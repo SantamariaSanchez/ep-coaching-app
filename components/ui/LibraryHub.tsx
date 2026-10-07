@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Dumbbell, MapPin } from "lucide-react";
 
@@ -20,6 +21,7 @@ export default function LibraryHub({
   exerciseView: React.ReactNode;
   gymView: React.ReactNode;
 }) {
+  const t = useT();
   const [tab, setTab] = useState<"exercises" | "gyms">(initialTab);
 
   return (
@@ -34,7 +36,7 @@ export default function LibraryHub({
             tab === "exercises" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
           }`}
         >
-          <Dumbbell size={13} /> Exercices ({exerciseCount})
+          <Dumbbell size={13} />{" "}{t("Exercices (")}{exerciseCount})
         </button>
         <button
           onClick={() => setTab("gyms")}
@@ -42,7 +44,7 @@ export default function LibraryHub({
             tab === "gyms" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
           }`}
         >
-          <MapPin size={13} /> Salles ({gymCount})
+          <MapPin size={13} />{" "}{t("Salles (")}{gymCount})
         </button>
       </div>
 

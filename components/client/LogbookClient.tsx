@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -59,6 +60,7 @@ function StartSessionButton({
   lastSession: Session | null;
   sessionBasePath: string;
 }) {
+  const t = useT();
   const { start, loading, error: startError } = useStartSession(sessionBasePath);
 
   function handleStart() {
@@ -84,7 +86,7 @@ function StartSessionButton({
         )}
         {lastSession && (
           <p className="text-[9px] text-[#F5EDED]/25 mt-0.5">
-            Dernier passage :{" "}
+            {t("Dernier passage :")}{" "}
             {new Intl.DateTimeFormat("fr-FR", {
               day: "numeric",
               month: "short",
@@ -98,7 +100,7 @@ function StartSessionButton({
         ) : (
           <>
             <span className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] opacity-0 group-hover:opacity-100 transition-opacity">
-              Démarrer
+              {t("Démarrer")}
             </span>
             <ChevronRight
               size={14}
@@ -116,6 +118,7 @@ function StartSessionButton({
 }
 
 function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
+  const t = useT();
   const [asking, setAsking] = useState(false);
   const [dayLabel, setDayLabel] = useState("");
   const { start, loading, error: startError } = useStartSession(sessionBasePath);
@@ -131,7 +134,7 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
     return (
       <div className="border border-dashed border-[#890404]/30 rounded-xl px-4 py-3.5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">
-          Quelle séance veux-tu faire ?
+          {t("Quelle séance veux-tu faire ?")}
         </p>
         <div className="flex gap-2">
           <input
@@ -139,7 +142,7 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
             value={dayLabel}
             onChange={(e) => setDayLabel(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleStart(); } }}
-            placeholder="Ex. Dos triceps quad" aria-label="Nom de la séance"
+            placeholder={t("Ex. Dos triceps quad")} aria-label={t("Nom de la séance")}
             className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
           />
           <button
@@ -147,11 +150,11 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
             disabled={loading}
             className="px-4 rounded-lg bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest transition-colors"
           >
-            {loading ? "…" : "Démarrer"}
+            {loading ? "…" : t("Démarrer")}
           </button>
         </div>
         <p className="text-[9px] text-[#F5EDED]/25 mt-2">
-          Sert à proposer un échauffement adapté, modifiable ensuite si besoin.
+          {t("Sert à proposer un échauffement adapté, modifiable ensuite si besoin.")}
         </p>
         {startError && (
           <p className="text-xs text-red-400 mt-1.5">{startError}</p>
@@ -166,7 +169,7 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
       className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
     >
       <Plus size={15} strokeWidth={1.8} />
-      Séance libre
+      {t("Séance libre")}
     </button>
   );
 }
@@ -183,6 +186,7 @@ interface ImportSuccess {
 }
 
 function ImportLogbookButton() {
+  const t = useT();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -233,7 +237,7 @@ function ImportLogbookButton() {
         ref={inputRef}
         type="file"
         accept=".csv"
-        aria-label="Importer un fichier CSV"
+        aria-label={t("Importer un fichier CSV")}
         className="hidden"
         onChange={handleFile}
       />
@@ -247,23 +251,23 @@ function ImportLogbookButton() {
         ) : (
           <Upload size={14} strokeWidth={1.8} />
         )}
-        Importer mon historique (Hevy / Strong)
+        {t("Importer mon historique (Hevy / Strong)")}
       </button>
 
       {result && result.ok && (
         <div className="flex items-start gap-2.5 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 mt-2.5">
           <CheckCircle2 size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-green-400">
-            {result.sessionsImported} séance{result.sessionsImported !== 1 ? "s" : ""} importée
-            {result.sessionsImported !== 1 ? "s" : ""} ({result.setsImported} sets) depuis{" "}
-            {result.source === "hevy" ? "Hevy" : "Strong"}.
+            {result.sessionsImported}{" "}{t("séance")}{result.sessionsImported !== 1 ? "s" : ""}{" "}{t("importée")}
+            {result.sessionsImported !== 1 ? "s" : ""} ({result.setsImported}{" "}{t("sets) depuis")}{" "}
+            {result.source === "hevy" ? t("Hevy") : t("Strong")}.
             {result.sessionsSkipped > 0 &&
               ` ${result.sessionsSkipped} déjà importée${result.sessionsSkipped !== 1 ? "s" : ""}, ignorée${result.sessionsSkipped !== 1 ? "s" : ""}.`}
             {result.programCreated && (
               <>
-                {" "}Ton programme a été reconstruit à partir de ton historique.{" "}
+                {" "}{t("Ton programme a été reconstruit à partir de ton historique.")}{" "}
                 <Link href="/dashboard/client/program" className="underline font-bold">
-                  va le voir
+                  {t("va le voir")}
                 </Link>.
               </>
             )}
@@ -291,6 +295,7 @@ export default function LogbookClient({
   showingAllHistory = false,
   historyError = false,
 }: Props) {
+  const t = useT();
   const router = useRouter();
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -320,10 +325,10 @@ export default function LogbookClient({
       {/* Header */}
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Logbook
+          {t("Logbook")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
-          Entraînement
+          {t("Entraînement")}
         </h1>
       </div>
 
@@ -342,7 +347,7 @@ export default function LogbookClient({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-0.5">
-              Séance en cours
+              {t("Séance en cours")}
             </p>
             <p className="text-sm font-black text-white truncate">
               {activeSession.day_label}
@@ -359,7 +364,7 @@ export default function LogbookClient({
 
       {/* ── Démarrer une séance ── */}
       <section className="mb-8">
-        <SectionLabel>Démarrer une séance</SectionLabel>
+        <SectionLabel>{t("Démarrer une séance")}</SectionLabel>
         <div className="space-y-2">
           {program?.days.map((day) => {
             const muscleGroups = [
@@ -386,8 +391,8 @@ export default function LogbookClient({
             <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4 mb-2">
               <p className="text-xs text-[#F5EDED]/40">
                 {isFree
-                  ? "Aucun programme actif. Crée ton programme ou démarre une séance libre."
-                  : "Aucun programme actif. Démarre une séance libre ou contacte ton coach."}
+                  ? t("Aucun programme actif. Crée ton programme ou démarre une séance libre.")
+                  : t("Aucun programme actif. Démarre une séance libre ou contacte ton coach.")}
               </p>
             </div>
           )}
@@ -403,7 +408,7 @@ export default function LogbookClient({
           tap ("Ouvrir le récap"). */}
       {sessions.length > 0 && (
         <section className="mb-8">
-          <SectionLabel>{showingAllHistory ? "Tout mon historique" : "Mes dernières séances"}</SectionLabel>
+          <SectionLabel>{showingAllHistory ? t("Tout mon historique") : t("Mes dernières séances")}</SectionLabel>
           <div className="space-y-2">
             {sessions.map((s) => (
               <SessionHistoryCard
@@ -423,13 +428,13 @@ export default function LogbookClient({
               <AlertCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-red-300">
-                  Impossible de charger tout ton historique pour le moment. Tes dernières séances sont affichées.
+                  {t("Impossible de charger tout ton historique pour le moment. Tes dernières séances sont affichées.")}
                 </p>
                 <Link
                   href={`${sessionBasePath}?historique=tout`}
                   className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-widest text-red-300 hover:text-red-200 transition-colors"
                 >
-                  Réessayer
+                  {t("Réessayer")}
                 </Link>
               </div>
             </div>
@@ -439,7 +444,7 @@ export default function LogbookClient({
               href={`${sessionBasePath}?historique=tout`}
               className="mt-3 w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-[#F5EDED]/75 transition-colors"
             >
-              Voir tout l&apos;historique
+              {t("Voir tout l'historique")}
               <ChevronRight size={13} />
             </Link>
           )}
@@ -447,14 +452,14 @@ export default function LogbookClient({
             <div className="mt-3 flex flex-col items-center gap-1">
               {sessions.length >= historyLimit && (
                 <p className="text-[10px] text-[#F5EDED]/30 text-center">
-                  Les {historyLimit} séances les plus récentes sont affichées.
+                  {t("Les")}{" "}{historyLimit}{" "}{t("séances les plus récentes sont affichées.")}
                 </p>
               )}
               <Link
                 href={sessionBasePath}
                 className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/65 transition-colors py-2"
               >
-                Revenir aux dernières séances
+                {t("Revenir aux dernières séances")}
               </Link>
             </div>
           )}
@@ -463,13 +468,13 @@ export default function LogbookClient({
 
       {/* ── Ma progression ── */}
       <section className="mb-8">
-        <SectionLabel>Ma progression : par exercice</SectionLabel>
+        <SectionLabel>{t("Ma progression : par exercice")}</SectionLabel>
         <ExerciseProgressionChart sessions={sessions} records={records} />
       </section>
 
       {checkins.length > 0 && (
         <section>
-          <SectionLabel>Ma progression : poids &amp; nutrition</SectionLabel>
+          <SectionLabel>{t("Ma progression : poids & nutrition")}</SectionLabel>
           <ClientProgressCharts checkins={checkins} />
         </section>
       )}

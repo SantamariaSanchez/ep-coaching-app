@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { Gift, ArrowRight, Bell, Check } from "lucide-react";
@@ -49,6 +50,7 @@ export function ClientCard({
   onRelaunch,
   isAnniversary = false,
 }: ClientCardProps) {
+  const t = useT();
   const [relaunchState, setRelaunchState] = useState<"idle" | "sending" | "sent">("idle");
 
   async function handleRelaunch(e: React.MouseEvent) {
@@ -144,7 +146,7 @@ export function ClientCard({
       {/* Oura Ring eligibility badge */}
       {ouraEligible && (
         <div
-          title="Rang Légende atteint : Oura Ring à offrir"
+          title={t("Rang Légende atteint : Oura Ring à offrir")}
           style={{
             position: "absolute",
             top: 14, left: 14,
@@ -269,7 +271,7 @@ export function ClientCard({
             )}
             {silentLabel && (
               <span
-                title="Aucune séance, log nutrition ou bilan récent"
+                title={t("Aucune séance, log nutrition ou bilan récent")}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -291,7 +293,7 @@ export function ClientCard({
             )}
             {intakeIncomplete && isActiveStatus && (
               <span
-                title="Le formulaire d'onboarding n'a jamais été terminé"
+                title={t("Le formulaire d'onboarding n'a jamais été terminé")}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -306,7 +308,7 @@ export function ClientCard({
                   textTransform: "uppercase",
                 }}
               >
-                Fiche à finir
+                {t("Fiche à finir")}
               </span>
             )}
             {isAnniversary && isActiveStatus && (
@@ -327,7 +329,7 @@ export function ClientCard({
                   textTransform: "uppercase",
                 }}
               >
-                🎉 Semaine {weekNum}
+                {t("🎉 Semaine")}{" "}{weekNum}
               </span>
             )}
           </div>
@@ -417,7 +419,7 @@ export function ClientCard({
               el.style.borderColor = "rgba(224,30,30,0.22)";
             }}
           >
-            Voir la fiche
+            {t("Voir la fiche")}
             <ArrowRight size={13} strokeWidth={2.4} />
           </Link>
 
@@ -428,8 +430,8 @@ export function ClientCard({
             <button
               onClick={handleRelaunch}
               disabled={relaunchState !== "idle"}
-              title="Envoyer une relance pour terminer la fiche"
-              aria-label="Envoyer une relance pour terminer la fiche"
+              title={t("Envoyer une relance pour terminer la fiche")}
+              aria-label={t("Envoyer une relance pour terminer la fiche")}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -450,7 +452,7 @@ export function ClientCard({
               }}
             >
               {relaunchState === "sent" ? <Check size={13} strokeWidth={2.4} /> : <Bell size={13} strokeWidth={2.4} />}
-              {relaunchState === "sent" ? "Envoyée" : "Relancer"}
+              {relaunchState === "sent" ? t("Envoyée") : t("Relancer")}
             </button>
           )}
         </div>

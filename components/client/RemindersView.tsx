@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -144,6 +145,7 @@ function ReminderForm({
   onCancel: () => void;
   saving: boolean;
 }) {
+  const t = useT();
   const [label, setLabel] = useState(initial?.label ?? "");
   const [time, setTime]   = useState(initial?.time ?? "08:00");
   const [days, setDays]   = useState<string[]>(initial?.days ?? ALL_DAYS);
@@ -173,12 +175,12 @@ function ReminderForm({
         {/* Label */}
         <div>
           <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", display: "block", marginBottom: 8 }}>
-            Nom du rappel
+            {t("Nom du rappel")}
           </label>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Logger ma nutrition, Me peser…" aria-label="Logger ma nutrition, Me peser…"
+            placeholder={t("Logger ma nutrition, Me peser…")} aria-label={t("Logger ma nutrition, Me peser…")}
             style={inputStyle}
           />
         </div>
@@ -186,9 +188,9 @@ function ReminderForm({
         {/* Time */}
         <div>
           <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", display: "block", marginBottom: 8 }}>
-            Heure
+            {t("Heure")}
           </label>
-          <input aria-label="Heure"
+          <input aria-label={t("Heure")}
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
@@ -199,7 +201,7 @@ function ReminderForm({
         {/* Days */}
         <div>
           <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", display: "block", marginBottom: 8 }}>
-            Jours
+            {t("Jours")}
           </label>
           <DayPills selected={days} onChange={setDays} />
         </div>
@@ -216,12 +218,12 @@ function ReminderForm({
             className="ep-btn-primary"
             style={{ flex: 1, height: 42, fontSize: 12 }}
           >
-            {saving ? "Sauvegarde…" : initial ? "Modifier" : "Créer le rappel"}
+            {saving ? t("Sauvegarde…") : initial ? t("Modifier") : t("Créer le rappel")}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            aria-label="Annuler"
+            aria-label={t("Annuler")}
             className="ep-btn-secondary"
             style={{ height: 42, padding: "0 16px" }}
           >
@@ -246,6 +248,7 @@ function ReminderCard({
   onDelete: () => void;
   onEdit: () => void;
 }) {
+  const t = useT();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
@@ -349,12 +352,12 @@ function ReminderCard({
               }}
               onBlur={() => setConfirmDelete(false)}
             >
-              Confirmer
+              {t("Confirmer")}
             </button>
           ) : (
             <button
               onClick={() => setConfirmDelete(true)}
-              aria-label="Supprimer le rappel"
+              aria-label={t("Supprimer le rappel")}
               style={{
                 width: 36, height: 36, borderRadius: 8,
                 background: "transparent",
@@ -375,6 +378,7 @@ function ReminderCard({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function RemindersView() {
+  const t = useT();
   const router = useRouter();
   const [reminders, setReminders]     = useState<Reminder[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -479,9 +483,9 @@ export default function RemindersView() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: "0 0 4px" }}>
-            Notifications
+            {t("Notifications")}
           </p>
-          <h1 className="ep-h1" style={{ fontSize: 28 }}>Mes rappels</h1>
+          <h1 className="ep-h1" style={{ fontSize: 28 }}>{t("Mes rappels")}</h1>
         </div>
         {!showForm && (
           <button
@@ -490,7 +494,7 @@ export default function RemindersView() {
             style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}
           >
             <Plus size={14} />
-            Nouveau rappel
+            {t("Nouveau rappel")}
           </button>
         )}
       </div>
@@ -510,10 +514,10 @@ export default function RemindersView() {
           <AlertCircle size={16} style={{ color: "#fbbf24", flexShrink: 0 }} strokeWidth={2} />
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", margin: "0 0 2px" }}>
-              Active les notifications
+              {t("Active les notifications")}
             </p>
             <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0 }}>
-              Pour recevoir tes rappels sur ton téléphone.
+              {t("Pour recevoir tes rappels sur ton téléphone.")}
             </p>
           </div>
           <button
@@ -533,7 +537,7 @@ export default function RemindersView() {
               textTransform: "uppercase",
             }}
           >
-            {requestingPush ? "…" : "Activer"}
+            {requestingPush ? "…" : t("Activer")}
           </button>
         </div>
       )}
@@ -581,7 +585,7 @@ export default function RemindersView() {
         /* Suggestions */
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 12px" }}>
-            Rappels recommandés
+            {t("Rappels recommandés")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {SUGGESTIONS.map((s, i) => (

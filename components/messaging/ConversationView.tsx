@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import {
   Fragment,
   useEffect,
@@ -83,6 +84,7 @@ function VoicePlayer({
   durationSeconds: number | null;
   expiresAt: string | null;
 }) {
+  const tr = useT();
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -156,7 +158,7 @@ function VoicePlayer({
         </div>
         <div className="flex items-center justify-between">
           <span className="text-[9px] text-white/60">
-            {playing ? `${elapsed}s` : duration > 0 ? `${duration}s` : "vocal"}
+            {playing ? `${elapsed}s` : duration > 0 ? `${duration}s` : tr("vocal")}
           </span>
           {hoursLeft !== null && hoursLeft < 24 && (
             <span className="text-[8px] font-bold text-amber-400 flex items-center gap-0.5">
@@ -273,6 +275,7 @@ function MessageBubble({
    * sans ça le message apparaîtrait à tort comme venant du pair habituel. */
   fromFounder?: boolean;
 }) {
+  const tr = useT();
   // Heure de Paris explicite : même référence que la liste des conversations
   // (formatée côté serveur), quel que soit le fuseau de l'appareil.
   const time = formatClock(msg.created_at);
@@ -287,7 +290,7 @@ function MessageBubble({
             className="inline-flex items-center rounded-full font-bold uppercase tracking-wide mb-1 text-[8px] px-1.5 py-0.5"
             style={{ background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.35)", color: "#E01E1E" }}
           >
-            Santamaria · Fondateur
+            {tr("Santamaria · Fondateur")}
           </span>
         )}
       <div
@@ -344,6 +347,7 @@ export default function ConversationView({
   canSend = true,
   isPeerAICoach = false,
 }: Props) {
+  const tr = useT();
   // Nom à afficher dans les notifications push envoyées au pair — c'est
   // TOUJOURS mon propre nom (l'expéditeur), jamais celui du destinataire.
   const senderFirstName =
@@ -774,17 +778,17 @@ export default function ConversationView({
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Chercher dans la conversation…" aria-label="Chercher dans la conversation…"
+                placeholder={tr("Chercher dans la conversation…")} aria-label={tr("Chercher dans la conversation…")}
                 className="flex-1 bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 outline-none"
               />
               {searchTerm && (
                 <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">
-                  {visibleMessages.length} résultat{visibleMessages.length !== 1 ? "s" : ""}
+                  {visibleMessages.length}{" "}{tr("résultat")}{visibleMessages.length !== 1 ? "s" : ""}
                 </span>
               )}
               <button
                 onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
-                aria-label="Fermer la recherche"
+                aria-label={tr("Fermer la recherche")}
                 className="text-[#F5EDED]/40 hover:text-white flex-shrink-0"
               >
                 <X size={14} />
@@ -795,7 +799,7 @@ export default function ConversationView({
               onClick={() => setSearchOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
             >
-              <Search size={11} /> Chercher dans la conversation
+              <Search size={11} />{" "}{tr("Chercher dans la conversation")}
             </button>
           )}
         </div>
@@ -807,7 +811,7 @@ export default function ConversationView({
           <div className="flex items-center justify-center h-full">
             <div
               role="status"
-              aria-label="Chargement des messages"
+              aria-label={tr("Chargement des messages")}
               className="w-5 h-5 border-2 border-[#890404]/40 border-t-[#E01E1E] rounded-full animate-spin"
             />
           </div>
@@ -815,13 +819,13 @@ export default function ConversationView({
         {loaded && loadError && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center" role="alert">
             <p className="text-sm text-[#F5EDED]/60">
-              Impossible de charger la conversation.
+              {tr("Impossible de charger la conversation.")}
             </p>
             <button
               onClick={() => { setLoaded(false); setLoadError(false); setReloadKey((k) => k + 1); }}
               className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-[#890404]/40 text-[#F5EDED]/70 hover:text-white hover:border-[#E01E1E]/60 transition-colors"
             >
-              <RotateCw size={12} /> Réessayer
+              <RotateCw size={12} />{" "}{tr("Réessayer")}
             </button>
           </div>
         )}
@@ -832,22 +836,22 @@ export default function ConversationView({
         {loaded && loadError && messages.length > 0 && (
           <div className="flex items-center justify-center gap-2 pb-2" role="alert">
             <p className="text-[10px] text-[#F5EDED]/45">
-              L&apos;historique n&apos;a pas pu être chargé.
+              {tr("L'historique n'a pas pu être chargé.")}
             </p>
             <button
               onClick={() => { setLoadError(false); setReloadKey((k) => k + 1); }}
               className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#F5EDED]/60 hover:text-white transition-colors"
             >
-              <RotateCw size={10} /> Réessayer
+              <RotateCw size={10} />{" "}{tr("Réessayer")}
             </button>
           </div>
         )}
         {loaded && !loadError && messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <p className="text-sm text-[#F5EDED]/25 text-center">
-              Aucun message pour l&apos;instant.
+              {tr("Aucun message pour l'instant.")}
               <br />
-              Démarre la conversation 👋
+              {tr("Démarre la conversation 👋")}
             </p>
           </div>
         )}
@@ -861,18 +865,18 @@ export default function ConversationView({
               disabled={loadingOlder}
               className="text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full border border-[#890404]/30 text-[#F5EDED]/45 hover:text-[#F5EDED]/75 hover:border-[#890404]/60 disabled:opacity-50 transition-colors"
             >
-              {loadingOlder ? "Chargement…" : "Voir les messages plus anciens"}
+              {loadingOlder ? tr("Chargement…") : tr("Voir les messages plus anciens")}
             </button>
             {olderError && (
               <p className="text-[10px] text-red-400" role="alert">
-                Chargement impossible, réessaie.
+                {tr("Chargement impossible, réessaie.")}
               </p>
             )}
           </div>
         )}
         {messages.length > 0 && visibleMessages.length === 0 && (
           <p className="text-xs text-[#F5EDED]/25 text-center py-8">
-            Aucun message ne correspond à ta recherche.
+            {tr("Aucun message ne correspond à ta recherche.")}
           </p>
         )}
         {visibleMessages.map((msg, i) => {
@@ -905,7 +909,7 @@ export default function ConversationView({
       {sendError && (
         <div className="px-3 pb-1 flex items-center justify-between gap-2">
           <p className="text-[11px] text-red-400">{sendError}</p>
-          <button onClick={() => setSendError(null)} aria-label="Fermer le message d'erreur" className="text-red-400/60 hover:text-red-400">
+          <button onClick={() => setSendError(null)} aria-label={tr("Fermer le message d'erreur")} className="text-red-400/60 hover:text-red-400">
             <X size={12} />
           </button>
         </div>
@@ -915,14 +919,14 @@ export default function ConversationView({
       {!canSend ? (
         <div className="border-t border-[#890404]/20 bg-[#150000] px-4 py-4 text-center">
           <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed">
-            Ton coach n&apos;a pas encore ouvert cette conversation.
+            {tr("Ton coach n'a pas encore ouvert cette conversation.")}
             <br />
-            Tu pourras lui répondre dès qu&apos;il t&apos;aura écrit.
+            {tr("Tu pourras lui répondre dès qu'il t'aura écrit.")}
           </p>
         </div>
       ) : (
       <div className="border-t border-[#890404]/20 bg-[#150000] px-3 pt-1.5 pb-3 flex flex-col gap-1">
-      <p className="text-[9px] text-[#F5EDED]/25 pl-1">Maintiens l&apos;icône micro pour enregistrer un message vocal.</p>
+      <p className="text-[9px] text-[#F5EDED]/25 pl-1">{tr("Maintiens l'icône micro pour enregistrer un message vocal.")}</p>
       <div className="flex items-center gap-2">
         <VoiceRecorderButton onSend={sendVoice} />
 
@@ -930,7 +934,7 @@ export default function ConversationView({
           onClick={() => imageInputRef.current?.click()}
           disabled={sending}
           className="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
-          title="Envoyer une photo" aria-label="Envoyer une photo"
+          title={tr("Envoyer une photo")} aria-label={tr("Envoyer une photo")}
         >
           <ImageIcon size={16} />
         </button>
@@ -938,7 +942,7 @@ export default function ConversationView({
           ref={imageInputRef}
           type="file"
           accept="image/*"
-          aria-label="Envoyer une photo"
+          aria-label={tr("Envoyer une photo")}
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -973,7 +977,7 @@ export default function ConversationView({
         <button
           onClick={sendText}
           disabled={!text.trim() || sending}
-          aria-label="Envoyer"
+          aria-label={tr("Envoyer")}
           className="w-10 h-10 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:bg-[#890404]/30 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
         >
           {sending ? (

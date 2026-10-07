@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState, useRef, useState } from "react";
 import { Camera, Video, CheckCircle2, Clock, ExternalLink, X, Loader2, Sparkles } from "lucide-react";
 import { POSING_CATEGORIES, CATEGORIES_BY_GENDER, TYPE_LABELS, type SubmissionType } from "@/lib/posing-data";
@@ -81,6 +82,7 @@ function SelfCategoryPicker({
   coachId: string;
   save: (clientId: string, _prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean } | null>;
 }) {
+  const tr = useT();
   const bound = save.bind(null, coachId);
   const [state, action, isPending] = useActionState(bound, null);
 
@@ -89,10 +91,10 @@ function SelfCategoryPicker({
       <select
         name="competition_category"
         defaultValue=""
-        aria-label="Catégorie de compétition"
+        aria-label={tr("Catégorie de compétition")}
         className="flex-1 bg-[#150000] border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/60"
       >
-        <option value="">Choisis ta catégorie</option>
+        <option value="">{tr("Choisis ta catégorie")}</option>
         <optgroup label="Femmes">
           {CATEGORIES_BY_GENDER.femme.map((cat) => (
             <option key={cat} value={cat}>{cat}</option>
@@ -109,10 +111,10 @@ function SelfCategoryPicker({
         disabled={isPending}
         className="bg-amber-500/15 hover:bg-amber-500/25 disabled:opacity-50 border border-amber-500/40 text-amber-400 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
       >
-        {isPending ? "…" : state?.success ? "✓ Validé" : "Valider"}
+        {isPending ? "…" : state?.success ? tr("✓ Validé") : tr("Valider")}
       </button>
       {state?.error && <p className="text-[10px] text-red-400">{state.error}</p>}
-      {state?.success && <p className="text-[10px] text-green-400">Catégorie enregistrée.</p>}
+      {state?.success && <p className="text-[10px] text-green-400">{tr("Catégorie enregistrée.")}</p>}
     </form>
   );
 }
@@ -130,6 +132,7 @@ function SubmissionForm({
   isSelfTracking: boolean;
   saveCompetitionSettings?: (clientId: string, _prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean } | null>;
 }) {
+  const tr = useT();
   const [type, setType] = useState<SubmissionType>("mandatory_poses");
   const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [video, setVideo] = useState<MediaItem | null>(null);
@@ -222,16 +225,16 @@ function SubmissionForm({
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <CheckCircle2 size={40} className="text-green-400" strokeWidth={1.5} />
         <p className="text-sm font-black text-white uppercase tracking-wider">
-          {isSelfTracking ? "Ajoutée à ton historique !" : "Mise à jour envoyée !"}
+          {isSelfTracking ? tr("Ajoutée à ton historique !") : tr("Mise à jour envoyée !")}
         </p>
         <p className="text-xs text-[#F5EDED]/35">
-          {isSelfTracking ? "Retrouve-la dans ton suivi ci-dessous." : "Ton coach recevra une notification."}
+          {isSelfTracking ? tr("Retrouve-la dans ton suivi ci-dessous.") : tr("Ton coach recevra une notification.")}
         </p>
         <button
           onClick={() => { setSuccess(false); setPhotos([]); setVideo(null); setVideoLink(""); setShowVideoLinkInput(false); setNotes(""); }}
           className="text-xs text-[#E01E1E] hover:underline mt-2"
         >
-          Envoyer une autre update
+          {tr("Envoyer une autre update")}
         </button>
       </div>
     );
@@ -268,7 +271,7 @@ function SubmissionForm({
       {type === "mandatory_poses" && posingData && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Poses obligatoires : {category}
+            {tr("Poses obligatoires :")}{" "}{category}
           </p>
           <div className="space-y-1.5">
             {posingData.mandatory_poses.map((pose, i) => (
@@ -290,7 +293,7 @@ function SubmissionForm({
 
       {!posingData && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">Les 3 photos de la semaine</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">{tr("Les 3 photos de la semaine")}</p>
           <div className="space-y-1.5">
             {["Face, bras le long du corps, relâché", "Profil (côté droit), relâché", "Dos, bras le long du corps, relâché"].map((pose, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -302,11 +305,11 @@ function SubmissionForm({
             ))}
           </div>
           <p className="mt-3 text-[10px] text-[#F5EDED]/35 border-t border-[#890404]/15 pt-2">
-            Même endroit, même lumière, même heure (idéalement le matin à jeun) : c&apos;est ce qui rend la comparaison fiable.
+            {tr("Même endroit, même lumière, même heure (idéalement le matin à jeun) : c'est ce qui rend la comparaison fiable.")}
           </p>
           {isSelfTracking && saveCompetitionSettings && (
             <div className="mt-3 pt-3 border-t border-[#890404]/15">
-              <p className="text-[10px] text-[#F5EDED]/45 mb-2">Tu prépares une compétition ? Choisis ta catégorie pour avoir tes poses imposées.</p>
+              <p className="text-[10px] text-[#F5EDED]/45 mb-2">{tr("Tu prépares une compétition ? Choisis ta catégorie pour avoir tes poses imposées.")}</p>
               <SelfCategoryPicker coachId={profile.id} save={saveCompetitionSettings} />
             </div>
           )}
@@ -319,7 +322,7 @@ function SubmissionForm({
         <div className="bg-[#E01E1E]/6 border border-[#E01E1E]/15 rounded-xl p-4">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E]/70 mb-2.5 flex items-center gap-1.5">
             <Sparkles size={11} />
-            Astuces posing · {category}
+            {tr("Astuces posing ·")}{" "}{category}
           </p>
           <div className="space-y-2">
             {posingData.tips.map((tip, i) => (
@@ -335,13 +338,13 @@ function SubmissionForm({
       {type === "posing_routine" && posingData && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 space-y-2">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Instructions : {category}
+            {tr("Instructions :")}{" "}{category}
           </p>
           <p className="text-xs text-[#F5EDED]/60 leading-relaxed">
             {posingData.posing_routine.instructions}
           </p>
           <p className="text-[10px] text-[#E01E1E]/70 font-bold">
-            ⏱ Durée : {posingData.posing_routine.duration}
+            {tr("⏱ Durée :")}{" "}{posingData.posing_routine.duration}
           </p>
         </div>
       )}
@@ -349,12 +352,12 @@ function SubmissionForm({
       {type === "posing_routine" && (
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Durée de ta routine
+            {tr("Durée de ta routine")}
           </label>
           <input
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            placeholder="Ex. 48 secondes" aria-label="Durée de ta routine"
+            placeholder={tr("Ex. 48 secondes")} aria-label={tr("Durée de ta routine")}
             className={inputCls}
           />
         </div>
@@ -364,7 +367,7 @@ function SubmissionForm({
       {type === "mandatory_poses" ? (
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Photos ({photos.length}/{MAX_PHOTOS}) <span className="text-[#E01E1E]">*</span>
+            {tr("Photos (")}{photos.length}/{MAX_PHOTOS}) <span className="text-[#E01E1E]">*</span>
           </label>
           <div className="flex gap-2 flex-wrap">
             {photos.map((p) => (
@@ -378,14 +381,14 @@ function SubmissionForm({
                 )}
                 {p.error && (
                   <div className="absolute inset-0 bg-[#E01E1E]/55 flex items-center justify-center">
-                    <span className="text-[9px] text-white font-black">Échec</span>
+                    <span className="text-[9px] text-white font-black">{tr("Échec")}</span>
                   </div>
                 )}
                 <button
                   type="button"
                   onClick={() => setPhotos((prev) => prev.filter((x) => x.localId !== p.localId))}
                   className="absolute top-0.5 right-0.5 w-4.5 h-4.5 rounded-full bg-black/65 flex items-center justify-center"
-                  aria-label="Retirer cette photo"
+                  aria-label={tr("Retirer cette photo")}
                 >
                   <X size={11} className="text-white" />
                 </button>
@@ -398,7 +401,7 @@ function SubmissionForm({
                 className="w-16 h-16 rounded-lg border border-dashed border-[#890404]/40 bg-black/20 flex flex-col items-center justify-center gap-1 text-[#F5EDED]/40"
               >
                 <Camera size={16} />
-                <span className="text-[8px] font-bold uppercase">Photo</span>
+                <span className="text-[8px] font-bold uppercase">{tr("Photo")}</span>
               </button>
             )}
           </div>
@@ -407,7 +410,7 @@ function SubmissionForm({
             type="file"
             accept="image/*"
             multiple
-            aria-label="Ajouter des photos"
+            aria-label={tr("Ajouter des photos")}
             className="hidden"
             onChange={(e) => {
               if (e.target.files && e.target.files.length > 0) handlePhotosSelected(e.target.files);
@@ -418,16 +421,16 @@ function SubmissionForm({
       ) : (
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Vidéo <span className="text-[#E01E1E]">*</span>
+            {tr("Vidéo")}{" "}<span className="text-[#E01E1E]">*</span>
           </label>
           {video ? (
             <div className="flex items-center gap-2.5 bg-black/20 border border-[#890404]/30 rounded-lg px-3 py-2">
               <Video size={14} className={video.error ? "text-[#E01E1E]" : "text-green-400"} />
               <span className="text-[11px] text-[#F5EDED]/60 flex-1">
-                {video.uploading ? "Envoi en cours…" : video.error ? "Échec de l'envoi" : "Vidéo prête"}
+                {video.uploading ? tr("Envoi en cours…") : video.error ? tr("Échec de l'envoi") : tr("Vidéo prête")}
               </span>
               {video.uploading && <Loader2 size={13} className="animate-spin text-[#F5EDED]/40" />}
-              <button type="button" onClick={() => setVideo(null)} aria-label="Retirer la vidéo">
+              <button type="button" onClick={() => setVideo(null)} aria-label={tr("Retirer la vidéo")}>
                 <X size={13} className="text-[#F5EDED]/40" />
               </button>
             </div>
@@ -436,14 +439,14 @@ function SubmissionForm({
               <input
                 value={videoLink}
                 onChange={(e) => setVideoLink(e.target.value)}
-                placeholder="https://go.screenpal.com/watch/..."
-                aria-label="Lien vidéo externe"
+                placeholder={tr("https://go.screenpal.com/watch/...")}
+                aria-label={tr("Lien vidéo externe")}
                 className={inputCls}
               />
               <button
                 type="button"
                 onClick={() => { setShowVideoLinkInput(false); setVideoLink(""); }}
-                aria-label="Annuler le lien"
+                aria-label={tr("Annuler le lien")}
                 className="flex-shrink-0 px-3 text-[#F5EDED]/40"
               >
                 <X size={14} />
@@ -457,14 +460,14 @@ function SubmissionForm({
                 className="flex-1 flex items-center justify-center gap-2 border border-dashed border-[#890404]/40 bg-black/20 rounded-lg py-2.5 text-[#F5EDED]/40"
               >
                 <Video size={14} />
-                <span className="text-[11px] font-bold uppercase tracking-widest">Filmer ma vidéo</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest">{tr("Filmer ma vidéo")}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setShowVideoLinkInput(true)}
                 className="text-[10.5px] font-bold text-[#F5EDED]/35 underline flex-shrink-0"
               >
-                ou lien
+                {tr("ou lien")}
               </button>
             </div>
           )}
@@ -472,7 +475,7 @@ function SubmissionForm({
             ref={videoInputRef}
             type="file"
             accept="video/*"
-            aria-label="Vidéo"
+            aria-label={tr("Vidéo")}
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -497,7 +500,7 @@ function SubmissionForm({
         >
           <Sparkles size={13} className="text-[#E01E1E] flex-shrink-0" />
           <span className="text-[11px] text-[#F5EDED]/55 leading-relaxed flex-1">
-            Utilise <strong className="text-[#F5EDED]">Lens Buddy</strong> pour reprendre la même pose au pixel près.
+            {tr("Utilise")}{" "}<strong className="text-[#F5EDED]">{tr("Lens Buddy")}</strong>{" "}{tr("pour reprendre la même pose au pixel près.")}
           </span>
           <ExternalLink size={12} className="text-[#E01E1E]/60 flex-shrink-0" />
         </a>
@@ -506,9 +509,9 @@ function SubmissionForm({
       {/* Notes */}
       <div>
         <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          Notes / Ressenti (facultatif)
+          {tr("Notes / Ressenti (facultatif)")}
         </label>
-        <textarea aria-label="Notes / Ressenti (facultatif)"
+        <textarea aria-label={tr("Notes / Ressenti (facultatif)")}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
@@ -524,7 +527,7 @@ function SubmissionForm({
         disabled={submitting || mediaUploading}
         className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
       >
-        {submitting ? "Envoi…" : mediaUploading ? "Envoi des médias…" : "Envoyer"}
+        {submitting ? tr("Envoi…") : mediaUploading ? tr("Envoi des médias…") : tr("Envoyer")}
       </button>
     </form>
   );
@@ -533,6 +536,7 @@ function SubmissionForm({
 // ── History card ─────────────────────────────────────────────────────────────
 
 function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSelfTracking: boolean }) {
+  const tr = useT();
   const hasFeedback = !!photo.coach_replied_at;
   const date = formatDate(photo.submitted_at);
   const typeLabel = TYPE_LABELS[photo.type] ?? photo.type;
@@ -557,12 +561,12 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
         {!isSelfTracking && (hasFeedback ? (
           <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/25 flex-shrink-0">
             <CheckCircle2 size={10} />
-            Retour reçu
+            {tr("Retour reçu")}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 flex-shrink-0">
             <Clock size={10} />
-            En attente
+            {tr("En attente")}
           </span>
         ))}
       </div>
@@ -583,7 +587,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
             >
               <ExternalLink size={11} />
-              Voir la vidéo
+              {tr("Voir la vidéo")}
             </a>
           )}
         </div>
@@ -598,7 +602,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
           className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
         >
           <ExternalLink size={11} />
-          Ouvrir dans Drive
+          {tr("Ouvrir dans Drive")}
         </a>
       )}
 
@@ -611,7 +615,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
       {!isSelfTracking && hasFeedback && photo.coach_feedback && (
         <div className="bg-green-500/8 border border-green-500/20 rounded-lg p-3 mt-1">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70 mb-1">
-            Retour de ton coach
+            {tr("Retour de ton coach")}
           </p>
           <p className="text-xs text-[#F5EDED]/75 leading-relaxed">
             {photo.coach_feedback}
@@ -643,6 +647,7 @@ export default function ClientPhotosView({
   saveCompetitionSettings,
   submitPhotoUpdate,
 }: Props) {
+  const tr = useT();
   // Guard: profile not yet available (Supabase fetch failed or slow)
   if (!profile) {
     return (
@@ -678,9 +683,9 @@ export default function ClientPhotosView({
       {/* Header */}
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Suivi
+          {tr("Suivi")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Photos</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Photos")}</h1>
       </div>
 
       {/* Frequency badge */}
@@ -693,16 +698,16 @@ export default function ClientPhotosView({
             </span>
             <div>
               <p className="text-xs font-black text-[#E01E1E] uppercase tracking-widest">
-                Suivi Quotidien : Compétition
+                {tr("Suivi Quotidien : Compétition")}
               </p>
               {daysLeft != null && daysLeft > 0 && (
                 <p className="text-[10px] text-[#F5EDED]/50 mt-0.5">
-                  J-{daysLeft} avant la compétition
+                  J-{daysLeft}{" "}{tr("avant la compétition")}
                 </p>
               )}
               {daysLeft != null && daysLeft <= 0 && (
                 <p className="text-[10px] text-green-400/70 mt-0.5">
-                  Jour J. Bonne chance ! 💪
+                  {tr("Jour J. Bonne chance ! 💪")}
                 </p>
               )}
             </div>
@@ -711,7 +716,7 @@ export default function ClientPhotosView({
           <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-2.5">
             <div className="w-2 h-2 rounded-full bg-green-400" />
             <p className="text-xs font-bold text-green-400 uppercase tracking-widest">
-              Suivi Hebdomadaire
+              {tr("Suivi Hebdomadaire")}
             </p>
           </div>
         )}
@@ -721,10 +726,10 @@ export default function ClientPhotosView({
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 mb-8">
         <div className="mb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            {isDaily ? "Mise à jour du jour" : "Mise à jour de la semaine"}
+            {isDaily ? tr("Mise à jour du jour") : tr("Mise à jour de la semaine")}
           </p>
           <h2 className="text-lg font-black uppercase tracking-tight">
-            Envoyer une mise à jour
+            {tr("Envoyer une mise à jour")}
           </h2>
         </div>
 
@@ -732,7 +737,7 @@ export default function ClientPhotosView({
           <div className="flex items-center gap-3 py-4 text-center justify-center">
             <CheckCircle2 size={20} className="text-green-400" />
             <p className="text-sm font-bold text-green-400">
-              Mise à jour envoyée {isDaily ? "aujourd'hui" : "cette semaine"} ✓
+              {tr("Mise à jour envoyée")}{" "}{isDaily ? tr("aujourd'hui") : tr("cette semaine")} ✓
             </p>
           </div>
         ) : (
@@ -750,10 +755,10 @@ export default function ClientPhotosView({
         <section className="mb-8">
           <div className="mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-              Progression
+              {tr("Progression")}
             </p>
             <h2 className="text-xl font-black uppercase tracking-tight">
-              Avant / Après
+              {tr("Avant / Après")}
             </h2>
           </div>
           <PhotoCompareSlider beforeUrl={oldestPhoto as string} afterUrl={newestPhoto as string} />
@@ -765,10 +770,10 @@ export default function ClientPhotosView({
         <section>
           <div className="mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-              Historique
+              {tr("Historique")}
             </p>
             <h2 className="text-xl font-black uppercase tracking-tight">
-              Mes photos
+              {tr("Mes photos")}
             </h2>
           </div>
           <div className="space-y-3">

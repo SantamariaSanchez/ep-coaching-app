@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Footprints, Plus, Trash2, Check, Target, Flame, Bell, Watch, X, Activity, AlertTriangle } from "lucide-react";
@@ -138,6 +139,7 @@ export default function StepsClient({
   logSteps?: (logDate: string, stepsActual: number, completedItems: string[]) => Promise<{ error?: string }>;
   createReminderFromRoutine?: (label: string, time: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const today = todayStr();
   const todayLog = logs.find((l) => l.log_date === today) ?? null;
 
@@ -331,7 +333,7 @@ export default function StepsClient({
         hasOura ? (
           <div className="flex items-center gap-2" style={{ fontSize: 11, color: "rgba(74,222,128,0.85)" }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", flexShrink: 0 }} />
-            Connecté à Oura. Tes pas d&apos;hier se synchronisent automatiquement chaque matin.
+            {t("Connecté à Oura. Tes pas d'hier se synchronisent automatiquement chaque matin.")}
           </div>
         ) : (
           <Link
@@ -340,7 +342,7 @@ export default function StepsClient({
             style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", textDecoration: "none" }}
           >
             <Watch size={12} style={{ flexShrink: 0 }} />
-            Connecte ta Oura Ring pour ne plus saisir tes pas à la main
+            {t("Connecte ta Oura Ring pour ne plus saisir tes pas à la main")}
           </Link>
         )
       )}
@@ -354,15 +356,15 @@ export default function StepsClient({
             <div className="flex items-center gap-2.5 min-w-0">
               <Activity size={15} className={pedometer.status === "active" ? "text-green-400 flex-shrink-0" : "text-[#E01E1E] flex-shrink-0"} />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-white">Podomètre automatique</p>
+                <p className="text-xs font-bold text-white">{t("Podomètre automatique")}</p>
                 <p className="text-[10px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">
                   {pedometer.status === "active"
-                    ? "Actif. Compte tes pas tant que l'appli reste ouverte à l'écran."
+                    ? t("Actif. Compte tes pas tant que l'appli reste ouverte à l'écran.")
                     : pedometer.status === "denied"
-                    ? "Mouvement refusé sur cet appareil."
+                    ? t("Mouvement refusé sur cet appareil.")
                     : pedometer.needsGesture
-                    ? "Compte tes pas tout seul, sans rien taper. Un tap pour démarrer (exigé par ton navigateur)."
-                    : "Compte tes pas tout seul, sans rien taper."}
+                    ? t("Compte tes pas tout seul, sans rien taper. Un tap pour démarrer (exigé par ton navigateur).")
+                    : t("Compte tes pas tout seul, sans rien taper.")}
                 </p>
               </div>
             </div>
@@ -374,7 +376,7 @@ export default function StepsClient({
                   : "flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
               }
             >
-              {pedometer.status === "active" ? "Désactiver" : "Activer"}
+              {pedometer.status === "active" ? t("Désactiver") : t("Activer")}
             </button>
           </div>
           {pedometer.error && (
@@ -391,13 +393,13 @@ export default function StepsClient({
           <div className="flex items-center gap-2">
             <Footprints size={16} className="text-[#E01E1E]" />
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-              Objectif quotidien
+              {t("Objectif quotidien")}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {streaks.current > 0 && (
               <span className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]">
-                <Flame size={11} /> {streaks.current}j d&apos;affilée
+                <Flame size={11} /> {streaks.current}{t("j d'affilée")}
               </span>
             )}
             {!readOnly && updateStepGoal ? (
@@ -407,19 +409,19 @@ export default function StepsClient({
                     type="number"
                     value={goal}
                     onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
-                    aria-label="Objectif de pas"
+                    aria-label={t("Objectif de pas")}
                     className="w-20 bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
                   />
-                  <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[#E01E1E]">OK</button>
+                  <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[#E01E1E]">{t("OK")}</button>
                 </div>
               ) : (
                 <button onClick={() => setEditingGoal(true)} className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
-                  <Target size={11} /> {goal.toLocaleString("fr-FR")} pas
+                  <Target size={11} /> {goal.toLocaleString("fr-FR")}{" "}{t("pas")}
                 </button>
               )
             ) : (
               <span className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
-                <Target size={11} /> {goal.toLocaleString("fr-FR")} pas/jour
+                <Target size={11} /> {goal.toLocaleString("fr-FR")}{" "}{t("pas/jour")}
               </span>
             )}
           </div>
@@ -427,7 +429,7 @@ export default function StepsClient({
 
         <div className="mb-3">
           <p className="text-3xl font-black text-white tabular-nums">{todaySteps.toLocaleString("fr-FR")}</p>
-          <p className="text-[10px] text-[#F5EDED]/30">pas aujourd&apos;hui</p>
+          <p className="text-[10px] text-[#F5EDED]/30">{t("pas aujourd'hui")}</p>
         </div>
 
         <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden mb-1">
@@ -436,7 +438,7 @@ export default function StepsClient({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-[10px] text-[#F5EDED]/30">{pct}% de l&apos;objectif</p>
+        <p className="text-[10px] text-[#F5EDED]/30">{pct}{t("% de l'objectif")}</p>
 
         {/* Masterclass 2026-08-15 : plus de saisie manuelle ici (doublon
             direct du champ "steps" du bilan du soir, qui alimente
@@ -444,11 +446,11 @@ export default function StepsClient({
             ou corriger le chiffre du jour. */}
         {!readOnly && !hasOura && pedometer.status !== "active" && (
           <p className="text-[10px] text-[#F5EDED]/25 mt-3 pt-3 border-t border-[#890404]/10 leading-relaxed">
-            Pas de podomètre actif ni de Oura connectée : renseigne ou corrige tes pas dans ton{" "}
+            {t("Pas de podomètre actif ni de Oura connectée : renseigne ou corrige tes pas dans ton")}{" "}
             <Link href={bilanHref} className="text-[#E01E1E] hover:text-[#ff4444] transition-colors">
-              bilan du soir
+              {t("bilan du soir")}
             </Link>
-            , ils remontent ici automatiquement.
+            {t(", ils remontent ici automatiquement.")}
           </p>
         )}
       </div>
@@ -456,10 +458,10 @@ export default function StepsClient({
       {/* Routine */}
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Ma routine du jour
+          {t("Ma routine du jour")}
         </p>
         {items.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/30 italic mb-3">Aucune habitude programmée, ajoute des créneaux de marche dans ta journée.</p>
+          <p className="text-xs text-[#F5EDED]/30 italic mb-3">{t("Aucune habitude programmée, ajoute des créneaux de marche dans ta journée.")}</p>
         ) : (
           <div className="space-y-1.5 mb-3">
             {items.map((item) => {
@@ -489,14 +491,14 @@ export default function StepsClient({
                     {!readOnly && createReminderFromRoutine && (
                       <button
                         onClick={() => { setReminderOpenFor(reminderOpenFor === item.id ? null : item.id); setReminderTime("12:00"); }}
-                        title="Créer un rappel push" aria-label="Créer un rappel push"
+                        title={t("Créer un rappel push")} aria-label={t("Créer un rappel push")}
                         className={rStatus === "done" ? "text-green-400" : "text-[#F5EDED]/20 hover:text-[#E01E1E] transition-colors"}
                       >
                         {rStatus === "done" ? <Check size={13} /> : <Bell size={13} />}
                       </button>
                     )}
                     {!readOnly && deleteRoutineItem && (
-                      <button onClick={() => handleDeleteItem(item.id)} aria-label="Supprimer l'activité" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
+                      <button onClick={() => handleDeleteItem(item.id)} aria-label={t("Supprimer l'activité")} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
                         <Trash2 size={13} />
                       </button>
                     )}
@@ -507,7 +509,7 @@ export default function StepsClient({
                         type="time"
                         value={reminderTime}
                         onChange={(e) => setReminderTime(e.target.value)}
-                        aria-label="Heure du rappel"
+                        aria-label={t("Heure du rappel")}
                         className="bg-[#0D0000] border border-[#890404]/25 rounded-md px-2 py-1 text-xs text-white focus:outline-none"
                       />
                       <button
@@ -515,9 +517,9 @@ export default function StepsClient({
                         disabled={rStatus === "saving"}
                         className="flex-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] disabled:opacity-40"
                       >
-                        {rStatus === "saving" ? "…" : "Rappel chaque jour à cette heure"}
+                        {rStatus === "saving" ? "…" : t("Rappel chaque jour à cette heure")}
                       </button>
-                      <button onClick={() => setReminderOpenFor(null)} aria-label="Fermer" className="text-[#F5EDED]/25 hover:text-white">
+                      <button onClick={() => setReminderOpenFor(null)} aria-label={t("Fermer")} className="text-[#F5EDED]/25 hover:text-white">
                         <X size={13} />
                       </button>
                     </div>
@@ -534,20 +536,20 @@ export default function StepsClient({
               <input
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                placeholder="Heure" aria-label="Heure"
+                placeholder={t("Heure")} aria-label={t("Heure")}
                 className="w-20 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
               />
               <input
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
-                placeholder="Ex. Marche après le déjeuner" aria-label="Nom de l'activité"
+                placeholder={t("Ex. Marche après le déjeuner")} aria-label={t("Nom de l'activité")}
                 className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
               />
-              <button onClick={handleAddItem} className="text-[10px] font-bold text-[#E01E1E] px-2">OK</button>
+              <button onClick={handleAddItem} className="text-[10px] font-bold text-[#E01E1E] px-2">{t("OK")}</button>
             </div>
           ) : (
             <button onClick={() => setShowAddItem(true)} className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]">
-              <Plus size={11} /> Ajouter une habitude
+              <Plus size={11} />{" "}{t("Ajouter une habitude")}
             </button>
           )
         )}
@@ -558,7 +560,7 @@ export default function StepsClient({
         <div className="flex items-center gap-2 mb-4">
           <Flame size={14} className="text-[#E01E1E]" />
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            {HEATMAP_WEEKS} dernières semaines
+            {HEATMAP_WEEKS}{" "}{t("dernières semaines")}
           </p>
         </div>
 
@@ -588,19 +590,19 @@ export default function StepsClient({
 
         <div className="flex items-center gap-5 mt-4 pt-4" style={{ borderTop: "1px solid rgba(245,237,237,0.06)" }}>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Moyenne 7j</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Moyenne 7j")}</p>
             <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{avg7.toLocaleString("fr-FR")}</p>
           </div>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Record</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Record")}</p>
             <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{bestDay.toLocaleString("fr-FR")}</p>
           </div>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Objectif atteint</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Objectif atteint")}</p>
             <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{goalMetCount}/{pastCells.length}</p>
           </div>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Record série</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Record série")}</p>
             <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{streaks.best}j</p>
           </div>
         </div>

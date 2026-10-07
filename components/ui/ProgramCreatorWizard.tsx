@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowLeft, Sparkles, Check, Loader2 } from "lucide-react";
@@ -59,6 +60,7 @@ export default function ProgramCreatorWizard({
   clientId: string;
   onSaved?: () => void;
 }) {
+  const t = useT();
   const [stepIdx, setStepIdx] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
 
@@ -161,24 +163,24 @@ export default function ProgramCreatorWizard({
         >
           {step === "goal" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Ton objectif principal ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">On calibre séries, reps et repos en fonction.</p>
+              <h2 className="text-xl font-black text-white mb-1">{t("Ton objectif principal ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{t("On calibre séries, reps et repos en fonction.")}</p>
               <OptionGrid options={Object.keys(GOAL_LABELS) as Goal[]} labels={GOAL_LABELS} value={goal} onSelect={setGoal} />
             </div>
           )}
 
           {step === "level" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Ton niveau ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour choisir des exercices adaptés à ta maîtrise technique.</p>
+              <h2 className="text-xl font-black text-white mb-1">{t("Ton niveau ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{t("Pour choisir des exercices adaptés à ta maîtrise technique.")}</p>
               <OptionGrid options={Object.keys(LEVEL_LABELS) as Level[]} labels={LEVEL_LABELS} value={level} onSelect={setLevel} cols={1} />
             </div>
           )}
 
           {step === "days" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Combien de jours par semaine ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">On choisit le split (full body, haut/bas, push/pull/legs...) en fonction.</p>
+              <h2 className="text-xl font-black text-white mb-1">{t("Combien de jours par semaine ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{t("On choisit le split (full body, haut/bas, push/pull/legs...) en fonction.")}</p>
               <div className="grid grid-cols-5 gap-2">
                 {DAYS_OPTIONS.map((d) => (
                   <button
@@ -199,16 +201,16 @@ export default function ProgramCreatorWizard({
 
           {step === "equipment" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Quel matériel as-tu ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">On ne te proposera que des exercices réalisables.</p>
+              <h2 className="text-xl font-black text-white mb-1">{t("Quel matériel as-tu ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{t("On ne te proposera que des exercices réalisables.")}</p>
               <OptionGrid options={Object.keys(EQUIPMENT_PREF_LABELS) as EquipmentPref[]} labels={EQUIPMENT_PREF_LABELS} value={equipment} onSelect={setEquipment} cols={1} />
             </div>
           )}
 
           {step === "length" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Durée de séance visée ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Détermine le nombre d&apos;exercices par séance.</p>
+              <h2 className="text-xl font-black text-white mb-1">{t("Durée de séance visée ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{t("Détermine le nombre d'exercices par séance.")}</p>
               <OptionGrid options={Object.keys(SESSION_LENGTH_LABELS) as SessionLength[]} labels={SESSION_LENGTH_LABELS} value={sessionLength} onSelect={setSessionLength} cols={1} />
             </div>
           )}
@@ -216,9 +218,9 @@ export default function ProgramCreatorWizard({
           {step === "priority" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">
-                Des zones à prioriser ? <span className="text-[#F5EDED]/30 font-normal text-sm">(optionnel, max 3)</span>
+                {t("Des zones à prioriser ?")}{" "}<span className="text-[#F5EDED]/30 font-normal text-sm">{t("(optionnel, max 3)")}</span>
               </h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Elles recevront un exercice de plus à chaque séance où elles apparaissent.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{t("Elles recevront un exercice de plus à chaque séance où elles apparaissent.")}</p>
               <div className="flex flex-wrap gap-2">
                 {MUSCLE_GROUPS.map((g) => {
                   const active = priorityGroups.has(g);
@@ -243,18 +245,18 @@ export default function ProgramCreatorWizard({
           {step === "result" && (
             <div>
               {!result ? (
-                <p className="text-sm text-[#F5EDED]/40 text-center py-10">Erreur de génération, réessaie.</p>
+                <p className="text-sm text-[#F5EDED]/40 text-center py-10">{t("Erreur de génération, réessaie.")}</p>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-4">
                     <Sparkles size={16} className="text-[#E01E1E]" />
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]">
-                      Ton programme sur mesure
+                      {t("Ton programme sur mesure")}
                     </p>
                   </div>
                   <h2 className="text-2xl font-black text-white mb-1">{result.name}</h2>
                   <p className="text-xs text-[#F5EDED]/40 mb-5">
-                    {result.days.length} séance{result.days.length !== 1 ? "s" : ""} · {totalExercises} exercice{totalExercises !== 1 ? "s" : ""} au total
+                    {result.days.length}{" "}{t("séance")}{result.days.length !== 1 ? "s" : ""} · {totalExercises}{" "}{t("exercice")}{totalExercises !== 1 ? "s" : ""}{" "}{t("au total")}
                   </p>
 
                   <div className="space-y-3 mb-5 max-h-80 overflow-y-auto pr-1">
@@ -282,7 +284,7 @@ export default function ProgramCreatorWizard({
                       onClick={handleRestart}
                       className="flex-1 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/50 border border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-4 py-2.5"
                     >
-                      Recommencer
+                      {t("Recommencer")}
                     </button>
                     <button
                       onClick={handleSave}
@@ -293,10 +295,10 @@ export default function ProgramCreatorWizard({
                         <Loader2 size={13} className="animate-spin" />
                       ) : saveStatus === "saved" ? (
                         <>
-                          <Check size={13} /> Programme activé
+                          <Check size={13} />{" "}{t("Programme activé")}
                         </>
                       ) : (
-                        "Activer ce programme"
+                        t("Activer ce programme")
                       )}
                     </button>
                   </div>
@@ -305,7 +307,7 @@ export default function ProgramCreatorWizard({
                   )}
                   {saveStatus === "saved" && (
                     <p className="text-[11px] text-[#F5EDED]/35 mt-2">
-                      Remplace ton programme actif, visible dans l&apos;onglet Programme.
+                      {t("Remplace ton programme actif, visible dans l'onglet Programme.")}
                     </p>
                   )}
                 </div>
@@ -320,7 +322,7 @@ export default function ProgramCreatorWizard({
           {stepIdx > 0 && (
             <button
               onClick={() => go(stepIdx - 1, -1)}
-              aria-label="Étape précédente"
+              aria-label={t("Étape précédente")}
               className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
             >
               <ArrowLeft size={16} />
@@ -331,7 +333,7 @@ export default function ProgramCreatorWizard({
             disabled={!canAdvance()}
             className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-sm font-bold uppercase tracking-widest h-12 rounded-xl transition-colors"
           >
-            {step === "priority" ? "Créer mon programme" : "Suivant"} <ArrowRight size={15} />
+            {step === "priority" ? t("Créer mon programme") : t("Suivant")} <ArrowRight size={15} />
           </button>
         </div>
       )}

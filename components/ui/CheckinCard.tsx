@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
@@ -17,6 +18,7 @@ const STRESS_HUNGER_LABEL = ["", "Bas", "Moyen", "Haut"];
 // affiché en petit, le client n'a pas besoin de le voir en double de son
 // propre bilan quotidien déjà rempli au jour le jour.
 function DailyAveragesRecap({ averages }: { averages: WeeklyAverages }) {
+  const t = useT();
   if (averages.daysLogged === 0) return null;
   const items: { label: string; value: string }[] = [];
   if (averages.weight != null) items.push({ label: "Poids", value: `${averages.weight} kg` });
@@ -38,7 +40,7 @@ function DailyAveragesRecap({ averages }: { averages: WeeklyAverages }) {
       borderRadius: 8, padding: "8px 10px", marginBottom: 14,
     }}>
       <p style={{ width: "100%", fontSize: 8, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
-        Moy. bilan quotidien ({averages.daysLogged}/7 j)
+        {t("Moy. bilan quotidien (")}{averages.daysLogged}/7 j)
       </p>
       {items.map(({ label, value }) => (
         <span key={label} style={{ fontSize: 10, color: "rgba(245,237,237,0.5)" }}>
@@ -86,6 +88,7 @@ function NumRow({ label, value }: { label: string; value: string | null | undefi
 }
 
 function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDone?: () => void; onCancel?: () => void }) {
+  const t = useT();
   const [state, formAction, isPending] = useActionState(replyToCheckin, null);
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
@@ -151,14 +154,14 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
 
       <div style={{ marginBottom: 12 }}>
         <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 6 }}>
-          Ton retour au client
+          {t("Ton retour au client")}
         </label>
         <textarea
           name="coach_notes"
           rows={4}
           required
           defaultValue={checkin.coach_notes ?? ""}
-          placeholder="Analyse, conseils, encouragements…" aria-label="Analyse, conseils, encouragements…"
+          placeholder={t("Analyse, conseils, encouragements…")} aria-label={t("Analyse, conseils, encouragements…")}
           style={{
             width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
             borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#F5EDED",
@@ -176,14 +179,14 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
               onClick={() => setShowLinkInput(true)}
               style={{ background: "none", border: "none", color: "rgba(245,237,237,0.4)", fontSize: 11, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
             >
-              ou coller un lien (ScreenPal, YouTube...)
+              {t("ou coller un lien (ScreenPal, YouTube...)")}
             </button>
           )}
           {(videoPath || checkin.coach_video_path) && !videoError && (
-            <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Vidéo attachée</span>
+            <span style={{ fontSize: 11, color: "#4ade80" }}>{t("✓ Vidéo attachée")}</span>
           )}
           {(videoLink || checkin.coach_video_link) && !videoError && (
-            <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Lien attaché</span>
+            <span style={{ fontSize: 11, color: "#4ade80" }}>{t("✓ Lien attaché")}</span>
           )}
           {videoError && <span style={{ fontSize: 11, color: "#FDC4C4" }}>{videoError}</span>}
         </div>
@@ -192,8 +195,8 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
             <input
               value={videoLinkInput}
               onChange={(e) => setVideoLinkInput(e.target.value)}
-              placeholder="https://go.screenpal.com/watch/..."
-              aria-label="Lien vidéo externe"
+              placeholder={t("https://go.screenpal.com/watch/...")}
+              aria-label={t("Lien vidéo externe")}
               style={{
                 flex: 1, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
                 borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#F5EDED", outline: "none",
@@ -208,7 +211,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
                 borderRadius: 8, padding: "0 14px", fontSize: 11, fontWeight: 800, cursor: "pointer",
               }}
             >
-              {linkPending ? "..." : "Attacher"}
+              {linkPending ? "..." : t("Attacher")}
             </button>
           </div>
         )}
@@ -217,9 +220,9 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
         <div style={{ width: 110 }}>
           <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 6 }}>
-            Note (/10)
+            {t("Note (/10)")}
           </label>
-          <select aria-label="Note (/10)"
+          <select aria-label={t("Note (/10)")}
             name="coach_rating"
             defaultValue={checkin.coach_rating ? String(checkin.coach_rating) : ""}
             style={{
@@ -227,7 +230,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
               borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "#F5EDED", outline: "none",
             }}
           >
-            <option value="">Non renseigné</option>
+            <option value="">{t("Non renseigné")}</option>
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}/10</option>
             ))}
@@ -243,7 +246,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
             cursor: isPending ? "wait" : "pointer",
           }}
         >
-          {isPending ? "Envoi…" : onCancel ? "Enregistrer la modification" : "Envoyer le retour"}
+          {isPending ? t("Envoi…") : onCancel ? t("Enregistrer la modification") : t("Envoyer le retour")}
         </button>
         {onCancel && (
           <button
@@ -256,7 +259,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
               letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer",
             }}
           >
-            Annuler
+            {t("Annuler")}
           </button>
         )}
       </div>
@@ -269,6 +272,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
 }
 
 export default function CheckinCard({ checkin, dailyAverages }: { checkin: CheckIn; dailyAverages?: WeeklyAverages }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(!checkin.coach_replied_at);
   const [isEditingReply, setIsEditingReply] = useState(false);
 
@@ -311,7 +315,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-              Semaine {checkin.week_number}
+              {t("Semaine")}{" "}{checkin.week_number}
             </p>
             <p style={{ margin: "2px 0 0", fontSize: 10, color: "rgba(245,237,237,0.28)" }}>
               {weekDate}
@@ -325,7 +329,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               background: "rgba(137,4,4,0.2)", border: "1px solid rgba(137,4,4,0.3)",
               borderRadius: 8, padding: "2px 10px",
             }}>
-              {(checkin.weight_avg ?? checkin.weight)} kg
+              {(checkin.weight_avg ?? checkin.weight)}{" "}{t("kg")}
             </span>
           )}
 
@@ -336,7 +340,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               padding: "2px 8px", borderRadius: 99,
               background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)",
             }}>
-              Sans réponse
+              {t("Sans réponse")}
             </span>
           ) : (
             <span style={{
@@ -344,7 +348,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               padding: "2px 8px", borderRadius: 99,
               background: "rgba(74,222,128,0.1)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.22)",
             }}>
-              {checkin.coach_rating ? `${checkin.coach_rating}/10` : "Répondu"}
+              {checkin.coach_rating ? `${checkin.coach_rating}/10` : t("Répondu")}
             </span>
           )}
         </div>
@@ -364,11 +368,11 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
           {/* ── Qualitative questions (new format) ───────────────────────── */}
           {hasQualitative && (
             <div style={{ marginBottom: 16 }}>
-              <p style={sectionLbl}>Bilan de la semaine</p>
+              <p style={sectionLbl}>{t("Bilan de la semaine")}</p>
               {checkin.attitude_rating != null && (
                 <div style={{ paddingBottom: 12, marginBottom: 12, borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
                   <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)", margin: "0 0 4px" }}>
-                    Attitude sur la semaine
+                    {t("Attitude sur la semaine")}
                   </p>
                   <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
                     {checkin.attitude_rating}
@@ -389,7 +393,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               {checkin.preferred_feedback_format && (
                 <div style={{ paddingBottom: 12, marginBottom: 12, borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
                   <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)", margin: "0 0 4px" }}>
-                    Format de retour préféré
+                    {t("Format de retour préféré")}
                   </p>
                   <p style={{ fontSize: 13, color: "rgba(245,237,237,0.78)", margin: 0, textTransform: "capitalize" }}>
                     {checkin.preferred_feedback_format}
@@ -411,7 +415,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
           {/* ── Legacy numeric fields (old format) ───────────────────────── */}
           {hasLegacyNumeric && (
             <div style={{ marginBottom: 16 }}>
-              <p style={sectionLbl}>Données chiffrées</p>
+              <p style={sectionLbl}>{t("Données chiffrées")}</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
                 <div>
                   <NumRow label="Adhérence nutri" value={checkin.nutrition_adherence ? `${checkin.nutrition_adherence}%` : null} />
@@ -438,7 +442,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
           {/* Legacy client_notes */}
           {checkin.client_notes && !hasQualitative && (
             <div style={{ marginBottom: 16 }}>
-              <p style={sectionLbl}>Notes client</p>
+              <p style={sectionLbl}>{t("Notes client")}</p>
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", lineHeight: 1.6, margin: 0 }}>
                 {checkin.client_notes}
               </p>
@@ -470,7 +474,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                     borderRadius: 8, padding: "6px 12px", textDecoration: "none", height: 64, boxSizing: "border-box",
                   }}
                 >
-                  <ExternalLink size={11} /> Vidéo d&apos;exécution
+                  <ExternalLink size={11} />{" "}{t("Vidéo d'exécution")}
                 </a>
               )}
             </div>
@@ -491,7 +495,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                     borderRadius: 8, padding: "6px 12px", textDecoration: "none",
                   }}
                 >
-                  <ExternalLink size={11} /> Photos Drive
+                  <ExternalLink size={11} />{" "}{t("Photos Drive")}
                 </a>
               )}
               {checkin.video_drive_link && (
@@ -506,7 +510,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                     borderRadius: 8, padding: "6px 12px", textDecoration: "none",
                   }}
                 >
-                  <ExternalLink size={11} /> Vidéo Drive
+                  <ExternalLink size={11} />{" "}{t("Vidéo Drive")}
                 </a>
               )}
             </div>
@@ -517,7 +521,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
             <div style={{ paddingTop: 14, borderTop: "1px solid rgba(137,4,4,0.12)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(74,222,128,0.5)", margin: 0 }}>
-                  Ton retour{checkin.coach_rating ? ` : ${checkin.coach_rating}/10` : ""}
+                  {t("Ton retour")}{checkin.coach_rating ? ` : ${checkin.coach_rating}/10` : ""}
                 </p>
                 <button
                   type="button"
@@ -528,7 +532,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                     letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer",
                   }}
                 >
-                  Modifier
+                  {t("Modifier")}
                 </button>
               </div>
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>

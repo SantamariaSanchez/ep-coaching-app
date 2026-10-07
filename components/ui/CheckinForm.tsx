@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState, useRef, useState } from "react";
 import { submitCheckin } from "@/app/dashboard/client/checkin/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -72,6 +73,7 @@ export default function CheckinForm({
 }: {
   weightAvgFromLogs?: number | null;
 }) {
+  const t = useT();
   const [state, formAction, isPending] = useActionState(submitCheckin, null);
   const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [video, setVideo] = useState<MediaItem | null>(null);
@@ -152,10 +154,10 @@ export default function CheckinForm({
           <CheckCircle2 size={24} style={{ color: "#4ade80" }} />
         </div>
         <p style={{ fontSize: 16, fontWeight: 900, color: "#4ade80", margin: 0, letterSpacing: "-0.01em" }}>
-          Check-in envoyé
+          {t("Check-in envoyé")}
         </p>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-          Ton coach va recevoir ton bilan et te répondre rapidement.
+          {t("Ton coach va recevoir ton bilan et te répondre rapidement.")}
         </p>
       </div>
     );
@@ -166,10 +168,10 @@ export default function CheckinForm({
 
       {/* ── Poids ───────────────────────────────────────────────────────────── */}
       <div>
-        <Section title="Poids" />
+        <Section title={t("Poids")} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
-            <label className={lbl}>Poids fin de semaine (kg)</label>
+            <label className={lbl}>{t("Poids fin de semaine (kg)")}</label>
             <input
               name="weight"
               type="number"
@@ -182,7 +184,7 @@ export default function CheckinForm({
           </div>
           <div>
             <label className={lbl}>
-              Poids moyen semaine (kg)
+              {t("Poids moyen semaine (kg)")}
               {weightAvgFromLogs && (
                 <span style={{ color: "rgba(224,30,30,0.6)", marginLeft: 6 }}>≈ {weightAvgFromLogs}</span>
               )}
@@ -203,7 +205,7 @@ export default function CheckinForm({
 
       {/* ── Photos physique ────────────────────────────────────────────────── */}
       <div>
-        <Section title="Photos physique de la semaine" />
+        <Section title={t("Photos physique de la semaine")} />
 
         {/* Suggestion Lens Buddy — la meilleure appli pour prendre des photos
             de comparaison cohérentes (mêmes angles, même pose) semaine après
@@ -215,13 +217,11 @@ export default function CheckinForm({
         }}>
           <Sparkles size={13} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 1 }} />
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, margin: 0 }}>
-            Astuce : l&apos;appli <strong style={{ color: "#F5EDED" }}>Lens Buddy</strong> aide à reprendre
-            exactement la même pose et le même angle chaque semaine, la meilleure
-            façon d&apos;avoir des photos de comparaison vraiment lisibles.
+            {t("Astuce : l'appli")}{" "}<strong style={{ color: "#F5EDED" }}>{t("Lens Buddy")}</strong>{" "}{t("aide à reprendre exactement la même pose et le même angle chaque semaine, la meilleure façon d'avoir des photos de comparaison vraiment lisibles.")}
           </p>
         </div>
 
-        <label className={lbl}>Photos ({photos.length}/{MAX_PHOTOS})</label>
+        <label className={lbl}>{t("Photos (")}{photos.length}/{MAX_PHOTOS})</label>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {photos.map((p) => (
             <div key={p.localId} style={{ position: "relative", width: 64, height: 64, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(137,4,4,0.3)" }}>
@@ -234,14 +234,14 @@ export default function CheckinForm({
               )}
               {p.error && (
                 <div style={{ position: "absolute", inset: 0, background: "rgba(224,30,30,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 800 }}>Échec</span>
+                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 800 }}>{t("Échec")}</span>
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => setPhotos((prev) => prev.filter((x) => x.localId !== p.localId))}
                 style={{ position: "absolute", top: 2, right: 2, width: 18, height: 18, borderRadius: "50%", background: "rgba(0,0,0,0.65)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-                aria-label="Retirer cette photo"
+                aria-label={t("Retirer cette photo")}
               >
                 <X size={11} style={{ color: "#fff" }} />
               </button>
@@ -261,7 +261,7 @@ export default function CheckinForm({
               }}
             >
               <Camera size={16} />
-              <span style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase" }}>Photo</span>
+              <span style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase" }}>{t("Photo")}</span>
             </button>
           )}
         </div>
@@ -270,7 +270,7 @@ export default function CheckinForm({
           type="file"
           accept="image/*"
           multiple
-          aria-label="Ajouter des photos"
+          aria-label={t("Ajouter des photos")}
           className="hidden"
           onChange={(e) => {
             if (e.target.files && e.target.files.length > 0) handlePhotosSelected(e.target.files);
@@ -281,13 +281,13 @@ export default function CheckinForm({
 
       {/* ── Bilan de la semaine ───────────────────────────────────────────── */}
       <div>
-        <Section title="Bilan de la semaine" />
+        <Section title={t("Bilan de la semaine")} />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* Attitude 1-10 + question conditionnelle */}
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <label className={lbl} style={{ marginBottom: 0 }}>1. Ton attitude sur la semaine</label>
+              <label className={lbl} style={{ marginBottom: 0 }}>{t("1. Ton attitude sur la semaine")}</label>
               {attitudeRating !== "" && (
                 <span style={{ fontSize: 13, fontWeight: 900, color: "#E01E1E" }}>{attitudeRating}/10</span>
               )}
@@ -299,19 +299,19 @@ export default function CheckinForm({
               max={10}
               value={attitudeRating === "" ? 5 : attitudeRating}
               onChange={(e) => setAttitudeRating(Number(e.target.value))}
-              aria-label="Ton attitude sur la semaine"
+              aria-label={t("Ton attitude sur la semaine")}
               className="w-full accent-[#E01E1E]"
             />
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, color: "rgba(245,237,237,0.25)" }}>
-              <span>Très négative</span>
-              <span>Excellente</span>
+              <span>{t("Très négative")}</span>
+              <span>{t("Excellente")}</span>
             </div>
             {needsAttitudeExplanation && (
               <div style={{ marginTop: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                   <AlertCircle size={12} style={{ color: "#E01E1E" }} />
                   <label className={lbl} style={{ marginBottom: 0 }}>
-                    Explique-nous pourquoi <span className="text-[#E01E1E]">*</span>
+                    {t("Explique-nous pourquoi")}{" "}<span className="text-[#E01E1E]">*</span>
                   </label>
                 </div>
                 <textarea
@@ -321,7 +321,7 @@ export default function CheckinForm({
                   placeholder={isLowAttitude
                     ? "Qu'est-ce qui a pesé sur ton attitude cette semaine ?"
                     : "Qu'est-ce qui t'a mis dans cet état d'esprit ?"}
-                  aria-label="Explique-nous pourquoi"
+                  aria-label={t("Explique-nous pourquoi")}
                   className={inp}
                 />
               </div>
@@ -330,51 +330,51 @@ export default function CheckinForm({
 
           {/* 3 plus grosses victoires */}
           <div>
-            <label className={lbl}>2. Tes 3 plus grosses victoires de la semaine</label>
+            <label className={lbl}>{t("2. Tes 3 plus grosses victoires de la semaine")}</label>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <input name="biggest_win" placeholder="Victoire n°1" aria-label="Victoire n°1" className={inp} style={{ resize: "none" }} />
-              <input name="biggest_win_2" placeholder="Victoire n°2" aria-label="Victoire n°2" className={inp} style={{ resize: "none" }} />
-              <input name="biggest_win_3" placeholder="Victoire n°3" aria-label="Victoire n°3" className={inp} style={{ resize: "none" }} />
+              <input name="biggest_win" placeholder={t("Victoire n°1")} aria-label={t("Victoire n°1")} className={inp} style={{ resize: "none" }} />
+              <input name="biggest_win_2" placeholder={t("Victoire n°2")} aria-label={t("Victoire n°2")} className={inp} style={{ resize: "none" }} />
+              <input name="biggest_win_3" placeholder={t("Victoire n°3")} aria-label={t("Victoire n°3")} className={inp} style={{ resize: "none" }} />
             </div>
           </div>
 
           <Q
             name="training_review"
             question="3. Évaluation de tes performances à l'entraînement"
-            placeholder="Charges, sensations, séances manquées, intensité ressentie…"
+            placeholder={t("Charges, sensations, séances manquées, intensité ressentie…")}
           />
           <Q
             name="work_impact"
             question="4. Événements personnels qui ont impacté ta semaine"
-            placeholder="Travail, vie perso, imprévus, fatigue accumulée…"
+            placeholder={t("Travail, vie perso, imprévus, fatigue accumulée…")}
           />
           <Q
             name="improvement_reflection"
             question="5. Comment améliorer la semaine prochaine ?"
-            placeholder="Ce que tu comptes changer ou mieux gérer…"
+            placeholder={t("Ce que tu comptes changer ou mieux gérer…")}
           />
           <Q
             name="entourage_support"
             question="6. Ton entourage aide ou complique ton suivi ?"
-            placeholder="Sorties au resto, soutien à la maison, pression sociale…"
+            placeholder={t("Sorties au resto, soutien à la maison, pression sociale…")}
           />
           <Q
             name="upcoming_obstacles"
             question="7. Événements prévus la semaine prochaine"
-            placeholder="Déplacement, week-end spécial, repas de famille…"
+            placeholder={t("Déplacement, week-end spécial, repas de famille…")}
           />
           <Q
             name="plan_adherence_feedback"
             question="8. Ton ressenti sur le plan et l'accompagnement"
-            placeholder="Adhésion au plan, ce qui te convient ou non dans le suivi…"
+            placeholder={t("Adhésion au plan, ce qui te convient ou non dans le suivi…")}
           />
         </div>
       </div>
 
       {/* ── Format de retour préféré ──────────────────────────────────────── */}
       <div>
-        <Section title="Retour de ton coach" />
-        <label className={lbl}>Comment tu préfères recevoir la réponse ?</label>
+        <Section title={t("Retour de ton coach")} />
+        <label className={lbl}>{t("Comment tu préfères recevoir la réponse ?")}</label>
         <div style={{ display: "flex", gap: 8 }}>
           {FEEDBACK_FORMATS.map(({ value, label }) => (
             <label key={value} style={{ flex: 1, cursor: "pointer" }}>
@@ -402,19 +402,19 @@ export default function CheckinForm({
 
       {/* ── Vidéo d'exécution ─────────────────────────────────────────────── */}
       <div>
-        <Section title="Vidéo d'exécution (correction technique)" />
+        <Section title={t("Vidéo d'exécution (correction technique)")} />
         {video ? (
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 10, padding: "8px 12px" }}>
             <Video size={14} style={{ color: video.error ? "#E01E1E" : "#4ade80", flexShrink: 0 }} />
             <span style={{ fontSize: 11, color: "rgba(245,237,237,0.6)", flex: 1 }}>
-              {video.uploading ? "Envoi en cours…" : video.error ? "Échec de l'envoi" : "Vidéo prête"}
+              {video.uploading ? t("Envoi en cours…") : video.error ? t("Échec de l'envoi") : t("Vidéo prête")}
             </span>
             {video.uploading && <Loader2 size={13} className="animate-spin" style={{ color: "rgba(245,237,237,0.4)" }} />}
             <button
               type="button"
               onClick={() => setVideo(null)}
               style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
-              aria-label="Retirer la vidéo"
+              aria-label={t("Retirer la vidéo")}
             >
               <X size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
             </button>
@@ -431,14 +431,14 @@ export default function CheckinForm({
             }}
           >
             <Video size={14} />
-            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Filmer un exercice à corriger</span>
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("Filmer un exercice à corriger")}</span>
           </button>
         )}
         <input
           ref={videoInputRef}
           type="file"
           accept="video/*"
-          aria-label="Filmer un exercice à corriger"
+          aria-label={t("Filmer un exercice à corriger")}
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -447,7 +447,7 @@ export default function CheckinForm({
           }}
         />
         <p style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", marginTop: 6 }}>
-          Optionnel : pour un retour technique de ton coach sur un exercice précis.
+          {t("Optionnel : pour un retour technique de ton coach sur un exercice précis.")}
         </p>
       </div>
 
@@ -472,7 +472,7 @@ export default function CheckinForm({
           cursor: isPending || mediaUploading ? "wait" : "pointer",
         }}
       >
-        {isPending ? "Envoi…" : mediaUploading ? "Envoi des médias…" : "Envoyer mon check-in"}
+        {isPending ? t("Envoi…") : mediaUploading ? t("Envoi des médias…") : t("Envoyer mon check-in")}
       </button>
     </form>
   );

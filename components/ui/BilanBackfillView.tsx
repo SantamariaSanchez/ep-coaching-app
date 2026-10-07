@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { ChevronDown, CalendarClock, Check, CircleDashed } from "lucide-react";
 import DailyBilanForm, { type BilanAction } from "@/components/ui/DailyBilanForm";
@@ -34,6 +35,7 @@ export default function BilanBackfillView({
   action: BilanAction;
   daysShown?: number;
 }) {
+  const t = useT();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const today = todayInParis();
@@ -51,7 +53,7 @@ export default function BilanBackfillView({
   return (
     <div>
       <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4">
-        Un jour manqué ? Complète-le ici, jusqu&apos;à {BILAN_BACKFILL_DAYS} jours en arrière.
+        {t("Un jour manqué ? Complète-le ici, jusqu'à")}{" "}{BILAN_BACKFILL_DAYS}{" "}{t("jours en arrière.")}
       </p>
       <div className="space-y-2">
         {days.map((date) => {
@@ -88,7 +90,7 @@ export default function BilanBackfillView({
                     }
                   >
                     {complete ? <Check size={10} /> : <CircleDashed size={10} />}
-                    {complete ? "Complet" : partial ? "Partiel" : "Manquant"}
+                    {complete ? t("Complet") : partial ? t("Partiel") : t("Manquant")}
                   </span>
                   <ChevronDown
                     size={15}
@@ -112,7 +114,7 @@ export default function BilanBackfillView({
           onClick={() => setShowAll(true)}
           className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
         >
-          Voir les {BILAN_BACKFILL_DAYS} derniers jours
+          {t("Voir les")}{" "}{BILAN_BACKFILL_DAYS}{" "}{t("derniers jours")}
         </button>
       )}
     </div>

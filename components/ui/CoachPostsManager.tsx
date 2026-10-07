@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Plus, Pencil, Trash2, X, Eye, CheckCircle2 } from "lucide-react";
 import type { CoachPost } from "@/utils/coach-posts";
@@ -24,6 +25,7 @@ function PostEditor({
   onSave: (title: string, content: string) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
+  const t = useT();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [content, setContent] = useState(initial?.content ?? "");
   const [saving, setSaving] = useState(false);
@@ -46,14 +48,14 @@ function PostEditor({
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Titre, ex. Pourquoi la constance bat l'intensité" aria-label="Titre, ex. Pourquoi la constance bat l'intensité"
+        placeholder={t("Titre, ex. Pourquoi la constance bat l'intensité")} aria-label={t("Titre, ex. Pourquoi la constance bat l'intensité")}
         className={`${inputCls} font-bold`}
       />
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={8}
-        placeholder="Ta réflexion, ton conseil, ton retour d'expérience…" aria-label="Ta réflexion, ton conseil, ton retour d'expérience…"
+        placeholder={t("Ta réflexion, ton conseil, ton retour d'expérience…")} aria-label={t("Ta réflexion, ton conseil, ton retour d'expérience…")}
         className={`${inputCls} resize-none`}
       />
       {error && <p className="text-xs text-red-400">{error}</p>}
@@ -63,11 +65,11 @@ function PostEditor({
           disabled={saving}
           className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
-          {saving ? "Publication…" : initial ? "Mettre à jour" : "Publier"}
+          {saving ? t("Publication…") : initial ? t("Mettre à jour") : t("Publier")}
         </button>
         <button
           onClick={onCancel}
-          aria-label="Annuler"
+          aria-label={t("Annuler")}
           className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors"
         >
           <X size={14} />
@@ -92,6 +94,7 @@ export default function CoachPostsManager({
   updateCoachPost: (postId: string, title: string, content: string) => Promise<{ error?: string }>;
   deleteCoachPost: (postId: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [showNew, setShowNew] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -101,14 +104,14 @@ export default function CoachPostsManager({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-          {posts.length} publication{posts.length !== 1 ? "s" : ""}
+          {posts.length}{" "}{t("publication")}{posts.length !== 1 ? "s" : ""}
         </p>
         {!showNew && (
           <button
             onClick={() => { setShowNew(true); setEditingId(null); setJustPublished(null); }}
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
           >
-            <Plus size={12} /> Nouveau post
+            <Plus size={12} />{" "}{t("Nouveau post")}
           </button>
         )}
       </div>
@@ -116,7 +119,7 @@ export default function CoachPostsManager({
       {justPublished != null && (
         <p className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400">
           <CheckCircle2 size={13} strokeWidth={2} />
-          Publié ! {justPublished} membre{justPublished !== 1 ? "s" : ""} notifié{justPublished !== 1 ? "s" : ""}.
+          {t("Publié !")}{" "}{justPublished}{" "}{t("membre")}{justPublished !== 1 ? "s" : ""}{" "}{t("notifié")}{justPublished !== 1 ? "s" : ""}.
         </p>
       )}
 
@@ -136,7 +139,7 @@ export default function CoachPostsManager({
 
       {posts.length === 0 && !showNew && (
         <p className="text-xs text-[#F5EDED]/25 italic text-center py-8">
-          Aucune publication pour l&apos;instant. Partage une réflexion ou un conseil avec tes membres.
+          {t("Aucune publication pour l'instant. Partage une réflexion ou un conseil avec tes membres.")}
         </p>
       )}
 
@@ -170,7 +173,7 @@ export default function CoachPostsManager({
                       onClick={() => deleteCoachPost(post.id)}
                       className="text-[10px] font-bold uppercase tracking-widest text-red-400"
                     >
-                      Confirmer
+                      {t("Confirmer")}
                     </button>
                   ) : (
                     <button
@@ -186,7 +189,7 @@ export default function CoachPostsManager({
               <p className="flex items-center gap-2 text-[10px] text-[#F5EDED]/30 mb-2">
                 {formatDate(post.created_at)}
                 <span className="inline-flex items-center gap-1 text-[#F5EDED]/25">
-                  <Eye size={10} /> Lu par {viewCounts[post.id] ?? 0}/{totalMembers}
+                  <Eye size={10} />{" "}{t("Lu par")}{" "}{viewCounts[post.id] ?? 0}/{totalMembers}
                 </span>
               </p>
               <p className="text-sm text-[#F5EDED]/60 leading-relaxed whitespace-pre-wrap">{post.content}</p>

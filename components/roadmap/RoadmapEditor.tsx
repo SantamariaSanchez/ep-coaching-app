@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, isValidElement, cloneElement } from "react";
 import { Plus, Trash2, Save, Eye, EyeOff, Target, CalendarRange, ChevronDown, AlertCircle, AlertTriangle, RotateCw } from "lucide-react";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
@@ -107,6 +108,7 @@ function PhaseCard({
   open: boolean;
   onToggle: () => void;
 }) {
+  const tr = useT();
   const colors = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
 
   return (
@@ -141,7 +143,7 @@ function PhaseCard({
             fontSize: 10, fontWeight: 700, letterSpacing: "0.15em",
             textTransform: "uppercase", color: colors.solid, flexShrink: 0,
           }}>
-            Phase {index + 1}
+            {tr("Phase")}{" "}{index + 1}
           </span>
           {/* Résumé visible même repliée (2026-08-19, accordéon demandé sur
               les pages "tout empilé") : label + dates, pour ne pas perdre le
@@ -158,8 +160,8 @@ function PhaseCard({
           type="button"
           onClick={onDelete}
           style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: 4, flexShrink: 0 }}
-          title="Supprimer la phase"
-          aria-label="Supprimer la phase"
+          title={tr("Supprimer la phase")}
+          aria-label={tr("Supprimer la phase")}
         >
           <Trash2 size={14} />
         </button>
@@ -220,7 +222,7 @@ function PhaseCard({
             <textarea
               value={phase.notes ?? ""}
               onChange={(e) => onChange({ notes: e.target.value })}
-              placeholder="Objectifs spécifiques à cette phase…" aria-label="Objectifs spécifiques à cette phase…"
+              placeholder={tr("Objectifs spécifiques à cette phase…")} aria-label={tr("Objectifs spécifiques à cette phase…")}
               rows={2}
               style={{ ...inputStyle, resize: "none" }}
             />
@@ -246,6 +248,7 @@ function ObjectiveCard({
   open: boolean;
   onToggle: () => void;
 }) {
+  const tr = useT();
   const typeConfig = OBJECTIVE_TYPES.find((t) => t.value === obj.type);
 
   return (
@@ -268,17 +271,17 @@ function ObjectiveCard({
         >
           <Target size={13} style={{ flexShrink: 0, color: OBJECTIVE_TERM_COLORS[obj.term] ?? "rgba(245,237,237,0.4)" }} />
           <span style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-            {obj.label || typeConfig?.label || "Objectif"}
+            {obj.label || typeConfig?.label || tr("Objectif")}
           </span>
           {obj.is_achieved && (
-            <span style={{ fontSize: 9, fontWeight: 800, color: "#4ade80", textTransform: "uppercase", flexShrink: 0 }}>✓ Atteint</span>
+            <span style={{ fontSize: 9, fontWeight: 800, color: "#4ade80", textTransform: "uppercase", flexShrink: 0 }}>{tr("✓ Atteint")}</span>
           )}
           <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: "auto", color: "rgba(245,237,237,0.3)", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }} />
         </button>
         <button
           type="button"
           onClick={onDelete}
-          aria-label="Supprimer l'objectif"
+          aria-label={tr("Supprimer l'objectif")}
           style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: "0 4px", flexShrink: 0 }}
         >
           <Trash2 size={13} />
@@ -363,7 +366,7 @@ function ObjectiveCard({
                     type="text"
                     value={obj.target_unit ?? typeConfig.unit}
                     onChange={(e) => onChange({ target_unit: e.target.value })}
-                    aria-label="Unité"
+                    aria-label={tr("Unité")}
                     style={{ ...inputStyle, width: 60 }}
                   />
                 </div>
@@ -392,14 +395,14 @@ function ObjectiveCard({
                   })}
                   style={{ accentColor: "#4ade80" }}
                 />
-                Objectif atteint
+                {tr("Objectif atteint")}
               </label>
               {obj.is_achieved && (
                 <input
                   type="date"
                   value={obj.achieved_at ?? ""}
                   onChange={(e) => onChange({ achieved_at: e.target.value })}
-                  aria-label="Date d'atteinte de l'objectif"
+                  aria-label={tr("Date d'atteinte de l'objectif")}
                   style={{ ...inputStyle, marginTop: 6 }}
                 />
               )}
@@ -436,6 +439,7 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
   startDate: string;
   endDate: string;
 }) {
+  const tr = useT();
   // Même repère "aujourd'hui" que le reste de la road map : jour calendaire
   // de Paris (lib/dates.ts) et écarts en jours via lib/roadmap-weeks.ts, au
   // lieu d'un Date.now() comparé à un minuit UTC. Lazy useState : calculé une
@@ -467,7 +471,7 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
       </div>
       {todayPct != null && (
         <div
-          title="Aujourd'hui"
+          title={tr("Aujourd'hui")}
           style={{
             position: "absolute", top: -3, bottom: -3, left: `${todayPct}%`,
             width: 2, background: "#fff", boxShadow: "0 0 4px rgba(255,255,255,0.8)",
@@ -489,6 +493,7 @@ export default function RoadmapEditor({
   /** Appelé après une sauvegarde réussie (ex. router.refresh() pour le pilote de phase). */
   onSaved?: () => void;
 }) {
+  const tr = useT();
   const [loading, setLoading] = useState(true);
   // Repasse "petit détail utile" (2026-09-10) : sans ça, un échec réseau au
   // chargement laissait existingRoadmap à null exactement comme "pas encore
@@ -678,8 +683,7 @@ export default function RoadmapEditor({
       <div role="alert" className="ep-card" style={{ padding: "20px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <AlertCircle size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
         <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: 0, flex: "1 1 220px" }}>
-          Impossible de charger la road map pour l&apos;instant. Ne modifie rien avant de recharger : si une
-          road map existe déjà, l&apos;enregistrer maintenant l&apos;écraserait.
+          {tr("Impossible de charger la road map pour l'instant. Ne modifie rien avant de recharger : si une road map existe déjà, l'enregistrer maintenant l'écraserait.")}
         </p>
         <button
           type="button"
@@ -687,7 +691,7 @@ export default function RoadmapEditor({
           className="ep-btn-secondary"
           style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}
         >
-          <RotateCw size={13} /> Réessayer
+          <RotateCw size={13} />{" "}{tr("Réessayer")}
         </button>
       </div>
     );
@@ -719,7 +723,7 @@ export default function RoadmapEditor({
       <section style={{ marginBottom: 28 }}>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
           <CalendarRange size={12} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
-          Période globale
+          {tr("Période globale")}
         </p>
         <div className="ep-card" style={{ padding: 20 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 12 }}>
@@ -755,7 +759,7 @@ export default function RoadmapEditor({
       {!hasRoadmap && showCalendar && startDate && endDate && (
         <section style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
-            Vue d&apos;ensemble : les phases sur les mois et les semaines
+            {tr("Vue d'ensemble : les phases sur les mois et les semaines")}
           </p>
           <div className="ep-card" style={{ padding: 20 }}>
             <RoadmapCalendar
@@ -772,11 +776,11 @@ export default function RoadmapEditor({
       <section style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
-            Phases d&apos;entraînement
+            {tr("Phases d'entraînement")}
             <span style={{ color: "rgba(245,237,237,0.3)", marginLeft: 8 }}>({phases.length})</span>
           </p>
           <button onClick={addPhase} className="ep-btn-primary" style={{ fontSize: 12 }}>
-            <Plus size={13} /> Ajouter une phase
+            <Plus size={13} />{" "}{tr("Ajouter une phase")}
           </button>
         </div>
 
@@ -789,7 +793,7 @@ export default function RoadmapEditor({
         {phases.length === 0 && (
           <div className="ep-card" style={{ padding: 32, textAlign: "center" }}>
             <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13 }}>
-              Aucune phase. Clique sur « Ajouter une phase »
+              {tr("Aucune phase. Clique sur « Ajouter une phase »")}
             </p>
           </div>
         )}
@@ -820,18 +824,18 @@ export default function RoadmapEditor({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
             <Target size={12} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
-            Objectifs
+            {tr("Objectifs")}
             <span style={{ color: "rgba(245,237,237,0.3)", marginLeft: 8 }}>({objectives.length})</span>
           </p>
           <button onClick={addObjective} className="ep-btn-primary" style={{ fontSize: 12 }}>
-            <Plus size={13} /> Ajouter un objectif
+            <Plus size={13} />{" "}{tr("Ajouter un objectif")}
           </button>
         </div>
 
         {objectives.length === 0 && (
           <div className="ep-card" style={{ padding: 32, textAlign: "center" }}>
             <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13 }}>
-              Aucun objectif défini
+              {tr("Aucun objectif défini")}
             </p>
           </div>
         )}
@@ -870,7 +874,7 @@ export default function RoadmapEditor({
         >
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: issues.errors.length > 0 ? "#E01E1E" : "#fbbf24", margin: "0 0 8px", display: "flex", alignItems: "center", gap: 6 }}>
             <AlertTriangle size={12} />
-            {issues.errors.length > 0 ? "À corriger avant d'enregistrer" : "À vérifier (n'empêche pas d'enregistrer)"}
+            {issues.errors.length > 0 ? tr("À corriger avant d'enregistrer") : tr("À vérifier (n'empêche pas d'enregistrer)")}
           </p>
           <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
             {issues.errors.map((m, i) => (
@@ -899,7 +903,7 @@ export default function RoadmapEditor({
         )}
         <button onClick={handleSave} disabled={saving} className="ep-btn-primary" style={{ fontSize: 14, padding: "14px 32px" }}>
           <Save size={16} />
-          {saved ? "Sauvegardé !" : saving ? "Sauvegarde en cours…" : "Sauvegarder la road map"}
+          {saved ? tr("Sauvegardé !") : saving ? tr("Sauvegarde en cours…") : tr("Sauvegarder la road map")}
         </button>
       </div>
     </>
@@ -916,14 +920,14 @@ export default function RoadmapEditor({
               style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}
             >
               {showCalendar ? <EyeOff size={14} /> : <Eye size={14} />}
-              {showCalendar ? "Masquer la vue d'ensemble" : "Vue d'ensemble"}
+              {showCalendar ? tr("Masquer la vue d'ensemble") : tr("Vue d'ensemble")}
             </button>
           </div>
 
           {showCalendar && startDate && endDate && (
             <section style={{ marginBottom: 28 }}>
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
-                Ma roadmap : les phases sur les mois et les semaines
+                {tr("Ma roadmap : les phases sur les mois et les semaines")}
               </p>
               <div className="ep-card" style={{ padding: 20 }}>
                 <RoadmapCalendar
@@ -936,7 +940,7 @@ export default function RoadmapEditor({
             </section>
           )}
 
-          <CollapsibleSection title="Modifier ma roadmap" defaultOpen={false}>
+          <CollapsibleSection title={tr("Modifier ma roadmap")} defaultOpen={false}>
             {editForm}
           </CollapsibleSection>
         </>

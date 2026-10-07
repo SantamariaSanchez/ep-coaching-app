@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import { X, Check, Users, AlertCircle } from "lucide-react";
 
@@ -28,6 +29,7 @@ export default function ApplyTemplateModal({
   onApply: (clientIds: string[], nameOverride?: string) => Promise<{ error?: string; appliedCount?: number }>;
   onClose: () => void;
 }) {
+  const t = useT();
   const [selected, setSelected] = useState<Set<string>>(
     new Set(preselectedClientId ? [preselectedClientId] : [])
   );
@@ -77,10 +79,10 @@ export default function ApplyTemplateModal({
       <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20 flex-shrink-0">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">Appliquer le modèle</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">{t("Appliquer le modèle")}</p>
             <p className="text-sm font-bold text-white truncate">{templateName}</p>
           </div>
-          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+          <button onClick={onClose} aria-label={t("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
             <X size={16} />
           </button>
         </div>
@@ -89,26 +91,26 @@ export default function ApplyTemplateModal({
           <div className="flex flex-col items-center gap-3 py-12 px-5">
             <Check size={36} className="text-green-400" />
             <p className="text-sm font-bold text-white text-center">
-              Modèle appliqué à {result} client{result !== 1 ? "s" : ""}.
+              {t("Modèle appliqué à")}{" "}{result}{" "}{t("client")}{result !== 1 ? "s" : ""}.
             </p>
             <button
               onClick={onClose}
               className="mt-2 text-xs font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
             >
-              Fermer
+              {t("Fermer")}
             </button>
           </div>
         ) : (
           <>
             <div className="px-5 pt-4 pb-2 flex-shrink-0">
               <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                Nom une fois appliqué <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+                {t("Nom une fois appliqué")}{" "}<span className="text-[#F5EDED]/25 font-normal">{t("(optionnel)")}</span>
               </label>
               <input
                 value={nameOverride}
                 onChange={(e) => setNameOverride(e.target.value)}
                 placeholder={templateName}
-                aria-label="Nom une fois appliqué"
+                aria-label={t("Nom une fois appliqué")}
                 className={inputCls}
               />
             </div>
@@ -116,13 +118,13 @@ export default function ApplyTemplateModal({
             <div className="px-5 pt-2 pb-1 flex items-center gap-1.5 flex-shrink-0">
               <Users size={12} className="text-[#F5EDED]/30" />
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-                {clients.length} client{clients.length !== 1 ? "s" : ""} · {selected.size} sélectionné{selected.size !== 1 ? "s" : ""}
+                {clients.length}{" "}{t("client")}{clients.length !== 1 ? "s" : ""} · {selected.size}{" "}{t("sélectionné")}{selected.size !== 1 ? "s" : ""}
               </p>
             </div>
 
             <div className="flex-1 overflow-y-auto px-3 py-2">
               {clients.length === 0 ? (
-                <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">Aucun client actif pour l&apos;instant.</p>
+                <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">{t("Aucun client actif pour l'instant.")}</p>
               ) : (
                 clients.map((c) => {
                   const checked = selected.has(c.id);
@@ -142,7 +144,7 @@ export default function ApplyTemplateModal({
                       >
                         {checked && <Check size={11} className="text-white" />}
                       </span>
-                      <span className="text-sm text-white truncate">{c.full_name ?? "Client"}</span>
+                      <span className="text-sm text-white truncate">{c.full_name ?? t("Client")}</span>
                     </button>
                   );
                 })
@@ -163,7 +165,7 @@ export default function ApplyTemplateModal({
                 className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
               >
                 {busy
-                  ? "Application…"
+                  ? t("Application…")
                   : `Appliquer à ${selected.size || ""} client${selected.size !== 1 ? "s" : ""}`.replace("  ", " ")}
               </button>
             </div>

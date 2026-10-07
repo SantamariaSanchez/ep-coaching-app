@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Link2, Copy, Check, Gift } from "lucide-react";
 import { ensureReferralCode } from "@/app/dashboard/client/profile/actions";
@@ -19,6 +20,7 @@ export default function ReferralCard({
   rewardedCount: number;
   pointsPerReferral: number;
 }) {
+  const t = useT();
   const [code, setCode] = useState(referralCode);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -43,14 +45,13 @@ export default function ReferralCard({
   return (
     <div className="mt-8">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Parrainage
+        {t("Parrainage")}
       </p>
-      <h2 className="text-xl font-black uppercase tracking-tight mb-4">Invite un ami</h2>
+      <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Invite un ami")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: "0 0 12px", lineHeight: 1.6 }}>
-          Partage ton lien personnel. Dès qu&apos;un ami s&apos;inscrit avec, tu gagnes{" "}
-          {pointsPerReferral} points. Et le jour où il devient client payant, tu reçois un mois
-          offert sur ton abonnement.
+          {t("Partage ton lien personnel. Dès qu'un ami s'inscrit avec, tu gagnes")}{" "}
+          {pointsPerReferral}{" "}{t("points. Et le jour où il devient client payant, tu reçois un mois offert sur ton abonnement.")}
         </p>
         {link ? (
           <>
@@ -76,7 +77,7 @@ export default function ReferralCard({
                 }}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? "Copié" : "Copier"}
+                {copied ? t("Copié") : t("Copier")}
               </button>
             </div>
             {referredCount > 0 && (
@@ -84,14 +85,14 @@ export default function ReferralCard({
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Gift size={13} style={{ color: "#FACC15", flexShrink: 0 }} />
                   <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>
-                    {referredCount} ami{referredCount > 1 ? "s" : ""} déjà parrainé{referredCount > 1 ? "s" : ""}
+                    {referredCount}{" "}{t("ami")}{referredCount > 1 ? "s" : ""}{" "}{t("déjà parrainé")}{referredCount > 1 ? "s" : ""}
                   </span>
                 </div>
                 {rewardedCount > 0 && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Gift size={13} style={{ color: "#4ade80", flexShrink: 0 }} />
                     <span style={{ fontSize: 11.5, color: "#4ade80", fontWeight: 700 }}>
-                      {rewardedCount} mois offert{rewardedCount > 1 ? "s" : ""} déjà gagné{rewardedCount > 1 ? "s" : ""}
+                      {rewardedCount}{" "}{t("mois offert")}{rewardedCount > 1 ? "s" : ""}{" "}{t("déjà gagné")}{rewardedCount > 1 ? "s" : ""}
                     </span>
                   </div>
                 )}
@@ -109,7 +110,7 @@ export default function ReferralCard({
               textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer",
             }}
           >
-            {loading ? "Génération..." : "Générer mon lien"}
+            {loading ? t("Génération...") : t("Générer mon lien")}
           </button>
         )}
       </div>

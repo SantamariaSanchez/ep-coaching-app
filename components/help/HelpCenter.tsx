@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, PlayCircle, Search } from "lucide-react";
@@ -13,6 +14,7 @@ import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 const COACH_PATHS: Record<string, string> = { agenda: "moi/agenda", bilan: "moi/bilan" };
 
 export default function HelpCenter({ space }: { space: HelpSpace }) {
+  const t = useT();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const base = `/dashboard/${space}`;
@@ -20,20 +22,20 @@ export default function HelpCenter({ space }: { space: HelpSpace }) {
 
   return (
     <div className="page-transition" style={{ padding: "22px 16px 110px", maxWidth: 720, margin: "0 auto" }}>
-      <h1 className="ep-h1" style={{ marginBottom: 4 }}>Aide et tutoriels</h1>
-      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 16px" }}>Tout ce qu&apos;il faut pour utiliser l&apos;appli sans te poser de question.</p>
+      <h1 className="ep-h1" style={{ marginBottom: 4 }}>{t("Aide et tutoriels")}</h1>
+      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 16px" }}>{t("Tout ce qu'il faut pour utiliser l'appli sans te poser de question.")}</p>
 
       <button type="button" onClick={restartTour} className="ep-card-hero" style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", marginBottom: 16, cursor: "pointer", textAlign: "left", color: "#F5EDED" }}>
         <PlayCircle size={26} style={{ color: "#E01E1E", flexShrink: 0 }} />
         <span>
-          <span style={{ display: "block", fontSize: 15, fontWeight: 900 }}>Découvrir l&apos;appli en 1 minute</span>
-          <span style={{ display: "block", fontSize: 12, color: "rgba(245,237,237,0.55)" }}>La visite guidée, écran par écran</span>
+          <span style={{ display: "block", fontSize: 15, fontWeight: 900 }}>{t("Découvrir l'appli en 1 minute")}</span>
+          <span style={{ display: "block", fontSize: 12, color: "rgba(245,237,237,0.55)" }}>{t("La visite guidée, écran par écran")}</span>
         </span>
       </button>
 
       <div className="ep-card" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", marginBottom: 12 }}>
         <Search size={16} style={{ color: "rgba(245,237,237,0.4)" }} />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Chercher un tuto" aria-label="Chercher un tuto" style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Chercher un tuto")} aria-label={t("Chercher un tuto")} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }} />
       </div>
 
       <div className="ep-card" style={{ padding: 0, overflow: "hidden" }}>
@@ -55,7 +57,7 @@ export default function HelpCenter({ space }: { space: HelpSpace }) {
                   </ol>
                   {href && (
                     <Link href={href} style={{ display: "inline-block", marginTop: 12, padding: "10px 14px", borderRadius: 12, background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, textDecoration: "none" }}>
-                      {g.cta ?? "Y aller"}
+                      {g.cta ?? t("Y aller")}
                     </Link>
                   )}
                 </div>
@@ -63,7 +65,7 @@ export default function HelpCenter({ space }: { space: HelpSpace }) {
             </div>
           );
         })}
-        {guides.length === 0 && <p style={{ padding: 16, fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>Aucun tuto ne correspond.</p>}
+        {guides.length === 0 && <p style={{ padding: 16, fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>{t("Aucun tuto ne correspond.")}</p>}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
@@ -19,6 +20,7 @@ export default function Sheet({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const t = useT();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -38,7 +40,7 @@ export default function Sheet({
   if (typeof document === "undefined") return null;
   return createPortal(
     <div className="fixed inset-0 z-[2147483000] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label={title}>
-      <button type="button" aria-label="Fermer" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
+      <button type="button" aria-label={t("Fermer")} onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
       <div
         className="relative w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-[#890404]/35 shadow-[0_-10px_60px_rgba(137,4,4,0.35)]"
         style={{ background: "linear-gradient(180deg, #1a0202 0%, #0d0000 100%)" }}
@@ -48,7 +50,7 @@ export default function Sheet({
             <p className="text-sm font-black uppercase tracking-tight text-white truncate">{title}</p>
             {subtitle && <p className="text-[11px] text-[#F5EDED]/45 mt-0.5 truncate">{subtitle}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label="Fermer" className="p-1.5 -m-1 rounded-lg text-[#F5EDED]/50 hover:text-white">
+          <button type="button" onClick={onClose} aria-label={t("Fermer")} className="p-1.5 -m-1 rounded-lg text-[#F5EDED]/50 hover:text-white">
             <X size={18} />
           </button>
         </div>

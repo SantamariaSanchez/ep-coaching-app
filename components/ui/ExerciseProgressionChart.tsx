@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import {
   LineChart,
@@ -36,6 +37,7 @@ export default function ExerciseProgressionChart({
   sessions: SessionWithSets[];
   records: PersonalRecord[];
 }) {
+  const t = useT();
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
 
   const allExerciseNames = [
@@ -47,7 +49,7 @@ export default function ExerciseProgressionChart({
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
         <TrendingUp size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
         <p className="text-sm text-[#F5EDED]/40">
-          Tes performances par exercice apparaîtront ici après ta première séance
+          {t("Tes performances par exercice apparaîtront ici après ta première séance")}
         </p>
       </div>
     );
@@ -168,12 +170,12 @@ export default function ExerciseProgressionChart({
         <div className="flex items-center gap-3 mb-4 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
           <Trophy size={14} className="text-amber-400" />
           <div>
-            <p className="text-[9px] text-[#F5EDED]/35 uppercase tracking-wider">PR</p>
+            <p className="text-[9px] text-[#F5EDED]/35 uppercase tracking-wider">{t("PR")}</p>
             <p className="text-lg font-black text-white">
-              {bestRecord.weight_kg} kg
+              {bestRecord.weight_kg}{" "}{t("kg")}
               {bestRecord.reps && (
                 <span className="text-sm font-normal text-[#F5EDED]/40 ml-1.5">
-                  × {bestRecord.reps} reps
+                  × {bestRecord.reps}{" "}{t("reps")}
                 </span>
               )}
             </p>
@@ -191,9 +193,7 @@ export default function ExerciseProgressionChart({
         <div className="flex items-start gap-3 mb-4 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
           <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-[#F5EDED]/60 leading-relaxed">
-            <span className="font-bold text-amber-400">Charge stable depuis 4 séances</span> sur cet
-            exercice ({recentWindow[0].maxWeight} kg). Une décharge (volume ou intensité réduits une
-            semaine) peut aider à relancer la progression.
+            <span className="font-bold text-amber-400">{t("Charge stable depuis 4 séances")}</span>{" "}{t("sur cet exercice (")}{recentWindow[0].maxWeight}{" "}{t("kg). Une décharge (volume ou intensité réduits une semaine) peut aider à relancer la progression.")}
           </p>
         </div>
       )}
@@ -228,7 +228,7 @@ export default function ExerciseProgressionChart({
         </div>
       ) : (
         <p className="text-xs text-[#F5EDED]/25 italic mb-5">
-          Encore trop peu de séances sur cet exercice pour tracer une courbe.
+          {t("Encore trop peu de séances sur cet exercice pour tracer une courbe.")}
         </p>
       )}
 

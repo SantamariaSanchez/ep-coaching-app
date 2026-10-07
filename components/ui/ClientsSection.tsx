@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Search, X } from "lucide-react";
@@ -93,6 +94,7 @@ export default function ClientsSection({
   /** Relance manuelle en un clic — même action que la page Communauté > Membres. */
   relaunchMember?: (memberId: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -161,14 +163,14 @@ export default function ClientsSection({
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
         <div>
-          {!hideTitle && <span className="ep-section-title" style={{ marginBottom: 2 }}>Mes clients</span>}
+          {!hideTitle && <span className="ep-section-title" style={{ marginBottom: 2 }}>{t("Mes clients")}</span>}
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
             {visible.length === clients.length
               ? `${clients.length} client${clients.length !== 1 ? "s" : ""}`
               : `${visible.length} sur ${clients.length}`}
             {totalAlerts > 0 && (
               <span style={{ color: "rgba(224,30,30,0.75)", fontWeight: 700 }}>
-                {" "}&nbsp;·&nbsp; {totalAlerts} point{totalAlerts !== 1 ? "s" : ""} à traiter
+                {" "}{t(" · ")}{" "}{totalAlerts}{" "}{t("point")}{totalAlerts !== 1 ? "s" : ""}{" "}{t("à traiter")}
               </span>
             )}
           </p>
@@ -188,8 +190,8 @@ export default function ClientsSection({
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Chercher un client"
-                aria-label="Chercher un client"
+                placeholder={t("Chercher un client")}
+                aria-label={t("Chercher un client")}
                 style={{
                   width: "100%",
                   background: "#150000",
@@ -204,7 +206,7 @@ export default function ClientsSection({
               {query && (
                 <button
                   onClick={() => setQuery("")}
-                  aria-label="Effacer la recherche"
+                  aria-label={t("Effacer la recherche")}
                   style={{
                     position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
                     background: "none", border: "none", cursor: "pointer",
@@ -219,7 +221,7 @@ export default function ClientsSection({
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              aria-label="Trier les clients"
+              aria-label={t("Trier les clients")}
               style={{
                 background: "#150000",
                 border: "1px solid rgba(137,4,4,0.3)",
@@ -288,11 +290,10 @@ export default function ClientsSection({
             <Users size={24} style={{ color: "rgba(224,30,30,0.6)" }} strokeWidth={1.5} />
           </div>
           <p style={{ fontSize: 15, fontWeight: 700, color: "#F5EDED", margin: "0 0 6px" }}>
-            Aucun client pour l&apos;instant
+            {t("Aucun client pour l'instant")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-            Les clients s&apos;inscrivent eux-mêmes depuis l&apos;appli, ils apparaîtront ici. Il ne te reste
-            plus qu&apos;à activer leur coaching.
+            {t("Les clients s'inscrivent eux-mêmes depuis l'appli, ils apparaîtront ici. Il ne te reste plus qu'à activer leur coaching.")}
           </p>
         </div>
       ) : visible.length === 0 ? (
@@ -306,10 +307,10 @@ export default function ClientsSection({
           }}
         >
           <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,237,237,0.55)", margin: "0 0 4px" }}>
-            Aucun client ne correspond
+            {t("Aucun client ne correspond")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-            Change de filtre ou vide la recherche pour revoir toute la liste.
+            {t("Change de filtre ou vide la recherche pour revoir toute la liste.")}
           </p>
         </div>
       ) : (

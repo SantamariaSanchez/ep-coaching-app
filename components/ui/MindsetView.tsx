@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo, useEffect } from "react";
 import {
   Brain,
@@ -70,6 +71,7 @@ function fmtDate(d: string) {
 // ── Quiz ──────────────────────────────────────────────────────────────────────
 
 function QuizFlow({ onComplete }: { onComplete: (result: QuizResult) => void }) {
+  const tr = useT();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const q = QUIZ_QUESTIONS[step];
@@ -90,14 +92,14 @@ function QuizFlow({ onComplete }: { onComplete: (result: QuizResult) => void }) 
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-          Question {step + 1} / {QUIZ_QUESTIONS.length}
+          {tr("Question")}{" "}{step + 1} / {QUIZ_QUESTIONS.length}
         </p>
         {step > 0 && (
           <button
             onClick={() => setStep((s) => s - 1)}
             className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
           >
-            <ChevronLeft size={12} /> Retour
+            <ChevronLeft size={12} />{" "}{tr("Retour")}
           </button>
         )}
       </div>
@@ -148,6 +150,7 @@ function ProfileTab({
   profile: MindsetProfile | null;
   onSave: (result: QuizResult) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [showQuiz, setShowQuiz] = useState(!profile?.quiz_completed_at);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,7 +176,7 @@ function ProfileTab({
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
         {saving ? (
           <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-8 text-center">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">Sauvegarde…</p>
+            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">{tr("Sauvegarde…")}</p>
           </div>
         ) : (
           <QuizFlow onComplete={handleComplete} />
@@ -183,7 +186,7 @@ function ProfileTab({
             onClick={() => setShowQuiz(false)}
             className="text-[10px] text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
           >
-            Annuler et garder mon profil actuel
+            {tr("Annuler et garder mon profil actuel")}
           </button>
         )}
       </div>
@@ -194,15 +197,15 @@ function ProfileTab({
     return (
       <div className="bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl p-8 text-center">
         <Brain size={32} className="text-[#E01E1E]/40 mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-sm font-bold text-white mb-1">Découvre ton profil mindset</p>
+        <p className="text-sm font-bold text-white mb-1">{tr("Découvre ton profil mindset")}</p>
         <p className="text-xs text-[#F5EDED]/35 mb-5 max-w-sm mx-auto">
-          7 questions pour comprendre ton rapport à la motivation, au stress, à ton image et à la discipline, et recevoir des conseils vraiment adaptés à ta situation.
+          {tr("7 questions pour comprendre ton rapport à la motivation, au stress, à ton image et à la discipline, et recevoir des conseils vraiment adaptés à ta situation.")}
         </p>
         <button
           onClick={() => setShowQuiz(true)}
           className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl transition-colors"
         >
-          Commencer le quiz
+          {tr("Commencer le quiz")}
         </button>
       </div>
     );
@@ -215,7 +218,7 @@ function ProfileTab({
   return (
     <div className="space-y-4">
       <div className="bg-[#1f0101] border border-[#E01E1E]/30 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-1">Ton profil</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-1">{tr("Ton profil")}</p>
         <p className="text-lg font-black text-white mb-1">{profileDef?.label}</p>
         <p className="text-xs text-[#F5EDED]/40 mb-4 leading-relaxed">{profileDef?.description}</p>
         <div className="flex flex-wrap gap-2 mb-5">
@@ -223,7 +226,7 @@ function ProfileTab({
             {envDef?.label}
           </span>
           <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/50">
-            Obstacle principal · {obstacleDef?.label}
+            {tr("Obstacle principal ·")}{" "}{obstacleDef?.label}
           </span>
         </div>
 
@@ -239,7 +242,7 @@ function ProfileTab({
         onClick={() => setShowQuiz(true)}
         className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
       >
-        <RotateCcw size={12} /> Refaire le quiz
+        <RotateCcw size={12} />{" "}{tr("Refaire le quiz")}
       </button>
     </div>
   );
@@ -256,6 +259,7 @@ function HabitsTab({
   habitLogs: MindsetHabitLog[];
   onToggle: (habitKey: string, checked: boolean) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [optimisticLogs, setOptimisticLogs] = useState(habitLogs);
   // MASTERCLASS.md Axe E (même piège que todayLogs dans ClientNutritionView) :
   // sans ça, revenir sur cette page sans remontage complet du composant
@@ -329,8 +333,8 @@ function HabitsTab({
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">Aujourd&apos;hui</p>
-          <p className="text-lg font-black text-white">{doneCount} / {HABITS.length} habitudes</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">{tr("Aujourd'hui")}</p>
+          <p className="text-lg font-black text-white">{doneCount} / {HABITS.length}{" "}{tr("habitudes")}</p>
         </div>
         <Flame size={28} className={doneCount > 0 ? "text-[#E01E1E]" : "text-[#F5EDED]/15"} strokeWidth={1.7} />
       </div>
@@ -383,6 +387,7 @@ function HabitsTab({
 // ── Conseils ──────────────────────────────────────────────────────────────────
 
 function TipsTab({ profile }: { profile: MindsetProfile | null }) {
+  const tr = useT();
   const [activeCategory, setActiveCategory] = useState<TipCategory | "all" | "pour_toi">(
     profile ? "pour_toi" : "all"
   );
@@ -420,7 +425,7 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
                 : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
-            Pour toi
+            {tr("Pour toi")}
           </button>
         )}
         <button
@@ -429,7 +434,7 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
             activeCategory === "all" ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
-          Tout
+          {tr("Tout")}
         </button>
         {categories.map((c) => (
           <button
@@ -458,7 +463,7 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
           </div>
         ))}
         {visible.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">Aucun conseil dans cette catégorie.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">{tr("Aucun conseil dans cette catégorie.")}</p>
         )}
       </div>
     </div>
@@ -484,6 +489,7 @@ function JournalTab({
   onAdd: (promptKey: string | null, content: string, mood: number | null) => Promise<{ error?: string; id?: string }>;
   onDelete: (id: string) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const confirm = useConfirm();
   const dayPrompt = getPromptOfDay();
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(dayPrompt.key);
@@ -548,7 +554,7 @@ function JournalTab({
     <div className="space-y-5">
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">Choisis un thème</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">{tr("Choisis un thème")}</p>
         <div className="flex gap-2 overflow-x-auto pb-3">
           {JOURNAL_PROMPTS.map((p) => (
             <button
@@ -571,13 +577,13 @@ function JournalTab({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={4}
-          placeholder="Écris librement…" aria-label="Écris librement…"
+          placeholder={tr("Écris librement…")} aria-label={tr("Écris librement…")}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors resize-none"
         />
 
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 mr-1">Humeur</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 mr-1">{tr("Humeur")}</span>
             {MOODS.map((m) => (
               <button
                 key={m.value}
@@ -595,14 +601,14 @@ function JournalTab({
             disabled={!content.trim() || saving}
             className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors"
           >
-            {saving ? "…" : "Enregistrer"}
+            {saving ? "…" : tr("Enregistrer")}
           </button>
         </div>
       </div>
 
       <div className="space-y-2">
         {localEntries.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">Aucune entrée pour l&apos;instant.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">{tr("Aucune entrée pour l'instant.")}</p>
         ) : (
           localEntries.map((entry) => {
             const prompt = JOURNAL_PROMPTS.find((p) => p.key === entry.prompt_key);
@@ -623,7 +629,7 @@ function JournalTab({
                   </div>
                   <button
                     onClick={() => handleDelete(entry.id)}
-                    aria-label="Supprimer cette entrée de journal"
+                    aria-label={tr("Supprimer cette entrée de journal")}
                     className="text-[#F5EDED]/15 hover:text-red-400 transition-colors"
                   >
                     <Trash2 size={12} />
@@ -664,6 +670,7 @@ export default function MindsetView({
   addJournalEntry,
   deleteJournalEntry,
 }: Props) {
+  const tr = useT();
   // Le quiz de profil est une configuration ponctuelle ; une fois fait, ce
   // qu'on vient remplir ici au quotidien c'est le journal — sans ça la page
   // rouvrait chaque jour sur le quiz déjà répondu, et il fallait cliquer
@@ -681,11 +688,11 @@ export default function MindsetView({
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mental & comportement
+          {tr("Mental & comportement")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
           <Brain size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
-          Mindset
+          {tr("Mindset")}
         </h1>
       </div>
 

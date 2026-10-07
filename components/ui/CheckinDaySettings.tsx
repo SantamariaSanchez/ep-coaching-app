@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState } from "react";
 import { updateCheckinDay } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
 
@@ -20,6 +21,7 @@ export default function CheckinDaySettings({
   clientId: string;
   currentDay: number;
 }) {
+  const t = useT();
   const bound = updateCheckinDay.bind(null, clientId);
   const [state, action, isPending] = useActionState(bound, null);
 
@@ -30,7 +32,7 @@ export default function CheckinDaySettings({
       borderRadius: 10, padding: "10px 14px", marginBottom: 20,
     }}>
       <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
-        Jour de check-in fixe
+        {t("Jour de check-in fixe")}
       </span>
       <form action={action} style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <select
@@ -38,7 +40,7 @@ export default function CheckinDaySettings({
           name="checkin_day"
           defaultValue={currentDay}
           disabled={isPending}
-          aria-label="Jour de check-in fixe"
+          aria-label={t("Jour de check-in fixe")}
           style={{
             background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)",
             borderRadius: 8, padding: "6px 10px", fontSize: 12, color: "#F5EDED", outline: "none",
@@ -57,11 +59,11 @@ export default function CheckinDaySettings({
             cursor: isPending ? "wait" : "pointer", opacity: isPending ? 0.6 : 1,
           }}
         >
-          {isPending ? "…" : "Enregistrer"}
+          {isPending ? "…" : t("Enregistrer")}
         </button>
       </form>
       {state && "success" in state && (
-        <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Enregistré</span>
+        <span style={{ fontSize: 11, color: "#4ade80" }}>{t("✓ Enregistré")}</span>
       )}
       {state && "error" in state && (
         <span style={{ fontSize: 11, color: "#FDC4C4" }}>{state.error}</span>

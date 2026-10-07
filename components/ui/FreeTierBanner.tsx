@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 // Bandeau d'échéance du compte gratuit, affiché dans les 21 derniers jours
 // avant verrouillage (voir lib/free-tier.ts et FreeTierGate.tsx pour le
 // verrou dur qui suit). Volontairement discret mais pas fermable : masquer un
@@ -11,6 +12,7 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 
 export default function FreeTierBanner({ label }: { label: string }) {
+  const t = useT();
   return (
     <Link
       href="/dashboard/client/abonnement"
@@ -19,7 +21,7 @@ export default function FreeTierBanner({ label }: { label: string }) {
     >
       <Clock size={12} className="flex-shrink-0" />
       <span>{label}</span>
-      <span className="underline underline-offset-2 opacity-80">Voir l&apos;accompagnement</span>
+      <span className="underline underline-offset-2 opacity-80">{t("Voir l'accompagnement")}</span>
     </Link>
   );
 }

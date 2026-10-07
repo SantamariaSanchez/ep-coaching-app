@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -16,6 +17,7 @@ export default function PersonalizationQuiz({
   onSkipAll: () => void;
   finishing: boolean;
 }) {
+  const t = useT();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<MemberPreferences>>({});
 
@@ -76,7 +78,7 @@ export default function PersonalizationQuiz({
           {finishing ? (
             <div style={{ width: 12, height: 12, border: "2px solid rgba(245,237,237,0.75)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
           ) : (
-            <>Passer, accéder à l&apos;appli <X size={13} /></>
+            <>{t("Passer, accéder à l'appli")}{" "}<X size={13} /></>
           )}
         </button>
       </div>
@@ -87,10 +89,10 @@ export default function PersonalizationQuiz({
           fontSize: 11, fontWeight: 800, letterSpacing: "0.18em",
           textTransform: "uppercase", color: "#E01E1E", margin: "0 0 6px", textAlign: "center",
         }}>
-          Personnalisation · {step + 1}/{QUESTIONS.length}
+          {t("Personnalisation ·")}{" "}{step + 1}/{QUESTIONS.length}
         </p>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", textAlign: "center", margin: "0 0 8px" }}>
-          5 minutes pour adapter l&apos;appli à toi. 100% optionnel.
+          {t("5 minutes pour adapter l'appli à toi. 100% optionnel.")}
         </p>
       </div>
 
@@ -157,7 +159,7 @@ export default function PersonalizationQuiz({
               fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0,
             }}
           >
-            ← Question précédente
+            {t("← Question précédente")}
           </button>
         </div>
       )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,6 +23,7 @@ export function restartTour() {
 }
 
 export default function WelcomeTour() {
+  const tr = useT();
   const pathname = usePathname();
   const space: HelpSpace = pathname.startsWith("/equipe") ? "staff" : pathname.startsWith("/dashboard/coach") ? "coach" : "client";
   const [open, setOpen] = useState(false);
@@ -63,10 +65,10 @@ export default function WelcomeTour() {
   }
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Découvrir l'appli" style={{ position: "fixed", inset: 0, zIndex: 400, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+    <div role="dialog" aria-modal="true" aria-label={tr("Découvrir l'appli")} style={{ position: "fixed", inset: 0, zIndex: 400, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div onClick={close} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(3px)" }} />
       <div className="ep-modal-panel" style={{ position: "relative", width: "100%", maxWidth: 480, margin: "0 12px", marginBottom: "calc(16px + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(160deg, #230202, #120000)", border: "1px solid rgba(224,30,30,0.35)", borderRadius: 20, padding: "22px 20px 18px", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
-        <button type="button" onClick={close} aria-label="Fermer" style={{ position: "absolute", top: 12, right: 12, background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer" }}>
+        <button type="button" onClick={close} aria-label={tr("Fermer")} style={{ position: "absolute", top: 12, right: 12, background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer" }}>
           <X size={18} />
         </button>
         <div style={{ display: "flex", gap: 5, marginBottom: 16 }}>
@@ -79,7 +81,7 @@ export default function WelcomeTour() {
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {step.href && (
             <Link href={step.href} onClick={close} style={{ padding: "11px 14px", borderRadius: 12, border: "1px solid rgba(137,4,4,0.5)", color: "rgba(245,237,237,0.85)", fontSize: 12.5, fontWeight: 800, textDecoration: "none" }}>
-              {step.cta ?? "Voir"}
+              {step.cta ?? tr("Voir")}
             </Link>
           )}
           <button
@@ -88,7 +90,7 @@ export default function WelcomeTour() {
             onClick={() => (last ? close() : setI((v) => v + 1))}
             style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 18px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
           >
-            {last ? "C'est parti" : "Suivant"} {!last && <ChevronRight size={15} />}
+            {last ? tr("C'est parti") : tr("Suivant")} {!last && <ChevronRight size={15} />}
           </button>
         </div>
       </div>

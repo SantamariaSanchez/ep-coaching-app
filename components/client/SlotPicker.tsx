@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,7 @@ export default function SlotPicker({
   /** "single" réserve un créneau isolé (1:1) ; "recurring" réserve le même créneau chaque semaine pendant 8 semaines (suivi hebdo). */
   mode: "single" | "recurring";
 }) {
+  const t = useT();
   const router = useRouter();
   const [bookedSlot, setBookedSlot] = useState<string | null>(null);
   const [pendingSlot, setPendingSlot] = useState<string | null>(null);
@@ -106,13 +108,13 @@ export default function SlotPicker({
     return (
       <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", margin: 0 }}>
-          Aucun créneau disponible pour l&apos;instant. Contacte ton coach directement.
+          {t("Aucun créneau disponible pour l'instant. Contacte ton coach directement.")}
         </p>
         <Link
           href="/dashboard/client/messages"
           style={{ display: "inline-block", marginTop: 10, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}
         >
-          Lui écrire
+          {t("Lui écrire")}
         </Link>
       </div>
     );
@@ -131,9 +133,9 @@ export default function SlotPicker({
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: 0 }}>
         {mode === "recurring"
-          ? "En choisissant un créneau, il sera automatiquement réservé chaque semaine à la même heure, pendant 8 semaines. "
+          ? t("En choisissant un créneau, il sera automatiquement réservé chaque semaine à la même heure, pendant 8 semaines. ")
           : ""}
-        Horaires affichés en heure de Paris.
+        {t("Horaires affichés en heure de Paris.")}
       </p>
 
       {success && (
@@ -153,7 +155,7 @@ export default function SlotPicker({
                 href="/dashboard/client/live"
                 style={{ display: "inline-block", marginTop: 6, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}
               >
-                Voir mes lives
+                {t("Voir mes lives")}
               </Link>
             )}
           </div>

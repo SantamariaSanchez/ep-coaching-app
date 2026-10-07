@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
@@ -154,6 +155,7 @@ function MetricChart({ title, icon: Icon, data, unit, color, referenceBand, base
       voir d'un coup d'œil si aujourd'hui dévie, pas juste la tendance 7j. */
   baseline?: number | null;
 }) {
+  const t = useT();
   const hasData = data.some((d) => d.value != null);
   const chartData = withRollingAverage(data);
   return (
@@ -185,7 +187,7 @@ function MetricChart({ title, icon: Icon, data, unit, color, referenceBand, base
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-[#F5EDED]/25 italic py-8 text-center">Pas encore de données.</p>
+        <p className="text-xs text-[#F5EDED]/25 italic py-8 text-center">{t("Pas encore de données.")}</p>
       )}
     </div>
   );
@@ -221,6 +223,7 @@ export default function TrackingClient({
   /** ?oura=... au retour de /api/oura/connect ou /callback */
   ouraStatus?: string;
 }) {
+  const t = useT();
   // MASTERCLASS.md Axe L : new Date().toISOString() rend la date en UTC,
   // pas celle de Paris — entre minuit et 1h/2h du matin, todayLog matchait
   // encore la ligne biometric_logs de LA VEILLE (déjà complète), et toute
@@ -352,7 +355,7 @@ export default function TrackingClient({
         <div className="bg-[#150000] border border-green-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
           <Watch size={15} className="text-green-400 flex-shrink-0" />
           <p className="text-[11px] text-[#F5EDED]/60 leading-relaxed flex-1">
-            Bague Oura connectée : sommeil, récupération, HRV et FC repos se remplissent automatiquement chaque matin.
+            {t("Bague Oura connectée : sommeil, récupération, HRV et FC repos se remplissent automatiquement chaque matin.")}
           </p>
           {!readOnly && disconnectOura && (
             <button
@@ -361,7 +364,7 @@ export default function TrackingClient({
               className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors flex-shrink-0"
             >
               <Unlink size={11} />
-              {disconnecting ? "…" : "Déconnecter"}
+              {disconnecting ? "…" : t("Déconnecter")}
             </button>
           )}
         </div>
@@ -371,7 +374,7 @@ export default function TrackingClient({
         <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
           <Watch size={15} className="text-[#F5EDED]/25 flex-shrink-0" />
           <p className="text-[11px] text-[#F5EDED]/40 leading-relaxed">
-            Pas de bague Oura connectée pour ce client, les données ci-dessous sont saisies à la main.
+            {t("Pas de bague Oura connectée pour ce client, les données ci-dessous sont saisies à la main.")}
           </p>
         </div>
       ) : canConnectOura && ouraConfigured ? (
@@ -381,18 +384,17 @@ export default function TrackingClient({
         >
           <Watch size={15} className="text-[#E01E1E] flex-shrink-0" />
           <span className="text-[11px] text-[#F5EDED]/45 leading-relaxed flex-1">
-            Connecte ta bague <strong className="text-[#F5EDED]">Oura Ring</strong> : ouvre l&apos;app Oura, connecte-toi, et
-            valide l&apos;accès. C&apos;est tout, aucune donnée à recopier.
+            {t("Connecte ta bague")}{" "}<strong className="text-[#F5EDED]">{t("Oura Ring")}</strong>{" "}{t(": ouvre l'app Oura, connecte-toi, et valide l'accès. C'est tout, aucune donnée à recopier.")}
           </span>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
-            Connecter →
+            {t("Connecter →")}
           </span>
         </a>
       ) : canConnectOura && !ouraConfigured ? null /* connexion Oura pas encore activée : rien d'affiché plutôt qu'un « bientôt » */ : (
         <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
           <Lock size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
-            La bague Oura Ring est offerte aux membres en coaching. Passe en coaching payant pour la recevoir et connecter automatiquement tes données ici. En attendant, log tes données à la main ci-dessous.
+            {t("La bague Oura Ring est offerte aux membres en coaching. Passe en coaching payant pour la recevoir et connecter automatiquement tes données ici. En attendant, log tes données à la main ci-dessous.")}
           </p>
         </div>
       )}
@@ -400,7 +402,7 @@ export default function TrackingClient({
       {!readOnly && logBiometrics && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Données du jour
+            {t("Données du jour")}
           </p>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <NumberField label="Sommeil (h)" value={sleepHours} onChange={setSleepHours} step={0.25} placeholder="7.5" />
@@ -413,7 +415,7 @@ export default function TrackingClient({
             disabled={saving}
             className="w-full flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
-            {saving ? "Analyse…" : saved ? <><CheckCircle2 size={13} /> Enregistré</> : "Enregistrer & analyser"}
+            {saving ? t("Analyse…") : saved ? <><CheckCircle2 size={13} />{" "}{t("Enregistré")}</> : t("Enregistrer & analyser")}
           </button>
           {saveError && (
             <p className="flex items-center gap-1.5 text-[11px] text-red-400 mt-2">
@@ -442,7 +444,7 @@ export default function TrackingClient({
           />
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 4px" }}>
-              Nuits ≥ 7h
+              {t("Nuits ≥ 7h")}
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
               <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{sleepStreak}</span>
@@ -455,7 +457,7 @@ export default function TrackingClient({
       {visibleInsights.length > 0 && (
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-            Suggestions d&apos;ajustement
+            {t("Suggestions d'ajustement")}
           </p>
           <div className="space-y-2">
             {visibleInsights.map((insight) => {
@@ -473,7 +475,7 @@ export default function TrackingClient({
                     {!readOnly && acknowledgeBiometricInsight && (
                       <button
                         onClick={() => handleAcknowledge(insight.id)}
-                        title="Marquer comme vu" aria-label="Marquer comme vu"
+                        title={t("Marquer comme vu")} aria-label={t("Marquer comme vu")}
                         className="flex-shrink-0 text-[#F5EDED]/25 hover:text-white transition-colors"
                       >
                         <Check size={14} />
@@ -488,16 +490,16 @@ export default function TrackingClient({
       )}
 
       <p className="text-[10px] text-[#F5EDED]/25" style={{ marginBottom: -8 }}>
-        Ligne pointillée = ta moyenne sur toute la période chargée, pour repérer un écart au premier coup d&apos;œil.
+        {t("Ligne pointillée = ta moyenne sur toute la période chargée, pour repérer un écart au premier coup d'œil.")}
       </p>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <MetricChart title="Sommeil" icon={Moon} data={sleepData} unit="h" color="#818cf8" referenceBand={[7, 9]} />
-        <MetricChart title="Récupération" icon={Gauge} data={readinessData} unit="" color="#4ade80" baseline={readinessBaseline} />
-        <MetricChart title="HRV" icon={Activity} data={hrvData} unit="ms" color="#E01E1E" baseline={hrvBaseline} />
-        <MetricChart title="FC au repos" icon={HeartPulse} data={rhrData} unit="bpm" color="#fbbf24" baseline={rhrBaseline} />
+        <MetricChart title={t("Sommeil")} icon={Moon} data={sleepData} unit="h" color="#818cf8" referenceBand={[7, 9]} />
+        <MetricChart title={t("Récupération")} icon={Gauge} data={readinessData} unit="" color="#4ade80" baseline={readinessBaseline} />
+        <MetricChart title={t("HRV")} icon={Activity} data={hrvData} unit="ms" color="#E01E1E" baseline={hrvBaseline} />
+        <MetricChart title={t("FC au repos")} icon={HeartPulse} data={rhrData} unit="bpm" color="#fbbf24" baseline={rhrBaseline} />
         {hasTemperatureData && (
-          <MetricChart title="Écart de température" icon={Thermometer} data={tempData} unit="°C" color="#fb923c" />
+          <MetricChart title={t("Écart de température")} icon={Thermometer} data={tempData} unit="°C" color="#fb923c" />
         )}
       </div>
     </div>

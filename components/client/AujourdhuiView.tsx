@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -96,6 +97,7 @@ export default function AujourdhuiView({
   // bloquant de la page serveur (voir app/dashboard/client/aujourdhui/page.tsx).
   getWeeklyExtras: () => Promise<{ weeklyRecap: WeeklyRecapStats | null; weeklyConsistency: number | null }>;
 }) {
+  const tr = useT();
   const [weeklyExtras, setWeeklyExtras] = useState<{ weeklyRecap: WeeklyRecapStats | null; weeklyConsistency: number | null }>({
     weeklyRecap: null,
     weeklyConsistency: null,
@@ -229,7 +231,7 @@ export default function AujourdhuiView({
               background: weekNum % 4 === 0 ? "rgba(224,30,30,0.12)" : "rgba(245,237,237,0.06)",
               border: `1px solid ${weekNum % 4 === 0 ? "rgba(224,30,30,0.3)" : "rgba(245,237,237,0.1)"}`,
             }}>
-              Semaine {weekNum}
+              {tr("Semaine")}{" "}{weekNum}
             </span>
           )}
         </p>
@@ -252,7 +254,7 @@ export default function AujourdhuiView({
           gratuits jusque-là). */}
       {weeklyRecap && (weeklyRecap.sessions > 0 || weeklyRecap.foodDays > 0 || weeklyRecap.avgWeight != null) && (
         <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
-          <SectionLabel icon={TrendingUp}>Ta semaine</SectionLabel>
+          <SectionLabel icon={TrendingUp}>{tr("Ta semaine")}</SectionLabel>
           <div className="ep-card" style={{ padding: "14px 16px" }}>
             <p style={{ margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.6, fontWeight: 600 }}>
               {formatWeeklyRecapLine(weeklyRecap)}
@@ -263,20 +265,20 @@ export default function AujourdhuiView({
 
       {/* Poids du matin — accès direct, sans passer par le bilan complet */}
       <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
-        <SectionLabel icon={Scale}>Poids du matin</SectionLabel>
+        <SectionLabel icon={Scale}>{tr("Poids du matin")}</SectionLabel>
         <div className="ep-card" style={{ padding: "14px 16px" }}>
           {weightSaved ? (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Check size={15} style={{ color: "#4ade80" }} strokeWidth={3} />
               <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#4ade80" }}>
-                {weightValue} kg enregistrés
+                {weightValue}{" "}{tr("kg enregistrés")}
               </p>
               <button
                 type="button"
                 onClick={() => setWeightSaved(false)}
                 style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.35)", background: "none", border: "none", cursor: "pointer" }}
               >
-                Modifier
+                {tr("Modifier")}
               </button>
             </div>
           ) : (
@@ -299,7 +301,7 @@ export default function AujourdhuiView({
                 max="300"
                 value={weightValue}
                 onChange={(e) => setWeightValue(e.target.value)}
-                placeholder="82.5 kg" aria-label="82.5 kg"
+                placeholder={tr("82.5 kg")} aria-label={tr("82.5 kg")}
                 className="ep-input"
                 style={{ flex: 1 }}
                 autoFocus={todayWeight == null}
@@ -310,7 +312,7 @@ export default function AujourdhuiView({
                 className="ep-btn-primary"
                 style={{ fontSize: 11, padding: "10px 16px", whiteSpace: "nowrap" }}
               >
-                {weightSaving ? "…" : "Enregistrer"}
+                {weightSaving ? "…" : tr("Enregistrer")}
               </button>
             </form>
           )}
@@ -327,7 +329,7 @@ export default function AujourdhuiView({
           les compléments ci-dessus), même formulation de valeur/sous-texte
           que MyDayCard côté coach pour rester cohérent d'un espace à l'autre. */}
       <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
-        <SectionLabel icon={Utensils}>Nutrition &amp; activité</SectionLabel>
+        <SectionLabel icon={Utensils}>{tr("Nutrition & activité")}</SectionLabel>
         <div className="ep-card" style={{ padding: 0, overflow: "hidden" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
             <Link
@@ -338,7 +340,7 @@ export default function AujourdhuiView({
               <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#E01E1E", marginBottom: 6 }}>
                 <Utensils size={12} strokeWidth={2} />
                 <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
-                  Nutrition
+                  {tr("Nutrition")}
                 </span>
                 {/* Repasse détail (audit onglet Aujourd'hui, 2026-09-16) :
                     seule carte-lien de l'écran sans chevron, alors que
@@ -361,7 +363,7 @@ export default function AujourdhuiView({
               <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#4ade80", marginBottom: 6 }}>
                 <Footprints size={12} strokeWidth={2} />
                 <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
-                  Pas
+                  {tr("Pas")}
                 </span>
                 <ChevronRight size={12} style={{ marginLeft: "auto", color: "rgba(245,237,237,0.2)" }} />
               </div>
@@ -383,10 +385,10 @@ export default function AujourdhuiView({
           la seule à afficher un cadenas qui ne correspondait à aucun vrai
           verrou. */}
       <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
-        <SectionLabel icon={Calendar}>Ton programme du jour</SectionLabel>
+        <SectionLabel icon={Calendar}>{tr("Ton programme du jour")}</SectionLabel>
         {todayBlocks.length === 0 ? (
           <Link href="/dashboard/client/agenda" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none" }}>
-            <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)" }}>Rien de prévu aujourd&apos;hui dans ton agenda.</span>
+            <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)" }}>{tr("Rien de prévu aujourd'hui dans ton agenda.")}</span>
             <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
           </Link>
         ) : (
@@ -425,12 +427,12 @@ export default function AujourdhuiView({
 
       {/* Sommeil & récup (Oura) */}
       <section className="animate-fade-up stagger-2" style={{ marginBottom: 24 }}>
-        <SectionLabel icon={BedDouble}>Sommeil &amp; récupération</SectionLabel>
+        <SectionLabel icon={BedDouble}>{tr("Sommeil & récupération")}</SectionLabel>
         {!isSubscribedClient ? (
           <Link href="/dashboard/client/abonnement" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
             <Lock size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
             <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", flex: 1 }}>
-              Le suivi sommeil/récupération (connexion Oura) est réservé aux clients coachés.
+              {tr("Le suivi sommeil/récupération (connexion Oura) est réservé aux clients coachés.")}
             </span>
             <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
           </Link>
@@ -438,19 +440,19 @@ export default function AujourdhuiView({
           <div className="ep-card" style={{ padding: "16px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
               <div>
-                <p className="ep-label" style={{ marginBottom: 4 }}>Sommeil</p>
+                <p className="ep-label" style={{ marginBottom: 4 }}>{tr("Sommeil")}</p>
                 <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
                   {biometric.sleep_hours != null ? `${biometric.sleep_hours}h` : "···"}
                 </p>
               </div>
               <div>
-                <p className="ep-label" style={{ marginBottom: 4 }}>Récup.</p>
+                <p className="ep-label" style={{ marginBottom: 4 }}>{tr("Récup.")}</p>
                 <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
                   {biometric.readiness_score != null ? biometric.readiness_score : "···"}
                 </p>
               </div>
               <div>
-                <p className="ep-label" style={{ marginBottom: 4 }}>HRV</p>
+                <p className="ep-label" style={{ marginBottom: 4 }}>{tr("HRV")}</p>
                 <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
                   {biometric.hrv_ms != null ? `${biometric.hrv_ms}ms` : "···"}
                 </p>
@@ -470,7 +472,7 @@ export default function AujourdhuiView({
           <Link href="/dashboard/client/tracking" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
             <HeartPulse size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
             <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", flex: 1 }}>
-              Connecte ta bague Oura pour voir ton sommeil et ta récupération ici.
+              {tr("Connecte ta bague Oura pour voir ton sommeil et ta récupération ici.")}
             </span>
             <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
           </Link>
@@ -480,7 +482,7 @@ export default function AujourdhuiView({
       {/* Habitudes du jour */}
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <SectionLabel icon={Check}>Habitudes du jour</SectionLabel>
+          <SectionLabel icon={Check}>{tr("Habitudes du jour")}</SectionLabel>
           <span style={{ fontSize: 11, fontWeight: 700, color: doneCount === HABITS.length ? "#4ade80" : "rgba(245,237,237,0.3)" }}>
             {doneCount}/{HABITS.length}
           </span>
@@ -493,7 +495,7 @@ export default function AujourdhuiView({
             nouvel encart séparé — un complément, pas une nouvelle section. */}
         {weeklyConsistency != null && (
           <p style={{ margin: "-4px 0 10px", fontSize: 10.5, color: "rgba(245,237,237,0.3)" }}>
-            Cette semaine : {weeklyConsistency}% de jours actifs
+            {tr("Cette semaine :")}{" "}{weeklyConsistency}{tr("% de jours actifs")}
           </p>
         )}
         <div className="ep-card" style={{ padding: "8px 16px" }}>
@@ -535,7 +537,7 @@ export default function AujourdhuiView({
           active, pour ne pas afficher une section vide à tout le monde */}
       {supplements.length > 0 && (
         <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
-          <SectionLabel icon={Pill}>Compléments du jour</SectionLabel>
+          <SectionLabel icon={Pill}>{tr("Compléments du jour")}</SectionLabel>
           <div className="ep-card" style={{ padding: "8px 16px" }}>
             {supplements.map((s, i) => {
               const key = supplementHabitKey(s.id);
@@ -582,7 +584,7 @@ export default function AujourdhuiView({
         <SectionLabel icon={PenLine}>{promptOfDay.label}</SectionLabel>
         <div className="ep-card" style={{ padding: "16px" }}>
           {journalSaved ? (
-            <p style={{ margin: 0, fontSize: 13, color: "#4ade80", fontWeight: 600 }}>✓ Enregistré dans ton journal.</p>
+            <p style={{ margin: 0, fontSize: 13, color: "#4ade80", fontWeight: 600 }}>{tr("✓ Enregistré dans ton journal.")}</p>
           ) : (
             <>
               <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
@@ -592,7 +594,7 @@ export default function AujourdhuiView({
                 value={journalText}
                 onChange={(e) => setJournalText(e.target.value)}
                 rows={3}
-                placeholder="Écris librement…" aria-label="Écris librement…"
+                placeholder={tr("Écris librement…")} aria-label={tr("Écris librement…")}
                 className="ep-input"
                 style={{ resize: "none", marginBottom: 10 }}
               />
@@ -622,7 +624,7 @@ export default function AujourdhuiView({
                   className="ep-btn-primary"
                   style={{ fontSize: 11, padding: "9px 18px" }}
                 >
-                  {journalSaving ? "…" : "Enregistrer"}
+                  {journalSaving ? "…" : tr("Enregistrer")}
                 </button>
               </div>
             </>

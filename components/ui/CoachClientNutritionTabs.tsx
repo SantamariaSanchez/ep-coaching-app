@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo } from "react";
 import { X, CheckCircle2, Plus } from "lucide-react";
 import NutritionForm from "@/components/ui/NutritionForm";
@@ -52,6 +53,7 @@ function TodayLogsView({
   nutritionProfile: NutritionProfile | null;
   foods?: Food[];
 }) {
+  const tr = useT();
   const targets = {
     calories: nutritionProfile?.calories_target ?? 0,
     proteins: nutritionProfile?.proteins_target ?? 0,
@@ -108,7 +110,7 @@ function TodayLogsView({
       {/* Slots */}
       {logs.length === 0 ? (
         <p className="text-sm text-[#F5EDED]/25 italic text-center py-6">
-          Aucun aliment logué aujourd&apos;hui.
+          {tr("Aucun aliment logué aujourd'hui.")}
         </p>
       ) : (
         MEAL_SLOTS.map((slot) => {
@@ -123,11 +125,11 @@ function TodayLogsView({
                 {slotLogs.map((l) => (
                   <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0">
                     <div>
-                      <p className="text-xs text-white font-medium">{l.foods?.name ?? "Aliment supprimé"}</p>
+                      <p className="text-xs text-white font-medium">{l.foods?.name ?? tr("Aliment supprimé")}</p>
                       <p className="text-[10px] text-[#F5EDED]/35">{l.quantity_g}g</p>
                     </div>
                     <div className="text-right text-[10px] text-[#F5EDED]/40">
-                      <p className="text-[#E01E1E]/70 font-bold">{Math.round(l.calories ?? 0)} kcal</p>
+                      <p className="text-[#E01E1E]/70 font-bold">{Math.round(l.calories ?? 0)}{" "}{tr("kcal")}</p>
                       <p>P {Math.round(l.proteins ?? 0)}g · G {Math.round(l.carbs ?? 0)}g · L {Math.round(l.fats ?? 0)}g</p>
                     </div>
                   </div>
@@ -142,7 +144,7 @@ function TodayLogsView({
       {logs.length > 0 && (
         <div className="mt-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Micronutriments du jour
+            {tr("Micronutriments du jour")}
           </p>
           <MicroBarList logs={logs} foods={foods} />
         </div>
@@ -162,6 +164,7 @@ function HistoryView({
   today: string;
   targets: { calories: number };
 }) {
+  const tr = useT();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const calsByDate = useMemo(() => {
@@ -215,28 +218,28 @@ function HistoryView({
             <p className="text-xs font-bold uppercase tracking-widest text-white">
               {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(selectedDate + "T12:00:00"))}
             </p>
-            <button onClick={() => setSelectedDate(null)} aria-label="Fermer le détail du jour" className="text-[#F5EDED]/40 hover:text-white">
+            <button onClick={() => setSelectedDate(null)} aria-label={tr("Fermer le détail du jour")} className="text-[#F5EDED]/40 hover:text-white">
               <X size={14} />
             </button>
           </div>
           {dayLogs.length === 0 ? (
-            <p className="text-xs text-[#F5EDED]/30 italic">Aucun aliment logué.</p>
+            <p className="text-xs text-[#F5EDED]/30 italic">{tr("Aucun aliment logué.")}</p>
           ) : (
             <>
               <div className="space-y-1 mb-4">
                 {dayLogs.map((l) => (
                   <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0">
                     <div>
-                      <p className="text-xs text-white">{l.foods?.name ?? "Aliment supprimé"}</p>
+                      <p className="text-xs text-white">{l.foods?.name ?? tr("Aliment supprimé")}</p>
                       <p className="text-[10px] text-[#F5EDED]/35">{l.quantity_g}g · {l.meal_slot}</p>
                     </div>
-                    <p className="text-xs text-[#E01E1E]/70 font-bold">{Math.round(l.calories ?? 0)} kcal</p>
+                    <p className="text-xs text-[#E01E1E]/70 font-bold">{Math.round(l.calories ?? 0)}{" "}{tr("kcal")}</p>
                   </div>
                 ))}
               </div>
               <div className="pt-2 border-t border-[#890404]/15">
                 <p className="text-xs font-bold text-[#F5EDED]/50">
-                  Total : {Math.round(calsByDate[selectedDate] ?? 0)} kcal
+                  {tr("Total :")}{" "}{Math.round(calsByDate[selectedDate] ?? 0)}{" "}{tr("kcal")}
                 </p>
               </div>
             </>
@@ -334,6 +337,7 @@ export default function CoachClientNutritionTabs({
   setSupplementStatus,
   deleteSupplement,
 }: Props) {
+  const tr = useT();
   const [tab, setTab] = useState<Tab>("plan");
   const [showBuilder, setShowBuilder] = useState(allPlans.length === 0);
   const [changingMode, setChangingMode] = useState(false);
@@ -380,7 +384,7 @@ export default function CoachClientNutritionTabs({
           <div className="flex items-center gap-2">
             <CheckCircle2 size={13} className="text-green-400" />
             <p className="text-xs font-bold text-white">
-              Plan actif :{" "}
+              {tr("Plan actif :")}{" "}
               <span className="text-[#E01E1E]">{activePlan.name}</span>
             </p>
           </div>
@@ -415,7 +419,7 @@ export default function CoachClientNutritionTabs({
               onClick={() => deactivateDietPlan(clientId, activePlan.id)}
               className="text-[10px] text-[#F5EDED]/30 hover:text-red-400 transition-colors"
             >
-              Désactiver
+              {tr("Désactiver")}
             </button>
           </div>
         </div>
@@ -445,14 +449,14 @@ export default function CoachClientNutritionTabs({
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50">
-                Objectifs TDEE
+                {tr("Objectifs TDEE")}
                 {nutritionProfile?.calories_target ? (
                   <span className="ml-2 text-[#E01E1E] normal-case font-normal">
-                    {nutritionProfile.calories_target} kcal/jour
+                    {nutritionProfile.calories_target}{" "}{tr("kcal/jour")}
                   </span>
                 ) : null}
               </span>
-              <span className="text-[#F5EDED]/35 text-xs">{showObjectifs ? "Réduire" : "Modifier"}</span>
+              <span className="text-[#F5EDED]/35 text-xs">{showObjectifs ? tr("Réduire") : tr("Modifier")}</span>
             </button>
             {showObjectifs && (
               <div className="px-4 pb-4">
@@ -470,14 +474,14 @@ export default function CoachClientNutritionTabs({
           <ClientReferenceCard intake={intake} />
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              {allPlans.length} plan{allPlans.length !== 1 ? "s" : ""}
+              {allPlans.length}{" "}{tr("plan")}{allPlans.length !== 1 ? "s" : ""}
             </p>
             <button
               onClick={() => setShowBuilder((v) => !v)}
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
             >
               <Plus size={12} />
-              {showBuilder ? "Fermer" : "Nouveau plan"}
+              {showBuilder ? tr("Fermer") : tr("Nouveau plan")}
             </button>
           </div>
 

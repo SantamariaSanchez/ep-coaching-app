@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Check, CheckCircle2, Loader2, X } from "lucide-react";
@@ -72,6 +73,7 @@ function FieldControl({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const t = useT();
   if (field.type === "textarea") {
     return (
       <textarea
@@ -142,8 +144,8 @@ function FieldControl({
           })}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "#8a6a6a", marginTop: 6 }}>
-          <span>Faible</span>
-          <span>Élevé</span>
+          <span>{t("Faible")}</span>
+          <span>{t("Élevé")}</span>
         </div>
       </div>
     );
@@ -171,6 +173,7 @@ function PhotoSlot({
   onPick: (f: File) => void;
   onClear: () => void;
 }) {
+  const t = useT();
   const ref = useRef<HTMLInputElement>(null);
   const preview = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
 
@@ -204,7 +207,7 @@ function PhotoSlot({
           <button
             type="button"
             onClick={onClear}
-            aria-label="Retirer la photo"
+            aria-label={t("Retirer la photo")}
             style={{
               position: "absolute", top: 6, right: 6, width: 24, height: 24, borderRadius: "50%",
               background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", display: "flex",
@@ -237,6 +240,7 @@ function PhotoSlot({
 }
 
 export default function ClientOnboardingIntake() {
+  const t = useT();
   const router = useRouter();
   const [initialDraft] = useState(() => loadDraft());
   const [answers, setAnswers] = useState<Record<string, string>>(() => initialDraft?.answers ?? {});
@@ -354,10 +358,10 @@ export default function ClientOnboardingIntake() {
           fontFamily: "var(--font-playfair,'Playfair Display'),serif", fontStyle: "italic", fontWeight: 700,
           fontSize: 24, color: "#E01E1E", textShadow: "0 0 24px rgba(224,30,30,0.5)", margin: 0,
         }}>
-          EP Coaching
+          {t("EP Coaching")}
         </p>
         <p style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "#a97", margin: "2px 0 0" }}>
-          Onboarding
+          {t("Onboarding")}
         </p>
       </div>
 
@@ -366,8 +370,8 @@ export default function ClientOnboardingIntake() {
           fontSize: 11.5, fontWeight: 600, color: "#4ade80", textAlign: "center", marginBottom: 14,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
-          <Check size={13} /> On reprend là où tu t&apos;étais arrêté.
-          {(current.kind === "gym-photos" || current.kind === "physique-photos") && " Il faut juste réajouter tes photos."}
+          <Check size={13} />{" "}{t("On reprend là où tu t'étais arrêté.")}
+          {(current.kind === "gym-photos" || current.kind === "physique-photos") && t(" Il faut juste réajouter tes photos.")}
         </p>
       )}
 
@@ -386,15 +390,14 @@ export default function ClientOnboardingIntake() {
         {current.kind === "intro" && (
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
-              Bienvenue dans <span style={{ fontFamily: "var(--font-playfair,'Playfair Display'),serif", fontStyle: "italic", color: "#E01E1E" }}>EP Coaching</span>
+              {t("Bienvenue dans")}{" "}<span style={{ fontFamily: "var(--font-playfair,'Playfair Display'),serif", fontStyle: "italic", color: "#E01E1E" }}>{t("EP Coaching")}</span>
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "#e3caca", margin: "0 0 20px" }}>
-              T&apos;as accès à l&apos;appli complète : programme, nutrition, suivi, road map, tout centralisé au même endroit.
-              5 formations (environ 25h) arrivent bientôt, pour que tu comprennes ce que tu fais, pas juste que tu le suives.
+              {t("T'as accès à l'appli complète : programme, nutrition, suivi, road map, tout centralisé au même endroit. 5 formations (environ 25h) arrivent bientôt, pour que tu comprennes ce que tu fais, pas juste que tu le suives.")}
               <br /><br />
-              Réponds à ces quelques questions, ça me permet de démarrer sur des bases solides.
+              {t("Réponds à ces quelques questions, ça me permet de démarrer sur des bases solides.")}
             </p>
-            <button onClick={goNext} className="ep-btn-primary" style={{ width: "100%" }}>Commencer</button>
+            <button onClick={goNext} className="ep-btn-primary" style={{ width: "100%" }}>{t("Commencer")}</button>
           </div>
         )}
 
@@ -418,13 +421,13 @@ export default function ClientOnboardingIntake() {
             </div>
             {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>
-              <button onClick={goPrev} className="ep-btn-secondary">Retour</button>
+              <button onClick={goPrev} className="ep-btn-secondary">{t("Retour")}</button>
               {safeStepIndex === steps.length - 2 ? (
                 <button onClick={handleFinish} disabled={submitting} className="ep-btn-primary" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : "Terminer"}
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : t("Terminer")}
                 </button>
               ) : (
-                <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>Suivant</button>
+                <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>{t("Suivant")}</button>
               )}
             </div>
           </div>
@@ -433,17 +436,17 @@ export default function ClientOnboardingIntake() {
         {current.kind === "gym-photos" && (
           <div>
             <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "#E01E1E", marginBottom: 16, display: "block" }}>
-              Section 7 · Ta salle de sport
+              {t("Section 7 · Ta salle de sport")}
             </span>
             <p style={{ fontSize: 14, fontWeight: 700, color: "#f0e0e0", marginBottom: 12 }}>
-              Une ou plusieurs photos de ta salle et du matériel disponible
+              {t("Une ou plusieurs photos de ta salle et du matériel disponible")}
             </p>
             <input
               ref={gymInputRef}
               type="file"
               accept="image/*"
               multiple
-              aria-label="Photos de la salle de sport"
+              aria-label={t("Photos de la salle de sport")}
               style={{ display: "none" }}
               onChange={async (e) => {
                 const files = Array.from(e.target.files ?? []);
@@ -472,13 +475,13 @@ export default function ClientOnboardingIntake() {
                 }}
               >
                 <Upload size={22} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
-                <span style={{ fontSize: 11.5, fontWeight: 700 }}>Ajouter</span>
+                <span style={{ fontSize: 11.5, fontWeight: 700 }}>{t("Ajouter")}</span>
               </button>
             </div>
             {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>
-              <button onClick={goPrev} className="ep-btn-secondary">Retour</button>
-              <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>Suivant</button>
+              <button onClick={goPrev} className="ep-btn-secondary">{t("Retour")}</button>
+              <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>{t("Suivant")}</button>
             </div>
           </div>
         )}
@@ -486,10 +489,10 @@ export default function ClientOnboardingIntake() {
         {current.kind === "physique-photos" && (
           <div>
             <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "#E01E1E", marginBottom: 16, display: "block" }}>
-              Section 8 · Photos physique
+              {t("Section 8 · Photos physique")}
             </span>
             <p style={{ fontSize: 14, fontWeight: 700, color: "#f0e0e0", marginBottom: 12 }}>
-              3 photos actuelles : face, profil, dos
+              {t("3 photos actuelles : face, profil, dos")}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
               <PhotoSlot label="Face" file={physiqueFiles.face} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, face: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, face: null }))} />
@@ -498,8 +501,8 @@ export default function ClientOnboardingIntake() {
             </div>
             {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>
-              <button onClick={goPrev} className="ep-btn-secondary">Retour</button>
-              <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>Suivant</button>
+              <button onClick={goPrev} className="ep-btn-secondary">{t("Retour")}</button>
+              <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>{t("Suivant")}</button>
             </div>
           </div>
         )}
@@ -508,19 +511,19 @@ export default function ClientOnboardingIntake() {
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 34, marginBottom: 14 }}>🔥</div>
             <h2 style={{ fontSize: 23, fontWeight: 900, color: "#fff", letterSpacing: "-0.02em", marginBottom: 12 }}>
-              C&apos;est parti.
+              {t("C'est parti.")}
             </h2>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "#e3caca", marginBottom: 20 }}>
-              J&apos;ai tout ce qu&apos;il me faut pour construire ton programme et ton plan. Direction ton espace.
+              {t("J'ai tout ce qu'il me faut pour construire ton programme et ton plan. Direction ton espace.")}
             </p>
             {submitError && <p style={{ color: "#E01E1E", fontSize: 12, fontWeight: 700, marginBottom: 14 }}>{submitError}</p>}
             {submitError ? (
               <button onClick={handleFinish} disabled={submitting} className="ep-btn-primary" style={{ width: "100%" }}>
-                {submitting ? <Loader2 size={16} className="animate-spin" /> : "Réessayer"}
+                {submitting ? <Loader2 size={16} className="animate-spin" /> : t("Réessayer")}
               </button>
             ) : (
               <button onClick={goToApp} className="ep-btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <CheckCircle2 size={16} /> Accéder à l&apos;application
+                <CheckCircle2 size={16} />{" "}{t("Accéder à l'application")}
               </button>
             )}
           </div>

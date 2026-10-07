@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useRef, useState } from "react";
 import { Camera, User, X, ArrowRight } from "lucide-react";
 import { updateMyProfile, uploadAvatar } from "@/utils/profile-actions";
@@ -11,6 +12,7 @@ export default function ProfileSetupStep({
   onDone: () => void;
   finishing: boolean;
 }) {
+  const t = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -64,7 +66,7 @@ export default function ProfileSetupStep({
             flexShrink: 0, padding: "7px 12px", whiteSpace: "nowrap",
           }}
         >
-          Passer <X size={13} />
+          {t("Passer")}{" "}<X size={13} />
         </button>
       </div>
 
@@ -74,20 +76,20 @@ export default function ProfileSetupStep({
             fontSize: 11, fontWeight: 800, letterSpacing: "0.18em",
             textTransform: "uppercase", color: "#E01E1E", margin: "0 0 6px", textAlign: "center",
           }}>
-            Ton profil
+            {t("Ton profil")}
           </p>
           <h1 style={{
             fontSize: "clamp(20px, 5vw, 26px)", fontWeight: 900,
             letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 8px",
             lineHeight: 1.2, textAlign: "center",
           }}>
-            Personnalise ta page
+            {t("Personnalise ta page")}
           </h1>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", textAlign: "center", margin: "0 0 28px" }}>
-            100% facultatif, tu pourras toujours le faire plus tard.
+            {t("100% facultatif, tu pourras toujours le faire plus tard.")}
           </p>
 
-          <input ref={fileRef} type="file" accept="image/*" aria-label="Photo de profil" className="hidden" onChange={handleAvatarChange} />
+          <input ref={fileRef} type="file" accept="image/*" aria-label={t("Photo de profil")} className="hidden" onChange={handleAvatarChange} />
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
             <button
               type="button"
@@ -122,12 +124,12 @@ export default function ProfileSetupStep({
                 display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
                 textTransform: "uppercase", color: "rgba(224,30,30,0.8)", marginBottom: 7,
               }}>
-                Bio
+                {t("Bio")}
               </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Parle un peu de toi, tes objectifs, ton parcours..." aria-label="Parle un peu de toi, tes objectifs, ton parcours..."
+                placeholder={t("Parle un peu de toi, tes objectifs, ton parcours...")} aria-label={t("Parle un peu de toi, tes objectifs, ton parcours...")}
                 rows={3}
                 maxLength={280}
                 style={{
@@ -142,12 +144,12 @@ export default function ProfileSetupStep({
                 display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
                 textTransform: "uppercase", color: "rgba(224,30,30,0.8)", marginBottom: 7,
               }}>
-                Instagram
+                {t("Instagram")}
               </label>
               <input
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
-                placeholder="tonpseudo" aria-label="tonpseudo"
+                placeholder={t("tonpseudo")} aria-label={t("tonpseudo")}
                 style={{
                   width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.15)",
                   borderRadius: 8, color: "#F5EDED", padding: "11px 14px", fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
@@ -163,7 +165,7 @@ export default function ProfileSetupStep({
             className="ep-btn-primary"
             style={{ width: "100%", height: 48, fontSize: 13, marginTop: 22, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
-            {busy ? "Un instant…" : "Continuer"}
+            {busy ? t("Un instant…") : t("Continuer")}
             {!busy && <ArrowRight size={15} />}
           </button>
         </div>

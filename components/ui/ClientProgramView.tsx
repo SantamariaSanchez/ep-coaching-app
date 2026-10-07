@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import type { ProgramWithDays } from "@/utils/programs";
@@ -23,6 +24,7 @@ export default function ClientProgramView({
   /** Bagage d'accessoires choisi par exercice (exercise_library.accessories). */
   accessoriesByName?: Record<string, string[]>;
 }) {
+  const t = useT();
   // Jours repliés par défaut (retour direct 2026-09-09 : "fermer pas
   // dérouler direct") : le label + les accessoires à prévoir suffisent
   // pour un coup d'oeil, la liste complète des exercices s'ouvre au clic.
@@ -35,7 +37,7 @@ export default function ClientProgramView({
           {program?.objective && (
             <p className="text-xs text-[#F5EDED]/45">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 mr-2">
-                Objectif de phase
+                {t("Objectif de phase")}
               </span>
               {program.objective}
             </p>
@@ -48,12 +50,12 @@ export default function ClientProgramView({
           {program ? (
             <>
               <Pencil size={13} />
-              Concevoir / modifier
+              {t("Concevoir / modifier")}
             </>
           ) : (
             <>
               <Plus size={13} />
-              Concevoir le programme
+              {t("Concevoir le programme")}
             </>
           )}
         </Link>
@@ -69,10 +71,10 @@ export default function ClientProgramView({
       {!program || program.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
-            Aucun programme actif
+            {t("Aucun programme actif")}
           </p>
           <p className="text-xs text-[#F5EDED]/25 mt-1">
-            Crée le premier programme d&apos;entraînement pour ce client.
+            {t("Crée le premier programme d'entraînement pour ce client.")}
           </p>
         </div>
       ) : (
@@ -100,7 +102,7 @@ export default function ClientProgramView({
                   </span>
                   <span className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-[10px] text-[#F5EDED]/30 font-semibold">
-                      {day.exercises.length} exercice{day.exercises.length > 1 ? "s" : ""}
+                      {day.exercises.length}{" "}{t("exercice")}{day.exercises.length > 1 ? "s" : ""}
                     </span>
                     {isOpen ? <ChevronUp size={14} className="text-[#F5EDED]/30" /> : <ChevronDown size={14} className="text-[#F5EDED]/30" />}
                   </span>
@@ -111,7 +113,7 @@ export default function ClientProgramView({
                 {accessories.length > 0 && (
                   <div className="bg-black/30 border border-[#890404]/20 rounded-lg px-3 py-2.5 mb-3">
                     <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                      <Backpack size={11} /> À prévoir
+                      <Backpack size={11} />{" "}{t("À prévoir")}
                     </p>
                     <div className="flex flex-col gap-1">
                       {accessories.map((a) =>
@@ -140,7 +142,7 @@ export default function ClientProgramView({
 
                 {day.exercises.length === 0 ? (
                   <p className="text-xs text-[#F5EDED]/25 italic">
-                    Aucun exercice
+                    {t("Aucun exercice")}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -160,7 +162,7 @@ export default function ClientProgramView({
                           )}
                           {ex.rir !== null && (
                             <span className="text-[10px] text-[#F5EDED]/50">
-                              RIR {ex.rir}
+                              {t("RIR")}{" "}{ex.rir}
                             </span>
                           )}
                           {ex.rest_seconds != null && ex.rest_seconds > 0 && (
@@ -168,7 +170,7 @@ export default function ClientProgramView({
                               {ex.rest_seconds >= 60
                                 ? `${Math.floor(ex.rest_seconds / 60)}min`
                                 : `${ex.rest_seconds}s`}{" "}
-                              repos
+                              {t("repos")}
                             </span>
                           )}
                         </div>

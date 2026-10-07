@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { UserRound, Check, Bot } from "lucide-react";
@@ -7,6 +8,7 @@ import { chooseNewCoach } from "@/app/dashboard/client/coachs/actions";
 import type { CoachDiscoveryEntry } from "@/utils/auth";
 
 export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscoveryEntry[] }) {
+  const t = useT();
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -26,7 +28,7 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
     return (
       <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)" }}>
-          Aucun coach tiers actif pour le moment. Contacte Santamaria sur Instagram en attendant.
+          {t("Aucun coach tiers actif pour le moment. Contacte Santamaria sur Instagram en attendant.")}
         </p>
       </div>
     );
@@ -51,7 +53,7 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-                {coach.full_name ?? "Coach"}
+                {coach.full_name ?? t("Coach")}
               </p>
               {coach.is_ai_coach && (
                 <span
@@ -62,7 +64,7 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
                     border: "1px solid rgba(96,165,250,0.35)", textTransform: "uppercase", letterSpacing: "0.03em",
                   }}
                 >
-                  <Bot size={9} /> IA
+                  <Bot size={9} />{" "}{t("IA")}
                 </span>
               )}
             </div>
@@ -81,7 +83,7 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
             className="ep-btn-primary"
             style={{ fontSize: 10.5, padding: "9px 14px", flexShrink: 0 }}
           >
-            {isPending && pendingId === coach.id ? "..." : <><Check size={13} /> Choisir</>}
+            {isPending && pendingId === coach.id ? "..." : <><Check size={13} />{" "}{t("Choisir")}</>}
           </button>
         </div>
       ))}

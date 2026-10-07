@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Plus, Pill, X, RotateCcw, Trash2 } from "lucide-react";
 import type { ClientSupplement } from "@/utils/supplements";
@@ -30,6 +31,7 @@ export default function SupplementsSection({
   onSetStatus: (id: string, status: "active" | "stopped") => Promise<{ error?: string }>;
   onDelete: (id: string) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [dosage, setDosage] = useState("");
@@ -82,7 +84,7 @@ export default function SupplementsSection({
         <div className="flex items-center gap-2">
           <Pill size={14} className="text-[#E01E1E]" />
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40">
-            Compléments alimentaires
+            {tr("Compléments alimentaires")}
           </p>
         </div>
         <button
@@ -90,13 +92,13 @@ export default function SupplementsSection({
           className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
         >
           {showForm ? <X size={12} /> : <Plus size={12} />}
-          {showForm ? "Fermer" : isCoachView ? "Suggérer" : "Ajouter"}
+          {showForm ? tr("Fermer") : isCoachView ? tr("Suggérer") : tr("Ajouter")}
         </button>
       </div>
       <p className="text-[10px] text-[#F5EDED]/25 mb-4">
         {isCoachView
-          ? "Liste des compléments de ce client. Ajoute une suggestion, il la verra dans son espace nutrition."
-          : "Ta liste de compléments : nom, dosage, moment de prise. Ton coach peut aussi t'en suggérer."}
+          ? tr("Liste des compléments de ce client. Ajoute une suggestion, il la verra dans son espace nutrition.")
+          : tr("Ta liste de compléments : nom, dosage, moment de prise. Ton coach peut aussi t'en suggérer.")}
       </p>
 
       {showForm && (
@@ -104,20 +106,20 @@ export default function SupplementsSection({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nom (ex. Créatine monohydrate)" aria-label="Nom (ex. Créatine monohydrate)"
+            placeholder={tr("Nom (ex. Créatine monohydrate)")} aria-label={tr("Nom (ex. Créatine monohydrate)")}
             className={inputCls}
           />
           <div className="grid grid-cols-2 gap-3">
             <input
               value={dosage}
               onChange={(e) => setDosage(e.target.value)}
-              placeholder="Dosage (ex. 5g)" aria-label="Dosage (ex. 5g)"
+              placeholder={tr("Dosage (ex. 5g)")} aria-label={tr("Dosage (ex. 5g)")}
               className={inputCls}
             />
             <input
               value={timing}
               onChange={(e) => setTiming(e.target.value)}
-              placeholder="Moment de prise" aria-label="Moment de prise"
+              placeholder={tr("Moment de prise")} aria-label={tr("Moment de prise")}
               list="supplement-timing-options"
               className={inputCls}
             />
@@ -130,7 +132,7 @@ export default function SupplementsSection({
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes (optionnel)" aria-label="Notes (optionnel)"
+            placeholder={tr("Notes (optionnel)")} aria-label={tr("Notes (optionnel)")}
             rows={2}
             className={inputCls + " resize-none"}
           />
@@ -141,7 +143,7 @@ export default function SupplementsSection({
               disabled={!name.trim() || saving}
               className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
-              {saving ? "Ajout…" : isCoachView ? "Suggérer" : "Ajouter"}
+              {saving ? tr("Ajout…") : isCoachView ? tr("Suggérer") : tr("Ajouter")}
             </button>
           </div>
         </div>
@@ -149,7 +151,7 @@ export default function SupplementsSection({
 
       {supplements.length === 0 && !showForm ? (
         <p className="text-xs text-[#F5EDED]/25 text-center py-4">
-          {isCoachView ? "Aucun complément renseigné pour ce client." : "Aucun complément renseigné pour l'instant."}
+          {isCoachView ? tr("Aucun complément renseigné pour ce client.") : tr("Aucun complément renseigné pour l'instant.")}
         </p>
       ) : (
         <div className="space-y-2">
@@ -171,7 +173,7 @@ export default function SupplementsSection({
                   {s.timing && <span>{s.timing}</span>}
                   {s.suggested_by && (
                     <span className="text-amber-400/70">
-                      {s.timing ? " · " : ""}Suggéré par {s.suggested_by_name ?? "ton coach"}
+                      {s.timing ? " · " : ""}{tr("Suggéré par")}{" "}{s.suggested_by_name ?? tr("ton coach")}
                     </span>
                   )}
                 </p>
@@ -188,7 +190,7 @@ export default function SupplementsSection({
                       : "text-[#F5EDED]/30 hover:text-green-400"
                   }`}
                 >
-                  {s.status === "active" ? "Arrêter" : <RotateCcw size={12} />}
+                  {s.status === "active" ? tr("Arrêter") : <RotateCcw size={12} />}
                 </button>
                 <button
                   onClick={() => handleDelete(s.id)}

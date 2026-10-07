@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 // Grille en lecture seule des jours/exercices d'un programme actif — extrait
 // de app/dashboard/client/program/page.tsx (2026-09-02) pour être réutilisé
 // partout où on doit montrer "mon programme" directement, sans passer par le
@@ -40,6 +41,7 @@ function StartDayButton({
   muscleGroups: string[];
   sessionBasePath: string;
 }) {
+  const t = useT();
   const { start, loading, error } = useStartSession(sessionBasePath);
   return (
     <div style={{ marginTop: 12 }}>
@@ -55,7 +57,7 @@ function StartDayButton({
         ) : (
           <Play size={12} fill="currentColor" />
         )}
-        {loading ? "Ouverture…" : "Démarrer cette séance"}
+        {loading ? t("Ouverture…") : t("Démarrer cette séance")}
       </button>
       {error && <p className="text-xs text-red-400 mt-1.5">{error}</p>}
     </div>
@@ -78,6 +80,7 @@ export default function ProgramDaysGrid({
    */
   sessionBasePath?: string;
 }) {
+  const t = useT();
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
   return (
@@ -108,7 +111,7 @@ export default function ProgramDaysGrid({
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
-                  {day.exercises.length} exercice{day.exercises.length > 1 ? "s" : ""}
+                  {day.exercises.length}{" "}{t("exercice")}{day.exercises.length > 1 ? "s" : ""}
                 </span>
                 {isOpen ? <ChevronUp size={14} color="rgba(245,237,237,0.3)" /> : <ChevronDown size={14} color="rgba(245,237,237,0.3)" />}
               </span>
@@ -119,7 +122,7 @@ export default function ProgramDaysGrid({
                 {accessories.length > 0 && (
                   <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(137,4,4,0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
                     <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 6px" }}>
-                      <Backpack size={11} /> À prévoir
+                      <Backpack size={11} />{" "}{t("À prévoir")}
                     </p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       {accessories.map((a) =>
@@ -150,7 +153,7 @@ export default function ProgramDaysGrid({
                 )}
 
                 {day.exercises.length === 0 ? (
-                  <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>Aucun exercice</p>
+                  <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>{t("Aucun exercice")}</p>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {day.exercises.map((ex) => (
@@ -165,11 +168,11 @@ export default function ProgramDaysGrid({
                             </span>
                           )}
                           {ex.rir !== null && (
-                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>RIR {ex.rir}</span>
+                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{t("RIR")}{" "}{ex.rir}</span>
                           )}
                           {ex.rest_seconds != null && ex.rest_seconds > 0 && (
                             <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-                              {ex.rest_seconds >= 60 ? `${Math.floor(ex.rest_seconds / 60)}min` : `${ex.rest_seconds}s`} repos
+                              {ex.rest_seconds >= 60 ? `${Math.floor(ex.rest_seconds / 60)}min` : `${ex.rest_seconds}s`}{" "}{t("repos")}
                             </span>
                           )}
                         </div>

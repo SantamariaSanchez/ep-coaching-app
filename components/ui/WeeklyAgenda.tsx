@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -352,6 +353,7 @@ export default function WeeklyAgenda({
   initialCompletedTaskKeys?: string[];
   saveTaskCompletion?: (date: string, completedKeys: string[]) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [blocks, setBlocks] = useState(initialBlocks);
   // Fiche d'action d'un bloc : ouvrir la bonne page, décaler la suite de la
   // journée, commencer maintenant, modifier.
@@ -768,7 +770,7 @@ export default function WeeklyAgenda({
                 {showIcon && Icon && <Icon size={9} style={{ flexShrink: 0 }} strokeWidth={2.2} />}
                 <span className="truncate">{block.label}</span>
                 {block.tasks && block.tasks.length > 0 && (
-                  <span style={{ width: 4, height: 4, borderRadius: "50%", background: block.color, flexShrink: 0 }} title="Des tâches sont prévues" />
+                  <span style={{ width: 4, height: 4, borderRadius: "50%", background: block.color, flexShrink: 0 }} title={tr("Des tâches sont prévues")} />
                 )}
               </p>
               <p className="text-[8px] text-[#F5EDED]/50 leading-tight">
@@ -867,7 +869,7 @@ export default function WeeklyAgenda({
                 return <Icon size={13} style={{ color: currentBlock.color, flexShrink: 0 }} strokeWidth={2.2} />;
               })()}
               <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: 0 }}>
-                En ce moment jusqu&apos;à {currentBlock.end_time.slice(0, 5)}
+                {tr("En ce moment jusqu'à")}{" "}{currentBlock.end_time.slice(0, 5)}
               </p>
             </div>
             {editable && (
@@ -893,7 +895,7 @@ export default function WeeklyAgenda({
               className="text-[9px] font-bold uppercase tracking-widest mb-2"
               style={{ color: "rgba(245,237,237,0.3)" }}
             >
-              Réinitialiser le minuteur
+              {tr("Réinitialiser le minuteur")}
             </button>
           )}
           {currentBlock.tasks && currentBlock.tasks.length > 0 && (
@@ -934,7 +936,7 @@ export default function WeeklyAgenda({
         <div className="flex items-center gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch" }}>
           <div className="ep-card" style={{ padding: "8px 14px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
             <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
-              Planifié / sem.
+              {tr("Planifié / sem.")}
             </span>
             <span style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED" }}>{formatHours(totalMinutes)}</span>
           </div>
@@ -945,7 +947,7 @@ export default function WeeklyAgenda({
               <div key={key} className="ep-card" style={{ padding: "8px 14px", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                 {Icon && <Icon size={12} style={{ color: preset!.color, flexShrink: 0 }} strokeWidth={2} />}
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.5)" }}>{preset?.label ?? "Autre"}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.5)" }}>{preset?.label ?? tr("Autre")}</span>
                   <span style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>{formatHours(mins)}</span>
                 </div>
               </div>
@@ -957,7 +959,7 @@ export default function WeeklyAgenda({
       {/* Démarrage rapide quand l'agenda est vide */}
       {relevantBlocks.length === 0 && editable && (
         <div className="ep-card" style={{ padding: 16 }}>
-          <p className={labelClass} style={{ marginBottom: 10 }}>Démarrage rapide</p>
+          <p className={labelClass} style={{ marginBottom: 10 }}>{tr("Démarrage rapide")}</p>
           <div className="flex flex-wrap gap-1.5">
             {AGENDA_PRESETS.map((p) => {
               const PIcon = p.icon;
@@ -985,13 +987,13 @@ export default function WeeklyAgenda({
           onClick={() => setViewMode("day")}
           className={`${chipClass} ${viewMode === "day" ? chipActive : chipInactive}`}
         >
-          Jour
+          {tr("Jour")}
         </button>
         <button
           onClick={() => setViewMode("week")}
           className={`${chipClass} ${viewMode === "week" ? chipActive : chipInactive}`}
         >
-          Semaine
+          {tr("Semaine")}
         </button>
       </div>
 
@@ -1043,12 +1045,12 @@ export default function WeeklyAgenda({
         <div className="space-y-2">
           <DaySwitcher selectedDay={selectedDay} onSelect={setSelectedDay} blocksByDay={blocksByDay} todayDow={todayDow} />
           <div className="flex items-center justify-between">
-            <button onClick={() => shiftDay(-1)} aria-label="Jour précédent" className="text-[#F5EDED]/25 hover:text-white p-1">
+            <button onClick={() => shiftDay(-1)} aria-label={tr("Jour précédent")} className="text-[#F5EDED]/25 hover:text-white p-1">
               <ChevronLeft size={16} />
             </button>
             <p className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
               {DAY_LABELS[selectedDay]}
-              {selectedDay === todayDow && <span style={{ color: "#E01E1E" }}> · Aujourd&apos;hui</span>}
+              {selectedDay === todayDow && <span style={{ color: "#E01E1E" }}>{" "}{tr("· Aujourd'hui")}</span>}
               {reveilBlockFor(selectedDay) && (
                 <button
                   type="button"
@@ -1065,15 +1067,15 @@ export default function WeeklyAgenda({
             <div className="flex items-center gap-2">
               {editable && (
                 <>
-                  <button onClick={() => openAddAt(selectedDay, 9)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title="Ajouter" aria-label="Ajouter">
+                  <button onClick={() => openAddAt(selectedDay, 9)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title={tr("Ajouter")} aria-label={tr("Ajouter")}>
                     <Plus size={15} />
                   </button>
-                  <button onClick={() => openDayOptions(selectedDay)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title="Options du jour" aria-label="Options du jour">
+                  <button onClick={() => openDayOptions(selectedDay)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title={tr("Options du jour")} aria-label={tr("Options du jour")}>
                     <MoreHorizontal size={15} />
                   </button>
                 </>
               )}
-              <button onClick={() => shiftDay(1)} aria-label="Jour suivant" className="text-[#F5EDED]/25 hover:text-white p-1">
+              <button onClick={() => shiftDay(1)} aria-label={tr("Jour suivant")} className="text-[#F5EDED]/25 hover:text-white p-1">
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -1113,13 +1115,13 @@ export default function WeeklyAgenda({
                   {Icon && <Icon size={16} style={{ color: b.color, flexShrink: 0 }} strokeWidth={2} />}
                   <p className="text-sm font-black uppercase tracking-widest text-white truncate">{b.label}</p>
                 </div>
-                <button onClick={() => setActionBlock(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+                <button onClick={() => setActionBlock(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
                   <X size={18} />
                 </button>
               </div>
               <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "4px 0 14px" }}>
                 {DAY_LABELS[b.day_of_week]} · {b.start_time.slice(0, 5)} à {b.end_time.slice(0, 5)}
-                {b.specific_date ? " · aujourd'hui seulement" : ""}
+                {b.specific_date ? tr(" · aujourd'hui seulement") : ""}
               </p>
 
               {dest && (
@@ -1131,17 +1133,17 @@ export default function WeeklyAgenda({
               {shiftDayFromBlock && (
                 <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(245,237,237,0.06)", borderRadius: 12, padding: 12, marginBottom: 10 }}>
                   <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>
-                    Décaler ce bloc et toute la suite
+                    {tr("Décaler ce bloc et toute la suite")}
                   </p>
                   {isToday && startNowDelta !== 0 && (
                     <button type="button" disabled={shiftBusy} onClick={() => shift(startNowDelta)} className="w-full rounded-lg border border-[#E01E1E]/60 bg-[#E01E1E]/15 text-white text-xs font-bold py-2.5 mb-2">
-                      Commencer maintenant ({startNowDelta > 0 ? "+" : ""}{startNowDelta} min pour la suite)
+                      {tr("Commencer maintenant (")}{startNowDelta > 0 ? "+" : ""}{startNowDelta}{" "}{tr("min pour la suite)")}
                     </button>
                   )}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
                     {[-15, 15, 30, 60].map((d) => (
                       <button key={d} type="button" disabled={shiftBusy} onClick={() => shift(d)} className="rounded-lg border border-[#890404]/40 text-[#F5EDED] text-xs font-bold py-2.5">
-                        {d > 0 ? "+" : "−"}{Math.abs(d)} min
+                        {d > 0 ? "+" : "−"}{Math.abs(d)}{" "}{tr("min")}
                       </button>
                     ))}
                   </div>
@@ -1155,7 +1157,7 @@ export default function WeeklyAgenda({
                           className="flex-1 rounded-lg text-[11px] font-bold py-2"
                           style={{ border: `1px solid ${shiftScope === sc ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.3)"}`, background: shiftScope === sc ? "rgba(224,30,30,0.12)" : "transparent", color: shiftScope === sc ? "#fff" : "rgba(245,237,237,0.5)" }}
                         >
-                          {sc === "jour" ? "Aujourd'hui seulement" : "Toutes les semaines"}
+                          {sc === "jour" ? tr("Aujourd'hui seulement") : tr("Toutes les semaines")}
                         </button>
                       ))}
                     </div>
@@ -1165,7 +1167,7 @@ export default function WeeklyAgenda({
               )}
 
               <button type="button" onClick={() => { const blk = b; setActionBlock(null); openEdit(blk); }} className="w-full rounded-xl border border-[#890404]/45 text-[#F5EDED]/80 text-xs font-bold uppercase tracking-widest py-3">
-                Modifier le bloc
+                {tr("Modifier le bloc")}
               </button>
             </div>
           </div>
@@ -1185,7 +1187,7 @@ export default function WeeklyAgenda({
                 })()}
                 <p className="text-sm font-black uppercase tracking-widest text-white truncate">{viewingBlock.label}</p>
               </div>
-              <button onClick={() => setViewingBlock(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+              <button onClick={() => setViewingBlock(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
                 <X size={18} />
               </button>
             </div>
@@ -1204,7 +1206,7 @@ export default function WeeklyAgenda({
             {viewingBlock.notes && (
               <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(245,237,237,0.06)", borderRadius: 10, padding: 12 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 4px" }}>
-                  Notes
+                  {tr("Notes")}
                 </p>
                 <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", whiteSpace: "pre-wrap", margin: 0 }}>{viewingBlock.notes}</p>
               </div>
@@ -1223,17 +1225,17 @@ export default function WeeklyAgenda({
             <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-black uppercase tracking-widest text-white">{DAY_LABELS[day]}</p>
-                <button onClick={closeDayOptions} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
+                <button onClick={closeDayOptions} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
                   <X size={18} />
                 </button>
               </div>
 
               <div>
                 <label className={labelClass}>
-                  Dupliquer {dayBlocks.length} bloc{dayBlocks.length > 1 ? "s" : ""} vers
+                  {tr("Dupliquer")}{" "}{dayBlocks.length}{" "}{tr("bloc")}{dayBlocks.length > 1 ? "s" : ""}{" "}{tr("vers")}
                 </label>
                 {dayBlocks.length === 0 ? (
-                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)" }}>Ce jour est vide, rien à copier.</p>
+                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)" }}>{tr("Ce jour est vide, rien à copier.")}</p>
                 ) : (
                   <>
                     <div className="flex flex-wrap gap-1.5 mb-2">
@@ -1256,7 +1258,7 @@ export default function WeeklyAgenda({
                       className="ep-btn-secondary"
                       style={{ width: "100%", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                     >
-                      <Copy size={12} /> {dayOptionsBusy ? "…" : "Dupliquer"}
+                      <Copy size={12} /> {dayOptionsBusy ? "…" : tr("Dupliquer")}
                     </button>
                   </>
                 )}
@@ -1269,7 +1271,7 @@ export default function WeeklyAgenda({
                     disabled={dayOptionsBusy}
                     className="w-full flex items-center justify-center gap-1.5 border border-red-500/30 text-red-400 rounded-lg px-3 py-2.5 text-xs font-bold uppercase tracking-widest"
                   >
-                    <Trash2 size={13} /> {clearConfirm ? "Confirmer : tout supprimer" : "Vider ce jour"}
+                    <Trash2 size={13} /> {clearConfirm ? tr("Confirmer : tout supprimer") : tr("Vider ce jour")}
                   </button>
                 </div>
               )}
@@ -1290,15 +1292,15 @@ export default function WeeklyAgenda({
           >
             <div className="flex items-center justify-between">
               <p className="text-sm font-black uppercase tracking-widest text-white">
-                {editingBlockId ? "Modifier le bloc" : `Nouveau bloc : ${DAY_LABELS[form.day_of_week]}`}
+                {editingBlockId ? tr("Modifier le bloc") : `Nouveau bloc : ${DAY_LABELS[form.day_of_week]}`}
               </p>
-              <button onClick={close} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
+              <button onClick={close} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
                 <X size={18} />
               </button>
             </div>
 
             <div>
-              <label className={labelClass}>Modèles rapides</label>
+              <label className={labelClass}>{tr("Modèles rapides")}</label>
               <div className="flex flex-wrap gap-1.5">
                 {AGENDA_PRESETS.map((p) => {
                   const PIcon = p.icon;
@@ -1324,7 +1326,7 @@ export default function WeeklyAgenda({
             </div>
 
             <div>
-              <label className={labelClass}>Jour</label>
+              <label className={labelClass}>{tr("Jour")}</label>
               <div className="flex flex-wrap gap-1.5">
                 {ALL_DAYS.map((d) => (
                   <button
@@ -1340,7 +1342,7 @@ export default function WeeklyAgenda({
 
             {!editingBlockId && addScheduleBlocksBulk && (
               <div>
-                <label className={labelClass}>Répéter aussi le (optionnel)</label>
+                <label className={labelClass}>{tr("Répéter aussi le (optionnel)")}</label>
                 <div className="flex flex-wrap gap-1.5">
                   {ALL_DAYS.filter((d) => d !== form.day_of_week).map((d) => {
                     const active = repeatDays.includes(d);
@@ -1359,17 +1361,17 @@ export default function WeeklyAgenda({
             )}
 
             <div>
-              <label className={labelClass}>Nom</label>
+              <label className={labelClass}>{tr("Nom")}</label>
               <input
                 value={form.label}
                 onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-                placeholder="Ex. Salle, Travail, Repas..." aria-label="Nom"
+                placeholder={tr("Ex. Salle, Travail, Repas...")} aria-label={tr("Nom")}
                 className={inputClass}
               />
             </div>
 
             <div>
-              <label className={labelClass}>Durée rapide</label>
+              <label className={labelClass}>{tr("Durée rapide")}</label>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {DURATION_PRESETS.map(({ minutes, label }) => (
                   <button
@@ -1384,12 +1386,12 @@ export default function WeeklyAgenda({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelClass}>Début</label>
-                  <input aria-label="Début" type="time" value={form.start_time} onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))} className={inputClass} />
+                  <label className={labelClass}>{tr("Début")}</label>
+                  <input aria-label={tr("Début")} type="time" value={form.start_time} onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))} className={inputClass} />
                 </div>
                 <div>
-                  <label className={labelClass}>Fin</label>
-                  <input aria-label="Fin" type="time" value={form.end_time} onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))} className={inputClass} />
+                  <label className={labelClass}>{tr("Fin")}</label>
+                  <input aria-label={tr("Fin")} type="time" value={form.end_time} onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))} className={inputClass} />
                 </div>
               </div>
             </div>
@@ -1398,13 +1400,13 @@ export default function WeeklyAgenda({
               <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2">
                 <AlertTriangle size={13} style={{ color: "#fbbf24", flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: 11, color: "#fbbf24", margin: 0, lineHeight: 1.4 }}>
-                  Chevauche {overlapBlocks.map((b) => `${b.label} (${b.start_time.slice(0, 5)} à ${b.end_time.slice(0, 5)})`).join(", ")}.
+                  {tr("Chevauche")}{" "}{overlapBlocks.map((b) => `${b.label} (${b.start_time.slice(0, 5)} à ${b.end_time.slice(0, 5)})`).join(", ")}.
                 </p>
               </div>
             )}
 
             <div>
-              <label className={labelClass}>Couleur</label>
+              <label className={labelClass}>{tr("Couleur")}</label>
               <div className="flex gap-2">
                 {COLOR_OPTIONS.map((c) => (
                   <button
@@ -1418,8 +1420,8 @@ export default function WeeklyAgenda({
             </div>
 
             <div>
-              <label className={labelClass}>Notes (optionnel)</label>
-              <textarea aria-label="Notes (optionnel)"
+              <label className={labelClass}>{tr("Notes (optionnel)")}</label>
+              <textarea aria-label={tr("Notes (optionnel)")}
                 rows={2}
                 value={form.notes ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value || null }))}
@@ -1429,17 +1431,17 @@ export default function WeeklyAgenda({
 
             <div>
               <label className={labelClass}>
-                À faire dans ce bloc (optionnel)
+                {tr("À faire dans ce bloc (optionnel)")}
               </label>
               <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "0 0 8px", lineHeight: 1.4 }}>
-                Une tâche, un objectif du jour, ou même un prompt à coller dans Claude, ça s&apos;affiche dès que tu arrives dans ce bloc.
+                {tr("Une tâche, un objectif du jour, ou même un prompt à coller dans Claude, ça s'affiche dès que tu arrives dans ce bloc.")}
               </p>
               {form.tasks.length > 0 && (
                 <div className="space-y-1.5 mb-2">
                   {form.tasks.map((t, i) => (
                     <div key={i} className="flex items-center gap-2 bg-[#0D0000] border border-[#890404]/20 rounded-lg px-3 py-2">
                       <span style={{ fontSize: 12, color: "#F5EDED", flex: 1, wordBreak: "break-word" }}>{t}</span>
-                      <button type="button" onClick={() => removeTaskFromForm(i)} aria-label="Supprimer la tâche" className="text-[#F5EDED]/25 hover:text-red-400 flex-shrink-0">
+                      <button type="button" onClick={() => removeTaskFromForm(i)} aria-label={tr("Supprimer la tâche")} className="text-[#F5EDED]/25 hover:text-red-400 flex-shrink-0">
                         <X size={13} />
                       </button>
                     </div>
@@ -1456,10 +1458,10 @@ export default function WeeklyAgenda({
                       addTaskToForm();
                     }
                   }}
-                  placeholder="Ex. Tourner 3 reels, ou un objectif du jour..." aria-label="Nouvelle tâche"
+                  placeholder={tr("Ex. Tourner 3 reels, ou un objectif du jour...")} aria-label={tr("Nouvelle tâche")}
                   className={inputClass}
                 />
-                <button type="button" onClick={addTaskToForm} aria-label="Ajouter la tâche" className="ep-btn-secondary" style={{ padding: "0 14px", fontSize: 11 }}>
+                <button type="button" onClick={addTaskToForm} aria-label={tr("Ajouter la tâche")} className="ep-btn-secondary" style={{ padding: "0 14px", fontSize: 11 }}>
                   <Plus size={13} />
                 </button>
               </div>
@@ -1475,7 +1477,7 @@ export default function WeeklyAgenda({
               }}
             >
               <span className="flex items-center gap-2" style={{ fontSize: 11.5, fontWeight: 600, color: form.notify ? "#4ade80" : "rgba(245,237,237,0.55)" }}>
-                <Bell size={13} /> Me notifier au début de ce bloc
+                <Bell size={13} />{" "}{tr("Me notifier au début de ce bloc")}
               </span>
               <span
                 style={{
@@ -1498,7 +1500,7 @@ export default function WeeklyAgenda({
               {editingBlockId && (
                 <button
                   onClick={() => handleDelete(editingBlockId)}
-                  aria-label="Supprimer le bloc"
+                  aria-label={tr("Supprimer le bloc")}
                   className="flex items-center justify-center gap-1.5 border border-red-500/30 text-red-400 rounded-lg px-3 py-2.5"
                 >
                   <Trash2 size={13} />
@@ -1509,7 +1511,7 @@ export default function WeeklyAgenda({
                 disabled={saving}
                 className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest rounded-lg py-2.5 transition-colors"
               >
-                {saving ? "Enregistrement…" : "Enregistrer"}
+                {saving ? tr("Enregistrement…") : tr("Enregistrer")}
               </button>
             </div>
           </div>

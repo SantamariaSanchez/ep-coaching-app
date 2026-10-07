@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ruler, ChevronDown, ChevronUp, AlertTriangle, Check } from "lucide-react";
@@ -84,6 +85,7 @@ export default function MeasurementsSection({
   /** Personnalisation "Mon appli" : taux de masse grasse. */
   showBodyFat?: boolean;
 }) {
+  const t = useT();
   const FIELDS = [WEIGHT_FIELD, ...(showBodyFat ? [BODY_FAT_FIELD] : []), ...(showCircumferences ? CIRCUMFERENCE_FIELDS : [])];
   const [bodyFatMethod, setBodyFatMethod] = useState(measurements.find((m) => m.body_fat_method)?.body_fat_method ?? "balance");
   const router = useRouter();
@@ -149,18 +151,18 @@ export default function MeasurementsSection({
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
       <div className="flex items-center justify-between mb-1">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 flex items-center gap-1.5">
-          <Ruler size={12} className="text-[#E01E1E]" /> {showCircumferences ? "Mensurations" : "Mesures"}
+          <Ruler size={12} className="text-[#E01E1E]" /> {showCircumferences ? t("Mensurations") : t("Mesures")}
         </p>
         {saved && (
           <span className="flex items-center gap-1 text-[10px] font-bold text-green-400">
-            <Check size={11} /> Enregistré
+            <Check size={11} />{" "}{t("Enregistré")}
           </span>
         )}
       </div>
 
       {measurements.length > 0 && (
         <p className="text-[11px] text-[#F5EDED]/35 mb-3">
-          Dernière prise : {fmtDate(measurements[0].measured_at)}
+          {t("Dernière prise :")}{" "}{fmtDate(measurements[0].measured_at)}
           {measurements[0].weight != null && ` · ${measurements[0].weight}kg`}
           {showBodyFat && measurements[0].body_fat != null && ` · ${measurements[0].body_fat}% MG`}
           {measurements[0].waist != null && ` · taille ${measurements[0].waist}cm`}
@@ -176,13 +178,13 @@ export default function MeasurementsSection({
       {showForm ? (
         <div className="space-y-3">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">Date</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{t("Date")}</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               max={todayInParis()}
-              aria-label="Date de la prise"
+              aria-label={t("Date de la prise")}
               className="bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
             />
           </div>
@@ -207,7 +209,7 @@ export default function MeasurementsSection({
           </div>
           {showBodyFat && (
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">Masse grasse mesurée avec</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{t("Masse grasse mesurée avec")}</label>
               <div className="flex flex-wrap gap-1.5">
                 {BODY_FAT_METHODS.map((m) => (
                   <button
@@ -223,13 +225,13 @@ export default function MeasurementsSection({
             </div>
           )}
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">Notes</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{t("Notes")}</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Contexte, jeûne, moment de la journée..."
-              aria-label="Notes"
+              placeholder={t("Contexte, jeûne, moment de la journée...")}
+              aria-label={t("Notes")}
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
             />
           </div>
@@ -244,14 +246,14 @@ export default function MeasurementsSection({
               disabled={saving}
               className="flex-1 py-2.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-colors"
             >
-              {saving ? "…" : "Enregistrer"}
+              {saving ? "…" : t("Enregistrer")}
             </button>
             {measurements.length > 0 && (
               <button
                 onClick={() => setShowForm(false)}
                 className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
               >
-                Annuler
+                {t("Annuler")}
               </button>
             )}
           </div>
@@ -261,7 +263,7 @@ export default function MeasurementsSection({
           onClick={() => setShowForm(true)}
           className="text-[11px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
         >
-          + Nouvelle prise {showCircumferences ? "de mensurations" : "de mesures"}
+          {t("+ Nouvelle prise")}{" "}{showCircumferences ? t("de mensurations") : t("de mesures")}
         </button>
       )}
 
@@ -272,7 +274,7 @@ export default function MeasurementsSection({
             className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
           >
             {showHistory ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            Historique ({measurements.length})
+            {t("Historique (")}{measurements.length})
           </button>
           {showHistory && (
             <div className="mt-3 space-y-1.5">

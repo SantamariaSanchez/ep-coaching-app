@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { DatabaseZap, CheckCircle2 } from "lucide-react";
 
@@ -10,6 +11,7 @@ export default function SeedLibraryButton({
   label: string;
   action: () => Promise<{ error?: string; inserted?: number; updated?: number }>;
 }) {
+  const t = useT();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ error?: string; inserted?: number; updated?: number } | null>(null);
 
@@ -29,13 +31,13 @@ export default function SeedLibraryButton({
         className="inline-flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 hover:border-[#890404]/60 rounded-lg transition-colors disabled:opacity-50"
       >
         <DatabaseZap size={12} />
-        {loading ? "Import en cours…" : label}
+        {loading ? t("Import en cours…") : label}
       </button>
       {result && !result.error && (
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-400">
           <CheckCircle2 size={12} />
           {(result.inserted ?? 0) === 0 && (result.updated ?? 0) === 0
-            ? "Déjà à jour"
+            ? t("Déjà à jour")
             : [
                 (result.inserted ?? 0) > 0 ? `${result.inserted} ajouté${result.inserted! > 1 ? "s" : ""}` : null,
                 (result.updated ?? 0) > 0 ? `${result.updated} corrigé${result.updated! > 1 ? "s" : ""}` : null,

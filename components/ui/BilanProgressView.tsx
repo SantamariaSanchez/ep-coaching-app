@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
@@ -88,6 +89,7 @@ function TrendChart({ title, data, unit, color }: {
   unit: string;
   color: string;
 }) {
+  const t = useT();
   const hasData = data.some((d) => d.value != null);
   const chartData = withRollingAverage(data);
   return (
@@ -112,7 +114,7 @@ function TrendChart({ title, data, unit, color }: {
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-[#F5EDED]/25 italic py-8 text-center">Pas encore de données.</p>
+        <p className="text-xs text-[#F5EDED]/25 italic py-8 text-center">{t("Pas encore de données.")}</p>
       )}
     </div>
   );
@@ -222,6 +224,7 @@ export default function BilanProgressView({
   /** Lien de téléchargement CSV, omis si non pertinent (ex. vue lecture seule sans export). */
   exportHref?: string;
 }) {
+  const t = useT();
   // MASTERCLASS.md Axe L : new Date().toISOString() rend la date en UTC —
   // entre minuit et 1h/2h du matin heure de Paris, "today" pointait encore
   // sur hier et faussait la série (computeLogStreak) juste après minuit.
@@ -231,7 +234,7 @@ export default function BilanProgressView({
     return (
       <div className="ep-card" style={{ textAlign: "center", padding: "40px 20px" }}>
         <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13, margin: 0 }}>
-          Remplis ton bilan du jour ci-dessus pour voir ta progression apparaître ici.
+          {t("Remplis ton bilan du jour ci-dessus pour voir ta progression apparaître ici.")}
         </p>
       </div>
     );
@@ -278,8 +281,7 @@ export default function BilanProgressView({
         >
           <AlertTriangle size={15} style={{ color: "#fbbf24", flexShrink: 0, marginTop: 1 }} />
           <p style={{ fontSize: 12.5, color: "#F5EDED", margin: 0, lineHeight: 1.5 }}>
-            <strong>Dette de sommeil</strong> : {shortNights} nuit{shortNights > 1 ? "s" : ""} à moins de 6h sur tes {last4Sleep.length} derniers bilans.
-            Réduis le volume d&apos;entraînement de 10-20% cette semaine et priorise le sommeil avant tout, la récupération ne suivra pas sinon.
+            <strong>{t("Dette de sommeil")}</strong> : {shortNights}{" "}{t("nuit")}{shortNights > 1 ? "s" : ""}{" "}{t("à moins de 6h sur tes")}{" "}{last4Sleep.length}{" "}{t("derniers bilans. Réduis le volume d'entraînement de 10-20% cette semaine et priorise le sommeil avant tout, la récupération ne suivra pas sinon.")}
           </p>
         </div>
       )}
@@ -288,7 +290,7 @@ export default function BilanProgressView({
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
           <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", margin: 0 }}>
-            Vue d&apos;ensemble · {logs.length} jour{logs.length > 1 ? "s" : ""}
+            {t("Vue d'ensemble ·")}{" "}{logs.length}{" "}{t("jour")}{logs.length > 1 ? "s" : ""}
           </p>
           {exportHref && (
             <a
@@ -301,7 +303,7 @@ export default function BilanProgressView({
                 borderRadius: 8, padding: "7px 12px",
               }}
             >
-              <Download size={12} /> Export CSV
+              <Download size={12} />{" "}{t("Export CSV")}
             </a>
           )}
         </div>
@@ -318,19 +320,19 @@ export default function BilanProgressView({
       </div>
 
       {/* Poids : la tendance qui compte le plus */}
-      <TrendChart title="Évolution du poids" data={weightData} unit="kg" color="#E01E1E" />
+      <TrendChart title={t("Évolution du poids")} data={weightData} unit="kg" color="#E01E1E" />
 
       {/* Autres métriques */}
       <div className="grid md:grid-cols-3 gap-4">
-        <TrendChart title="Sommeil" data={sleepData} unit="h" color="#818cf8" />
-        <TrendChart title="Pas" data={stepsData} unit="" color="#4ade80" />
-        <TrendChart title="Calories" data={caloriesData} unit="kcal" color="#fbbf24" />
+        <TrendChart title={t("Sommeil")} data={sleepData} unit="h" color="#818cf8" />
+        <TrendChart title={t("Pas")} data={stepsData} unit="" color="#4ade80" />
+        <TrendChart title={t("Calories")} data={caloriesData} unit="kcal" color="#fbbf24" />
       </div>
 
       {/* Détail semaine par semaine */}
       <div>
         <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", marginBottom: 12 }}>
-          Détail par semaine
+          {t("Détail par semaine")}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {weeks.map(({ weekStart, logs: wLogs, averages }) => (
@@ -340,10 +342,10 @@ export default function BilanProgressView({
                 borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 8,
               }}>
                 <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
-                  Semaine du {fmtShort(weekStart)}
+                  {t("Semaine du")}{" "}{fmtShort(weekStart)}
                 </span>
                 <span style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
-                  {wLogs.length} jour{wLogs.length > 1 ? "s" : ""}
+                  {wLogs.length}{" "}{t("jour")}{wLogs.length > 1 ? "s" : ""}
                   {streak > 0 && weekStart === weeks[0]?.weekStart && (
                     <Flame size={10} style={{ display: "inline", marginLeft: 4, verticalAlign: -1, color: "var(--ep-gold)" }} />
                   )}
@@ -352,14 +354,14 @@ export default function BilanProgressView({
 
               <div className="ep-card" style={{ padding: "12px 14px 4px", marginBottom: 10 }}>
                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 4px" }}>
-                  Moyennes · corps &amp; activité
+                  {t("Moyennes · corps & activité")}
                 </p>
                 <AvgRow metric="poids" label="Poids" value={averages.weight} unit=" kg" />
                 <AvgRow metric="pas" label="Pas" value={averages.steps} />
                 <AvgRow metric="sommeil" label="Sommeil" value={averages.sleep_hours} unit="h" />
                 <AvgRow metric="sommeil" label="Qualité sommeil" value={averages.sleep_rating} unit="%" />
                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "14px 0 4px" }}>
-                  Moyennes · nutrition
+                  {t("Moyennes · nutrition")}
                 </p>
                 <AvgRow metric="kcal" label="Kcal" value={averages.calories_kcal} unit=" kcal" />
                 <AvgRow metric="proteines" label="Protéines" value={averages.proteins_g} unit="g" />

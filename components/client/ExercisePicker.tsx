@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Search, Plus, X, Dumbbell } from "lucide-react";
@@ -24,6 +25,7 @@ function CreateExerciseForm({
   onCreated: (input: { name: string; muscleGroup: string | null }) => void;
   onCancel: () => void;
 }) {
+  const t = useT();
   const [name, setName] = useState(initialName);
   const [muscleGroup, setMuscleGroup] = useState<string>(LIBRARY_MUSCLE_GROUPS[0]);
   const [equipment, setEquipment] = useState("");
@@ -58,20 +60,20 @@ function CreateExerciseForm({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-        Créer un nouvel exercice
+        {t("Créer un nouvel exercice")}
       </p>
       <input
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nom de l'exercice" aria-label="Nom de l'exercice"
+        placeholder={t("Nom de l'exercice")} aria-label={t("Nom de l'exercice")}
         className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
       />
       <div className="grid grid-cols-2 gap-2">
         <select
           value={muscleGroup}
           onChange={(e) => setMuscleGroup(e.target.value)}
-          aria-label="Groupe musculaire"
+          aria-label={t("Groupe musculaire")}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
         >
           {LIBRARY_MUSCLE_GROUPS.map((g) => (
@@ -83,10 +85,10 @@ function CreateExerciseForm({
         <select
           value={equipment}
           onChange={(e) => setEquipment(e.target.value)}
-          aria-label="Matériel"
+          aria-label={t("Matériel")}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
         >
-          <option value="">Matériel (optionnel)</option>
+          <option value="">{t("Matériel (optionnel)")}</option>
           {EQUIPMENT_OPTIONS.map((e) => (
             <option key={e} value={e}>
               {e}
@@ -101,13 +103,13 @@ function CreateExerciseForm({
           disabled={saving || !name.trim()}
           className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
-          {saving ? "Création…" : "Créer et ajouter à la séance"}
+          {saving ? t("Création…") : t("Créer et ajouter à la séance")}
         </button>
         <button
           onClick={onCancel}
           className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 transition-colors"
         >
-          Annuler
+          {t("Annuler")}
         </button>
       </div>
     </div>
@@ -120,6 +122,7 @@ interface RecentExercise {
 }
 
 export default function ExercisePicker({ onAdd }: Props) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [library, setLibrary] = useState<LibraryExercise[]>([]);
@@ -208,7 +211,7 @@ export default function ExercisePicker({ onAdd }: Props) {
         className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
       >
         <Plus size={15} strokeWidth={2} />
-        Ajouter un exercice
+        {t("Ajouter un exercice")}
       </button>
     );
   }
@@ -227,9 +230,9 @@ export default function ExercisePicker({ onAdd }: Props) {
       >
         <div className="flex items-center justify-between">
           <p className="text-sm font-black uppercase tracking-widest text-white">
-            Ajouter un exercice
+            {t("Ajouter un exercice")}
           </p>
-          <button onClick={close} aria-label="Fermer" className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
+          <button onClick={close} aria-label={t("Fermer")} className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -251,7 +254,7 @@ export default function ExercisePicker({ onAdd }: Props) {
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher un exercice…" aria-label="Rechercher un exercice…"
+                placeholder={t("Rechercher un exercice…")} aria-label={t("Rechercher un exercice…")}
                 className="w-full bg-[#1f0101] border border-[#890404]/30 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
               />
             </div>
@@ -265,7 +268,7 @@ export default function ExercisePicker({ onAdd }: Props) {
                     : "border-[#890404]/25 text-[#F5EDED]/40"
                 }`}
               >
-                Tout
+                {t("Tout")}
               </button>
               {LIBRARY_MUSCLE_GROUPS.filter((g) => groupCounts[g]).map((g) => (
                 <button
@@ -292,7 +295,7 @@ export default function ExercisePicker({ onAdd }: Props) {
               {!loading && !search && !activeGroup && recentExercises.length > 0 && (
                 <>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-0.5">
-                    Récents
+                    {t("Récents")}
                   </p>
                   {recentExercises.map((ex) => (
                     <button
@@ -315,7 +318,7 @@ export default function ExercisePicker({ onAdd }: Props) {
               {!loading && !search && !activeGroup && mostUsedExercises.length > 0 && (
                 <>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-1.5">
-                    Plus loggués
+                    {t("Plus loggués")}
                   </p>
                   {mostUsedExercises.map((ex) => (
                     <button
@@ -337,7 +340,7 @@ export default function ExercisePicker({ onAdd }: Props) {
 
               {!loading && !search && !activeGroup && (recentExercises.length > 0 || mostUsedExercises.length > 0) && (
                 <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-1.5">
-                  Toute la bibliothèque
+                  {t("Toute la bibliothèque")}
                 </p>
               )}
 
@@ -363,13 +366,13 @@ export default function ExercisePicker({ onAdd }: Props) {
 
               {!loading && !fetched && (
                 <p className="text-xs text-[#F5EDED]/25 italic text-center py-8">
-                  Chargement de la bibliothèque…
+                  {t("Chargement de la bibliothèque…")}
                 </p>
               )}
 
               {!loading && fetched && filtered.length === 0 && (
                 <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">
-                  Aucun exercice trouvé.
+                  {t("Aucun exercice trouvé.")}
                 </p>
               )}
             </div>
@@ -381,7 +384,7 @@ export default function ExercisePicker({ onAdd }: Props) {
               <Plus size={12} />
               {search.trim()
                 ? `Créer "${search.trim()}" comme nouvel exercice`
-                : "Créer un nouvel exercice"}
+                : t("Créer un nouvel exercice")}
             </button>
           </>
         )}

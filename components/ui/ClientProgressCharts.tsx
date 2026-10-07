@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import {
   LineChart,
@@ -45,11 +46,12 @@ const TOOLTIP_STYLE = {
 // ── Weight chart ──────────────────────────────────────────────────────────────
 
 function WeightChart({ data }: { data: WeightPoint[] }) {
+  const t = useT();
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-40 bg-[#1f0101] border border-[#890404]/20 rounded-xl">
         <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
-          Pas encore de données
+          {t("Pas encore de données")}
         </p>
       </div>
     );
@@ -96,11 +98,12 @@ function WeightChart({ data }: { data: WeightPoint[] }) {
 // ── Adherence chart ───────────────────────────────────────────────────────────
 
 function AdherenceChart({ data }: { data: AdherencePoint[] }) {
+  const t = useT();
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-40 bg-[#1f0101] border border-[#890404]/20 rounded-xl">
         <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
-          Pas encore de données
+          {t("Pas encore de données")}
         </p>
       </div>
     );
@@ -154,6 +157,7 @@ export default function ClientProgressCharts({
 }: {
   checkins: CheckIn[];
 }) {
+  const t = useT();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -192,7 +196,7 @@ export default function ClientProgressCharts({
       {/* Weight chart */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Évolution du poids
+          {t("Évolution du poids")}
         </p>
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
           <WeightChart data={weightData} />
@@ -202,7 +206,7 @@ export default function ClientProgressCharts({
       {/* Adherence chart */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Adhésion nutrition par semaine
+          {t("Adhésion nutrition par semaine")}
         </p>
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
           <AdherenceChart data={adherenceData} />

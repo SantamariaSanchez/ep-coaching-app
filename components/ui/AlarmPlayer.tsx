@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // Fait vraiment "sonner" l'appli quand un bloc d'agenda de type réveil
@@ -18,6 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // reste disponible dans ce cas, c'est une contrainte de la plateforme,
 // pas quelque chose de contournable depuis le code de l'appli.
 export default function AlarmPlayer() {
+  const t = useT();
   const [ringing, setRinging] = useState<{ title: string; body: string; url: string; blockId?: string } | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const stopFnRef = useRef<(() => void) | null>(null);
@@ -154,7 +156,7 @@ export default function AlarmPlayer() {
   return (
     <div
       role="alertdialog"
-      aria-label="Réveil"
+      aria-label={t("Réveil")}
       onClick={needsTap ? retryOnTap : undefined}
       style={{
         position: "fixed",
@@ -175,7 +177,7 @@ export default function AlarmPlayer() {
       <h1 style={{ fontSize: "1.75rem", fontWeight: 700, margin: 0 }}>{ringing.title}</h1>
       <p style={{ fontSize: "1.05rem", opacity: 0.85, margin: 0, maxWidth: 360 }}>{ringing.body}</p>
       {needsTap && (
-        <p style={{ fontSize: "0.9rem", opacity: 0.7, margin: 0 }}>Touche l'écran pour activer le son</p>
+        <p style={{ fontSize: "0.9rem", opacity: 0.7, margin: 0 }}>{t("Touche l'écran pour activer le son")}</p>
       )}
       <button
         onClick={(e) => {
@@ -194,14 +196,9 @@ export default function AlarmPlayer() {
           cursor: "pointer",
         }}
       >
-        Arrêter
+        {t("Arrêter")}
       </button>
-      <style>{`
-        @keyframes ep-alarm-pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.15); }
-        }
-      `}</style>
+      <style>{t("\n        @keyframes ep-alarm-pulse {\n          0%, 100% { transform: scale(1); }\n          50% { transform: scale(1.15); }\n        }\n      ")}</style>
     </div>
   );
 }

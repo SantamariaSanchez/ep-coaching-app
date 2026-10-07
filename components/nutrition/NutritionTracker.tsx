@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Lock, Plus, RotateCcw, Shuffle, Sparkles } from "lucide-react";
@@ -138,6 +139,7 @@ export default function NutritionTracker({
     fibers_per_100: number;
   }) => Promise<{ food?: Food; error?: string }>;
 }) {
+  const tr = useT();
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   // ?jour=AAAA-MM-JJ : ouvert depuis le bilan d'un jour passé.
   const jour = useSearchParams().get("jour");
@@ -496,18 +498,18 @@ export default function NutritionTracker({
     <div className="space-y-4">
       {/* Jour */}
       <div className="flex items-center gap-2">
-        <button type="button" aria-label="Jour précédent" disabled={date <= minDate} onClick={() => goTo(shiftDate(date, -1))} className="w-9 h-9 rounded-lg border border-[#890404]/30 flex items-center justify-center text-[#F5EDED]/70 disabled:opacity-30">
+        <button type="button" aria-label={tr("Jour précédent")} disabled={date <= minDate} onClick={() => goTo(shiftDate(date, -1))} className="w-9 h-9 rounded-lg border border-[#890404]/30 flex items-center justify-center text-[#F5EDED]/70 disabled:opacity-30">
           <ChevronLeft size={16} />
         </button>
         <div className="flex-1 text-center">
           <p className="text-sm font-black uppercase tracking-tight text-white first-letter:uppercase">{dayLabel}</p>
           {date !== today && (
             <button type="button" onClick={() => goTo(today)} className="text-[10px] font-bold uppercase tracking-widest text-[#ff6b6b]">
-              Revenir à aujourd&apos;hui
+              {tr("Revenir à aujourd'hui")}
             </button>
           )}
         </div>
-        <button type="button" aria-label="Jour suivant" disabled={date >= today} onClick={() => goTo(shiftDate(date, 1))} className="w-9 h-9 rounded-lg border border-[#890404]/30 flex items-center justify-center text-[#F5EDED]/70 disabled:opacity-30">
+        <button type="button" aria-label={tr("Jour suivant")} disabled={date >= today} onClick={() => goTo(shiftDate(date, 1))} className="w-9 h-9 rounded-lg border border-[#890404]/30 flex items-center justify-center text-[#F5EDED]/70 disabled:opacity-30">
           <ChevronRight size={16} />
         </button>
       </div>
@@ -517,7 +519,7 @@ export default function NutritionTracker({
         <div className="rounded-xl border border-[#890404]/25 bg-black/25 p-3">
           <div className="flex items-center gap-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 flex-1 truncate">
-              {isOwnPlan ? "Mon plan" : "Plan de ton coach"} · {plan.name}
+              {isOwnPlan ? tr("Mon plan") : tr("Plan de ton coach")} · {plan.name}
             </p>
             {!onChangeMode && <Lock size={11} className="text-[#F5EDED]/30" />}
           </div>
@@ -551,11 +553,11 @@ export default function NutritionTracker({
         {mode === "flexible" && suggestions.length > 0 && (
           <p className="text-[11px] text-[#F5EDED]/55 mt-3 text-center">
             <Sparkles size={11} className="inline -mt-0.5 mr-1 text-[#ff6b6b]" />
-            Avec les repas prévus : <b className="text-white">{Math.round(projected.calories)} kcal</b> · P {Math.round(projected.proteins)} · G {Math.round(projected.carbs)} · L {Math.round(projected.fats)}
+            {tr("Avec les repas prévus :")}{" "}<b className="text-white">{Math.round(projected.calories)}{" "}{tr("kcal")}</b> · P {Math.round(projected.proteins)} · G {Math.round(projected.carbs)} · L {Math.round(projected.fats)}
           </p>
         )}
         {!hasPlanToday && target.calories === 0 && (
-          <p className="text-[11px] text-[#F5EDED]/45 mt-3 text-center">Pas encore d&apos;objectifs : ils s&apos;affichent dès que ton plan ou tes besoins sont définis.</p>
+          <p className="text-[11px] text-[#F5EDED]/45 mt-3 text-center">{tr("Pas encore d'objectifs : ils s'affichent dès que ton plan ou tes besoins sont définis.")}</p>
         )}
       </div>
 
@@ -563,7 +565,7 @@ export default function NutritionTracker({
       {isFixedLike && hasPlanToday && logs.length === 0 && !loadingDay && (date !== today || prefilledToday) && (
         <button type="button" disabled={busy} onClick={() => fillSlots()} className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 disabled:opacity-50">
           <Check size={14} className="inline -mt-0.5 mr-1.5" />
-          J&apos;ai suivi mon plan ce jour-là
+          {tr("J'ai suivi mon plan ce jour-là")}
         </button>
       )}
 
@@ -584,10 +586,10 @@ export default function NutritionTracker({
               <p className="flex-1 text-[11px] font-black uppercase tracking-widest text-[#F5EDED]/70">{slotLabel(slot)}</p>
               {slotLogs.length > 0 ? (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                  <Check size={11} /> {Math.round(kcal)} kcal
+                  <Check size={11} /> {Math.round(kcal)}{" "}{tr("kcal")}
                 </span>
               ) : slotSuggest.length > 0 ? (
-                <span className="text-[10px] font-bold text-[#F5EDED]/40">Prévu · {Math.round(kcal)} kcal</span>
+                <span className="text-[10px] font-bold text-[#F5EDED]/40">{tr("Prévu ·")}{" "}{Math.round(kcal)}{" "}{tr("kcal")}</span>
               ) : null}
             </div>
 
@@ -595,7 +597,7 @@ export default function NutritionTracker({
               <div className="flex gap-1.5 px-4 pb-2">
                 {variants.map((v) => (
                   <button key={v} type="button" disabled={busy} onClick={() => current !== v && chooseVariant(slot, v)} className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${current === v ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-[#ff6b6b]" : "border-[#890404]/30 text-[#F5EDED]/45"}`}>
-                    {v === 1 ? "Choix habituel" : `Option ${v}`}
+                    {v === 1 ? tr("Choix habituel") : `Option ${v}`}
                   </button>
                 ))}
               </div>
@@ -605,7 +607,7 @@ export default function NutritionTracker({
               {slotLogs.map((l) => (
                 <button key={l.id} type="button" onClick={() => setSheet({ kind: "log", logId: l.id })} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/[0.03] text-left">
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm text-white truncate">{l.foods?.name ?? "Aliment"}</span>
+                    <span className="block text-sm text-white truncate">{l.foods?.name ?? tr("Aliment")}</span>
                     <span className="block text-[10.5px] text-[#F5EDED]/40">
                       {Math.round(Number(l.quantity_g))} g · P {Math.round(l.proteins ?? 0)} · G {Math.round(l.carbs ?? 0)} · L {Math.round(l.fats ?? 0)}
                     </span>
@@ -625,7 +627,7 @@ export default function NutritionTracker({
                       </span>
                       <span className="block text-[10.5px] text-[#F5EDED]/40">
                         {s.grams} g
-                        {s.adjusted && <span className="text-amber-300/80"> · ajusté (plan {s.planGrams} g)</span>}
+                        {s.adjusted && <span className="text-amber-300/80">{" "}{tr("· ajusté (plan")}{" "}{s.planGrams} g)</span>}
                       </span>
                     </span>
                     <span className="text-xs font-bold text-[#F5EDED]/45">{Math.round(macrosFor(s.food, s.grams).calories)}</span>
@@ -634,7 +636,7 @@ export default function NutritionTracker({
 
               {slotLogs.length === 0 && slotSuggest.length === 0 && (
                 <p className="px-2 py-2 text-xs text-[#F5EDED]/35">
-                  {isFixedLike && planForSlot.length > 0 ? "Repas retiré de ta journée." : "Rien de logué pour l'instant."}
+                  {isFixedLike && planForSlot.length > 0 ? tr("Repas retiré de ta journée.") : tr("Rien de logué pour l'instant.")}
                 </p>
               )}
             </div>
@@ -642,16 +644,16 @@ export default function NutritionTracker({
             <div className="flex gap-2 px-4 pb-3 pt-1.5">
               {mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 && (
                 <button type="button" disabled={busy} onClick={() => eatSuggestions(slot)} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#E01E1E] text-white text-[11px] font-black uppercase tracking-widest disabled:opacity-50">
-                  <Check size={13} /> J&apos;ai mangé ça
+                  <Check size={13} />{" "}{tr("J'ai mangé ça")}
                 </button>
               )}
               {isFixedLike && slotLogs.length === 0 && planForSlot.length > 0 && (
                 <button type="button" disabled={busy} onClick={() => fillSlots([slot])} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[#890404]/40 text-[#F5EDED]/75 text-[11px] font-bold uppercase tracking-widest disabled:opacity-50">
-                  <RotateCcw size={12} /> Remettre le repas du plan
+                  <RotateCcw size={12} />{" "}{tr("Remettre le repas du plan")}
                 </button>
               )}
               <button type="button" onClick={() => setSheet({ kind: "add", slot })} className={`${mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? "" : "flex-1"} inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#890404]/40 text-[#F5EDED]/75 text-[11px] font-bold uppercase tracking-widest`}>
-                <Plus size={13} /> {mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? "Autre" : "Ajouter"}
+                <Plus size={13} /> {mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? tr("Autre") : tr("Ajouter")}
               </button>
             </div>
           </section>
@@ -741,7 +743,7 @@ export default function NutritionTracker({
 
       {mode === "flexible" && Object.keys(dayOverrides).length > 0 && (
         <button type="button" onClick={() => { setOverrides((p) => ({ ...p, [date]: {} })); writeLS(`ep-flex:${planKey}:${date}`, {}); }} className="w-full text-[11px] font-bold text-[#F5EDED]/45 underline">
-          Revenir aux repas du plan pour {date === today ? "aujourd'hui" : "ce jour"}
+          {tr("Revenir aux repas du plan pour")}{" "}{date === today ? tr("aujourd'hui") : tr("ce jour")}
         </button>
       )}
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 // Performances par discipline (2026-10-07). L'écran entier se construit à
 // partir des déclarations de lib/disciplines.ts : onglets, chiffres clés,
 // records, historique et formulaire de saisie. Utilisé par le membre (et le
@@ -34,6 +35,7 @@ export default function PerformanceHub({
   readOnly?: boolean;
   currentPractices?: string[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [active, setActive] = useState<DisciplineKey | null>(disciplines[0] ?? null);
   const [adding, setAdding] = useState(false);
@@ -41,7 +43,7 @@ export default function PerformanceHub({
   const [pending, startTransition] = useTransition();
 
   if (disciplines.length === 0) {
-    if (readOnly) return <p className="text-sm text-[#F5EDED]/50">Aucune discipline suivie pour l&apos;instant.</p>;
+    if (readOnly) return <p className="text-sm text-[#F5EDED]/50">{t("Aucune discipline suivie pour l'instant.")}</p>;
     return (
       <PracticePicker
         current={currentPractices}
@@ -66,7 +68,7 @@ export default function PerformanceHub({
   return (
     <div className="space-y-4">
       {disciplines.length > 1 && (
-        <div role="tablist" aria-label="Disciplines" className="flex gap-1.5 overflow-x-auto pb-1">
+        <div role="tablist" aria-label={t("Disciplines")} className="flex gap-1.5 overflow-x-auto pb-1">
           {disciplines.map((k) => (
             <button
               key={k}
@@ -94,14 +96,14 @@ export default function PerformanceHub({
 
       {!readOnly && (
         <button onClick={() => setAdding(true)} className="w-full min-h-[46px] rounded-xl bg-[#E01E1E] text-white text-sm font-bold flex items-center justify-center gap-2">
-          <Plus size={16} /> Nouvelle saisie
+          <Plus size={16} />{" "}{t("Nouvelle saisie")}
         </button>
       )}
       {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
 
       {records.length > 0 && (
         <section className="rounded-xl bg-[#1f0101] border border-[#890404]/25 p-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2 flex items-center gap-1.5"><Trophy size={12} className="text-amber-400" /> Records</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2 flex items-center gap-1.5"><Trophy size={12} className="text-amber-400" />{" "}{t("Records")}</p>
           <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
             {records.map((r) => (
               <li key={r.key} className="flex items-baseline justify-between gap-2 text-sm">
@@ -114,9 +116,9 @@ export default function PerformanceHub({
       )}
 
       <section>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">Historique</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">{t("Historique")}</p>
         {list.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#890404]/30 py-8 text-center text-xs text-[#F5EDED]/40">{readOnly ? "Rien de noté pour l'instant." : "Ta première saisie apparaîtra ici."}</div>
+          <div className="rounded-xl border border-dashed border-[#890404]/30 py-8 text-center text-xs text-[#F5EDED]/40">{readOnly ? t("Rien de noté pour l'instant.") : t("Ta première saisie apparaîtra ici.")}</div>
         ) : (
           <ul className="rounded-xl bg-[#1f0101] border border-[#890404]/20 divide-y divide-[#890404]/15">
             {list.slice(0, 60).map((e) => {
@@ -131,7 +133,7 @@ export default function PerformanceHub({
                   </div>
                   {!readOnly && (
                     <button
-                      aria-label="Supprimer cette saisie"
+                      aria-label={t("Supprimer cette saisie")}
                       onClick={() => startTransition(async () => { const r = await deletePerformanceEntryAction(e.id); if (r.error) setError(r.error); else router.refresh(); })}
                       className="w-10 h-10 flex items-center justify-center text-[#F5EDED]/30 hover:text-red-400"
                     >
@@ -177,11 +179,12 @@ const PRACTICE_OF: Partial<Record<DisciplineKey, string>> = { prepa: "bodybuildi
 const practiceOf = (k: DisciplineKey) => PRACTICE_OF[k] ?? k;
 
 function PracticePicker({ current, onSave, pending, error }: { current: string[]; onSave: (l: string[]) => void; pending: boolean; error: string | null }) {
+  const t = useT();
   const practices = new Set(DISCIPLINES.map((d) => practiceOf(d.key)));
   const [sel, setSel] = useState<string[]>(current.filter((c) => practices.has(c)));
   return (
     <div className="space-y-3">
-      <p className="text-sm text-[#F5EDED]/70 leading-relaxed">Choisis ta ou tes disciplines : l&apos;appli ajoute les bons outils (allure, stations Hyrox, WOD, 1RM, douleur, tension...) et rien d&apos;autre.</p>
+      <p className="text-sm text-[#F5EDED]/70 leading-relaxed">{t("Choisis ta ou tes disciplines : l'appli ajoute les bons outils (allure, stations Hyrox, WOD, 1RM, douleur, tension...) et rien d'autre.")}</p>
       <div className="grid sm:grid-cols-2 gap-2">
         {DISCIPLINES.map((d) => {
           const value = practiceOf(d.key);
@@ -205,13 +208,14 @@ function PracticePicker({ current, onSave, pending, error }: { current: string[]
         onClick={() => onSave([...new Set([...current.filter((c) => !practices.has(c)), ...sel])])}
         className="w-full min-h-[46px] rounded-xl bg-[#E01E1E] disabled:opacity-40 text-white text-sm font-bold"
       >
-        Activer
+        {t("Activer")}
       </button>
     </div>
   );
 }
 
 function EntrySheet({ kinds, title, onClose, onSubmit, pending, error }: { kinds: EntryKind[]; title: string; onClose: () => void; onSubmit: (kind: string, date: string, data: Record<string, unknown>) => void; pending: boolean; error: string | null }) {
+  const t = useT();
   const [kindKey, setKindKey] = useState(kinds[0].key);
   const [date, setDate] = useState(todayIso());
   const [values, setValues] = useState<Record<string, string>>({});
@@ -223,10 +227,10 @@ function EntrySheet({ kinds, title, onClose, onSubmit, pending, error }: { kinds
       <div role="dialog" aria-modal="true" aria-label={title} className="w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[#1a0101] border border-[#890404]/40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
           <p className="text-base font-bold text-white">{title}</p>
-          <button aria-label="Fermer" onClick={onClose} className="w-10 h-10 flex items-center justify-center text-[#F5EDED]/60"><X size={18} /></button>
+          <button aria-label={t("Fermer")} onClick={onClose} className="w-10 h-10 flex items-center justify-center text-[#F5EDED]/60"><X size={18} /></button>
         </div>
         {kinds.length > 1 && (
-          <div className="flex gap-1.5 mb-3 flex-wrap" role="radiogroup" aria-label="Type de saisie">
+          <div className="flex gap-1.5 mb-3 flex-wrap" role="radiogroup" aria-label={t("Type de saisie")}>
             {kinds.map((k) => (
               <button key={k.key} role="radio" aria-checked={k.key === kindKey} onClick={() => { setKindKey(k.key); setValues({}); }} className={`min-h-[38px] px-3 rounded-full text-xs font-bold border ${k.key === kindKey ? "bg-[#E01E1E] border-[#E01E1E] text-white" : "border-[#890404]/40 text-[#F5EDED]/65"}`}>
                 {k.label}
@@ -236,7 +240,7 @@ function EntrySheet({ kinds, title, onClose, onSubmit, pending, error }: { kinds
         )}
         <div className="space-y-3">
           <label className="block">
-            <span className="text-xs font-bold text-[#F5EDED]/70">Date</span>
+            <span className="text-xs font-bold text-[#F5EDED]/70">{t("Date")}</span>
             <input type="date" value={date} max={todayIso()} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full h-11 rounded-xl bg-[#150000] border border-[#890404]/40 px-3 text-sm text-white" />
           </label>
           {kind.fields.map((f) => (
@@ -244,7 +248,7 @@ function EntrySheet({ kinds, title, onClose, onSubmit, pending, error }: { kinds
           ))}
           {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
           <button disabled={pending} onClick={() => onSubmit(kind.key, date, values)} className="w-full min-h-[46px] rounded-xl bg-[#E01E1E] disabled:opacity-50 text-white text-sm font-bold">
-            {pending ? "Enregistrement..." : "Enregistrer"}
+            {pending ? t("Enregistrement...") : t("Enregistrer")}
           </button>
         </div>
       </div>
@@ -253,11 +257,12 @@ function EntrySheet({ kinds, title, onClose, onSubmit, pending, error }: { kinds
 }
 
 function FieldInput({ field, value, onChange }: { field: FieldDef; value: string; onChange: (v: string) => void }) {
+  const t = useT();
   const label = (
     <span className="text-xs font-bold text-[#F5EDED]/70">
       {field.label}
       {field.unit ? ` (${field.unit})` : ""}
-      {field.required ? "" : <span className="font-normal text-[#F5EDED]/35"> · facultatif</span>}
+      {field.required ? "" : <span className="font-normal text-[#F5EDED]/35">{" "}{t("· facultatif")}</span>}
     </span>
   );
   if (field.type === "select") {

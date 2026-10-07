@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, isValidElement, cloneElement } from "react";
 import { Save, Check, Target } from "lucide-react";
 import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
@@ -113,6 +114,7 @@ export default function ClientIntakeForm({
   // n'ont alors aucun sens, ce prop bascule sur un phrasé à la 1re personne.
   isSelf?: boolean;
 }) {
+  const t = useT();
   const [form, setForm] = useState<ClientIntakeInput>(existingIntake ?? emptyIntake());
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -175,22 +177,20 @@ export default function ClientIntakeForm({
   return (
     <div className="space-y-1">
       <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-2">
-        Toutes les infos du questionnaire d&apos;onboarding, à remplir une fois pour toutes. Elles servent
-        ensuite de référence partout dans l&apos;appli (créateur de recette, programme, nutrition...) sans
-        avoir à reposer les mêmes questions à chaque fois.
+        {t("Toutes les infos du questionnaire d'onboarding, à remplir une fois pour toutes. Elles servent ensuite de référence partout dans l'appli (créateur de recette, programme, nutrition...) sans avoir à reposer les mêmes questions à chaque fois.")}
       </p>
 
-      <Section title="Informations générales" />
+      <Section title={t("Informations générales")} />
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Date de naissance">
           <input type="date" value={txt("date_of_birth")} onChange={(e) => set("date_of_birth", e.target.value || null)} className={inputClass} />
         </Field>
         <Field label="Sexe biologique">
           <select value={txt("gender")} onChange={(e) => set("gender", (e.target.value || null) as ClientIntakeInput["gender"])} className={inputClass}>
-            <option value="">Non renseigné</option>
-            <option value="Homme">Homme</option>
-            <option value="Femme">Femme</option>
-            <option value="Autre">Autre</option>
+            <option value="">{t("Non renseigné")}</option>
+            <option value="Homme">{t("Homme")}</option>
+            <option value="Femme">{t("Femme")}</option>
+            <option value="Autre">{t("Autre")}</option>
           </select>
         </Field>
         <Field label="Taille (cm)">
@@ -204,14 +204,14 @@ export default function ClientIntakeForm({
         </Field>
         <Field label="Emploi du temps">
           <select value={txt("schedule_type")} onChange={(e) => set("schedule_type", (e.target.value || null) as ClientIntakeInput["schedule_type"])} className={inputClass}>
-            <option value="">Non renseigné</option>
-            <option value="fixe">Fixe</option>
-            <option value="variable">Variable</option>
+            <option value="">{t("Non renseigné")}</option>
+            <option value="fixe">{t("Fixe")}</option>
+            <option value="variable">{t("Variable")}</option>
           </select>
         </Field>
       </div>
 
-      <Section title="Objectifs" />
+      <Section title={t("Objectifs")} />
       <div className="space-y-3">
         <Field label="Objectif à 3 mois">
           <textarea rows={2} value={txt("goal_3_months")} onChange={(e) => set("goal_3_months", e.target.value || null)} className={`${inputClass} resize-none`} />
@@ -224,19 +224,18 @@ export default function ClientIntakeForm({
         </Field>
       </div>
 
-      <Section title="Santé et récupération" />
+      <Section title={t("Santé et récupération")} />
 
       {updateClientStepGoal && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-4">
           <div className="flex items-center gap-2 mb-2">
             <Target size={13} className="text-[#E01E1E]" />
             <p className="text-[10px] font-bold uppercase tracking-widest text-white">
-              Objectif de pas imposé au client
+              {t("Objectif de pas imposé au client")}
             </p>
           </div>
           <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
-            Ce chiffre est celui affiché dans l&apos;app du client, dans &quot;Steps&quot;. Le client ne peut
-            plus le modifier lui-même. C&apos;est toi, le coach, qui le règles ici.
+            {t("Ce chiffre est celui affiché dans l'app du client, dans \"Steps\". Le client ne peut plus le modifier lui-même. C'est toi, le coach, qui le règles ici.")}
           </p>
           <div className="flex items-center gap-2">
             <input
@@ -244,17 +243,17 @@ export default function ClientIntakeForm({
               min={1}
               value={goalInput}
               onChange={(e) => setGoalInput(e.target.value)}
-              aria-label="Objectif de pas quotidien"
+              aria-label={t("Objectif de pas quotidien")}
               className={`${inputClass} w-32`}
             />
-            <span className="text-[10px] text-[#F5EDED]/30">pas / jour</span>
+            <span className="text-[10px] text-[#F5EDED]/30">{t("pas / jour")}</span>
             <button
               type="button"
               onClick={handleSaveGoal}
               disabled={goalSaving}
               className="ml-auto bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
             >
-              {goalSaving ? "…" : goalSaved ? "✓ Enregistré" : "Enregistrer"}
+              {goalSaving ? "…" : goalSaved ? t("✓ Enregistré") : t("Enregistrer")}
             </button>
           </div>
         </div>
@@ -285,7 +284,7 @@ export default function ClientIntakeForm({
         </Field>
       </div>
 
-      <Section title="Nutrition" />
+      <Section title={t("Nutrition")} />
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Repas actuels/jour">
           <input type="number" value={num("meals_current")} onChange={(e) => set("meals_current", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
@@ -341,7 +340,7 @@ export default function ClientIntakeForm({
       </div>
 
       <div className="mt-3">
-        <label className={labelClass}>Régime alimentaire (utilisé partout dans l&apos;appli : recettes, plans...)</label>
+        <label className={labelClass}>{t("Régime alimentaire (utilisé partout dans l'appli : recettes, plans...)")}</label>
         <div className="flex flex-wrap gap-2 mt-1">
           {(Object.keys(DIET_LABELS) as Diet[]).map((d) => (
             <button
@@ -360,7 +359,7 @@ export default function ClientIntakeForm({
         </div>
       </div>
       <div className="mt-3">
-        <label className={labelClass}>Allergies (utilisées partout dans l&apos;appli)</label>
+        <label className={labelClass}>{t("Allergies (utilisées partout dans l'appli)")}</label>
         <div className="flex flex-wrap gap-2 mt-1">
           {(Object.keys(ALLERGEN_LABELS) as Allergen[]).map((a) => (
             <button
@@ -381,21 +380,21 @@ export default function ClientIntakeForm({
       <div className="grid sm:grid-cols-2 gap-3 mt-3">
         <Field label="Préférence de plan">
           <select value={txt("plan_preference")} onChange={(e) => set("plan_preference", (e.target.value || null) as ClientIntakeInput["plan_preference"])} className={inputClass}>
-            <option value="">Non renseigné</option>
-            <option value="fixe">Plan fixe</option>
-            <option value="flexible">Macros flexibles</option>
+            <option value="">{t("Non renseigné")}</option>
+            <option value="fixe">{t("Plan fixe")}</option>
+            <option value="flexible">{t("Macros flexibles")}</option>
           </select>
         </Field>
         <Field label="Apport calorique">
           <select value={txt("calorie_preference")} onChange={(e) => set("calorie_preference", (e.target.value || null) as ClientIntakeInput["calorie_preference"])} className={inputClass}>
-            <option value="">Non renseigné</option>
-            <option value="lineaire">Linéaire chaque jour</option>
-            <option value="variable">Varie selon les jours</option>
+            <option value="">{t("Non renseigné")}</option>
+            <option value="lineaire">{t("Linéaire chaque jour")}</option>
+            <option value="variable">{t("Varie selon les jours")}</option>
           </select>
         </Field>
       </div>
 
-      <Section title="Entraînement" />
+      <Section title={t("Entraînement")} />
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Séances actuelles/semaine">
           <input type="number" value={num("sessions_current")} onChange={(e) => set("sessions_current", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
@@ -431,17 +430,17 @@ export default function ClientIntakeForm({
         </Field>
       </div>
 
-      <Section title="Lieu d'entraînement" />
+      <Section title={t("Lieu d'entraînement")} />
       <Field label="Où s'entraîne-t-il/elle vraiment ? (conditionne le matériel proposable dans les suggestions et le constructeur de programme)">
         <select
           value={txt("training_access")}
           onChange={(e) => set("training_access", (e.target.value || null) as ClientIntakeInput["training_access"])}
           className={inputClass}
         >
-          <option value="">Non renseigné</option>
-          <option value="salle">En salle de sport</option>
-          <option value="domicile_equipe">À la maison, avec du matériel</option>
-          <option value="domicile_minimal">À la maison, sans matériel</option>
+          <option value="">{t("Non renseigné")}</option>
+          <option value="salle">{t("En salle de sport")}</option>
+          <option value="domicile_equipe">{t("À la maison, avec du matériel")}</option>
+          <option value="domicile_minimal">{t("À la maison, sans matériel")}</option>
         </select>
       </Field>
       {form.training_access === "salle" && (
@@ -455,7 +454,7 @@ export default function ClientIntakeForm({
         </div>
       )}
 
-      <Section title="Autre" />
+      <Section title={t("Autre")} />
       <Field label="Notes libres">
         <textarea rows={3} value={txt("additional_notes")} onChange={(e) => set("additional_notes", e.target.value || null)} className={`${inputClass} resize-none`} />
       </Field>
@@ -471,7 +470,7 @@ export default function ClientIntakeForm({
           disabled={saving}
           className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest py-3.5 rounded-xl transition-colors"
         >
-          {saving ? "Enregistrement…" : saved ? <><Check size={14} /> Enregistré</> : <><Save size={14} /> {isSelf ? "Enregistrer ma fiche" : "Enregistrer la fiche client"}</>}
+          {saving ? t("Enregistrement…") : saved ? <><Check size={14} />{" "}{t("Enregistré")}</> : <><Save size={14} /> {isSelf ? t("Enregistrer ma fiche") : t("Enregistrer la fiche client")}</>}
         </button>
       </div>
     </div>

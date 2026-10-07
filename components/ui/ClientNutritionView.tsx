@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode, CalendarDays } from "lucide-react";
@@ -237,6 +238,7 @@ function FoodResultButton({
   onClick: () => void;
   watchContext?: FoodWatchContext;
 }) {
+  const tr = useT();
   const watchHits = watchContext && hasFoodWatchContext(watchContext) ? checkFoodWatch(food, watchContext) : [];
   return (
     <button
@@ -247,13 +249,13 @@ function FoodResultButton({
         {food.name}
         {food.is_custom && (
           <span className="ml-1.5 text-[9px] text-[#E01E1E] uppercase font-bold">
-            custom
+            {tr("custom")}
           </span>
         )}
         {watchHits.length > 0 && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
       </p>
       <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
-        {food.calories_per_100} kcal/100g · P{" "}
+        {food.calories_per_100}{" "}{tr("kcal/100g · P")}{" "}
         {food.proteins_per_100}g · G {food.carbs_per_100}g ·
         L {food.fats_per_100}g
         {watchHits.length > 0 && <span className="text-amber-400/80"> · {watchHits.join(", ")}</span>}
@@ -352,6 +354,7 @@ export default function ClientNutritionView({
   logMealItems,
   updatePlanMode,
 }: Props) {
+  const tr = useT();
   // ── State ──────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
@@ -1653,7 +1656,7 @@ export default function ClientNutritionView({
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-6">
         <div className="min-w-0">
-          <h1 className="text-3xl font-black uppercase tracking-tight">Nutrition</h1>
+          <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Nutrition")}</h1>
           <div className="mt-1.5 flex items-center gap-2 flex-wrap">
             <p className="text-xs text-[#F5EDED]/40 first-letter:uppercase">
               {new Intl.DateTimeFormat("fr-FR", {
@@ -1667,11 +1670,11 @@ export default function ClientNutritionView({
         </div>
         <button
           onClick={() => openCreateFood("", null)}
-          aria-label="Créer un aliment"
+          aria-label={tr("Créer un aliment")}
           className="flex-shrink-0 inline-flex items-center gap-1.5 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-[11px] font-bold px-3 py-2.5 rounded-xl transition-colors"
         >
           <Plus size={13} />
-          Aliment
+          {tr("Aliment")}
         </button>
       </div>
 
@@ -1687,7 +1690,7 @@ export default function ClientNutritionView({
                 : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
-            {tab === "today" ? "Aujourd'hui" : tab === "history" ? "Historique" : "Courses"}
+            {tab === "today" ? tr("Aujourd'hui") : tab === "history" ? tr("Historique") : tr("Courses")}
           </button>
         ))}
       </div>
@@ -1748,7 +1751,7 @@ export default function ClientNutritionView({
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm bg-red-700/60 inline-block" />
-                &lt; 70%
+                {tr("< 70%")}
               </span>
             </div>
           )}
@@ -1813,7 +1816,7 @@ export default function ClientNutritionView({
                         {["dim", "lun", "mar", "mer", "jeu", "ven", "sam"][d.getDay()]}
                       </span>
                       <span className="text-sm font-black text-white">{d.getDate()}</span>
-                      {!outOfRange && <span className="text-[8px] text-white/60">{Math.round(cals)} kcal</span>}
+                      {!outOfRange && <span className="text-[8px] text-white/60">{Math.round(cals)}{" "}{tr("kcal")}</span>}
                     </button>
                   );
                 })}
@@ -1830,7 +1833,7 @@ export default function ClientNutritionView({
                 <button
                   onClick={() => shiftHistoryDay(-1)}
                   disabled={!canGoPrevDay}
-                  aria-label="Jour précédent"
+                  aria-label={tr("Jour précédent")}
                   className="text-[#F5EDED]/40 hover:text-[#F5EDED]/80 disabled:opacity-20 disabled:hover:text-[#F5EDED]/40 transition-colors"
                 >
                   <ChevronLeft size={18} />
@@ -1839,7 +1842,7 @@ export default function ClientNutritionView({
                   <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5 justify-center">
                     <CalendarDays size={12} className="text-[#E01E1E]" />
                     {viewedDate === today
-                      ? "Aujourd'hui"
+                      ? tr("Aujourd'hui")
                       : new Intl.DateTimeFormat("fr-FR", {
                           weekday: "long",
                           day: "numeric",
@@ -1851,14 +1854,14 @@ export default function ClientNutritionView({
                       onClick={() => setHistorySelectedDate(today)}
                       className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mt-0.5"
                     >
-                      Revenir à aujourd&apos;hui
+                      {tr("Revenir à aujourd'hui")}
                     </button>
                   )}
                 </div>
                 <button
                   onClick={() => shiftHistoryDay(1)}
                   disabled={!canGoNextDay}
-                  aria-label="Jour suivant"
+                  aria-label={tr("Jour suivant")}
                   className="text-[#F5EDED]/40 hover:text-[#F5EDED]/80 disabled:opacity-20 disabled:hover:text-[#F5EDED]/40 transition-colors"
                 >
                   <ChevronRight size={18} />
@@ -1884,7 +1887,7 @@ export default function ClientNutritionView({
 
               {historyDayLogs.length > 0 && (
                 <div className="px-1 text-xs font-bold text-[#F5EDED]/60 text-right">
-                  Total : {fmt(calsByDate[viewedDate] ?? 0)} kcal
+                  {tr("Total :")}{" "}{fmt(calsByDate[viewedDate] ?? 0)}{" "}{tr("kcal")}
                 </div>
               )}
             </div>
@@ -1905,7 +1908,7 @@ export default function ClientNutritionView({
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3 flex items-center gap-1.5">
               <Lightbulb size={12} className="text-amber-400" />
-              Idées pour varier
+              {tr("Idées pour varier")}
             </p>
             <div className="space-y-3">
               {FOOD_IDEAS.map((group) => (
@@ -1946,7 +1949,7 @@ export default function ClientNutritionView({
               </p>
               <button
                 onClick={closeModal}
-                aria-label="Fermer"
+                aria-label={tr("Fermer")}
                 className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />
@@ -1966,9 +1969,9 @@ export default function ClientNutritionView({
                         : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
                     }`}
                   >
-                    {t === "aliments" && "Aliments"}
-                    {t === "repas" && <span className="flex items-center gap-1"><UtensilsCrossed size={10} />Repas</span>}
-                    {t === "recettes" && <span className="flex items-center gap-1"><BookOpen size={10} />Recettes</span>}
+                    {t === "aliments" && tr("Aliments")}
+                    {t === "repas" && <span className="flex items-center gap-1"><UtensilsCrossed size={10} />{tr("Repas")}</span>}
+                    {t === "recettes" && <span className="flex items-center gap-1"><BookOpen size={10} />{tr("Recettes")}</span>}
                   </button>
                 ))}
               </div>
@@ -1983,7 +1986,7 @@ export default function ClientNutritionView({
                       autoFocus
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Rechercher un aliment…" aria-label="Rechercher un aliment…"
+                      placeholder={tr("Rechercher un aliment…")} aria-label={tr("Rechercher un aliment…")}
                       className={inputCls}
                     />
                     {/* Item 16 : scan code-barres — pré-remplit le formulaire
@@ -1992,7 +1995,7 @@ export default function ClientNutritionView({
                     <button
                       onClick={() => setShowScannerModal(true)}
                       disabled={scanningProduct}
-                      title="Scanner un code-barres" aria-label="Scanner un code-barres"
+                      title={tr("Scanner un code-barres")} aria-label={tr("Scanner un code-barres")}
                       className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#E01E1E] hover:border-[#E01E1E]/40 transition-colors disabled:opacity-40"
                     >
                       <ScanBarcode size={16} />
@@ -2000,7 +2003,7 @@ export default function ClientNutritionView({
                   </div>
                 )}
                 {scanningProduct && (
-                  <p className="px-5 pb-2 text-[11px] text-[#F5EDED]/40 flex-shrink-0">Recherche du produit…</p>
+                  <p className="px-5 pb-2 text-[11px] text-[#F5EDED]/40 flex-shrink-0">{tr("Recherche du produit…")}</p>
                 )}
                 {scanError && (
                   <p className="px-5 pb-2 text-[11px] text-amber-400 flex-shrink-0">{scanError}</p>
@@ -2012,14 +2015,14 @@ export default function ClientNutritionView({
                       <div className="mx-1 mt-2 mb-1 flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
                         <AlertTriangle size={12} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <p className="text-[10.5px] text-amber-300/90 leading-relaxed">
-                          À surveiller pour toi : {summarizeFoodWatchContext(watchContext)}.
+                          {tr("À surveiller pour toi :")}{" "}{summarizeFoodWatchContext(watchContext)}.
                         </p>
                       </div>
                     )}
                     {!searchQuery && recentFoods.length > 0 && (
                       <div className="mb-1">
                         <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
-                          <Clock size={10} /> Récents
+                          <Clock size={10} />{" "}{tr("Récents")}
                         </p>
                         {recentFoods.map((food) => (
                           <FoodResultButton key={`recent-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchContext={watchContext} />
@@ -2029,7 +2032,7 @@ export default function ClientNutritionView({
                     {!searchQuery && mostUsedFoods.length > 0 && (
                       <div className="mb-1">
                         <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
-                          <Flame size={10} /> Les plus utilisés
+                          <Flame size={10} />{" "}{tr("Les plus utilisés")}
                         </p>
                         {mostUsedFoods.map((food) => (
                           <FoodResultButton key={`used-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchContext={watchContext} />
@@ -2037,7 +2040,7 @@ export default function ClientNutritionView({
                       </div>
                     )}
                     {!searchQuery && (recentFoods.length > 0 || mostUsedFoods.length > 0) && (
-                      <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Tous les aliments</p>
+                      <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{tr("Tous les aliments")}</p>
                     )}
                     {filteredFoods.length === 0 ? (
                       searchQuery.trim() ? (
@@ -2048,17 +2051,17 @@ export default function ClientNutritionView({
                         <div className="px-3 py-6 flex flex-col items-center gap-3 text-center">
                           <Search size={20} className="text-[#F5EDED]/15" strokeWidth={1.5} />
                           <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
-                            Aucun aliment ne correspond à
+                            {tr("Aucun aliment ne correspond à")}
                             <span className="text-white font-bold"> « {searchQuery.trim()} »</span>.
                             <br />
-                            Crée le maintenant, il restera dans ta liste.
+                            {tr("Crée le maintenant, il restera dans ta liste.")}
                           </p>
                           <button
                             onClick={() => openCreateFood(searchQuery, addingToSlot)}
                             className="w-full inline-flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
                           >
                             <Plus size={13} />
-                            Créer « {searchQuery.trim()} »
+                            {tr("Créer «")}{" "}{searchQuery.trim()} »
                           </button>
                           <button
                             onClick={() => {
@@ -2070,11 +2073,11 @@ export default function ClientNutritionView({
                             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
                           >
                             <Zap size={11} />
-                            Ou juste les calories
+                            {tr("Ou juste les calories")}
                           </button>
                         </div>
                       ) : (
-                        <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucun résultat</p>
+                        <p className="text-center text-xs text-[#F5EDED]/30 py-8">{tr("Aucun résultat")}</p>
                       )
                     ) : (
                       filteredFoods.map((food) => (
@@ -2094,11 +2097,11 @@ export default function ClientNutritionView({
                           className="w-full flex items-center justify-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 disabled:opacity-50 text-[#E01E1E] text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
                         >
                           <Bookmark size={13} />
-                          {importingPlan ? "Import…" : "Importer les repas de mon plan"}
+                          {importingPlan ? tr("Import…") : tr("Importer les repas de mon plan")}
                         </button>
                         {importError && <p className="text-[10.5px] text-red-400 mt-1.5 text-center">{importError}</p>}
                         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5 text-center leading-relaxed">
-                          Chaque repas de ton plan devient réutilisable en un tap, sans avoir à tout re-rentrer.
+                          {tr("Chaque repas de ton plan devient réutilisable en un tap, sans avoir à tout re-rentrer.")}
                         </p>
                       </div>
                     )}
@@ -2106,8 +2109,8 @@ export default function ClientNutritionView({
                       <div className="text-center py-8 px-4">
                         <UtensilsCrossed size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
                         <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
-                          Aucun repas enregistré. Ajoute des aliments à un créneau, puis touche l&apos;icône{" "}
-                          <Bookmark size={11} className="inline text-[#F5EDED]/40" /> à côté pour le sauvegarder et le réutiliser en un tap.
+                          {tr("Aucun repas enregistré. Ajoute des aliments à un créneau, puis touche l'icône")}{" "}
+                          <Bookmark size={11} className="inline text-[#F5EDED]/40" />{" "}{tr("à côté pour le sauvegarder et le réutiliser en un tap.")}
                         </p>
                       </div>
                     ) : (
@@ -2132,7 +2135,7 @@ export default function ClientNutritionView({
                                 <div className="min-w-0">
                                   <p className="text-sm text-white font-bold truncate">{meal.name}</p>
                                   <p className="text-[10px] text-[#F5EDED]/35">
-                                    {meal.saved_meal_items.length} aliment{meal.saved_meal_items.length > 1 ? "s" : ""} · {fmt(totalKcal)} kcal
+                                    {meal.saved_meal_items.length}{" "}{tr("aliment")}{meal.saved_meal_items.length > 1 ? "s" : ""} · {fmt(totalKcal)}{" "}{tr("kcal")}
                                   </p>
                                 </div>
                               </button>
@@ -2164,12 +2167,12 @@ export default function ClientNutritionView({
                       >
                         <p className="text-sm text-white font-medium leading-tight">{r.name}</p>
                         <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
-                          {r.kcal} kcal/portion · P {r.protein}g · G {r.carbs}g · L {r.fat}g
+                          {r.kcal}{" "}{tr("kcal/portion · P")}{" "}{r.protein}g · G {r.carbs}g · L {r.fat}g
                         </p>
                       </button>
                     ))}
                     {allRecipes.length === 0 && (
-                      <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucune recette disponible</p>
+                      <p className="text-center text-xs text-[#F5EDED]/30 py-8">{tr("Aucune recette disponible")}</p>
                     )}
                   </div>
                 )}
@@ -2186,14 +2189,14 @@ export default function ClientNutritionView({
                       className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors py-2"
                     >
                       <Zap size={11} />
-                      Ajout rapide (juste les calories)
+                      {tr("Ajout rapide (juste les calories)")}
                     </button>
                     <button
                       onClick={() => openCreateFood(searchQuery, addingToSlot)}
                       className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors py-2"
                     >
                       <Plus size={11} />
-                      Créer un aliment personnalisé
+                      {tr("Créer un aliment personnalisé")}
                     </button>
                   </div>
                 )}
@@ -2203,12 +2206,12 @@ export default function ClientNutritionView({
               <div className="px-5 py-4 flex flex-col gap-4 overflow-y-auto flex-1">
                 <div>
                   <p className="text-[10px] text-[#F5EDED]/35 mb-1">
-                    {selectedRecipe.kcal} kcal/portion · P {selectedRecipe.protein}g · G {selectedRecipe.carbs}g · L {selectedRecipe.fat}g
+                    {selectedRecipe.kcal}{" "}{tr("kcal/portion · P")}{" "}{selectedRecipe.protein}g · G {selectedRecipe.carbs}g · L {selectedRecipe.fat}g
                   </p>
                 </div>
                 <div>
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                    Nombre de portions
+                    {tr("Nombre de portions")}
                   </label>
                   <input
                     autoFocus
@@ -2228,10 +2231,10 @@ export default function ClientNutritionView({
                         const s = parseFloat(recipeServings) || 1;
                         return (
                           <>
-                            <div><p className="text-[#E01E1E] font-black text-base">{Math.round(selectedRecipe.kcal * s)}</p><p className="text-[#F5EDED]/40 text-[9px]">kcal</p></div>
-                            <div><p className="text-blue-300 font-bold">{Math.round(selectedRecipe.protein * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">Prot</p></div>
-                            <div><p className="text-amber-300 font-bold">{Math.round(selectedRecipe.carbs * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">Gluc</p></div>
-                            <div><p className="text-rose-300 font-bold">{Math.round(selectedRecipe.fat * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">Lip</p></div>
+                            <div><p className="text-[#E01E1E] font-black text-base">{Math.round(selectedRecipe.kcal * s)}</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("kcal")}</p></div>
+                            <div><p className="text-blue-300 font-bold">{Math.round(selectedRecipe.protein * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("Prot")}</p></div>
+                            <div><p className="text-amber-300 font-bold">{Math.round(selectedRecipe.carbs * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("Gluc")}</p></div>
+                            <div><p className="text-rose-300 font-bold">{Math.round(selectedRecipe.fat * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("Lip")}</p></div>
                           </>
                         );
                       })()}
@@ -2239,8 +2242,8 @@ export default function ClientNutritionView({
                   </div>
                 )}
                 <div className="flex gap-2">
-                  <button onClick={() => setSelectedRecipe(null)} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60">Retour</button>
-                  <button onClick={handleAddRecipe} disabled={!recipeServings || parseFloat(recipeServings) <= 0} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg disabled:opacity-40">Ajouter</button>
+                  <button onClick={() => setSelectedRecipe(null)} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60">{tr("Retour")}</button>
+                  <button onClick={handleAddRecipe} disabled={!recipeServings || parseFloat(recipeServings) <= 0} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg disabled:opacity-40">{tr("Ajouter")}</button>
                 </div>
               </div>
             ) : selectedFood ? (
@@ -2248,7 +2251,7 @@ export default function ClientNutritionView({
               <div className="px-5 py-4 flex flex-col gap-4">
                 <div>
                   <p className="text-[10px] text-[#F5EDED]/35 mb-1">
-                    {selectedFood.calories_per_100} kcal/100g · P{" "}
+                    {selectedFood.calories_per_100}{" "}{tr("kcal/100g · P")}{" "}
                     {selectedFood.proteins_per_100}g · G{" "}
                     {selectedFood.carbs_per_100}g · L{" "}
                     {selectedFood.fats_per_100}g
@@ -2256,7 +2259,7 @@ export default function ClientNutritionView({
                 </div>
                 <div>
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                    Quantité (grammes)
+                    {tr("Quantité (grammes)")}
                   </label>
                   {/* Retour direct 2026-09-09 : "très très mal fait pour loger
                       un aliment" — taper un nombre de grammes à la main à
@@ -2270,7 +2273,7 @@ export default function ClientNutritionView({
                         const current = parseFloat(quantityInput) || 0;
                         setQuantityInput(String(Math.max(0, current - 10)));
                       }}
-                      aria-label="Moins 10 grammes"
+                      aria-label={tr("Moins 10 grammes")}
                       className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/40 active:scale-95 transition-all text-lg font-bold"
                     >
                       −
@@ -2291,7 +2294,7 @@ export default function ClientNutritionView({
                         const current = parseFloat(quantityInput) || 0;
                         setQuantityInput(String(current + 10));
                       }}
-                      aria-label="Plus 10 grammes"
+                      aria-label={tr("Plus 10 grammes")}
                       className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/40 active:scale-95 transition-all text-lg font-bold"
                     >
                       +
@@ -2327,19 +2330,19 @@ export default function ClientNutritionView({
                             <p className="text-[#E01E1E] font-black text-base">
                               {fmt(m.calories)}
                             </p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">kcal</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("kcal")}</p>
                           </div>
                           <div>
                             <p className="text-blue-300 font-bold">{fmt(m.proteins)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Prot</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Prot")}</p>
                           </div>
                           <div>
                             <p className="text-amber-300 font-bold">{fmt(m.carbs)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Gluc</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Gluc")}</p>
                           </div>
                           <div>
                             <p className="text-rose-300 font-bold">{fmt(m.fats)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Lip</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Lip")}</p>
                           </div>
                         </div>
                       );
@@ -2354,14 +2357,14 @@ export default function ClientNutritionView({
                     onClick={() => setSelectedFood(null)}
                     className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
                   >
-                    Retour
+                    {tr("Retour")}
                   </button>
                   <button
                     onClick={handleAddFood}
                     disabled={!quantityInput || parseFloat(quantityInput) <= 0}
                     className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-40 transition-colors"
                   >
-                    Confirmer
+                    {tr("Confirmer")}
                   </button>
                 </div>
               </div>
@@ -2380,20 +2383,20 @@ export default function ClientNutritionView({
           <div className="ep-modal-panel relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-4">
               <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
-                <Bookmark size={13} className="text-[#E01E1E]" /> Enregistrer ce repas
+                <Bookmark size={13} className="text-[#E01E1E]" />{" "}{tr("Enregistrer ce repas")}
               </p>
-              <button onClick={() => setSavingMealSlot(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70">
+              <button onClick={() => setSavingMealSlot(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70">
                 <X size={16} />
               </button>
             </div>
             <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
-              Donne-lui un nom pour le retrouver et le reloguer en un tap la prochaine fois.
+              {tr("Donne-lui un nom pour le retrouver et le reloguer en un tap la prochaine fois.")}
             </p>
             <input
               autoFocus
               value={savingMealName}
               onChange={(e) => setSavingMealName(e.target.value)}
-              placeholder="Ex : Mon petit-déj habituel" aria-label="Ex : Mon petit-déj habituel"
+              placeholder={tr("Ex : Mon petit-déj habituel")} aria-label={tr("Ex : Mon petit-déj habituel")}
               className={inputCls}
             />
             <button
@@ -2401,7 +2404,7 @@ export default function ClientNutritionView({
               disabled={savingMealBusy || !savingMealName.trim()}
               className="w-full mt-4 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors"
             >
-              {savingMealBusy ? "…" : "Enregistrer"}
+              {savingMealBusy ? "…" : tr("Enregistrer")}
             </button>
           </div>
         </div>
@@ -2425,11 +2428,11 @@ export default function ClientNutritionView({
           <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-5">
               <p className="text-xs font-bold uppercase tracking-widest text-white">
-                Créer un aliment
+                {tr("Créer un aliment")}
               </p>
               <button
                 onClick={() => setShowCreateModal(false)}
-                aria-label="Fermer"
+                aria-label={tr("Fermer")}
                 className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />
@@ -2439,22 +2442,22 @@ export default function ClientNutritionView({
             <div className="space-y-3">
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                  Nom *
+                  {tr("Nom *")}
                 </label>
                 <input
                   value={createForm.name}
                   onChange={(e) =>
                     setCreateForm((p) => ({ ...p, name: e.target.value }))
                   }
-                  placeholder="Ex. Riz basmati précuit" aria-label="Nom de l'aliment"
+                  placeholder={tr("Ex. Riz basmati précuit")} aria-label={tr("Nom de l'aliment")}
                   className={inputCls}
                 />
               </div>
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                  Catégorie
+                  {tr("Catégorie")}
                 </label>
-                <select aria-label="Catégorie"
+                <select aria-label={tr("Catégorie")}
                   value={createForm.category}
                   onChange={(e) =>
                     setCreateForm((p) => ({ ...p, category: e.target.value }))
@@ -2507,14 +2510,14 @@ export default function ClientNutritionView({
                 onClick={() => setShowCreateModal(false)}
                 className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
               >
-                Annuler
+                {tr("Annuler")}
               </button>
               <button
                 onClick={handleCreateFood}
                 disabled={creating}
                 className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-50 transition-colors"
               >
-                {creating ? "Création…" : "Créer"}
+                {creating ? tr("Création…") : tr("Créer")}
               </button>
             </div>
           </div>
@@ -2532,32 +2535,31 @@ export default function ClientNutritionView({
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5">
                 <Zap size={12} className="text-amber-400" />
-                Ajout rapide
+                {tr("Ajout rapide")}
               </p>
               <button
                 onClick={() => setShowQuickAddModal(false)}
-                aria-label="Fermer"
+                aria-label={tr("Fermer")}
                 className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />
               </button>
             </div>
             <p className="text-[10px] text-[#F5EDED]/35 mb-5">
-              Au resto, pas le temps de chercher l&apos;aliment exact ? Indique juste les calories
-              (et les macros si tu les connais), ça compte direct dans ton suivi.
+              {tr("Au resto, pas le temps de chercher l'aliment exact ? Indique juste les calories (et les macros si tu les connais), ça compte direct dans ton suivi.")}
             </p>
 
             <div className="space-y-3">
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                  Nom (optionnel)
+                  {tr("Nom (optionnel)")}
                 </label>
                 <input
                   value={quickAddForm.name}
                   onChange={(e) =>
                     setQuickAddForm((p) => ({ ...p, name: e.target.value }))
                   }
-                  placeholder="Ex. Repas au restaurant" aria-label="Nom du repas"
+                  placeholder={tr("Ex. Repas au restaurant")} aria-label={tr("Nom du repas")}
                   className={inputCls}
                 />
               </div>
@@ -2596,14 +2598,14 @@ export default function ClientNutritionView({
                 onClick={() => setShowQuickAddModal(false)}
                 className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
               >
-                Annuler
+                {tr("Annuler")}
               </button>
               <button
                 onClick={handleQuickAdd}
                 disabled={quickAdding}
                 className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-amber-500 hover:bg-amber-400 text-black rounded-lg disabled:opacity-50 transition-colors"
               >
-                {quickAdding ? "Ajout…" : "Ajouter"}
+                {quickAdding ? tr("Ajout…") : tr("Ajouter")}
               </button>
             </div>
           </div>
@@ -2634,6 +2636,7 @@ function DietPlanCard({
   isOwnPlan?: boolean;
   highlightSlot?: string | null;
 }) {
+  const tr = useT();
   const [validatingSlot, setValidatingSlot] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
   const isWeekly = plan.structure === "weekly";
@@ -2941,14 +2944,14 @@ function DietPlanCard({
       >
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
-            {isOwnPlan ? "Mon plan" : "Plan de ton coach"}
+            {isOwnPlan ? tr("Mon plan") : tr("Plan de ton coach")}
             {/* Sur le total des items VISIBLES (variante affichée par créneau),
                 pas dayMeals.length qui compte aussi les items des options
                 masquées — sinon "6/12 cochés" alors que les 6 items affichés
                 sont tous cochés, cf. le fix checkedMap ci-dessus. */}
             {checkable && visibleMeals.length > 0 && (
               <span className="ml-2 text-[#F5EDED]/30 font-normal">
-                {doneCount}/{visibleMeals.length} cochés
+                {doneCount}/{visibleMeals.length}{" "}{tr("cochés")}
               </span>
             )}
           </p>
@@ -2985,7 +2988,7 @@ function DietPlanCard({
 
       {expanded && !isViewingToday && (
         <p className="px-4 pt-2 text-[10px] text-[#F5EDED]/30 italic">
-          Aperçu de {DOW_FULL_LABELS[viewDow]}, lecture seule, reviens sur {DOW_FULL_LABELS[todayDow]} pour cocher.
+          {tr("Aperçu de")}{" "}{DOW_FULL_LABELS[viewDow]}{tr(", lecture seule, reviens sur")}{" "}{DOW_FULL_LABELS[todayDow]}{" "}{tr("pour cocher.")}
         </p>
       )}
 
@@ -2999,14 +3002,14 @@ function DietPlanCard({
                 : "border-[#890404]/25 text-[#F5EDED]/35"
             }`}
           >
-            🔥 Aujourd&apos;hui = jour high
+            {tr("🔥 Aujourd'hui = jour high")}
           </button>
         </div>
       )}
 
       {expanded && dayMeals.length === 0 && isWeekly && (
         <p className="px-4 pt-3 text-[10px] text-[#F5EDED]/25 italic">
-          Aucun repas prévu pour aujourd&apos;hui dans ce plan, jour libre ou off.
+          {tr("Aucun repas prévu pour aujourd'hui dans ce plan, jour libre ou off.")}
         </p>
       )}
 
@@ -3077,7 +3080,7 @@ function DietPlanCard({
                     className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#4ade80] hover:text-[#6ee7a0] disabled:opacity-50 transition-colors"
                   >
                     <Check size={11} strokeWidth={3} />
-                    {isValidating ? "Validation…" : "Valider"}
+                    {isValidating ? tr("Validation…") : tr("Valider")}
                   </button>
                 )}
               </div>
@@ -3097,7 +3100,7 @@ function DietPlanCard({
                           : "border-[#890404]/25 text-[#F5EDED]/35"
                       }`}
                     >
-                      {i === 0 ? "Choix habituel" : `Option ${i + 1}`}
+                      {i === 0 ? tr("Choix habituel") : `Option ${i + 1}`}
                     </button>
                   ))}
                 </div>
@@ -3146,7 +3149,7 @@ function DietPlanCard({
                             isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
                           }`}
                         >
-                          {m.foods?.name ?? "Aliment"}
+                          {m.foods?.name ?? tr("Aliment")}
                         </p>
                         <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
                           {m.quantity_g}g
@@ -3189,6 +3192,7 @@ function MealSlotCard({
   onDelete: (id: string) => void;
   onSaveAsMeal?: () => void;
 }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(true);
   const [hasPhoto, setHasPhoto] = useState(() => !!loadMealPhoto(today, slotKey));
 
@@ -3234,7 +3238,7 @@ function MealSlotCard({
             </p>
             {logs.length > 0 && (
               <p className="text-[10px] text-[#F5EDED]/35">
-                {fmt(totalCals)} kcal · {logs.length} aliment
+                {fmt(totalCals)}{" "}{tr("kcal ·")}{" "}{logs.length}{" "}{tr("aliment")}
                 {logs.length > 1 ? "s" : ""}
               </p>
             )}
@@ -3248,7 +3252,7 @@ function MealSlotCard({
                 onSaveAsMeal();
               }}
               className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
-              title="Enregistrer ce repas pour le réutiliser en un tap" aria-label="Enregistrer ce repas pour le réutiliser en un tap"
+              title={tr("Enregistrer ce repas pour le réutiliser en un tap")} aria-label={tr("Enregistrer ce repas pour le réutiliser en un tap")}
             >
               <Bookmark size={13} />
             </button>
@@ -3259,7 +3263,7 @@ function MealSlotCard({
             className={`inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer ${
               hasPhoto ? "text-purple-400" : "text-[#F5EDED]/20 hover:text-[#F5EDED]/50"
             }`}
-            title="Prendre une photo pour t'aider à loguer ce soir"
+            title={tr("Prendre une photo pour t'aider à loguer ce soir")}
           >
             <Camera size={13} />
             <input
@@ -3277,7 +3281,7 @@ function MealSlotCard({
             className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors px-2 py-1"
           >
             <Plus size={11} />
-            Ajouter
+            {tr("Ajouter")}
           </button>
           {expanded ? (
             <ChevronUp size={14} className="text-[#F5EDED]/30" />
@@ -3296,12 +3300,12 @@ function MealSlotCard({
             >
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-white font-medium truncate">
-                  {log.foods?.name ?? "Aliment"}
+                  {log.foods?.name ?? tr("Aliment")}
                 </p>
                 <p className="text-[10px] text-[#F5EDED]/35">
                   {log.quantity_g}g ·{" "}
                   <span className="text-[#E01E1E]/70">
-                    {fmt(log.calories ?? 0)} kcal
+                    {fmt(log.calories ?? 0)}{" "}{tr("kcal")}
                   </span>{" "}
                   · P {fmt(log.proteins ?? 0)}g · G {fmt(log.carbs ?? 0)}g · L{" "}
                   {fmt(log.fats ?? 0)}g
@@ -3309,7 +3313,7 @@ function MealSlotCard({
               </div>
               <button
                 onClick={() => onDelete(log.id)}
-                aria-label="Supprimer ce repas logué"
+                aria-label={tr("Supprimer ce repas logué")}
                 className="text-[#F5EDED]/20 hover:text-red-500 transition-colors ml-3 flex-shrink-0"
               >
                 <Trash2 size={12} />

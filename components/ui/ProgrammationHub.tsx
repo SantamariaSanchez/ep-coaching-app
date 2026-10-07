@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
@@ -87,6 +88,7 @@ export default function ProgrammationHub({
   applyRoadmapTemplate,
   bulkAdjustCalories,
 }: Props) {
+  const tr = useT();
   const [tab, setTab] = useState<Tab>("programmes");
   const [showBulkCalorie, setShowBulkCalorie] = useState(false);
   // startDate n'existe que pour une application de road map : les décalages
@@ -125,14 +127,14 @@ export default function ProgrammationHub({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              {programTemplates.length} modèle{programTemplates.length !== 1 ? "s" : ""} de programme
+              {programTemplates.length}{" "}{tr("modèle")}{programTemplates.length !== 1 ? "s" : ""}{" "}{tr("de programme")}
             </p>
             <Link
               href="/dashboard/coach/programmation/programmes/new"
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
             >
               <Plus size={12} />
-              Nouveau modèle
+              {tr("Nouveau modèle")}
             </Link>
           </div>
 
@@ -159,7 +161,7 @@ export default function ProgrammationHub({
                       </div>
                       {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
                       <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
-                        {t.days.length} séance{t.days.length !== 1 ? "s" : ""} · {exerciseCount} exercice{exerciseCount !== 1 ? "s" : ""}
+                        {t.days.length}{" "}{tr("séance")}{t.days.length !== 1 ? "s" : ""} · {exerciseCount}{" "}{tr("exercice")}{exerciseCount !== 1 ? "s" : ""}
                         {t.frequency ? ` · ${t.frequency}×/semaine` : ""}
                       </p>
                     </div>
@@ -169,12 +171,12 @@ export default function ProgrammationHub({
                         onClick={() => setApplyTarget({ kind: "programme", id: t.id, name: t.name })}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors"
                       >
-                        <Send size={11} /> Appliquer
+                        <Send size={11} />{" "}{tr("Appliquer")}
                       </button>
                       <Link
                         href={`/dashboard/coach/programmation/programmes/${t.id}/edit`}
                         className="p-2 text-[#F5EDED]/40 hover:text-white transition-colors"
-                        title="Modifier"
+                        title={tr("Modifier")}
                       >
                         <Pencil size={13} />
                       </Link>
@@ -203,7 +205,7 @@ export default function ProgrammationHub({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              {dietTemplates.length} modèle{dietTemplates.length !== 1 ? "s" : ""} de diète
+              {dietTemplates.length}{" "}{tr("modèle")}{dietTemplates.length !== 1 ? "s" : ""}{" "}{tr("de diète")}
             </p>
             <div className="flex items-center gap-4">
               {/* Item 11 : ajuster l'objectif calorique de plusieurs clients
@@ -215,14 +217,14 @@ export default function ProgrammationHub({
                 className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED] transition-colors"
               >
                 <SlidersHorizontal size={12} />
-                Ajuster les calories
+                {tr("Ajuster les calories")}
               </button>
               <button
                 onClick={() => setShowDietBuilder((v) => !v)}
                 className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
               >
                 <Plus size={12} />
-                {showDietBuilder ? "Fermer" : "Nouveau modèle"}
+                {showDietBuilder ? tr("Fermer") : tr("Nouveau modèle")}
               </button>
             </div>
           </div>
@@ -268,14 +270,14 @@ export default function ProgrammationHub({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              {roadmapTemplates.length} modèle{roadmapTemplates.length !== 1 ? "s" : ""} de road map
+              {roadmapTemplates.length}{" "}{tr("modèle")}{roadmapTemplates.length !== 1 ? "s" : ""}{" "}{tr("de road map")}
             </p>
             <Link
               href="/dashboard/coach/programmation/roadmap/new"
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
             >
               <Plus size={12} />
-              Nouveau modèle
+              {tr("Nouveau modèle")}
             </Link>
           </div>
 
@@ -350,6 +352,7 @@ function EmptyState({ text, ctaHref, ctaLabel }: { text: string; ctaHref?: strin
 }
 
 function DeleteButton({ onDelete }: { onDelete: () => Promise<{ error?: string }> }) {
+  const tr = useT();
   const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   return (
@@ -362,7 +365,7 @@ function DeleteButton({ onDelete }: { onDelete: () => Promise<{ error?: string }
         setBusy(false);
       }}
       className="p-2 text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-50"
-      title="Supprimer" aria-label="Supprimer"
+      title={tr("Supprimer")} aria-label={tr("Supprimer")}
     >
       <Trash2 size={13} />
     </button>
@@ -380,6 +383,7 @@ function DietTemplateRow({
   onApply: () => void;
   onDelete: () => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(false);
 
   const bySlot = useMemo(() => {
@@ -399,9 +403,9 @@ function DietTemplateRow({
           <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
             {MODE_LABELS[template.mode]}
             {template.structure === "weekly" && (
-              <span className="inline-flex items-center gap-0.5"><CalendarDays size={9} /> hebdo</span>
+              <span className="inline-flex items-center gap-0.5"><CalendarDays size={9} />{" "}{tr("hebdo")}</span>
             )}
-            · {template.diet_plan_template_meals.length} aliment{template.diet_plan_template_meals.length !== 1 ? "s" : ""}
+            · {template.diet_plan_template_meals.length}{" "}{tr("aliment")}{template.diet_plan_template_meals.length !== 1 ? "s" : ""}
           </p>
         </div>
         {expanded ? <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" /> : <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />}
@@ -410,7 +414,7 @@ function DietTemplateRow({
       {expanded && (
         <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
           {template.diet_plan_template_meals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">Plan flexible, aucun aliment prédéfini.</p>
+            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Plan flexible, aucun aliment prédéfini.")}</p>
           ) : (
             Object.entries(bySlot).map(([slot, meals]) => (
               <div key={slot}>
@@ -418,7 +422,7 @@ function DietTemplateRow({
                 <div className="space-y-1">
                   {meals.map((m) => (
                     <div key={m.id} className="flex items-center justify-between py-1">
-                      <p className="text-xs text-white">{m.foods?.name ?? foods.find((f) => f.id === m.food_id)?.name ?? "Aliment"}</p>
+                      <p className="text-xs text-white">{m.foods?.name ?? foods.find((f) => f.id === m.food_id)?.name ?? tr("Aliment")}</p>
                       <p className="text-[10px] text-[#F5EDED]/35">{m.quantity_g}g</p>
                     </div>
                   ))}
@@ -432,7 +436,7 @@ function DietTemplateRow({
               onClick={onApply}
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors"
             >
-              <Send size={11} /> Appliquer
+              <Send size={11} />{" "}{tr("Appliquer")}
             </button>
             <DeleteButton onDelete={onDelete} />
           </div>
@@ -451,6 +455,7 @@ function RoadmapTemplateRow({
   onApply: (startDate: string) => void;
   onDelete: () => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(false);
   const [startDate, setStartDate] = useState(todayISO());
 
@@ -461,9 +466,9 @@ function RoadmapTemplateRow({
           <p className="text-sm font-bold text-white truncate">{template.name}</p>
           {template.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-0.5 truncate">{template.objective}</p>}
           <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap mt-0.5">
-            {template.duration_weeks ? `${template.duration_weeks} semaine${template.duration_weeks !== 1 ? "s" : ""}` : "Durée libre"}
-            · {template.phases.length} phase{template.phases.length !== 1 ? "s" : ""}
-            · {template.milestones.length} jalon{template.milestones.length !== 1 ? "s" : ""}
+            {template.duration_weeks ? `${template.duration_weeks} semaine${template.duration_weeks !== 1 ? "s" : ""}` : tr("Durée libre")}
+            · {template.phases.length}{" "}{tr("phase")}{template.phases.length !== 1 ? "s" : ""}
+            · {template.milestones.length}{" "}{tr("jalon")}{template.milestones.length !== 1 ? "s" : ""}
           </p>
         </div>
         {expanded ? <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" /> : <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />}
@@ -472,13 +477,13 @@ function RoadmapTemplateRow({
       {expanded && (
         <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
           {template.phases.length === 0 && template.milestones.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">Aucune phase ni jalon dans ce modèle.</p>
+            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Aucune phase ni jalon dans ce modèle.")}</p>
           ) : (
             <>
               {template.phases.length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 flex items-center gap-1.5">
-                    <CalendarDays size={10} /> Phases
+                    <CalendarDays size={10} />{" "}{tr("Phases")}
                   </p>
                   <div className="space-y-1">
                     {template.phases.map((p) => {
@@ -487,7 +492,7 @@ function RoadmapTemplateRow({
                         <div key={p.id} className="flex items-center justify-between py-1">
                           <p className="text-xs text-white truncate">{colors.icon} {p.label}</p>
                           <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
-                            Semaine {p.start_week_offset} à {p.end_week_offset}
+                            {tr("Semaine")}{" "}{p.start_week_offset} à {p.end_week_offset}
                           </p>
                         </div>
                       );
@@ -499,13 +504,13 @@ function RoadmapTemplateRow({
               {template.milestones.length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 flex items-center gap-1.5">
-                    <Target size={10} /> Jalons
+                    <Target size={10} />{" "}{tr("Jalons")}
                   </p>
                   <div className="space-y-1">
                     {template.milestones.map((m) => (
                       <div key={m.id} className="flex items-center justify-between py-1">
                         <p className="text-xs text-white truncate">{m.label}</p>
-                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">Semaine {m.week_offset}</p>
+                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">{tr("Semaine")}{" "}{m.week_offset}</p>
                       </div>
                     ))}
                   </div>
@@ -516,9 +521,9 @@ function RoadmapTemplateRow({
 
           <div className="pt-2">
             <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-              Date de démarrage à l&apos;application
+              {tr("Date de démarrage à l'application")}
             </label>
-            <input aria-label="Date de démarrage à l&apos;application"
+            <input aria-label={tr("Date de démarrage à l&apos;application")}
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
@@ -531,12 +536,12 @@ function RoadmapTemplateRow({
               onClick={() => onApply(startDate)}
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors"
             >
-              <Send size={11} /> Appliquer
+              <Send size={11} />{" "}{tr("Appliquer")}
             </button>
             <Link
               href={`/dashboard/coach/programmation/roadmap/${template.id}/edit`}
               className="p-2 text-[#F5EDED]/40 hover:text-white transition-colors"
-              title="Modifier"
+              title={tr("Modifier")}
             >
               <Pencil size={13} />
             </Link>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, AlertCircle, RotateCw } from "lucide-react";
@@ -136,6 +137,7 @@ function WeekDetailModal({
   today: string;
   onClose: () => void;
 }) {
+  const t = useT();
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const phase = getPhaseForDate(phases, week.weekStart);
@@ -228,17 +230,17 @@ function WeekDetailModal({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
           <div style={{ minWidth: 0 }}>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
-              Semaine {week.index} de la road map
+              {t("Semaine")}{" "}{week.index}{" "}{t("de la road map")}
             </p>
             <h3 id={titleId} style={{ fontSize: 16, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", margin: "2px 0 0" }}>
-              {fmt(week.weekStart)} au {fmt(week.weekEnd)}
+              {fmt(week.weekStart)}{" "}{t("au")}{" "}{fmt(week.weekEnd)}
             </h3>
           </div>
           <button
             ref={closeRef}
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("Fermer")}
             style={{ background: "none", border: "none", color: "rgba(245,237,237,0.5)", cursor: "pointer", padding: 4, flexShrink: 0 }}
           >
             <X size={18} />
@@ -278,7 +280,7 @@ function WeekDetailModal({
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: tiles.length ? 10 : 0 }}>
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
-              {stat?.isCurrent ? "Semaine en cours" : "Performance"}
+              {stat?.isCurrent ? t("Semaine en cours") : t("Performance")}
             </span>
             <span style={{
               background: perfData.bg,
@@ -311,23 +313,23 @@ function WeekDetailModal({
             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 12, fontSize: 12, color: "rgba(245,237,237,0.7)" }}>
               {stat.avgWeight != null && (
                 <span>
-                  Poids moyen {nf(stat.avgWeight)} kg
+                  {t("Poids moyen")}{" "}{nf(stat.avgWeight)}{" "}{t("kg")}
                   {weightDelta != null && (
                     <span style={{ color: "rgba(245,237,237,0.4)" }}>
-                      {" "}({weightDelta >= 0 ? "+" : "-"}{nf(Math.abs(weightDelta))} kg vs semaine d&apos;avant)
+                      {" "}({weightDelta >= 0 ? "+" : "-"}{nf(Math.abs(weightDelta))}{" "}{t("kg vs semaine d'avant)")}
                     </span>
                   )}
                 </span>
               )}
-              {stat.avgSleep != null && <span>Sommeil moyen {nf(stat.avgSleep)} h</span>}
-              {stat.avgKcal != null && <span>Calories moyennes {nf(stat.avgKcal, 0)} kcal (jours logués)</span>}
+              {stat.avgSleep != null && <span>{t("Sommeil moyen")}{" "}{nf(stat.avgSleep)} h</span>}
+              {stat.avgKcal != null && <span>{t("Calories moyennes")}{" "}{nf(stat.avgKcal, 0)}{" "}{t("kcal (jours logués)")}</span>}
             </div>
           )}
           {stat?.checkinExists && (
-            <p style={{ fontSize: 11, color: "#4ade80", margin: "8px 0 0" }}>✓ Check-in hebdo envoyé</p>
+            <p style={{ fontSize: 11, color: "#4ade80", margin: "8px 0 0" }}>{t("✓ Check-in hebdo envoyé")}</p>
           )}
           {isFuture && (
-            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "8px 0 0" }}>Semaine à venir : pas encore de données.</p>
+            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "8px 0 0" }}>{t("Semaine à venir : pas encore de données.")}</p>
           )}
         </div>
 
@@ -335,7 +337,7 @@ function WeekDetailModal({
         {weekObjectives.length > 0 && (
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 8 }}>
-              Objectifs de la semaine
+              {t("Objectifs de la semaine")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {weekObjectives.map((obj) => (
@@ -359,7 +361,7 @@ function WeekDetailModal({
                     </p>
                     {obj.target_value != null && (
                       <p style={{ fontSize: 10, color: "rgba(245,237,237,0.4)", margin: "2px 0 0" }}>
-                        Objectif : {obj.target_value} {obj.target_unit ?? ""}
+                        {t("Objectif :")}{" "}{obj.target_value} {obj.target_unit ?? ""}
                       </p>
                     )}
                   </div>
@@ -372,7 +374,7 @@ function WeekDetailModal({
         {/* 7-day breakdown */}
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 8 }}>
-            Jour par jour
+            {t("Jour par jour")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {days.map((day, i) => {
@@ -401,10 +403,10 @@ function WeekDetailModal({
                     {fmt(day, { day: "numeric", month: "short" })}
                   </span>
                   <span style={{ fontSize: 11, color: parts.length ? "rgba(245,237,237,0.75)" : "rgba(245,237,237,0.25)", flex: "1 1 140px", minWidth: 0 }}>
-                    {future ? "à venir" : parts.length ? parts.join(" · ") : "pas de donnée"}
+                    {future ? t("à venir") : parts.length ? parts.join(" · ") : t("pas de donnée")}
                   </span>
                   {d?.sessionDone && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", flexShrink: 0 }}>● Séance</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", flexShrink: 0 }}>{t("● Séance")}</span>
                   )}
                 </div>
               );
@@ -426,6 +428,7 @@ export default function RoadmapCalendar({
   clientId,
   onWeekClick,
 }: RoadmapCalendarProps) {
+  const t = useT();
   const [selectedWeek, setSelectedWeek] = useState<RoadmapWeek | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   // Stats rangées avec la clé de ce qui les a produites : "en chargement" se
@@ -518,7 +521,7 @@ export default function RoadmapCalendar({
   if (!hasWeeks) {
     return (
       <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>
-        Calendrier indisponible : vérifie les dates de début et de fin (période de 10 ans maximum).
+        {t("Calendrier indisponible : vérifie les dates de début et de fin (période de 10 ans maximum).")}
       </p>
     );
   }
@@ -570,15 +573,15 @@ export default function RoadmapCalendar({
         ))}
       </div>
       <p style={{ fontSize: 10, lineHeight: 1.5, color: "rgba(245,237,237,0.3)", margin: "0 0 16px" }}>
-        {WEEK_SCORE_LEGEND} Touche un numéro de semaine pour le détail jour par jour.
+        {WEEK_SCORE_LEGEND}{" "}{t("Touche un numéro de semaine pour le détail jour par jour.")}
       </p>
 
       {statsError && (
         <div role="alert" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)", borderRadius: 8, padding: "10px 12px", marginBottom: 16 }}>
           <AlertCircle size={14} style={{ color: "#E01E1E", flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: "#FDC4C4", flex: "1 1 180px" }}>{statsError} Les couleurs des semaines ne sont pas à jour.</span>
+          <span style={{ fontSize: 12, color: "#FDC4C4", flex: "1 1 180px" }}>{statsError}{" "}{t("Les couleurs des semaines ne sont pas à jour.")}</span>
           <button type="button" onClick={() => setReloadKey((k) => k + 1)} className="ep-btn-secondary" style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 5 }}>
-            <RotateCw size={12} /> Réessayer
+            <RotateCw size={12} />{" "}{t("Réessayer")}
           </button>
         </div>
       )}

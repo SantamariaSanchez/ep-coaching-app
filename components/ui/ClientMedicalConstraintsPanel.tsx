@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { HeartPulse, ShieldAlert, ChevronDown, ChevronRight, Plus, X, Activity, Trash2 } from "lucide-react";
@@ -43,6 +44,7 @@ function RecoveryLogTool({
   ) => Promise<{ error?: string }>;
   deleteRecoveryLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [formOpen, setFormOpen] = useState(false);
   const [date, setDate] = useState(today);
   const [zone, setZone] = useState("");
@@ -84,7 +86,7 @@ function RecoveryLogTool({
       <div className="flex items-center justify-between mb-2">
         <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
           <Activity size={12} className="text-[#E01E1E]" />
-          Journal de reprise
+          {t("Journal de reprise")}
         </p>
         {!formOpen && (
           <button
@@ -92,7 +94,7 @@ function RecoveryLogTool({
             onClick={() => setFormOpen(true)}
             className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
           >
-            <Plus size={11} /> Séance
+            <Plus size={11} />{" "}{t("Séance")}
           </button>
         )}
       </div>
@@ -123,7 +125,7 @@ function RecoveryLogTool({
               value={date}
               max={today}
               onChange={(e) => setDate(e.target.value)}
-              aria-label="Date"
+              aria-label={t("Date")}
               className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-[#E01E1E]/60"
             />
             <input
@@ -132,30 +134,30 @@ function RecoveryLogTool({
               max={10}
               value={pain}
               onChange={(e) => setPain(Number(e.target.value))}
-              aria-label="Douleur sur 10"
-              placeholder="Douleur /10"
+              aria-label={t("Douleur sur 10")}
+              placeholder={t("Douleur /10")}
               className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-[#E01E1E]/60"
             />
           </div>
           <input
             value={zone}
             onChange={(e) => setZone(e.target.value)}
-            placeholder="Zone / mouvement (ex. genou droit, squat)"
-            aria-label="Zone concernée"
+            placeholder={t("Zone / mouvement (ex. genou droit, squat)")}
+            aria-label={t("Zone concernée")}
             className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
           />
           <input
             value={loadNote}
             onChange={(e) => setLoadNote(e.target.value)}
-            placeholder="Charge / répétitions (optionnel, ex. 40kg x 8)"
-            aria-label="Charge et répétitions"
+            placeholder={t("Charge / répétitions (optionnel, ex. 40kg x 8)")}
+            aria-label={t("Charge et répétitions")}
             className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
           />
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Note (optionnel)"
-            aria-label="Note"
+            placeholder={t("Note (optionnel)")}
+            aria-label={t("Note")}
             rows={2}
             className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
           />
@@ -166,7 +168,7 @@ function RecoveryLogTool({
               onClick={() => setFormOpen(false)}
               className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-3"
             >
-              Annuler
+              {t("Annuler")}
             </button>
             <button
               type="button"
@@ -174,14 +176,14 @@ function RecoveryLogTool({
               disabled={saving || !zone.trim()}
               className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2"
             >
-              {saving ? "Enregistrement…" : "Enregistrer"}
+              {saving ? t("Enregistrement…") : t("Enregistrer")}
             </button>
           </div>
         </div>
       )}
 
       {logs.length === 0 ? (
-        <p className="text-[11px] text-[#F5EDED]/25">Aucune séance de reprise loguée pour l&apos;instant.</p>
+        <p className="text-[11px] text-[#F5EDED]/25">{t("Aucune séance de reprise loguée pour l'instant.")}</p>
       ) : (
         <div className="space-y-1.5">
           {logs.slice(0, 6).map((log) => (
@@ -199,7 +201,7 @@ function RecoveryLogTool({
               <button
                 type="button"
                 onClick={() => deleteRecoveryLog(clientId, log.id)}
-                aria-label="Supprimer cette séance"
+                aria-label={t("Supprimer cette séance")}
                 className="text-[#F5EDED]/15 hover:text-red-400 flex-shrink-0"
               >
                 <Trash2 size={11} />
@@ -232,6 +234,7 @@ export default function ClientMedicalConstraintsPanel({
   ) => Promise<{ error?: string }>;
   deleteRecoveryLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
 
@@ -247,7 +250,7 @@ export default function ClientMedicalConstraintsPanel({
     <div className="ep-card" style={{ padding: "16px 18px" }}>
       <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
         <HeartPulse size={13} className="text-[#E01E1E]" />
-        Contraintes médicales de ce client
+        {t("Contraintes médicales de ce client")}
       </p>
 
       {/* Sélecteur : le coach décide lui-même, jamais une détection auto à
@@ -278,8 +281,7 @@ export default function ClientMedicalConstraintsPanel({
 
       {activeConstraints.length === 0 ? (
         <p className="text-[11.5px] text-[#F5EDED]/25 leading-relaxed">
-          Aucune contrainte rattachée. Ajoute une fiche ci-dessus si ce client a une blessure, une
-          pathologie, un handicap ou une situation qui demande d&apos;adapter son programme.
+          {t("Aucune contrainte rattachée. Ajoute une fiche ci-dessus si ce client a une blessure, une pathologie, un handicap ou une situation qui demande d'adapter son programme.")}
         </p>
       ) : (
         <div className="space-y-2.5">
@@ -336,7 +338,7 @@ export default function ClientMedicalConstraintsPanel({
                       href={`/dashboard/coach/contraintes/${constraint.slug}`}
                       className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
                     >
-                      Voir la fiche complète et les sources →
+                      {t("Voir la fiche complète et les sources →")}
                     </Link>
                   </div>
                 )}

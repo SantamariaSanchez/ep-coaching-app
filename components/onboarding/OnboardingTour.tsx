@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -172,6 +173,7 @@ export default function OnboardingTour({
   onFinish: () => void;
   finishing: boolean;
 }) {
+  const t = useT();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -229,7 +231,7 @@ export default function OnboardingTour({
           {finishing ? (
             <div style={{ width: 12, height: 12, border: "2px solid rgba(245,237,237,0.75)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
           ) : (
-            <>Passer, accéder à l&apos;appli <X size={13} /></>
+            <>{t("Passer, accéder à l'appli")}{" "}<X size={13} /></>
           )}
         </button>
       </div>
@@ -313,7 +315,7 @@ export default function OnboardingTour({
         {step > 0 && (
           <button
             onClick={() => go(step - 1, -1)}
-            aria-label="Étape précédente"
+            aria-label={t("Étape précédente")}
             style={{
               width: 52, height: 52, borderRadius: 14, flexShrink: 0,
               border: "1px solid rgba(245,237,237,0.12)", background: "transparent",
@@ -330,7 +332,7 @@ export default function OnboardingTour({
             className="ep-btn-primary"
             style={{ flex: 1, height: 52, fontSize: 13 }}
           >
-            {finishing ? "Un instant…" : <>À toi de jouer <ArrowRight size={16} /></>}
+            {finishing ? t("Un instant…") : <>{t("À toi de jouer")}{" "}<ArrowRight size={16} /></>}
           </button>
         ) : (
           <button
@@ -338,7 +340,7 @@ export default function OnboardingTour({
             className="ep-btn-primary"
             style={{ flex: 1, height: 52, fontSize: 13 }}
           >
-            Suivant <ArrowRight size={16} />
+            {t("Suivant")}{" "}<ArrowRight size={16} />
           </button>
         )}
       </div>

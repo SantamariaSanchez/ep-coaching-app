@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 // Écran de verrouillage du compte gratuit après 60 jours (voir
 // lib/free-tier.ts). Demande directe du 2026-09-08 : "au bout de tant de
 // temps d'inactivité... ou encore que il a maximum 2 mois en compte gratuit
@@ -28,6 +29,7 @@ import { createClientSupabase } from "@/lib/supabase-client";
 const ALWAYS_REACHABLE = ["/dashboard/client/abonnement", "/dashboard/client/parametres"];
 
 export default function FreeTierGate() {
+  const t = useT();
   const pathname = usePathname();
   if (ALWAYS_REACHABLE.some((p) => pathname?.startsWith(p))) return null;
 
@@ -50,11 +52,10 @@ export default function FreeTierGate() {
           <Lock size={22} className="text-[#E01E1E]" />
         </div>
         <h1 className="text-xl font-black text-white uppercase tracking-tight mb-2">
-          Ton accès gratuit est terminé
+          {t("Ton accès gratuit est terminé")}
         </h1>
         <p className="text-[13px] text-[#F5EDED]/55 leading-relaxed mb-6">
-          60 jours pour découvrir l&apos;appli, c&apos;est fait. Tes données sont gardées telles
-          quelles, rien n&apos;est perdu : prends un coach et tu retrouves tout instantanément.
+          {t("60 jours pour découvrir l'appli, c'est fait. Tes données sont gardées telles quelles, rien n'est perdu : prends un coach et tu retrouves tout instantanément.")}
         </p>
 
         <Link
@@ -62,7 +63,7 @@ export default function FreeTierGate() {
           className="ep-btn-primary w-full mb-3"
           style={{ height: 50, fontSize: 13, display: "flex" }}
         >
-          Voir l&apos;accompagnement
+          {t("Voir l'accompagnement")}
         </Link>
 
         <div className="flex items-center justify-center gap-4 mt-5">
@@ -71,14 +72,14 @@ export default function FreeTierGate() {
             onClick={logout}
             className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
           >
-            <LogOut size={12} /> Me déconnecter
+            <LogOut size={12} />{" "}{t("Me déconnecter")}
           </button>
           <span className="text-[#F5EDED]/15">·</span>
           <Link
             href="/dashboard/client/parametres"
             className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
           >
-            <Trash2 size={12} /> Supprimer mon compte
+            <Trash2 size={12} />{" "}{t("Supprimer mon compte")}
           </Link>
         </div>
       </div>

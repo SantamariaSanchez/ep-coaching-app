@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import { BookOpen, ChefHat, ClipboardList, Search, ScanBarcode, Sparkles, Zap } from "lucide-react";
 import Sheet from "@/components/nutrition/Sheet";
@@ -94,6 +95,7 @@ export default function AddFoodSheet({
   onCreateFood: (food: Omit<Food, "id">) => Promise<Food | null>;
   onClose: () => void;
 }) {
+  const tr = useT();
   const hasPlan = planMealsToday.length + planMealsOther.length > 0;
   const [tab, setTab] = useState<Tab>("aliments");
   const [query, setQuery] = useState("");
@@ -175,7 +177,7 @@ export default function AddFoodSheet({
         footer={
           <div className="flex gap-2">
             <button type="button" onClick={() => setPicked(null)} className="px-4 py-3 rounded-xl border border-[#890404]/40 text-[#F5EDED]/70 text-xs font-bold uppercase tracking-widest">
-              Retour
+              {tr("Retour")}
             </button>
             <button
               type="button"
@@ -188,7 +190,7 @@ export default function AddFoodSheet({
           </div>
         }
       >
-        <input value={qty} onChange={(e) => setQty(e.target.value)} inputMode="decimal" autoFocus aria-label="Quantité en grammes" className={`${input} text-center text-2xl font-black`} />
+        <input value={qty} onChange={(e) => setQty(e.target.value)} inputMode="decimal" autoFocus aria-label={tr("Quantité en grammes")} className={`${input} text-center text-2xl font-black`} />
         <div className="flex flex-wrap gap-1.5 mt-2.5">
           {[...new Set([defaultGrams(picked), 30, 50, 100, 150, 200, 250])].map((v) => (
             <button key={v} type="button" onClick={() => setQty(String(v))} className={chip(g === v)}>
@@ -197,7 +199,7 @@ export default function AddFoodSheet({
           ))}
         </div>
         <p className="text-sm text-[#F5EDED]/70 mt-4">
-          <b className="text-white">{Math.round(m.calories)} kcal</b> · P {Math.round(m.proteins)} g · G {Math.round(m.carbs)} g · L {Math.round(m.fats)} g
+          <b className="text-white">{Math.round(m.calories)}{" "}{tr("kcal")}</b> · P {Math.round(m.proteins)} g · G {Math.round(m.carbs)} g · L {Math.round(m.fats)} g
         </p>
         {error && <p className="text-xs text-red-300 mt-2">{error}</p>}
       </Sheet>
@@ -221,9 +223,9 @@ export default function AddFoodSheet({
           <div className="flex gap-2 mb-2.5">
             <div className="relative flex-1">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Riz, poulet, skyr..." aria-label="Chercher un aliment" autoFocus className={`${input} pl-9`} />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Riz, poulet, skyr...")} aria-label={tr("Chercher un aliment")} autoFocus className={`${input} pl-9`} />
             </div>
-            <button type="button" onClick={() => setScanning(true)} aria-label="Scanner un code-barres" className="px-3 rounded-lg border border-[#890404]/35 text-[#F5EDED]/70">
+            <button type="button" onClick={() => setScanning(true)} aria-label={tr("Scanner un code-barres")} className="px-3 rounded-lg border border-[#890404]/35 text-[#F5EDED]/70">
               <ScanBarcode size={18} />
             </button>
           </div>
@@ -237,7 +239,7 @@ export default function AddFoodSheet({
           </div>
           {!query && filter === "tout" && (
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5 flex items-center gap-1.5">
-              <Sparkles size={11} /> Ton plan, tes récents et tes habitudes d&apos;abord
+              <Sparkles size={11} />{" "}{tr("Ton plan, tes récents et tes habitudes d'abord")}
             </p>
           )}
           <div className="space-y-0.5">
@@ -250,14 +252,14 @@ export default function AddFoodSheet({
                     {tag && <span className="ml-2 text-[9px] font-bold uppercase tracking-wider text-[#ff6b6b]">{tag}</span>}
                   </p>
                   <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
-                    {Math.round(f.calories_per_100)} kcal/100 g · P {f.proteins_per_100} · G {f.carbs_per_100} · L {f.fats_per_100}
+                    {Math.round(f.calories_per_100)}{" "}{tr("kcal/100 g · P")}{" "}{f.proteins_per_100} · G {f.carbs_per_100} · L {f.fats_per_100}
                   </p>
                 </button>
               );
             })}
             {results.length === 0 && (
               <div className="py-4 text-center">
-                <p className="text-sm text-[#F5EDED]/50">Aucun aliment trouvé.</p>
+                <p className="text-sm text-[#F5EDED]/50">{tr("Aucun aliment trouvé.")}</p>
                 <button
                   type="button"
                   onClick={() => {
@@ -266,7 +268,7 @@ export default function AddFoodSheet({
                   }}
                   className="mt-2 text-xs font-bold text-[#ff6b6b] underline"
                 >
-                  Ajouter « {query} » en ajout rapide
+                  {tr("Ajouter «")}{" "}{query}{" "}{tr("» en ajout rapide")}
                 </button>
               </div>
             )}
@@ -297,7 +299,7 @@ export default function AddFoodSheet({
                       <p className="text-sm font-bold text-white">{meal.label}</p>
                       <p className="text-[11px] text-[#F5EDED]/45 mt-0.5 line-clamp-2">{meal.items.map((i) => `${i.food.name} ${i.grams} g`).join(", ")}</p>
                       <p className="text-[10.5px] text-[#F5EDED]/60 mt-1">
-                        {Math.round(t.calories)} kcal · P {Math.round(t.proteins)} · G {Math.round(t.carbs)} · L {Math.round(t.fats)}
+                        {Math.round(t.calories)}{" "}{tr("kcal · P")}{" "}{Math.round(t.proteins)} · G {Math.round(t.carbs)} · L {Math.round(t.fats)}
                       </p>
                     </button>
                   );
@@ -312,9 +314,9 @@ export default function AddFoodSheet({
           <div>
             <p className="text-base font-black text-white">{recipe.name}</p>
             <p className="text-xs text-[#F5EDED]/50 mt-1">
-              Par portion : {recipe.kcal} kcal · P {recipe.protein} · G {recipe.carbs} · L {recipe.fat}
+              {tr("Par portion :")}{" "}{recipe.kcal}{" "}{tr("kcal · P")}{" "}{recipe.protein} · G {recipe.carbs} · L {recipe.fat}
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mt-4 mb-1.5">Portions</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mt-4 mb-1.5">{tr("Portions")}</p>
             <div className="flex gap-1.5">
               {[0.5, 1, 1.5, 2].map((v) => (
                 <button key={v} type="button" onClick={() => setServings(v)} className={chip(servings === v)}>
@@ -324,7 +326,7 @@ export default function AddFoodSheet({
             </div>
             <div className="flex gap-2 mt-5">
               <button type="button" onClick={() => setRecipe(null)} className="px-4 py-3 rounded-xl border border-[#890404]/40 text-[#F5EDED]/70 text-xs font-bold uppercase tracking-widest">
-                Retour
+                {tr("Retour")}
               </button>
               <button
                 type="button"
@@ -340,7 +342,7 @@ export default function AddFoodSheet({
           <>
             <div className="relative mb-2.5">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
-              <input value={recipeQuery} onChange={(e) => setRecipeQuery(e.target.value)} placeholder="Chercher une recette" aria-label="Chercher une recette" className={`${input} pl-9`} />
+              <input value={recipeQuery} onChange={(e) => setRecipeQuery(e.target.value)} placeholder={tr("Chercher une recette")} aria-label={tr("Chercher une recette")} className={`${input} pl-9`} />
             </div>
             <div className="flex gap-1.5 overflow-x-auto -mx-4 px-4 pb-2.5 no-scrollbar">
               {RECIPE_MEALS.map((m) => (
@@ -349,20 +351,20 @@ export default function AddFoodSheet({
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-[#F5EDED]/35 mb-1.5">Les plus riches en protéines d&apos;abord.</p>
+            <p className="text-[10px] text-[#F5EDED]/35 mb-1.5">{tr("Les plus riches en protéines d'abord.")}</p>
             <div className="space-y-0.5">
               {recipeResults.map((r) => (
                 <button key={`${r.source}-${r.id}`} type="button" onClick={() => { setRecipe(r); setServings(1); }} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#1f0101]">
                   <p className="text-sm text-white font-medium leading-tight">
                     {r.name}
-                    {r.source === "communaute" && <span className="ml-2 text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/40">Communauté</span>}
+                    {r.source === "communaute" && <span className="ml-2 text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/40">{tr("Communauté")}</span>}
                   </p>
                   <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
-                    {r.kcal} kcal · P {r.protein} · G {r.carbs} · L {r.fat}
+                    {r.kcal}{" "}{tr("kcal · P")}{" "}{r.protein} · G {r.carbs} · L {r.fat}
                   </p>
                 </button>
               ))}
-              {recipeResults.length === 0 && <p className="text-sm text-[#F5EDED]/50 py-4 text-center">Aucune recette.</p>}
+              {recipeResults.length === 0 && <p className="text-sm text-[#F5EDED]/50 py-4 text-center">{tr("Aucune recette.")}</p>}
             </div>
           </>
         ))}
@@ -382,7 +384,7 @@ export default function AddFoodSheet({
               >
                 <p className="text-sm font-bold text-white">{meal.name}</p>
                 <p className="text-[11px] text-[#F5EDED]/45 mt-0.5 line-clamp-2">{items.map((i) => `${i.foods!.name} ${i.quantity_g} g`).join(", ")}</p>
-                <p className="text-[10.5px] text-[#F5EDED]/60 mt-1">{Math.round(kcal)} kcal</p>
+                <p className="text-[10.5px] text-[#F5EDED]/60 mt-1">{Math.round(kcal)}{" "}{tr("kcal")}</p>
               </button>
             );
           })}
@@ -391,8 +393,8 @@ export default function AddFoodSheet({
 
       {tab === "rapide" && (
         <div className="space-y-2.5">
-          <p className="text-xs text-[#F5EDED]/50">Restaurant, plat sans étiquette : entre le total du repas, il est gardé pour la prochaine fois.</p>
-          <input value={quick.name} onChange={(e) => setQuick({ ...quick, name: e.target.value })} placeholder="Nom (ex : burger resto)" aria-label="Nom" className={input} />
+          <p className="text-xs text-[#F5EDED]/50">{tr("Restaurant, plat sans étiquette : entre le total du repas, il est gardé pour la prochaine fois.")}</p>
+          <input value={quick.name} onChange={(e) => setQuick({ ...quick, name: e.target.value })} placeholder={tr("Nom (ex : burger resto)")} aria-label={tr("Nom")} className={input} />
           <div className="grid grid-cols-2 gap-2">
             {(
               [
@@ -421,7 +423,7 @@ export default function AddFoodSheet({
             }
             className="w-full px-4 py-3 rounded-xl bg-[#E01E1E] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40"
           >
-            {busy ? "..." : "Ajouter"}
+            {busy ? "..." : tr("Ajouter")}
           </button>
         </div>
       )}

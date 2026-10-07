@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState, useTransition } from "react";
 import { CheckCircle2, PenLine } from "lucide-react";
 import { saveWeeklyReflection } from "@/app/dashboard/client/semaine/actions";
@@ -44,6 +45,7 @@ export default function WeeklyReviewReflection({
   weekStart: string;
   existing: WeeklyReflection | null;
 }) {
+  const t = useT();
   const [editing, setEditing] = useState(!existing);
   const [answers, setAnswers] = useState<ReflectionAnswers>(() =>
     existing ? parseReflectionContent(existing.content) : EMPTY,
@@ -130,7 +132,7 @@ export default function WeeklyReviewReflection({
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2 min-w-0">
             <CheckCircle2 size={16} style={{ color: "#4ade80", flexShrink: 0 }} />
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#4ade80" }}>Revue faite</p>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#4ade80" }}>{t("Revue faite")}</p>
             {moodInfo && (
               <span title={`Semaine ${moodInfo.label.toLowerCase()}`} style={{ fontSize: 16 }}>
                 {moodInfo.emoji}
@@ -143,7 +145,7 @@ export default function WeeklyReviewReflection({
             className="ep-btn-secondary ep-press"
             style={{ padding: "8px 12px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}
           >
-            <PenLine size={12} /> Modifier
+            <PenLine size={12} />{" "}{t("Modifier")}
           </button>
         </div>
         <div className="flex flex-col gap-4">
@@ -159,7 +161,7 @@ export default function WeeklyReviewReflection({
           )}
         </div>
         <p style={{ margin: "14px 0 0", fontSize: 11, color: "rgba(245,237,237,0.3)" }}>
-          Enregistrée aussi dans ton journal Mindset.
+          {t("Enregistrée aussi dans ton journal Mindset.")}
         </p>
       </div>
     );
@@ -167,9 +169,9 @@ export default function WeeklyReviewReflection({
 
   return (
     <div className="ep-card" style={{ padding: "18px" }}>
-      <p className="ep-section-title" style={{ marginBottom: 4 }}>Prends 2 minutes de recul</p>
+      <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Prends 2 minutes de recul")}</p>
       <p style={{ margin: "0 0 16px", fontSize: 12, color: "rgba(245,237,237,0.4)", lineHeight: 1.5 }}>
-        3 questions, réponds à celles qui te parlent. Ta revue est enregistrée dans ton journal Mindset.
+        {t("3 questions, réponds à celles qui te parlent. Ta revue est enregistrée dans ton journal Mindset.")}
       </p>
 
       <div className="flex flex-col gap-4">
@@ -189,8 +191,8 @@ export default function WeeklyReviewReflection({
         ))}
 
         <div>
-          <span className="ep-label" style={{ display: "block", marginBottom: 6 }}>Ta semaine en une humeur</span>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Humeur de la semaine">
+          <span className="ep-label" style={{ display: "block", marginBottom: 6 }}>{t("Ta semaine en une humeur")}</span>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("Humeur de la semaine")}>
             {MOODS.map((m) => {
               const active = mood === m.value;
               return (
@@ -226,7 +228,7 @@ export default function WeeklyReviewReflection({
 
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={submit} disabled={pending} className="ep-btn-primary">
-            {pending ? "Enregistrement..." : hasSaved ? "Mettre à jour ma revue" : "Enregistrer ma revue"}
+            {pending ? t("Enregistrement...") : hasSaved ? t("Mettre à jour ma revue") : t("Enregistrer ma revue")}
           </button>
           {hasSaved && (
             <button
@@ -242,7 +244,7 @@ export default function WeeklyReviewReflection({
               className="ep-btn-secondary"
               style={{ padding: "12px 16px", fontSize: 11 }}
             >
-              Annuler
+              {t("Annuler")}
             </button>
           )}
         </div>

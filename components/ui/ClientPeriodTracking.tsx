@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Droplet } from "lucide-react";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
@@ -36,6 +37,7 @@ export default function ClientPeriodTracking({
   ) => Promise<{ error?: string; id?: string }>;
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [logs, setLogs] = useState(initialLogs);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
@@ -109,8 +111,7 @@ export default function ClientPeriodTracking({
   return (
     <div className="space-y-4">
       <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
-        Suivi du cycle. Utile pour comprendre les fluctuations d&apos;énergie, de poids d&apos;eau et de performance
-        au fil du mois. Log le début de chaque cycle, la durée moyenne se calcule automatiquement.
+        {t("Suivi du cycle. Utile pour comprendre les fluctuations d'énergie, de poids d'eau et de performance au fil du mois. Log le début de chaque cycle, la durée moyenne se calcule automatiquement.")}
       </p>
 
       <div className="grid grid-cols-3 gap-2">
@@ -131,22 +132,22 @@ export default function ClientPeriodTracking({
           onClick={() => setShowForm(true)}
           className="w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
         >
-          <Plus size={13} /> Logger un cycle
+          <Plus size={13} />{" "}{t("Logger un cycle")}
         </button>
       ) : (
         <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Date de début</label>
-              <input aria-label="Date de début" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+              <label className={labelClass}>{t("Date de début")}</label>
+              <input aria-label={t("Date de début")} type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Date de fin (optionnel)</label>
-              <input aria-label="Date de fin (optionnel)" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
+              <label className={labelClass}>{t("Date de fin (optionnel)")}</label>
+              <input aria-label={t("Date de fin (optionnel)")} type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
             </div>
           </div>
           <div>
-            <label className={labelClass}>Flux</label>
+            <label className={labelClass}>{t("Flux")}</label>
             <div className="flex gap-1.5">
               {Object.entries(FLOW_LABELS).map(([key, l]) => (
                 <button
@@ -162,7 +163,7 @@ export default function ClientPeriodTracking({
             </div>
           </div>
           <div>
-            <label className={labelClass}>Symptômes</label>
+            <label className={labelClass}>{t("Symptômes")}</label>
             <div className="flex flex-wrap gap-1.5">
               {SYMPTOM_OPTIONS.map((s) => (
                 <button
@@ -178,20 +179,20 @@ export default function ClientPeriodTracking({
             </div>
           </div>
           <div>
-            <label className={labelClass}>Notes</label>
-            <textarea aria-label="Notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputClass} resize-none`} />
+            <label className={labelClass}>{t("Notes")}</label>
+            <textarea aria-label={t("Notes")} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputClass} resize-none`} />
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
           <div className="flex gap-2">
             <button onClick={() => setShowForm(false)} className="flex-1 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 border border-[#890404]/25 rounded-lg py-2.5">
-              Annuler
+              {t("Annuler")}
             </button>
             <button
               onClick={handleAdd}
               disabled={saving}
               className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest rounded-lg py-2.5 transition-colors"
             >
-              {saving ? "Enregistrement…" : "Enregistrer"}
+              {saving ? t("Enregistrement…") : t("Enregistrer")}
             </button>
           </div>
         </div>
@@ -217,13 +218,13 @@ export default function ClientPeriodTracking({
                 {log.notes && <p className="text-[10px] text-[#F5EDED]/30 mt-0.5">{log.notes}</p>}
               </div>
             </div>
-            <button onClick={() => handleDelete(log.id)} aria-label="Supprimer ce cycle" className="text-[#F5EDED]/20 hover:text-red-400 flex-shrink-0">
+            <button onClick={() => handleDelete(log.id)} aria-label={t("Supprimer ce cycle")} className="text-[#F5EDED]/20 hover:text-red-400 flex-shrink-0">
               <Trash2 size={13} />
             </button>
           </div>
         ))}
         {logs.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 text-center py-6">Aucun cycle loggé pour l&apos;instant.</p>
+          <p className="text-xs text-[#F5EDED]/25 text-center py-6">{t("Aucun cycle loggé pour l'instant.")}</p>
         )}
       </div>
     </div>

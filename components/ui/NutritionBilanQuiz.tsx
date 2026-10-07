@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Check, ChevronRight, ChevronLeft, Sparkles, Search, X, Plus,
@@ -111,6 +112,7 @@ export default function NutritionBilanQuiz({
   addFoodLog,
   createCustomFood,
 }: Props) {
+  const t = useT();
   // ── Phase & navigation state ────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("slots");
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
@@ -351,10 +353,10 @@ export default function NutritionBilanQuiz({
         <div className="w-14 h-14 rounded-2xl bg-[#E01E1E]/15 border border-[#E01E1E]/30 flex items-center justify-center mx-auto mb-4">
           <Sparkles size={24} className="text-[#E01E1E]" strokeWidth={1.8} />
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">Journée loggée</p>
-        <p className="text-3xl font-black text-white mb-1">{summary.cal} kcal</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">{t("Journée loggée")}</p>
+        <p className="text-3xl font-black text-white mb-1">{summary.cal}{" "}{t("kcal")}</p>
         <p className="text-xs text-[#F5EDED]/40 mb-5">
-          estimé sur {activeMealKeys.length} repas · {entries(mealFoods)} aliment{entries(mealFoods) !== 1 ? "s" : ""}
+          {t("estimé sur")}{" "}{activeMealKeys.length}{" "}{t("repas ·")}{" "}{entries(mealFoods)}{" "}{t("aliment")}{entries(mealFoods) !== 1 ? "s" : ""}
         </p>
         <div className="grid grid-cols-3 gap-2 mb-5">
           {[
@@ -369,7 +371,7 @@ export default function NutritionBilanQuiz({
           ))}
         </div>
         <p className="text-[10px] text-[#F5EDED]/25">
-          Tu peux affiner dans l&apos;onglet &quot;Aujourd&apos;hui&quot; si besoin.
+          {t("Tu peux affiner dans l'onglet \"Aujourd'hui\" si besoin.")}
         </p>
       </div>
     );
@@ -380,8 +382,8 @@ export default function NutritionBilanQuiz({
     return (
       <div className="space-y-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Récap</p>
-          <h3 className="text-xl font-black text-white">Vérifie avant de logger</h3>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Récap")}</p>
+          <h3 className="text-xl font-black text-white">{t("Vérifie avant de logger")}</h3>
         </div>
 
         {activeMealKeys.map((key) => {
@@ -395,7 +397,7 @@ export default function NutritionBilanQuiz({
                 <p className="text-xs font-bold text-white flex items-center gap-1.5">
                   <span>{slot.emoji}</span> {slot.label}
                 </p>
-                <p className="text-[10px] text-[#F5EDED]/40">{slotCal} kcal</p>
+                <p className="text-[10px] text-[#F5EDED]/40">{slotCal}{" "}{t("kcal")}</p>
               </div>
               <div className="space-y-1">
                 {foods.map((sf) => {
@@ -404,7 +406,7 @@ export default function NutritionBilanQuiz({
                     <div key={sf.food.id} className="flex items-center justify-between">
                       <p className="text-xs text-[#F5EDED]/70 truncate flex-1">{sf.food.name}</p>
                       <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
-                        {QTY_G[sf.qty]}g · {m.calories} kcal
+                        {QTY_G[sf.qty]}g · {m.calories}{" "}{t("kcal")}
                       </p>
                     </div>
                   );
@@ -416,10 +418,10 @@ export default function NutritionBilanQuiz({
 
         <div className="bg-[#E01E1E]/10 border border-[#E01E1E]/25 rounded-xl p-4">
           <div className="flex gap-4">
-            <div><p className="text-2xl font-black text-[#E01E1E]">{totals.cal}</p><p className="text-[9px] text-[#F5EDED]/35">kcal</p></div>
-            <div><p className="text-lg font-black text-blue-300">{totals.prot}g</p><p className="text-[9px] text-[#F5EDED]/35">Prot</p></div>
-            <div><p className="text-lg font-black text-amber-300">{totals.carbs}g</p><p className="text-[9px] text-[#F5EDED]/35">Gluc</p></div>
-            <div><p className="text-lg font-black text-rose-300">{totals.fat}g</p><p className="text-[9px] text-[#F5EDED]/35">Lip</p></div>
+            <div><p className="text-2xl font-black text-[#E01E1E]">{totals.cal}</p><p className="text-[9px] text-[#F5EDED]/35">{t("kcal")}</p></div>
+            <div><p className="text-lg font-black text-blue-300">{totals.prot}g</p><p className="text-[9px] text-[#F5EDED]/35">{t("Prot")}</p></div>
+            <div><p className="text-lg font-black text-amber-300">{totals.carbs}g</p><p className="text-[9px] text-[#F5EDED]/35">{t("Gluc")}</p></div>
+            <div><p className="text-lg font-black text-rose-300">{totals.fat}g</p><p className="text-[9px] text-[#F5EDED]/35">{t("Lip")}</p></div>
           </div>
         </div>
 
@@ -430,7 +432,7 @@ export default function NutritionBilanQuiz({
             onClick={() => { setCurrentSlotIdx(activeMealKeys.length - 1); setPhase("meal"); }}
             className="flex items-center gap-1 px-4 py-2.5 border border-[#890404]/40 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED]/80"
           >
-            <ChevronLeft size={13} /> Modifier
+            <ChevronLeft size={13} />{" "}{t("Modifier")}
           </button>
           <button
             onClick={handleSubmit}
@@ -440,7 +442,7 @@ export default function NutritionBilanQuiz({
             {submitting ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <><Sparkles size={13} /> Logger ma journée</>
+              <><Sparkles size={13} />{" "}{t("Logger ma journée")}</>
             )}
           </button>
         </div>
@@ -453,9 +455,9 @@ export default function NutritionBilanQuiz({
     return (
       <div className="space-y-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Étape 1</p>
-          <h3 className="text-xl font-black text-white mb-1">Quels repas as-tu fait aujourd&apos;hui ?</h3>
-          <p className="text-xs text-[#F5EDED]/40">Sélectionne tout ce qui s&apos;applique.</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Étape 1")}</p>
+          <h3 className="text-xl font-black text-white mb-1">{t("Quels repas as-tu fait aujourd'hui ?")}</h3>
+          <p className="text-xs text-[#F5EDED]/40">{t("Sélectionne tout ce qui s'applique.")}</p>
         </div>
 
         <div className="space-y-2">
@@ -478,7 +480,7 @@ export default function NutritionBilanQuiz({
                     {slot.label}
                   </span>
                   {hasPhoto && (
-                    <span className="ml-2 text-[9px] text-purple-400 font-bold">📸 photo</span>
+                    <span className="ml-2 text-[9px] text-purple-400 font-bold">{t("📸 photo")}</span>
                   )}
                 </span>
                 {selected && <Check size={15} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />}
@@ -492,7 +494,7 @@ export default function NutritionBilanQuiz({
           disabled={selectedSlots.length === 0}
           className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
         >
-          Commencer le détail <ChevronRight size={15} />
+          {t("Commencer le détail")}{" "}<ChevronRight size={15} />
         </button>
       </div>
     );
@@ -509,7 +511,7 @@ export default function NutritionBilanQuiz({
         <div>
           <div className="flex items-center justify-between mb-1">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-              Repas {mealProgress}
+              {t("Repas")}{" "}{mealProgress}
             </p>
             <p className="text-[10px] text-[#F5EDED]/30">
               {currentSelections.length > 0 ? `${currentSelections.length} aliment(s)` : ""}
@@ -526,7 +528,7 @@ export default function NutritionBilanQuiz({
           <div className="relative rounded-xl overflow-hidden">
             <img src={photo} alt={currentSlot.label} className="w-full max-h-36 object-cover" />
             <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
-              <p className="text-[10px] text-white font-semibold">📸 Ta photo de ce repas</p>
+              <p className="text-[10px] text-white font-semibold">{t("📸 Ta photo de ce repas")}</p>
             </div>
           </div>
         )}
@@ -557,12 +559,12 @@ export default function NutritionBilanQuiz({
                           : "border-[#890404]/25 text-[#F5EDED]/35 hover:border-[#890404]/50"
                       }`}
                     >
-                      {q === "petit" ? "Petite" : q === "moyen" ? "Normale" : q === "grand" ? "Grande" : "Double"}
+                      {q === "petit" ? t("Petite") : q === "moyen" ? t("Normale") : q === "grand" ? t("Grande") : t("Double")}
                     </button>
                   ))}
                 </div>
                 <p className="text-[9px] text-[#F5EDED]/30">
-                  ≈ {QTY_G[sf.qty]}g · {calcMacros(sf.food, sf.qty).calories} kcal
+                  ≈ {QTY_G[sf.qty]}g · {calcMacros(sf.food, sf.qty).calories}{" "}{t("kcal")}
                 </p>
               </div>
             ))}
@@ -573,7 +575,7 @@ export default function NutritionBilanQuiz({
         {historySuggestions.length > 0 && !showSearch && (
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2 flex items-center gap-1.5">
-              <span>⏱</span> Tes habitudes pour ce créneau
+              <span>⏱</span>{" "}{t("Tes habitudes pour ce créneau")}
             </p>
             <div className="space-y-1.5">
               {historySuggestions.map((food) => {
@@ -593,7 +595,7 @@ export default function NutritionBilanQuiz({
                         {food.name}
                       </p>
                       <p className="text-[9px] text-[#F5EDED]/30 mt-0.5">
-                        {food.calories_per_100} kcal/100g · P {food.proteins_per_100}g
+                        {food.calories_per_100}{" "}{t("kcal/100g · P")}{" "}{food.proteins_per_100}g
                       </p>
                     </div>
                     {selected
@@ -612,9 +614,9 @@ export default function NutritionBilanQuiz({
           <div>
             <div className="flex items-center gap-2 mb-2">
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex-1">
-                Rechercher un aliment
+                {t("Rechercher un aliment")}
               </p>
-              <button onClick={() => { setShowSearch(false); setSearchQ(""); setShowCreateFood(false); }} aria-label="Fermer la recherche" className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+              <button onClick={() => { setShowSearch(false); setSearchQ(""); setShowCreateFood(false); }} aria-label={t("Fermer la recherche")} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
                 <X size={13} />
               </button>
             </div>
@@ -623,19 +625,19 @@ export default function NutritionBilanQuiz({
               autoFocus
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
-              placeholder="Ex. riz complet, poulet…" aria-label="Rechercher un aliment"
+              placeholder={t("Ex. riz complet, poulet…")} aria-label={t("Rechercher un aliment")}
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 mb-2"
             />
             <div className="space-y-1 max-h-48 overflow-y-auto">
               {searchResults.length === 0 && searchQ.trim() && !showCreateFood && (
                 <div className="py-4 text-center">
-                  <p className="text-xs text-[#F5EDED]/30 mb-2">Aucun résultat pour &quot;{searchQ.trim()}&quot;</p>
+                  <p className="text-xs text-[#F5EDED]/30 mb-2">{t("Aucun résultat pour \"")}{searchQ.trim()}{t("\"")}</p>
                   <button
                     onClick={openCreateFood}
                     className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
                   >
                     <Plus size={12} />
-                    Créer &quot;{searchQ.trim()}&quot; comme nouvel aliment
+                    {t("Créer \"")}{searchQ.trim()}{t("\" comme nouvel aliment")}
                   </button>
                 </div>
               )}
@@ -651,7 +653,7 @@ export default function NutritionBilanQuiz({
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-[#F5EDED]/80 truncate">{food.name}</p>
-                      <p className="text-[9px] text-[#F5EDED]/30">{food.calories_per_100} kcal/100g</p>
+                      <p className="text-[9px] text-[#F5EDED]/30">{food.calories_per_100}{" "}{t("kcal/100g")}</p>
                     </div>
                     {selected
                       ? <Check size={14} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />
@@ -666,19 +668,19 @@ export default function NutritionBilanQuiz({
               <div className="mt-3 bg-[#150000] border border-[#890404]/30 rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
-                    Nouvel aliment
+                    {t("Nouvel aliment")}
                   </p>
-                  <button onClick={() => setShowCreateFood(false)} aria-label="Fermer" className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+                  <button onClick={() => setShowCreateFood(false)} aria-label={t("Fermer")} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
                     <X size={13} />
                   </button>
                 </div>
                 <input
                   value={createForm.name}
                   onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="Nom de l'aliment" aria-label="Nom de l'aliment"
+                  placeholder={t("Nom de l'aliment")} aria-label={t("Nom de l'aliment")}
                   className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
                 />
-                <p className="text-[9px] text-[#F5EDED]/25">Valeurs pour 100g</p>
+                <p className="text-[9px] text-[#F5EDED]/25">{t("Valeurs pour 100g")}</p>
                 <div className="grid grid-cols-4 gap-1.5">
                   {([
                     { key: "calories", label: "Kcal" },
@@ -705,7 +707,7 @@ export default function NutritionBilanQuiz({
                   disabled={creatingFood}
                   className="w-full flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest py-2.5 rounded-lg transition-colors"
                 >
-                  {creatingFood ? "Création…" : "Créer et ajouter au repas"}
+                  {creatingFood ? t("Création…") : t("Créer et ajouter au repas")}
                 </button>
               </div>
             )}
@@ -716,7 +718,7 @@ export default function NutritionBilanQuiz({
             className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-xl px-4 py-2.5 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
           >
             <Search size={13} />
-            Ajouter un autre aliment
+            {t("Ajouter un autre aliment")}
           </button>
         )}
 
@@ -726,16 +728,16 @@ export default function NutritionBilanQuiz({
             onClick={goPrevMeal}
             className="flex items-center gap-1 px-4 py-2.5 border border-[#890404]/30 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
           >
-            <ChevronLeft size={13} /> Retour
+            <ChevronLeft size={13} />{" "}{t("Retour")}
           </button>
           <button
             onClick={goNextMeal}
             className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
           >
             {currentSlotIdx < activeMealKeys.length - 1 ? (
-              <><span>Repas suivant</span> <ChevronRight size={15} /></>
+              <><span>{t("Repas suivant")}</span> <ChevronRight size={15} /></>
             ) : (
-              <><span>Voir le récap</span> <ChevronRight size={15} /></>
+              <><span>{t("Voir le récap")}</span> <ChevronRight size={15} /></>
             )}
           </button>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dumbbell, Check, ChevronDown, ChevronUp } from "lucide-react";
@@ -15,6 +16,7 @@ export default function ProgramPresetSelector({
   currentProgramName: string | null;
   saveProgram: (clientId: string, input: ProgramInput) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<string | null>(null);
@@ -44,10 +46,10 @@ export default function ProgramPresetSelector({
     <div>
       <div className="mb-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Choisir un programme
+          {t("Choisir un programme")}
         </p>
         <p className="text-sm text-[#F5EDED]/45 leading-relaxed">
-          Sélectionne un programme adapté à ton niveau et tes disponibilités. Tu peux en changer à tout moment.
+          {t("Sélectionne un programme adapté à ton niveau et tes disponibilités. Tu peux en changer à tout moment.")}
         </p>
       </div>
 
@@ -96,11 +98,11 @@ export default function ProgramPresetSelector({
                         color: "rgba(245,237,237,0.5)",
                       }}
                     >
-                      {preset.frequency}x / semaine
+                      {preset.frequency}{t("x / semaine")}
                     </span>
                     {isActive && (
                       <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">
-                        Actif
+                        {t("Actif")}
                       </span>
                     )}
                   </div>
@@ -121,7 +123,7 @@ export default function ProgramPresetSelector({
                   className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors py-1"
                 >
                   {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  Voir les séances
+                  {t("Voir les séances")}
                 </button>
                 {isExpanded && (
                   <div className="mt-3 mb-3 space-y-3">
@@ -160,7 +162,7 @@ export default function ProgramPresetSelector({
         <p className="text-xs text-red-400 mb-3">{error}</p>
       )}
       {success && (
-        <p className="text-xs text-green-400 mb-3">Programme activé avec succès.</p>
+        <p className="text-xs text-green-400 mb-3">{t("Programme activé avec succès.")}</p>
       )}
 
       <button
@@ -172,7 +174,7 @@ export default function ProgramPresetSelector({
           color: selected && selected !== activePreset?.id ? "#fff" : "rgba(245,237,237,0.35)",
         }}
       >
-        {isPending ? "Activation..." : selected === activePreset?.id ? "Programme actif" : "Activer ce programme"}
+        {isPending ? t("Activation...") : selected === activePreset?.id ? t("Programme actif") : t("Activer ce programme")}
       </button>
     </div>
   );

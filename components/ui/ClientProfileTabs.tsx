@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Card from "./Card";
@@ -108,12 +109,13 @@ function InfoRow({
   label: string;
   value: string | null | undefined;
 }) {
+  const t = useT();
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
         {label}
       </span>
-      <span className="text-sm text-white font-medium">{value || "Non renseigné"}</span>
+      <span className="text-sm text-white font-medium">{value || t("Non renseigné")}</span>
     </div>
   );
 }
@@ -134,6 +136,7 @@ function IntakeWaitingState({
   isClientSubscribed: boolean;
   sendIntakeReminder: (clientId: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   async function handleRemind() {
@@ -154,18 +157,16 @@ function IntakeWaitingState({
         </div>
         {!isClientSubscribed ? (
           <>
-            <p className="text-sm font-black text-white mb-1.5">Coaching pas encore activé</p>
+            <p className="text-sm font-black text-white mb-1.5">{t("Coaching pas encore activé")}</p>
             <p className="text-xs text-[#F5EDED]/45 leading-relaxed max-w-xs">
-              Active le coaching payant de {clientFirstName} depuis l&apos;onglet Profil pour débloquer
-              son questionnaire d&apos;onboarding. Il remplira alors sa fiche lui-même, en autonomie.
+              {t("Active le coaching payant de")}{" "}{clientFirstName}{" "}{t("depuis l'onglet Profil pour débloquer son questionnaire d'onboarding. Il remplira alors sa fiche lui-même, en autonomie.")}
             </p>
           </>
         ) : (
           <>
-            <p className="text-sm font-black text-white mb-1.5">En attente de {clientFirstName}</p>
+            <p className="text-sm font-black text-white mb-1.5">{t("En attente de")}{" "}{clientFirstName}</p>
             <p className="text-xs text-[#F5EDED]/45 leading-relaxed max-w-xs mb-4">
-              Son questionnaire d&apos;onboarding n&apos;est pas encore rempli. Sa fiche se complètera
-              automatiquement dès qu&apos;il le fera, tu pourras alors la consulter et la corriger ici.
+              {t("Son questionnaire d'onboarding n'est pas encore rempli. Sa fiche se complètera automatiquement dès qu'il le fera, tu pourras alors la consulter et la corriger ici.")}
             </p>
             <button
               type="button"
@@ -176,12 +177,12 @@ function IntakeWaitingState({
             >
               <Bell size={12} />
               {status === "sending"
-                ? "Envoi…"
+                ? t("Envoi…")
                 : status === "sent"
-                ? "Rappel envoyé"
+                ? t("Rappel envoyé")
                 : status === "error"
-                ? "Erreur, réessaie"
-                : "Renvoyer une notification"}
+                ? t("Erreur, réessaie")
+                : t("Renvoyer une notification")}
             </button>
           </>
         )}
@@ -364,6 +365,7 @@ export default function ClientProfileTabs({
   ) => Promise<{ error?: string }>;
   deleteRecoveryLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
@@ -493,7 +495,7 @@ export default function ClientProfileTabs({
           />
 
           {intake ? (
-            <Card title="Fiche client : l'essentiel">
+            <Card title={t("Fiche client : l'essentiel")}>
               <div className="space-y-3">
                 {(intake.goal_3_months || intake.goal_12_months) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -514,7 +516,7 @@ export default function ClientProfileTabs({
                   ))}
                   {intake.injuries && (
                     <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-red-500/10 border border-red-500/25 text-red-400">
-                      ⚠ Blessure/douleur déclarée
+                      {t("⚠ Blessure/douleur déclarée")}
                     </span>
                   )}
                 </div>
@@ -523,23 +525,23 @@ export default function ClientProfileTabs({
                   onClick={() => setActiveTab("intake")}
                   className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
                 >
-                  Voir la fiche complète →
+                  {t("Voir la fiche complète →")}
                 </button>
               </div>
             </Card>
           ) : (
-            <Card title="Fiche client : l'essentiel">
+            <Card title={t("Fiche client : l'essentiel")}>
               <p className="text-xs text-[#F5EDED]/40 mb-2">
                 {client.subscription_status === "active"
-                  ? "En attente que le client remplisse son questionnaire d'onboarding. Objectifs, régime, blessures... tout ce qui sert ensuite dans le créateur de recette, de programme et de plan nutrition, se remplira automatiquement dès qu'il l'aura fait."
-                  : "Active le coaching payant de ce client pour débloquer son questionnaire d'onboarding. C'est lui qui remplit sa fiche, pas toi."}
+                  ? t("En attente que le client remplisse son questionnaire d'onboarding. Objectifs, régime, blessures... tout ce qui sert ensuite dans le créateur de recette, de programme et de plan nutrition, se remplira automatiquement dès qu'il l'aura fait.")
+                  : t("Active le coaching payant de ce client pour débloquer son questionnaire d'onboarding. C'est lui qui remplit sa fiche, pas toi.")}
               </p>
               <button
                 type="button"
                 onClick={() => setActiveTab("intake")}
                 className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
               >
-                Voir le statut →
+                {t("Voir le statut →")}
               </button>
             </Card>
           )}
@@ -551,7 +553,7 @@ export default function ClientProfileTabs({
             currentNextBillingDate={client.next_billing_date}
           />
 
-          <Card title="Informations personnelles">
+          <Card title={t("Informations personnelles")}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InfoRow label="Nom complet" value={client.full_name} />
               <InfoRow label="Email" value={client.email} />
@@ -569,7 +571,7 @@ export default function ClientProfileTabs({
             </div>
           </Card>
 
-          <Card title="Suivi">
+          <Card title={t("Suivi")}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <InfoRow
                 label="Date de début"
@@ -585,19 +587,19 @@ export default function ClientProfileTabs({
           </Card>
 
           {client.goal && (
-            <Card title="Objectif">
+            <Card title={t("Objectif")}>
               <p className="text-sm text-[#F5EDED]/80 leading-relaxed">
                 {client.goal}
               </p>
             </Card>
           )}
 
-          <Card title="Points & rang">
+          <Card title={t("Points & rang")}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-bold text-white">
                 {rank.emoji} {rank.label}
               </span>
-              <span className="text-xs text-[#F5EDED]/40">{points} pts</span>
+              <span className="text-xs text-[#F5EDED]/40">{points}{" "}{t("pts")}</span>
             </div>
             {next && (
               <>
@@ -608,7 +610,7 @@ export default function ClientProfileTabs({
                   />
                 </div>
                 <p className="text-[10px] text-[#F5EDED]/35">
-                  Encore {next.minPoints - points} pts avant {next.emoji} {next.label}
+                  {t("Encore")}{" "}{next.minPoints - points}{" "}{t("pts avant")}{" "}{next.emoji} {next.label}
                 </p>
               </>
             )}
@@ -676,7 +678,7 @@ export default function ClientProfileTabs({
       {activeTab === "agenda" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
-            Emploi du temps du client. Lecture seule, c&apos;est lui qui le gère depuis son espace.
+            {t("Emploi du temps du client. Lecture seule, c'est lui qui le gère depuis son espace.")}
           </p>
           <WeeklyAgenda blocks={scheduleBlocks} editable={false} />
         </div>
@@ -691,8 +693,7 @@ export default function ClientProfileTabs({
       {activeTab === "pas" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
-            Suivi de pas du client. Lecture seule, c&apos;est lui qui coche sa routine et logue ses pas
-            au quotidien. L&apos;objectif se règle depuis l&apos;onglet Fiche client.
+            {t("Suivi de pas du client. Lecture seule, c'est lui qui coche sa routine et logue ses pas au quotidien. L'objectif se règle depuis l'onglet Fiche client.")}
           </p>
           <StepsClient
             settings={{ client_id: client.id, daily_goal: stepGoal }}
@@ -713,8 +714,7 @@ export default function ClientProfileTabs({
       {activeTab === "sommeil" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
-            Sommeil et récupération du client. Lecture seule, c&apos;est lui qui logue ses données ou
-            connecte sa bague Oura depuis son espace.
+            {t("Sommeil et récupération du client. Lecture seule, c'est lui qui logue ses données ou connecte sa bague Oura depuis son espace.")}
           </p>
           <TrackingClient logs={biometricLogs} insights={biometricInsights} ouraConnected={clientHasOura} readOnly />
         </div>
@@ -729,8 +729,7 @@ export default function ClientProfileTabs({
       {activeTab === "mindset" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
-            Profil mindset et habitudes du client. Lecture seule, c&apos;est lui qui remplit son quiz et
-            coche ses habitudes depuis son espace.
+            {t("Profil mindset et habitudes du client. Lecture seule, c'est lui qui remplit son quiz et coche ses habitudes depuis son espace.")}
           </p>
           <CoachClientMindsetView profile={mindsetProfile} habitLogs={mindsetHabitLogs} />
         </div>
@@ -746,28 +745,27 @@ export default function ClientProfileTabs({
       {activeTab === "roadmap" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">Road Map client</p>
+            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">{t("Road Map client")}</p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/roadmap`}
               className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
               <ExternalLink size={12} />
-              {roadmapData ? "Modifier" : "Configurer"}
+              {roadmapData ? t("Modifier") : t("Configurer")}
             </Link>
           </div>
 
           {roadmapLoading ? (
             <Card>
               <div className="flex items-center justify-center py-8">
-                <p className="text-xs text-[#F5EDED]/40">Chargement…</p>
+                <p className="text-xs text-[#F5EDED]/40">{t("Chargement…")}</p>
               </div>
             </Card>
           ) : roadmapError ? (
             <Card>
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
                 <p className="text-xs text-[#F5EDED]/40">
-                  Impossible de vérifier si ce client a déjà une road map. Recharge la page avant de
-                  cliquer sur « Configurer », pour ne pas risquer d&apos;en créer une en double.
+                  {t("Impossible de vérifier si ce client a déjà une road map. Recharge la page avant de cliquer sur « Configurer », pour ne pas risquer d'en créer une en double.")}
                 </p>
               </div>
             </Card>
@@ -775,20 +773,20 @@ export default function ClientProfileTabs({
             <Card>
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
                 <p className="text-xs text-[#F5EDED]/40">
-                  Clique sur &laquo; Configurer &raquo; pour créer la road map de ce client.
+                  {t("Clique sur « Configurer » pour créer la road map de ce client.")}
                 </p>
               </div>
             </Card>
           ) : (
             <div className="space-y-4">
-              <Card title="Période">
+              <Card title={t("Période")}>
                 <p className="text-sm text-white font-medium">
                   {formatDate(roadmapData.roadmap.start_date)} → {formatDate(roadmapData.roadmap.end_date)}
                 </p>
               </Card>
 
               {roadmapData.phases.length > 0 && (
-                <Card title="Phases">
+                <Card title={t("Phases")}>
                   <div className="flex flex-col gap-2">
                     {roadmapData.phases.map((phase) => {
                       const colors = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
@@ -812,7 +810,7 @@ export default function ClientProfileTabs({
               )}
 
               {roadmapData.objectives.length > 0 && (
-                <Card title="Objectifs">
+                <Card title={t("Objectifs")}>
                   <div className="flex flex-col gap-2">
                     {roadmapData.objectives.map((obj) => (
                       <div
@@ -961,10 +959,10 @@ export default function ClientProfileTabs({
         <div>
           <div className="flex items-start justify-between mb-4">
             <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              {checkinsWithAverages.length} check-in{checkinsWithAverages.length !== 1 ? "s" : ""}
+              {checkinsWithAverages.length}{" "}{t("check-in")}{checkinsWithAverages.length !== 1 ? "s" : ""}
               {pendingCheckins > 0 && (
                 <span className="ml-2 text-amber-400 font-semibold normal-case tracking-normal">
-                  · {pendingCheckins} sans réponse
+                  · {pendingCheckins}{" "}{t("sans réponse")}
                 </span>
               )}
             </p>
@@ -975,10 +973,10 @@ export default function ClientProfileTabs({
           {checkinsWithAverages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
-                Aucun check-in pour l&apos;instant
+                {t("Aucun check-in pour l'instant")}
               </p>
               <p className="text-xs text-[#F5EDED]/25 mt-1">
-                Le client n&apos;a pas encore soumis de bilan hebdomadaire.
+                {t("Le client n'a pas encore soumis de bilan hebdomadaire.")}
               </p>
             </div>
           ) : (

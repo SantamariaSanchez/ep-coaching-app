@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Rocket, User, Tags, Users, Link2, ChevronRight, ChevronLeft, Target } from "lucide-react";
@@ -54,6 +55,7 @@ export default function CoachOnboardingFlow({
   inviteCode: string | null;
   canvas: BusinessCanvas | null;
 }) {
+  const t = useT();
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
   const [finishing, setFinishing] = useState(false);
@@ -102,26 +104,24 @@ export default function CoachOnboardingFlow({
             <Rocket size={28} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
           </div>
           <h1 className="ep-h1" style={{ marginBottom: 10 }}>
-            Bienvenue{fullName ? `, ${fullName.split(" ")[0]}` : ""}
+            {t("Bienvenue")}{fullName ? `, ${fullName.split(" ")[0]}` : ""}
           </h1>
           <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, maxWidth: 440, margin: "0 auto" }}>
-            Ton abonnement plateforme est actif. Avant ton premier client, 3 minutes pour que ta fiche
-            soit prête : ton profil, tes spécialités, ta capacité, et ton lien d&apos;inscription
-            personnel. Tout reste modifiable ensuite depuis Paramètres.
+            {t("Ton abonnement plateforme est actif. Avant ton premier client, 3 minutes pour que ta fiche soit prête : ton profil, tes spécialités, ta capacité, et ton lien d'inscription personnel. Tout reste modifiable ensuite depuis Paramètres.")}
           </p>
         </div>
       )}
 
       {step === "profile" && (
         <div>
-          <StepHeader icon={User} title="Ton profil" subtitle="Ce que verra un prospect qui te découvre dans l'annuaire." />
+          <StepHeader icon={User} title={t("Ton profil")} subtitle="Ce que verra un prospect qui te découvre dans l'annuaire." />
           <ProfileEditor fullName={fullName} phone={phone} bio={bio} instagramHandle={instagramHandle} />
         </div>
       )}
 
       {step === "specializations" && (
         <div>
-          <StepHeader icon={Tags} title="Tes spécialités" subtitle="Pour qu'un membre te trouve selon SON besoin, pas au hasard." />
+          <StepHeader icon={Tags} title={t("Tes spécialités")} subtitle="Pour qu'un membre te trouve selon SON besoin, pas au hasard." />
           <CoachSpecializationsCard initialSpecializations={specializations} />
         </div>
       )}
@@ -130,13 +130,11 @@ export default function CoachOnboardingFlow({
         <div>
           <StepHeader
             icon={Target}
-            title="Ton activité"
+            title={t("Ton activité")}
             subtitle="Sert à personnaliser automatiquement les prompts de contenu dans Studio créatif à TA situation, pas rester générique."
           />
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.6, margin: "0 0 14px" }}>
-            Remplis au moins &laquo; Proposition de valeur &raquo; et &laquo; Segments de clientèle &raquo; si tu es pressé,
-            les autres blocs t&apos;attendent dans Développer mon business quand tu auras 5 minutes de plus. Rien n&apos;est
-            obligatoire, chaque bloc s&apos;enregistre tout seul.
+            {t("Remplis au moins « Proposition de valeur » et « Segments de clientèle » si tu es pressé, les autres blocs t'attendent dans Développer mon business quand tu auras 5 minutes de plus. Rien n'est obligatoire, chaque bloc s'enregistre tout seul.")}
           </p>
           <BusinessCanvasEditor canvas={canvas} />
         </div>
@@ -144,14 +142,14 @@ export default function CoachOnboardingFlow({
 
       {step === "capacity" && (
         <div>
-          <StepHeader icon={Users} title="Ta capacité" subtitle="Combien de clients tu peux vraiment bien suivre en ce moment." />
+          <StepHeader icon={Users} title={t("Ta capacité")} subtitle="Combien de clients tu peux vraiment bien suivre en ce moment." />
           <AcceptingClientsCard initialAccepting={accepting} waitlist={waitlist} />
         </div>
       )}
 
       {step === "invite" && (
         <div>
-          <StepHeader icon={Link2} title="Ton lien" subtitle="Chaque inscription via ce lien te rattache automatiquement le client." />
+          <StepHeader icon={Link2} title={t("Ton lien")} subtitle="Chaque inscription via ce lien te rattache automatiquement le client." />
           <InviteLinkCard inviteCode={inviteCode} />
         </div>
       )}
@@ -168,7 +166,7 @@ export default function CoachOnboardingFlow({
               background: "none", border: "none", cursor: "pointer",
             }}
           >
-            <ChevronLeft size={14} /> Retour
+            <ChevronLeft size={14} />{" "}{t("Retour")}
           </button>
         ) : (
           <span />
@@ -180,7 +178,7 @@ export default function CoachOnboardingFlow({
           className="ep-btn-primary"
           style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 22px" }}
         >
-          {stepIndex === STEPS.length - 1 ? "C'est parti" : "Continuer"}
+          {stepIndex === STEPS.length - 1 ? t("C'est parti") : t("Continuer")}
           <ChevronRight size={14} />
         </button>
       </div>

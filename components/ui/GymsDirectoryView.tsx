@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo } from "react";
 import { Search, Plus, X, Star, MapPin, Pencil, Trash2, Globe, Dumbbell, Pin } from "lucide-react";
 import type { GymWithReviews } from "@/utils/gyms";
@@ -61,6 +62,7 @@ function GymForm({
   onSave: (input: CreateGymInput) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
+  const tr = useT();
   const [name, setName] = useState(initial?.name ?? "");
   const [city, setCity] = useState(initial?.city ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
@@ -95,21 +97,21 @@ function GymForm({
   return (
     <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
-        <label className={labelCls}>Nom de la salle</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Basic-Fit Lille Centre" aria-label="Nom de la salle" className={inputCls} />
+        <label className={labelCls}>{tr("Nom de la salle")}</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("Ex. Basic-Fit Lille Centre")} aria-label={tr("Nom de la salle")} className={inputCls} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className={labelCls}>Ville</label>
-          <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Lille" aria-label="Lille" className={inputCls} />
+          <label className={labelCls}>{tr("Ville")}</label>
+          <input value={city} onChange={(e) => setCity(e.target.value)} placeholder={tr("Lille")} aria-label={tr("Lille")} className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Adresse (optionnel)</label>
-          <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue…" aria-label="12 rue…" className={inputCls} />
+          <label className={labelCls}>{tr("Adresse (optionnel)")}</label>
+          <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder={tr("12 rue…")} aria-label={tr("12 rue…")} className={inputCls} />
         </div>
       </div>
       <div>
-        <label className={labelCls}>Type de salle</label>
+        <label className={labelCls}>{tr("Type de salle")}</label>
         <div className="flex gap-2">
           {GYM_TYPE_OPTIONS.map((t) => (
             <button
@@ -126,7 +128,7 @@ function GymForm({
         </div>
       </div>
       <div>
-        <label className={labelCls}>Type de matériel disponible (optionnel)</label>
+        <label className={labelCls}>{tr("Type de matériel disponible (optionnel)")}</label>
         <div className="flex flex-wrap gap-1.5">
           {EQUIPMENT_TYPES.map((t) => (
             <button
@@ -144,22 +146,22 @@ function GymForm({
           ))}
         </div>
         <p className="mt-1 text-[9px] text-[#F5EDED]/25">
-          Sert au filtre et au croisement avec la bibliothèque d&apos;exercices.
+          {tr("Sert au filtre et au croisement avec la bibliothèque d'exercices.")}
         </p>
       </div>
       <div>
-        <label className={labelCls}>Équipement disponible (optionnel)</label>
+        <label className={labelCls}>{tr("Équipement disponible (optionnel)")}</label>
         <textarea
           value={equipmentNotes}
           onChange={(e) => setEquipmentNotes(e.target.value)}
           rows={2}
-          placeholder="Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…" aria-label="Notes sur l'équipement"
+          placeholder={tr("Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…")} aria-label={tr("Notes sur l'équipement")}
           className={`${inputCls} resize-none`}
         />
       </div>
       <div>
-        <label className={labelCls}>Site web (optionnel)</label>
-        <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" aria-label="https://…" className={inputCls} />
+        <label className={labelCls}>{tr("Site web (optionnel)")}</label>
+        <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder={tr("https://…")} aria-label={tr("https://…")} className={inputCls} />
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="flex gap-2">
@@ -168,9 +170,9 @@ function GymForm({
           disabled={saving}
           className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
-          {saving ? "Enregistrement…" : initial ? "Mettre à jour" : "Ajouter à l'annuaire"}
+          {saving ? tr("Enregistrement…") : initial ? tr("Mettre à jour") : tr("Ajouter à l'annuaire")}
         </button>
-        <button onClick={onCancel} aria-label="Annuler" className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -187,6 +189,7 @@ function ReviewForm({
   onSave: (rating: number, comment: string) => Promise<void>;
   onCancel: () => void;
 }) {
+  const tr = useT();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [saving, setSaving] = useState(false);
@@ -198,7 +201,7 @@ function ReviewForm({
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         rows={2}
-        placeholder="Ton avis (optionnel)…" aria-label="Ton avis (optionnel)…"
+        placeholder={tr("Ton avis (optionnel)…")} aria-label={tr("Ton avis (optionnel)…")}
         className={`${inputCls} resize-none`}
       />
       <div className="flex gap-2">
@@ -207,10 +210,10 @@ function ReviewForm({
           disabled={saving}
           className="flex-1 py-2 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
-          {saving ? "…" : "Publier l'avis"}
+          {saving ? "…" : tr("Publier l'avis")}
         </button>
         <button onClick={onCancel} className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 rounded-lg">
-          Annuler
+          {tr("Annuler")}
         </button>
       </div>
     </div>
@@ -242,6 +245,7 @@ function GymCard({
   onReview: (rating: number, comment: string) => Promise<void>;
   onDeleteReview: (reviewId: string) => Promise<void>;
 }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [reviewing, setReviewing] = useState(false);
@@ -296,7 +300,7 @@ function GymCard({
           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             {isMyGym && (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]">
-                <Pin size={9} /> Ta salle
+                <Pin size={9} />{" "}{tr("Ta salle")}
               </span>
             )}
             {gym.type && (
@@ -330,8 +334,7 @@ function GymCard({
           )}
           {matchingExerciseCount != null && (
             <p className="text-xs text-[#F5EDED]/40">
-              <strong className="text-[#F5EDED]/70">{matchingExerciseCount}</strong> exercice{matchingExerciseCount !== 1 ? "s" : ""} de la
-              bibliothèque réalisable{matchingExerciseCount !== 1 ? "s" : ""} avec ce matériel.
+              <strong className="text-[#F5EDED]/70">{matchingExerciseCount}</strong>{" "}{tr("exercice")}{matchingExerciseCount !== 1 ? "s" : ""}{" "}{tr("de la bibliothèque réalisable")}{matchingExerciseCount !== 1 ? "s" : ""}{" "}{tr("avec ce matériel.")}
             </p>
           )}
           {!isCoach && onSetAsMyGym && !isMyGym && (
@@ -340,33 +343,33 @@ function GymCard({
               disabled={settingMyGym}
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
             >
-              <Pin size={11} /> {settingMyGym ? "…" : "Marquer comme ma salle"}
+              <Pin size={11} /> {settingMyGym ? "…" : tr("Marquer comme ma salle")}
             </button>
           )}
           {gym.equipment_notes && (
-            <p className="text-xs text-[#F5EDED]/45 leading-relaxed italic">&ldquo;{gym.equipment_notes}&rdquo;</p>
+            <p className="text-xs text-[#F5EDED]/45 leading-relaxed italic">{tr("&ldquo;")}{gym.equipment_notes}{tr("&rdquo;")}</p>
           )}
           {gym.website && (
             <a href={safeExternalUrl(gym.website) ?? "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors">
-              <Globe size={11} /> Site web
+              <Globe size={11} />{" "}{tr("Site web")}
             </a>
           )}
 
           <div className="border-t border-[#890404]/10 pt-3 space-y-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
-              Avis ({gym.reviews.length})
+              {tr("Avis (")}{gym.reviews.length})
             </p>
             {gym.reviews.map((r) => (
               <div key={r.id} className="bg-[#150000] border border-[#890404]/15 rounded-lg p-2.5">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <StarDisplay value={r.rating} />
-                    <span className="text-[10px] text-[#F5EDED]/30">{r.profiles?.full_name ?? "Membre"}</span>
+                    <span className="text-[10px] text-[#F5EDED]/30">{r.profiles?.full_name ?? tr("Membre")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] text-[#F5EDED]/20">{formatDate(r.created_at)}</span>
                     {r.author_id === currentUserId && (
-                      <button onClick={() => onDeleteReview(r.id)} aria-label="Supprimer ton avis" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
+                      <button onClick={() => onDeleteReview(r.id)} aria-label={tr("Supprimer ton avis")} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
                         <Trash2 size={10} />
                       </button>
                     )}
@@ -386,7 +389,7 @@ function GymCard({
                 onClick={() => setReviewing(true)}
                 className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
               >
-                {myReview ? "Modifier mon avis" : "Laisser un avis"}
+                {myReview ? tr("Modifier mon avis") : tr("Laisser un avis")}
               </button>
             )}
           </div>
@@ -394,13 +397,13 @@ function GymCard({
           {isCoach && (
             <div className="flex gap-2 pt-2 border-t border-[#890404]/10">
               <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
-                <Pencil size={11} /> Modifier
+                <Pencil size={11} />{" "}{tr("Modifier")}
               </button>
               {confirmDelete ? (
-                <button onClick={onDelete} className="text-[10px] font-bold uppercase tracking-widest text-red-400">Confirmer</button>
+                <button onClick={onDelete} className="text-[10px] font-bold uppercase tracking-widest text-red-400">{tr("Confirmer")}</button>
               ) : (
                 <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors ml-auto">
-                  <Trash2 size={11} /> Supprimer
+                  <Trash2 size={11} />{" "}{tr("Supprimer")}
                 </button>
               )}
             </div>
@@ -447,6 +450,7 @@ export default function GymsDirectoryView({
   myGymName,
   onSetMyGym,
 }: Props) {
+  const tr = useT();
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [activeType, setActiveType] = useState<GymType | null>(null);
@@ -484,18 +488,18 @@ export default function GymsDirectoryView({
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher une salle ou une ville…" aria-label="Rechercher une salle ou une ville…" className={`${inputCls} pl-9`} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr("Rechercher une salle ou une ville…")} aria-label={tr("Rechercher une salle ou une ville…")} className={`${inputCls} pl-9`} />
         </div>
         <button
           onClick={() => setShowCreate((v) => !v)}
           className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors flex-shrink-0"
         >
-          <Plus size={13} /> {showCreate ? "Fermer" : "Ajouter une salle"}
+          <Plus size={13} /> {showCreate ? tr("Fermer") : tr("Ajouter une salle")}
         </button>
       </div>
 
       <p className="text-[10px] text-[#F5EDED]/25">
-        {gyms.length} salle{gyms.length !== 1 ? "s" : ""} référencée{gyms.length !== 1 ? "s" : ""}, partage la tienne et note celles que tu connais.
+        {gyms.length}{" "}{tr("salle")}{gyms.length !== 1 ? "s" : ""}{" "}{tr("référencée")}{gyms.length !== 1 ? "s" : ""}{tr(", partage la tienne et note celles que tu connais.")}
       </p>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
@@ -505,7 +509,7 @@ export default function GymsDirectoryView({
             activeType === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
-          Toutes ({gyms.length})
+          {tr("Toutes (")}{gyms.length})
         </button>
         {GYM_TYPE_OPTIONS.filter((t) => typeCounts[t]).map((t) => (
           <button
@@ -528,7 +532,7 @@ export default function GymsDirectoryView({
               activeEquipment === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
-            Tout matériel
+            {tr("Tout matériel")}
           </button>
           {EQUIPMENT_TYPES.filter((t) => equipmentCounts[t]).map((t) => (
             <button
@@ -572,7 +576,7 @@ export default function GymsDirectoryView({
           />
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">Aucune salle ne correspond à ta recherche.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{tr("Aucune salle ne correspond à ta recherche.")}</p>
         )}
       </div>
     </div>

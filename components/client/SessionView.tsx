@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -655,6 +656,7 @@ function WarmupStep({
   onValidate: (seconds: number) => void;
   onCancel: () => void;
 }) {
+  const tr = useT();
   // Le point de départ est persisté (comme le timer de séance) — sans ça,
   // changer d'onglet démonte ce composant et le décompte repart de zéro,
   // donnant l'impression que la séance vient d'être interrompue/annulée
@@ -715,7 +717,7 @@ function WarmupStep({
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Échauffement : {dayLabel}
+            {tr("Échauffement :")}{" "}{dayLabel}
           </p>
           <div className="flex items-center gap-2">
             <Timer size={14} className="text-[#E01E1E]" />
@@ -736,9 +738,9 @@ function WarmupStep({
           />
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-[8px] text-[#F5EDED]/25">0 min</span>
-          <span className="text-[8px] text-green-400">5 min ✓</span>
-          <span className="text-[8px] text-[#F5EDED]/25">15 min</span>
+          <span className="text-[8px] text-[#F5EDED]/25">{tr("0 min")}</span>
+          <span className="text-[8px] text-green-400">{tr("5 min ✓")}</span>
+          <span className="text-[8px] text-[#F5EDED]/25">{tr("15 min")}</span>
         </div>
       </div>
 
@@ -747,8 +749,7 @@ function WarmupStep({
         <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-5">
           <AlertCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-red-400">
-            Minimum 5 minutes d&apos;échauffement requis pour préparer tes
-            articulations
+            {tr("Minimum 5 minutes d'échauffement requis pour préparer tes articulations")}
           </p>
         </div>
       )}
@@ -756,7 +757,7 @@ function WarmupStep({
         <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-2.5 mb-5">
           <CheckCircle2 size={14} className="text-green-400" />
           <p className="text-xs font-bold text-green-400">
-            Durée recommandée atteinte ✓
+            {tr("Durée recommandée atteinte ✓")}
           </p>
         </div>
       )}
@@ -764,7 +765,7 @@ function WarmupStep({
         <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5 mb-5">
           <AlertCircle size={14} className="text-amber-400" />
           <p className="text-xs font-bold text-amber-400">
-            Tu peux commencer, n&apos;attends pas trop
+            {tr("Tu peux commencer, n'attends pas trop")}
           </p>
         </div>
       )}
@@ -793,7 +794,7 @@ function WarmupStep({
       {movementPreps.length > 0 && (
         <div className="mb-5">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
-            Montée sur tes mouvements du jour
+            {tr("Montée sur tes mouvements du jour")}
           </p>
           <div className="space-y-2">
             {movementPreps.map((mp) => (
@@ -818,7 +819,7 @@ function WarmupStep({
       {/* Exercises list — suggestions éditables : retire ce que tu ne veux
           pas, ajoute les tiens. */}
       <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
-        Suggestions, modifie librement
+        {tr("Suggestions, modifie librement")}
       </p>
       <div className="space-y-2 mb-3">
         {exercises.map((ex, i) => (
@@ -842,7 +843,7 @@ function WarmupStep({
             </span>
             <button
               onClick={() => removeExercise(i)}
-              aria-label="Retirer"
+              aria-label={tr("Retirer")}
               className="text-[#F5EDED]/25 hover:text-red-400 transition-colors flex-shrink-0"
             >
               <X size={14} />
@@ -851,7 +852,7 @@ function WarmupStep({
         ))}
         {exercises.length === 0 && (
           <p className="text-xs text-[#F5EDED]/25 italic text-center py-3">
-            Aucun exercice. Ajoute le tien ci-dessous.
+            {tr("Aucun exercice. Ajoute le tien ci-dessous.")}
           </p>
         )}
       </div>
@@ -862,13 +863,13 @@ function WarmupStep({
           value={customName}
           onChange={(e) => setCustomName(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomExercise(); } }}
-          placeholder="Ajouter ton propre exercice…" aria-label="Ajouter ton propre exercice…"
+          placeholder={tr("Ajouter ton propre exercice…")} aria-label={tr("Ajouter ton propre exercice…")}
           className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
         />
         <button
           onClick={addCustomExercise}
           disabled={!customName.trim()}
-          aria-label="Ajouter l'exercice"
+          aria-label={tr("Ajouter l'exercice")}
           className="px-4 rounded-lg bg-[#890404]/30 hover:bg-[#890404]/50 disabled:opacity-30 text-[#F5EDED]/70 transition-colors"
         >
           <Plus size={16} />
@@ -885,14 +886,14 @@ function WarmupStep({
             : "bg-[#890404]/20 text-[#F5EDED]/20 cursor-not-allowed"
         }`}
       >
-        {canValidate ? "Valider l'échauffement → Commencer" : `Encore ${formatTime(300 - elapsed)}`}
+        {canValidate ? tr("Valider l'échauffement → Commencer") : `Encore ${formatTime(300 - elapsed)}`}
       </button>
 
       <button
         onClick={onCancel}
         className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/25 hover:text-red-400 transition-colors"
       >
-        Annuler la séance
+        {tr("Annuler la séance")}
       </button>
     </div>
   );
@@ -907,6 +908,7 @@ function WarmupStep({
 // pendant que ça compte. Se referme tout seul dès que le set suivant est
 // validé (voir handleValidateSet) — jamais par une action dédiée.
 function RestTimerBadge({ timer }: { timer: RestTimer }) {
+  const tr = useT();
   const [elapsed, setElapsed] = useState(() =>
     Math.floor((Date.now() - timer.startedAt) / 1000)
   );
@@ -952,7 +954,7 @@ function RestTimerBadge({ timer }: { timer: RestTimer }) {
         {formatTime(elapsed)}
       </span>
       <span className="text-[8px] font-bold uppercase tracking-wider text-[#F5EDED]/35 whitespace-nowrap">
-        repos {timer.suggestedLabel}
+        {tr("repos")}{" "}{timer.suggestedLabel}
       </span>
     </div>
   );
@@ -1013,6 +1015,7 @@ function SetRow({
   onRetrySave: () => void;
   onEnsureSetId: () => Promise<string | null>;
 }) {
+  const tr = useT();
   const weight = parseFloat(set.weightKg) || 0;
   // Même règle que persistSet (isPR sauvegardé) : sans seuil (exercice
   // jamais fait avant), n'importe quel poids saisi devient le premier
@@ -1106,22 +1109,22 @@ function SetRow({
     >
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/30 w-12">
-          Set {position}
+          {tr("Set")}{" "}{position}
         </span>
         {set.validated && (
           <CheckCircle2 size={12} className="text-green-400" />
         )}
         {showPR && (
           <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
-            🏆 PR !
+            {tr("🏆 PR !")}
           </span>
         )}
         {set.validated ? (
           <button
             onClick={onUnvalidate}
             className="ml-auto flex items-center gap-1 p-1 rounded-md text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
-            title="Modifier ce set"
-            aria-label="Modifier ce set"
+            title={tr("Modifier ce set")}
+            aria-label={tr("Modifier ce set")}
           >
             <Pencil size={11} />
           </button>
@@ -1129,8 +1132,8 @@ function SetRow({
           <button
             onClick={onRemove}
             className="ml-auto p-1 rounded-md text-[#F5EDED]/25 hover:text-red-400 transition-colors"
-            title="Retirer ce set"
-            aria-label="Retirer ce set"
+            title={tr("Retirer ce set")}
+            aria-label={tr("Retirer ce set")}
           >
             <X size={12} />
           </button>
@@ -1143,17 +1146,17 @@ function SetRow({
             <span>
               {set.weightKg || "···"}
               <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
-                kg
+                {tr("kg")}
               </span>
             </span>
             <span>
               {set.repsActual || "···"}
               <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
-                reps
+                {tr("reps")}
               </span>
             </span>
             <span>
-              RIR{" "}
+              {tr("RIR")}{" "}
               <span className="text-[#E01E1E]">{set.rirActual || "···"}</span>
             </span>
             {set.standardizationScore && (
@@ -1170,38 +1173,38 @@ function SetRow({
             <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5">
               <AlertCircle size={11} className="text-amber-400 flex-shrink-0" />
               <p className="text-[10px] text-amber-300 flex-1">
-                Pas encore enregistré, vérifie ta connexion.
+                {tr("Pas encore enregistré, vérifie ta connexion.")}
               </p>
               <button
                 onClick={onRetrySave}
                 disabled={set.saving}
                 className="text-[9px] font-black uppercase tracking-widest text-amber-300 hover:text-amber-200 disabled:opacity-50 transition-colors"
               >
-                {set.saving ? "Envoi…" : "Réessayer"}
+                {set.saving ? tr("Envoi…") : tr("Réessayer")}
               </button>
             </div>
           )}
 
           {set.hasVideo ? (
             <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-400">
-              <Video size={11} /> Vidéo envoyée à ton coach
+              <Video size={11} />{" "}{tr("Vidéo envoyée à ton coach")}
             </span>
           ) : !set.dbId ? (
             // Filmer un set exige la ligne en base (le chemin de la video y
             // est rattache) — proposer le bouton alors qu'elle n'existe pas
             // ne menait qu'a un clic sans effet.
             <span className="text-[10px] text-[#F5EDED]/25">
-              Vidéo possible une fois le set enregistré
+              {tr("Vidéo possible une fois le set enregistré")}
             </span>
           ) : (
             <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
               {uploadingVideo ? (
                 <>
-                  <Loader2 size={11} className="animate-spin" /> Envoi…
+                  <Loader2 size={11} className="animate-spin" />{" "}{tr("Envoi…")}
                 </>
               ) : (
                 <>
-                  <Video size={11} /> Filmer ce set
+                  <Video size={11} />{" "}{tr("Filmer ce set")}
                 </>
               )}
               <input
@@ -1229,7 +1232,7 @@ function SetRow({
             <div className="rounded-lg bg-[#150000] border border-[#890404]/20 px-2.5 py-1.5 space-y-1">
               {hasLastRef && lastRef && (
                 <p className="text-[10px] text-[#F5EDED]/50 leading-tight break-words">
-                  <span className="text-[#F5EDED]/30">Dernière fois : </span>
+                  <span className="text-[#F5EDED]/30">{tr("Dernière fois :")}{" "}</span>
                   {formatPrevSet(lastRef)}
                 </p>
               )}
@@ -1237,8 +1240,8 @@ function SetRow({
                 <div className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-[11px] font-bold text-white leading-tight">
-                      <span className="text-[#E01E1E]">Objectif : </span>
-                      {formatKg(suggestion.weightKg)} kg × {suggestion.reps}
+                      <span className="text-[#E01E1E]">{tr("Objectif :")}{" "}</span>
+                      {formatKg(suggestion.weightKg)}{" "}{tr("kg ×")}{" "}{suggestion.reps}
                     </p>
                     <p className="text-[9.5px] text-[#F5EDED]/35 leading-tight mt-0.5 break-words">
                       {suggestion.reason}
@@ -1255,7 +1258,7 @@ function SetRow({
                     className="flex-shrink-0 min-h-[36px] px-3 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/30 hover:bg-[#E01E1E]/25 transition-colors"
                     aria-label={`Remplir ${formatKg(suggestion.weightKg)} kg et ${suggestion.reps} reps`}
                   >
-                    Remplir
+                    {tr("Remplir")}
                   </button>
                 </div>
               )}
@@ -1266,9 +1269,9 @@ function SetRow({
           <div className="flex gap-2">
             <div className="flex-1 min-w-0">
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
-                Poids (kg)
+                {tr("Poids (kg)")}
               </label>
-              <input aria-label="Poids (kg)"
+              <input aria-label={tr("Poids (kg)")}
                 type="number"
                 inputMode="decimal"
                 placeholder={weightPlaceholder}
@@ -1278,18 +1281,18 @@ function SetRow({
               />
               {!suggestion && suggestionDiffersFromLast && !set.weightKg && (
                 <p className="text-[8.5px] text-[#F5EDED]/30 mt-1 leading-tight">
-                  💡 {suggestedWeight}kg suggéré (RIR {prevWeight!.rir} la dernière fois pour une cible {exercise.rir})
+                  💡 {suggestedWeight}{tr("kg suggéré (RIR")}{" "}{prevWeight!.rir}{" "}{tr("la dernière fois pour une cible")}{" "}{exercise.rir})
                 </p>
               )}
             </div>
             <div className="flex-1 min-w-0">
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
-                Reps
+                {tr("Reps")}
               </label>
               {/* Placeholder = la fourchette de CETTE série ("6-8"), plus
                   jamais le schéma complet du programme ("1x12-15, 2x10-12")
                   écrasé dans un petit champ numérique. */}
-              <input aria-label="Reps"
+              <input aria-label={tr("Reps")}
                 type="number"
                 inputMode="numeric"
                 placeholder={repsPlaceholder}
@@ -1307,7 +1310,7 @@ function SetRow({
               onClick={() => onChange({ weightKg: copyableWeight })}
               className="inline-flex items-center min-h-[36px] px-3 rounded-lg text-[10px] font-bold text-[#F5EDED]/55 hover:text-[#F5EDED]/80 border border-[#890404]/25 hover:border-[#890404]/50 transition-colors"
             >
-              = Série précédente ({copyableWeight.replace(".", ",")} kg)
+              {tr("= Série précédente (")}{copyableWeight.replace(".", ",")}{" "}{tr("kg)")}
             </button>
           )}
 
@@ -1319,11 +1322,11 @@ function SetRow({
           <div>
             <div className="flex items-baseline justify-between gap-2 mb-1">
               <span className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
-                RIR réel
+                {tr("RIR réel")}
               </span>
-              <span className="text-[8.5px] text-[#F5EDED]/25">0 = échec · 5 = facile</span>
+              <span className="text-[8.5px] text-[#F5EDED]/25">{tr("0 = échec · 5 = facile")}</span>
             </div>
-            <div className="flex gap-1" role="group" aria-label="RIR réel">
+            <div className="flex gap-1" role="group" aria-label={tr("RIR réel")}>
               {RIR_CHOICES.map((v) => {
                 const selected = set.rirActual === String(v);
                 return (
@@ -1348,15 +1351,15 @@ function SetRow({
           <div>
             <div className="flex items-baseline justify-between gap-2 mb-1">
               <span className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
-                Exécution
+                {tr("Exécution")}
               </span>
               <span className="text-[8.5px] text-[#F5EDED]/35 truncate">
                 {set.standardizationScore
                   ? STANDARDIZATION_LABELS[set.standardizationScore]
-                  : "1 = approximative · 5 = parfaite"}
+                  : tr("1 = approximative · 5 = parfaite")}
               </span>
             </div>
-            <div className="flex gap-1" role="group" aria-label="Exécution">
+            <div className="flex gap-1" role="group" aria-label={tr("Exécution")}>
               {SCORE_CHOICES.map((v) => {
                 const selected = set.standardizationScore === String(v);
                 return (
@@ -1388,17 +1391,17 @@ function SetRow({
           <div className="flex items-center justify-between gap-2">
             {set.hasVideo ? (
               <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-400">
-                <Video size={11} /> Vidéo envoyée à ton coach
+                <Video size={11} />{" "}{tr("Vidéo envoyée à ton coach")}
               </span>
             ) : (
               <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
                 {uploadingVideo ? (
                   <>
-                    <Loader2 size={11} className="animate-spin" /> Envoi…
+                    <Loader2 size={11} className="animate-spin" />{" "}{tr("Envoi…")}
                   </>
                 ) : (
                   <>
-                    <Video size={11} /> Filmer ce set
+                    <Video size={11} />{" "}{tr("Filmer ce set")}
                   </>
                 )}
                 <input
@@ -1427,10 +1430,10 @@ function SetRow({
           >
             {set.saving ? (
               <>
-                <Loader2 size={12} className="animate-spin" /> Enregistrement…
+                <Loader2 size={12} className="animate-spin" />{" "}{tr("Enregistrement…")}
               </>
             ) : (
-              "✓ Valider le set"
+              tr("✓ Valider le set")
             )}
           </button>
         </div>
@@ -1479,6 +1482,7 @@ function ExerciseCard({
   onMoveDown?: () => void;
   onNotesChange: (notes: string) => void;
 }) {
+  const tr = useT();
   const confirm = useConfirm();
   // Conseils réels de la bibliothèque d'exercices en priorité — sinon les
   // cues génériques (avant : c'était toujours ces cues génériques, quasi
@@ -1525,7 +1529,7 @@ function ExerciseCard({
         >
           <p className="text-sm font-black text-white flex items-center gap-1.5">
             {exState.exercise.name}
-            {hasPR && <span title="Record personnel sur cet exercice">🏆</span>}
+            {hasPR && <span title={tr("Record personnel sur cet exercice")}>🏆</span>}
           </p>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             {exState.exercise.muscle_group && (
@@ -1536,9 +1540,9 @@ function ExerciseCard({
             {tensionLabel && (
               <span
                 className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E01E1E]/10 text-[#E01E1E]/80 border border-[#E01E1E]/20"
-                title="Zone de tension visée sur cet exercice"
+                title={tr("Zone de tension visée sur cet exercice")}
               >
-                Focus : {tensionLabel}
+                {tr("Focus :")}{" "}{tensionLabel}
               </span>
             )}
             {!isCustomExercise && exState.exercise.sets && (
@@ -1554,7 +1558,7 @@ function ExerciseCard({
                   `${exState.exercise.sets} séries × ${formatRange(ranges[0])} reps`
                 ) : (
                   <>
-                    {exState.exercise.sets} séries
+                    {exState.exercise.sets}{" "}{tr("séries")}
                     {exState.exercise.reps && ` × ${exState.exercise.reps} reps`}
                   </>
                 )}
@@ -1568,7 +1572,7 @@ function ExerciseCard({
                 validatedCount === totalSets && totalSets > 0 ? "text-green-400" : "text-[#F5EDED]/30"
               }`}
             >
-              {validatedCount}/{totalSets} validées
+              {validatedCount}/{totalSets}{" "}{tr("validées")}
             </span>
           </div>
         </button>
@@ -1591,8 +1595,8 @@ function ExerciseCard({
                 onClick={onMoveUp}
                 disabled={!onMoveUp}
                 className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors"
-                title="Monter l'exercice"
-                aria-label="Monter l'exercice"
+                title={tr("Monter l'exercice")}
+                aria-label={tr("Monter l'exercice")}
               >
                 <ChevronUp size={12} />
               </button>
@@ -1600,8 +1604,8 @@ function ExerciseCard({
                 onClick={onMoveDown}
                 disabled={!onMoveDown}
                 className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors border-t border-[#890404]/20"
-                title="Descendre l'exercice"
-                aria-label="Descendre l'exercice"
+                title={tr("Descendre l'exercice")}
+                aria-label={tr("Descendre l'exercice")}
               >
                 <ChevronDown size={12} />
               </button>
@@ -1614,7 +1618,7 @@ function ExerciseCard({
                 ? "bg-[#E01E1E]/15 text-[#E01E1E] border-[#E01E1E]/25"
                 : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
-            title="Tips d'exécution" aria-label="Tips d'exécution"
+            title={tr("Tips d'exécution")} aria-label={tr("Tips d'exécution")}
           >
             💡
           </button>
@@ -1625,7 +1629,7 @@ function ExerciseCard({
                 ? "bg-blue-500/15 text-blue-400 border-blue-500/25"
                 : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
-            title="Historique" aria-label="Historique"
+            title={tr("Historique")} aria-label={tr("Historique")}
           >
             <BarChart2 size={12} />
           </button>
@@ -1638,7 +1642,7 @@ function ExerciseCard({
                 ? "text-amber-400/70 border-amber-500/20"
                 : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
-            title="Notes" aria-label="Notes"
+            title={tr("Notes")} aria-label={tr("Notes")}
           >
             <StickyNote size={12} />
           </button>
@@ -1649,7 +1653,7 @@ function ExerciseCard({
               }
             }}
             className="p-1.5 rounded-lg text-[9px] font-bold border text-[#F5EDED]/30 border-[#890404]/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
-            title="Retirer cet exercice" aria-label="Retirer cet exercice"
+            title={tr("Retirer cet exercice")} aria-label={tr("Retirer cet exercice")}
           >
             <X size={12} />
           </button>
@@ -1668,7 +1672,7 @@ function ExerciseCard({
         >
           <ClipboardList size={12} className="text-[#E01E1E]/70 mt-0.5 flex-shrink-0" />
           <span className="min-w-0 flex-1">
-            <span className="ep-label block mb-0.5">Consigne du programme</span>
+            <span className="ep-label block mb-0.5">{tr("Consigne du programme")}</span>
             <span
               className={`block text-[11px] text-[#F5EDED]/65 leading-snug whitespace-pre-wrap break-words ${
                 programNotesOpen ? "" : "line-clamp-2"
@@ -1684,12 +1688,12 @@ function ExerciseCard({
       {exState.showNotes && (
         <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-            Ta note sur cet exercice
+            {tr("Ta note sur cet exercice")}
           </p>
           <textarea
             value={exState.clientNotes}
             onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Ex. variante testée, gêne à l'épaule, ressenti..." aria-label="Notes sur l'exercice"
+            placeholder={tr("Ex. variante testée, gêne à l'épaule, ressenti...")} aria-label={tr("Notes sur l'exercice")}
             rows={2}
             className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
           />
@@ -1701,7 +1705,7 @@ function ExerciseCard({
         <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3 space-y-3">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-              {libraryInstructions ? "Conseils d'exécution" : "Cues d'exécution"}
+              {libraryInstructions ? tr("Conseils d'exécution") : tr("Cues d'exécution")}
             </p>
             {libraryInstructions ? (
               <p className="text-xs text-[#F5EDED]/65 leading-relaxed whitespace-pre-wrap">
@@ -1730,7 +1734,7 @@ function ExerciseCard({
               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
             >
               <Video size={11} />
-              Voir la vidéo d&apos;exemple
+              {tr("Voir la vidéo d'exemple")}
             </a>
           )}
         </div>
@@ -1745,30 +1749,30 @@ function ExerciseCard({
       {exState.showHistory && prevSets.length > 0 && (
         <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-            Dernière séance ({prevSets.length} set{prevSets.length > 1 ? "s" : ""})
+            {tr("Dernière séance (")}{prevSets.length}{" "}{tr("set")}{prevSets.length > 1 ? "s" : ""})
           </p>
           <div className="flex flex-col gap-1.5">
             {prevSets.map((s, i) => (
               <div key={i} className="flex items-center gap-3 text-sm">
                 <span className="text-[10px] font-bold text-[#F5EDED]/30 w-10 flex-shrink-0">
-                  Set {i + 1}
+                  {tr("Set")}{" "}{i + 1}
                 </span>
                 <span className="flex gap-3 font-black text-white">
                   {s.weight != null && (
                     <span>
                       {s.weight}
-                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">kg</span>
+                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">{tr("kg")}</span>
                     </span>
                   )}
                   {s.reps != null && (
                     <span>
                       {s.reps}
-                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">reps</span>
+                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">{tr("reps")}</span>
                     </span>
                   )}
                   {s.rir != null && (
                     <span>
-                      RIR <span className="text-[#E01E1E]">{s.rir}</span>
+                      {tr("RIR")}{" "}<span className="text-[#E01E1E]">{s.rir}</span>
                     </span>
                   )}
                 </span>
@@ -1844,7 +1848,7 @@ function ExerciseCard({
           className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/20 hover:border-[#890404]/40 rounded-lg transition-colors"
         >
           <Plus size={11} />
-          Ajouter un set
+          {tr("Ajouter un set")}
         </button>
       </div>
       </>
@@ -1864,6 +1868,7 @@ function SliderInput({
   value: number;
   onChange: (v: number) => void;
 }) {
+  const tr = useT();
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
@@ -1882,8 +1887,8 @@ function SliderInput({
         className="w-full accent-[#E01E1E]"
       />
       <div className="flex justify-between text-[8px] text-[#F5EDED]/25">
-        <span>Faible</span>
-        <span>Excellent</span>
+        <span>{tr("Faible")}</span>
+        <span>{tr("Excellent")}</span>
       </div>
     </div>
   );
@@ -1898,6 +1903,7 @@ export default function SessionView({
   sessionId: string;
   returnPath?: string;
 }) {
+  const tr = useT();
   const router = useRouter();
   const confirm = useConfirm();
   // SessionView est aussi utilisé pour le logbook perso du coach
@@ -2757,9 +2763,9 @@ export default function SessionView({
       <div className="px-6 py-8 text-center">
         {loadFailed ? (
           <>
-            <p className="text-[#F5EDED]/60 text-sm mb-1">Impossible de charger la séance.</p>
+            <p className="text-[#F5EDED]/60 text-sm mb-1">{tr("Impossible de charger la séance.")}</p>
             <p className="text-[#F5EDED]/35 text-xs mb-4">
-              Vérifie ta connexion : tes séries déjà validées sont enregistrées.
+              {tr("Vérifie ta connexion : tes séries déjà validées sont enregistrées.")}
             </p>
             <button
               type="button"
@@ -2767,11 +2773,11 @@ export default function SessionView({
               className="ep-btn-primary"
               style={{ padding: "12px 22px", fontSize: 12, borderRadius: 12 }}
             >
-              Réessayer
+              {tr("Réessayer")}
             </button>
           </>
         ) : (
-          <p className="text-[#F5EDED]/40">Séance introuvable</p>
+          <p className="text-[#F5EDED]/40">{tr("Séance introuvable")}</p>
         )}
       </div>
     );
@@ -2859,7 +2865,7 @@ export default function SessionView({
         {/* Header */}
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Récap de séance
+            {tr("Récap de séance")}
           </p>
           <h1 className="text-2xl font-black uppercase">{session.day_label}</h1>
           <p className="text-xs text-[#F5EDED]/35 mt-1">
@@ -2906,7 +2912,7 @@ export default function SessionView({
             <div className="flex items-center gap-2 mb-2">
               <Trophy size={14} className="text-amber-400" />
               <p className="text-xs font-black uppercase tracking-widest text-amber-400">
-                {sessionPRs.length} nouveau{sessionPRs.length > 1 ? "x" : ""} PR
+                {sessionPRs.length}{" "}{tr("nouveau")}{sessionPRs.length > 1 ? "x" : ""}{" "}{tr("PR")}
               </p>
             </div>
             <div className="flex flex-wrap gap-2 mb-3">
@@ -2915,7 +2921,7 @@ export default function SessionView({
                   key={i}
                   className="text-xs font-bold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20"
                 >
-                  {pr.exerciseName} : {pr.weightKg} kg
+                  {pr.exerciseName} : {pr.weightKg}{" "}{tr("kg")}
                 </span>
               ))}
             </div>
@@ -2927,7 +2933,7 @@ export default function SessionView({
               href={`${communityBasePath}/communaute/victoires?share=${encodeURIComponent(buildPRShareText(sessionPRs))}`}
               className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/30 transition-colors"
             >
-              <Trophy size={11} /> Partager en Victoire
+              <Trophy size={11} />{" "}{tr("Partager en Victoire")}
             </a>
           </div>
         )}
@@ -2935,7 +2941,7 @@ export default function SessionView({
         {/* Feeling sliders */}
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-5 space-y-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Ressenti global
+            {tr("Ressenti global")}
           </p>
           {!session.is_completed && (
             <>
@@ -2944,12 +2950,12 @@ export default function SessionView({
               <SliderInput label="Feeling global" value={feeling} onChange={setFeeling} />
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
-                  Notes libres
+                  {tr("Notes libres")}
                 </label>
                 <textarea
                   value={sessionNotes}
                   onChange={(e) => setSessionNotes(e.target.value)}
-                  placeholder="Observations, fatigue particulière, douleurs..." aria-label="Observations, fatigue particulière, douleurs..."
+                  placeholder={tr("Observations, fatigue particulière, douleurs...")} aria-label={tr("Observations, fatigue particulière, douleurs...")}
                   rows={3}
                   className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
                 />
@@ -2960,15 +2966,15 @@ export default function SessionView({
             <div className="flex gap-4">
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{session.energy_level ?? "···"}</p>
-                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Énergie</p>
+                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">{tr("Énergie")}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{session.pump ?? "···"}</p>
-                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Pump</p>
+                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">{tr("Pump")}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{session.general_feeling ?? "···"}</p>
-                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Feeling</p>
+                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">{tr("Feeling")}</p>
               </div>
             </div>
           )}
@@ -2977,7 +2983,7 @@ export default function SessionView({
           {session.is_completed && session.notes && (
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                Notes libres
+                {tr("Notes libres")}
               </p>
               <p className="text-sm text-[#F5EDED]/70 leading-relaxed whitespace-pre-wrap break-words">
                 {session.notes}
@@ -2994,7 +3000,7 @@ export default function SessionView({
         {recapBreakdownSets.length > 0 && (
           <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-              Détail des séries
+              {tr("Détail des séries")}
             </p>
             <SessionSetsBreakdown
               sets={recapBreakdownSets}
@@ -3007,7 +3013,7 @@ export default function SessionView({
         {volumeData.length > 0 && (
           <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-              Volume par muscle (sets)
+              {tr("Volume par muscle (sets)")}
             </p>
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
@@ -3037,7 +3043,7 @@ export default function SessionView({
         {rirData.length > 0 && (
           <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-              RIR moyen par exercice
+              {tr("RIR moyen par exercice")}
             </p>
             <div className="h-32">
               <ResponsiveContainer width="100%" height="100%">
@@ -3064,7 +3070,7 @@ export default function SessionView({
         {scoreData.length > 0 && (
           <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-              Score standardisation par exercice
+              {tr("Score standardisation par exercice")}
             </p>
             <div className="h-32">
               <ResponsiveContainer width="100%" height="100%">
@@ -3107,7 +3113,7 @@ export default function SessionView({
               ) : (
                 <>
                   <CheckCircle2 size={16} />
-                  Valider et sauvegarder la séance
+                  {tr("Valider et sauvegarder la séance")}
                 </>
               )}
             </button>
@@ -3116,7 +3122,7 @@ export default function SessionView({
               disabled={saving || canceling}
               className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/25 hover:text-red-400 transition-colors disabled:opacity-50"
             >
-              {canceling ? "Annulation…" : "Annuler la séance (rien ne sera enregistré)"}
+              {canceling ? tr("Annulation…") : tr("Annuler la séance (rien ne sera enregistré)")}
             </button>
           </>
         )}
@@ -3141,7 +3147,7 @@ export default function SessionView({
               ) : (
                 <RotateCcw size={13} />
               )}
-              {reopening ? "Réouverture…" : "Terminée par erreur ? Rouvrir la séance"}
+              {reopening ? tr("Réouverture…") : tr("Terminée par erreur ? Rouvrir la séance")}
             </button>
           </div>
         )}
@@ -3190,11 +3196,11 @@ export default function SessionView({
             </div>
             <div className="text-right">
               <p className="text-[9px] text-[#F5EDED]/35 uppercase tracking-wider">
-                {totalSetsAll} sets validés
+                {totalSetsAll}{" "}{tr("sets validés")}
               </p>
               {avgRIR != null && (
                 <p className="text-[9px] text-[#F5EDED]/35">
-                  RIR moy.{" "}
+                  {tr("RIR moy.")}{" "}
                   <span className="font-black text-white">
                     {Math.round(avgRIR * 10) / 10}
                   </span>
@@ -3205,7 +3211,7 @@ export default function SessionView({
                 disabled={canceling}
                 className="text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/25 hover:text-red-400 transition-colors mt-1 disabled:opacity-50"
               >
-                {canceling ? "Annulation…" : "Annuler"}
+                {canceling ? tr("Annulation…") : tr("Annuler")}
               </button>
             </div>
           </div>
@@ -3228,7 +3234,7 @@ export default function SessionView({
         <div className="px-4 pt-5 max-w-2xl mx-auto">
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3">
             <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-              <Backpack size={11} /> À prévoir pour cette séance
+              <Backpack size={11} />{" "}{tr("À prévoir pour cette séance")}
             </p>
             {/* La raison est affichée, pas cachée dans un title : sur mobile le
                 survol n'existe pas, et sans le pourquoi la liste n'est qu'un
@@ -3247,7 +3253,7 @@ export default function SessionView({
                     <span className="block text-[11px] text-[#F5EDED]/45 leading-snug">{a.reason}</span>
                     {a.forExercises.length > 0 && (
                       <span className="block text-[10px] text-[#F5EDED]/25 mt-0.5">
-                        Pour {a.forExercises.slice(0, 3).join(", ")}
+                        {tr("Pour")}{" "}{a.forExercises.slice(0, 3).join(", ")}
                       </span>
                     )}
                   </>
@@ -3274,7 +3280,7 @@ export default function SessionView({
         {exercises.length === 0 && (
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
             <p className="text-sm text-[#F5EDED]/40">
-              Séance libre, ajoute tes exercices ci-dessous
+              {tr("Séance libre, ajoute tes exercices ci-dessous")}
             </p>
           </div>
         )}
@@ -3337,7 +3343,7 @@ export default function SessionView({
             className="ep-btn-primary w-full"
             style={{ padding: "14px 24px", fontSize: 12, borderRadius: 12 }}
           >
-            Terminer la séance →
+            {tr("Terminer la séance →")}
           </button>
         </div>
       </div>

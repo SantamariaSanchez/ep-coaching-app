@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sun, Moon as MoonIcon, UtensilsCrossed, X, ChevronRight } from "lucide-react";
@@ -80,6 +81,7 @@ export default function DailyGateOverlay({
   mealBaseHref: string;
   bilanHref: string;
 }) {
+  const t = useT();
   const pathname = usePathname();
 
   // Clé par raison seule (plus de date) : une fermeture est définitive pour
@@ -156,14 +158,14 @@ export default function DailyGateOverlay({
             className="ep-btn-primary"
             style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "7px 12px", textDecoration: "none" }}
           >
-            Y aller <ChevronRight size={12} />
+            {t("Y aller")}{" "}<ChevronRight size={12} />
           </a>
         </div>
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Fermer"
-          title="Fermer"
+          aria-label={t("Fermer")}
+          title={t("Fermer")}
           style={{
             flexShrink: 0,
             width: 26, height: 26, borderRadius: "50%",

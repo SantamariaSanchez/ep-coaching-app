@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
@@ -67,6 +68,7 @@ export default function CommandPalette({
   navItems: NavShortcut[];
   isCoach: boolean;
 }) {
+  const tr = useT();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [clients, setClients] = useState<ClientResult[] | null>(null);
@@ -283,12 +285,12 @@ export default function CommandPalette({
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
             onKeyDown={onKeyDownInput}
             placeholder={isCoach ? "Un client, une page, « poids », « leads »..." : "Une page, un aliment, « poids », « calories »..."}
-            aria-label="Rechercher"
+            aria-label={tr("Rechercher")}
             style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }}
           />
           <button
             onClick={() => setOpen(false)}
-            aria-label="Fermer"
+            aria-label={tr("Fermer")}
             style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.3)", padding: 2, display: "flex" }}
           >
             <X size={16} />
@@ -309,7 +311,7 @@ export default function CommandPalette({
           ))}
           {results.length === 0 && shownAnswers.length === 0 && (
             <p style={{ padding: "20px 14px", fontSize: 12.5, color: "rgba(245,237,237,0.35)", textAlign: "center", margin: 0 }}>
-              {loadingClients ? "Chargement des clients..." : "Aucun résultat"}
+              {loadingClients ? tr("Chargement des clients...") : tr("Aucun résultat")}
             </p>
           )}
           {results.map((r, i) => (
@@ -334,9 +336,9 @@ export default function CommandPalette({
         </div>
 
         <div style={{ display: "flex", gap: 14, padding: "8px 14px", borderTop: "1px solid rgba(137,4,4,0.2)", fontSize: 10.5, color: "rgba(245,237,237,0.25)" }}>
-          <span>↑↓ naviguer</span>
-          <span>↵ ouvrir</span>
-          <span>esc fermer</span>
+          <span>{tr("↑↓ naviguer")}</span>
+          <span>{tr("↵ ouvrir")}</span>
+          <span>{tr("esc fermer")}</span>
         </div>
       </div>
     </div>

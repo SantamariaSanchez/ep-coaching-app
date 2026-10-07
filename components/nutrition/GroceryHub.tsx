@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 // Courses, version inventaire (2026-10-07) : retour direct du fondateur,
 // « j'ai acheté 3 bananes, je logue 1 banane, il doit m'en rester 2, et je
 // sais quand racheter sans aller voir mes placards ». Trois volets :
@@ -20,6 +21,7 @@ type View = "racheter" | "stock" | "semaine";
 const UNIT_LABELS: Record<PantryUnit, string> = { piece: "Pièces", g: "Grammes", ml: "Millilitres" };
 
 export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]; source: "plan" | "habitudes"; foods: Food[] }) {
+  const t = useT();
   const [items, setItems] = useState<PantryItem[] | null>(null);
   const [view, setView] = useState<View>("racheter");
   const [adding, setAdding] = useState(false);
@@ -79,13 +81,13 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
           <ShoppingCart size={15} className="text-[#E01E1E]" />
           <p className="text-[11px] text-[#F5EDED]/60 leading-snug flex-1">
             {items === null
-              ? "Chargement de ton stock..."
+              ? t("Chargement de ton stock...")
               : items.length === 0
-                ? "Ajoute ce que tu as chez toi : ton stock baisse tout seul à chaque repas noté."
+                ? t("Ajoute ce que tu as chez toi : ton stock baisse tout seul à chaque repas noté.")
                 : `${items.length} article${items.length > 1 ? "s" : ""} en stock${lowCount ? ` · ${lowCount} à surveiller` : ""}. Le stock baisse tout seul quand tu notes un repas.`}
           </p>
         </div>
-        <div role="tablist" aria-label="Courses" className="grid grid-cols-3 gap-1 bg-[#150000] rounded-lg p-1">
+        <div role="tablist" aria-label={t("Courses")} className="grid grid-cols-3 gap-1 bg-[#150000] rounded-lg p-1">
           {([
             ["racheter", `À racheter${buyList.length ? ` (${buyList.length})` : ""}`],
             ["stock", "Mon stock"],
@@ -113,12 +115,12 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
       {view === "stock" && (
         <div className="space-y-3">
           <button onClick={() => setAdding(true)} className="w-full min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-[#E01E1E] text-white text-sm font-bold">
-            <Plus size={16} /> Ajouter des courses
+            <Plus size={16} />{" "}{t("Ajouter des courses")}
           </button>
           {items && items.length === 0 && (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 px-4 text-center">
               <Package size={22} className="mx-auto text-[#F5EDED]/25 mb-2" />
-              <p className="text-xs text-[#F5EDED]/45">Ton stock est vide. Ajoute tes courses, ou coche ce que tu as acheté dans « À racheter ».</p>
+              <p className="text-xs text-[#F5EDED]/45">{t("Ton stock est vide. Ajoute tes courses, ou coche ce que tu as acheté dans « À racheter ».")}</p>
             </div>
           )}
           {groupByCategory(items ?? []).map(([category, list]) => (
@@ -133,8 +135,8 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
                         <span className="block text-sm text-white truncate">{item.name}</span>
                         <span className="flex items-center gap-1.5 text-[11px] text-[#F5EDED]/45">
                           {formatQuantity(item.quantity, item.unit)}
-                          {st.status === "vide" && <span className="text-red-400 font-bold">· Vide</span>}
-                          {st.status === "bas" && <span className="text-amber-400 font-bold">· Bientôt vide</span>}
+                          {st.status === "vide" && <span className="text-red-400 font-bold">{t("· Vide")}</span>}
+                          {st.status === "bas" && <span className="text-amber-400 font-bold">{t("· Bientôt vide")}</span>}
                           {st.status === "ok" && st.daysLeft != null && <span>· ≈ {Math.max(1, Math.round(st.daysLeft))} j</span>}
                         </span>
                       </button>
@@ -156,11 +158,11 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
       {view === "semaine" && (
         <div className="space-y-2">
           <p className="text-[11px] text-[#F5EDED]/50 px-1">
-            {source === "plan" ? "Besoins de la semaine d'après ton plan, face à ton stock." : "Besoins de la semaine d'après ce que tu manges le plus, face à ton stock."}
+            {source === "plan" ? t("Besoins de la semaine d'après ton plan, face à ton stock.") : t("Besoins de la semaine d'après ce que tu manges le plus, face à ton stock.")}
           </p>
           {needs.length === 0 ? (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 text-center">
-              <p className="text-xs text-[#F5EDED]/40">Pas encore assez de données. Note tes repas quelques jours, ou demande un plan à ton coach.</p>
+              <p className="text-xs text-[#F5EDED]/40">{t("Pas encore assez de données. Note tes repas quelques jours, ou demande un plan à ton coach.")}</p>
             </div>
           ) : (
             <ul className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3 space-y-2">
@@ -217,19 +219,20 @@ function groupByCategory(items: PantryItem[]): [string, PantryItem[]][] {
 }
 
 function BuyListView({ suggestions, source, onBought, onAll, pending }: { suggestions: BuySuggestion[]; source: "plan" | "habitudes"; onBought: (s: BuySuggestion, q: number) => void; onAll: () => void; pending: boolean }) {
+  const t = useT();
   const [qty, setQty] = useState<Record<string, number>>({});
   if (suggestions.length === 0) {
     return (
       <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 px-4 text-center">
         <Check size={22} className="mx-auto text-emerald-400 mb-2" />
-        <p className="text-xs text-[#F5EDED]/55">Rien à racheter pour l&apos;instant. Ton stock couvre la semaine.</p>
+        <p className="text-xs text-[#F5EDED]/55">{t("Rien à racheter pour l'instant. Ton stock couvre la semaine.")}</p>
       </div>
     );
   }
   return (
     <div className="space-y-2">
       <p className="text-[11px] text-[#F5EDED]/50 px-1">
-        {source === "plan" ? "Ce qui manque pour tenir ton plan cette semaine, plus ce qui est vide chez toi." : "Ce qui manque d'après tes habitudes, plus ce qui est vide chez toi."} Coche ce que tu as acheté : ça passe direct en stock.
+        {source === "plan" ? t("Ce qui manque pour tenir ton plan cette semaine, plus ce qui est vide chez toi.") : t("Ce qui manque d'après tes habitudes, plus ce qui est vide chez toi.")}{" "}{t("Coche ce que tu as acheté : ça passe direct en stock.")}
       </p>
       <ul className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-2 divide-y divide-[#890404]/15">
         {suggestions.map((s) => {
@@ -246,7 +249,7 @@ function BuyListView({ suggestions, source, onBought, onAll, pending }: { sugges
               </button>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-white truncate">{s.name}</p>
-                <p className="text-[10px] text-[#F5EDED]/40">{s.reason === "plan" ? "Pour la semaine" : "Vide ou presque"}</p>
+                <p className="text-[10px] text-[#F5EDED]/40">{s.reason === "plan" ? t("Pour la semaine") : t("Vide ou presque")}</p>
               </div>
               <input
                 type="number"
@@ -258,25 +261,26 @@ function BuyListView({ suggestions, source, onBought, onAll, pending }: { sugges
                 aria-label={`Quantité de ${s.name}`}
                 className="w-20 h-10 rounded-lg bg-[#150000] border border-[#890404]/30 text-right px-2 text-sm text-white"
               />
-              <span className="w-12 text-[11px] text-[#F5EDED]/45">{s.unit === "piece" ? "pièce(s)" : s.unit}</span>
+              <span className="w-12 text-[11px] text-[#F5EDED]/45">{s.unit === "piece" ? t("pièce(s)") : s.unit}</span>
             </li>
           );
         })}
       </ul>
       <button disabled={pending} onClick={onAll} className="w-full min-h-[44px] rounded-xl border border-[#E01E1E]/60 text-sm font-bold text-white">
-        J&apos;ai tout acheté
+        {t("J'ai tout acheté")}
       </button>
     </div>
   );
 }
 
 function SheetFrame({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  const t = useT();
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} className="w-full sm:max-w-md max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[#1a0101] border border-[#890404]/40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
           <p className="text-base font-bold text-white">{title}</p>
-          <button aria-label="Fermer" onClick={onClose} className="w-10 h-10 flex items-center justify-center text-[#F5EDED]/60"><X size={18} /></button>
+          <button aria-label={t("Fermer")} onClick={onClose} className="w-10 h-10 flex items-center justify-center text-[#F5EDED]/60"><X size={18} /></button>
         </div>
         {children}
       </div>
@@ -285,6 +289,7 @@ function SheetFrame({ title, onClose, children }: { title: string; onClose: () =
 }
 
 function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => void; onAdd: (p: { foodId: string | null; name: string; category: string; unit: PantryUnit; quantity: number; gramsPerUnit: number | null; lowThreshold: number | null }) => void }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<{ foodId: string | null; name: string; category: string } | null>(null);
   const [unit, setUnit] = useState<PantryUnit>("g");
@@ -307,22 +312,22 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
         <div className="space-y-2">
           <label className="flex items-center gap-2 rounded-xl bg-[#150000] border border-[#890404]/40 px-3">
             <Search size={15} className="text-[#F5EDED]/40" />
-            <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Banane, riz, poulet..." aria-label="Chercher un aliment" className="flex-1 h-11 bg-transparent text-sm text-white outline-none" />
+            <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Banane, riz, poulet...")} aria-label={t("Chercher un aliment")} className="flex-1 h-11 bg-transparent text-sm text-white outline-none" />
           </label>
           <ul className="space-y-1">
             {results.map((f) => (
               <li key={f.id}>
                 <button onClick={() => pick({ foodId: f.id, name: f.name, category: f.category ?? "Divers" })} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#2a0303]">
                   <span className="text-sm text-white">{f.name}</span>
-                  <span className="block text-[10px] text-[#F5EDED]/40">{f.category ?? "Divers"}</span>
+                  <span className="block text-[10px] text-[#F5EDED]/40">{f.category ?? t("Divers")}</span>
                 </button>
               </li>
             ))}
             {query.trim().length >= 2 && (
               <li>
                 <button onClick={() => pick({ foodId: null, name: query.trim(), category: "Divers" })} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-[#F5EDED]/70 hover:bg-[#2a0303]">
-                  Ajouter « {query.trim()} » sans fiche aliment
-                  <span className="block text-[10px] text-[#F5EDED]/40">Il ne baissera pas tout seul avec tes repas.</span>
+                  {t("Ajouter «")}{" "}{query.trim()}{" "}{t("» sans fiche aliment")}
+                  <span className="block text-[10px] text-[#F5EDED]/40">{t("Il ne baissera pas tout seul avec tes repas.")}</span>
                 </button>
               </li>
             )}
@@ -330,7 +335,7 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-1 bg-[#150000] rounded-lg p-1" role="radiogroup" aria-label="Unité">
+          <div className="grid grid-cols-3 gap-1 bg-[#150000] rounded-lg p-1" role="radiogroup" aria-label={t("Unité")}>
             {(Object.keys(UNIT_LABELS) as PantryUnit[]).map((u) => (
               <button key={u} role="radio" aria-checked={unit === u} onClick={() => setUnit(u)} className={`min-h-[40px] rounded-md text-xs font-bold ${unit === u ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/55"}`}>{UNIT_LABELS[u]}</button>
             ))}
@@ -342,7 +347,7 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
             onClick={() => onAdd({ ...picked, unit, quantity: Number(quantity) || 0, gramsPerUnit: unit === "piece" ? Number(gpu) || 100 : null, lowThreshold: threshold === "" ? null : Number(threshold) })}
             className="w-full min-h-[44px] rounded-xl bg-[#E01E1E] text-white text-sm font-bold"
           >
-            Mettre en stock
+            {t("Mettre en stock")}
           </button>
         </div>
       )}
@@ -351,6 +356,7 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
 }
 
 function EditSheet({ item, onClose, onSave, onDelete }: { item: PantryItem; onClose: () => void; onSave: (qty: number, fields: { unit: PantryUnit; gramsPerUnit: number | null; lowThreshold: number | null }) => void; onDelete: () => void }) {
+  const t = useT();
   const [quantity, setQuantity] = useState(String(Math.round(item.quantity * 10) / 10));
   const [gpu, setGpu] = useState(String(item.grams_per_unit ?? guessPieceWeight(item.name) ?? 100));
   const [threshold, setThreshold] = useState(item.low_threshold == null ? "" : String(item.low_threshold));
@@ -362,10 +368,10 @@ function EditSheet({ item, onClose, onSave, onDelete }: { item: PantryItem; onCl
         {unit === "piece" && <NumberField label="Poids d'une pièce (g)" value={gpu} onChange={setGpu} />}
         <NumberField label="Me prévenir sous (facultatif)" value={threshold} onChange={setThreshold} />
         <button onClick={() => onSave(Number(quantity) || 0, { unit, gramsPerUnit: unit === "piece" ? Number(gpu) || 100 : null, lowThreshold: threshold === "" ? null : Number(threshold) })} className="w-full min-h-[44px] rounded-xl bg-[#E01E1E] text-white text-sm font-bold">
-          Enregistrer
+          {t("Enregistrer")}
         </button>
         <button onClick={onDelete} className="w-full min-h-[44px] rounded-xl border border-red-500/40 text-red-300 text-sm font-bold flex items-center justify-center gap-2">
-          <Trash2 size={15} /> Retirer du stock
+          <Trash2 size={15} />{" "}{t("Retirer du stock")}
         </button>
       </div>
     </SheetFrame>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import { Clock3, CheckCircle2 } from "lucide-react";
 import { joinWaitlist } from "@/app/dashboard/client/abonnement/actions";
@@ -7,6 +8,7 @@ import { joinWaitlist } from "@/app/dashboard/client/abonnement/actions";
 // Item 45 : le coach est à capacité — remplace le CTA de réservation par
 // une inscription à sa liste d'attente.
 export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWaitlist: boolean }) {
+  const t = useT();
   const [joined, setJoined] = useState(alreadyOnWaitlist);
   // MASTERCLASS.md Axe E : sans ça, une inscription faite dans un autre
   // onglet restait invisible tant que le composant ne remontait pas.
@@ -35,7 +37,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
         display: "flex", alignItems: "center", gap: 10, justifyContent: "center",
         color: "#4ade80", fontSize: 13, fontWeight: 700,
       }}>
-        <CheckCircle2 size={16} /> Tu es sur la liste d&apos;attente, le coach te contactera.
+        <CheckCircle2 size={16} />{" "}{t("Tu es sur la liste d'attente, le coach te contactera.")}
       </div>
     );
   }
@@ -45,7 +47,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
       <input
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Un mot sur ta situation (facultatif)" aria-label="Un mot sur ta situation (facultatif)"
+        placeholder={t("Un mot sur ta situation (facultatif)")} aria-label={t("Un mot sur ta situation (facultatif)")}
         style={{
           width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.2)",
           borderRadius: "var(--radius-lg)", color: "#F5EDED", padding: "12px 16px", fontSize: 13,
@@ -64,7 +66,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
         }}
       >
         <Clock3 size={16} />
-        {isPending ? "..." : "Rejoindre la liste d'attente"}
+        {isPending ? "..." : t("Rejoindre la liste d'attente")}
       </button>
       {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, RotateCw } from "lucide-react";
@@ -10,6 +11,7 @@ import { AlertCircle, RotateCw } from "lucide-react";
 // configuré", formulaire de création vide...), sinon on pousse à recréer
 // par-dessus la vraie. On le dit clairement et on propose de réessayer.
 export default function RoadmapLoadError({ message, hint }: { message: string; hint?: string }) {
+  const t = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -31,7 +33,7 @@ export default function RoadmapLoadError({ message, hint }: { message: string; h
         className="ep-btn-secondary"
         style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}
       >
-        <RotateCw size={13} /> {pending ? "Chargement…" : "Réessayer"}
+        <RotateCw size={13} /> {pending ? t("Chargement…") : t("Réessayer")}
       </button>
     </div>
   );

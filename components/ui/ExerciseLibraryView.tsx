@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo, useEffect } from "react";
 import {
   Search,
@@ -79,6 +80,7 @@ function ExerciseForm({
   onSave: (input: CreateExerciseInput & { video_url?: string }) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
+  const tr = useT();
   const [name, setName] = useState(initial?.name ?? "");
   const [muscleGroup, setMuscleGroup] = useState(initial?.muscle_group ?? LIBRARY_MUSCLE_GROUPS[0]);
   const [muscleSubgroup, setMuscleSubgroup] = useState(initial?.muscle_subgroup ?? "");
@@ -160,14 +162,14 @@ function ExerciseForm({
   return (
     <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
-        <label className={labelCls}>Nom de l&apos;exercice</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Développé incliné haltères" aria-label="Nom de l'exercice" className={inputCls} />
+        <label className={labelCls}>{tr("Nom de l'exercice")}</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("Ex. Développé incliné haltères")} aria-label={tr("Nom de l'exercice")} className={inputCls} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className={labelCls}>Groupe musculaire</label>
-          <select aria-label="Groupe musculaire"
+          <label className={labelCls}>{tr("Groupe musculaire")}</label>
+          <select aria-label={tr("Groupe musculaire")}
             value={muscleGroup}
             onChange={(e) => { setMuscleGroup(e.target.value); setMuscleSubgroup(""); }}
             className={inputCls}
@@ -178,8 +180,8 @@ function ExerciseForm({
           </select>
         </div>
         <div>
-          <label className={labelCls}>Sous-groupe (optionnel)</label>
-          <select aria-label="Sous-groupe (optionnel)" value={muscleSubgroup} onChange={(e) => setMuscleSubgroup(e.target.value)} className={inputCls} disabled={subgroups.length === 0}>
+          <label className={labelCls}>{tr("Sous-groupe (optionnel)")}</label>
+          <select aria-label={tr("Sous-groupe (optionnel)")} value={muscleSubgroup} onChange={(e) => setMuscleSubgroup(e.target.value)} className={inputCls} disabled={subgroups.length === 0}>
             <option value="">-</option>
             {subgroups.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -190,8 +192,8 @@ function ExerciseForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
-          <label className={labelCls}>Matériel</label>
-          <select aria-label="Matériel" value={equipment} onChange={(e) => setEquipment(e.target.value)} className={inputCls}>
+          <label className={labelCls}>{tr("Matériel")}</label>
+          <select aria-label={tr("Matériel")} value={equipment} onChange={(e) => setEquipment(e.target.value)} className={inputCls}>
             <option value="">-</option>
             {EQUIPMENT_OPTIONS.map((e) => (
               <option key={e} value={e}>{e}</option>
@@ -199,8 +201,8 @@ function ExerciseForm({
           </select>
         </div>
         <div>
-          <label className={labelCls}>Marque de machine (optionnel)</label>
-          <select aria-label="Marque de machine (optionnel)" value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
+          <label className={labelCls}>{tr("Marque de machine (optionnel)")}</label>
+          <select aria-label={tr("Marque de machine (optionnel)")} value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
             <option value="">-</option>
             {MACHINE_BRANDS.map((b) => (
               <option key={b} value={b}>{b}</option>
@@ -208,8 +210,8 @@ function ExerciseForm({
           </select>
         </div>
         <div>
-          <label className={labelCls}>Type</label>
-          <select aria-label="Type" value={category} onChange={(e) => setCategory(e.target.value as ExerciseCategory)} className={inputCls}>
+          <label className={labelCls}>{tr("Type")}</label>
+          <select aria-label={tr("Type")} value={category} onChange={(e) => setCategory(e.target.value as ExerciseCategory)} className={inputCls}>
             <option value="">-</option>
             {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -217,8 +219,8 @@ function ExerciseForm({
           </select>
         </div>
         <div>
-          <label className={labelCls}>Difficulté</label>
-          <select aria-label="Difficulté" value={difficulty} onChange={(e) => setDifficulty(e.target.value as ExerciseDifficulty)} className={inputCls}>
+          <label className={labelCls}>{tr("Difficulté")}</label>
+          <select aria-label={tr("Difficulté")} value={difficulty} onChange={(e) => setDifficulty(e.target.value as ExerciseDifficulty)} className={inputCls}>
             <option value="">-</option>
             {Object.entries(DIFFICULTY_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -228,12 +230,12 @@ function ExerciseForm({
       </div>
 
       <div>
-        <label className={labelCls}>Consignes d&apos;exécution (optionnel)</label>
+        <label className={labelCls}>{tr("Consignes d'exécution (optionnel)")}</label>
         <textarea
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           rows={3}
-          placeholder="Points clés de la technique…" aria-label="Points clés de la technique…"
+          placeholder={tr("Points clés de la technique…")} aria-label={tr("Points clés de la technique…")}
           className={`${inputCls} resize-none`}
         />
       </div>
@@ -241,12 +243,12 @@ function ExerciseForm({
       {showVideoField && (
         <div className="border-t border-[#890404]/15 pt-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
-            Précisions pour la construction de programme (pas montré au client)
+            {tr("Précisions pour la construction de programme (pas montré au client)")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className={labelCls}>Position</label>
-              <select aria-label="Position" value={position} onChange={(e) => setPosition(e.target.value)} className={inputCls}>
+              <label className={labelCls}>{tr("Position")}</label>
+              <select aria-label={tr("Position")} value={position} onChange={(e) => setPosition(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {POSITION_OPTIONS.map((p) => (
                   <option key={p} value={p}>{p}</option>
@@ -254,8 +256,8 @@ function ExerciseForm({
               </select>
             </div>
             <div>
-              <label className={labelCls}>Liberté mvt</label>
-              <select aria-label="Liberté mvt" value={freedomOfMovement} onChange={(e) => setFreedomOfMovement(e.target.value)} className={inputCls}>
+              <label className={labelCls}>{tr("Liberté mvt")}</label>
+              <select aria-label={tr("Liberté mvt")} value={freedomOfMovement} onChange={(e) => setFreedomOfMovement(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -263,33 +265,24 @@ function ExerciseForm({
               </select>
             </div>
             <div>
-              <label className={labelCls}>Uni / Bi</label>
-              <select aria-label="Uni / Bi" value={isUnilateral} onChange={(e) => setIsUnilateral(e.target.value as typeof isUnilateral)} className={inputCls}>
+              <label className={labelCls}>{tr("Uni / Bi")}</label>
+              <select aria-label={tr("Uni / Bi")} value={isUnilateral} onChange={(e) => setIsUnilateral(e.target.value as typeof isUnilateral)} className={inputCls}>
                 <option value="">-</option>
-                <option value="uni">Uni</option>
-                <option value="bi">Bi</option>
+                <option value="uni">{tr("Uni")}</option>
+                <option value="bi">{tr("Bi")}</option>
               </select>
             </div>
             <div>
-              <label className={labelCls}>Microchargeable</label>
-              <select aria-label="Microchargeable" value={microloadable} onChange={(e) => setMicroloadable(e.target.value as typeof microloadable)} className={inputCls}>
+              <label className={labelCls}>{tr("Microchargeable")}</label>
+              <select aria-label={tr("Microchargeable")} value={microloadable} onChange={(e) => setMicroloadable(e.target.value as typeof microloadable)} className={inputCls}>
                 <option value="">-</option>
-                <option value="oui">Oui</option>
-                <option value="non">Non</option>
+                <option value="oui">{tr("Oui")}</option>
+                <option value="non">{tr("Non")}</option>
               </select>
             </div>
             <div>
-              <label className={labelCls}>Facile à répliquer</label>
-              <select aria-label="Facile à répliquer" value={easyToReplicate} onChange={(e) => setEasyToReplicate(e.target.value)} className={inputCls}>
-                <option value="">-</option>
-                {QUALITATIVE_SCALE.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Difficulté d&apos;apprentissage</label>
-              <select aria-label="Difficulté d&apos;apprentissage" value={learningDifficulty} onChange={(e) => setLearningDifficulty(e.target.value)} className={inputCls}>
+              <label className={labelCls}>{tr("Facile à répliquer")}</label>
+              <select aria-label={tr("Facile à répliquer")} value={easyToReplicate} onChange={(e) => setEasyToReplicate(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -297,8 +290,8 @@ function ExerciseForm({
               </select>
             </div>
             <div>
-              <label className={labelCls}>Stabilité</label>
-              <select aria-label="Stabilité" value={stabilityDemand} onChange={(e) => setStabilityDemand(e.target.value)} className={inputCls}>
+              <label className={labelCls}>{tr("Difficulté d'apprentissage")}</label>
+              <select aria-label={tr("Difficulté d&apos;apprentissage")} value={learningDifficulty} onChange={(e) => setLearningDifficulty(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -306,8 +299,17 @@ function ExerciseForm({
               </select>
             </div>
             <div>
-              <label className={labelCls}>Accessibilité</label>
-              <select aria-label="Accessibilité" value={accessibility} onChange={(e) => setAccessibility(e.target.value)} className={inputCls}>
+              <label className={labelCls}>{tr("Stabilité")}</label>
+              <select aria-label={tr("Stabilité")} value={stabilityDemand} onChange={(e) => setStabilityDemand(e.target.value)} className={inputCls}>
+                <option value="">-</option>
+                {QUALITATIVE_SCALE.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>{tr("Accessibilité")}</label>
+              <select aria-label={tr("Accessibilité")} value={accessibility} onChange={(e) => setAccessibility(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -320,11 +322,11 @@ function ExerciseForm({
 
       {showVideoField && (
         <div>
-          <label className={labelCls}>Vidéo d&apos;exemple</label>
+          <label className={labelCls}>{tr("Vidéo d'exemple")}</label>
           <div className="flex items-center gap-2 mb-2">
             <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#890404]/40 bg-black/20 text-xs text-[#F5EDED]/50 hover:border-[#890404]/60 hover:text-[#F5EDED]/75 cursor-pointer transition-colors">
               <Video size={13} />
-              {uploadingVideo ? "Envoi…" : "Uploader une vidéo"}
+              {uploadingVideo ? tr("Envoi…") : tr("Uploader une vidéo")}
               <input
                 type="file"
                 accept="video/*"
@@ -339,14 +341,14 @@ function ExerciseForm({
             </label>
             {videoUrl && (
               <span className="text-[10px] text-green-400 flex items-center gap-1">
-                <PlayCircle size={12} /> Vidéo prête
+                <PlayCircle size={12} />{" "}{tr("Vidéo prête")}
               </span>
             )}
           </div>
           <input
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
-            placeholder="…ou colle un lien YouTube / Vimeo / direct" aria-label="…ou colle un lien YouTube / Vimeo / direct"
+            placeholder={tr("…ou colle un lien YouTube / Vimeo / direct")} aria-label={tr("…ou colle un lien YouTube / Vimeo / direct")}
             className={inputCls}
           />
         </div>
@@ -360,9 +362,9 @@ function ExerciseForm({
           disabled={saving}
           className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
-          {saving ? "Enregistrement…" : initial ? "Mettre à jour" : "Ajouter à la bibliothèque"}
+          {saving ? tr("Enregistrement…") : initial ? tr("Mettre à jour") : tr("Ajouter à la bibliothèque")}
         </button>
-        <button onClick={onCancel} aria-label="Annuler" className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -385,6 +387,7 @@ function ExerciseCard({
   onUpdate: (input: CreateExerciseInput & { video_url?: string }) => Promise<{ error?: string }>;
   onDelete: () => Promise<void>;
 }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -446,7 +449,7 @@ function ExerciseCard({
             )}
             {!exercise.is_official && (
               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-300">
-                Communauté
+                {tr("Communauté")}
               </span>
             )}
           </div>
@@ -477,14 +480,14 @@ function ExerciseCard({
               exercise.microloadable != null || exercise.easy_to_replicate || exercise.learning_difficulty ||
               exercise.stability_demand || exercise.accessibility) && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
-                {exercise.position && <p className="text-[10px] text-[#F5EDED]/40">Position <strong className="text-[#F5EDED]/70">{exercise.position}</strong></p>}
-                {exercise.freedom_of_movement && <p className="text-[10px] text-[#F5EDED]/40">Liberté mvt <strong className="text-[#F5EDED]/70">{exercise.freedom_of_movement}</strong></p>}
-                {exercise.is_unilateral != null && <p className="text-[10px] text-[#F5EDED]/40">Uni/Bi <strong className="text-[#F5EDED]/70">{exercise.is_unilateral ? "Uni" : "Bi"}</strong></p>}
-                {exercise.microloadable != null && <p className="text-[10px] text-[#F5EDED]/40">Microcharg. <strong className="text-[#F5EDED]/70">{exercise.microloadable ? "Oui" : "Non"}</strong></p>}
-                {exercise.easy_to_replicate && <p className="text-[10px] text-[#F5EDED]/40">Réplicable <strong className="text-[#F5EDED]/70">{exercise.easy_to_replicate}</strong></p>}
-                {exercise.learning_difficulty && <p className="text-[10px] text-[#F5EDED]/40">Apprentissage <strong className="text-[#F5EDED]/70">{exercise.learning_difficulty}</strong></p>}
-                {exercise.stability_demand && <p className="text-[10px] text-[#F5EDED]/40">Stabilité <strong className="text-[#F5EDED]/70">{exercise.stability_demand}</strong></p>}
-                {exercise.accessibility && <p className="text-[10px] text-[#F5EDED]/40">Accessibilité <strong className="text-[#F5EDED]/70">{exercise.accessibility}</strong></p>}
+                {exercise.position && <p className="text-[10px] text-[#F5EDED]/40">{tr("Position")}{" "}<strong className="text-[#F5EDED]/70">{exercise.position}</strong></p>}
+                {exercise.freedom_of_movement && <p className="text-[10px] text-[#F5EDED]/40">{tr("Liberté mvt")}{" "}<strong className="text-[#F5EDED]/70">{exercise.freedom_of_movement}</strong></p>}
+                {exercise.is_unilateral != null && <p className="text-[10px] text-[#F5EDED]/40">{tr("Uni/Bi")}{" "}<strong className="text-[#F5EDED]/70">{exercise.is_unilateral ? tr("Uni") : tr("Bi")}</strong></p>}
+                {exercise.microloadable != null && <p className="text-[10px] text-[#F5EDED]/40">{tr("Microcharg.")}{" "}<strong className="text-[#F5EDED]/70">{exercise.microloadable ? tr("Oui") : tr("Non")}</strong></p>}
+                {exercise.easy_to_replicate && <p className="text-[10px] text-[#F5EDED]/40">{tr("Réplicable")}{" "}<strong className="text-[#F5EDED]/70">{exercise.easy_to_replicate}</strong></p>}
+                {exercise.learning_difficulty && <p className="text-[10px] text-[#F5EDED]/40">{tr("Apprentissage")}{" "}<strong className="text-[#F5EDED]/70">{exercise.learning_difficulty}</strong></p>}
+                {exercise.stability_demand && <p className="text-[10px] text-[#F5EDED]/40">{tr("Stabilité")}{" "}<strong className="text-[#F5EDED]/70">{exercise.stability_demand}</strong></p>}
+                {exercise.accessibility && <p className="text-[10px] text-[#F5EDED]/40">{tr("Accessibilité")}{" "}<strong className="text-[#F5EDED]/70">{exercise.accessibility}</strong></p>}
               </div>
             )
           )}
@@ -494,7 +497,7 @@ function ExerciseCard({
               <div className="flex items-center gap-2.5 bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2.5 mt-2">
                 <Lock size={14} className="text-amber-400 flex-shrink-0" strokeWidth={1.8} />
                 <p className="text-[11px] text-amber-300/80">
-                  Vidéo de démonstration débloquée à {FEATURE_UNLOCK_POINTS.exercise_videos} pts ou avec l&apos;abonnement.
+                  {tr("Vidéo de démonstration débloquée à")}{" "}{FEATURE_UNLOCK_POINTS.exercise_videos}{" "}{tr("pts ou avec l'abonnement.")}
                 </p>
               </div>
             ) : (
@@ -503,7 +506,7 @@ function ExerciseCard({
           ) : (
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/25">
-                <Video size={11} /> Vidéo d&apos;exécution à venir
+                <Video size={11} />{" "}{tr("Vidéo d'exécution à venir")}
               </p>
               <a
                 href={youtubeSearchUrl(exercise.name)}
@@ -512,7 +515,7 @@ function ExerciseCard({
                 onClick={(e) => e.stopPropagation()}
                 className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors"
               >
-                <PlayCircle size={12} /> Chercher une démo
+                <PlayCircle size={12} />{" "}{tr("Chercher une démo")}
               </a>
             </div>
           )}
@@ -523,18 +526,18 @@ function ExerciseCard({
                 onClick={() => setEditing(true)}
                 className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
               >
-                <Pencil size={11} /> Modifier / ajouter la vidéo
+                <Pencil size={11} />{" "}{tr("Modifier / ajouter la vidéo")}
               </button>
               {confirmDelete ? (
                 <button onClick={onDelete} className="text-[10px] font-bold uppercase tracking-widest text-red-400">
-                  Confirmer la suppression
+                  {tr("Confirmer la suppression")}
                 </button>
               ) : (
                 <button
                   onClick={() => setConfirmDelete(true)}
                   className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors ml-auto"
                 >
-                  <Trash2 size={11} /> Supprimer
+                  <Trash2 size={11} />{" "}{tr("Supprimer")}
                 </button>
               )}
             </div>
@@ -569,6 +572,7 @@ export default function ExerciseLibraryView({
   deleteExercise,
   missingVideoTop = [],
 }: Props) {
+  const tr = useT();
   const videosUnlocked = hasUnlocked("exercise_videos", points, isSubscribed);
   const [exercises, setExercises] = useState(initialExercises);
 
@@ -636,15 +640,14 @@ export default function ExerciseLibraryView({
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <p className="flex items-center gap-2 text-[11.5px] text-amber-300/90 leading-snug">
               <AlertTriangle size={14} className="flex-shrink-0" />
-              0/{exercises.length} exercices ont une vidéo de démonstration, le système de déblocage par points
-              n&apos;a encore rien à débloquer.
+              0/{exercises.length}{" "}{tr("exercices ont une vidéo de démonstration, le système de déblocage par points n'a encore rien à débloquer.")}
             </p>
             {missingVideoTop.length > 0 && (
               <button
                 onClick={() => setShowMissingVideo((v) => !v)}
                 className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
               >
-                {showMissingVideo ? "Masquer" : `Voir les ${missingVideoTop.length} plus prescrits`}
+                {showMissingVideo ? tr("Masquer") : `Voir les ${missingVideoTop.length} plus prescrits`}
               </button>
             )}
           </div>
@@ -660,7 +663,7 @@ export default function ExerciseLibraryView({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
-                      title="Chercher une démo"
+                      title={tr("Chercher une démo")}
                     >
                       <PlayCircle size={12} />
                     </a>
@@ -678,7 +681,7 @@ export default function ExerciseLibraryView({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un exercice…" aria-label="Rechercher un exercice…"
+            placeholder={tr("Rechercher un exercice…")} aria-label={tr("Rechercher un exercice…")}
             className={`${inputCls} pl-9`}
           />
         </div>
@@ -686,12 +689,12 @@ export default function ExerciseLibraryView({
           onClick={() => setShowCreate((v) => !v)}
           className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors flex-shrink-0"
         >
-          <Plus size={13} /> {showCreate ? "Fermer" : "Créer un exercice"}
+          <Plus size={13} /> {showCreate ? tr("Fermer") : tr("Créer un exercice")}
         </button>
       </div>
 
       <p className="text-[10px] text-[#F5EDED]/25">
-        {exercises.length} exercice{exercises.length !== 1 ? "s" : ""} dans la bibliothèque, enrichis-la en ajoutant les tiens.
+        {exercises.length}{" "}{tr("exercice")}{exercises.length !== 1 ? "s" : ""}{" "}{tr("dans la bibliothèque, enrichis-la en ajoutant les tiens.")}
       </p>
 
       {showCreate && (
@@ -719,7 +722,7 @@ export default function ExerciseLibraryView({
             activeGroup === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
-          Tout ({exercises.length})
+          {tr("Tout (")}{exercises.length})
         </button>
         {LIBRARY_MUSCLE_GROUPS.filter((g) => groupCounts[g]).map((g) => (
           <button
@@ -736,7 +739,7 @@ export default function ExerciseLibraryView({
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mr-1">
-          Matériel :
+          {tr("Matériel :")}
         </span>
         <button
           onClick={() => setActiveEquipmentType(null)}
@@ -744,7 +747,7 @@ export default function ExerciseLibraryView({
             activeEquipmentType === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
-          Tout
+          {tr("Tout")}
         </button>
         {EQUIPMENT_TYPES.filter((t) => equipmentTypeCounts[t]).map((t) => (
           <button
@@ -762,7 +765,7 @@ export default function ExerciseLibraryView({
       {Object.keys(brandCounts).length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mr-1">
-            Marque :
+            {tr("Marque :")}
           </span>
           <button
             onClick={() => setActiveBrand(null)}
@@ -770,7 +773,7 @@ export default function ExerciseLibraryView({
               activeBrand === null ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
-            Toutes
+            {tr("Toutes")}
           </button>
           {MACHINE_BRANDS.filter((b) => brandCounts[b]).map((b) => (
             <button
@@ -816,7 +819,7 @@ export default function ExerciseLibraryView({
           </div>
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">Aucun exercice ne correspond à ta recherche.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{tr("Aucun exercice ne correspond à ta recherche.")}</p>
         )}
       </div>
     </div>

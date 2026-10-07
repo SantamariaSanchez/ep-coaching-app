@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, AlertCircle, Check, Wand2, CalendarRange, Target, ChevronDown } from "lucide-react";
@@ -104,6 +105,7 @@ export default function RoadmapTemplateEditor({
     input: RoadmapTemplateInput
   ) => Promise<{ id?: string; error?: string }>;
 }) {
+  const tr = useT();
   const router = useRouter();
   const [state, setState] = useState(() => initFromTemplate(template));
   const [saving, setSaving] = useState(false);
@@ -279,23 +281,23 @@ export default function RoadmapTemplateEditor({
       {/* Structure — phase de réflexion avant de lister le moindre jalon */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-          1. Structure du modèle
+          {tr("1. Structure du modèle")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="sm:col-span-2">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Nom du modèle
+              {tr("Nom du modèle")}
             </label>
             <input
               value={state.name}
               onChange={(e) => updateMeta("name", e.target.value)}
-              placeholder="Ex. Prépa compétition 12 semaines" aria-label="Nom du modèle"
+              placeholder={tr("Ex. Prépa compétition 12 semaines")} aria-label={tr("Nom du modèle")}
               className={inputCls}
             />
           </div>
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Durée totale (semaines)
+              {tr("Durée totale (semaines)")}
             </label>
             <input
               type="number"
@@ -303,31 +305,31 @@ export default function RoadmapTemplateEditor({
               max="104"
               value={state.duration_weeks}
               onChange={(e) => updateMeta("duration_weeks", e.target.value)}
-              placeholder="Ex. 12" aria-label="Durée en semaines"
+              placeholder={tr("Ex. 12")} aria-label={tr("Durée en semaines")}
               className={inputCls}
             />
           </div>
         </div>
         <div className="mb-4">
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Objectif du modèle
+            {tr("Objectif du modèle")}
           </label>
           <input
             value={state.objective}
             onChange={(e) => updateMeta("objective", e.target.value)}
-            placeholder="Ex. Perte de poids progressive, débutant · Prépa compétition physique" aria-label="Objectif"
+            placeholder={tr("Ex. Perte de poids progressive, débutant · Prépa compétition physique")} aria-label={tr("Objectif")}
             className={inputCls}
           />
         </div>
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Notes de conception <span className="text-[#F5EDED]/25 font-normal">(privé, jamais montré au client)</span>
+            {tr("Notes de conception")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(privé, jamais montré au client)")}</span>
           </label>
           <textarea
             value={state.notes}
             onChange={(e) => updateMeta("notes", e.target.value)}
             rows={2}
-            placeholder="Ex. adapter la durée de la phase de cut selon le point de départ du client…" aria-label="Notes"
+            placeholder={tr("Ex. adapter la durée de la phase de cut selon le point de départ du client…")} aria-label={tr("Notes")}
             className={`${inputCls} resize-none`}
           />
         </div>
@@ -338,7 +340,7 @@ export default function RoadmapTemplateEditor({
             className="mt-4 inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Wand2 size={13} />
-            Générer une phase de départ sur toute la durée
+            {tr("Générer une phase de départ sur toute la durée")}
           </button>
         )}
       </div>
@@ -348,20 +350,20 @@ export default function RoadmapTemplateEditor({
         <div className="flex items-center justify-between mb-3 px-1">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 flex items-center gap-1.5">
             <CalendarRange size={12} />
-            2. Phases <span className="text-[#F5EDED]/25">({state.phases.length})</span>
+            {tr("2. Phases")}{" "}<span className="text-[#F5EDED]/25">({state.phases.length})</span>
           </p>
           <button
             onClick={addPhase}
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
           >
-            <Plus size={12} /> Ajouter une phase
+            <Plus size={12} />{" "}{tr("Ajouter une phase")}
           </button>
         </div>
 
         {state.phases.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-2 text-center px-6">
             <p className="text-xs text-[#F5EDED]/35">
-              Aucune phase pour l&apos;instant. Génère un point de départ ci-dessus ou ajoute une phase vide.
+              {tr("Aucune phase pour l'instant. Génère un point de départ ci-dessus ou ajoute une phase vide.")}
             </p>
           </div>
         ) : (
@@ -380,7 +382,7 @@ export default function RoadmapTemplateEditor({
                     >
                       <span className="text-sm flex-shrink-0">{colors.icon}</span>
                       <span className="text-[10px] font-bold uppercase tracking-widest flex-shrink-0" style={{ color: colors.solid }}>
-                        Phase {i + 1}
+                        {tr("Phase")}{" "}{i + 1}
                       </span>
                       {!open && (
                         <span className="text-[11px] text-[#F5EDED]/35 truncate">
@@ -392,7 +394,7 @@ export default function RoadmapTemplateEditor({
                     <button
                       onClick={() => removePhase(phase.localId)}
                       className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
-                      title="Supprimer la phase" aria-label="Supprimer la phase"
+                      title={tr("Supprimer la phase")} aria-label={tr("Supprimer la phase")}
                     >
                       <Trash2 size={13} />
                     </button>
@@ -403,9 +405,9 @@ export default function RoadmapTemplateEditor({
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                         <div className="col-span-2 sm:col-span-1">
                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                            Type
+                            {tr("Type")}
                           </label>
-                          <select aria-label="Type"
+                          <select aria-label={tr("Type")}
                             value={phase.type}
                             onChange={(e) => {
                               const newType = e.target.value;
@@ -424,9 +426,9 @@ export default function RoadmapTemplateEditor({
                         </div>
                         <div className="col-span-2 sm:col-span-1">
                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                            Label
+                            {tr("Label")}
                           </label>
-                          <input aria-label="Label"
+                          <input aria-label={tr("Label")}
                             value={phase.label}
                             onChange={(e) => updatePhase(phase.localId, { label: e.target.value })}
                             placeholder={colors.label}
@@ -435,9 +437,9 @@ export default function RoadmapTemplateEditor({
                         </div>
                         <div>
                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                            Semaine de début
+                            {tr("Semaine de début")}
                           </label>
-                          <input aria-label="Semaine de début"
+                          <input aria-label={tr("Semaine de début")}
                             type="number"
                             min="0"
                             value={phase.start_week_offset}
@@ -447,9 +449,9 @@ export default function RoadmapTemplateEditor({
                         </div>
                         <div>
                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                            Semaine de fin
+                            {tr("Semaine de fin")}
                           </label>
-                          <input aria-label="Semaine de fin"
+                          <input aria-label={tr("Semaine de fin")}
                             type="number"
                             min="0"
                             value={phase.end_week_offset}
@@ -462,7 +464,7 @@ export default function RoadmapTemplateEditor({
                       <textarea
                         value={phase.notes}
                         onChange={(e) => updatePhase(phase.localId, { notes: e.target.value })}
-                        placeholder="Notes (optionnel)" aria-label="Notes (optionnel)"
+                        placeholder={tr("Notes (optionnel)")} aria-label={tr("Notes (optionnel)")}
                         rows={1}
                         className={`${inputCls} resize-none`}
                       />
@@ -480,19 +482,19 @@ export default function RoadmapTemplateEditor({
         <div className="flex items-center justify-between mb-3 px-1">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 flex items-center gap-1.5">
             <Target size={12} />
-            3. Jalons <span className="text-[#F5EDED]/25">({state.milestones.length})</span>
+            {tr("3. Jalons")}{" "}<span className="text-[#F5EDED]/25">({state.milestones.length})</span>
           </p>
           <button
             onClick={addMilestone}
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
           >
-            <Plus size={12} /> Ajouter un jalon
+            <Plus size={12} />{" "}{tr("Ajouter un jalon")}
           </button>
         </div>
 
         {state.milestones.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-2 text-center px-6">
-            <p className="text-xs text-[#F5EDED]/35">Aucun jalon pour l&apos;instant.</p>
+            <p className="text-xs text-[#F5EDED]/35">{tr("Aucun jalon pour l'instant.")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -510,7 +512,7 @@ export default function RoadmapTemplateEditor({
                     >
                       <Target size={12} className="flex-shrink-0" style={{ color: OBJECTIVE_TERM_COLORS[m.term] ?? "rgba(245,237,237,0.4)" }} />
                       <span className="text-[12px] font-bold text-white truncate">
-                        {m.label || typeConfig?.label || "Jalon"}
+                        {m.label || typeConfig?.label || tr("Jalon")}
                       </span>
                       {!open && (
                         <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">S{m.week_offset}</span>
@@ -520,7 +522,7 @@ export default function RoadmapTemplateEditor({
                     <button
                       onClick={() => removeMilestone(m.localId)}
                       className="px-1 text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
-                      title="Supprimer le jalon" aria-label="Supprimer le jalon"
+                      title={tr("Supprimer le jalon")} aria-label={tr("Supprimer le jalon")}
                     >
                       <Trash2 size={13} />
                     </button>
@@ -548,9 +550,9 @@ export default function RoadmapTemplateEditor({
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div>
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                        Type
+                        {tr("Type")}
                       </label>
-                      <select aria-label="Type"
+                      <select aria-label={tr("Type")}
                         value={m.type}
                         onChange={(e) => {
                           const t = MILESTONE_TYPES.find((x) => x.value === e.target.value);
@@ -565,9 +567,9 @@ export default function RoadmapTemplateEditor({
                     </div>
                     <div>
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                        Semaine cible
+                        {tr("Semaine cible")}
                       </label>
-                      <input aria-label="Semaine cible"
+                      <input aria-label={tr("Semaine cible")}
                         type="number"
                         min="0"
                         value={m.week_offset}
@@ -577,9 +579,9 @@ export default function RoadmapTemplateEditor({
                     </div>
                     <div>
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                        Label
+                        {tr("Label")}
                       </label>
-                      <input aria-label="Label"
+                      <input aria-label={tr("Label")}
                         value={m.label}
                         onChange={(e) => updateMilestone(m.localId, { label: e.target.value })}
                         placeholder={typeConfig?.label ?? "Jalon"}
@@ -589,7 +591,7 @@ export default function RoadmapTemplateEditor({
                     {typeConfig?.unit && (
                       <div>
                         <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                          Valeur cible ({typeConfig.unit})
+                          {tr("Valeur cible (")}{typeConfig.unit})
                         </label>
                         <div className="flex gap-1.5">
                           <input
@@ -602,7 +604,7 @@ export default function RoadmapTemplateEditor({
                           <input
                             value={m.target_unit || typeConfig.unit}
                             onChange={(e) => updateMilestone(m.localId, { target_unit: e.target.value })}
-                            aria-label="Unité"
+                            aria-label={tr("Unité")}
                             className={`${inputCls} w-16 flex-shrink-0`}
                           />
                         </div>
@@ -613,7 +615,7 @@ export default function RoadmapTemplateEditor({
                   <textarea
                     value={m.description}
                     onChange={(e) => updateMilestone(m.localId, { description: e.target.value })}
-                    placeholder="Description (optionnel)" aria-label="Description (optionnel)"
+                    placeholder={tr("Description (optionnel)")} aria-label={tr("Description (optionnel)")}
                     rows={1}
                     className={`${inputCls} resize-none`}
                   />
@@ -638,7 +640,7 @@ export default function RoadmapTemplateEditor({
           onClick={() => router.back()}
           className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2.5 transition-colors"
         >
-          Annuler
+          {tr("Annuler")}
         </button>
         <button
           onClick={handleSave}
@@ -650,12 +652,12 @@ export default function RoadmapTemplateEditor({
           {saved ? (
             <>
               <Check size={13} />
-              Sauvegardé
+              {tr("Sauvegardé")}
             </>
           ) : saving ? (
-            "Sauvegarde…"
+            tr("Sauvegarde…")
           ) : (
-            "Sauvegarder le modèle"
+            tr("Sauvegarder le modèle")
           )}
         </button>
       </div>

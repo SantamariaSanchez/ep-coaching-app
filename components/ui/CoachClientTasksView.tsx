@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import { Bell, CheckCircle2, Clock, Plus, Send, Trash2 } from "lucide-react";
 import type { ClientTask } from "@/utils/tasks";
@@ -53,6 +54,7 @@ export default function CoachClientTasksView({
   deleteClientTask: (clientId: string, taskId: string) => Promise<{ error?: string }>;
   sendMotivationMessage: (clientId: string, message: string) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [tasks, setTasks] = useState(initialTasks);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
@@ -136,7 +138,7 @@ export default function CoachClientTasksView({
       {/* ── Create task ── */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Nouveau rappel
+          {tr("Nouveau rappel")}
         </p>
 
         <div className="flex flex-wrap gap-2 mb-3">
@@ -158,14 +160,14 @@ export default function CoachClientTasksView({
           <input
             value={icon}
             onChange={(e) => setIcon(e.target.value)}
-            aria-label="Icône"
+            aria-label={tr("Icône")}
             className={inputCls + " w-14 text-center"}
             maxLength={2}
           />
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Ex. Prends ta créatine" aria-label="Intitulé de la tâche"
+            placeholder={tr("Ex. Prends ta créatine")} aria-label={tr("Intitulé de la tâche")}
             className={inputCls}
           />
         </div>
@@ -173,12 +175,12 @@ export default function CoachClientTasksView({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              Relance toutes les
+              {tr("Relance toutes les")}
             </span>
             <select
               value={nagMinutes}
               onChange={(e) => setNagMinutes(parseInt(e.target.value))}
-              aria-label="Relance toutes les"
+              aria-label={tr("Relance toutes les")}
               className={inputCls + " w-auto py-1.5"}
             >
               {NAG_OPTIONS.map((m) => (
@@ -194,7 +196,7 @@ export default function CoachClientTasksView({
             className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-40 transition-colors"
           >
             <Plus size={13} />
-            {creating ? "Envoi…" : "Envoyer"}
+            {creating ? tr("Envoi…") : tr("Envoyer")}
           </button>
         </div>
         {createError && <p className="text-xs text-red-400 mt-2">{createError}</p>}
@@ -203,10 +205,10 @@ export default function CoachClientTasksView({
       {/* ── Pending tasks ── */}
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          En attente ({pending.length})
+          {tr("En attente (")}{pending.length})
         </p>
         {pending.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/30 italic">Aucun rappel en attente.</p>
+          <p className="text-xs text-[#F5EDED]/30 italic">{tr("Aucun rappel en attente.")}</p>
         ) : (
           <div className="space-y-2">
             {pending.map((t) => (
@@ -219,7 +221,7 @@ export default function CoachClientTasksView({
                   <div>
                     <p className="text-sm font-semibold text-white">{t.label}</p>
                     <p className="text-[10px] text-[#F5EDED]/35 flex items-center gap-1">
-                      <Bell size={9} /> relance / {t.nag_minutes} min · dernière {timeAgo(t.last_notified_at)}
+                      <Bell size={9} />{" "}{tr("relance /")}{" "}{t.nag_minutes}{" "}{tr("min · dernière")}{" "}{timeAgo(t.last_notified_at)}
                     </p>
                   </div>
                 </div>
@@ -240,7 +242,7 @@ export default function CoachClientTasksView({
       {done.length > 0 && (
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Terminés ({done.length})
+            {tr("Terminés (")}{done.length})
           </p>
           <div className="space-y-2">
             {done.slice(0, 10).map((t) => (
@@ -264,7 +266,7 @@ export default function CoachClientTasksView({
       {/* ── Motivation message ── */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Message de motivation
+          {tr("Message de motivation")}
         </p>
         <div className="flex flex-wrap gap-2 mb-3">
           {MOTIVATION_SUGGESTIONS.map((m) => (
@@ -282,13 +284,13 @@ export default function CoachClientTasksView({
           <input
             value={motivationText}
             onChange={(e) => setMotivationText(e.target.value)}
-            placeholder="Écris ton propre message…" aria-label="Écris ton propre message…"
+            placeholder={tr("Écris ton propre message…")} aria-label={tr("Écris ton propre message…")}
             className={inputCls}
           />
           <button
             onClick={() => handleSendMotivation(motivationText)}
             disabled={!motivationText.trim() || sendingMotivation}
-            aria-label="Envoyer le message"
+            aria-label={tr("Envoyer le message")}
             className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-40 transition-colors flex-shrink-0"
           >
             <Send size={13} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PhoneCall } from "lucide-react";
@@ -19,6 +20,7 @@ interface StagnationStatus {
 // aller chercher le client... pas juste une notif qui sert qu'à amener
 // dans l'agenda".
 export default function StagnationBanner() {
+  const t = useT();
   const [status, setStatus] = useState<StagnationStatus | null>(null);
 
   useEffect(() => {
@@ -44,11 +46,10 @@ export default function StagnationBanner() {
       >
         <div>
           <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-            On dirait que ça coince depuis {status.daysSince}j
+            {t("On dirait que ça coince depuis")}{" "}{status.daysSince}j
           </p>
           <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
-            Ton coach a été prévenu, mais un vrai échange règle toujours plus vite les choses
-            qu&apos;une appli. Réserve un créneau, ça prend deux minutes.
+            {t("Ton coach a été prévenu, mais un vrai échange règle toujours plus vite les choses qu'une appli. Réserve un créneau, ça prend deux minutes.")}
           </p>
         </div>
         <Link
@@ -57,7 +58,7 @@ export default function StagnationBanner() {
           style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px", display: "inline-flex", alignItems: "center", gap: 6, width: "fit-content" }}
         >
           <PhoneCall size={13} strokeWidth={2} />
-          Réserver un appel avec mon coach
+          {t("Réserver un appel avec mon coach")}
         </Link>
       </div>
     </section>

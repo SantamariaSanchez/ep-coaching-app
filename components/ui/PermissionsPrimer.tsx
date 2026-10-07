@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useState } from "react";
 import { Bell, Camera, MapPin, Check, X } from "lucide-react";
 
@@ -28,6 +29,7 @@ const STORAGE_KEY = "ep-permissions-primer-done";
 type Status = "idle" | "granted" | "denied";
 
 export default function PermissionsPrimer() {
+  const tr = useT();
   const [show, setShow] = useState(false);
   const [notif, setNotif] = useState<Status>("idle");
   const [camera, setCamera] = useState<Status>("idle");
@@ -192,7 +194,7 @@ export default function PermissionsPrimer() {
   return (
     <div
       role="dialog"
-      aria-label="Autorisations de l'application"
+      aria-label={tr("Autorisations de l'application")}
       style={{
         position: "fixed",
         inset: 0,
@@ -206,14 +208,13 @@ export default function PermissionsPrimer() {
     >
       <div className="w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl sm:mb-8 p-5">
         <div className="flex items-start justify-between gap-3 mb-1">
-          <p className="text-sm font-black uppercase tracking-widest text-white">Autoriser l&apos;appli</p>
-          <button onClick={dismiss} aria-label="Plus tard" className="text-[#F5EDED]/40 hover:text-white">
+          <p className="text-sm font-black uppercase tracking-widest text-white">{tr("Autoriser l'appli")}</p>
+          <button onClick={dismiss} aria-label={tr("Plus tard")} className="text-[#F5EDED]/40 hover:text-white">
             <X size={16} />
           </button>
         </div>
         <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed mb-4">
-          Trois autorisations, chacune pour une raison précise. Tu peux tout refuser, l&apos;appli
-          fonctionne quand même.
+          {tr("Trois autorisations, chacune pour une raison précise. Tu peux tout refuser, l'appli fonctionne quand même.")}
         </p>
 
         <div className="space-y-2 mb-4">
@@ -231,11 +232,11 @@ export default function PermissionsPrimer() {
               </div>
               {status === "granted" ? (
                 <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-green-400 flex-shrink-0">
-                  <Check size={12} /> OK
+                  <Check size={12} />{" "}{tr("OK")}
                 </span>
               ) : status === "denied" ? (
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex-shrink-0">
-                  Refusé
+                  {tr("Refusé")}
                 </span>
               ) : (
                 <button
@@ -243,7 +244,7 @@ export default function PermissionsPrimer() {
                   disabled={busy !== null}
                   className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
                 >
-                  {busy === key ? "…" : "Autoriser"}
+                  {busy === key ? "…" : tr("Autoriser")}
                 </button>
               )}
             </div>
@@ -254,7 +255,7 @@ export default function PermissionsPrimer() {
           onClick={dismiss}
           className="w-full py-2.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
         >
-          Terminer
+          {tr("Terminer")}
         </button>
       </div>
     </div>

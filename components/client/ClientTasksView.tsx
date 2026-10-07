@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -7,6 +8,7 @@ import { CheckCircle2, Circle, ClipboardList } from "lucide-react";
 import type { ClientTask } from "@/utils/tasks";
 
 export default function ClientTasksView() {
+  const tr = useT();
   const router = useRouter();
   const [tasks, setTasks] = useState<ClientTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,16 +66,16 @@ export default function ClientTasksView() {
     <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
       <div style={{ marginBottom: 24 }}>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: "0 0 4px" }}>
-          Coach
+          {tr("Coach")}
         </p>
-        <h1 className="ep-h1" style={{ fontSize: 28 }}>Mes tâches</h1>
+        <h1 className="ep-h1" style={{ fontSize: 28 }}>{tr("Mes tâches")}</h1>
       </div>
 
       {pending.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 20px" }}>
           <ClipboardList size={32} style={{ color: "rgba(224,30,30,0.3)", margin: "0 auto 12px" }} strokeWidth={1.5} />
           <p style={{ color: "rgba(245,237,237,0.4)", fontSize: 13 }}>
-            Aucune tâche en attente. 🎉
+            {tr("Aucune tâche en attente. 🎉")}
           </p>
         </div>
       ) : (
@@ -116,7 +118,7 @@ export default function ClientTasksView() {
       {done.length > 0 && (
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 12px" }}>
-            Terminées
+            {tr("Terminées")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {done.slice(0, 15).map((task) => (

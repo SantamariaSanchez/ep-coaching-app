@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo, useEffect } from "react";
 import type { NutritionProfile, NutritionProfileInput } from "@/utils/nutrition";
 import type { DailyLog } from "@/utils/daily-logs";
@@ -107,6 +108,7 @@ export default function NutritionForm({
     data: NutritionProfileInput
   ) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const lsKey = `ep-tdee-${clientId}`;
 
   const [form, setForm] = useState(() => {
@@ -332,7 +334,7 @@ export default function NutritionForm({
       {/* Current targets banner */}
       {existingProfile && (
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-          <p className={labelCls}>Objectifs actuels</p>
+          <p className={labelCls}>{tr("Objectifs actuels")}</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { label: "Calories", value: existingProfile.calories_target, unit: "kcal" },
@@ -352,13 +354,13 @@ export default function NutritionForm({
             ))}
           </div>
           <p className="text-[10px] text-[#F5EDED]/25 mt-3">
-            Phase :{" "}
+            {tr("Phase :")}{" "}
             <span className="text-[#E01E1E] font-semibold capitalize">
               {existingProfile.phase ?? "-"}
             </span>{" "}
-            · TDEE :{" "}
+            {tr("· TDEE :")}{" "}
             <span className="text-white font-semibold">
-              {existingProfile.tdee ?? "-"} kcal
+              {existingProfile.tdee ?? "-"}{" "}{tr("kcal")}
             </span>
           </p>
         </div>
@@ -374,19 +376,17 @@ export default function NutritionForm({
             <TrendingUp size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs font-bold text-amber-400 mb-1">
-                Écart entre TDEE formule et TDEE réel observé
+                {tr("Écart entre TDEE formule et TDEE réel observé")}
               </p>
               <p className="text-[11px] text-[#F5EDED]/55 leading-relaxed">
-                Sur les {observed.days} derniers jours, {observed.weightChangeKg >= 0 ? "+" : ""}
-                {observed.weightChangeKg}kg pour ~{observed.avgCalories} kcal/jour loggés →
-                TDEE réel estimé à ~{observed.tdee} kcal, contre {calc?.tdee} kcal côté formule
-                ({tdeeGap > 0 ? "+" : ""}{tdeeGap} kcal).
+                {tr("Sur les")}{" "}{observed.days}{" "}{tr("derniers jours,")}{" "}{observed.weightChangeKg >= 0 ? "+" : ""}
+                {observed.weightChangeKg}{tr("kg pour ~")}{observed.avgCalories}{" "}{tr("kcal/jour loggés → TDEE réel estimé à ~")}{observed.tdee}{" "}{tr("kcal, contre")}{" "}{calc?.tdee}{" "}{tr("kcal côté formule (")}{tdeeGap > 0 ? "+" : ""}{tdeeGap}{" "}{tr("kcal).")}
               </p>
               <button
                 onClick={applySuggestion}
                 className="mt-2.5 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors underline"
               >
-                Ajuster l&apos;objectif en conséquence
+                {tr("Ajuster l'objectif en conséquence")}
               </button>
             </div>
           </div>
@@ -395,14 +395,14 @@ export default function NutritionForm({
 
       {/* Section: Données de base */}
       <CollapsibleSection
-        title="Données de base"
+        title={tr("Données de base")}
         summary={`${form.gender} · ${form.weight || "?"}kg · ${form.height || "?"}cm · ${form.age || "?"} ans`}
         open={openBase}
         onToggle={() => setOpenBase((v) => !v)}
       >
         {/* Gender */}
         <div className="mb-4">
-          <label className={labelCls}>Sexe</label>
+          <label className={labelCls}>{tr("Sexe")}</label>
           <div className="flex gap-2">
             {(["Homme", "Femme"] as const).map((g) => (
               <button
@@ -422,7 +422,7 @@ export default function NutritionForm({
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className={labelCls}>Poids (kg)</label>
+            <label className={labelCls}>{tr("Poids (kg)")}</label>
             <input
               type="number"
               value={form.weight}
@@ -436,12 +436,12 @@ export default function NutritionForm({
                 onClick={() => set("weight", String(clientWeight))}
                 className="text-[9px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/60 mt-1"
               >
-                Dernier pesé : {clientWeight}kg, utiliser
+                {tr("Dernier pesé :")}{" "}{clientWeight}{tr("kg, utiliser")}
               </button>
             )}
           </div>
           <div>
-            <label className={labelCls}>Taille (cm)</label>
+            <label className={labelCls}>{tr("Taille (cm)")}</label>
             <input
               type="number"
               value={form.height}
@@ -451,7 +451,7 @@ export default function NutritionForm({
             />
           </div>
           <div>
-            <label className={labelCls}>Âge</label>
+            <label className={labelCls}>{tr("Âge")}</label>
             <input
               type="number"
               value={form.age}
@@ -465,28 +465,28 @@ export default function NutritionForm({
 
       {/* Section: Activité sportive */}
       <CollapsibleSection
-        title="Activité sportive"
+        title={tr("Activité sportive")}
         summary={`${form.trainingType} · ${form.sessionsPerWeek || "?"}x/sem · ${form.sessionDuration || "?"}min`}
         open={openSport}
         onToggle={() => setOpenSport((v) => !v)}
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className={labelCls}>Type d&apos;entraînement</label>
-            <select aria-label="Type d&apos;entraînement"
+            <label className={labelCls}>{tr("Type d'entraînement")}</label>
+            <select aria-label={tr("Type d&apos;entraînement")}
               value={form.trainingType}
               onChange={(e) => set("trainingType", e.target.value)}
               className={inputCls}
             >
               {TRAINING_TYPES.map((t) => (
                 <option key={t.label} value={t.label}>
-                  {t.label} ({t.kcal_per_hour} kcal/h)
+                  {t.label} ({t.kcal_per_hour}{" "}{tr("kcal/h)")}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className={labelCls}>Séances / semaine</label>
+            <label className={labelCls}>{tr("Séances / semaine")}</label>
             <input
               type="number"
               min="0"
@@ -498,7 +498,7 @@ export default function NutritionForm({
             />
           </div>
           <div>
-            <label className={labelCls}>Durée séance (min)</label>
+            <label className={labelCls}>{tr("Durée séance (min)")}</label>
             <input
               type="number"
               min="0"
@@ -513,14 +513,14 @@ export default function NutritionForm({
 
       {/* Section: Activité quotidienne */}
       <CollapsibleSection
-        title="Activité quotidienne"
+        title={tr("Activité quotidienne")}
         summary={`${form.stepsPerDay || "?"} pas/j · ${ACTIVITY_LEVELS.find((a) => String(a.value) === form.activityLevel)?.label ?? ""}`}
         open={openDaily}
         onToggle={() => setOpenDaily((v) => !v)}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Pas par jour</label>
+            <label className={labelCls}>{tr("Pas par jour")}</label>
             <input
               type="number"
               min="0"
@@ -531,20 +531,20 @@ export default function NutritionForm({
             />
           </div>
           <div>
-            <label className={labelCls}>Activité professionnelle</label>
-            <select aria-label="Activité professionnelle"
+            <label className={labelCls}>{tr("Activité professionnelle")}</label>
+            <select aria-label={tr("Activité professionnelle")}
               value={form.activityLevel}
               onChange={(e) => set("activityLevel", e.target.value)}
               className={inputCls}
             >
               {ACTIVITY_LEVELS.map((a) => (
                 <option key={a.value} value={a.value}>
-                  {a.label} (+{a.value} kcal)
+                  {a.label} (+{a.value}{" "}{tr("kcal)")}
                 </option>
               ))}
             </select>
             <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
-              Indépendant de tes pas quotidiens, déjà comptés ci-contre.
+              {tr("Indépendant de tes pas quotidiens, déjà comptés ci-contre.")}
             </p>
           </div>
         </div>
@@ -552,7 +552,7 @@ export default function NutritionForm({
 
       {/* Section: Objectif */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className={labelCls + " mb-4"}>Objectif</p>
+        <p className={labelCls + " mb-4"}>{tr("Objectif")}</p>
         <div className="grid grid-cols-3 gap-2 mb-4">
           {(["deficit", "maintenance", "surplus"] as const).map((p) => (
             <button
@@ -564,13 +564,13 @@ export default function NutritionForm({
                   : "border-[#890404]/30 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               }`}
             >
-              {p === "deficit" ? "Déficit" : p === "maintenance" ? "Maintenance" : "Surplus"}
+              {p === "deficit" ? tr("Déficit") : p === "maintenance" ? tr("Maintenance") : tr("Surplus")}
             </button>
           ))}
         </div>
         <div>
-          <label className={labelCls}>Ajustement calorique</label>
-          <select aria-label="Ajustement calorique"
+          <label className={labelCls}>{tr("Ajustement calorique")}</label>
+          <select aria-label={tr("Ajustement calorique")}
             value={form.adjustment}
             onChange={(e) => set("adjustment", e.target.value)}
             disabled={form.phase === "maintenance"}
@@ -589,30 +589,28 @@ export default function NutritionForm({
           d'entraînement par défaut. Écarts optionnels pour repos/high day,
           absorbés en glucides (protéines/lipides stables). */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className={labelCls + " mb-1"}>Jours de repos / high day (optionnel)</p>
+        <p className={labelCls + " mb-1"}>{tr("Jours de repos / high day (optionnel)")}</p>
         <p className="text-[10px] text-[#F5EDED]/30 mb-4">
-          L&apos;objectif ci-dessus est celui des jours d&apos;entraînement. Défini un écart pour
-          les jours de repos ou les journées &laquo;&nbsp;high&nbsp;&raquo;. L&apos;écart est absorbé en
-          glucides, protéines et lipides restent stables.
+          {tr("L'objectif ci-dessus est celui des jours d'entraînement. Défini un écart pour les jours de repos ou les journées « high ». L'écart est absorbé en glucides, protéines et lipides restent stables.")}
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Jour de repos (kcal)</label>
+            <label className={labelCls}>{tr("Jour de repos (kcal)")}</label>
             <input
               type="number"
               value={form.offsetRest}
               onChange={(e) => set("offsetRest", e.target.value)}
-              placeholder="Ex. -200" aria-label="Ajustement calorique jour de repos"
+              placeholder={tr("Ex. -200")} aria-label={tr("Ajustement calorique jour de repos")}
               className={inputCls}
             />
           </div>
           <div>
-            <label className={labelCls}>Jour high (kcal)</label>
+            <label className={labelCls}>{tr("Jour high (kcal)")}</label>
             <input
               type="number"
               value={form.offsetHigh}
               onChange={(e) => set("offsetHigh", e.target.value)}
-              placeholder="Ex. +400" aria-label="Ajustement calorique jour haut"
+              placeholder={tr("Ex. +400")} aria-label={tr("Ajustement calorique jour haut")}
               className={inputCls}
             />
           </div>
@@ -624,7 +622,7 @@ export default function NutritionForm({
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <FlameKindling size={14} className="text-[#E01E1E]" />
-            <p className={labelCls + " mb-0"}>Résultats calculés</p>
+            <p className={labelCls + " mb-0"}>{tr("Résultats calculés")}</p>
           </div>
 
           {/* TDEE breakdown */}
@@ -644,7 +642,7 @@ export default function NutritionForm({
                 </p>
                 <p className="text-xl font-black text-white">
                   {value}
-                  <span className="text-[10px] text-[#F5EDED]/40 ml-1">kcal</span>
+                  <span className="text-[10px] text-[#F5EDED]/40 ml-1">{tr("kcal")}</span>
                 </p>
               </div>
             ))}
@@ -653,18 +651,18 @@ export default function NutritionForm({
           {/* TDEE — repère de maintenance, jamais modifié directement */}
           <div className="bg-[#890404]/15 border border-[#890404]/30 rounded-lg px-3 py-2.5 mb-4">
             <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
-              TDEE total (repère de maintenance)
+              {tr("TDEE total (repère de maintenance)")}
             </p>
             <p className="text-3xl font-black text-[#E01E1E]">
               {calc.tdee}
-              <span className="text-sm text-[#F5EDED]/40 ml-1 font-normal">kcal/j</span>
+              <span className="text-sm text-[#F5EDED]/40 ml-1 font-normal">{tr("kcal/j")}</span>
             </p>
           </div>
         </div>
       ) : (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl p-8 text-center">
           <p className="text-xs text-[#F5EDED]/30 font-semibold uppercase tracking-widest">
-            Remplis poids, taille et âge pour voir le calcul
+            {tr("Remplis poids, taille et âge pour voir le calcul")}
           </p>
         </div>
       )}
@@ -674,20 +672,19 @@ export default function NutritionForm({
           modifiables à tout moment sans que le calcul ne les écrase. */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <div className="flex items-center justify-between mb-1">
-          <p className={labelCls + " mb-0"}>Objectifs à enregistrer</p>
+          <p className={labelCls + " mb-0"}>{tr("Objectifs à enregistrer")}</p>
           {calc && targetsTouched && (
             <button
               type="button"
               onClick={resetTargetsToCalc}
               className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
             >
-              Recalculer depuis le TDEE
+              {tr("Recalculer depuis le TDEE")}
             </button>
           )}
         </div>
         <p className="text-[10px] text-[#F5EDED]/30 mb-4">
-          Modifiable librement, indépendamment du calcul TDEE ci-dessus (qui reste un repère de
-          maintenance). Pré-rempli par le calcul tant que rien n&apos;est tapé ici.
+          {tr("Modifiable librement, indépendamment du calcul TDEE ci-dessus (qui reste un repère de maintenance). Pré-rempli par le calcul tant que rien n'est tapé ici.")}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {(
@@ -737,12 +734,12 @@ export default function NutritionForm({
           {saved ? (
             <>
               <Check size={13} />
-              Sauvegardé
+              {tr("Sauvegardé")}
             </>
           ) : saving ? (
-            "Sauvegarde…"
+            tr("Sauvegarde…")
           ) : (
-            "Sauvegarder les objectifs"
+            tr("Sauvegarder les objectifs")
           )}
         </button>
       </div>

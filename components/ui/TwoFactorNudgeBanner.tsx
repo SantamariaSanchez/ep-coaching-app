@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { ShieldAlert, X } from "lucide-react";
@@ -11,6 +12,7 @@ import { ShieldAlert, X } from "lucide-react";
 // sans le "force" : visible à chaque session tant que la 2FA n'est pas
 // activée, mais jamais bloquant — pas de nouveau risque de verrouillage.
 export default function TwoFactorNudgeBanner() {
+  const t = useT();
   const [hidden, setHidden] = useState(false);
   if (hidden) return null;
 
@@ -21,21 +23,21 @@ export default function TwoFactorNudgeBanner() {
     >
       <ShieldAlert size={15} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2} />
       <p className="text-[12px] text-[#F5EDED]/70 leading-snug flex-1 m-0">
-        Active la double authentification sur ton compte fondateur.
+        {t("Active la double authentification sur ton compte fondateur.")}
         <span className="hidden sm:inline text-[#F5EDED]/40">
           {" "}
-          Ce compte voit tous les membres de la plateforme, une 2FA le protège si ton mot de passe fuite.
+          {t("Ce compte voit tous les membres de la plateforme, une 2FA le protège si ton mot de passe fuite.")}
         </span>
       </p>
       <Link
         href="/dashboard/coach/parametres"
         className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#F5EDED] transition-colors"
       >
-        Activer
+        {t("Activer")}
       </Link>
       <button
         onClick={() => setHidden(true)}
-        aria-label="Masquer"
+        aria-label={t("Masquer")}
         className="flex-shrink-0 text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
       >
         <X size={14} />

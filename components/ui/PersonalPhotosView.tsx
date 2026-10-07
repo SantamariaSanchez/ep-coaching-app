@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Trash2, Lock, Loader2, Trophy, ChevronDown, ChevronUp } from "lucide-react";
@@ -67,6 +68,7 @@ export default function PersonalPhotosView({
   showCircumferences = true,
   showBodyFat = false,
 }: Props) {
+  const t = useT();
   const router = useRouter();
   const confirm = useConfirm();
   const [photos, setPhotos] = useState(initialPhotos);
@@ -133,9 +135,9 @@ export default function PersonalPhotosView({
       {/* Header */}
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Suivi
+          {t("Suivi")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Photos</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Photos")}</h1>
       </div>
 
       {/* Nouveau : competition_category/competition_date sont déjà remplis
@@ -150,7 +152,7 @@ export default function PersonalPhotosView({
               <div>
                 <p className="text-sm font-black text-white">{competitionCategory}</p>
                 <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
-                  {competitionDate ? formatDate(competitionDate) : "Date à définir"}
+                  {competitionDate ? formatDate(competitionDate) : t("Date à définir")}
                 </p>
               </div>
             </div>
@@ -169,13 +171,13 @@ export default function PersonalPhotosView({
                 className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-white transition-colors mt-3.5 pt-3.5 border-t border-[#890404]/15 w-full"
               >
                 {showPosing ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                Guide de posing {competitionCategory}
+                {t("Guide de posing")}{" "}{competitionCategory}
               </button>
               {showPosing && (
                 <div className="mt-3 space-y-3">
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                      Poses obligatoires
+                      {t("Poses obligatoires")}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {posingData.mandatory_poses.map((pose) => (
@@ -187,14 +189,14 @@ export default function PersonalPhotosView({
                   </div>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                      Routine posing · {posingData.posing_routine.duration}
+                      {t("Routine posing ·")}{" "}{posingData.posing_routine.duration}
                     </p>
                     <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{posingData.posing_routine.instructions}</p>
                   </div>
                   {posingData.tips.length > 0 && (
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                        Astuces
+                        {t("Astuces")}
                       </p>
                       <ul className="space-y-1">
                         {posingData.tips.map((tip, i) => (
@@ -218,20 +220,19 @@ export default function PersonalPhotosView({
       <div className="flex items-start gap-2.5 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3 mb-6">
         <Lock size={14} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
-          Ces photos restent privées. Elles ne servent qu&apos;à toi, pour
-          suivre ta progression physique dans le temps.
+          {t("Ces photos restent privées. Elles ne servent qu'à toi, pour suivre ta progression physique dans le temps.")}
         </p>
       </div>
 
       {/* Upload */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 mb-8 space-y-3">
         <p className="text-sm font-black uppercase tracking-tight">
-          Ajouter une photo
+          {t("Ajouter une photo")}
         </p>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Note (facultatif) : poids du jour, ressenti..." aria-label="Note (facultatif) : poids du jour, ressenti..."
+          placeholder={t("Note (facultatif) : poids du jour, ressenti...")} aria-label={t("Note (facultatif) : poids du jour, ressenti...")}
           rows={2}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
         />
@@ -243,11 +244,11 @@ export default function PersonalPhotosView({
         >
           {uploading ? (
             <>
-              <Loader2 size={14} className="animate-spin" /> Envoi...
+              <Loader2 size={14} className="animate-spin" />{" "}{t("Envoi...")}
             </>
           ) : (
             <>
-              <Camera size={14} /> Prendre ou choisir une photo
+              <Camera size={14} />{" "}{t("Prendre ou choisir une photo")}
             </>
           )}
         </button>
@@ -255,7 +256,7 @@ export default function PersonalPhotosView({
           ref={inputRef}
           type="file"
           accept="image/*"
-          aria-label="Prendre ou choisir une photo"
+          aria-label={t("Prendre ou choisir une photo")}
           className="hidden"
           disabled={uploading}
           onChange={(e) => {
@@ -275,10 +276,10 @@ export default function PersonalPhotosView({
       {showCompare && oldestWithUrl && newestWithUrl && (
         <section className="mb-8">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Progression
+            {t("Progression")}
           </p>
           <h2 className="text-xl font-black uppercase tracking-tight mb-3">
-            Avant / Après
+            {t("Avant / Après")}
           </h2>
           <PhotoCompareSlider
             beforeUrl={oldestWithUrl.url as string}
@@ -293,7 +294,7 @@ export default function PersonalPhotosView({
       {photos.length > 0 ? (
         <section>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Historique
+            {t("Historique")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {photos.map((photo) => (
@@ -321,7 +322,7 @@ export default function PersonalPhotosView({
                   onClick={() => handleDelete(photo)}
                   disabled={deletingId === photo.id}
                   className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-black/60 text-white/70 hover:text-red-400 transition-colors"
-                  title="Supprimer" aria-label="Supprimer"
+                  title={t("Supprimer")} aria-label={t("Supprimer")}
                 >
                   <Trash2 size={12} />
                 </button>
@@ -331,7 +332,7 @@ export default function PersonalPhotosView({
         </section>
       ) : (
         <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">
-          Aucune photo pour le moment. Ajoute la première ci-dessus.
+          {t("Aucune photo pour le moment. Ajoute la première ci-dessus.")}
         </p>
       )}
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { Plus, X, CalendarDays } from "lucide-react";
 import { DAY_LABELS, type ScheduleBlock } from "@/utils/agenda";
 import type { DayRow } from "./ProgramEditor";
@@ -32,24 +33,22 @@ export default function WeeklyStructurePlanner({
   onRemoveDay: (dayLocalId: string) => void;
   subjectLabel?: string;
 }) {
+  const tr = useT();
   const unassigned = days.filter((d) => !d.weekday);
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
         <CalendarDays size={12} />
-        Planification hebdomadaire
+        {tr("Planification hebdomadaire")}
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-4 leading-relaxed max-w-2xl">
-        Place chaque séance sur un vrai jour de la semaine, en tenant compte de ce que {subjectLabel} fait déjà ce
-        jour-là (travail, sommeil, autres créneaux, depuis son agenda). Un jour libre sur le papier peut être un
-        mauvais jour dans les faits (rentre tard, dort peu la veille...).
+        {tr("Place chaque séance sur un vrai jour de la semaine, en tenant compte de ce que")}{" "}{subjectLabel}{" "}{tr("fait déjà ce jour-là (travail, sommeil, autres créneaux, depuis son agenda). Un jour libre sur le papier peut être un mauvais jour dans les faits (rentre tard, dort peu la veille...).")}
       </p>
 
       {scheduleBlocks.length === 0 && (
         <p className="text-[10.5px] text-amber-300/70 italic mb-4">
-          Ce client n&apos;a pas encore renseigné son agenda (onglet Agenda), le placement ci-dessous se fait à
-          l&apos;aveugle pour l&apos;instant.
+          {tr("Ce client n'a pas encore renseigné son agenda (onglet Agenda), le placement ci-dessous se fait à l'aveugle pour l'instant.")}
         </p>
       )}
 
@@ -84,11 +83,11 @@ export default function WeeklyStructurePlanner({
                       key={d.localId}
                       className="flex items-center justify-between gap-1 bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded px-1.5 py-1"
                     >
-                      <span className="text-[10px] font-bold text-white truncate">{d.day_label || "Séance"}</span>
+                      <span className="text-[10px] font-bold text-white truncate">{d.day_label || tr("Séance")}</span>
                       <button
                         type="button"
                         onClick={() => onSetWeekday(d.localId, null)}
-                        title="Détacher de ce jour" aria-label="Détacher de ce jour"
+                        title={tr("Détacher de ce jour")} aria-label={tr("Détacher de ce jour")}
                         className="text-[#F5EDED]/30 hover:text-red-400 flex-shrink-0"
                       >
                         <X size={10} />
@@ -103,7 +102,7 @@ export default function WeeklyStructurePlanner({
                   className="w-full flex items-center justify-center gap-1 py-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/25 hover:border-[#890404]/45 rounded transition-colors"
                 >
                   <Plus size={10} />
-                  Séance
+                  {tr("Séance")}
                 </button>
               </div>
             );
@@ -114,19 +113,19 @@ export default function WeeklyStructurePlanner({
       {unassigned.length > 0 && (
         <div className="mt-4 pt-4 border-t border-[#890404]/15">
           <p className="text-[9px] font-bold uppercase tracking-widest text-amber-300/80 mb-2">
-            Séances pas encore placées sur un jour précis
+            {tr("Séances pas encore placées sur un jour précis")}
           </p>
           <div className="flex flex-wrap gap-2">
             {unassigned.map((d) => (
               <div key={d.localId} className="flex items-center gap-1.5 bg-[#150000] border border-amber-500/25 rounded-lg px-2 py-1.5">
-                <span className="text-[10px] font-bold text-white">{d.day_label || "Séance"}</span>
+                <span className="text-[10px] font-bold text-white">{d.day_label || tr("Séance")}</span>
                 <select
                   value=""
                   onChange={(e) => e.target.value && onSetWeekday(d.localId, parseInt(e.target.value, 10))}
                   aria-label={`Placer ${d.day_label || "la séance"}`}
                   className="bg-[#1f0101] border border-[#890404]/30 rounded px-1 py-0.5 text-[9px] text-[#F5EDED]/70 focus:outline-none"
                 >
-                  <option value="">Placer…</option>
+                  <option value="">{tr("Placer…")}</option>
                   {WEEKDAYS.map((wd) => (
                     <option key={wd} value={wd}>{DAY_LABELS[wd]}</option>
                   ))}
@@ -134,7 +133,7 @@ export default function WeeklyStructurePlanner({
                 <button
                   type="button"
                   onClick={() => onRemoveDay(d.localId)}
-                  title="Supprimer cette séance" aria-label="Supprimer cette séance"
+                  title={tr("Supprimer cette séance")} aria-label={tr("Supprimer cette séance")}
                   className="text-[#F5EDED]/25 hover:text-red-400"
                 >
                   <X size={11} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Wand2, Loader2, ChevronDown, ChevronUp, Info } from "lucide-react";
 import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
@@ -29,6 +30,7 @@ export default function AutoGeneratePlanButton({
   hasIntake: boolean;
   generatePlanSuggestions: (clientId: string) => Promise<PlanSuggestions>;
 }) {
+  const t = useT();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<PlanSuggestions | null>(null);
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
@@ -47,15 +49,12 @@ export default function AutoGeneratePlanButton({
           <Wand2 size={16} className="text-[#E01E1E]" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-white">Suggestions à partir de la fiche client</p>
+          <p className="text-xs font-bold text-white">{t("Suggestions à partir de la fiche client")}</p>
           <p className="text-[11px] text-[#F5EDED]/40 mt-0.5 leading-relaxed">
-            Calcule des objectifs nutrition indicatifs et propose plusieurs exercices possibles par groupe
-            musculaire (jamais un seul choix imposé). <strong className="text-[#F5EDED]/60">Rien n&apos;est
-            enregistré automatiquement.</strong> C&apos;est à toi de reporter ce qui te semble pertinent dans le
-            calculateur TDEE ou l&apos;éditeur de programme.
+            {t("Calcule des objectifs nutrition indicatifs et propose plusieurs exercices possibles par groupe musculaire (jamais un seul choix imposé).")}{" "}<strong className="text-[#F5EDED]/60">{t("Rien n'est enregistré automatiquement.")}</strong>{" "}{t("C'est à toi de reporter ce qui te semble pertinent dans le calculateur TDEE ou l'éditeur de programme.")}
           </p>
           {!hasIntake && (
-            <p className="text-[11px] text-amber-400 mt-2">Remplis et enregistre la fiche client d&apos;abord.</p>
+            <p className="text-[11px] text-amber-400 mt-2">{t("Remplis et enregistre la fiche client d'abord.")}</p>
           )}
           <button
             onClick={handleRun}
@@ -63,7 +62,7 @@ export default function AutoGeneratePlanButton({
             className="mt-3 flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             {running ? <Loader2 size={13} className="animate-spin" /> : <Wand2 size={13} />}
-            {running ? "Calcul…" : "Voir des suggestions"}
+            {running ? t("Calcul…") : t("Voir des suggestions")}
           </button>
 
           {result?.error && <p className="text-[11px] text-red-400 mt-3">⚠ {result.error}</p>}
@@ -77,17 +76,14 @@ export default function AutoGeneratePlanButton({
               <div className="flex items-start gap-2 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
                 <Info size={12} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
                 <p className="text-[10px] text-[#F5EDED]/40 leading-relaxed">
-                  Sélection basée sur la difficulté déclarée (débutant/intermédiaire d&apos;abord) et la catégorie
-                  (composé/isolation) de chaque exercice de ta bibliothèque, filtrée sur le matériel détesté /
-                  problématique déclaré. Ce n&apos;est pas une recherche dans la littérature scientifique,
-                  vérifie toujours la pertinence pour ce client précis.
+                  {t("Sélection basée sur la difficulté déclarée (débutant/intermédiaire d'abord) et la catégorie (composé/isolation) de chaque exercice de ta bibliothèque, filtrée sur le matériel détesté / problématique déclaré. Ce n'est pas une recherche dans la littérature scientifique, vérifie toujours la pertinence pour ce client précis.")}
                 </p>
               </div>
 
               {result.nutrition && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-                    Nutrition suggérée : {PHASE_LABEL[result.nutrition.phase]}
+                    {t("Nutrition suggérée :")}{" "}{PHASE_LABEL[result.nutrition.phase]}
                   </p>
                   <div className="grid grid-cols-4 gap-2">
                     {[
@@ -108,7 +104,7 @@ export default function AutoGeneratePlanButton({
               {result.program && result.program.length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-                    Pistes d&apos;exercices par jour
+                    {t("Pistes d'exercices par jour")}
                   </p>
                   <div className="space-y-2">
                     {result.program.map((day, i) => (
@@ -135,7 +131,7 @@ export default function AutoGeneratePlanButton({
                                     <ExerciseChip key={ex.name} ex={ex} />
                                   ))}
                                   {g.compound.length === 0 && g.isolation.length === 0 && (
-                                    <p className="text-[10px] text-[#F5EDED]/25 italic">Aucun exercice disponible pour ce groupe.</p>
+                                    <p className="text-[10px] text-[#F5EDED]/25 italic">{t("Aucun exercice disponible pour ce groupe.")}</p>
                                   )}
                                 </div>
                               </div>
@@ -151,7 +147,7 @@ export default function AutoGeneratePlanButton({
               {result.roadmap && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-                    Road map suggérée
+                    {t("Road map suggérée")}
                   </p>
                   <div className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5 space-y-1.5">
                     {result.roadmap.phases.map((p) => (
@@ -161,7 +157,7 @@ export default function AutoGeneratePlanButton({
                     ))}
                     {result.roadmap.objectives.map((o) => (
                       <p key={o.label} className="text-[11px] text-[#F5EDED]/50">
-                        🎯 {o.label} : objectif {o.term === "short" ? "court terme" : "long terme"} pour {o.target_date}
+                        🎯 {o.label}{" "}{t(": objectif")}{" "}{o.term === "short" ? t("court terme") : t("long terme")}{" "}{t("pour")}{" "}{o.target_date}
                       </p>
                     ))}
                   </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { AlertCircle, ChevronDown, ChevronUp, ChevronRight } from "lucide-react";
@@ -82,9 +83,10 @@ export function SessionSetsBreakdown({
   sets: BreakdownSet[];
   videoUrlFor?: (set: BreakdownSet) => string | null;
 }) {
+  const t = useT();
   const groups = groupByExercise(sets);
   if (groups.length === 0) {
-    return <p className="text-xs text-[#F5EDED]/35 italic">Aucune série enregistrée pour cette séance.</p>;
+    return <p className="text-xs text-[#F5EDED]/35 italic">{t("Aucune série enregistrée pour cette séance.")}</p>;
   }
 
   return (
@@ -140,12 +142,12 @@ export function SessionSetsBreakdown({
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className="ml-1.5 text-[#E01E1E]"
-                          title="Voir la vidéo du set"
+                          title={t("Voir la vidéo du set")}
                         >
                           🎥
                         </a>
                       ) : (
-                        <span className="ml-1.5" title="Vidéo envoyée">
+                        <span className="ml-1.5" title={t("Vidéo envoyée")}>
                           🎥
                         </span>
                       ))}
@@ -202,6 +204,7 @@ export default function SessionHistoryCard({
   /** Lien vers le récap complet de la séance (logbook perso uniquement). */
   recapHref?: string;
 }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
 
   const totalSets = dedupeSessionSets(session.sets).length;
@@ -221,7 +224,7 @@ export default function SessionHistoryCard({
             </p>
             {prCount > 0 && (
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 flex-shrink-0">
-                🏆 {prCount} PR
+                🏆 {prCount}{" "}{t("PR")}
               </span>
             )}
           </div>
@@ -249,7 +252,7 @@ export default function SessionHistoryCard({
                 ))}
               </div>
               <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
-                feeling
+                {t("feeling")}
               </span>
             </div>
           )}
@@ -270,19 +273,19 @@ export default function SessionHistoryCard({
             <div className="flex gap-4">
               {session.general_feeling != null && (
                 <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Feeling</p>
+                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">{t("Feeling")}</p>
                   <FeelingDots value={session.general_feeling} />
                 </div>
               )}
               {session.energy_level != null && (
                 <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Énergie</p>
+                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">{t("Énergie")}</p>
                   <FeelingDots value={session.energy_level} />
                 </div>
               )}
               {session.pump != null && (
                 <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Pump</p>
+                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">{t("Pump")}</p>
                   <FeelingDots value={session.pump} />
                 </div>
               )}
@@ -302,7 +305,7 @@ export default function SessionHistoryCard({
               href={recapHref}
               className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
             >
-              Ouvrir le récap
+              {t("Ouvrir le récap")}
               <ChevronRight size={12} />
             </Link>
           )}

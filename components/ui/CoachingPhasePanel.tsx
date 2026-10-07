@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Target, Sliders, Flame, CheckCircle2, XCircle, MinusCircle, ChevronDown, ChevronUp, History, Lightbulb, AlertTriangle } from "lucide-react";
 import {
@@ -44,6 +45,7 @@ export default function CoachingPhasePanel({
   signals: AdherenceSignal[];
   suggestions: PhaseSuggestion[];
 }) {
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState("");
@@ -83,10 +85,9 @@ export default function CoachingPhasePanel({
         <div className="flex items-center gap-3">
           <Target size={18} className="text-[#F5EDED]/30 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white">Phase de coaching non suivie</p>
+            <p className="text-sm font-bold text-white">{t("Phase de coaching non suivie")}</p>
             <p className="text-[11px] text-[#F5EDED]/40">
-              Ce client est coaché mais aucune phase n&apos;a encore été démarrée (probablement actif avant
-              l&apos;ajout de cette fonctionnalité).
+              {t("Ce client est coaché mais aucune phase n'a encore été démarrée (probablement actif avant l'ajout de cette fonctionnalité).")}
             </p>
           </div>
           <button
@@ -94,7 +95,7 @@ export default function CoachingPhasePanel({
             disabled={isPending}
             className="flex-shrink-0 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-bold uppercase tracking-widest px-3.5 py-2.5 rounded-lg transition-colors disabled:opacity-50"
           >
-            {isPending ? "..." : "Démarrer le calibrage"}
+            {isPending ? "..." : t("Démarrer le calibrage")}
           </button>
         </div>
         {error && <p className="text-[11px] text-red-400 mt-2">{error}</p>}
@@ -114,13 +115,13 @@ export default function CoachingPhasePanel({
         </div>
         <div className="flex-1 min-w-0">
           <p className="flex items-center gap-2 text-sm font-bold text-white">
-            Phase {PHASE_LABELS[phase.phase]}
+            {t("Phase")}{" "}{PHASE_LABELS[phase.phase]}
             <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/45 border border-[#890404]/20">
-              depuis {age} jour{age !== 1 ? "s" : ""}
+              {t("depuis")}{" "}{age}{" "}{t("jour")}{age !== 1 ? "s" : ""}
             </span>
           </p>
           <p className="text-[11px] text-[#F5EDED]/40 mt-0.5">
-            {PHASE_DESCRIPTIONS[phase.phase]} Débutée le {formatSince(phase.since)}.
+            {PHASE_DESCRIPTIONS[phase.phase]}{" "}{t("Débutée le")}{" "}{formatSince(phase.since)}.
           </p>
         </div>
       </div>
@@ -170,7 +171,7 @@ export default function CoachingPhasePanel({
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Note optionnelle sur cette transition..." aria-label="Note optionnelle sur cette transition..."
+                placeholder={t("Note optionnelle sur cette transition...")} aria-label={t("Note optionnelle sur cette transition...")}
                 className="w-full mb-2 bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
               />
             )}
@@ -186,12 +187,12 @@ export default function CoachingPhasePanel({
                 onClick={() => setShowNote((v) => !v)}
                 className="flex-shrink-0 text-[#F5EDED]/30 hover:text-[#F5EDED]/60 text-[10px] font-semibold uppercase tracking-widest px-2 py-2"
               >
-                Note
+                {t("Note")}
               </button>
             </div>
           </>
         ) : (
-          <p className="text-[10.5px] text-[#F5EDED]/30 text-center">Phase la plus avancée du parcours.</p>
+          <p className="text-[10.5px] text-[#F5EDED]/30 text-center">{t("Phase la plus avancée du parcours.")}</p>
         )}
         {error && <p className="text-[11px] text-red-400 mt-2">{error}</p>}
       </div>
@@ -203,7 +204,7 @@ export default function CoachingPhasePanel({
         className="w-full flex items-center justify-center gap-1.5 mt-3 text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/25 hover:text-[#F5EDED]/50 transition-colors"
       >
         <History size={10} />
-        Historique des phases
+        {t("Historique des phases")}
         {historyOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
       </button>
       {historyOpen && history && history.length > 0 && (
@@ -213,7 +214,7 @@ export default function CoachingPhasePanel({
               <span className="text-[#F5EDED]/25 flex-shrink-0">{formatSince(h.started_at)}</span>
               <span>
                 {PHASE_LABELS[h.phase]}
-                {h.ended_at ? ` (jusqu'au ${formatSince(h.ended_at)})` : " (en cours)"}
+                {h.ended_at ? ` (jusqu'au ${formatSince(h.ended_at)})` : t(" (en cours)")}
                 {h.note ? ` · ${h.note}` : ""}
               </span>
             </div>

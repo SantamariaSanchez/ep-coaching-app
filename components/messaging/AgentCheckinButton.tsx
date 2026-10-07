@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Bot, Check } from "lucide-react";
 import { triggerAgentCheckin } from "@/app/dashboard/coach/messages/[clientId]/actions";
@@ -11,6 +12,7 @@ import { triggerAgentCheckin } from "@/app/dashboard/coach/messages/[clientId]/a
 // via le compte du coach — visible immédiatement dans la conversation en
 // dessous (realtime déjà en place sur ConversationView).
 export default function AgentCheckinButton({ clientId }: { clientId: string }) {
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState<"idle" | "sent" | "error">("idle");
 
@@ -28,7 +30,7 @@ export default function AgentCheckinButton({ clientId }: { clientId: string }) {
       type="button"
       onClick={handleClick}
       disabled={isPending}
-      title="Un agent IA regarde l'activité réelle de ce client et envoie une relance personnalisée"
+      title={t("Un agent IA regarde l'activité réelle de ce client et envoie une relance personnalisée")}
       className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-colors flex-shrink-0 ml-auto disabled:opacity-50"
       style={
         state === "sent"
@@ -37,7 +39,7 @@ export default function AgentCheckinButton({ clientId }: { clientId: string }) {
       }
     >
       {state === "sent" ? <Check size={12} /> : <Bot size={12} />}
-      {isPending ? "…" : state === "sent" ? "Relance envoyée" : state === "error" ? "Réessayer" : "Relance agent IA"}
+      {isPending ? "…" : state === "sent" ? t("Relance envoyée") : state === "error" ? t("Réessayer") : t("Relance agent IA")}
     </button>
   );
 }

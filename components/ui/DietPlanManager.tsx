@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -63,6 +64,7 @@ function MacroCoverage({
   unit: string;
   color: string;
 }) {
+  const tr = useT();
   const pct = target > 0 ? Math.min(150, (current / target) * 100) : 0;
   const delta = Math.round(target - current);
   return (
@@ -82,7 +84,7 @@ function MacroCoverage({
       </div>
       {target > 0 && (
         <p className="text-[9px] mt-1 text-[#F5EDED]/30">
-          {delta > 0 ? `Reste ${delta}${unit}` : delta < 0 ? `Dépasse de ${-delta}${unit}` : "Pile sur la cible"}
+          {delta > 0 ? `Reste ${delta}${unit}` : delta < 0 ? `Dépasse de ${-delta}${unit}` : tr("Pile sur la cible")}
         </p>
       )}
     </div>
@@ -197,14 +199,15 @@ function autoAdjustQuantities(
 // pas une checklist à part : des observations concrètes tirées de la fiche
 // client, jamais une recommandation calculée à sa place.
 function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
+  const tr = useT();
   if (!intake) {
     return (
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Contexte nutritionnel
+          {tr("Contexte nutritionnel")}
         </p>
         <p className="text-[11px] text-[#F5EDED]/30">
-          Fiche client absente, impossible de raisonner appétit/stress/habitudes sans elle.
+          {tr("Fiche client absente, impossible de raisonner appétit/stress/habitudes sans elle.")}
         </p>
       </div>
     );
@@ -256,14 +259,13 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Contexte nutritionnel
+        {tr("Contexte nutritionnel")}
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
-        Ce que la cible calorique/macro (onglet Objectifs TDEE) ne dit pas à elle seule, à prendre en compte
-        avant de fixer un total définitif, pas après.
+        {tr("Ce que la cible calorique/macro (onglet Objectifs TDEE) ne dit pas à elle seule, à prendre en compte avant de fixer un total définitif, pas après.")}
       </p>
       {signals.length === 0 ? (
-        <p className="text-[11px] text-[#F5EDED]/25 italic">Rien de renseigné sur ces points dans la fiche client.</p>
+        <p className="text-[11px] text-[#F5EDED]/25 italic">{tr("Rien de renseigné sur ces points dans la fiche client.")}</p>
       ) : (
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mb-3">
           {signals.map((s) => (
@@ -276,8 +278,7 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
       )}
       {highStressPoorSleep && (
         <p className="text-[11px] text-amber-300/90 leading-relaxed border-t border-amber-500/20 pt-2.5">
-          Stress élevé + sommeil faible : risque réel d&apos;appétit dérégulé. Une marge plus généreuse qu&apos;un
-          déficit agressif est souvent plus tenable ici, une décision à toi, pas une règle automatique.
+          {tr("Stress élevé + sommeil faible : risque réel d'appétit dérégulé. Une marge plus généreuse qu'un déficit agressif est souvent plus tenable ici, une décision à toi, pas une règle automatique.")}
         </p>
       )}
     </div>
@@ -400,6 +401,7 @@ export function PlanBuilder({
   roadmap?: RoadmapWithData | null;
   roadmapHref?: string;
 }) {
+  const tr = useT();
   const confirm = useConfirm();
   const [planName, setPlanName] = useState("");
   const [objective, setObjective] = useState("");
@@ -744,9 +746,9 @@ export function PlanBuilder({
     return (
       <div className="flex flex-col items-center gap-3 py-10">
         <CheckCircle2 size={40} className="text-green-400" />
-        <p className="text-sm font-bold text-white">Plan activé avec succès !</p>
+        <p className="text-sm font-bold text-white">{tr("Plan activé avec succès !")}</p>
         <button onClick={() => setSuccess(false)} className="text-xs text-[#E01E1E] hover:underline">
-          Créer un autre plan
+          {tr("Créer un autre plan")}
         </button>
       </div>
     );
@@ -757,7 +759,7 @@ export function PlanBuilder({
       <PhaseHeader
         id="diet-phase-contexte"
         n={1}
-        title="Réflexion & contexte"
+        title={tr("Réflexion & contexte")}
         subtitle="Pourquoi ce total calorique, pas juste combien : appétit, stress, habitudes déjà en place."
         open={openPhase === 1}
         onToggle={() => togglePhase(1)}
@@ -776,7 +778,7 @@ export function PlanBuilder({
       <PhaseHeader
         id="diet-phase-programmation"
         n={2}
-        title="Programmation"
+        title={tr("Programmation")}
         subtitle="Structure de la semaine, nombre de repas, répartition macro visée, avant le moindre aliment."
         open={openPhase === 2}
         onToggle={() => togglePhase(2)}
@@ -789,26 +791,25 @@ export function PlanBuilder({
         <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
           <div className="flex items-center justify-between gap-3 mb-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              Point de départ <span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">(optionnel)</span>
+              {tr("Point de départ")}{" "}<span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">{tr("(optionnel)")}</span>
             </p>
             {templates.length > 0 && (
               <button
                 onClick={() => setShowStartingPoint((v) => !v)}
                 className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
               >
-                {showStartingPoint ? "Masquer" : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
+                {showStartingPoint ? tr("Masquer") : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
               </button>
             )}
           </div>
           <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed">
-            Pars d&apos;un de tes modèles de diète et ajuste le pour {subjectLabel}, ou construis tout sur mesure
-            ci dessous.
+            {tr("Pars d'un de tes modèles de diète et ajuste le pour")}{" "}{subjectLabel}{tr(", ou construis tout sur mesure ci dessous.")}
           </p>
 
           {loadedTemplateName && (
             <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-lg px-3 py-1.5">
               <Check size={11} />
-              Chargé depuis « {loadedTemplateName} », ajuste librement
+              {tr("Chargé depuis «")}{" "}{loadedTemplateName}{" "}{tr("», ajuste librement")}
             </p>
           )}
 
@@ -825,12 +826,12 @@ export function PlanBuilder({
                   {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
                   <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
                     {MODE_LABELS[t.mode]}
-                    {t.structure === "weekly" ? " · hebdo" : ""} · {t.diet_plan_template_meals.length} aliment
+                    {t.structure === "weekly" ? tr(" · hebdo") : ""} · {t.diet_plan_template_meals.length}{" "}{tr("aliment")}
                     {t.diet_plan_template_meals.length !== 1 ? "s" : ""}
                   </p>
                   <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 group-hover:text-[#E01E1E] transition-colors">
                     <LayoutTemplate size={11} />
-                    Charger et personnaliser
+                    {tr("Charger et personnaliser")}
                   </span>
                 </button>
               ))}
@@ -843,32 +844,32 @@ export function PlanBuilder({
               className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
             >
               <ExternalLink size={11} />
-              Gérer la bibliothèque de modèles
+              {tr("Gérer la bibliothèque de modèles")}
             </Link>
           )}
         </div>
       )}
 
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-        1. Objectif &amp; structure
+        {tr("1. Objectif & structure")}
       </p>
 
       {/* Plan name + mode */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Nom du plan
+            {tr("Nom du plan")}
           </label>
           <input
             value={planName}
             onChange={(e) => setPlanName(e.target.value)}
-            placeholder="Ex. Prise de masse semaine 1" aria-label="Nom du plan"
+            placeholder={tr("Ex. Prise de masse semaine 1")} aria-label={tr("Nom du plan")}
             className={inputCls}
           />
         </div>
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Mode
+            {tr("Mode")}
           </label>
           <div className="flex gap-2">
             {MODES.map(({ key, label, icon: Icon }) => (
@@ -894,30 +895,29 @@ export function PlanBuilder({
 
       <div>
         <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          Objectif du plan <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+          {tr("Objectif du plan")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
         </label>
         <input
           value={objective}
           onChange={(e) => setObjective(e.target.value)}
-          placeholder="Ex. Sèche progressive, 400 kcal sous la maintenance, protéines hautes" aria-label="Objectif"
+          placeholder={tr("Ex. Sèche progressive, 400 kcal sous la maintenance, protéines hautes")} aria-label={tr("Objectif")}
           className={inputCls}
         />
       </div>
 
       <div>
         <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          Sorties, repas en famille, contraintes sociales connues <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+          {tr("Sorties, repas en famille, contraintes sociales connues")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
         </label>
         <textarea
           value={socialNotes}
           onChange={(e) => setSocialNotes(e.target.value)}
           rows={2}
-          placeholder="Ex. Repas de famille le dimanche midi, sort au restaurant le vendredi soir avec ses amis…" aria-label="Notes sur le contexte social"
+          placeholder={tr("Ex. Repas de famille le dimanche midi, sort au restaurant le vendredi soir avec ses amis…")} aria-label={tr("Notes sur le contexte social")}
           className={`${inputCls} resize-none`}
         />
         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
-          Pour que la diète reste tenable dans sa vraie vie, pas seulement sur le papier, à prendre en compte dans
-          la structure de la semaine ci-dessous.
+          {tr("Pour que la diète reste tenable dans sa vraie vie, pas seulement sur le papier, à prendre en compte dans la structure de la semaine ci-dessous.")}
         </p>
       </div>
 
@@ -925,7 +925,7 @@ export function PlanBuilder({
       {mode !== "flexible" && (
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Structure <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+            {tr("Structure")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
           </label>
           <div className="flex gap-2 mb-2">
             {[
@@ -947,8 +947,8 @@ export function PlanBuilder({
           </div>
           <p className="text-[10px] text-[#F5EDED]/30">
             {structure === "weekly"
-              ? "Construis chaque jour séparément, utile pour des jours \"on\"/\"off\" ou un jour de recharge glucidique."
-              : "Un seul jour-type, répété tous les jours."}
+              ? tr("Construis chaque jour séparément, utile pour des jours \"on\"/\"off\" ou un jour de recharge glucidique.")
+              : tr("Un seul jour-type, répété tous les jours.")}
           </p>
         </div>
       )}
@@ -979,13 +979,13 @@ export function PlanBuilder({
       {mode !== "flexible" && structure === "weekly" && (
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Pourquoi {DAY_TABS.find((d) => d.key === activeDay)?.label} est structuré ainsi <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+            {tr("Pourquoi")}{" "}{DAY_TABS.find((d) => d.key === activeDay)?.label}{" "}{tr("est structuré ainsi")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
           </label>
           <textarea
             value={dayNotes[activeDay] ?? ""}
             onChange={(e) => setDayNotes((prev) => ({ ...prev, [activeDay]: e.target.value }))}
             rows={2}
-            placeholder="Ex. Jour haut en glucides avant la séance jambes du lendemain matin. / Jour off, déficit plus marqué, journée sédentaire." aria-label="Notes du jour"
+            placeholder={tr("Ex. Jour haut en glucides avant la séance jambes du lendemain matin. / Jour off, déficit plus marqué, journée sédentaire.")} aria-label={tr("Notes du jour")}
             className={`${inputCls} resize-none`}
           />
         </div>
@@ -995,7 +995,7 @@ export function PlanBuilder({
       {mode === "flexible" && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 text-center">
           <p className="text-xs text-[#F5EDED]/40">
-            En mode Flexible, tu logues librement tes repas, aucun plan prédéfini nécessaire.
+            {tr("En mode Flexible, tu logues librement tes repas, aucun plan prédéfini nécessaire.")}
           </p>
         </div>
       )}
@@ -1004,11 +1004,11 @@ export function PlanBuilder({
       {mode !== "flexible" && (
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Répartition macro
+            {tr("Répartition macro")}
             {structure === "weekly" ? ` · ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : ""}
             {!targets && (
               <span className="ml-2 font-normal normal-case tracking-normal text-[#F5EDED]/25">
-                aucune cible définie, remplis l&apos;onglet Objectifs TDEE pour piloter au macro près
+                {tr("aucune cible définie, remplis l'onglet Objectifs TDEE pour piloter au macro près")}
               </span>
             )}
           </p>
@@ -1026,13 +1026,13 @@ export function PlanBuilder({
                 onClick={handleAutoAdjust}
                 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
               >
-                <RefreshCw size={11} /> Ajuster automatiquement les grammages sur la cible
+                <RefreshCw size={11} />{" "}{tr("Ajuster automatiquement les grammages sur la cible")}
               </button>
               <p className="text-[9px] text-[#F5EDED]/25 mt-1">
-                Garde les aliments choisis, réajuste seulement les quantités par macro dominante (protéine/glucide/lipide) pour coller à l&apos;objectif.
+                {tr("Garde les aliments choisis, réajuste seulement les quantités par macro dominante (protéine/glucide/lipide) pour coller à l'objectif.")}
               </p>
               {autoAdjustDone && (
-                <p className="text-[10px] text-green-400 font-semibold mt-1.5">✓ Grammages ajustés</p>
+                <p className="text-[10px] text-green-400 font-semibold mt-1.5">{tr("✓ Grammages ajustés")}</p>
               )}
               {autoAdjustError && (
                 <p className="text-[10px] text-red-400 mt-1.5">{autoAdjustError}</p>
@@ -1048,7 +1048,7 @@ export function PlanBuilder({
         <PhaseHeader
           id="diet-phase-construction"
           n={3}
-          title="Construction"
+          title={tr("Construction")}
           subtitle="Chaque aliment ajouté porte sa raison d'être, pas juste un nom et un grammage."
           open={openPhase === 3}
           onToggle={() => togglePhase(3)}
@@ -1059,7 +1059,7 @@ export function PlanBuilder({
       {mode !== "flexible" && openPhase === 3 && (
         <>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-            Détail des repas
+            {tr("Détail des repas")}
           </p>
           <div className="space-y-3">
             {MEAL_SLOTS.map((slot) => {
@@ -1077,9 +1077,9 @@ export function PlanBuilder({
                       </p>
                       {slotMeals.length > 0 && (
                         <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
-                          {Math.round(st.calories)} kcal · P {Math.round(st.proteins)}g · G {Math.round(st.carbs)}g · L{" "}
+                          {Math.round(st.calories)}{" "}{tr("kcal · P")}{" "}{Math.round(st.proteins)}g · G {Math.round(st.carbs)}g · L{" "}
                           {Math.round(st.fats)}g
-                          {variantGroups.length > 1 && " · option principale"}
+                          {variantGroups.length > 1 && tr(" · option principale")}
                         </p>
                       )}
                     </div>
@@ -1093,10 +1093,10 @@ export function PlanBuilder({
                             setSearch("");
                             setQty("100");
                           }}
-                          title="Ajouter une option alternative pour ce créneau (ex : 2e choix)"
+                          title={tr("Ajouter une option alternative pour ce créneau (ex : 2e choix)")}
                           className="inline-flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/45 hover:text-[#F5EDED]/80 transition-colors"
                         >
-                          <Shuffle size={11} /> Variante
+                          <Shuffle size={11} />{" "}{tr("Variante")}
                         </button>
                       )}
                       <button
@@ -1109,19 +1109,19 @@ export function PlanBuilder({
                         }}
                         className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors"
                       >
-                        <Plus size={11} /> Ajouter
+                        <Plus size={11} />{" "}{tr("Ajouter")}
                       </button>
                     </div>
                   </div>
                   {slotMeals.length === 0 ? (
-                    <p className="text-[10px] text-[#F5EDED]/20 italic">Aucun aliment</p>
+                    <p className="text-[10px] text-[#F5EDED]/20 italic">{tr("Aucun aliment")}</p>
                   ) : (
                     <div className="space-y-3">
                       {variantGroups.map((vg) => (
                         <div key={vg}>
                           {variantGroups.length > 1 && (
                             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
-                              {vg === 1 ? "Option principale" : `${vg}e choix`}
+                              {vg === 1 ? tr("Option principale") : `${vg}e choix`}
                             </p>
                           )}
                           <div className="space-y-1">
@@ -1141,7 +1141,7 @@ export function PlanBuilder({
                                     {canSwapFood(m.foodId) && (
                                       <button
                                         onClick={() => swapFood(m.localId)}
-                                        title="Remplacer par un autre aliment de la même catégorie (rotation)" aria-label="Remplacer par un autre aliment de la même catégorie (rotation)"
+                                        title={tr("Remplacer par un autre aliment de la même catégorie (rotation)")} aria-label={tr("Remplacer par un autre aliment de la même catégorie (rotation)")}
                                         className="text-[#F5EDED]/20 hover:text-green-400 transition-colors p-0.5"
                                       >
                                         <RefreshCw size={12} />
@@ -1149,7 +1149,7 @@ export function PlanBuilder({
                                     )}
                                     <button
                                       onClick={() => setMeals((prev) => prev.filter((meal) => meal.localId !== m.localId))}
-                                      aria-label="Supprimer cet aliment"
+                                      aria-label={tr("Supprimer cet aliment")}
                                       className="text-[#F5EDED]/20 hover:text-red-500 transition-colors p-0.5"
                                     >
                                       <Trash2 size={12} />
@@ -1173,7 +1173,7 @@ export function PlanBuilder({
       <PhaseHeader
         id="diet-phase-livraison"
         n={4}
-        title="Livraison"
+        title={tr("Livraison")}
         subtitle="Couverture des carences, liste de courses, bilan avant sauvegarde : ce que ce client recevra."
         open={openPhase === 4}
         onToggle={() => togglePhase(4)}
@@ -1184,7 +1184,7 @@ export function PlanBuilder({
       {mode !== "flexible" && dayMeals.length > 0 && (
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Couverture des micronutriments {structure === "weekly" && currentDay ? `· ${DAY_TABS.find((d) => d.key === currentDay)?.label ?? ""}` : ""}
+            {tr("Couverture des micronutriments")}{" "}{structure === "weekly" && currentDay ? `· ${DAY_TABS.find((d) => d.key === currentDay)?.label ?? ""}` : ""}
           </p>
           <MicroBarList logs={microLogs} foods={foods} />
         </div>
@@ -1194,12 +1194,12 @@ export function PlanBuilder({
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
           <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             <ShoppingCart size={12} />
-            Liste de courses de ce plan
+            {tr("Liste de courses de ce plan")}
           </p>
           <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
             {structure === "weekly"
-              ? "Somme réelle des jours déjà remplis."
-              : "Le jour affiché, extrapolé sur 7 jours (structure journalière : mêmes repas chaque jour)."}
+              ? tr("Somme réelle des jours déjà remplis.")
+              : tr("Le jour affiché, extrapolé sur 7 jours (structure journalière : mêmes repas chaque jour).")}
           </p>
           <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
             {draftShoppingItems.map((item) => (
@@ -1215,7 +1215,7 @@ export function PlanBuilder({
       {draftShoppingItems.length > 0 && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-            Organisation des préparations de repas
+            {tr("Organisation des préparations de repas")}
           </p>
           <ul className="space-y-1.5">
             {[
@@ -1238,7 +1238,7 @@ export function PlanBuilder({
         <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
           <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-3">
             <ClipboardCheck size={12} />
-            Bilan avant sauvegarde
+            {tr("Bilan avant sauvegarde")}
           </p>
           <div className="space-y-1.5">
             {(() => {
@@ -1275,7 +1275,7 @@ export function PlanBuilder({
             })()}
           </div>
           <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
-            Rien ici n&apos;empêche d&apos;enregistrer, un rappel, pas un blocage.
+            {tr("Rien ici n'empêche d'enregistrer, un rappel, pas un blocage.")}
           </p>
         </div>
       )}
@@ -1286,15 +1286,15 @@ export function PlanBuilder({
           {templateSaved ? (
             <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-green-400">
               <Check size={13} />
-              Modèle enregistré dans ta bibliothèque
+              {tr("Modèle enregistré dans ta bibliothèque")}
             </p>
           ) : templateFormOpen ? (
             <div className="space-y-3">
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                  Nom du modèle
+                  {tr("Nom du modèle")}
                 </label>
-                <input aria-label="Nom du modèle"
+                <input aria-label={tr("Nom du modèle")}
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder={planName || "Ex. Sèche 2000 kcal, 4 repas"}
@@ -1307,29 +1307,28 @@ export function PlanBuilder({
                   onClick={() => { setTemplateFormOpen(false); setTemplateError(null); }}
                   className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
                 >
-                  Annuler
+                  {tr("Annuler")}
                 </button>
                 <button
                   onClick={handleSaveAsTemplate}
                   disabled={templateBusy}
                   className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 disabled:opacity-50 transition-colors"
                 >
-                  {templateBusy ? "Enregistrement…" : "Enregistrer le modèle"}
+                  {templateBusy ? tr("Enregistrement…") : tr("Enregistrer le modèle")}
                 </button>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed max-w-md">
-                Cette structure de repas te resservira ? Enregistre la comme modèle réutilisable, sans quitter
-                cette page.
+                {tr("Cette structure de repas te resservira ? Enregistre la comme modèle réutilisable, sans quitter cette page.")}
               </p>
               <button
                 onClick={() => { setTemplateName(planName); setTemplateFormOpen(true); }}
                 className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
               >
                 <BookmarkPlus size={12} />
-                Enregistrer comme modèle
+                {tr("Enregistrer comme modèle")}
               </button>
             </div>
           )}
@@ -1347,7 +1346,7 @@ export function PlanBuilder({
         disabled={saving}
         className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
       >
-        {saving ? "Activation…" : "Activer ce plan"}
+        {saving ? tr("Activation…") : tr("Activer ce plan")}
       </button>
 
       {/* Food search modal */}
@@ -1362,11 +1361,11 @@ export function PlanBuilder({
                 </p>
                 {addingVariantGroup && (
                   <p className="text-[10px] text-[#F5EDED]/40 mt-0.5">
-                    {addingVariantGroup}e choix, une option alternative pour ce créneau
+                    {addingVariantGroup}{tr("e choix, une option alternative pour ce créneau")}
                   </p>
                 )}
               </div>
-              <button onClick={() => setAddingToSlot(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
+              <button onClick={() => setAddingToSlot(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
                 <X size={16} />
               </button>
             </div>
@@ -1377,7 +1376,7 @@ export function PlanBuilder({
                   <div className="mx-5 mt-3 mb-1 flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2 flex-shrink-0">
                     <AlertTriangle size={12} className="text-amber-400 flex-shrink-0 mt-0.5" />
                     <p className="text-[10.5px] text-amber-300/90 leading-relaxed">
-                      À surveiller pour ce client : {summarizeFoodWatchContext(watchContext)}. Détection approximative sur le nom/la catégorie, vérifie toujours toi-même.
+                      {tr("À surveiller pour ce client :")}{" "}{summarizeFoodWatchContext(watchContext)}{tr(". Détection approximative sur le nom/la catégorie, vérifie toujours toi-même.")}
                     </p>
                   </div>
                 )}
@@ -1386,7 +1385,7 @@ export function PlanBuilder({
                     autoFocus
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Rechercher un aliment…" aria-label="Rechercher un aliment…"
+                    placeholder={tr("Rechercher un aliment…")} aria-label={tr("Rechercher un aliment…")}
                     className={inputCls}
                   />
                   {watchContext.diet && (
@@ -1397,7 +1396,7 @@ export function PlanBuilder({
                         onChange={(e) => setHideIncompatible(e.target.checked)}
                         className="accent-[#E01E1E]"
                       />
-                      Masquer les aliments non compatibles régime {watchContext.dietLabel?.toLowerCase()}
+                      {tr("Masquer les aliments non compatibles régime")}{" "}{watchContext.dietLabel?.toLowerCase()}
                       {incompatibleCount > 0 && ` (${incompatibleCount})`}
                     </label>
                   )}
@@ -1407,11 +1406,11 @@ export function PlanBuilder({
                     <div className="px-3 py-8 flex flex-col items-center gap-2 text-center">
                       <Search size={18} className="text-[#F5EDED]/15" strokeWidth={1.5} />
                       <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
-                        Aucun aliment ne correspond à
+                        {tr("Aucun aliment ne correspond à")}
                         <span className="text-white font-bold"> « {search.trim()} »</span>.
                         <br />
-                        Essaie un autre terme, ou ajoute le à la bibliothèque d&apos;aliments.
-                        {hideIncompatible && watchContext.diet && " Le filtre régime peut aussi en cacher certains."}
+                        {tr("Essaie un autre terme, ou ajoute le à la bibliothèque d'aliments.")}
+                        {hideIncompatible && watchContext.diet && tr(" Le filtre régime peut aussi en cacher certains.")}
                       </p>
                     </div>
                   )}
@@ -1419,9 +1418,9 @@ export function PlanBuilder({
                     <div className="px-3 py-8 flex flex-col items-center gap-2 text-center">
                       <Search size={18} className="text-[#F5EDED]/15" strokeWidth={1.5} />
                       <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
-                        Aucun aliment compatible régime {watchContext.dietLabel?.toLowerCase()} trouvé.
+                        {tr("Aucun aliment compatible régime")}{" "}{watchContext.dietLabel?.toLowerCase()}{" "}{tr("trouvé.")}
                         <br />
-                        Désactive le filtre ci-dessus pour voir aussi les aliments non vérifiés.
+                        {tr("Désactive le filtre ci-dessus pour voir aussi les aliments non vérifiés.")}
                       </p>
                     </div>
                   )}
@@ -1438,7 +1437,7 @@ export function PlanBuilder({
                           {watchHits.length > 0 && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
                         </p>
                         <p className="text-[10px] text-[#F5EDED]/35">
-                          {food.calories_per_100} kcal/100g · P {food.proteins_per_100}g
+                          {food.calories_per_100}{" "}{tr("kcal/100g · P")}{" "}{food.proteins_per_100}g
                           {watchHits.length > 0 && (
                             <span className="text-amber-400/80"> · {watchHits.join(", ")}</span>
                           )}
@@ -1464,9 +1463,9 @@ export function PlanBuilder({
                 })()}
                 <div>
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                    Quantité (g)
+                    {tr("Quantité (g)")}
                   </label>
-                  <input aria-label="Quantité (g)"
+                  <input aria-label={tr("Quantité (g)")}
                     autoFocus
                     type="number"
                     min="1"
@@ -1479,13 +1478,13 @@ export function PlanBuilder({
                 {/* Pourquoi ce choix — décision propre à ce repas, ce client. */}
                 <div>
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                    Pourquoi ce choix pour ce repas <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+                    {tr("Pourquoi ce choix pour ce repas")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
                   </label>
                   <textarea
                     value={mealNotes}
                     onChange={(e) => setMealNotes(e.target.value)}
                     rows={2}
-                    placeholder="Ex. Remplace le poisson qu'il déteste, pratique à emporter au travail, source de glucides avant la séance du soir…" aria-label="Notes sur le repas"
+                    placeholder={tr("Ex. Remplace le poisson qu'il déteste, pratique à emporter au travail, source de glucides avant la séance du soir…")} aria-label={tr("Notes sur le repas")}
                     className={`${inputCls} resize-none`}
                   />
                 </div>
@@ -1493,7 +1492,7 @@ export function PlanBuilder({
                 {/* Référence partagée sur l'aliment — cuisson, association, conservation. */}
                 <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                    Préparation &amp; association (fiche partagée de l&apos;aliment)
+                    {tr("Préparation & association (fiche partagée de l'aliment)")}
                   </p>
                   {editingPrepNotes ? (
                     <>
@@ -1501,7 +1500,7 @@ export function PlanBuilder({
                         value={prepNotesDraft}
                         onChange={(e) => setPrepNotesDraft(e.target.value)}
                         rows={2}
-                        placeholder="Ex. Se mange froid ou chaud, s'associe bien avec du citron et de l'aneth, se conserve 2 jours au frigo…" aria-label="Notes de préparation"
+                        placeholder={tr("Ex. Se mange froid ou chaud, s'associe bien avec du citron et de l'aneth, se conserve 2 jours au frigo…")} aria-label={tr("Notes de préparation")}
                         className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                       />
                       <div className="flex gap-2 mt-2">
@@ -1519,28 +1518,28 @@ export function PlanBuilder({
                           disabled={savingPrepNotes}
                           className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] disabled:opacity-50"
                         >
-                          {savingPrepNotes ? "Enregistrement…" : "Enregistrer"}
+                          {savingPrepNotes ? tr("Enregistrement…") : tr("Enregistrer")}
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingPrepNotes(false)}
                           className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
                         >
-                          Annuler
+                          {tr("Annuler")}
                         </button>
                       </div>
                     </>
                   ) : (
                     <>
                       <p className="text-xs text-[#F5EDED]/60 italic mb-1.5">
-                        {selectedFood.prep_notes || "Aucune note pour l'instant."}
+                        {selectedFood.prep_notes || tr("Aucune note pour l'instant.")}
                       </p>
                       <button
                         type="button"
                         onClick={() => setEditingPrepNotes(true)}
                         className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
                       >
-                        {selectedFood.prep_notes ? "Modifier" : "Ajouter une note"}
+                        {selectedFood.prep_notes ? tr("Modifier") : tr("Ajouter une note")}
                       </button>
                     </>
                   )}
@@ -1554,19 +1553,19 @@ export function PlanBuilder({
                         <>
                           <div>
                             <p className="text-[#E01E1E] font-black text-base">{Math.round(n.calories)}</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">kcal</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("kcal")}</p>
                           </div>
                           <div>
                             <p className="text-blue-300 font-bold">{Math.round(n.proteins)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Prot.</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Prot.")}</p>
                           </div>
                           <div>
                             <p className="text-amber-300 font-bold">{Math.round(n.carbs)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Gluc.</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Gluc.")}</p>
                           </div>
                           <div>
                             <p className="text-rose-300 font-bold">{Math.round(n.fats)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Lip.</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Lip.")}</p>
                           </div>
                         </>
                       );
@@ -1578,13 +1577,13 @@ export function PlanBuilder({
                     onClick={() => setSelectedFood(null)}
                     className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60"
                   >
-                    Retour
+                    {tr("Retour")}
                   </button>
                   <button
                     onClick={addMeal}
                     className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg"
                   >
-                    Ajouter
+                    {tr("Ajouter")}
                   </button>
                 </div>
               </div>
@@ -1611,6 +1610,7 @@ function PlanDetailRow({
   onDeactivate: () => void;
   onDelete: () => void;
 }) {
+  const tr = useT();
   const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -1674,7 +1674,7 @@ function PlanDetailRow({
               <p className="text-[11px] text-[#F5EDED]/40 truncate">{plan.objective}</p>
             )}
             <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
-              {plan.mode} {isWeekly && "· hebdo"} · {plan.diet_plan_meals.length} aliment{plan.diet_plan_meals.length !== 1 ? "s" : ""} ·{" "}
+              {plan.mode} {isWeekly && tr("· hebdo")} · {plan.diet_plan_meals.length}{" "}{tr("aliment")}{plan.diet_plan_meals.length !== 1 ? "s" : ""} ·{" "}
               {new Date(plan.created_at).toLocaleDateString("fr-FR")}
             </p>
           </div>
@@ -1706,9 +1706,9 @@ function PlanDetailRow({
             </div>
           )}
           {plan.diet_plan_meals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">Plan flexible, aucun aliment prédéfini.</p>
+            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Plan flexible, aucun aliment prédéfini.")}</p>
           ) : visibleMeals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">Aucun aliment pour ce jour.</p>
+            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Aucun aliment pour ce jour.")}</p>
           ) : (
             <>
               {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => {
@@ -1725,7 +1725,7 @@ function PlanDetailRow({
                         <div key={vg}>
                           {variantGroups.length > 1 && (
                             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
-                              {vg === 1 ? "Option principale" : `${vg}e choix`}
+                              {vg === 1 ? tr("Option principale") : `${vg}e choix`}
                             </p>
                           )}
                           <div className="space-y-1">
@@ -1734,7 +1734,7 @@ function PlanDetailRow({
                               .map((m) => (
                                 <div key={m.id} className="flex items-center justify-between py-1">
                                   <div className="min-w-0">
-                                    <p className="text-xs text-white">{m.foods?.name ?? "Aliment"}</p>
+                                    <p className="text-xs text-white">{m.foods?.name ?? tr("Aliment")}</p>
                                     {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic">{m.notes}</p>}
                                   </div>
                                   <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0">{m.quantity_g}g</p>
@@ -1748,7 +1748,7 @@ function PlanDetailRow({
                 );
               })}
               <div className="flex gap-4 pt-2 border-t border-[#890404]/15 text-xs">
-                <span className="text-[#E01E1E] font-black">{Math.round(totals.calories)} kcal</span>
+                <span className="text-[#E01E1E] font-black">{Math.round(totals.calories)}{" "}{tr("kcal")}</span>
                 <span className="text-blue-300">P {Math.round(totals.proteins)}g</span>
                 <span className="text-amber-300">G {Math.round(totals.carbs)}g</span>
                 <span className="text-rose-300">L {Math.round(totals.fats)}g</span>
@@ -1763,7 +1763,7 @@ function PlanDetailRow({
                 onClick={async () => { setBusy(true); await onDeactivate(); setBusy(false); }}
                 className="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors disabled:opacity-50"
               >
-                Désactiver
+                {tr("Désactiver")}
               </button>
             ) : (
               <button
@@ -1771,7 +1771,7 @@ function PlanDetailRow({
                 onClick={async () => { setBusy(true); await onActivate(); setBusy(false); }}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors disabled:opacity-50"
               >
-                <PlayCircle size={12} /> Activer
+                <PlayCircle size={12} />{" "}{tr("Activer")}
               </button>
             )}
             <button
@@ -1782,7 +1782,7 @@ function PlanDetailRow({
                 await onDelete();
                 setBusy(false);
               }}
-              aria-label="Supprimer le plan"
+              aria-label={tr("Supprimer le plan")}
               className="px-3 py-2 text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-50"
             >
               <Trash2 size={13} />
@@ -1807,10 +1807,11 @@ export function PlansListView({
   onDeactivate: (planId: string) => Promise<void>;
   onDelete: (planId: string) => Promise<void>;
 }) {
+  const tr = useT();
   if (plans.length === 0) {
     return (
       <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">
-        Aucun plan créé pour l&apos;instant.
+        {tr("Aucun plan créé pour l'instant.")}
       </p>
     );
   }

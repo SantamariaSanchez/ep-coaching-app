@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -132,6 +133,7 @@ function WeeklyNoteForm({
   prevNoteWeight: number | null;
   saveNote: (clientId: string, noteId: string | null, data: CoachNoteInput) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const router = useRouter();
   const [form, setForm] = useState<NoteFormState>(() => emptyNoteForm(currentNote));
   const [saving, setSaving] = useState(false);
@@ -187,11 +189,11 @@ function WeeklyNoteForm({
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-5">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-          Semaine {weekNumber} : {formatDate(weekStart)}
+          {tr("Semaine")}{" "}{weekNumber} : {formatDate(weekStart)}
         </p>
         {isEditing && (
           <span className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/25 px-2 py-0.5 rounded-full">
-            Édition
+            {tr("Édition")}
           </span>
         )}
       </div>
@@ -199,8 +201,8 @@ function WeeklyNoteForm({
       {/* Phase + Poids */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div>
-          <label className={labelCls}>Phase</label>
-          <select aria-label="Phase"
+          <label className={labelCls}>{tr("Phase")}</label>
+          <select aria-label={tr("Phase")}
             value={form.phase}
             onChange={(e) => set("phase", e.target.value)}
             className={inputCls}
@@ -213,7 +215,7 @@ function WeeklyNoteForm({
           </select>
         </div>
         <div>
-          <label className={labelCls}>Poids observé (kg)</label>
+          <label className={labelCls}>{tr("Poids observé (kg)")}</label>
           <input
             type="number"
             step="0.1"
@@ -224,8 +226,8 @@ function WeeklyNoteForm({
           />
         </div>
         <div>
-          <label className={labelCls}>Variation vs S-1</label>
-          <input aria-label="Variation vs S-1"
+          <label className={labelCls}>{tr("Variation vs S-1")}</label>
+          <input aria-label={tr("Variation vs S-1")}
             type="number"
             step="0.1"
             value={form.weight_variation}
@@ -235,7 +237,7 @@ function WeeklyNoteForm({
           />
         </div>
         <div>
-          <label className={labelCls}>Note globale /10</label>
+          <label className={labelCls}>{tr("Note globale /10")}</label>
           <div className="flex gap-1 flex-wrap">
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
               <button
@@ -292,7 +294,7 @@ function WeeklyNoteForm({
               : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
           }`}
         >
-          {saved ? <><Check size={13} /> Enregistré</> : saving ? "Enregistrement…" : "Enregistrer la note"}
+          {saved ? <><Check size={13} />{" "}{tr("Enregistré")}</> : saving ? tr("Enregistrement…") : tr("Enregistrer la note")}
         </button>
       </div>
     </div>
@@ -302,6 +304,7 @@ function WeeklyNoteForm({
 // ── Note History ──────────────────────────────────────────────────────────────
 
 function NoteCard({ note }: { note: CoachNote }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(false);
 
   const fields = [
@@ -326,7 +329,7 @@ function NoteCard({ note }: { note: CoachNote }) {
           </span>
           {note.weight != null && (
             <span className="text-[10px] text-[#F5EDED]/50">
-              {note.weight} kg
+              {note.weight}{" "}{tr("kg")}
               {note.weight_variation != null && (
                 <span
                   className={`ml-1 font-semibold ${note.weight_variation < 0 ? "text-blue-400" : note.weight_variation > 0 ? "text-amber-400" : "text-[#F5EDED]/40"}`}
@@ -372,6 +375,7 @@ function KeyDecisionForm({
   clientId: string;
   saveDecision: (clientId: string, data: KeyDecisionInput) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const router = useRouter();
   const today = new Date().toISOString().split("T")[0];
   const [form, setForm] = useState({
@@ -426,17 +430,17 @@ function KeyDecisionForm({
           className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           <Plus size={13} />
-          Ajouter une décision
+          {tr("Ajouter une décision")}
         </button>
       ) : (
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-            Nouvelle décision clé
+            {tr("Nouvelle décision clé")}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Date</label>
-              <input aria-label="Date"
+              <label className={labelCls}>{tr("Date")}</label>
+              <input aria-label={tr("Date")}
                 type="date"
                 value={form.decision_date}
                 onChange={(e) => set("decision_date", e.target.value)}
@@ -444,8 +448,8 @@ function KeyDecisionForm({
               />
             </div>
             <div>
-              <label className={labelCls}>Type</label>
-              <select aria-label="Type"
+              <label className={labelCls}>{tr("Type")}</label>
+              <select aria-label={tr("Type")}
                 value={form.type}
                 onChange={(e) => set("type", e.target.value)}
                 className={inputCls}
@@ -459,32 +463,32 @@ function KeyDecisionForm({
             </div>
           </div>
           <div>
-            <label className={labelCls}>Décision *</label>
+            <label className={labelCls}>{tr("Décision *")}</label>
             <textarea
               rows={2}
               value={form.decision}
               onChange={(e) => set("decision", e.target.value)}
-              placeholder="Ex. Passer de 2000 à 1800 kcal/j suite à plateau" aria-label="Décision"
+              placeholder={tr("Ex. Passer de 2000 à 1800 kcal/j suite à plateau")} aria-label={tr("Décision")}
               className={textareaCls}
             />
           </div>
           <div>
-            <label className={labelCls}>Raison</label>
+            <label className={labelCls}>{tr("Raison")}</label>
             <textarea
               rows={2}
               value={form.reason}
               onChange={(e) => set("reason", e.target.value)}
-              placeholder="Pourquoi cette décision ?" aria-label="Pourquoi cette décision ?"
+              placeholder={tr("Pourquoi cette décision ?")} aria-label={tr("Pourquoi cette décision ?")}
               className={textareaCls}
             />
           </div>
           <div>
-            <label className={labelCls}>Résultat observé (facultatif)</label>
+            <label className={labelCls}>{tr("Résultat observé (facultatif)")}</label>
             <textarea
               rows={2}
               value={form.result}
               onChange={(e) => set("result", e.target.value)}
-              placeholder="Résultat après mise en place…" aria-label="Résultat après mise en place…"
+              placeholder={tr("Résultat après mise en place…")} aria-label={tr("Résultat après mise en place…")}
               className={textareaCls}
             />
           </div>
@@ -496,14 +500,14 @@ function KeyDecisionForm({
               onClick={() => setOpen(false)}
               className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2 transition-colors"
             >
-              Annuler
+              {tr("Annuler")}
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
               className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg disabled:opacity-60 transition-colors"
             >
-              {saved ? <><Check size={13} /> Ajouté</> : saving ? "Enregistrement…" : "Enregistrer"}
+              {saved ? <><Check size={13} />{" "}{tr("Ajouté")}</> : saving ? tr("Enregistrement…") : tr("Enregistrer")}
             </button>
           </div>
         </div>
@@ -523,6 +527,7 @@ function DecisionCard({
   clientId: string;
   deleteDecision: (clientId: string, id: string) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const router = useRouter();
   const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
@@ -567,7 +572,7 @@ function DecisionCard({
           {expanded && decision.reason && (
             <div className="mt-2">
               <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold mb-0.5">
-                Raison
+                {tr("Raison")}
               </p>
               <p className="text-xs text-[#F5EDED]/60">{decision.reason}</p>
             </div>
@@ -575,7 +580,7 @@ function DecisionCard({
           {expanded && decision.result && (
             <div className="mt-2">
               <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold mb-0.5">
-                Résultat observé
+                {tr("Résultat observé")}
               </p>
               <p className="text-xs text-[#F5EDED]/60">{decision.result}</p>
             </div>
@@ -593,7 +598,7 @@ function DecisionCard({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            aria-label="Supprimer"
+            aria-label={tr("Supprimer")}
             className="text-[#F5EDED]/20 hover:text-red-500 transition-colors disabled:opacity-40"
           >
             <Trash2 size={12} />
@@ -636,6 +641,7 @@ export default function CoachNotesView({
   saveDecision,
   deleteDecision,
 }: Props) {
+  const tr = useT();
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [activeTab, setActiveTab] = useState<"journal" | "decisions">("journal");
 
@@ -691,7 +697,7 @@ export default function CoachNotesView({
           {pastNotes.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-                Historique
+                {tr("Historique")}
               </p>
               <div className="space-y-2">
                 {visibleNotes.map((note) => (
@@ -704,9 +710,9 @@ export default function CoachNotesView({
                   className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
                 >
                   {showAllNotes ? (
-                    <><ChevronUp size={13} /> Réduire</>
+                    <><ChevronUp size={13} />{" "}{tr("Réduire")}</>
                   ) : (
-                    <><ChevronDown size={13} /> Voir tout ({pastNotes.length} semaines)</>
+                    <><ChevronDown size={13} />{" "}{tr("Voir tout (")}{pastNotes.length}{" "}{tr("semaines)")}</>
                   )}
                 </button>
               )}
@@ -726,14 +732,13 @@ export default function CoachNotesView({
           {decisions.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-1.5 py-12 px-6 bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl text-center">
               <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
-                Aucune décision enregistrée
+                {tr("Aucune décision enregistrée")}
               </p>
               {/* Item 40 : le formulaire juste au-dessus suffit à comprendre
                   quoi faire, mais un mot sur l'utilité évite de se demander
                   si "décision" a un sens précis ici. */}
               <p className="text-[11px] text-[#F5EDED]/22 max-w-xs leading-relaxed">
-                Sert à garder une trace des choix structurants pour ce client (changement de phase, ajustement
-                majeur...), pas un journal de suivi au quotidien.
+                {tr("Sert à garder une trace des choix structurants pour ce client (changement de phase, ajustement majeur...), pas un journal de suivi au quotidien.")}
               </p>
             </div>
           ) : (

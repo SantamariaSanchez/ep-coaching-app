@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
@@ -48,6 +49,7 @@ export default function NotificationBell({
   /** Panneau aligné sur le bord gauche du déclencheur plutôt que le droit */
   alignLeft?: boolean;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -120,7 +122,7 @@ export default function NotificationBell({
     <div ref={wrapRef} style={{ position: "relative" }}>
       <button
         onClick={handleOpen}
-        aria-label="Notifications"
+        aria-label={t("Notifications")}
         className="ep-btn-icon"
         style={{
           position: "relative",
@@ -192,14 +194,14 @@ export default function NotificationBell({
             }}
           >
             <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "#F5EDED" }}>
-              Notifications
+              {t("Notifications")}
             </span>
             <CheckCheck size={13} style={{ color: "rgba(245,237,237,0.25)" }} />
           </div>
 
           {items.length === 0 ? (
             <p style={{ padding: "24px 16px", textAlign: "center", fontSize: 12, color: "rgba(245,237,237,0.3)" }}>
-              Rien pour l&apos;instant.
+              {t("Rien pour l'instant.")}
             </p>
           ) : (
             items.map((n) => (

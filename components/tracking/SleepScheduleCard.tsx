@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState } from "react";
 import { BedDouble, Sunrise, Flame } from "lucide-react";
 import type { DailyLog } from "@/utils/daily-logs";
@@ -62,6 +63,7 @@ export default function SleepScheduleCard({
   recentLogs: DailyLog[];
   updateAction: ScheduleAction;
 }) {
+  const tr = useT();
   const [state, formAction, pending] = useActionState(updateAction, null);
   const streak = computeStreak(recentLogs, targetBedtime, targetWakeTime);
   const last7 = recentLogs.slice(0, 7);
@@ -71,7 +73,7 @@ export default function SleepScheduleCard({
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <BedDouble size={14} style={{ color: "#E01E1E" }} strokeWidth={2} />
         <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)", margin: 0, flex: 1 }}>
-          Routine de sommeil
+          {tr("Routine de sommeil")}
         </p>
         {streak > 0 && (
           <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 800, color: "#f59e0b" }}>
@@ -83,16 +85,16 @@ export default function SleepScheduleCard({
       <form action={formAction} style={{ marginBottom: 18 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
           <div>
-            <label className={lbl}>Heure de coucher visée</label>
-            <input name="target_bedtime" type="time" defaultValue={targetBedtime?.slice(0, 5) ?? ""} className={inp} aria-label="Heure de coucher visée" />
+            <label className={lbl}>{tr("Heure de coucher visée")}</label>
+            <input name="target_bedtime" type="time" defaultValue={targetBedtime?.slice(0, 5) ?? ""} className={inp} aria-label={tr("Heure de coucher visée")} />
           </div>
           <div>
-            <label className={lbl}>Heure de lever visée</label>
-            <input name="target_wake_time" type="time" defaultValue={targetWakeTime?.slice(0, 5) ?? ""} className={inp} aria-label="Heure de lever visée" />
+            <label className={lbl}>{tr("Heure de lever visée")}</label>
+            <input name="target_wake_time" type="time" defaultValue={targetWakeTime?.slice(0, 5) ?? ""} className={inp} aria-label={tr("Heure de lever visée")} />
           </div>
         </div>
         <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "0 0 10px", lineHeight: 1.5 }}>
-          Le bilan du soir devient obligatoire 15 min avant l&apos;heure de coucher visée.
+          {tr("Le bilan du soir devient obligatoire 15 min avant l'heure de coucher visée.")}
         </p>
         {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", margin: "0 0 8px" }}>{state.error}</p>}
         <button
@@ -101,14 +103,14 @@ export default function SleepScheduleCard({
           className="ep-btn-primary"
           style={{ fontSize: 11.5, padding: "9px 16px" }}
         >
-          {pending ? "..." : state?.success ? "Enregistré ✓" : "Enregistrer"}
+          {pending ? "..." : state?.success ? tr("Enregistré ✓") : tr("Enregistrer")}
         </button>
       </form>
 
       {last7.length > 0 && (targetBedtime || targetWakeTime) && (
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(245,237,237,0.35)", margin: "0 0 8px" }}>
-            7 derniers jours
+            {tr("7 derniers jours")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {last7.map((log) => {
@@ -137,7 +139,7 @@ export default function SleepScheduleCard({
                       </span>
                     </>
                   ) : (
-                    <span style={{ color: "rgba(245,237,237,0.25)" }}>Non renseigné</span>
+                    <span style={{ color: "rgba(245,237,237,0.25)" }}>{tr("Non renseigné")}</span>
                   )}
                   {log.sleep_hours != null && (
                     <span style={{ marginLeft: "auto", color: "rgba(245,237,237,0.35)" }}>{log.sleep_hours}h</span>

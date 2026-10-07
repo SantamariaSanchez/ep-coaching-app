@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import Link from "next/link";
 import { Compass, Scale, Utensils, Dumbbell } from "lucide-react";
 import type { PhasePilot, PilotTone, WeightPoint } from "@/lib/phase-pilot";
@@ -176,6 +177,7 @@ export default function PhasePilotCard({
   /** Préfixe des liens d'action (bilan, nutrition, logbook). null : aucun lien. */
   basePath: string | null;
 }) {
+  const tr = useT();
   if (error) return <RoadmapLoadError message={error} hint="La road map reste consultable plus bas." />;
   if (!pilot) return null;
 
@@ -186,7 +188,7 @@ export default function PhasePilotCard({
   return (
     <section
       className="ep-card-hero"
-      aria-label="Pilote de phase"
+      aria-label={tr("Pilote de phase")}
       style={{ padding: "18px 16px 16px", marginBottom: 24, borderColor: `${accent}55` }}
     >
       {/* Liseré et halo à la couleur de la phase, par-dessus la brume rouge. */}
@@ -195,7 +197,7 @@ export default function PhasePilotCard({
 
       <div style={{ position: "relative" }}>
         <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)", margin: "0 0 10px" }}>
-          <Compass size={12} /> Pilote de phase
+          <Compass size={12} />{" "}{tr("Pilote de phase")}
         </p>
 
         {/* En-tête : phase + semaine */}
@@ -206,7 +208,7 @@ export default function PhasePilotCard({
             </h2>
             {phase && pilot.weekIndex != null && pilot.totalWeeks != null && (
               <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "3px 0 0" }}>
-                Semaine {pilot.weekIndex} sur {pilot.totalWeeks} · fin le {fmtDate(phase.end_date, true)}
+                {tr("Semaine")}{" "}{pilot.weekIndex}{" "}{tr("sur")}{" "}{pilot.totalWeeks}{" "}{tr("· fin le")}{" "}{fmtDate(phase.end_date, true)}
               </p>
             )}
           </div>
@@ -226,7 +228,7 @@ export default function PhasePilotCard({
                 whiteSpace: "nowrap",
               }}
             >
-              🏆 J-{pilot.competition.daysLeft} compét
+              🏆 J-{pilot.competition.daysLeft}{" "}{tr("compét")}
             </span>
           )}
         </div>
@@ -236,7 +238,7 @@ export default function PhasePilotCard({
           <div style={{ marginBottom: 14 }}>
             <div
               role="progressbar"
-              aria-label="Avancement de la phase"
+              aria-label={tr("Avancement de la phase")}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(pilot.phaseProgressPct)}
@@ -269,7 +271,7 @@ export default function PhasePilotCard({
           <p style={{ fontSize: 13, lineHeight: 1.5, color: "#F5EDED", margin: 0 }}>{pilot.verdict.text}</p>
           {pilot.weightTrend?.projectedEndKg != null && (
             <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "6px 0 0" }}>
-              À ce rythme : environ {nf(pilot.weightTrend.projectedEndKg)} kg en fin de phase (projection, pas un objectif).
+              {tr("À ce rythme : environ")}{" "}{nf(pilot.weightTrend.projectedEndKg)}{" "}{tr("kg en fin de phase (projection, pas un objectif).")}
             </p>
           )}
         </div>
@@ -279,10 +281,10 @@ export default function PhasePilotCard({
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
               <span className="ep-label">
-                Pesées du {fmtDate(pilot.weightSeries[0].date)} au {fmtDate(pilot.weightSeries[pilot.weightSeries.length - 1].date)}
+                {tr("Pesées du")}{" "}{fmtDate(pilot.weightSeries[0].date)}{" "}{tr("au")}{" "}{fmtDate(pilot.weightSeries[pilot.weightSeries.length - 1].date)}
               </span>
               {pilot.corridor && pilot.weightTrend && (
-                <span style={{ fontSize: 9.5, color: "rgba(224,30,30,0.6)", whiteSpace: "nowrap" }}>zone rouge : couloir repère</span>
+                <span style={{ fontSize: 9.5, color: "rgba(224,30,30,0.6)", whiteSpace: "nowrap" }}>{tr("zone rouge : couloir repère")}</span>
               )}
             </div>
             <WeightSparkline pilot={pilot} accent={accent} />
@@ -353,8 +355,7 @@ export default function PhasePilotCard({
         )}
 
         <p style={{ fontSize: 9.5, lineHeight: 1.5, color: "rgba(245,237,237,0.28)", margin: 0 }}>
-          Repères indicatifs (Iraki et al. 2019 pour la prise de masse, Helms et al. 2014 pour la sèche), jamais une consigne.
-          Calculé sur les pesées du bilan, le tracker nutrition, les séances terminées et le sommeil noté.
+          {tr("Repères indicatifs (Iraki et al. 2019 pour la prise de masse, Helms et al. 2014 pour la sèche), jamais une consigne. Calculé sur les pesées du bilan, le tracker nutrition, les séances terminées et le sommeil noté.")}
         </p>
       </div>
     </section>

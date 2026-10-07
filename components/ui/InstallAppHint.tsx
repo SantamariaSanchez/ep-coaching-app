@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import { Smartphone, X, MoreVertical, Share, Download } from "lucide-react";
 
@@ -35,6 +36,7 @@ function detectPlatform(): Platform {
 // iOS Safari n'expose pas cette API (limite de la plateforme, pas de
 // l'appli), donc les 3 étapes manuelles restent le seul chemin possible là-bas.
 export default function InstallAppHint() {
+  const t = useT();
   const [platform, setPlatform] = useState<Platform>(null);
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(true);
@@ -91,7 +93,7 @@ export default function InstallAppHint() {
         className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors py-2"
       >
         {deferredPrompt ? <Download size={11} strokeWidth={1.8} /> : <Smartphone size={11} strokeWidth={1.8} />}
-        Installer l&apos;appli sur ton téléphone
+        {t("Installer l'appli sur ton téléphone")}
       </button>
 
       {open && (
@@ -102,43 +104,43 @@ export default function InstallAppHint() {
           >
             <button
               onClick={() => setOpen(false)}
-              aria-label="Fermer"
+              aria-label={t("Fermer")}
               className="absolute top-3 right-3 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
             >
               <X size={14} />
             </button>
             <p className="text-sm font-black text-[#F5EDED] mb-3 pr-6">
-              Installer EP Coaching
+              {t("Installer EP Coaching")}
             </p>
 
             {platform === "android" ? (
               <ol className="space-y-2.5 text-xs text-[#F5EDED]/65">
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-[#E01E1E]">1.</span>
-                  Ouvre ce lien dans Chrome (colle l&apos;adresse si besoin)
+                  {t("Ouvre ce lien dans Chrome (colle l'adresse si besoin)")}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-[#E01E1E]">2.</span>
-                  Touche les <MoreVertical size={12} className="inline -mt-0.5" /> trois petits points en haut à droite
+                  {t("Touche les")}{" "}<MoreVertical size={12} className="inline -mt-0.5" />{" "}{t("trois petits points en haut à droite")}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-[#E01E1E]">3.</span>
-                  Touche <span className="font-bold text-[#F5EDED]">« Installer l&apos;application »</span> (ou « Ajouter à l&apos;écran d&apos;accueil »)
+                  {t("Touche")}{" "}<span className="font-bold text-[#F5EDED]">{t("« Installer l'application »")}</span>{" "}{t("(ou « Ajouter à l'écran d'accueil »)")}
                 </li>
               </ol>
             ) : (
               <ol className="space-y-2.5 text-xs text-[#F5EDED]/65">
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-[#E01E1E]">1.</span>
-                  Ouvre ce lien dans Safari
+                  {t("Ouvre ce lien dans Safari")}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-[#E01E1E]">2.</span>
-                  Touche <Share size={12} className="inline -mt-0.5" /> le bouton Partager en bas
+                  {t("Touche")}{" "}<Share size={12} className="inline -mt-0.5" />{" "}{t("le bouton Partager en bas")}
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-[#E01E1E]">3.</span>
-                  Touche <span className="font-bold text-[#F5EDED]">« Sur l&apos;écran d&apos;accueil »</span>
+                  {t("Touche")}{" "}<span className="font-bold text-[#F5EDED]">{t("« Sur l'écran d'accueil »")}</span>
                 </li>
               </ol>
             )}
@@ -147,7 +149,7 @@ export default function InstallAppHint() {
               onClick={dismiss}
               className="mt-4 text-[10px] font-semibold text-[#F5EDED]/25 hover:text-[#F5EDED]/50"
             >
-              Ne plus afficher
+              {t("Ne plus afficher")}
             </button>
           </div>
         </div>

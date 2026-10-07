@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -14,12 +15,13 @@ export default function PasswordInput({
   inputStyle?: React.CSSProperties;
   wrapperStyle?: React.CSSProperties;
 }) {
+  const t = useT();
   const [visible, setVisible] = useState(false);
 
   return (
     <div style={{ position: "relative", ...wrapperStyle }}>
       <input
-        aria-label="Mot de passe"
+        aria-label={t("Mot de passe")}
         {...props}
         type={visible ? "text" : "password"}
         className={className}

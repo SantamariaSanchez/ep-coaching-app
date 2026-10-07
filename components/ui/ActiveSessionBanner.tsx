@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Dumbbell, ChevronRight } from "lucide-react";
@@ -16,6 +17,7 @@ function formatElapsed(seconds: number) {
 // séance en cours, qui pouvait sembler "arrêtée" alors qu'elle continue
 // tant qu'on n'a pas appuyé sur "Terminer".
 export default function ActiveSessionBanner() {
+  const t = useT();
   const pathname = usePathname();
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export default function ActiveSessionBanner() {
         <Dumbbell size={12} />
       </div>
       <span style={{ fontSize: 12, fontWeight: 800, whiteSpace: "nowrap" }}>
-        Séance en cours · {formatElapsed(elapsed)}
+        {t("Séance en cours ·")}{" "}{formatElapsed(elapsed)}
       </span>
       <ChevronRight size={14} style={{ opacity: 0.8, flexShrink: 0 }} />
     </button>

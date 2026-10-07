@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import type { RoadmapWithData } from "@/utils/roadmap";
 import { todayInParis } from "@/lib/dates";
 
@@ -18,20 +19,20 @@ export default function RoadmapContextPanel({
   /** Ex. "ce programme", "cette diète" — utilisé dans le texte de repère en bas. */
   workTypeLabel?: string;
 }) {
+  const t = useT();
   if (!roadmap.roadmap) {
     return (
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Road map
+          {t("Road map")}
         </p>
         <p className="text-[11px] text-[#F5EDED]/30">
-          Pas de road map posée pour {subjectLabel}. {workTypeLabel} n&apos;est rattaché à aucune trajectoire
-          déclarée.
+          {t("Pas de road map posée pour")}{" "}{subjectLabel}. {workTypeLabel}{" "}{t("n'est rattaché à aucune trajectoire déclarée.")}
           {roadmapHref && (
             <>
               {" "}
               <a href={roadmapHref} className="text-[#E01E1E] hover:text-[#ff4444] underline">
-                En créer une
+                {t("En créer une")}
               </a>
               .
             </>
@@ -56,26 +57,26 @@ export default function RoadmapContextPanel({
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
       <div className="flex items-center justify-between gap-2 mb-2">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-          Road map de {subjectLabel}
+          {t("Road map de")}{" "}{subjectLabel}
         </p>
         {roadmapHref && (
           <a href={roadmapHref} className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
-            Voir la road map complète
+            {t("Voir la road map complète")}
           </a>
         )}
       </div>
       {currentPhase ? (
         <p className="text-xs text-white mb-1">
-          <span className="font-black">Phase en cours : {currentPhase.label}</span>
+          <span className="font-black">{t("Phase en cours :")}{" "}{currentPhase.label}</span>
           <span className="text-[#F5EDED]/30"> ({currentPhase.start_date} → {currentPhase.end_date})</span>
         </p>
       ) : (
-        <p className="text-[11px] text-[#F5EDED]/30 mb-1">Aucune phase active actuellement dans la road map.</p>
+        <p className="text-[11px] text-[#F5EDED]/30 mb-1">{t("Aucune phase active actuellement dans la road map.")}</p>
       )}
       {currentPhase?.notes && <p className="text-[11px] text-[#F5EDED]/50 leading-relaxed mb-2">{currentPhase.notes}</p>}
       {upcomingObjectives.length > 0 && (
         <div className="mt-2 pt-2 border-t border-[#890404]/15 space-y-1">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">Objectifs à venir</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">{t("Objectifs à venir")}</p>
           {upcomingObjectives.map((o) => (
             <p key={o.id} className="text-[11px] text-[#F5EDED]/55">
               {o.label} <span className="text-[#F5EDED]/25">({o.target_date})</span>
@@ -84,7 +85,7 @@ export default function RoadmapContextPanel({
         </div>
       )}
       <p className="text-[10px] text-[#F5EDED]/25 mt-2 leading-relaxed">
-        Ce que tu construis ci-dessous doit servir cette trajectoire, pas exister à côté.
+        {t("Ce que tu construis ci-dessous doit servir cette trajectoire, pas exister à côté.")}
       </p>
     </div>
   );

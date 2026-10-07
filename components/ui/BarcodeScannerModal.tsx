@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import { X, ScanBarcode, AlertTriangle } from "lucide-react";
 
@@ -28,6 +29,7 @@ export default function BarcodeScannerModal({
   onScan: (barcode: string) => void;
   onClose: () => void;
 }) {
+  const tr = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,9 +93,9 @@ export default function BarcodeScannerModal({
       <div className="relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#890404]/20">
           <p className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
-            <ScanBarcode size={14} className="text-[#E01E1E]" /> Scanner un code-barres
+            <ScanBarcode size={14} className="text-[#E01E1E]" />{" "}{tr("Scanner un code-barres")}
           </p>
-          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
+          <button onClick={onClose} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
             <X size={16} />
           </button>
         </div>
@@ -102,10 +104,10 @@ export default function BarcodeScannerModal({
           <div className="p-6 flex flex-col items-center gap-3 text-center">
             <AlertTriangle size={24} className="text-amber-400" />
             <p className="text-sm text-[#F5EDED]/70">
-              Ton navigateur ne permet pas le scan de code-barres ici.
+              {tr("Ton navigateur ne permet pas le scan de code-barres ici.")}
             </p>
             <p className="text-xs text-[#F5EDED]/35">
-              Ça marche avec Chrome sur Android. En attendant, ajoute l&apos;aliment manuellement.
+              {tr("Ça marche avec Chrome sur Android. En attendant, ajoute l'aliment manuellement.")}
             </p>
           </div>
         ) : error ? (
@@ -118,7 +120,7 @@ export default function BarcodeScannerModal({
             <video ref={videoRef} muted playsInline className="w-full h-full object-cover" />
             <div className="absolute inset-8 border-2 border-[#E01E1E]/70 rounded-xl pointer-events-none" />
             <p className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-white/70 font-semibold">
-              Centre le code-barres dans le cadre
+              {tr("Centre le code-barres dans le cadre")}
             </p>
           </div>
         )}

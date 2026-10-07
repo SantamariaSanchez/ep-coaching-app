@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -214,6 +215,7 @@ function VolumeBudgetReviewPanel({
   // juste avant la décharge) — ajusté ici pour la semaine en cours.
   mesocycle?: { startDate: string; weeks: number } | null;
 }) {
+  const tr = useT();
   const volume = computeWeeklyVolume(days);
   const [showAll, setShowAll] = useState(false);
   const relevantGroups = MUSCLE_GROUPS.filter(
@@ -227,14 +229,12 @@ function VolumeBudgetReviewPanel({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Volume &amp; intensité
+        {tr("Volume & intensité")}
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
-        Séries directes/semaine par groupe musculaire, comparées au budget visé et aux repères MEV/MAV/MRV
-        (Renaissance Periodization). Un repère, pas une règle : récupération, historique et priorités du
-        client comptent tout autant (
+        {tr("Séries directes/semaine par groupe musculaire, comparées au budget visé et aux repères MEV/MAV/MRV (Renaissance Periodization). Un repère, pas une règle : récupération, historique et priorités du client comptent tout autant (")}
         <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
-          Pelland et al., Sports Med 2025
+          {tr("Pelland et al., Sports Med 2025")}
         </a>
         ).
       </p>
@@ -249,7 +249,7 @@ function VolumeBudgetReviewPanel({
         >
           <p className="text-[11px] font-bold">
             {mesoStatus.isOverdue
-              ? "Bloc déjà terminé selon les dates renseignées, à relancer."
+              ? tr("Bloc déjà terminé selon les dates renseignées, à relancer.")
               : mesoStatus.isDeloadWeek
               ? `Semaine ${mesoStatus.currentWeek}/${mesoStatus.totalWeeks} · décharge (~50% du budget plein)`
               : `Semaine ${mesoStatus.currentWeek}/${mesoStatus.totalWeeks} · budgets ci-dessous ajustés à ~${Math.round(mesoStatus.volumeFactor * 100)}%`}
@@ -258,7 +258,7 @@ function VolumeBudgetReviewPanel({
       )}
 
       {displayedGroups.length === 0 ? (
-        <p className="text-[11px] text-[#F5EDED]/25 italic">Aucun groupe travaillé pour l&apos;instant.</p>
+        <p className="text-[11px] text-[#F5EDED]/25 italic">{tr("Aucun groupe travaillé pour l'instant.")}</p>
       ) : (
         <div className="space-y-1.5">
           {displayedGroups.map((group) => {
@@ -276,7 +276,7 @@ function VolumeBudgetReviewPanel({
                   <p className="text-xs font-bold text-white truncate">{group}</p>
                   {landmark && (
                     <p className="text-[9px] text-[#F5EDED]/25">
-                      MEV {landmark.mev} · MAV {landmark.mav} · MRV {landmark.mrv}
+                      {tr("MEV")}{" "}{landmark.mev}{" "}{tr("· MAV")}{" "}{landmark.mav}{" "}{tr("· MRV")}{" "}{landmark.mrv}
                     </p>
                   )}
                 </div>
@@ -290,7 +290,7 @@ function VolumeBudgetReviewPanel({
                     aria-label={`${group}, séries par semaine visées`}
                     className="w-12 bg-[#1f0101] border border-[#890404]/30 rounded px-1.5 py-1 text-xs text-center text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
                   />
-                  <span className="text-[9px] text-[#F5EDED]/20">visé{mesoStatus && !mesoStatus.isOverdue ? " (plein)" : ""}</span>
+                  <span className="text-[9px] text-[#F5EDED]/20">{tr("visé")}{mesoStatus && !mesoStatus.isOverdue ? tr(" (plein)") : ""}</span>
                 </div>
                 <div className="text-right flex-shrink-0" style={{ width: 64 }}>
                   <p className="text-sm font-black" style={{ color: status.color }}>
@@ -316,7 +316,7 @@ function VolumeBudgetReviewPanel({
           className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
         >
           {showAll
-            ? "Masquer les groupes non travaillés"
+            ? tr("Masquer les groupes non travaillés")
             : `+ ${hiddenGroups.length} groupe${hiddenGroups.length > 1 ? "s" : ""} non travaillé${hiddenGroups.length > 1 ? "s" : ""}`}
         </button>
       )}
@@ -341,19 +341,17 @@ function EquipmentInventoryPanel({
   onToggle: (type: EquipmentType) => void;
   subjectLabel: string;
 }) {
+  const tr = useT();
   const baseline = allowedEquipmentTypes(trainingAccess);
   if (baseline.length === 0) return null;
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Inventaire matériel de cette séance
+        {tr("Inventaire matériel de cette séance")}
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
-        Le lieu d&apos;entraînement de la fiche client filtre déjà le gros du matériel injouable. Ici, affine pour
-        la salle précise de {subjectLabel} et son horaire : une catégorie théoriquement disponible peut être
-        absente de cette salle, ou son poste habituellement pris d&apos;assaut à l&apos;heure d&apos;entraînement
-        habituelle.
+        {tr("Le lieu d'entraînement de la fiche client filtre déjà le gros du matériel injouable. Ici, affine pour la salle précise de")}{" "}{subjectLabel}{" "}{tr("et son horaire : une catégorie théoriquement disponible peut être absente de cette salle, ou son poste habituellement pris d'assaut à l'heure d'entraînement habituelle.")}
       </p>
       <div className="flex flex-wrap gap-2">
         {baseline.map((type) => {
@@ -369,7 +367,7 @@ function EquipmentInventoryPanel({
                   : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/60 hover:border-[#890404]/45"
               }`}
             >
-              {EQUIPMENT_TYPE_LABELS[type]} {isExcluded ? "· écarté pour cette séance" : "· disponible"}
+              {EQUIPMENT_TYPE_LABELS[type]} {isExcluded ? tr("· écarté pour cette séance") : tr("· disponible")}
             </button>
           );
         })}
@@ -394,6 +392,7 @@ function DeliveryReviewPanel({
   untargetedTrainedGroups: number;
   hasObjective: boolean;
 }) {
+  const tr = useT();
   const items = [
     {
       ok: unplacedDays === 0,
@@ -420,7 +419,7 @@ function DeliveryReviewPanel({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-3">
-        Bilan avant sauvegarde
+        {tr("Bilan avant sauvegarde")}
       </p>
       <div className="space-y-1.5">
         {items.map((item, i) => (
@@ -431,8 +430,7 @@ function DeliveryReviewPanel({
         ))}
       </div>
       <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
-        Rien ici n&apos;empêche d&apos;enregistrer, un point ouvert peut être un choix assumé. C&apos;est un
-        rappel, pas un blocage.
+        {tr("Rien ici n'empêche d'enregistrer, un point ouvert peut être un choix assumé. C'est un rappel, pas un blocage.")}
       </p>
     </div>
   );
@@ -477,6 +475,7 @@ function PositionCoveragePanel({
   days: DayRow[];
   library: LibraryExercise[];
 }) {
+  const tr = useT();
   const coverage = computePositionCoverage(days, library);
   const flagged = Object.entries(coverage).filter(([, v]) => v.total >= 2 && v.positions.size === 1);
 
@@ -485,12 +484,10 @@ function PositionCoveragePanel({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Diversité des positions de résistance
+        {tr("Diversité des positions de résistance")}
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
-        Un groupe travaillé uniquement en position Mi-course, Allongée ou Raccourcie sous-exploite
-        l&apos;hypertrophie par rapport à un mix des 3 (la tension mécanique maximale se déplace selon la
-        longueur du muscle à laquelle il travaille). Un repère, pas une règle bloquante.
+        {tr("Un groupe travaillé uniquement en position Mi-course, Allongée ou Raccourcie sous-exploite l'hypertrophie par rapport à un mix des 3 (la tension mécanique maximale se déplace selon la longueur du muscle à laquelle il travaille). Un repère, pas une règle bloquante.")}
       </p>
       <div className="space-y-1.5">
         {flagged.map(([group, v]) => (
@@ -500,7 +497,7 @@ function PositionCoveragePanel({
           >
             <p className="text-xs font-bold text-white flex-1">{group}</p>
             <p className="text-[10.5px] text-amber-300/85 text-right">
-              {v.total} exercice{v.total > 1 ? "s" : ""}, tous en position {[...v.positions][0]}
+              {v.total}{" "}{tr("exercice")}{v.total > 1 ? "s" : ""}{tr(", tous en position")}{" "}{[...v.positions][0]}
             </p>
           </div>
         ))}
@@ -599,6 +596,7 @@ export function ExerciseNameField({
   onPick: (lib: LibraryExercise) => void;
   onEnter?: () => void;
 }) {
+  const tr = useT();
   const [open, setOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filterGroup, setFilterGroup] = useState("");
@@ -655,13 +653,13 @@ export function ExerciseNameField({
             if (e.key === "Enter") { setOpen(false); onEnter?.(); }
             if (e.key === "Escape") setOpen(false);
           }}
-          placeholder="Exercice (recherche...)" aria-label="Exercice (recherche...)"
+          placeholder={tr("Exercice (recherche...)")} aria-label={tr("Exercice (recherche...)")}
           className="w-full bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
         />
         <button
           type="button"
           onClick={() => { setOpen(true); setShowFilters((v) => !v); }}
-          title="Filtrer par muscle / matériel" aria-label="Filtrer par muscle / matériel"
+          title={tr("Filtrer par muscle / matériel")} aria-label={tr("Filtrer par muscle / matériel")}
           className={`flex-shrink-0 p-1 rounded transition-colors ${
             hasActiveFilters ? "text-[#E01E1E]" : "text-[#F5EDED]/20 hover:text-[#F5EDED]/50"
           }`}
@@ -677,7 +675,7 @@ export function ExerciseNameField({
             {pendingPick.conflicts.map((c, i) => (
               <p key={i} className="text-[10px] text-amber-300/90 flex items-start gap-1.5">
                 <AlertCircle size={11} className="flex-shrink-0 mt-0.5" />
-                <span><strong>{conflictSourceLabel(c.source)}</strong> : correspond à « {c.keyword} »</span>
+                <span><strong>{conflictSourceLabel(c.source)}</strong>{" "}{tr(": correspond à «")}{" "}{c.keyword} »</span>
               </p>
             ))}
           </div>
@@ -687,14 +685,14 @@ export function ExerciseNameField({
               onClick={() => { onPick(pendingPick.lib); setPendingPick(null); setOpen(false); setShowFilters(false); }}
               className="flex-1 py-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25 rounded-lg transition-colors"
             >
-              Ajouter quand même
+              {tr("Ajouter quand même")}
             </button>
             <button
               type="button"
               onClick={() => setPendingPick(null)}
               className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors"
             >
-              Annuler
+              {tr("Annuler")}
             </button>
           </div>
         </div>
@@ -705,10 +703,10 @@ export function ExerciseNameField({
           <select
             value={filterGroup}
             onChange={(e) => setFilterGroup(e.target.value)}
-            aria-label="Filtrer par groupe musculaire"
+            aria-label={tr("Filtrer par groupe musculaire")}
             className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
           >
-            <option value="">Tout muscle</option>
+            <option value="">{tr("Tout muscle")}</option>
             {LIBRARY_MUSCLE_GROUPS.map((g) => (
               <option key={g} value={g}>{g}</option>
             ))}
@@ -716,10 +714,10 @@ export function ExerciseNameField({
           <select
             value={filterEquipment}
             onChange={(e) => setFilterEquipment(e.target.value as EquipmentType | "")}
-            aria-label="Filtrer par matériel"
+            aria-label={tr("Filtrer par matériel")}
             className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
           >
-            <option value="">Tout matériel</option>
+            <option value="">{tr("Tout matériel")}</option>
             {EQUIPMENT_TYPES.map((t) => (
               <option key={t} value={t}>{EQUIPMENT_TYPE_LABELS[t]}</option>
             ))}
@@ -752,7 +750,7 @@ export function ExerciseNameField({
                   <div className="flex items-center gap-1 mt-1 flex-wrap">
                     {conflicts.length > 0 && (
                       <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center gap-0.5">
-                        <AlertCircle size={9} /> à vérifier
+                        <AlertCircle size={9} />{" "}{tr("à vérifier")}
                       </span>
                     )}
                     {lib.category && (
@@ -779,7 +777,7 @@ export function ExerciseNameField({
                 <button
                   type="button"
                   onClick={() => setDetailFor(lib)}
-                  title="Fiche exercice détaillée" aria-label="Fiche exercice détaillée"
+                  title={tr("Fiche exercice détaillée")} aria-label={tr("Fiche exercice détaillée")}
                   className="flex-shrink-0 px-2 flex items-center justify-center text-[#F5EDED]/25 hover:text-[#E01E1E] hover:bg-[#890404]/20 transition-colors"
                 >
                   <Info size={13} />
@@ -792,7 +790,7 @@ export function ExerciseNameField({
       {open && !pendingPick && q.length >= 2 && !hasActiveFilters && matches.length === 0 && (
         <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl px-3 py-2 flex items-center gap-2">
           <Search size={11} className="text-[#F5EDED]/20 flex-shrink-0" />
-          <span className="text-[10px] text-[#F5EDED]/30">Aucun résultat, nom libre conservé</span>
+          <span className="text-[10px] text-[#F5EDED]/30">{tr("Aucun résultat, nom libre conservé")}</span>
         </div>
       )}
       {detailFor && (
@@ -818,6 +816,7 @@ function AssignmentOnlyPanel({
   onChange: (field: keyof AssignmentDecisions, value: string) => void;
   onClose: () => void;
 }) {
+  const tr = useT();
   // MASTERCLASS.md Axe C (suite) : le fond se fermait déjà au clic, rien
   // au clavier avant ça.
   useEffect(() => {
@@ -834,12 +833,12 @@ function AssignmentOnlyPanel({
       <div className="ep-modal-panel relative w-full sm:max-w-lg bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[88vh] overflow-y-auto">
         <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-[#150000] border-b border-[#890404]/20 z-10">
           <div className="min-w-0">
-            <p className="text-sm font-black text-white truncate">{name || "Exercice"}</p>
+            <p className="text-sm font-black text-white truncate">{name || tr("Exercice")}</p>
             <p className="text-[10px] text-amber-400/80 font-semibold mt-1">
-              Hors bibliothèque, ajoute-le à la bibliothèque pour avoir sa fiche de classification.
+              {tr("Hors bibliothèque, ajoute-le à la bibliothèque pour avoir sa fiche de classification.")}
             </p>
           </div>
-          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+          <button onClick={onClose} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
             <X size={18} />
           </button>
         </div>
@@ -847,10 +846,10 @@ function AssignmentOnlyPanel({
           <div className="bg-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#E01E1E] mb-1">
               <ClipboardCheck size={12} />
-              Décisions pour cette séance
+              {tr("Décisions pour cette séance")}
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed mb-4">
-              Ce que toi tu choisis pour ce client précis, à cette place précise du programme.
+              {tr("Ce que toi tu choisis pour ce client précis, à cette place précise du programme.")}
             </p>
             <div className="space-y-4">
               {(
@@ -880,7 +879,7 @@ function AssignmentOnlyPanel({
             onClick={onClose}
             className="mt-4 w-full py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
           >
-            Terminé pour cet exercice
+            {tr("Terminé pour cet exercice")}
           </button>
         </div>
       </div>
@@ -928,6 +927,7 @@ export default function ProgramEditor({
   /** Pour qui on conçoit — utilisé dans les textes ("ce client", "moi"). */
   subjectLabel?: string;
 }) {
+  const tr = useT();
   const router = useRouter();
   const confirm = useConfirm();
   const [state, setState] = useState(() => initFromProgram(program));
@@ -1423,7 +1423,7 @@ export default function ProgramEditor({
           l'état réel de chaque phase du travail, pour ne jamais perdre de
           vue l'ensemble en travaillant une section précise. */}
       <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-3 flex flex-wrap items-center gap-2">
-        <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/25 mr-1">Ce projet :</span>
+        <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/25 mr-1">{tr("Ce projet :")}</span>
         {[
           { n: 1, label: "Contexte", detail: intake ? "fiche client chargée" : "fiche client absente" },
           {
@@ -1458,7 +1458,7 @@ export default function ProgramEditor({
       <PhaseHeader
         id="phase-contexte"
         n={1}
-        title="Réflexion & contexte"
+        title={tr("Réflexion & contexte")}
         subtitle="Le point de départ : qui est ce client, quelle structure de base, quelles contraintes déjà connues."
         open={openPhase === 1}
         onToggle={() => togglePhase(1)}
@@ -1473,26 +1473,25 @@ export default function ProgramEditor({
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
           <div className="flex items-center justify-between gap-3 mb-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              Point de départ <span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">(optionnel)</span>
+              {tr("Point de départ")}{" "}<span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">{tr("(optionnel)")}</span>
             </p>
             {templates.length > 0 && (
               <button
                 onClick={() => setShowStartingPoint((v) => !v)}
                 className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
               >
-                {showStartingPoint ? "Masquer" : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
+                {showStartingPoint ? tr("Masquer") : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
               </button>
             )}
           </div>
           <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed">
-            Pars d&apos;un de tes modèles et personnalise le à la volée pour {subjectLabel}, ou conçois tout sur
-            mesure ci dessous. Charger un modèle ne le modifie jamais, c&apos;est une copie de travail.
+            {tr("Pars d'un de tes modèles et personnalise le à la volée pour")}{" "}{subjectLabel}{tr(", ou conçois tout sur mesure ci dessous. Charger un modèle ne le modifie jamais, c'est une copie de travail.")}
           </p>
 
           {loadedTemplateName && (
             <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-lg px-3 py-1.5">
               <Check size={11} />
-              Chargé depuis « {loadedTemplateName} », personnalise librement
+              {tr("Chargé depuis «")}{" "}{loadedTemplateName}{" "}{tr("», personnalise librement")}
             </p>
           )}
 
@@ -1517,13 +1516,13 @@ export default function ProgramEditor({
                     </div>
                     {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
                     <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
-                      {t.days.length} séance{t.days.length !== 1 ? "s" : ""} · {exerciseCount} exercice
+                      {t.days.length}{" "}{tr("séance")}{t.days.length !== 1 ? "s" : ""} · {exerciseCount}{" "}{tr("exercice")}
                       {exerciseCount !== 1 ? "s" : ""}
                       {t.frequency ? ` · ${t.frequency}×/semaine` : ""}
                     </p>
                     <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 group-hover:text-[#E01E1E] transition-colors">
                       <LayoutTemplate size={11} />
-                      Charger et personnaliser
+                      {tr("Charger et personnaliser")}
                     </span>
                   </button>
                 );
@@ -1537,7 +1536,7 @@ export default function ProgramEditor({
               className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
             >
               <ExternalLink size={11} />
-              Gérer la bibliothèque de modèles
+              {tr("Gérer la bibliothèque de modèles")}
             </Link>
           )}
         </div>
@@ -1548,7 +1547,7 @@ export default function ProgramEditor({
       <PhaseHeader
         id="phase-programmation"
         n={2}
-        title="Programmation"
+        title={tr("Programmation")}
         subtitle="Placement réel dans la semaine, budget de volume, matériel disponible, avant le moindre exercice."
         open={openPhase === 2}
         onToggle={() => togglePhase(2)}
@@ -1560,25 +1559,25 @@ export default function ProgramEditor({
       {/* ── 1. Structure ──────────────────────────────────────────────────── */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-          Structure du programme
+          {tr("Structure du programme")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-1">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Nom du programme
+              {tr("Nom du programme")}
             </label>
             <input
               value={state.name}
               onChange={(e) => updateMeta("name", e.target.value)}
-              placeholder="Ex. PPL : Hypertrophie" aria-label="Nom du programme"
+              placeholder={tr("Ex. PPL : Hypertrophie")} aria-label={tr("Nom du programme")}
               className={inputCls}
             />
           </div>
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Split
+              {tr("Split")}
             </label>
-            <select aria-label="Split"
+            <select aria-label={tr("Split")}
               value={state.type}
               onChange={(e) => updateMeta("type", e.target.value)}
               className={inputCls}
@@ -1590,7 +1589,7 @@ export default function ProgramEditor({
           </div>
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Fréquence (séances/semaine)
+              {tr("Fréquence (séances/semaine)")}
             </label>
             <input
               type="number"
@@ -1598,7 +1597,7 @@ export default function ProgramEditor({
               max="7"
               value={state.frequency}
               onChange={(e) => updateMeta("frequency", e.target.value)}
-              placeholder="Ex. 4" aria-label="Fréquence en séances par semaine"
+              placeholder={tr("Ex. 4")} aria-label={tr("Fréquence en séances par semaine")}
               className={inputCls}
             />
           </div>
@@ -1606,26 +1605,26 @@ export default function ProgramEditor({
 
         <div className="mt-4">
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Objectif de phase
+            {tr("Objectif de phase")}
           </label>
           <input
             value={state.objective}
             onChange={(e) => updateMeta("objective", e.target.value)}
-            placeholder="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa" aria-label="Objectif"
+            placeholder={tr("Ex. Hypertrophie haut du corps, 8 semaines avant la prépa")} aria-label={tr("Objectif")}
             className={inputCls}
           />
         </div>
 
         <div className="mt-4">
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Notes de conception{" "}
-            <span className="text-[#F5EDED]/25 font-normal">(pour toi, jamais affichées côté client)</span>
+            {tr("Notes de conception")}{" "}
+            <span className="text-[#F5EDED]/25 font-normal">{tr("(pour toi, jamais affichées côté client)")}</span>
           </label>
           <textarea
             value={state.coach_notes}
             onChange={(e) => updateMeta("coach_notes", e.target.value)}
             rows={2}
-            placeholder="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…" aria-label="Notes du coach"
+            placeholder={tr("Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…")} aria-label={tr("Notes du coach")}
             className={`${inputCls} resize-none`}
           />
         </div>
@@ -1648,31 +1647,29 @@ export default function ProgramEditor({
               }}
               className="accent-[#E01E1E]"
             />
-            Suivre un mésocycle (montée de volume programmée + décharge en fin de bloc)
+            {tr("Suivre un mésocycle (montée de volume programmée + décharge en fin de bloc)")}
           </label>
           {state.mesocycle_start_date.trim() !== "" && (
             <>
               <p className="mt-2 text-[10.5px] text-[#F5EDED]/30 leading-relaxed max-w-2xl">
-                Le budget de volume ci-dessous (phase Livraison) sert de cible pour l&apos;avant-dernière
-                semaine du bloc : la première semaine démarre plus bas, la dernière est une décharge
-                automatique à ~50%. Un repère de calcul, jamais une réécriture des séries : à toi d&apos;ajuster.
+                {tr("Le budget de volume ci-dessous (phase Livraison) sert de cible pour l'avant-dernière semaine du bloc : la première semaine démarre plus bas, la dernière est une décharge automatique à ~50%. Un repère de calcul, jamais une réécriture des séries : à toi d'ajuster.")}
               </p>
               <div className="mt-3 flex flex-wrap items-end gap-4">
                 <div>
                   <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1 block">
-                    Date de départ
+                    {tr("Date de départ")}
                   </label>
                   <input
                     type="date"
                     value={state.mesocycle_start_date}
                     onChange={(e) => updateMeta("mesocycle_start_date", e.target.value)}
-                    aria-label="Date de départ du mésocycle"
+                    aria-label={tr("Date de départ du mésocycle")}
                     className="bg-[#1f0101] border border-[#890404]/30 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
                   />
                 </div>
                 <div>
                   <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1 block">
-                    Durée (semaines)
+                    {tr("Durée (semaines)")}
                   </label>
                   <input
                     type="number"
@@ -1680,7 +1677,7 @@ export default function ProgramEditor({
                     max={MESOCYCLE_WEEKS_MAX}
                     value={state.mesocycle_weeks}
                     onChange={(e) => updateMeta("mesocycle_weeks", e.target.value)}
-                    aria-label="Durée du mésocycle en semaines"
+                    aria-label={tr("Durée du mésocycle en semaines")}
                     className="w-16 bg-[#1f0101] border border-[#890404]/30 rounded-lg px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
                   />
                 </div>
@@ -1691,7 +1688,7 @@ export default function ProgramEditor({
                   return (
                     <p className="text-[10.5px] text-[#F5EDED]/45 pb-1.5">
                       {status.isOverdue
-                        ? "Bloc déjà terminé selon ces dates, il est temps d'en démarrer un nouveau."
+                        ? tr("Bloc déjà terminé selon ces dates, il est temps d'en démarrer un nouveau.")
                         : status.isDeloadWeek
                         ? `Semaine ${status.currentWeek}/${status.totalWeeks} · décharge`
                         : `Semaine ${status.currentWeek}/${status.totalWeeks} · volume à ~${Math.round(status.volumeFactor * 100)}% de la cible`}
@@ -1709,13 +1706,11 @@ export default function ProgramEditor({
             className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Wand2 size={13} />
-            {state.days.length === 0 ? "Séances vides de cette structure" : "Regénérer les séances vides"}
+            {state.days.length === 0 ? tr("Séances vides de cette structure") : tr("Regénérer les séances vides")}
           </button>
         </div>
         <p className="mt-2 text-[10px] text-[#F5EDED]/25 leading-relaxed">
-          Ça pose seulement les séances vides du split choisi, aucun exercice n&apos;est choisi à ta place.
-          Chaque exercice ajouté ensuite passe par sa propre configuration complète (position, amplitude,
-          matériel, risque…), volontairement plus lente qu&apos;un remplissage automatique.
+          {tr("Ça pose seulement les séances vides du split choisi, aucun exercice n'est choisi à ta place. Chaque exercice ajouté ensuite passe par sa propre configuration complète (position, amplitude, matériel, risque…), volontairement plus lente qu'un remplissage automatique.")}
         </p>
       </div>
 
@@ -1738,38 +1733,37 @@ export default function ProgramEditor({
       {/* Vérification exercices — fiche client + contraintes ajoutées à la volée */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Vérification automatique des exercices
+          {tr("Vérification automatique des exercices")}
         </p>
         {intake && (intake.injuries || intake.exercises_problematic || intake.disliked_equipment) ? (
           <div className="space-y-1.5 mb-3">
             {intake.injuries && (
-              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">Blessures/douleurs :</strong> {intake.injuries}</p>
+              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">{tr("Blessures/douleurs :")}</strong> {intake.injuries}</p>
             )}
             {intake.exercises_problematic && (
-              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">Exercices problématiques :</strong> {intake.exercises_problematic}</p>
+              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">{tr("Exercices problématiques :")}</strong> {intake.exercises_problematic}</p>
             )}
             {intake.disliked_equipment && (
-              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">Matériel détesté :</strong> {intake.disliked_equipment}</p>
+              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">{tr("Matériel détesté :")}</strong> {intake.disliked_equipment}</p>
             )}
           </div>
         ) : (
           <p className="text-[11px] text-[#F5EDED]/30 italic mb-3">
-            Rien de déclaré dans la fiche client sur ce point. Remplis-la ou ajoute une contrainte ci-dessous.
+            {tr("Rien de déclaré dans la fiche client sur ce point. Remplis-la ou ajoute une contrainte ci-dessous.")}
           </p>
         )}
         <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          Autres contraintes à vérifier (pas dans la fiche client)
+          {tr("Autres contraintes à vérifier (pas dans la fiche client)")}
         </label>
         <textarea
           value={customConstraints}
           onChange={(e) => setCustomConstraints(e.target.value)}
           rows={2}
-          placeholder="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…" aria-label="Contraintes particulières"
+          placeholder={tr("Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…")} aria-label={tr("Contraintes particulières")}
           className={`${inputCls} resize-none`}
         />
         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
-          Chaque exercice sélectionné depuis la bibliothèque est comparé à tout ça. En cas de correspondance, une
-          confirmation est demandée avant de l&apos;ajouter, jamais un blocage silencieux.
+          {tr("Chaque exercice sélectionné depuis la bibliothèque est comparé à tout ça. En cas de correspondance, une confirmation est demandée avant de l'ajouter, jamais un blocage silencieux.")}
         </p>
       </div>
       </>
@@ -1778,7 +1772,7 @@ export default function ProgramEditor({
       <PhaseHeader
         id="phase-construction"
         n={3}
-        title="Construction"
+        title={tr("Construction")}
         subtitle="Chaque exercice se configure entièrement : tension, amplitude, matériel, risque. Pas juste un nom."
         open={openPhase === 3}
         onToggle={() => togglePhase(3)}
@@ -1789,23 +1783,22 @@ export default function ProgramEditor({
 
       {/* Days */}
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 px-1">
-        Séances &amp; exercices
+        {tr("Séances & exercices")}
       </p>
       {state.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
           <p className="text-xs text-[#F5EDED]/35 font-semibold uppercase tracking-widest">
-            Aucune séance
+            {tr("Aucune séance")}
           </p>
           <p className="text-[11px] text-[#F5EDED]/25 max-w-sm text-center">
-            Choisis un split et une fréquence ci dessus puis génère les séances, charge un de tes modèles, ou
-            ajoute une séance vide directement.
+            {tr("Choisis un split et une fréquence ci dessus puis génère les séances, charge un de tes modèles, ou ajoute une séance vide directement.")}
           </p>
           <button
             onClick={() => addDay()}
             className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
-            Ajouter une séance
+            {tr("Ajouter une séance")}
           </button>
         </div>
       ) : (
@@ -1830,7 +1823,7 @@ export default function ProgramEditor({
                       </p>
                     ) : (
                       <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70 mb-1">
-                        Pas encore placée, voir Planification hebdomadaire
+                        {tr("Pas encore placée, voir Planification hebdomadaire")}
                       </p>
                     )}
                     <div className="flex items-center gap-1.5">
@@ -1839,13 +1832,13 @@ export default function ProgramEditor({
                       onChange={(e) =>
                         updateDayLabel(day.localId, e.target.value)
                       }
-                      aria-label="Nom du jour"
+                      aria-label={tr("Nom du jour")}
                       className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-[#E01E1E] focus:outline-none border-b border-transparent focus:border-[#E01E1E]/40 pb-0.5 min-w-0"
                     />
                     <button
                       onClick={() => moveDay(day.localId, -1)}
                       disabled={dayIdx === 0}
-                      title="Déplacer à gauche" aria-label="Déplacer à gauche"
+                      title={tr("Déplacer à gauche")} aria-label={tr("Déplacer à gauche")}
                       className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronLeft size={14} />
@@ -1853,21 +1846,21 @@ export default function ProgramEditor({
                     <button
                       onClick={() => moveDay(day.localId, 1)}
                       disabled={dayIdx === state.days.length - 1}
-                      title="Déplacer à droite" aria-label="Déplacer à droite"
+                      title={tr("Déplacer à droite")} aria-label={tr("Déplacer à droite")}
                       className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronRight size={14} />
                     </button>
                     <button
                       onClick={() => duplicateDay(day.localId)}
-                      title="Dupliquer cette séance" aria-label="Dupliquer cette séance"
+                      title={tr("Dupliquer cette séance")} aria-label={tr("Dupliquer cette séance")}
                       className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
                     >
                       <Copy size={12} />
                     </button>
                     <button
                       onClick={() => removeDay(day.localId)}
-                      title="Supprimer la séance" aria-label="Supprimer la séance"
+                      title={tr("Supprimer la séance")} aria-label={tr("Supprimer la séance")}
                       className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
                     >
                       <Trash2 size={13} />
@@ -1900,7 +1893,7 @@ export default function ProgramEditor({
                                 moveExercise(day.localId, ex.localId, -1)
                               }
                               disabled={exIdx === 0}
-                              title="Monter" aria-label="Monter"
+                              title={tr("Monter")} aria-label={tr("Monter")}
                               className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
@@ -1917,7 +1910,7 @@ export default function ProgramEditor({
                                 moveExercise(day.localId, ex.localId, 1)
                               }
                               disabled={exIdx === day.exercises.length - 1}
-                              title="Descendre" aria-label="Descendre"
+                              title={tr("Descendre")} aria-label={tr("Descendre")}
                               className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
@@ -1932,7 +1925,7 @@ export default function ProgramEditor({
                             {canSwap(ex.name) && (
                               <button
                                 onClick={() => swapExercise(day.localId, ex.localId)}
-                                title="Remplacer par un autre exercice du même groupe/catégorie" aria-label="Remplacer par un autre exercice du même groupe/catégorie"
+                                title={tr("Remplacer par un autre exercice du même groupe/catégorie")} aria-label={tr("Remplacer par un autre exercice du même groupe/catégorie")}
                                 className="text-[#F5EDED]/25 hover:text-green-400 transition-colors p-0.5 ml-0.5"
                               >
                                 <RefreshCw size={11} />
@@ -1942,7 +1935,7 @@ export default function ProgramEditor({
                               onClick={() =>
                                 removeExercise(day.localId, ex.localId)
                               }
-                              title="Supprimer" aria-label="Supprimer"
+                              title={tr("Supprimer")} aria-label={tr("Supprimer")}
                               className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
                             >
                               <Trash2 size={11} />
@@ -1965,7 +1958,7 @@ export default function ProgramEditor({
                             }`}
                           >
                             <ClipboardCheck size={11} />
-                            {isAssignmentConfigured(rowAssignment(ex)) ? "Configuré · modifier" : "Configurer cet exercice"}
+                            {isAssignmentConfigured(rowAssignment(ex)) ? tr("Configuré · modifier") : tr("Configurer cet exercice")}
                           </button>
                         )}
 
@@ -2013,7 +2006,7 @@ export default function ProgramEditor({
                               e.target.value
                             )
                           }
-                          placeholder="Notes (optionnel)" aria-label="Notes (optionnel)"
+                          placeholder={tr("Notes (optionnel)")} aria-label={tr("Notes (optionnel)")}
                           className="w-full bg-transparent text-[10px] text-[#F5EDED]/40 placeholder:text-[#F5EDED]/20 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/10 pb-0.5 transition-colors"
                         />
 
@@ -2021,16 +2014,16 @@ export default function ProgramEditor({
                         <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-[#890404]/10">
                           <div>
                             <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
-                              Groupe musculaire
+                              {tr("Groupe musculaire")}
                             </label>
-                            <select aria-label="Groupe musculaire"
+                            <select aria-label={tr("Groupe musculaire")}
                               value={ex.muscle_group}
                               onChange={(e) =>
                                 updateExerciseMuscleGroup(day.localId, ex.localId, e.target.value)
                               }
                               className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
                             >
-                              <option value="">Non défini</option>
+                              <option value="">{tr("Non défini")}</option>
                               {MUSCLE_GROUPS.map((g) => (
                                 <option key={g} value={g}>{g}</option>
                               ))}
@@ -2038,7 +2031,7 @@ export default function ProgramEditor({
                           </div>
                           <div>
                             <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
-                              Type
+                              {tr("Type")}
                             </label>
                             <div className="flex gap-1.5 pt-1">
                               {(["true", "false"] as const).map((val) => (
@@ -2054,7 +2047,7 @@ export default function ProgramEditor({
                                     className="sr-only peer"
                                   />
                                   <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-[#890404]/20 text-[#F5EDED]/30 peer-checked:border-[#E01E1E]/50 peer-checked:text-[#E01E1E] transition-colors cursor-pointer">
-                                    {val === "true" ? "Direct" : "Indirect"}
+                                    {val === "true" ? tr("Direct") : tr("Indirect")}
                                   </span>
                                 </label>
                               ))}
@@ -2067,9 +2060,9 @@ export default function ProgramEditor({
                           MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup]?.length > 0 && (
                             <div>
                               <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
-                                Sous-groupe
+                                {tr("Sous-groupe")}
                               </label>
-                              <select aria-label="Sous-groupe"
+                              <select aria-label={tr("Sous-groupe")}
                                 value={ex.muscle_subgroup}
                                 onChange={(e) =>
                                   updateExercise(
@@ -2081,7 +2074,7 @@ export default function ProgramEditor({
                                 }
                                 className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
                               >
-                                <option value="">Non défini</option>
+                                <option value="">{tr("Non défini")}</option>
                                 {MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup].map((sg) => (
                                   <option key={sg} value={sg}>{sg}</option>
                                 ))}
@@ -2098,7 +2091,7 @@ export default function ProgramEditor({
                     className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/20 hover:border-[#890404]/40 rounded-lg transition-colors"
                   >
                     <Plus size={11} />
-                    Exercice
+                    {tr("Exercice")}
                   </button>
                 </div>
               ))}
@@ -2111,7 +2104,7 @@ export default function ProgramEditor({
             className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
-            Ajouter une séance
+            {tr("Ajouter une séance")}
           </button>
         </>
       )}
@@ -2130,15 +2123,15 @@ export default function ProgramEditor({
           {templateSaved ? (
             <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-green-400">
               <Check size={13} />
-              Modèle enregistré dans ta bibliothèque
+              {tr("Modèle enregistré dans ta bibliothèque")}
             </p>
           ) : templateFormOpen ? (
             <div className="space-y-3">
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                  Nom du modèle
+                  {tr("Nom du modèle")}
                 </label>
-                <input aria-label="Nom du modèle"
+                <input aria-label={tr("Nom du modèle")}
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder={state.name || "Ex. PPL Hypertrophie 5x/semaine"}
@@ -2151,28 +2144,28 @@ export default function ProgramEditor({
                   onClick={() => { setTemplateFormOpen(false); setTemplateError(null); }}
                   className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
                 >
-                  Annuler
+                  {tr("Annuler")}
                 </button>
                 <button
                   onClick={handleSaveAsTemplate}
                   disabled={templateBusy}
                   className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 disabled:opacity-50 transition-colors"
                 >
-                  {templateBusy ? "Enregistrement…" : "Enregistrer le modèle"}
+                  {templateBusy ? tr("Enregistrement…") : tr("Enregistrer le modèle")}
                 </button>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed max-w-md">
-                Cette structure te resservira ? Enregistre la comme modèle réutilisable, sans quitter cette page.
+                {tr("Cette structure te resservira ? Enregistre la comme modèle réutilisable, sans quitter cette page.")}
               </p>
               <button
                 onClick={() => { setTemplateName(state.name); setTemplateFormOpen(true); }}
                 className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
               >
                 <BookmarkPlus size={12} />
-                Enregistrer comme modèle
+                {tr("Enregistrer comme modèle")}
               </button>
             </div>
           )}
@@ -2184,7 +2177,7 @@ export default function ProgramEditor({
       <PhaseHeader
         id="phase-livraison"
         n={4}
-        title="Livraison"
+        title={tr("Livraison")}
         subtitle="Vérification finale et sauvegarde, ce que ce client verra."
         open={openPhase === 4}
         onToggle={() => togglePhase(4)}
@@ -2220,7 +2213,7 @@ export default function ProgramEditor({
           onClick={() => router.back()}
           className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2.5 transition-colors"
         >
-          Annuler
+          {tr("Annuler")}
         </button>
         <button
           onClick={handleSave}
@@ -2234,12 +2227,12 @@ export default function ProgramEditor({
           {saved ? (
             <>
               <Check size={13} />
-              Sauvegardé
+              {tr("Sauvegardé")}
             </>
           ) : saving ? (
-            "Sauvegarde…"
+            tr("Sauvegarde…")
           ) : (
-            "Sauvegarder"
+            tr("Sauvegarder")
           )}
         </button>
       </div>

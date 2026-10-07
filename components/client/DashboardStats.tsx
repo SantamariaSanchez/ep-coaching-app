@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProgressRing from "@/components/ui/ProgressRing";
@@ -114,6 +115,7 @@ export default function ClientDashboardStats({
   show?: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean };
   coached?: boolean;
 }) {
+  const tr = useT();
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
@@ -198,7 +200,7 @@ export default function ClientDashboardStats({
           justifyContent: "space-between",
           marginBottom: 10,
         }}>
-          <p className="ep-section-title" style={{ margin: 0 }}>Aujourd&apos;hui</p>
+          <p className="ep-section-title" style={{ margin: 0 }}>{tr("Aujourd'hui")}</p>
           <span style={{
             fontSize: 10,
             fontWeight: 700,
@@ -206,7 +208,7 @@ export default function ClientDashboardStats({
             letterSpacing: "0.06em",
             textTransform: "uppercase",
           }}>
-            {doneCount === tasks.length ? "✓ Tout fait" : `${doneCount}/${tasks.length} actions`}
+            {doneCount === tasks.length ? tr("✓ Tout fait") : `${doneCount}/${tasks.length} actions`}
           </span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -228,7 +230,7 @@ export default function ClientDashboardStats({
           justifyContent: "space-between",
           marginBottom: 20,
         }}>
-          <span className="ep-badge-red">Semaine {stats.weekNumber}</span>
+          <span className="ep-badge-red">{tr("Semaine")}{" "}{stats.weekNumber}</span>
           {coached && stats.hasCheckinThisWeek && (
             <span style={{
               display: "flex",
@@ -241,7 +243,7 @@ export default function ClientDashboardStats({
               textTransform: "uppercase",
             }}>
               <CheckCircle2 size={12} />
-              Check-in ✓
+              {tr("Check-in ✓")}
             </span>
           )}
         </div>
@@ -313,10 +315,10 @@ export default function ClientDashboardStats({
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
-              Check-in semaine {stats.weekNumber}
+              {tr("Check-in semaine")}{" "}{stats.weekNumber}
             </p>
             <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-              Partage ton ressenti avec ton coach
+              {tr("Partage ton ressenti avec ton coach")}
             </p>
           </div>
           <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} />

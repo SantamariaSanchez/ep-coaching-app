@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { submitCorrection } from "@/app/dashboard/client/program/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -8,20 +9,22 @@ import { Video, CheckCircle2, Clock, Loader2, X } from "lucide-react";
 import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 function StatusBadge({ status }: { status: "pending" | "answered" }) {
+  const t = useT();
   return status === "answered" ? (
     <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/25">
       <CheckCircle2 size={10} />
-      Corrigé
+      {t("Corrigé")}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">
       <Clock size={10} />
-      En attente
+      {t("En attente")}
     </span>
   );
 }
 
 function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
+  const t = useT();
   const date = new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
     month: "short",
@@ -43,14 +46,14 @@ function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
       <div className="space-y-1.5 text-xs text-[#F5EDED]/60">
         <p>
           <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
-            Objectif :{" "}
+            {t("Objectif :")}{" "}
           </span>
           {c.objective}
         </p>
         {c.client_question && (
           <p>
             <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
-              Question :{" "}
+              {t("Question :")}{" "}
             </span>
             {c.client_question}
           </p>
@@ -65,7 +68,7 @@ function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
       {c.status === "answered" && (
         <div className="pt-3 border-t border-[#890404]/15 space-y-2">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70">
-            Retour de ton coach
+            {t("Retour de ton coach")}
           </p>
           <p className="text-xs text-[#F5EDED]/75 leading-relaxed">
             {c.coach_feedback}
@@ -88,6 +91,7 @@ export default function ClientCorrectionsSection({
 }: {
   corrections: ExerciseCorrectionResolved[];
 }) {
+  const t = useT();
   const [state, formAction, isPending] = useActionState(
     submitCorrection,
     INITIAL_STATE
@@ -153,13 +157,13 @@ export default function ClientCorrectionsSection({
       {/* Header */}
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Technique
+          {t("Technique")}
         </p>
         <h2 className="text-xl font-black uppercase tracking-tight">
-          Corrections &amp; Questions
+          {t("Corrections & Questions")}
         </h2>
         <p className="mt-1 text-xs text-[#F5EDED]/30">
-          Envoie une vidéo de ton exercice, ton coach te donne un retour.
+          {t("Envoie une vidéo de ton exercice, ton coach te donne un retour.")}
         </p>
       </div>
 
@@ -169,25 +173,25 @@ export default function ClientCorrectionsSection({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>
-                Exercice <span className="text-[#E01E1E]">*</span>
+                {t("Exercice")}{" "}<span className="text-[#E01E1E]">*</span>
               </label>
               <input
                 name="exercise_name"
                 type="text"
                 required
-                placeholder="Ex : Squat barre" aria-label="Ex : Squat barre"
+                placeholder={t("Ex : Squat barre")} aria-label={t("Ex : Squat barre")}
                 className={inputClass}
               />
             </div>
             <div>
               <label className={labelClass}>
-                Objectif <span className="text-[#E01E1E]">*</span>
+                {t("Objectif")}{" "}<span className="text-[#E01E1E]">*</span>
               </label>
               <input
                 name="objective"
                 type="text"
                 required
-                placeholder="Ex : améliorer la profondeur" aria-label="Ex : améliorer la profondeur"
+                placeholder={t("Ex : améliorer la profondeur")} aria-label={t("Ex : améliorer la profondeur")}
                 className={inputClass}
               />
             </div>
@@ -195,14 +199,14 @@ export default function ClientCorrectionsSection({
 
           <div>
             <label className={labelClass}>
-              Vidéo de l&apos;exercice <span className="text-[#E01E1E]">*</span>
+              {t("Vidéo de l'exercice")}{" "}<span className="text-[#E01E1E]">*</span>
             </label>
             <input type="hidden" name="video_path" value={videoPath ?? ""} required />
             <input
               ref={videoInputRef}
               type="file"
               accept="video/*"
-              aria-label="Vidéo de l'exercice"
+              aria-label={t("Vidéo de l'exercice")}
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -216,7 +220,7 @@ export default function ClientCorrectionsSection({
                 <button
                   type="button"
                   onClick={() => { setVideoPath(null); setVideoName(null); if (videoInputRef.current) videoInputRef.current.value = ""; }}
-                  aria-label="Retirer la vidéo"
+                  aria-label={t("Retirer la vidéo")}
                   className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
                 >
                   <X size={14} />
@@ -231,11 +235,11 @@ export default function ClientCorrectionsSection({
               >
                 {uploading ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" /> Envoi de la vidéo…
+                    <Loader2 size={14} className="animate-spin" />{" "}{t("Envoi de la vidéo…")}
                   </>
                 ) : (
                   <>
-                    <Video size={14} /> Choisir une vidéo
+                    <Video size={14} />{" "}{t("Choisir une vidéo")}
                   </>
                 )}
               </button>
@@ -246,11 +250,11 @@ export default function ClientCorrectionsSection({
           </div>
 
           <div>
-            <label className={labelClass}>Question ou commentaire</label>
+            <label className={labelClass}>{t("Question ou commentaire")}</label>
             <textarea
               name="client_question"
               rows={3}
-              placeholder="Ex : Je sens que mes genoux rentrent vers l'intérieur..." aria-label="Ex : Je sens que mes genoux rentrent vers l'intérieur..."
+              placeholder={t("Ex : Je sens que mes genoux rentrent vers l'intérieur...")} aria-label={t("Ex : Je sens que mes genoux rentrent vers l'intérieur...")}
               className={`${inputClass} resize-none`}
             />
           </div>
@@ -260,7 +264,7 @@ export default function ClientCorrectionsSection({
           )}
           {state?.success && (
             <p className="text-green-400 text-xs">
-              ✓ Envoyé, ton coach te répondra prochainement.
+              {t("✓ Envoyé, ton coach te répondra prochainement.")}
             </p>
           )}
 
@@ -269,7 +273,7 @@ export default function ClientCorrectionsSection({
             disabled={isPending || uploading || !videoPath}
             className="w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
           >
-            {isPending ? "Envoi…" : "Envoyer"}
+            {isPending ? t("Envoi…") : t("Envoyer")}
           </button>
         </form>
       </div>
@@ -278,7 +282,7 @@ export default function ClientCorrectionsSection({
       {corrections.length > 0 && (
         <div className="space-y-3">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Mes dépôts ({corrections.length})
+            {t("Mes dépôts (")}{corrections.length})
           </p>
           {corrections.map((c) => (
             <CorrectionCard key={c.id} c={c} />

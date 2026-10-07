@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import { X, Video, ExternalLink, ClipboardCheck, Backpack } from "lucide-react";
 import type { LibraryExercise } from "@/utils/exercise-library";
@@ -183,6 +184,7 @@ export default function ExerciseDetailPanel({
   /** Position par défaut de l'exercice (classification), affichée en repère dans la section décision. */
   defaultTensionFromClassification?: string | null;
 }) {
+  const t = useT();
   const [ex, setEx] = useState(exercise);
   const [notes, setNotes] = useState(exercise.setup_notes ?? "");
   const [savingNotes, setSavingNotes] = useState(false);
@@ -242,7 +244,7 @@ export default function ExerciseDetailPanel({
               )}
             </div>
           </div>
-          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+          <button onClick={onClose} aria-label={t("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
             <X size={18} />
           </button>
         </div>
@@ -255,13 +257,13 @@ export default function ExerciseDetailPanel({
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-[11px] font-bold text-[#E01E1E] hover:text-[#ff4444]"
             >
-              <Video size={13} /> Voir la vidéo <ExternalLink size={11} />
+              <Video size={13} />{" "}{t("Voir la vidéo")}{" "}<ExternalLink size={11} />
             </a>
           )}
 
           {ex.instructions && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Exécution</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Exécution")}</p>
               <p className="text-xs text-[#F5EDED]/70 leading-relaxed whitespace-pre-wrap">{ex.instructions}</p>
             </div>
           )}
@@ -271,21 +273,19 @@ export default function ExerciseDetailPanel({
             <div className="bg-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4 -mx-1">
               <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#E01E1E] mb-1">
                 <ClipboardCheck size={12} />
-                Décisions pour cette séance
+                {t("Décisions pour cette séance")}
               </p>
               <p className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed mb-4">
-                Rien ici n&apos;est déduit automatiquement, c&apos;est ce que toi tu choisis pour ce client précis,
-                à cette place précise du programme. La classification ci-dessous est une référence générale sur
-                l&apos;exercice ; ça, c&apos;est la mise en œuvre réelle.
+                {t("Rien ici n'est déduit automatiquement, c'est ce que toi tu choisis pour ce client précis, à cette place précise du programme. La classification ci-dessous est une référence générale sur l'exercice ; ça, c'est la mise en œuvre réelle.")}
               </p>
 
               <div className="space-y-4">
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                    Tension recherchée pour ce client
+                    {t("Tension recherchée pour ce client")}
                     {defaultTensionFromClassification && (
                       <span className="text-[#F5EDED]/25 normal-case font-normal">
-                        {" "}· par défaut sur cet exercice : {defaultTensionFromClassification}
+                        {" "}{t("· par défaut sur cet exercice :")}{" "}{defaultTensionFromClassification}
                       </span>
                     )}
                   </p>
@@ -299,56 +299,55 @@ export default function ExerciseDetailPanel({
 
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                    Amplitude visée
+                    {t("Amplitude visée")}
                   </p>
                   <textarea
                     value={assignment.rom_notes}
                     onChange={(e) => onAssignmentChange("rom_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. Presse à cuisses de sa salle limitée en amplitude basse, ajouter une planche pour compenser." aria-label="Notes sur l'amplitude de mouvement"
+                    placeholder={t("Ex. Presse à cuisses de sa salle limitée en amplitude basse, ajouter une planche pour compenser.")} aria-label={t("Notes sur l'amplitude de mouvement")}
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
 
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                    Résistance &amp; accessoires
+                    {t("Résistance & accessoires")}
                   </p>
                   <textarea
                     value={assignment.resistance_notes}
                     onChange={(e) => onAssignmentChange("resistance_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. Élastique léger en haut du mouvement pour garder la tension en position raccourcie." aria-label="Notes sur la résistance"
+                    placeholder={t("Ex. Élastique léger en haut du mouvement pour garder la tension en position raccourcie.")} aria-label={t("Notes sur la résistance")}
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
 
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                    Disponibilité vérifiée
+                    {t("Disponibilité vérifiée")}
                   </p>
                   <textarea
                     value={assignment.availability_notes}
                     onChange={(e) => onAssignmentChange("availability_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. S'entraîne à 18h, salle bondée sur ce poste, prévoir un remplaçant si occupé." aria-label="Notes sur la disponibilité du matériel"
+                    placeholder={t("Ex. S'entraîne à 18h, salle bondée sur ce poste, prévoir un remplaçant si occupé.")} aria-label={t("Notes sur la disponibilité du matériel")}
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
 
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                    Seuil d&apos;inconfort
+                    {t("Seuil d'inconfort")}
                   </p>
                   <p className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed mb-1.5">
-                    À partir de combien de séries, à quelle intensité, ce mouvement devient inconfortable pour ce
-                    client (essoufflement, articulation) au point d&apos;ajuster ?
+                    {t("À partir de combien de séries, à quelle intensité, ce mouvement devient inconfortable pour ce client (essoufflement, articulation) au point d'ajuster ?")}
                   </p>
                   <textarea
                     value={assignment.discomfort_notes}
                     onChange={(e) => onAssignmentChange("discomfort_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. Passe en amplitude partielle dès la 3e série à RIR 1." aria-label="Notes sur la gêne ou l'inconfort"
+                    placeholder={t("Ex. Passe en amplitude partielle dès la 3e série à RIR 1.")} aria-label={t("Notes sur la gêne ou l'inconfort")}
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
@@ -364,14 +363,13 @@ export default function ExerciseDetailPanel({
               mots-clés sur le nom — voir lib/session-accessories.ts. */}
           <div className="border-t border-[#890404]/15 pt-4">
             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5 flex items-center gap-1.5">
-              <Backpack size={11} /> Bagage d&apos;accessoires{" "}
+              <Backpack size={11} />{" "}{t("Bagage d'accessoires")}{" "}
               {(ex.accessories ?? []).length === 0 && (
-                <span className="text-amber-400/80 normal-case font-semibold">· non renseigné, rien n&apos;est affiché en séance tant que c&apos;est vide</span>
+                <span className="text-amber-400/80 normal-case font-semibold">{t("· non renseigné, rien n'est affiché en séance tant que c'est vide")}</span>
               )}
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
-              Ce que tu choisis ici s&apos;affiche pour tous les clients qui font cet exercice, dans &laquo;&nbsp;à prévoir&nbsp;&raquo;
-              (programme, logbook, séance en cours). Plusieurs accessoires possibles à la fois.
+              {t("Ce que tu choisis ici s'affiche pour tous les clients qui font cet exercice, dans « à prévoir » (programme, logbook, séance en cours). Plusieurs accessoires possibles à la fois.")}
             </p>
             {(() => {
               // Suggestion (jamais auto-appliquée, voir lib/session-accessories.ts)
@@ -388,8 +386,8 @@ export default function ExerciseDetailPanel({
                   className="w-full text-left mb-2 px-3 py-2 rounded-lg bg-[#150000] border border-dashed border-[#890404]/30 hover:border-[#E01E1E]/50 transition-colors disabled:opacity-50"
                 >
                   <span className="text-[10.5px] text-[#F5EDED]/45">
-                    Suggestion d&apos;après le nom : <strong className="text-[#F5EDED]/70">{guess.accessory}</strong>
-                    {" "}<span className="text-[#E01E1E] font-bold">+ Ajouter</span>
+                    {t("Suggestion d'après le nom :")}{" "}<strong className="text-[#F5EDED]/70">{guess.accessory}</strong>
+                    {" "}<span className="text-[#E01E1E] font-bold">{t("+ Ajouter")}</span>
                   </span>
                 </button>
               );
@@ -411,7 +409,7 @@ export default function ExerciseDetailPanel({
           {/* Position / courbe de résistance — seul repère avec citations directes */}
           <div className="border-t border-[#890404]/15 pt-4">
             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-              Position dans l&apos;amplitude (classification générale) {!ex.position && <span className="text-amber-400/80 normal-case font-semibold">· non renseigné</span>}
+              {t("Position dans l'amplitude (classification générale)")}{" "}{!ex.position && <span className="text-amber-400/80 normal-case font-semibold">{t("· non renseigné")}</span>}
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">{POSITION_HELP}</p>
             <Pills options={POSITION_OPTIONS} value={ex.position as typeof POSITION_OPTIONS[number] | null} onChange={(v) => setField("position", v)} disabled={!onUpdate || pending === "position"} />
@@ -428,7 +426,7 @@ export default function ExerciseDetailPanel({
           {(Object.keys(QUAL_INFO) as QualKey[]).map((key) => (
             <div key={key} className="border-t border-[#890404]/15 pt-4">
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                {QUAL_INFO[key].label} {!ex[key] && <span className="text-amber-400/80 normal-case font-semibold">· non renseigné</span>}
+                {QUAL_INFO[key].label} {!ex[key] && <span className="text-amber-400/80 normal-case font-semibold">{t("· non renseigné")}</span>}
               </p>
               <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">{QUAL_INFO[key].help}</p>
               <Pills options={QUALITATIVE_SCALE} value={ex[key] as typeof QUALITATIVE_SCALE[number] | null} onChange={(v) => setField(key, v)} disabled={!onUpdate || pending === key} />
@@ -438,7 +436,7 @@ export default function ExerciseDetailPanel({
           {/* Unilatéral / Microchargeable */}
           <div className="border-t border-[#890404]/15 pt-4 grid grid-cols-2 gap-4">
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Uni / Bilatéral</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Uni / Bilatéral")}</p>
               <Pills
                 options={["Unilatéral", "Bilatéral"] as const}
                 value={ex.is_unilateral == null ? null : ex.is_unilateral ? "Unilatéral" : "Bilatéral"}
@@ -447,7 +445,7 @@ export default function ExerciseDetailPanel({
               />
             </div>
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Microchargeable</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Microchargeable")}</p>
               <Pills
                 options={["Oui", "Non"] as const}
                 value={ex.microloadable == null ? null : ex.microloadable ? "Oui" : "Non"}
@@ -455,8 +453,7 @@ export default function ExerciseDetailPanel({
                 disabled={!onUpdate || pending === "microloadable"}
               />
               <p className="text-[9.5px] text-[#F5EDED]/30 leading-relaxed mt-1.5">
-                Décisif sur les mouvements où le client plafonne vite (souvent isolation, petits groupes) : sans
-                incrément fin, la seule option est de sauter un palier de charge trop gros.
+                {t("Décisif sur les mouvements où le client plafonne vite (souvent isolation, petits groupes) : sans incrément fin, la seule option est de sauter un palier de charge trop gros.")}
               </p>
             </div>
           </div>
@@ -464,12 +461,10 @@ export default function ExerciseDetailPanel({
           {/* Adaptations / accessoires (fiche générale de l'exercice) */}
           <div className="border-t border-[#890404]/15 pt-4">
             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-              Adaptations &amp; accessoires (fiche générale de l&apos;exercice)
+              {t("Adaptations & accessoires (fiche générale de l'exercice)")}
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
-              Astuces d&apos;installation valables pour tous les clients sur cet exercice, pas propre à celui-ci
-              (ça, c&apos;est la section décisions plus haut) : élastique pour garder la tension en position
-              raccourcie, sangles si la prise devient limitante, ajustement si une machine manque d&apos;amplitude...
+              {t("Astuces d'installation valables pour tous les clients sur cet exercice, pas propre à celui-ci (ça, c'est la section décisions plus haut) : élastique pour garder la tension en position raccourcie, sangles si la prise devient limitante, ajustement si une machine manque d'amplitude...")}
             </p>
             {onUpdate ? (
               <>
@@ -477,7 +472,7 @@ export default function ExerciseDetailPanel({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="Ex. Ajouter un élastique en haut du mouvement pour garder la tension en position raccourcie." aria-label="Notes"
+                  placeholder={t("Ex. Ajouter un élastique en haut du mouvement pour garder la tension en position raccourcie.")} aria-label={t("Notes")}
                   className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                 />
                 {notes !== (ex.setup_notes ?? "") && (
@@ -486,12 +481,12 @@ export default function ExerciseDetailPanel({
                     disabled={savingNotes}
                     className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] disabled:opacity-50"
                   >
-                    {savingNotes ? "Enregistrement…" : "Enregistrer la note"}
+                    {savingNotes ? t("Enregistrement…") : t("Enregistrer la note")}
                   </button>
                 )}
               </>
             ) : (
-              <p className="text-xs text-[#F5EDED]/60 italic">{ex.setup_notes || "Aucune note pour l'instant."}</p>
+              <p className="text-xs text-[#F5EDED]/60 italic">{ex.setup_notes || t("Aucune note pour l'instant.")}</p>
             )}
           </div>
 
@@ -501,7 +496,7 @@ export default function ExerciseDetailPanel({
               onClick={onClose}
               className="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
             >
-              Terminé pour cet exercice
+              {t("Terminé pour cet exercice")}
             </button>
           )}
         </div>

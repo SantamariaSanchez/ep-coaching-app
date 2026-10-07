@@ -993,7 +993,7 @@ export default function DashboardNav({
               }}
             >
               <ArrowLeftRight size={14} strokeWidth={1.7} />
-              {isCoach ? "Mon coaching perso" : "Mon espace coach"}
+              {isCoach ? t("Mon coaching perso") : t("Mon espace coach")}
             </Link>
           )}
 

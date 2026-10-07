@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { Copy, Check, MessageCircle, Zap, TrendingUp, BarChart2, Heart, Flame, Send } from "lucide-react";
@@ -115,6 +116,7 @@ Je t'ai mis les détails dans les notes. On reprend le déficit la semaine suiva
 }
 
 function CopyButton({ text }: { text: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   // Le presse-papiers peut être refusé (navigateur, permissions, contexte
   // non sécurisé) : avant, l'échec était avalé et le bouton ne réagissait
@@ -145,18 +147,18 @@ function CopyButton({ text }: { text: string }) {
         {copied ? (
           <>
             <Check size={11} />
-            Copié
+            {t("Copié")}
           </>
         ) : (
           <>
             <Copy size={11} />
-            Copier
+            {t("Copier")}
           </>
         )}
       </button>
       {copyFailed && (
         <p role="alert" className="text-[10px] text-red-400">
-          Copie impossible ici, sélectionne le texte à la main.
+          {t("Copie impossible ici, sélectionne le texte à la main.")}
         </p>
       )}
     </div>
@@ -170,6 +172,7 @@ function TemplateCard({
   template: Template;
   conversationHref: string | null;
 }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   const Icon = template.icon;
 
@@ -225,7 +228,7 @@ function TemplateCard({
                 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-[#E01E1E]/15 text-[#F5EDED]/80 hover:text-white hover:bg-[#E01E1E]/25 border border-[#E01E1E]/30 transition-colors"
               >
                 <Send size={11} />
-                Ouvrir sa conversation
+                {t("Ouvrir sa conversation")}
               </Link>
             )}
             <CopyButton text={template.body} />

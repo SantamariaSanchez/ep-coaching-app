@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo } from "react";
 import { MICRO_DAILY_REF } from "@/lib/micro-references";
 import { getMicroDeficiencyOrder, topFoodsForMicro } from "@/utils/nutrition-utils";
@@ -30,6 +31,7 @@ export default function MicroBarList({
   // appels qui ne le passent pas.
   foods?: Food[];
 }) {
+  const t = useT();
   const stats = useMemo(
     () => getMicroDeficiencyOrder(logs, MICRO_DAILY_REF),
     [logs]
@@ -45,7 +47,7 @@ export default function MicroBarList({
   if (stats.every((s) => s.consumed === 0)) {
     return (
       <p className="text-xs text-[#F5EDED]/25 italic">
-        Données micronutriments non disponibles pour les aliments loggés.
+        {t("Données micronutriments non disponibles pour les aliments loggés.")}
       </p>
     );
   }
@@ -96,7 +98,7 @@ export default function MicroBarList({
             </div>
             {suggestions.length > 0 && (
               <p className="text-[9px] text-[#F5EDED]/25 pl-28 mt-0.5">
-                Riche en {s.name.toLowerCase()} : {suggestions.map((f) => f.name).join(", ")}
+                {t("Riche en")}{" "}{s.name.toLowerCase()} : {suggestions.map((f) => f.name).join(", ")}
               </p>
             )}
           </div>

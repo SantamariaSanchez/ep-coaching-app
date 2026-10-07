@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Search, X } from "lucide-react";
@@ -39,6 +40,7 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
 });
 
 export default function CoachConversationsList({ rows }: { rows: ConversationRow[] }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
 
@@ -77,8 +79,8 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Chercher un membre"
-              aria-label="Chercher un membre"
+              placeholder={t("Chercher un membre")}
+              aria-label={t("Chercher un membre")}
               style={{
                 width: "100%",
                 background: "#150000",
@@ -93,7 +95,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
             {query && (
               <button
                 onClick={() => setQuery("")}
-                aria-label="Effacer la recherche"
+                aria-label={t("Effacer la recherche")}
                 style={{
                   position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
                   background: "none", border: "none", cursor: "pointer",
@@ -122,10 +124,10 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
       {visible.length === 0 ? (
         <div className="ep-card" style={{ padding: "36px 20px", textAlign: "center" }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,237,237,0.55)", margin: "0 0 4px" }}>
-            Aucune conversation ne correspond
+            {t("Aucune conversation ne correspond")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-            Change de filtre ou vide la recherche pour revoir toute la liste.
+            {t("Change de filtre ou vide la recherche pour revoir toute la liste.")}
           </p>
         </div>
       ) : (
@@ -186,7 +188,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                     {/* Nom tronqué plutôt que de pousser le badge hors de la
                         carte sur un écran de 390px. */}
                     <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {row.fullName ?? "Membre"}
+                      {row.fullName ?? t("Membre")}
                     </span>
                     <span style={{ flexShrink: 0, display: "inline-flex" }}>
                       <RoleBadge label={row.badge} />
@@ -206,7 +208,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                     </p>
                   ) : (
                     <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.18)", fontStyle: "italic" }}>
-                      Aucun message
+                      {t("Aucun message")}
                     </p>
                   )}
                 </div>

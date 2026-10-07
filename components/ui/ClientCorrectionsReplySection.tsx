@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState, useRef, useState } from "react";
 import { Video, CheckCircle2, Clock, Loader2, X } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -32,6 +33,7 @@ function AnnotatedClientVideo({
   onAddAnnotation?: (timestampSeconds: number, note: string) => void;
   onRemoveAnnotation?: (index: number) => void;
 }) {
+  const tr = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [noteInput, setNoteInput] = useState("");
 
@@ -72,7 +74,7 @@ function AnnotatedClientVideo({
                 <button
                   type="button"
                   onClick={() => onRemoveAnnotation?.(i)}
-                  aria-label="Supprimer l'annotation"
+                  aria-label={tr("Supprimer l'annotation")}
                   className="text-[#F5EDED]/25 hover:text-[#F5EDED]/50 flex-shrink-0"
                 >
                   <X size={11} />
@@ -89,7 +91,7 @@ function AnnotatedClientVideo({
             type="text"
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
-            placeholder="Note à l'instant courant de la vidéo…" aria-label="Note à l'instant courant de la vidéo…"
+            placeholder={tr("Note à l'instant courant de la vidéo…")} aria-label={tr("Note à l'instant courant de la vidéo…")}
             className="flex-1 bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors"
           />
           <button
@@ -98,7 +100,7 @@ function AnnotatedClientVideo({
             disabled={!noteInput.trim()}
             className="flex-shrink-0 bg-[#150000] border border-[#890404]/30 hover:border-[#E01E1E]/60 disabled:opacity-40 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/60 transition-colors"
           >
-            + note
+            {tr("+ note")}
           </button>
         </div>
       )}
@@ -115,6 +117,7 @@ function ReplyForm({
   clientId: string;
   action: (correctionId: string, clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
 }) {
+  const tr = useT();
   const bound = action.bind(null, correction.id, clientId);
   const [state, formAction, isPending] = useActionState(bound, null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -165,7 +168,7 @@ function ReplyForm({
   }
 
   if (state?.success) {
-    return <p className="text-green-400 text-xs font-semibold">✓ Retour envoyé.</p>;
+    return <p className="text-green-400 text-xs font-semibold">{tr("✓ Retour envoyé.")}</p>;
   }
 
   return (
@@ -184,7 +187,7 @@ function ReplyForm({
         name="coach_feedback"
         rows={3}
         required
-        placeholder="Observations sur la technique, corrections à apporter..." aria-label="Observations sur la technique, corrections à apporter..."
+        placeholder={tr("Observations sur la technique, corrections à apporter...")} aria-label={tr("Observations sur la technique, corrections à apporter...")}
         className="w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
       />
 
@@ -193,7 +196,7 @@ function ReplyForm({
         ref={videoInputRef}
         type="file"
         accept="video/*"
-        aria-label="Vidéo de réponse"
+        aria-label={tr("Vidéo de réponse")}
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -207,7 +210,7 @@ function ReplyForm({
           <button
             type="button"
             onClick={() => { setVideoPath(null); setVideoName(null); if (videoInputRef.current) videoInputRef.current.value = ""; }}
-            aria-label="Retirer la vidéo"
+            aria-label={tr("Retirer la vidéo")}
             className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
           >
             <X size={13} />
@@ -222,11 +225,11 @@ function ReplyForm({
         >
           {uploading ? (
             <>
-              <Loader2 size={12} className="animate-spin" /> Envoi de la vidéo…
+              <Loader2 size={12} className="animate-spin" />{" "}{tr("Envoi de la vidéo…")}
             </>
           ) : (
             <>
-              <Video size={12} /> Ajouter une vidéo (facultatif)
+              <Video size={12} />{" "}{tr("Ajouter une vidéo (facultatif)")}
             </>
           )}
         </button>
@@ -239,7 +242,7 @@ function ReplyForm({
         disabled={isPending || uploading}
         className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
       >
-        {isPending ? "Envoi…" : "Envoyer le retour"}
+        {isPending ? tr("Envoi…") : tr("Envoyer le retour")}
       </button>
     </form>
   );
@@ -254,6 +257,7 @@ export default function ClientCorrectionsReplySection({
   clientId: string;
   sendCorrectionFeedback: (correctionId: string, clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
 }) {
+  const tr = useT();
   if (corrections.length === 0) return null;
 
   const pending = corrections.filter((c) => c.status === "pending");
@@ -262,7 +266,7 @@ export default function ClientCorrectionsReplySection({
   return (
     <div className="mt-6 pt-6 border-t border-[#890404]/15">
       <p className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-3">
-        Corrections & questions {pending.length > 0 && <span className="text-amber-400">({pending.length} en attente)</span>}
+        {tr("Corrections & questions")}{" "}{pending.length > 0 && <span className="text-amber-400">({pending.length}{" "}{tr("en attente)")}</span>}
       </p>
       <div className="space-y-3">
         {[...pending, ...answered].map((c) => (
@@ -276,21 +280,21 @@ export default function ClientCorrectionsReplySection({
               <p className="text-sm font-bold text-white">{c.exercise_name}</p>
               {c.status === "answered" ? (
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/25 flex-shrink-0">
-                  <CheckCircle2 size={10} /> Traité
+                  <CheckCircle2 size={10} />{" "}{tr("Traité")}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 flex-shrink-0">
-                  <Clock size={10} /> En attente
+                  <Clock size={10} />{" "}{tr("En attente")}
                 </span>
               )}
             </div>
             <p className="text-xs text-[#F5EDED]/55">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Objectif : </span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{tr("Objectif :")}{" "}</span>
               {c.objective}
             </p>
             {c.client_question && (
               <p className="text-xs text-[#F5EDED]/55">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Question : </span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{tr("Question :")}{" "}</span>
                 {c.client_question}
               </p>
             )}

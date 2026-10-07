@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
@@ -23,6 +24,7 @@ export default function OwnDietPlansSection({
   deactivateOwnDietPlan,
   deleteOwnDietPlan,
 }: Props) {
+  const t = useT();
   const [showBuilder, setShowBuilder] = useState(plans.length === 0);
 
   return (
@@ -30,10 +32,10 @@ export default function OwnDietPlansSection({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Mes plans alimentaires
+            {t("Mes plans alimentaires")}
           </p>
           <p className="text-sm text-[#F5EDED]/40">
-            Crée ton propre plan, ou logue librement en mode flexible.
+            {t("Crée ton propre plan, ou logue librement en mode flexible.")}
           </p>
         </div>
         <button
@@ -41,7 +43,7 @@ export default function OwnDietPlansSection({
           className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0 ml-3"
         >
           <Plus size={12} />
-          {showBuilder ? "Fermer" : "Nouveau plan"}
+          {showBuilder ? t("Fermer") : t("Nouveau plan")}
         </button>
       </div>
 

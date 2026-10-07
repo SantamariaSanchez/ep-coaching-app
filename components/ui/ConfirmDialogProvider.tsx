@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 
@@ -43,6 +44,7 @@ interface PendingConfirm {
 }
 
 export default function ConfirmDialogProvider({ children }: { children: React.ReactNode }) {
+  const t = useT();
   const [pending, setPending] = useState<PendingConfirm | null>(null);
   const resolverRef = useRef<((value: boolean) => void) | null>(null);
 
@@ -99,13 +101,13 @@ export default function ConfirmDialogProvider({ children }: { children: React.Re
                 autoFocus
                 className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-[#F5EDED]/50 hover:text-white transition-colors"
               >
-                {pending.options.cancelLabel ?? "Annuler"}
+                {pending.options.cancelLabel ?? t("Annuler")}
               </button>
               <button
                 onClick={() => settle(true)}
                 className="flex-1 py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl transition-colors"
               >
-                {pending.options.confirmLabel ?? "Confirmer"}
+                {pending.options.confirmLabel ?? t("Confirmer")}
               </button>
             </div>
           </div>
