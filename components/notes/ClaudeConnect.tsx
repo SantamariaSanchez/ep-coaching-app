@@ -7,10 +7,10 @@ import { Sparkles, Copy, Check, Trash2, ChevronDown, ChevronUp } from "lucide-re
 import { createApiTokenAction, revokeApiTokenAction } from "@/app/actions/notes";
 
 // Tuto + clé perso pour relier Claude (et Notion via Claude) à ses notes.
-export default function ClaudeConnect({ tokens }: { tokens: { id: string; name: string; created_at: string; last_used_at: string | null }[] }) {
+export default function ClaudeConnect({ tokens, defaultOpen = false }: { tokens: { id: string; name: string; created_at: string; last_used_at: string | null }[]; defaultOpen?: boolean }) {
   const tr = useT();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [url, setUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,8 +20,8 @@ export default function ClaudeConnect({ tokens }: { tokens: { id: string; name: 
     <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
       <span style={{ width: 24, height: 24, borderRadius: 99, background: "rgba(224,30,30,0.18)", color: "#ff6b6b", fontSize: 12, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n}</span>
       <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{title}</p>
-        <div style={{ fontSize: 12.5, color: "rgba(245,237,237,0.65)", marginTop: 2, lineHeight: 1.55 }}>{body}</div>
+        <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{tr(title)}</p>
+        <div style={{ fontSize: 12.5, color: "rgba(245,237,237,0.65)", marginTop: 2, lineHeight: 1.55 }}>{typeof body === "string" ? tr(body) : body}</div>
       </div>
     </div>
   );
@@ -76,7 +76,7 @@ export default function ClaudeConnect({ tokens }: { tokens: { id: string; name: 
               {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "6px 0 0" }}>{error}</p>}
             </>
           )}
-          {step(2, "Ajoute-la dans Claude", "Sur claude.ai : Réglages, Connecteurs, Ajouter un connecteur personnalisé. Nom : EP Coaching. Adresse : colle celle de l'étape 1.")}
+          {step(2, "Ajoute-la dans Claude", "Sur claude.ai (ordinateur ou navigateur du téléphone) : Paramètres, Connecteurs, Ajouter un connecteur personnalisé. Nom : EP Coaching. Adresse : colle celle de l'étape 1. Il apparaît ensuite aussi dans l'appli Claude.")}
           {step(3, "Active-le dans une conversation", "Bouton des outils sous la zone de texte : coche EP Coaching (et Notion si tu veux importer tes pages).")}
           {step(
             4,

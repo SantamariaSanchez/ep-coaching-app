@@ -38,10 +38,14 @@ const DATA_FILES = [
   "components/settings/LegalLinksCard.tsx",
   "lib/app-setup.ts",
   "components/settings/LanguageDisplayCard.tsx",
+  "lib/claude-prompts.ts",
+  "lib/positioning.ts",
+  "components/coach/PositioningBuilder.tsx",
+  "components/ai/ClaudeHub.tsx",
 ];
 for (const f of DATA_FILES) {
   const src = readFileSync(f, "utf8");
-  for (const m of src.matchAll(new RegExp(String.raw`(?:label|title|description|hint|subtitle|group): ` + STR, "g"))) {
+  for (const m of src.matchAll(new RegExp(String.raw`(?:label|title|description|hint|subtitle|group|help|intro|prompt): ` + STR, "g"))) {
     const k = JSON.parse(`"${m[1]}"`);
     if (k && /[A-Za-zÀ-ÿ]{2,}/.test(k) && !keys.has(k)) missing.set(k, f);
   }

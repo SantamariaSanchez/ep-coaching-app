@@ -15,7 +15,7 @@ import {
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
   AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
-  BookOpenCheck, Gauge, Award, CalendarCheck,
+  BookOpenCheck, Gauge, Award, CalendarCheck, Crosshair, BrainCircuit,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -147,6 +147,7 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Mon business",
     items: [
+      { label: "Ma niche et mon avatar", icon: Crosshair, segment: "positionnement" },
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
       { label: "Mes stats réseaux", icon: BarChart3, segment: "stats-reseaux" },
       { label: "Mes formations", icon: GraduationCap, segment: "formations" },
@@ -245,6 +246,7 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Mon profil", icon: User, segment: "profile" },
       // Questionnaire de personnalisation (2026-09-29) : ce que chacun suit.
       { label: "Mon appli", icon: SlidersHorizontal, segment: "mon-appli" },
+      { label: "Claude et Notion", icon: BrainCircuit, segment: "claude" },
       { label: "Paramètres", icon: Settings, segment: "parametres" },
       { label: "Aide et tutoriels", icon: LifeBuoy, segment: "aide" },
     ],
@@ -340,6 +342,7 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Mon profil", icon: User, segment: "profile" },
       // Questionnaire de personnalisation (2026-09-29) : ce que chacun suit.
       { label: "Mon appli", icon: SlidersHorizontal, segment: "mon-appli" },
+      { label: "Claude et Notion", icon: BrainCircuit, segment: "claude" },
       { label: "Paramètres", icon: Settings, segment: "parametres" },
       { label: "Aide et tutoriels", icon: LifeBuoy, segment: "aide" },
     ],

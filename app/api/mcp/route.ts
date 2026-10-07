@@ -3,6 +3,7 @@ import { ownerOfToken } from "@/lib/api-tokens";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { insertNote, searchNotes } from "@/lib/notes";
 import { getQuickAnswers } from "@/lib/quick-answers";
+import { callExtraTool, toolsForRole } from "@/lib/mcp-tools";
 
 // Connecteur personnel pour Claude (protocole MCP, transport HTTP sans
 // état) : https://ep-coaching.vercel.app/api/mcp?key=<clé perso>, à
@@ -78,9 +79,20 @@ async function callTool(ownerId: string, name: string, args: Record<string, unkn
       const answers = await getQuickAnswers(ownerId, p?.role === "coach" ? "coach" : "client", p?.is_platform_owner === true);
       return text(answers.map((a) => `- ${a.title} : ${a.value}${a.detail ? ` (${a.detail})` : ""}`).join("\n"));
     }
-    default:
-      return null;
+    default: {
+      return callExtraTool(ownerId, await roleOf(ownerId), name, args);
+    }
   }
+}
+
+async function roleOf(ownerId: string): Promise<"coach" | "client" | "staff"> {
+  const admin = createAdminClient();
+  const [{ data: p }, { data: staff }] = await Promise.all([
+    admin.from("profiles").select("role").eq("id", ownerId).maybeSingle(),
+    admin.from("staff_members").select("user_id").eq("user_id", ownerId).limit(1).maybeSingle(),
+  ]);
+  if (p?.role === "coach") return "coach";
+  return staff ? "staff" : "client";
 }
 
 export async function POST(req: Request) {
@@ -98,12 +110,12 @@ export async function POST(req: Request) {
           protocolVersion: typeof m.params?.protocolVersion === "string" ? m.params.protocolVersion : "2025-06-18",
           capabilities: { tools: {} },
           serverInfo: { name: "EP Coaching", version: "1.0.0" },
-          instructions: "Connecteur personnel EP Coaching : ajoute et cherche des notes, donne les chiffres de la semaine.",
+          instructions: "Connecteur personnel EP Coaching (coaching sportif et nutrition). Notes, bilan du jour, repas, records, et pour un coach : clients, stats réseaux, scripts du Studio et positionnement. Réponds en français, en tutoyant.",
         });
       case "ping":
         return ok(m.id, {});
       case "tools/list":
-        return ok(m.id, { tools: TOOLS });
+        return ok(m.id, { tools: [...TOOLS, ...toolsForRole(await roleOf(ownerId))] });
       case "tools/call": {
         const name = String(m.params?.name ?? "");
         const res = await callTool(ownerId, name, (m.params?.arguments as Record<string, unknown>) ?? {}).catch(() => text("Erreur côté EP Coaching, réessaie."));

@@ -133,6 +133,7 @@ export default function StaffShell({
             ...(g.label === "Moi"
               ? [
                   { href: "/equipe/poste", label: "Fiche technique", icon: FileSignature },
+                  { href: "/equipe/claude", label: "Claude et Notion", icon: Sparkles },
                   { href: "/equipe/compte", label: "Mon compte", icon: UserCog },
                 ]
               : []),

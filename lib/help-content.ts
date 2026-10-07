@@ -120,14 +120,14 @@ export const GUIDES: Guide[] = [
   {
     id: "claude-notion",
     title: "Relier Claude et Notion",
-    for: ["coach", "client"],
+    for: ["coach", "client", "staff"],
     steps: [
-      "Dans Notes, ouvre « Relier Claude et Notion » et génère ton adresse de connecteur.",
-      "Sur claude.ai : Réglages, Connecteurs, Ajouter un connecteur personnalisé, colle l'adresse.",
-      "Dans une conversation, active EP Coaching (et Notion). Demande par exemple : « importe ma page Notion Idées dans mes notes EP Coaching ».",
+      "Ouvre Plus, puis « Claude et Notion », et génère ton adresse de connecteur. Pas de clé d'API, pas de code.",
+      "Sur claude.ai : Paramètres, Connecteurs, Ajouter un connecteur personnalisé, colle l'adresse. Ajoute aussi le connecteur Notion si tu l'utilises.",
+      "Dans une conversation, active EP Coaching (et Notion), puis copie une des demandes toutes prêtes : noter ta journée, ajouter un repas en photo, analyser ta semaine, écrire tes scripts...",
     ],
-    href: "notes",
-    cta: "Générer ma clé",
+    href: "claude",
+    cta: "Ouvrir Claude et Notion",
   },
   {
     id: "bilan",
