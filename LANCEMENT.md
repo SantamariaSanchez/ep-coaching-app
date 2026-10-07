@@ -78,3 +78,22 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
 - [x] Formations pour tous les coachs (création, vente, accès)
 - [x] Bilan « Forme du jour » (énergie, moral, eau, courbatures, FC repos, VFC)
 - [x] Accueils coach et client personnalisés, Ma semaine personnalisée
+- [x] Session du 07/10 (demande « grosse session ») :
+  - Recherche tolérante aux fautes dans toutes les barres (pluriels, inversions, saisie partielle)
+  - Courses : stock qui baisse tout seul à chaque repas noté (3 bananes, 1 mangée, il en reste 2),
+    à racheter, besoins de la semaine
+  - Studio : cartes de scripts compactes qui s'ouvrent en haut de l'écran
+  - Performances par niche : course, Hyrox, CrossFit, force, rééducation, suivi santé, prépa
+    compétition (posing, peak week), grossesse et post-partum ; onglets cachés si inutiles
+  - Ma niche et mon avatar : positionnement pas à pas avec modèles par niche, bio, piliers
+  - Claude pour tous (sans clé d'API) : page Claude et Notion, demandes prêtes par rôle,
+    connecteur avec 16 outils (journée, repas, records, clients, stats réseaux, scripts, positionnement)
+  - Paramètres refaits par rubriques avec recherche (langue, page d'ouverture, vibrations, repos,
+    stock auto, cache, version)
+  - Appli en français ou en anglais (~4 000 textes traduits, Paramètres > Langue)
+  - Stats réseaux simplifiées (en bref, sans jargon technique)
+
+## Reste à faire (anglais)
+
+- [ ] Pages de connexion et d'inscription en anglais (hors espace connecté)
+- [ ] Textes générés côté serveur (messages d'erreur des actions, notifications, e-mails)
