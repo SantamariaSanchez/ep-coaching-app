@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -38,6 +39,7 @@ const labelStyle: React.CSSProperties = {
 // mot de passe, le lien connectait l'utilisateur sans rien lui permettre de
 // changer.
 export default function ResetPasswordPage() {
+  const t = useT();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -100,17 +102,17 @@ export default function ResetPasswordPage() {
         {done ? (
           <div style={{ textAlign: "center" }}>
             <CheckCircle2 size={40} style={{ color: "#4ade80", margin: "0 auto 14px" }} />
-            <p style={{ color: "#F5EDED", fontSize: 15, fontWeight: 700 }}>Mot de passe mis à jour.</p>
-            <p style={{ color: "rgba(245,237,237,0.4)", fontSize: 13, marginTop: 6 }}>Redirection...</p>
+            <p style={{ color: "#F5EDED", fontSize: 15, fontWeight: 700 }}>{t("Mot de passe mis à jour.")}</p>
+            <p style={{ color: "rgba(245,237,237,0.4)", fontSize: 13, marginTop: 6 }}>{t("Redirection...")}</p>
           </div>
         ) : (
           <>
             <h2 style={{ fontWeight: 800, fontSize: 20, color: "#F5EDED", letterSpacing: "-0.03em", margin: "0 0 20px", textAlign: "center" }}>
-              Choisis un nouveau mot de passe
+              {t("Choisis un nouveau mot de passe")}
             </h2>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
-                <label style={labelStyle}>Nouveau mot de passe</label>
+                <label style={labelStyle}>{t("Nouveau mot de passe")}</label>
                 <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -121,7 +123,7 @@ export default function ResetPasswordPage() {
                 />
               </div>
               <div>
-                <label style={labelStyle}>Confirme le mot de passe</label>
+                <label style={labelStyle}>{t("Confirme le mot de passe")}</label>
                 <PasswordInput
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
@@ -143,7 +145,7 @@ export default function ResetPasswordPage() {
               )}
 
               <button type="submit" disabled={submitting} className="ep-btn-primary" style={{ width: "100%", height: 48, fontSize: 13 }}>
-                {submitting ? "Mise à jour..." : "METTRE À JOUR"}
+                {submitting ? t("Mise à jour...") : t("METTRE À JOUR")}
               </button>
             </form>
 
@@ -154,7 +156,7 @@ export default function ResetPasswordPage() {
                 marginTop: 18, color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, textDecoration: "none",
               }}
             >
-              Retour à l&apos;accueil
+              {t("Retour à l'accueil")}
             </Link>
           </>
         )}

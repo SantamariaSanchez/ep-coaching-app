@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import PasswordInput from "@/components/ui/PasswordInput";
@@ -30,6 +31,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 export default function CoachSignupFlow() {
+  const t = useT();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -86,15 +88,15 @@ export default function CoachSignupFlow() {
         background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.2)",
       }}>
         <p style={{ fontSize: 13, color: "#F5EDED", margin: 0, fontWeight: 700 }}>
-          Utilise EP Coaching pour suivre tes propres clients
+          {t("Utilise EP Coaching pour suivre tes propres clients")}
         </p>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "6px 0 0", lineHeight: 1.5 }}>
-          Tes clients restent les tiens, jamais visibles par un autre coach de la plateforme.
+          {t("Tes clients restent les tiens, jamais visibles par un autre coach de la plateforme.")}
         </p>
       </div>
 
       <div>
-        <label style={labelStyle}>Formule</label>
+        <label style={labelStyle}>{t("Formule")}</label>
         <div style={{ display: "flex", gap: 10 }}>
           {COACH_PLATFORM_PLANS.map((plan) => {
             const active = planId === plan.id;
@@ -119,29 +121,29 @@ export default function CoachSignupFlow() {
       </div>
 
       <div>
-        <label style={labelStyle}>Nom complet</label>
+        <label style={labelStyle}>{t("Nom complet")}</label>
         <input
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           type="text"
-          placeholder="Ton nom" aria-label="Ton nom"
+          placeholder={t("Ton nom")} aria-label={t("Ton nom")}
           style={inputStyle}
         />
       </div>
 
       <div>
-        <label style={labelStyle}>Email</label>
+        <label style={labelStyle}>{t("Email")}</label>
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           type="email"
-          placeholder="ton@email.com" aria-label="ton@email.com"
+          placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
           style={inputStyle}
         />
       </div>
 
       <div>
-        <label style={labelStyle}>Mot de passe</label>
+        <label style={labelStyle}>{t("Mot de passe")}</label>
         <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -149,7 +151,7 @@ export default function CoachSignupFlow() {
           inputStyle={inputStyle}
         />
         <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "6px 0 0" }}>
-          8 caractères minimum.
+          {t("8 caractères minimum.")}
         </p>
       </div>
 
@@ -161,15 +163,15 @@ export default function CoachSignupFlow() {
           style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "#E01E1E" }}
         />
         <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>
-          J&apos;accepte les{" "}
+          {t("J'accepte les")}{" "}
           <Link href="/legal/cgu" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>
-            CGU
+            {t("CGU")}
           </Link>{" "}
-          et les{" "}
+          {t("et les")}{" "}
           <Link href="/legal/cgv" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>
-            CGV
+            {t("CGV")}
           </Link>{" "}
-          d&apos;EP Coaching, y compris la facturation dès la souscription selon la formule choisie.
+          {t("d'EP Coaching, y compris la facturation dès la souscription selon la formule choisie.")}
         </span>
       </label>
 
@@ -182,8 +184,7 @@ export default function CoachSignupFlow() {
           style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "#E01E1E" }}
         />
         <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>
-          Je veux aussi recevoir la newsletter EP Coaching. Optionnel, désinscription en un clic à
-          tout moment.
+          {t("Je veux aussi recevoir la newsletter EP Coaching. Optionnel, désinscription en un clic à tout moment.")}
         </span>
       </label>
 
@@ -203,7 +204,7 @@ export default function CoachSignupFlow() {
         className="ep-btn-primary"
         style={{ width: "100%", height: 50, fontSize: 13 }}
       >
-        {submitting ? "Un instant…" : "Créer mon compte coach"}
+        {submitting ? t("Un instant…") : t("Créer mon compte coach")}
       </button>
     </form>
   );

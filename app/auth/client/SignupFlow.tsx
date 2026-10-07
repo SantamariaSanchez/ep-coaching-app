@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, Heart, PhoneCall } from "lucide-react";
@@ -36,6 +37,7 @@ const labelStyle: React.CSSProperties = {
 type Step = "info" | "choix";
 
 export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void }) {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get("coach") ?? undefined;
@@ -121,27 +123,26 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
         <form onSubmit={handleCreateAccount} className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ marginBottom: 2 }}>
             <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
-              Crée ton compte
+              {t("Crée ton compte")}
             </h2>
             <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
-              Accès immédiat à ton entraînement, ta nutrition et ton suivi de progression. Gratuit
-              pendant 60 jours, en 30 secondes.
+              {t("Accès immédiat à ton entraînement, ta nutrition et ton suivi de progression. Gratuit pendant 60 jours, en 30 secondes.")}
             </p>
           </div>
           <div>
-            <label style={labelStyle}>Prénom et nom</label>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="Ton prénom et nom" aria-label="Ton prénom et nom" style={inputStyle} />
+            <label style={labelStyle}>{t("Prénom et nom")}</label>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder={t("Ton prénom et nom")} aria-label={t("Ton prénom et nom")} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="ton@email.com" aria-label="ton@email.com" style={inputStyle} />
+            <label style={labelStyle}>{t("Email")}</label>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder={t("ton@email.com")} aria-label={t("ton@email.com")} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Téléphone</label>
+            <label style={labelStyle}>{t("Téléphone")}</label>
             <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="06 12 34 56 78" aria-label="06 12 34 56 78" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Mot de passe</label>
+            <label style={labelStyle}>{t("Mot de passe")}</label>
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -154,7 +155,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
                 avant évite cet aller-retour, surtout ici où la promesse
                 affichée juste au-dessus est "en 30 secondes". */}
             <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "6px 0 0" }}>
-              8 caractères minimum.
+              {t("8 caractères minimum.")}
             </p>
           </div>
 
@@ -177,21 +178,19 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               style={{ width: 17, height: 17, marginTop: 1, accentColor: "#E01E1E", flexShrink: 0, cursor: "pointer" }}
             />
             <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(245,237,237,0.55)" }}>
-              J&apos;accepte les{" "}
+              {t("J'accepte les")}{" "}
               <a href="/legal/cgu" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
-                conditions d&apos;utilisation
+                {t("conditions d'utilisation")}
               </a>
               ,{" "}
               <a href="/legal/cgv" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
-                les CGV
+                {t("les CGV")}
               </a>{" "}
-              et la{" "}
+              {t("et la")}{" "}
               <a href="/legal/confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
-                politique de confidentialité
+                {t("politique de confidentialité")}
               </a>
-              . Je comprends que le compte gratuit dure 60 jours, qu&apos;il est suspendu ensuite si je
-              ne prends pas d&apos;accompagnement, et qu&apos;un compte laissé sans connexion pendant 60
-              jours est supprimé.
+              {t(". Je comprends que le compte gratuit dure 60 jours, qu'il est suspendu ensuite si je ne prends pas d'accompagnement, et qu'un compte laissé sans connexion pendant 60 jours est supprimé.")}
             </span>
           </label>
 
@@ -214,8 +213,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               style={{ width: 17, height: 17, marginTop: 1, accentColor: "#E01E1E", flexShrink: 0, cursor: "pointer" }}
             />
             <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(245,237,237,0.55)" }}>
-              Je veux aussi recevoir la newsletter EP Coaching (conseils entraînement, nutrition,
-              mindset, un mail de temps en temps). Optionnel, désinscription en un clic à tout moment.
+              {t("Je veux aussi recevoir la newsletter EP Coaching (conseils entraînement, nutrition, mindset, un mail de temps en temps). Optionnel, désinscription en un clic à tout moment.")}
             </span>
           </label>
 
@@ -230,7 +228,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           )}
 
           <button type="submit" disabled={creatingAccount} className="ep-btn-primary" style={{ width: "100%", height: 48, fontSize: 13, marginTop: 4 }}>
-            {creatingAccount ? "Création du compte…" : "Créer mon compte"}
+            {creatingAccount ? t("Création du compte…") : t("Créer mon compte")}
           </button>
         </form>
       )}
@@ -239,10 +237,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
-              Compte créé 🎉
+              {t("Compte créé 🎉")}
             </h2>
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", margin: 0 }}>
-              Rejoins la communauté gratuitement, ou passe directement en coaching premium.
+              {t("Rejoins la communauté gratuitement, ou passe directement en coaching premium.")}
             </p>
           </div>
 
@@ -260,9 +258,9 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           >
             <Heart size={20} style={{ color: "#F5EDED", flexShrink: 0 }} strokeWidth={1.8} />
             <span style={{ flex: 1 }}>
-              <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>Rejoindre la communauté</span>
+              <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{t("Rejoindre la communauté")}</span>
               <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.5)", marginTop: 2 }}>
-                Gratuit · Victoires, Questions, Ressources
+                {t("Gratuit · Victoires, Questions, Ressources")}
               </span>
             </span>
             {submitting === "free" ? (
@@ -274,7 +272,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0" }}>
             <div style={{ flex: 1, height: 1, background: "rgba(245,237,237,0.08)" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "rgba(245,237,237,0.25)", textTransform: "uppercase" }}>ou</span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "rgba(245,237,237,0.25)", textTransform: "uppercase" }}>{t("ou")}</span>
             <div style={{ flex: 1, height: 1, background: "rgba(245,237,237,0.08)" }} />
           </div>
 
@@ -292,9 +290,9 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           >
             <PhoneCall size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
             <span style={{ flex: 1 }}>
-              <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>Je veux un coaching individuel</span>
+              <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{t("Je veux un coaching individuel")}</span>
               <span style={{ display: "block", fontSize: 10, color: "rgba(245,237,237,0.35)", marginTop: 2 }}>
-                Réserve ton appel découverte de 30 min
+                {t("Réserve ton appel découverte de 30 min")}
               </span>
             </span>
             {submitting === "coaching" ? (
@@ -316,7 +314,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
           }}
         >
-          Déjà membre ? <span style={{ color: "#E01E1E" }}>Me connecter</span>
+          {t("Déjà membre ?")}{" "}<span style={{ color: "#E01E1E" }}>{t("Me connecter")}</span>
         </button>
       )}
     </div>

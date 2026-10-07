@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
@@ -16,6 +17,7 @@ import TwoFactorSetup from "@/components/settings/TwoFactorSetup";
 //   2. compte fondateur (is_platform_owner) qui n'a pas encore activé la 2FA :
 //      activation obligatoire avant d'accéder au dashboard.
 export default async function TwoFactorPage() {
+  const t = await getT();
   const supabase = await createServerSupabase();
   const {
     data: { user },
@@ -72,29 +74,27 @@ export default async function TwoFactorPage() {
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck size={13} className="text-[#E01E1E]/70" strokeWidth={2} />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E01E1E]/70">
-              Double authentification
+              {t("Double authentification")}
             </span>
           </div>
 
           {mode === "challenge" ? (
             <>
               <h1 className="text-xl font-extrabold text-[#F5EDED] tracking-tight mb-2">
-                Saisis ton code
+                {t("Saisis ton code")}
               </h1>
               <p className="text-[12.5px] text-[#F5EDED]/40 leading-relaxed mb-5">
-                Ouvre ton application d&apos;authentification et recopie le code à
-                6 chiffres associé à EP Coaching.
+                {t("Ouvre ton application d'authentification et recopie le code à 6 chiffres associé à EP Coaching.")}
               </p>
               <TwoFactorChallenge redirectTo={dest} />
             </>
           ) : (
             <>
               <h1 className="text-xl font-extrabold text-[#F5EDED] tracking-tight mb-2">
-                Activation requise
+                {t("Activation requise")}
               </h1>
               <p className="text-[12.5px] text-[#F5EDED]/40 leading-relaxed mb-5">
-                Ce compte donne accès à l&apos;ensemble de la plateforme et à tous
-                les membres. La double authentification y est obligatoire.
+                {t("Ce compte donne accès à l'ensemble de la plateforme et à tous les membres. La double authentification y est obligatoire.")}
               </p>
               <TwoFactorSetup redirectTo={dest} />
             </>

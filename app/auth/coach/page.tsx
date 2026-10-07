@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Shield } from "lucide-react";
@@ -11,6 +12,7 @@ import { useIsIOSApp } from "@/lib/use-native";
 import CoachSignupFlow from "./CoachSignupFlow";
 
 function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone: () => void }) {
+  const tr = useT();
   const [email, setEmail] = useState(initialEmail);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -33,7 +35,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
     }}>
       {sent ? (
         <p style={{ fontSize: 13, color: "#F5EDED", margin: 0 }}>
-          Si un compte existe avec cet email, un lien de réinitialisation vient d&apos;être envoyé.
+          {tr("Si un compte existe avec cet email, un lien de réinitialisation vient d'être envoyé.")}
         </p>
       ) : (
         <>
@@ -41,7 +43,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
-            placeholder="ton@email.com" aria-label="ton@email.com"
+            placeholder={tr("ton@email.com")} aria-label={tr("ton@email.com")}
             className="ep-input"
             style={{ marginBottom: 10 }}
           />
@@ -56,14 +58,14 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
                 textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer",
               }}
             >
-              {sending ? "Envoi..." : "Envoyer le lien"}
+              {sending ? tr("Envoi...") : tr("Envoyer le lien")}
             </button>
             <button
               type="button"
               onClick={onDone}
               style={{ background: "none", border: "none", color: "rgba(245,237,237,0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
             >
-              Annuler
+              {tr("Annuler")}
             </button>
           </div>
         </>
@@ -73,6 +75,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
 }
 
 export default function CoachLoginPage() {
+  const tr = useT();
   const [state, formAction, pending] = useActionState(loginCoach, null);
   const [email, setEmail] = useState("");
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -111,7 +114,7 @@ export default function CoachLoginPage() {
           }}
         >
           <ChevronLeft size={13} />
-          Retour
+          {tr("Retour")}
         </Link>
 
         {/* Auth card */}
@@ -126,7 +129,7 @@ export default function CoachLoginPage() {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
               <Shield size={12} style={{ color: "rgba(224,30,30,0.65)" }} strokeWidth={2} />
               <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)" }}>
-                Espace professionnel
+                {tr("Espace professionnel")}
               </span>
             </div>
             <h1
@@ -140,7 +143,7 @@ export default function CoachLoginPage() {
                 lineHeight: 1.1,
               }}
             >
-              Espace Coach
+              {tr("Espace Coach")}
             </h1>
           </div>
 
@@ -159,7 +162,7 @@ export default function CoachLoginPage() {
                   fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
                 }}
               >
-                {t === "connexion" ? "Connexion" : "Devenir coach"}
+                {t === "connexion" ? tr("Connexion") : tr("Devenir coach")}
               </button>
             ))}
           </div>
@@ -184,14 +187,14 @@ export default function CoachLoginPage() {
                 color: "rgba(224,30,30,0.75)",
                 marginBottom: 8,
               }}>
-                Email
+                {tr("Email")}
               </label>
               <input
                 name="email"
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="ton@email.com" aria-label="ton@email.com"
+                placeholder={tr("ton@email.com")} aria-label={tr("ton@email.com")}
                 className="ep-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -208,7 +211,7 @@ export default function CoachLoginPage() {
                 color: "rgba(224,30,30,0.75)",
                 marginBottom: 8,
               }}>
-                Mot de passe
+                {tr("Mot de passe")}
               </label>
               <PasswordInput
                 name="password"
@@ -225,7 +228,7 @@ export default function CoachLoginPage() {
                   color: "rgba(245,237,237,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0,
                 }}
               >
-                Mot de passe oublié ?
+                {tr("Mot de passe oublié ?")}
               </button>
             </div>
 
@@ -254,7 +257,7 @@ export default function CoachLoginPage() {
               className="ep-btn-primary"
               style={{ width: "100%", height: 50, fontSize: 13, marginTop: 4 }}
             >
-              {pending ? "Connexion…" : "SE CONNECTER"}
+              {pending ? tr("Connexion…") : tr("SE CONNECTER")}
             </button>
           </form>
           )}

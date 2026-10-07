@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { Suspense, useActionState, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Heart } from "lucide-react";
@@ -35,6 +36,7 @@ const labelStyle: React.CSSProperties = {
 // ── Connexion form ────────────────────────────────────────────────────────────
 
 function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone: () => void }) {
+  const t = useT();
   const [email, setEmail] = useState(initialEmail);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -57,16 +59,16 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
     }}>
       {sent ? (
         <p style={{ fontSize: 13, color: "#F5EDED", margin: 0 }}>
-          Si un compte existe avec cet email, un lien de réinitialisation vient d&apos;être envoyé.
+          {t("Si un compte existe avec cet email, un lien de réinitialisation vient d'être envoyé.")}
         </p>
       ) : (
         <>
-          <label style={labelStyle}>Email pour réinitialiser</label>
+          <label style={labelStyle}>{t("Email pour réinitialiser")}</label>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
-            placeholder="ton@email.com" aria-label="ton@email.com"
+            placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
             style={{ ...inputStyle, marginBottom: 10 }}
           />
           <div style={{ display: "flex", gap: 10 }}>
@@ -80,14 +82,14 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
                 textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer",
               }}
             >
-              {sending ? "Envoi..." : "Envoyer le lien"}
+              {sending ? t("Envoi...") : t("Envoyer le lien")}
             </button>
             <button
               type="button"
               onClick={onDone}
               style={{ background: "none", border: "none", color: "rgba(245,237,237,0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
             >
-              Annuler
+              {t("Annuler")}
             </button>
           </div>
         </>
@@ -97,6 +99,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
 }
 
 function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState(loginClient, null);
   const [email, setEmail] = useState("");
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -104,23 +107,23 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
   return (
     <>
       <h2 style={{ fontWeight: 800, fontSize: 20, color: "#F5EDED", letterSpacing: "-0.03em", margin: "0 0 20px" }}>
-        Me connecter
+        {t("Me connecter")}
       </h2>
       <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div>
-          <label style={labelStyle}>Email</label>
+          <label style={labelStyle}>{t("Email")}</label>
           <input
             name="email"
             type="email"
             required
-            placeholder="ton@email.com" aria-label="ton@email.com"
+            placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
             style={inputStyle}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div>
-          <label style={labelStyle}>Mot de passe</label>
+          <label style={labelStyle}>{t("Mot de passe")}</label>
           <PasswordInput name="password" required placeholder="••••••••" inputStyle={inputStyle} autoComplete="current-password" />
           <button
             type="button"
@@ -130,7 +133,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
               color: "rgba(245,237,237,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0,
             }}
           >
-            Mot de passe oublié ?
+            {t("Mot de passe oublié ?")}
           </button>
         </div>
 
@@ -157,7 +160,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
           className="ep-btn-primary"
           style={{ width: "100%", height: 48, fontSize: 13 }}
         >
-          {pending ? "Connexion…" : "SE CONNECTER"}
+          {pending ? t("Connexion…") : t("SE CONNECTER")}
         </button>
       </form>
 
@@ -170,7 +173,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
           color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
         }}
       >
-        Nouveau ici ? <span style={{ color: "#E01E1E" }}>Rejoindre la communauté</span>
+        {t("Nouveau ici ?")}{" "}<span style={{ color: "#E01E1E" }}>{t("Rejoindre la communauté")}</span>
       </button>
     </>
   );
@@ -179,6 +182,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ClientAuthPage() {
+  const t = useT();
   // Lead-magnet links can deep-link straight to the login tab (?mode=login)
   // — read synchronously via a lazy initializer instead of an effect, no
   // Suspense boundary needed since this skips useSearchParams() entirely.
@@ -206,7 +210,7 @@ export default function ClientAuthPage() {
           fontSize: 12, fontWeight: 600, marginBottom: 28,
         }}>
           <ChevronLeft size={14} />
-          Retour
+          {t("Retour")}
         </Link>
 
         {/* Logo + header */}
@@ -217,7 +221,7 @@ export default function ClientAuthPage() {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
             <Heart size={13} style={{ color: "rgba(224,30,30,0.7)" }} strokeWidth={2} />
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)" }}>
-              Communauté
+              {t("Communauté")}
             </span>
           </div>
         </div>
