@@ -105,7 +105,15 @@ function DailyTaskRow({ task }: { task: DailyTask }) {
 }
 
 // "show" : personnalisation Mon appli, seuls les suivis choisis apparaissent.
-export default function ClientDashboardStats({ show = { poids: true, nutrition: true, entrainement: true, sommeil: true } }: { show?: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean } }) {
+// "coached" : false pour un membre gratuit, le check-in hebdo est réservé aux
+// clients accompagnés (CoachOnlyGate), on ne le propose donc pas.
+export default function ClientDashboardStats({
+  show = { poids: true, nutrition: true, entrainement: true, sommeil: true },
+  coached = true,
+}: {
+  show?: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean };
+  coached?: boolean;
+}) {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
@@ -203,7 +211,8 @@ export default function ClientDashboardStats({ show = { poids: true, nutrition: 
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {tasks.map((task) => (
-            <DailyTaskRow key={task.href} task={task} />
+            // La pesée et le bilan pointent tous deux vers /bilan : clé sur le libellé.
+            <DailyTaskRow key={task.label} task={task} />
           ))}
         </div>
       </div>
@@ -220,7 +229,7 @@ export default function ClientDashboardStats({ show = { poids: true, nutrition: 
           marginBottom: 20,
         }}>
           <span className="ep-badge-red">Semaine {stats.weekNumber}</span>
-          {stats.hasCheckinThisWeek && (
+          {coached && stats.hasCheckinThisWeek && (
             <span style={{
               display: "flex",
               alignItems: "center",
@@ -253,7 +262,7 @@ export default function ClientDashboardStats({ show = { poids: true, nutrition: 
             trackColor="rgba(224,30,30,0.07)"
             label="Nutrition"
             unit="%"
-            sublabel={`${stats.consumedCals} / ${stats.targetCals} kcal`}
+            sublabel={stats.targetCals > 0 ? `${stats.consumedCals} / ${stats.targetCals} kcal` : `${stats.consumedCals} kcal, objectif à calculer`}
             delay={0}
           />}
           <ProgressRing
@@ -273,7 +282,7 @@ export default function ClientDashboardStats({ show = { poids: true, nutrition: 
       </div>
 
       {/* ── Check-in CTA ────────────────────────────────────────────────────── */}
-      {!stats.hasCheckinThisWeek && (
+      {coached && !stats.hasCheckinThisWeek && (
         <Link
           href="/dashboard/client/checkin"
           className="animate-slide-up"

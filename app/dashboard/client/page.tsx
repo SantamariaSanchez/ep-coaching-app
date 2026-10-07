@@ -4,7 +4,8 @@ import { getAppSetup } from "@/lib/app-setup-server";
 import { isOn } from "@/lib/app-setup";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getUser, getProfile, isSubscribed } from "@/utils/auth";
+import { getUser, getProfile } from "@/utils/auth";
+import { getAccessType } from "@/utils/auth-client";
 import { getThisWeekCheckin, getISOWeek, getWeekStart } from "@/utils/checkins";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getLatestCoachNote } from "@/utils/notes";
@@ -348,6 +349,8 @@ function WelcomeGuide({
   personalization,
   checklist,
   activityStreak,
+  totalPoints,
+  show,
 }: {
   firstName: string;
   goal: string | null;
@@ -356,9 +359,18 @@ function WelcomeGuide({
   personalization: ReturnType<typeof derivePersonalization>;
   checklist: OnboardingChecklistItem[];
   activityStreak: number;
+  totalPoints: number;
+  show: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean };
 }) {
   const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
   const pitch = upsellPitch(checklist, activityStreak);
+  // Dès la première vraie action, l'accueil devient une routine du jour
+  // (régularité, actions du jour, anneaux) comme pour un client accompagné :
+  // sans ça, un membre qui revient le lendemain retrouvait le même catalogue
+  // statique et rien qui l'invite à refaire son bilan ou noter ses repas.
+  // Avant toute action, seule la checklist de démarrage s'affiche, pour ne
+  // pas lui proposer deux fois les mêmes premières actions.
+  const hasStarted = checklist.some((i) => i.done);
   return (
     <div
       className="page-transition ep-page-medium"
@@ -375,6 +387,13 @@ function WelcomeGuide({
 
       {!hasCoach && <NoCoachBanner />}
       {hasCoach && <StagnationBanner />}
+
+      {hasStarted && (
+        <>
+          <RegularityCard streakDays={activityStreak} points={totalPoints} />
+          <ClientDashboardStats show={show} coached={false} />
+        </>
+      )}
 
       <StartChecklist items={checklist} />
 
@@ -543,13 +562,15 @@ export default async function ClientDashboard({
 
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
-  if (!isSubscribed(profile)) {
-    const [preferences, checklist, activityStreak] = await Promise.all([
+  if (getAccessType(profile) === "membre_gratuit") {
+    const [preferences, checklist, activityStreak, totalPoints, appSetup] = await Promise.all([
       getMemberPreferences(user.id),
       getOnboardingChecklist(user.id),
       // Item 42 : signal de constance déjà calculé pour item 20, réutilisé
       // ici pour rendre la relance premium contextuelle plutôt que générique.
       getClientActivityStreak(user.id),
+      getTotalPoints(user.id),
+      getAppSetup(user.id),
     ]);
     return (
       <>
@@ -562,6 +583,8 @@ export default async function ClientDashboard({
           personalization={derivePersonalization(preferences)}
           checklist={checklist}
           activityStreak={activityStreak}
+          totalPoints={totalPoints}
+          show={{ poids: isOn(appSetup, "poids"), nutrition: isOn(appSetup, "nutrition"), entrainement: isOn(appSetup, "entrainement"), sommeil: isOn(appSetup, "sommeil") }}
         />
       </>
     );

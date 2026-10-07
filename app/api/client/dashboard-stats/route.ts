@@ -22,7 +22,11 @@ export async function GET() {
 
   const supabase = await createServerSupabase();
 
-  const [nutritionProfile, todayLogs, last7DaysLogs, thisWeekCheckin, sessionCount, bilanCount, weighInCount] =
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split("T")[0];
+
+  const [nutritionProfile, todayLogs, last7DaysLogs, thisWeekCheckin, sessionCount, bilanCount, weighInCount, recentSleep] =
     await Promise.all([
       getNutritionProfile(guard.userId),
       getTodayLogs(guard.userId),
@@ -50,6 +54,15 @@ export async function GET() {
         .eq("client_id", guard.userId)
         .eq("log_date", todayStr)
         .not("weight_morning", "is", null),
+      // Sommeil des 7 derniers bilans quotidiens : le check-in hebdo est
+      // réservé aux clients accompagnés, un membre gratuit n'avait donc
+      // jamais de sommeil affiché alors qu'il le note chaque jour au bilan.
+      supabase
+        .from("daily_logs")
+        .select("sleep_hours")
+        .eq("client_id", guard.userId)
+        .gte("log_date", sevenDaysAgoStr)
+        .not("sleep_hours", "is", null),
     ]);
 
   const consumedCals = Math.round(
@@ -68,9 +81,17 @@ export async function GET() {
   const stepsDisplay = thisWeekCheckin?.steps_per_day
     ? thisWeekCheckin.steps_per_day.toLocaleString("fr-FR")
     : "-";
+  const dailySleep = ((recentSleep.data ?? []) as { sleep_hours: number | null }[])
+    .map((r) => Number(r.sleep_hours))
+    .filter((h) => h > 0);
+  const avgDailySleep = dailySleep.length > 0
+    ? Math.round((dailySleep.reduce((a, b) => a + b, 0) / dailySleep.length) * 10) / 10
+    : null;
   const sleepDisplay = thisWeekCheckin?.sleep_hours
     ? `${thisWeekCheckin.sleep_hours}h`
-    : "-";
+    : avgDailySleep != null
+      ? `${avgDailySleep}h`
+      : "-";
   const weekNumber = getISOWeek(today);
 
   return NextResponse.json({
