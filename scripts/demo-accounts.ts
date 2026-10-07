@@ -212,6 +212,17 @@ async function seedRichDemo(coachId: string, clientId: string, password: string)
     );
   }
 
+  // ── Stock de courses (inventaire) ────────────────────────────────────
+  await admin.from("pantry_items").delete().eq("owner_id", clientId);
+  await admin.from("pantry_items").insert([
+    { owner_id: clientId, food_id: FOOD.banane, name: "Banane", category: "Fruits", unit: "piece", quantity: 2, grams_per_unit: 120, low_threshold: 2 },
+    { owner_id: clientId, food_id: FOOD.riz, name: "Riz basmati cuit", category: "Feculents", unit: "g", quantity: 1300, low_threshold: 400 },
+    { owner_id: clientId, food_id: FOOD.poulet, name: "Poulet blanc cuit", category: "Viandes", unit: "g", quantity: 540, low_threshold: 300 },
+    { owner_id: clientId, food_id: FOOD.oeufs, name: "Oeuf entier cuit", category: "Oeufs", unit: "piece", quantity: 8, grams_per_unit: 60, low_threshold: 4 },
+    { owner_id: clientId, food_id: FOOD.fromageBlanc, name: "Fromage blanc 3%", category: "Laitiers", unit: "g", quantity: 0, low_threshold: 200 },
+    { owner_id: clientId, food_id: FOOD.avoine, name: "Flocons d'avoine", category: "Cereales", unit: "g", quantity: 900, low_threshold: 200 },
+  ]);
+
   // ── Road Map ─────────────────────────────────────────────────────────
   await admin.from("roadmaps").delete().eq("client_id", clientId);
   const { data: roadmap } = await admin

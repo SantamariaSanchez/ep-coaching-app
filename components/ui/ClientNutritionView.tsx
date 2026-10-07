@@ -6,6 +6,7 @@ import { Plus, Trash2, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Che
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { onKeyActivate } from "@/lib/a11y";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
+import GroceryHub from "@/components/nutrition/GroceryHub";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionTracker from "@/components/nutrition/NutritionTracker";
 import type { TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
@@ -582,38 +583,12 @@ export default function ClientNutritionView({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Liste de courses — coché persiste localement (utile en cours de courses),
-  // remis à zéro manuellement plutôt qu'automatiquement pour ne pas perdre
-  // la progression si on ferme l'appli en plein magasin.
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("ep-shopping-checked");
-      if (saved) setCheckedItems(new Set(JSON.parse(saved)));
-    } catch {}
-  }, []);
-  function toggleChecked(foodId: string) {
-    setCheckedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(foodId)) next.delete(foodId);
-      else next.add(foodId);
-      try { localStorage.setItem("ep-shopping-checked", JSON.stringify([...next])); } catch {}
-      return next;
-    });
-  }
+  // Liste de courses : besoins de la semaine (plan ou habitudes), confrontés
+  // au stock réel dans GroceryHub.
   const shoppingList = useMemo(
     () => buildShoppingList(activePlan, historyLogsState),
     [activePlan, historyLogsState]
   );
-  const shoppingByCategory = useMemo(() => {
-    const map = new Map<string, typeof shoppingList.items>();
-    for (const item of shoppingList.items) {
-      const list = map.get(item.category) ?? [];
-      list.push(item);
-      map.set(item.category, list);
-    }
-    return map;
-  }, [shoppingList]);
 
   // Repas enregistrés — état local pour refléter création/suppression sans
   // recharger la page (même pattern que `foods`).
@@ -1923,64 +1898,7 @@ export default function ClientNutritionView({
           — jamais vide de sens même sans plan fixe. */}
       {activeTab === "courses" && (
         <div className="space-y-5">
-          <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl px-4 py-3 flex items-start gap-2.5">
-            <ShoppingCart size={15} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-            <p className="text-[11px] text-[#F5EDED]/55 leading-relaxed">
-              {shoppingList.source === "plan"
-                ? "Générée à partir de ton plan nutritionnel, pour la semaine."
-                : "Générée à partir de ce que tu manges le plus souvent ces 7 derniers jours."}
-            </p>
-          </div>
-
-          {shoppingList.items.length === 0 ? (
-            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center">
-              <p className="text-xs text-[#F5EDED]/35">
-                Pas encore assez de données. Logue tes repas quelques jours, ou demande à ton coach un plan.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {[...shoppingByCategory.entries()].map(([category, items]) => (
-                <div key={category} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2.5">
-                    {category}
-                  </p>
-                  <div className="space-y-1.5">
-                    {items.map((item) => {
-                      const checked = checkedItems.has(item.foodId);
-                      return (
-                        <button
-                          key={item.foodId}
-                          onClick={() => toggleChecked(item.foodId)}
-                          className="w-full flex items-center gap-2.5 text-left"
-                        >
-                          <span className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
-                            checked ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
-                          }`}>
-                            {checked && <Check size={12} className="text-white" strokeWidth={3} />}
-                          </span>
-                          <span className={`text-sm flex-1 ${checked ? "text-[#F5EDED]/30 line-through" : "text-white"}`}>
-                            {item.name}
-                          </span>
-                          <span className={`text-xs ${checked ? "text-[#F5EDED]/20" : "text-[#F5EDED]/40"}`}>
-                            {item.totalGrams >= 1000 ? `${(item.totalGrams / 1000).toFixed(1)}kg` : `${item.totalGrams}g`}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-              {checkedItems.size > 0 && (
-                <button
-                  onClick={() => { setCheckedItems(new Set()); try { localStorage.removeItem("ep-shopping-checked"); } catch {} }}
-                  className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors"
-                >
-                  Tout décocher
-                </button>
-              )}
-            </div>
-          )}
+          <GroceryHub needs={shoppingList.items} source={shoppingList.source} foods={foods} />
 
           {/* Idées de sources — pour varier en plan flexible, sans dépendre
               uniquement de ce qui a déjà été loggué. */}
