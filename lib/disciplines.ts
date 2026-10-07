@@ -12,7 +12,7 @@
 //
 // Fichier partagé serveur/client, sans import serveur.
 
-export type DisciplineKey = "course" | "hyrox" | "crossfit" | "force" | "reeducation" | "sante";
+export type DisciplineKey = "course" | "hyrox" | "crossfit" | "force" | "reeducation" | "sante" | "prepa" | "maternite";
 
 export type FieldType = "number" | "duration" | "text" | "select" | "scale";
 
@@ -477,7 +477,125 @@ const sante: Discipline = {
   tip: "Une tension régulièrement à 140/90 ou plus, ou une valeur d'analyse qui change beaucoup, mérite d'en parler à ton médecin. L'appli garde l'historique, elle ne pose pas de diagnostic.",
 };
 
-export const DISCIPLINES: Discipline[] = [course, hyrox, crossfit, force, reeducation, sante];
+// ── Prépa compétition (bodybuilding) ───────────────────────────────────
+
+const POSES = ["Double biceps de face", "Grand dorsal de face", "Profil poitrine", "Double biceps de dos", "Grand dorsal de dos", "Profil triceps", "Abdos et cuisses", "Most muscular", "Routine libre", "Quarts de tour"];
+
+const prepa: Discipline = {
+  key: "prepa",
+  label: "Prépa compétition",
+  menuLabel: "Prépa",
+  description: "Ta prépa semaine par semaine : poids, tour de taille et condition, tes séances de posing et ta peak week, jusqu'au jour de la compétition.",
+  kinds: [
+    {
+      key: "check",
+      label: "Point de prépa",
+      fields: [
+        { key: "poids", label: "Poids moyen de la semaine", type: "number", unit: "kg", step: 0.1, required: true },
+        { key: "taille", label: "Tour de taille", type: "number", unit: "cm", step: 0.5 },
+        { key: "date_compet", label: "Date de la compétition", type: "text", placeholder: "AAAA-MM-JJ", hint: "Pour compter les semaines restantes" },
+        { key: "condition", label: "Condition ressentie", type: "scale", min: 1, max: 10, hint: "1 = loin, 10 = prêt à monter sur scène" },
+        { key: "faim", label: "Faim", type: "scale", min: 1, max: 10 },
+        { key: "energie", label: "Énergie à l'entraînement", type: "scale", min: 1, max: 10 },
+        { key: "notes", label: "Notes", type: "text" },
+      ],
+      summary: (d) => [`${frNum(num(d.poids) ?? 0)} kg`, num(d.taille) ? `taille ${frNum(num(d.taille)!)} cm` : "", num(d.condition) ? `condition ${num(d.condition)}/10` : ""].filter(Boolean).join(" · "),
+    },
+    {
+      key: "posing",
+      label: "Séance de posing",
+      fields: [
+        { key: "duree", label: "Durée", type: "duration", placeholder: "20", required: true },
+        { key: "pose", label: "Pose travaillée en priorité", type: "select", options: POSES },
+        { key: "tenue", label: "Tenue des poses", type: "scale", min: 1, max: 10, hint: "Facilité à tenir les poses sans trembler" },
+        { key: "notes", label: "À corriger", type: "text", placeholder: "Ouvrir plus les dorsaux, rentrer le ventre au profil..." },
+      ],
+      summary: (d) => [num(d.duree) ? formatDuration(num(d.duree)) : "", d.pose, num(d.tenue) ? `tenue ${num(d.tenue)}/10` : ""].filter(Boolean).join(" · "),
+    },
+    {
+      key: "peak",
+      label: "Jour de peak week",
+      fields: [
+        { key: "jour", label: "Jour", type: "select", options: ["J-7", "J-6", "J-5", "J-4", "J-3", "J-2", "J-1", "Jour J"], required: true },
+        { key: "glucides", label: "Glucides", type: "number", unit: "g" },
+        { key: "eau", label: "Eau", type: "number", unit: "L", step: 0.1 },
+        { key: "sel", label: "Sel", type: "number", unit: "g", step: 0.5 },
+        { key: "poids", label: "Poids au réveil", type: "number", unit: "kg", step: 0.1 },
+        { key: "rendu", label: "Rendu visuel", type: "select", options: ["Plat", "Plein", "Rempli et sec", "Débordé (eau)"] },
+      ],
+      summary: (d) => [d.jour, num(d.glucides) ? `${num(d.glucides)} g glucides` : "", num(d.eau) ? `${frNum(num(d.eau)!)} L d'eau` : "", d.rendu].filter(Boolean).join(" · "),
+    },
+  ],
+  stats: (entries) => {
+    const checks = entries.filter((e) => e.kind === "check").sort((a, b) => a.performed_on.localeCompare(b.performed_on));
+    const last = checks[checks.length - 1];
+    const ref = checks.filter((e) => daysAgo(e.performed_on) >= 21 && daysAgo(e.performed_on) <= 35).pop();
+    let rate: string | null = null;
+    if (last && ref && num(last.data.poids) && num(ref.data.poids)) {
+      const weeks = Math.max(1, (new Date(last.performed_on).getTime() - new Date(ref.performed_on).getTime()) / (7 * 86400000));
+      const pct = ((num(ref.data.poids)! - num(last.data.poids)!) / num(ref.data.poids)! / weeks) * 100;
+      rate = `${pct >= 0 ? "-" : "+"}${frNum(Math.abs(pct))} % par semaine`;
+    }
+    const date = [...checks].reverse().map((e) => String(e.data.date_compet ?? "")).find((v) => /^\d{4}-\d{2}-\d{2}$/.test(v));
+    const weeksLeft = date ? Math.ceil(-daysAgo(date) / 7) : null;
+    const posing = entries.filter((e) => e.kind === "posing" && daysAgo(e.performed_on) < 7).reduce((sum, e) => sum + (num(e.data.duree) ?? 0), 0);
+    return [
+      { label: "Compétition", value: weeksLeft == null ? "date à renseigner" : weeksLeft > 0 ? `dans ${weeksLeft} semaine${weeksLeft > 1 ? "s" : ""}` : "passée" },
+      { label: "Rythme de perte", value: rate ?? "il faut 4 semaines de points" },
+      { label: "Posing (7 j)", value: posing ? formatDuration(posing) : "0" },
+    ];
+  },
+  tip: "Repère courant en sèche : perdre environ 0,5 à 1 % du poids de corps par semaine pour garder le muscle. Le posing se travaille toute la prépa, pas seulement les dernières semaines.",
+};
+
+// ── Grossesse et post-partum ───────────────────────────────────────────
+
+const maternite: Discipline = {
+  key: "maternite",
+  label: "Grossesse et post-partum",
+  menuLabel: "Maternité",
+  description: "Tes séances adaptées, ton périnée et tes signaux à surveiller, semaine après semaine, pendant la grossesse et après l'accouchement. Toujours avec l'accord de ta sage-femme ou de ton médecin.",
+  kinds: [
+    {
+      key: "seance",
+      label: "Séance adaptée",
+      fields: [
+        { key: "phase", label: "Phase", type: "select", options: ["Grossesse", "Post-partum"], required: true },
+        { key: "semaine", label: "Semaine", type: "number", min: 0, max: 60, hint: "Semaine de grossesse ou semaines depuis l'accouchement" },
+        { key: "type", label: "Type de séance", type: "select", options: ["Marche", "Renforcement", "Mobilité et étirements", "Natation", "Vélo", "Respiration et gainage doux", "Autre"], required: true },
+        { key: "duree", label: "Durée", type: "duration", placeholder: "30" },
+        { key: "effort", label: "Effort ressenti", type: "scale", min: 1, max: 10, hint: "Tu dois pouvoir parler pendant l'effort" },
+        { key: "notes", label: "Notes", type: "text" },
+      ],
+      summary: (d) => [d.type, num(d.duree) ? formatDuration(num(d.duree)) : "", num(d.semaine) != null ? `${d.phase === "Post-partum" ? "post-partum" : "grossesse"} sem. ${num(d.semaine)}` : "", num(d.effort) ? `effort ${num(d.effort)}/10` : ""].filter(Boolean).join(" · "),
+    },
+    {
+      key: "perinee",
+      label: "Périnée et signaux",
+      fields: [
+        { key: "exercices", label: "Exercices de périnée", type: "duration", placeholder: "10", hint: "Durée des exercices faits aujourd'hui" },
+        { key: "fuites", label: "Fuites urinaires", type: "select", options: ["Aucune", "À l'effort", "En toussant ou en riant", "Souvent"] },
+        { key: "lourdeur", label: "Sensation de lourdeur pelvienne", type: "scale", min: 0, max: 10, hint: "0 = aucune" },
+        { key: "abdos", label: "Écart des abdos (diastasis)", type: "select", options: ["Non mesuré", "1 doigt", "2 doigts", "3 doigts ou plus"] },
+        { key: "notes", label: "Notes", type: "text" },
+      ],
+      summary: (d) => [num(d.exercices) ? `périnée ${formatDuration(num(d.exercices))}` : "", d.fuites && d.fuites !== "Aucune" ? `fuites : ${String(d.fuites).toLowerCase()}` : "pas de fuite", num(d.lourdeur) ? `lourdeur ${num(d.lourdeur)}/10` : "", d.abdos && d.abdos !== "Non mesuré" ? `diastasis ${d.abdos}` : ""].filter(Boolean).join(" · "),
+    },
+  ],
+  stats: (entries) => {
+    const week = entries.filter((e) => daysAgo(e.performed_on) < 7);
+    const lastSession = entries.find((e) => e.kind === "seance");
+    const alerts = week.filter((e) => e.kind === "perinee" && ((e.data.fuites && e.data.fuites !== "Aucune") || (num(e.data.lourdeur) ?? 0) >= 4)).length;
+    return [
+      { label: "Où tu en es", value: lastSession && num(lastSession.data.semaine) != null ? `${lastSession.data.phase === "Post-partum" ? "Post-partum, semaine" : "Grossesse, semaine"} ${num(lastSession.data.semaine)}` : "à renseigner" },
+      { label: "Séances (7 j)", value: String(week.filter((e) => e.kind === "seance").length) },
+      { label: "Signaux à surveiller (7 j)", value: alerts ? `${alerts}, à signaler à ta sage-femme` : "aucun" },
+    ];
+  },
+  tip: "Arrête la séance et contacte ta sage-femme ou ton médecin en cas de saignement, douleur, vertige, contractions ou perte de liquide. Après l'accouchement, la course et les sauts reprennent après une rééducation du périnée validée.",
+};
+
+export const DISCIPLINES: Discipline[] = [course, hyrox, crossfit, force, reeducation, sante, prepa, maternite];
 export const DISCIPLINE_BY_KEY = Object.fromEntries(DISCIPLINES.map((d) => [d.key, d])) as Record<DisciplineKey, Discipline>;
 
 export function isDisciplineKey(v: unknown): v is DisciplineKey {

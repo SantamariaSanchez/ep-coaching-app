@@ -40,6 +40,8 @@ export type ModuleKey =
   | "perf_force"
   | "perf_reeducation"
   | "perf_sante"
+  | "perf_prepa"
+  | "perf_maternite"
   // Coach
   | "coaching_clients"
   | "contenu"
@@ -62,7 +64,7 @@ export const EMPTY_SETUP: AppSetup = { answers: {}, modules: {}, completed: fals
 /** Modules désactivés par défaut (nouveautés qu'on ne force sur personne). */
 const OFF_BY_DEFAULT: ModuleKey[] = [
   "masse_grasse", "competition", "energie", "humeur", "hydratation", "courbatures", "cardio_repos",
-  "perf_course", "perf_hyrox", "perf_crossfit", "perf_force", "perf_reeducation", "perf_sante",
+  "perf_course", "perf_hyrox", "perf_crossfit", "perf_force", "perf_reeducation", "perf_sante", "perf_prepa", "perf_maternite",
 ];
 
 /** Disciplines du moteur Performances, avec leur module. */
@@ -73,6 +75,8 @@ export const PERF_MODULES = {
   force: "perf_force",
   reeducation: "perf_reeducation",
   sante: "perf_sante",
+  prepa: "perf_prepa",
+  maternite: "perf_maternite",
 } as const satisfies Record<string, ModuleKey>;
 
 /** Disciplines actives pour cette personne (ordre fixe). */
@@ -121,6 +125,7 @@ export const PRACTICE_OPTIONS: ChoiceOption[] = [
   { value: "crossfit", label: "CrossFit", hint: "WOD, benchmarks, haltéro" },
   { value: "reeducation", label: "Rééducation, reprise après blessure", hint: "Douleur, amplitude, séances" },
   { value: "sante", label: "Suivi santé renforcé", hint: "Tension, prises de sang" },
+  { value: "maternite", label: "Grossesse ou post-partum", hint: "Séances adaptées, périnée" },
 ];
 
 /** Questions "suivi perso" : membres, clients, et l'espace Moi des coachs. */
@@ -139,6 +144,8 @@ export const MEMBER_QUESTIONS: SetupQuestion[] = [
       perf_force: has(a, "force"),
       perf_reeducation: has(a, "reeducation"),
       perf_sante: has(a, "sante"),
+      perf_prepa: has(a, "bodybuilding_compet"),
+      perf_maternite: has(a, "maternite"),
       ...(has(a, "bodybuilding_compet") ? { competition: true, photos: true, masse_grasse: true } : {}),
       ...(has(a, "perte_gras") ? { poids: true, pas: true } : {}),
     }),

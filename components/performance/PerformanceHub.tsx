@@ -171,19 +171,26 @@ export default function PerformanceHub({
   );
 }
 
+// Pratique du questionnaire Mon appli qui active chaque discipline (le plus
+// souvent la même clé ; la prépa vient de « Bodybuilding de compétition »).
+const PRACTICE_OF: Partial<Record<DisciplineKey, string>> = { prepa: "bodybuilding_compet" };
+const practiceOf = (k: DisciplineKey) => PRACTICE_OF[k] ?? k;
+
 function PracticePicker({ current, onSave, pending, error }: { current: string[]; onSave: (l: string[]) => void; pending: boolean; error: string | null }) {
-  const [sel, setSel] = useState<string[]>(current.filter((c) => c in DISCIPLINE_BY_KEY));
+  const practices = new Set(DISCIPLINES.map((d) => practiceOf(d.key)));
+  const [sel, setSel] = useState<string[]>(current.filter((c) => practices.has(c)));
   return (
     <div className="space-y-3">
       <p className="text-sm text-[#F5EDED]/70 leading-relaxed">Choisis ta ou tes disciplines : l&apos;appli ajoute les bons outils (allure, stations Hyrox, WOD, 1RM, douleur, tension...) et rien d&apos;autre.</p>
       <div className="grid sm:grid-cols-2 gap-2">
         {DISCIPLINES.map((d) => {
-          const on = sel.includes(d.key);
+          const value = practiceOf(d.key);
+          const on = sel.includes(value);
           return (
             <button
               key={d.key}
               aria-pressed={on}
-              onClick={() => setSel((s) => (on ? s.filter((x) => x !== d.key) : [...s, d.key]))}
+              onClick={() => setSel((s) => (on ? s.filter((x) => x !== value) : [...s, value]))}
               className={`text-left rounded-xl border p-3 min-h-[64px] ${on ? "border-[#E01E1E] bg-[#E01E1E]/15" : "border-[#890404]/35 bg-[#1f0101]"}`}
             >
               <p className="text-sm font-bold text-white">{d.label}</p>
@@ -195,7 +202,7 @@ function PracticePicker({ current, onSave, pending, error }: { current: string[]
       {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
       <button
         disabled={pending || sel.length === 0}
-        onClick={() => onSave([...new Set([...current.filter((c) => !(c in DISCIPLINE_BY_KEY)), ...sel])])}
+        onClick={() => onSave([...new Set([...current.filter((c) => !practices.has(c)), ...sel])])}
         className="w-full min-h-[46px] rounded-xl bg-[#E01E1E] disabled:opacity-40 text-white text-sm font-bold"
       >
         Activer
