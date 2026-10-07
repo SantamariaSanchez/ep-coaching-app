@@ -121,6 +121,11 @@ export function dots(totalKg: number, bodyweightKg: number, woman: boolean): num
   return denom > 0 ? Math.round(((totalKg * 500) / denom) * 10) / 10 : null;
 }
 
+/** Nombre à la française (21,2). */
+export function frNum(n: number, digits = 1): string {
+  return n.toLocaleString("fr-FR", { maximumFractionDigits: digits });
+}
+
 function daysAgo(dateIso: string): number {
   return (Date.now() - new Date(dateIso + "T12:00:00Z").getTime()) / 86400000;
 }
@@ -163,13 +168,13 @@ const course: Discipline = {
       summary: (d) => {
         const km = num(d.distance_km);
         const sec = num(d.duree);
-        return [d.type, km ? `${km} km` : "", sec ? formatDuration(sec) : "", pace(km, sec)].filter(Boolean).join(" · ");
+        return [d.type, km ? `${frNum(km, 2)} km` : "", sec ? formatDuration(sec) : "", pace(km, sec)].filter(Boolean).join(" · ");
       },
       records: (d) => {
         const km = num(d.distance_km);
         const sec = num(d.duree);
         const out: RecordLine[] = [];
-        if (km) out.push({ key: "longue", label: "Plus longue sortie", value: km, display: `${km} km`, better: "higher" });
+        if (km) out.push({ key: "longue", label: "Plus longue sortie", value: km, display: `${frNum(km, 2)} km`, better: "higher" });
         if (km && sec) {
           for (const [key, label, dist] of RUN_DISTANCES) {
             if (Math.abs(km - dist) / dist <= 0.02) out.push({ key, label, value: sec, display: formatDuration(sec), better: "lower" });
@@ -184,8 +189,8 @@ const course: Discipline = {
     const month = entries.filter((e) => daysAgo(e.performed_on) < 28);
     const km = (list: PerformanceEntry[]) => list.reduce((s, e) => s + (num(e.data.distance_km) ?? 0), 0);
     return [
-      { label: "Km cette semaine", value: `${Math.round(km(week) * 10) / 10}` },
-      { label: "Moyenne / semaine (4 sem.)", value: `${Math.round((km(month) / 4) * 10) / 10} km` },
+      { label: "Km cette semaine", value: frNum(km(week)) },
+      { label: "Moyenne / semaine (4 sem.)", value: `${frNum(km(month) / 4)} km` },
       { label: "Sorties cette semaine", value: String(week.length) },
     ];
   },
@@ -356,7 +361,7 @@ const force: Discipline = {
     const score = total && ctx.bodyweightKg ? dots(total, ctx.bodyweightKg, ctx.isWoman) : null;
     return [
       { label: "Total estimé (SBD)", value: total ? `${Math.round(total)} kg` : "à compléter" },
-      { label: "Score DOTS", value: score ? String(score) : ctx.bodyweightKg ? "à compléter" : "pèse-toi d'abord" },
+      { label: "Score DOTS", value: score ? frNum(score) : ctx.bodyweightKg ? "à compléter" : "pèse-toi d'abord" },
       { label: "Séries notées (30 j)", value: String(entries.filter((e) => daysAgo(e.performed_on) < 30).length) },
     ];
   },
@@ -400,7 +405,7 @@ const reeducation: Discipline = {
   stats: (entries) => {
     const pain = (from: number, to: number) => {
       const list = entries.filter((e) => e.kind === "douleur" && daysAgo(e.performed_on) >= from && daysAgo(e.performed_on) < to).map((e) => num(e.data.intensite) ?? 0);
-      return list.length ? Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10) / 10 : null;
+      return list.length ? frNum(list.reduce((a, b) => a + b, 0) / list.length) : null;
     };
     const now = pain(0, 7);
     const before = pain(7, 14);
