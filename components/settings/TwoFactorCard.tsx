@@ -44,14 +44,14 @@ export default function TwoFactorCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <p className="text-sm font-semibold text-white">
-            {enabled ? "Activée" : "Non activée"}
+            {enabled ? t("Activée") : t("Non activée")}
           </p>
           <p className="text-[11px] text-[#F5EDED]/40 mt-1 leading-relaxed">
             {enabled
-              ? "Un code à 6 chiffres est demandé à chaque connexion, en plus du mot de passe."
+              ? t("Un code à 6 chiffres est demandé à chaque connexion, en plus du mot de passe.")
               : mandatory
-                ? "Obligatoire sur ce compte : il donne accès à l'ensemble de la plateforme."
-                : "Ajoute un code à 6 chiffres à la connexion. Même avec ton mot de passe, personne ne peut entrer sans ton téléphone."}
+                ? t("Obligatoire sur ce compte : il donne accès à l'ensemble de la plateforme.")
+                : t("Ajoute un code à 6 chiffres à la connexion. Même avec ton mot de passe, personne ne peut entrer sans ton téléphone.")}
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export default function TwoFactorCard({
           disabled={busy}
           className="flex items-center justify-center gap-2 w-full mt-4 py-2.5 text-[#F5EDED]/25 hover:text-red-400 font-bold text-[11px] uppercase tracking-widest transition-colors"
         >
-          <ShieldOff size={12} /> {busy ? "Désactivation…" : "Désactiver"}
+          <ShieldOff size={12} /> {busy ? t("Désactivation…") : t("Désactiver")}
         </button>
       )}
     </div>

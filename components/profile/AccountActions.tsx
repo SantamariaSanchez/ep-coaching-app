@@ -101,7 +101,7 @@ export default function AccountActions({
         <div className="flex items-center gap-2.5">
           <Lock size={14} className="text-[#F5EDED]/40" />
           <span className="text-sm text-white font-medium">
-            {resetSent ? "Email envoyé !" : "Changer mon mot de passe"}
+            {resetSent ? t("Email envoyé !") : t("Changer mon mot de passe")}
           </span>
         </div>
         <ChevronRight size={13} className="text-[#F5EDED]/20" />
@@ -133,7 +133,7 @@ export default function AccountActions({
                   disabled={emailChangeSending || !newEmail.trim()}
                   className="flex-1 bg-[#E01E1E]/15 hover:bg-[#E01E1E]/25 border border-[#E01E1E]/30 disabled:opacity-50 rounded-lg py-2 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
                 >
-                  {emailChangeSending ? "Envoi…" : "Envoyer le lien de confirmation"}
+                  {emailChangeSending ? t("Envoi…") : t("Envoyer le lien de confirmation")}
                 </button>
                 <button
                   onClick={() => {
@@ -191,7 +191,7 @@ export default function AccountActions({
         className="flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-[#F5EDED]/25 hover:text-[#E01E1E] disabled:opacity-50 font-bold text-[11px] uppercase tracking-widest transition-colors"
       >
         <ShieldOff size={12} />
-        {signingOutEverywhere ? "Déconnexion…" : "Se déconnecter partout"}
+        {signingOutEverywhere ? t("Déconnexion…") : t("Se déconnecter partout")}
       </button>
 
       {confirmingDelete ? (
@@ -209,7 +209,7 @@ export default function AccountActions({
               disabled={deleting}
               className="flex-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 disabled:opacity-50 rounded-lg py-2.5 text-red-300 font-bold text-xs uppercase tracking-widest transition-colors"
             >
-              {deleting ? "Suppression…" : "Confirmer la suppression"}
+              {deleting ? t("Suppression…") : t("Confirmer la suppression")}
             </button>
             <button
               onClick={() => {

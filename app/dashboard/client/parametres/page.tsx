@@ -111,7 +111,7 @@ export default async function ClientParametresPage() {
         {
           id: "securite",
           title: "Compte et sécurité",
-          keywords: "compte email mot de passe déconnexion supprimer exporter données double authentification 2fa sécurité",
+          keywords: "compte email mot de passe déconnexion déconnecter partout appareils sessions supprimer exporter données double authentification 2fa sécurité",
           node: (
             <>
               <AccountActions email={profile.email} signOutRedirect="/auth/client" />
@@ -123,10 +123,10 @@ export default async function ClientParametresPage() {
         {
           id: "appareil",
           title: "Appareil et à propos",
-          keywords: "cache version mise à jour appareil déconnecter partout sessions mentions légales cgu confidentialité",
+          keywords: "cache version mise à jour appareil mentions légales cgu confidentialité",
           node: (
             <>
-              <DeviceAboutCard version={appVersion()} signOutRedirect="/auth/client" />
+              <DeviceAboutCard version={appVersion()} />
               <LegalLinksCard />
             </>
           ),

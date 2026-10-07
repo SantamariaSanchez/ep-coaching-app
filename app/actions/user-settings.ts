@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getUser } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { createServerSupabase } from "@/lib/supabase-server";
 import { isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
 
 // Réglages du compte (table user_settings) : langue et baisse automatique
@@ -54,17 +53,6 @@ export async function setPantryAutoAction(enabled: boolean): Promise<{ error?: s
   if (error) {
     console.error("setPantryAutoAction error:", error);
     return { error: "Enregistrement impossible, réessaie." };
-  }
-  return {};
-}
-
-/** Déconnecte la personne de tous ses appareils (téléphone perdu, ordinateur partagé). */
-export async function signOutEverywhereAction(): Promise<{ error?: string }> {
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.auth.signOut({ scope: "global" });
-  if (error) {
-    console.error("signOutEverywhereAction error:", error);
-    return { error: "Déconnexion impossible, réessaie." };
   }
   return {};
 }

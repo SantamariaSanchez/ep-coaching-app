@@ -61,7 +61,7 @@ export default function InviteLinkCard({ inviteCode }: { inviteCode: string | nu
               }}
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? "Copié" : "Copier"}
+              {copied ? t("Copié") : t("Copier")}
             </button>
           </div>
         ) : (
@@ -75,7 +75,7 @@ export default function InviteLinkCard({ inviteCode }: { inviteCode: string | nu
               textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer",
             }}
           >
-            {loading ? "Génération..." : "Générer mon lien"}
+            {loading ? t("Génération...") : t("Générer mon lien")}
           </button>
         )}
       </div>

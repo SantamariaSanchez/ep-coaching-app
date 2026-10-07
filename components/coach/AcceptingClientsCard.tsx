@@ -72,12 +72,12 @@ export default function AcceptingClientsCard({
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
-              {accepting ? "Tu acceptes de nouveaux clients" : "Complet, liste d'attente active"}
+              {accepting ? t("Tu acceptes de nouveaux clients") : t("Complet, liste d'attente active")}
             </p>
             <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
               {accepting
-                ? "Désactive si tu es à capacité, les membres verront rejoindre une liste d'attente."
-                : "Les membres non-clients voient un bouton pour rejoindre ta liste d'attente."}
+                ? t("Désactive si tu es à capacité, les membres verront rejoindre une liste d'attente.")
+                : t("Les membres non-clients voient un bouton pour rejoindre ta liste d'attente.")}
             </p>
           </div>
           <button
@@ -116,7 +116,7 @@ export default function AcceptingClientsCard({
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED" }}>
-                        {entry.member_name ?? "Sans nom"}
+                        {entry.member_name ?? t("Sans nom")}
                       </p>
                       {entry.note && (
                         <p style={{ margin: "1px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{entry.note}</p>

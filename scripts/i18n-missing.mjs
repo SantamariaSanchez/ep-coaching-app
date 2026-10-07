@@ -36,6 +36,8 @@ const DATA_FILES = [
   "lib/accessibility.ts",
   "components/coach/MyPlatformSubscriptionCard.tsx",
   "components/settings/LegalLinksCard.tsx",
+  "lib/app-setup.ts",
+  "components/settings/LanguageDisplayCard.tsx",
 ];
 for (const f of DATA_FILES) {
   const src = readFileSync(f, "utf8");

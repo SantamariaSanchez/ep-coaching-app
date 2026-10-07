@@ -44,12 +44,12 @@ export default function PrivacyCard({ initialVisible }: { initialVisible: boolea
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
-              {visible ? "Visible dans l'annuaire public des coachs" : "Masqué de l'annuaire public"}
+              {visible ? t("Visible dans l'annuaire public des coachs") : t("Masqué de l'annuaire public")}
             </p>
             <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
               {visible
-                ? "N'importe quel visiteur de /coachs peut te trouver et te contacter."
-                : "Personne ne te trouve depuis /coachs. Tes clients déjà liés à toi ne sont pas affectés."}
+                ? t("N'importe quel visiteur de /coachs peut te trouver et te contacter.")
+                : t("Personne ne te trouve depuis /coachs. Tes clients déjà liés à toi ne sont pas affectés.")}
             </p>
           </div>
           <button

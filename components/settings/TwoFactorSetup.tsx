@@ -159,7 +159,7 @@ export default function TwoFactorSetup({
           className="flex items-center justify-center gap-2 w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 rounded-lg py-3 text-white font-bold text-xs uppercase tracking-widest transition-colors"
         >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
-          {busy ? "Préparation…" : "Activer la double authentification"}
+          {busy ? t("Préparation…") : t("Activer la double authentification")}
         </button>
       </div>
     );
@@ -216,7 +216,7 @@ export default function TwoFactorSetup({
         className="flex items-center justify-center gap-2 w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 rounded-lg py-3 text-white font-bold text-xs uppercase tracking-widest transition-colors"
       >
         {busy ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
-        {busy ? "Vérification…" : "Confirmer et activer"}
+        {busy ? t("Vérification…") : t("Confirmer et activer")}
       </button>
     </div>
   );

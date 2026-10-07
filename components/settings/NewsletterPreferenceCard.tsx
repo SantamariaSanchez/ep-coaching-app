@@ -50,7 +50,7 @@ export default function NewsletterPreferenceCard({ initialSubscribed }: { initia
             disabled={isPending}
             className="flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-[#E01E1E] border border-[#E01E1E]/40 rounded-lg px-3 py-2 disabled:opacity-50"
           >
-            {isPending ? "..." : "S'inscrire"}
+            {isPending ? "..." : t("S'inscrire")}
           </button>
         )}
       </div>

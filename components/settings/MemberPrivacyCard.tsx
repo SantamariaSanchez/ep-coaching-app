@@ -45,12 +45,12 @@ export default function MemberPrivacyCard({ initialVisible }: { initialVisible: 
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
-              {visible ? "Visible dans le classement communautaire" : "Masqué du classement communautaire"}
+              {visible ? t("Visible dans le classement communautaire") : t("Masqué du classement communautaire")}
             </p>
             <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
               {visible
-                ? "Les autres membres voient ton nom, ta photo et tes points dans le classement."
-                : "Les autres membres ne te voient plus dans le classement. Toi, tu gardes ta position et tu continues de gagner des points."}
+                ? t("Les autres membres voient ton nom, ta photo et tes points dans le classement.")
+                : t("Les autres membres ne te voient plus dans le classement. Toi, tu gardes ta position et tu continues de gagner des points.")}
             </p>
           </div>
           <button

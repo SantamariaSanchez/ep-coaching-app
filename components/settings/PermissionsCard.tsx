@@ -231,7 +231,7 @@ export default function PermissionsCard({
             <div>
               <p className="text-sm font-semibold text-white">{tr("Notifications push")}</p>
               <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
-                {push ? "Activées sur cet appareil" : "Non activées"}
+                {push ? tr("Activées sur cet appareil") : tr("Non activées")}
               </p>
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function PermissionsCard({
               disabled={pushLoading}
               className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
             >
-              <Bell size={12} /> {pushLoading ? "Activation…" : "Activer"}
+              <Bell size={12} /> {pushLoading ? tr("Activation…") : tr("Activer")}
             </button>
           )}
         </div>
@@ -298,10 +298,10 @@ export default function PermissionsCard({
             className="flex items-center gap-1.5 mt-3 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
           >
             <Send size={11} />
-            {testPushState === "sending" && "Envoi…"}
-            {testPushState === "sent" && "Envoyée, regarde ton appareil"}
-            {testPushState === "error" && "Échec, réessaie"}
-            {testPushState === "idle" && "M'envoyer une notification de test"}
+            {testPushState === "sending" && tr("Envoi…")}
+            {testPushState === "sent" && tr("Envoyée, regarde ton appareil")}
+            {testPushState === "error" && tr("Échec, réessaie")}
+            {testPushState === "idle" && tr("M'envoyer une notification de test")}
           </button>
         )}
 
@@ -323,7 +323,7 @@ export default function PermissionsCard({
             className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
           >
             <Bell size={11} />
-            {pushLoading ? "Réactivation…" : "Le test n'arrive pas ? Réactiver les notifications"}
+            {pushLoading ? tr("Réactivation…") : tr("Le test n'arrive pas ? Réactiver les notifications")}
           </button>
         )}
       </div>
@@ -337,7 +337,7 @@ export default function PermissionsCard({
           <div>
             <p className="text-sm font-semibold text-white">{tr("Mouvement (podomètre)")}</p>
             <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
-              {pedometerEnabled ? "Activé, réglages dans Steps" : "Non activé"}
+              {pedometerEnabled ? tr("Activé, réglages dans Steps") : tr("Non activé")}
             </p>
           </div>
         </div>
@@ -356,10 +356,10 @@ export default function PermissionsCard({
             <p className="text-sm font-semibold text-white">{tr("Photos & vidéo")}</p>
             <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
               {cameraStatus === "granted"
-                ? "Autorisées sur cet appareil"
+                ? tr("Autorisées sur cet appareil")
                 : cameraStatus === "denied"
-                  ? "Refusées, à réactiver dans les réglages du navigateur"
-                  : "Utilisées pour filmer tes scripts/vidéos"}
+                  ? tr("Refusées, à réactiver dans les réglages du navigateur")
+                  : tr("Utilisées pour filmer tes scripts/vidéos")}
             </p>
           </div>
         </div>
@@ -373,7 +373,7 @@ export default function PermissionsCard({
             disabled={cameraLoading}
             className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
           >
-            <Camera size={12} /> {cameraLoading ? "Activation…" : "Autoriser"}
+            <Camera size={12} /> {cameraLoading ? tr("Activation…") : tr("Autoriser")}
           </button>
         )}
       </div>
@@ -385,10 +385,10 @@ export default function PermissionsCard({
             <p className="text-sm font-semibold text-white">{tr("Localisation")}</p>
             <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
               {locationStatus === "granted"
-                ? "Autorisée sur cet appareil"
+                ? tr("Autorisée sur cet appareil")
                 : locationStatus === "denied"
-                  ? "Refusée, à réactiver dans les réglages du navigateur"
-                  : "Utilisée pour te proposer une salle/un coach à proximité"}
+                  ? tr("Refusée, à réactiver dans les réglages du navigateur")
+                  : tr("Utilisée pour te proposer une salle/un coach à proximité")}
             </p>
           </div>
         </div>
@@ -402,7 +402,7 @@ export default function PermissionsCard({
             disabled={locationLoading}
             className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
           >
-            <MapPin size={12} /> {locationLoading ? "Activation…" : "Autoriser"}
+            <MapPin size={12} /> {locationLoading ? tr("Activation…") : tr("Autoriser")}
           </button>
         )}
       </div>

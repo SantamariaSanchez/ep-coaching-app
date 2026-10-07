@@ -80,7 +80,7 @@ export default function TwoFactorChallenge({ redirectTo }: { redirectTo: string 
         className="flex items-center justify-center gap-2 w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 rounded-lg py-3.5 text-white font-bold text-xs uppercase tracking-widest transition-colors"
       >
         {busy ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
-        {busy ? "Vérification…" : "Valider"}
+        {busy ? t("Vérification…") : t("Valider")}
       </button>
 
       <button

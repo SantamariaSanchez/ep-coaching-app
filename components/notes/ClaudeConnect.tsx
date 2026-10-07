@@ -56,7 +56,7 @@ export default function ClaudeConnect({ tokens }: { tokens: { id: string; name: 
                 }}
                 style={{ marginTop: 6, padding: "9px 13px", borderRadius: 10, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, cursor: "pointer" }}
               >
-                {pending ? "..." : "Générer mon adresse de connecteur"}
+                {pending ? "..." : tr("Générer mon adresse de connecteur")}
               </button>
               {url && (
                 <div style={{ marginTop: 8, padding: 10, borderRadius: 10, background: "rgba(0,0,0,0.35)", border: "1px solid rgba(224,30,30,0.35)" }}>
@@ -68,7 +68,7 @@ export default function ClaudeConnect({ tokens }: { tokens: { id: string; name: 
                     }}
                     style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 9, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "#F5EDED", fontSize: 11.5, fontWeight: 800, cursor: "pointer" }}
                   >
-                    {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? "Copiée" : "Copier"}
+                    {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? tr("Copiée") : tr("Copier")}
                   </button>
                   <p style={{ fontSize: 11, color: "#facc15", margin: "8px 0 0" }}>{tr("Garde-la pour toi : elle ne sera plus affichée.")}</p>
                 </div>
@@ -94,7 +94,7 @@ export default function ClaudeConnect({ tokens }: { tokens: { id: string; name: 
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "rgba(245,237,237,0.75)", marginBottom: 4 }}>
                   <span style={{ flex: 1 }}>
                     {t.name}{" "}{tr("· créée le")}{" "}{new Date(t.created_at).toLocaleDateString("fr-FR")}
-                    {t.last_used_at ? ` · utilisée le ${new Date(t.last_used_at).toLocaleDateString("fr-FR")}` : " · jamais utilisée"}
+                    {t.last_used_at ? ` · utilisée le ${new Date(t.last_used_at).toLocaleDateString("fr-FR")}` : tr(" · jamais utilisée")}
                   </span>
                   <button
                     type="button"

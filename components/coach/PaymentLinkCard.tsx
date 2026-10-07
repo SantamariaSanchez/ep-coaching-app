@@ -47,7 +47,7 @@ export default function PaymentLinkCard({ initialLink }: { initialLink: string |
           style={{ flex: 1 }}
         />
         <button onClick={handleSave} disabled={isPending} className="ep-btn-primary" style={{ fontSize: 11 }}>
-          {saved ? <Check size={14} /> : isPending ? "..." : "Enregistrer"}
+          {saved ? <Check size={14} /> : isPending ? "..." : t("Enregistrer")}
         </button>
       </div>
       {error && <p className="text-red-400 text-xs font-semibold mt-3">{error}</p>}

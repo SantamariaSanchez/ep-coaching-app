@@ -50,7 +50,7 @@ export default function MyPlatformSubscriptionCard({ billing }: { billing: Coach
           </span>
           {billing.amount != null && (
             <span className="text-xs text-[#F5EDED]/55">
-              {billing.amount}€ / {billing.intervalMonths === 1 ? "mois" : `${billing.intervalMonths} mois`}
+              {billing.amount}€ / {billing.intervalMonths === 1 ? t("mois") : `${billing.intervalMonths} mois`}
             </span>
           )}
           {billing.status === "trialing" && billing.trialEnd && (
