@@ -77,19 +77,19 @@ export default function PerformanceHub({
               onClick={() => setActive(k)}
               className={`shrink-0 min-h-[40px] px-4 rounded-full text-xs font-bold border ${k === discipline.key ? "bg-[#E01E1E] border-[#E01E1E] text-white" : "border-[#890404]/40 text-[#F5EDED]/65"}`}
             >
-              {DISCIPLINE_BY_KEY[k].menuLabel}
+              {t(DISCIPLINE_BY_KEY[k].menuLabel)}
             </button>
           ))}
         </div>
       )}
 
-      <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{discipline.description}</p>
+      <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{t(discipline.description)}</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {stats.map((s) => (
           <div key={s.label} className="rounded-xl bg-[#1f0101] border border-[#890404]/25 px-3 py-3">
             <p className="text-lg font-black text-white leading-tight">{s.value}</p>
-            <p className="text-[10px] uppercase tracking-wider font-bold text-[#F5EDED]/40 mt-1">{s.label}</p>
+            <p className="text-[10px] uppercase tracking-wider font-bold text-[#F5EDED]/40 mt-1">{t(s.label)}</p>
           </div>
         ))}
       </div>
@@ -107,7 +107,7 @@ export default function PerformanceHub({
           <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
             {records.map((r) => (
               <li key={r.key} className="flex items-baseline justify-between gap-2 text-sm">
-                <span className="text-[#F5EDED]/70 truncate">{r.label}</span>
+                <span className="text-[#F5EDED]/70 truncate">{t(r.label)}</span>
                 <span className="font-bold text-white whitespace-nowrap">{r.display} <span className="text-[10px] font-normal text-[#F5EDED]/35">{frDate(r.date)}</span></span>
               </li>
             ))}
@@ -147,12 +147,12 @@ export default function PerformanceHub({
         )}
       </section>
 
-      {discipline.tip && <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed border-l-2 border-[#E01E1E]/60 pl-3">{discipline.tip}</p>}
+      {discipline.tip && <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed border-l-2 border-[#E01E1E]/60 pl-3">{t(discipline.tip)}</p>}
 
       {adding && (
         <EntrySheet
           kinds={discipline.kinds}
-          title={`Nouvelle saisie : ${discipline.menuLabel}`}
+          title={`${t("Nouvelle saisie")} : ${t(discipline.menuLabel)}`}
           pending={pending}
           onClose={() => setAdding(false)}
           onSubmit={(kind, date, data) =>
@@ -196,8 +196,8 @@ function PracticePicker({ current, onSave, pending, error }: { current: string[]
               onClick={() => setSel((s) => (on ? s.filter((x) => x !== value) : [...s, value]))}
               className={`text-left rounded-xl border p-3 min-h-[64px] ${on ? "border-[#E01E1E] bg-[#E01E1E]/15" : "border-[#890404]/35 bg-[#1f0101]"}`}
             >
-              <p className="text-sm font-bold text-white">{d.label}</p>
-              <p className="text-[11px] text-[#F5EDED]/50 leading-snug mt-0.5">{d.description}</p>
+              <p className="text-sm font-bold text-white">{t(d.label)}</p>
+              <p className="text-[11px] text-[#F5EDED]/50 leading-snug mt-0.5">{t(d.description)}</p>
             </button>
           );
         })}
@@ -233,7 +233,7 @@ function EntrySheet({ kinds, title, onClose, onSubmit, pending, error }: { kinds
           <div className="flex gap-1.5 mb-3 flex-wrap" role="radiogroup" aria-label={t("Type de saisie")}>
             {kinds.map((k) => (
               <button key={k.key} role="radio" aria-checked={k.key === kindKey} onClick={() => { setKindKey(k.key); setValues({}); }} className={`min-h-[38px] px-3 rounded-full text-xs font-bold border ${k.key === kindKey ? "bg-[#E01E1E] border-[#E01E1E] text-white" : "border-[#890404]/40 text-[#F5EDED]/65"}`}>
-                {k.label}
+                {t(k.label)}
               </button>
             ))}
           </div>
@@ -260,7 +260,7 @@ function FieldInput({ field, value, onChange }: { field: FieldDef; value: string
   const t = useT();
   const label = (
     <span className="text-xs font-bold text-[#F5EDED]/70">
-      {field.label}
+      {t(field.label)}
       {field.unit ? ` (${field.unit})` : ""}
       {field.required ? "" : <span className="font-normal text-[#F5EDED]/35">{" "}{t("· facultatif")}</span>}
     </span>
@@ -272,11 +272,11 @@ function FieldInput({ field, value, onChange }: { field: FieldDef; value: string
         <div className="mt-1 flex flex-wrap gap-1.5">
           {field.options?.map((o) => (
             <button key={o} type="button" aria-pressed={value === o} onClick={() => onChange(value === o ? "" : o)} className={`min-h-[36px] px-3 rounded-full text-xs border ${value === o ? "bg-[#E01E1E]/25 border-[#E01E1E] text-white font-bold" : "border-[#890404]/40 text-[#F5EDED]/65"}`}>
-              {o}
+              {t(o)}
             </button>
           ))}
         </div>
-        {field.hint && <span className="block mt-1 text-[10px] text-[#F5EDED]/40">{field.hint}</span>}
+        {field.hint && <span className="block mt-1 text-[10px] text-[#F5EDED]/40">{t(field.hint)}</span>}
       </div>
     );
   }
@@ -293,7 +293,7 @@ function FieldInput({ field, value, onChange }: { field: FieldDef; value: string
             </button>
           ))}
         </div>
-        {field.hint && <span className="block mt-1 text-[10px] text-[#F5EDED]/40">{field.hint}</span>}
+        {field.hint && <span className="block mt-1 text-[10px] text-[#F5EDED]/40">{t(field.hint)}</span>}
       </div>
     );
   }
@@ -310,7 +310,7 @@ function FieldInput({ field, value, onChange }: { field: FieldDef; value: string
         onChange={(e) => onChange(e.target.value)}
         className="mt-1 w-full h-11 rounded-xl bg-[#150000] border border-[#890404]/40 px-3 text-sm text-white placeholder:text-[#F5EDED]/25"
       />
-      {field.hint && <span className="block mt-1 text-[10px] text-[#F5EDED]/40">{field.hint}</span>}
+      {field.hint && <span className="block mt-1 text-[10px] text-[#F5EDED]/40">{t(field.hint)}</span>}
     </label>
   );
 }
