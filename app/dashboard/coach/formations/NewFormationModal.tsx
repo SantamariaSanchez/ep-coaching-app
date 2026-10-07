@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import { X, AlertCircle } from "lucide-react";
 
@@ -19,6 +20,7 @@ export default function NewFormationModal({
   onCreate: (title: string, emoji: string) => Promise<{ error?: string; id?: string }>;
   onClose: () => void;
 }) {
+  const t = useT();
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("📚");
   const [creating, setCreating] = useState(false);
@@ -51,8 +53,8 @@ export default function NewFormationModal({
       <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
       <div className="ep-modal-panel relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl z-10">
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20">
-          <p className="text-sm font-bold text-white">Nouvelle formation</p>
-          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
+          <p className="text-sm font-bold text-white">{t("Nouvelle formation")}</p>
+          <button onClick={onClose} aria-label={t("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
             <X size={16} />
           </button>
         </div>
@@ -60,26 +62,26 @@ export default function NewFormationModal({
         <div className="px-5 pt-4 pb-2 flex gap-3">
           <div className="w-16 flex-shrink-0">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Emoji
+              {t("Emoji")}
             </label>
             <input
               value={emoji}
               onChange={(e) => setEmoji(e.target.value)}
               maxLength={4}
-              aria-label="Emoji de la formation"
+              aria-label={t("Emoji de la formation")}
               className={`${inputCls} text-center text-lg`}
             />
           </div>
           <div className="flex-1 min-w-0">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Titre
+              {t("Titre")}
             </label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-              placeholder="Ex : Mobilité & prévention"
-              aria-label="Titre de la formation"
+              placeholder={t("Ex : Mobilité & prévention")}
+              aria-label={t("Titre de la formation")}
               autoFocus
               className={inputCls}
             />
@@ -98,14 +100,14 @@ export default function NewFormationModal({
             onClick={onClose}
             className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-[#F5EDED]/40 hover:text-white transition-colors"
           >
-            Annuler
+            {t("Annuler")}
           </button>
           <button
             onClick={handleCreate}
             disabled={creating || !title.trim()}
             className="flex-1 py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
           >
-            {creating ? "Création…" : "Créer"}
+            {creating ? t("Création…") : t("Créer")}
           </button>
         </div>
       </div>

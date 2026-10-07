@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
@@ -7,6 +8,7 @@ import { createFormation } from "./actions";
 import NewFormationModal from "./NewFormationModal";
 
 export default function NewFormationButton() {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -24,7 +26,7 @@ export default function NewFormationButton() {
         style={{ marginBottom: 16, alignSelf: "flex-start" }}
       >
         <Plus size={14} />
-        Nouvelle formation
+        {t("Nouvelle formation")}
       </button>
       {open && <NewFormationModal onCreate={handleCreate} onClose={() => setOpen(false)} />}
     </>

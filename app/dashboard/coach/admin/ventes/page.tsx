@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -24,6 +25,7 @@ function StatCard({ label, value, sub, color = "#F5EDED" }: { label: string; val
 // portefeuille, RLS sur coach_id = auth.uid()), pas au seul propriétaire de
 // plateforme, contrairement à /admin/leads qui est une donnée plateforme.
 export default async function SalesCallsPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -47,16 +49,16 @@ export default async function SalesCallsPage() {
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Retour
+        {t("Retour")}
       </Link>
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Vente
+          {t("Vente")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Appels de vente</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Appels de vente")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Un appel = une ligne. Coche show up et closing une fois l&apos;appel passé, note le CA si signé.
+          {t("Un appel = une ligne. Coche show up et closing une fois l'appel passé, note le CA si signé.")}
         </p>
       </div>
 

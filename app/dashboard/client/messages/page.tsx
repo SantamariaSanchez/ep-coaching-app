@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 ﻿import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed, isClientCapable, roleBadge } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -26,6 +27,7 @@ async function canMemberSend(coachId: string, clientId: string): Promise<boolean
 }
 
 export default async function ClientMessagesPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -43,17 +45,17 @@ export default async function ClientMessagesPage() {
           <Users size={22} className="text-[#F5EDED]/25" strokeWidth={1.5} />
         </div>
         <p className="text-[#F5EDED]/60 text-sm font-semibold mb-1">
-          Tu n&apos;as pas encore de coach.
+          {t("Tu n'as pas encore de coach.")}
         </p>
         <p className="text-[#F5EDED]/35 text-xs mb-5">
-          Choisis un coach pour pouvoir lui écrire directement.
+          {t("Choisis un coach pour pouvoir lui écrire directement.")}
         </p>
         <Link
           href="/dashboard/client/coachs"
           className="ep-btn-primary"
           style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, textDecoration: "none" }}
         >
-          Trouver un coach
+          {t("Trouver un coach")}
           <ChevronRight size={14} />
         </Link>
       </div>
@@ -102,13 +104,13 @@ export default async function ClientMessagesPage() {
             <RoleBadge label={coachBadge} />
             {coachIsAI && (
               <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/35">
-                <Bot size={9} /> Coach IA
+                <Bot size={9} />{" "}{t("Coach IA")}
               </span>
             )}
           </p>
           {coachIsAI && (
             <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
-              Réponses automatiques par IA, disponible 24/7.
+              {t("Réponses automatiques par IA, disponible 24/7.")}
             </p>
           )}
 

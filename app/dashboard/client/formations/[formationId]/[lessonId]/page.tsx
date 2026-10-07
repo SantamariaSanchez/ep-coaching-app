@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -12,6 +13,7 @@ export default async function LessonPage({
 }: {
   params: Promise<{ formationId: string; lessonId: string }>;
 }) {
+  const t = await getT();
   const { formationId, lessonId } = await params;
 
   const user = await getUser();
@@ -153,7 +155,7 @@ export default async function LessonPage({
             <ChevronLeft size={15} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
-                Précédent
+                {t("Précédent")}
               </p>
               <p style={{
                 fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.65)", margin: 0,
@@ -185,7 +187,7 @@ export default async function LessonPage({
           >
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
-                Suivant
+                {t("Suivant")}
               </p>
               <p style={{
                 fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.65)", margin: 0,
@@ -214,10 +216,10 @@ export default async function LessonPage({
           >
             <div>
               <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(74,222,128,0.5)", margin: "0 0 2px" }}>
-                Formation terminée
+                {t("Formation terminée")}
               </p>
               <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(74,222,128,0.8)", margin: 0 }}>
-                Voir le résumé
+                {t("Voir le résumé")}
               </p>
             </div>
             <ListVideo size={15} style={{ color: "rgba(74,222,128,0.5)", flexShrink: 0 }} />
@@ -242,10 +244,10 @@ export default async function LessonPage({
           >
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
-                {currentIndex >= 0 ? "Dernière vidéo" : "Programme"}
+                {currentIndex >= 0 ? t("Dernière vidéo") : t("Programme")}
               </p>
               <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.65)", margin: 0 }}>
-                Retour au programme{toFinish > 0 ? ` (${toFinish} à terminer)` : ""}
+                {t("Retour au programme")}{toFinish > 0 ? ` (${toFinish} à terminer)` : ""}
               </p>
             </div>
             <ListVideo size={15} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />

@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCommunityPostCount } from "@/utils/community";
@@ -13,6 +14,7 @@ export default async function CoachPublicProfilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -46,9 +48,9 @@ export default async function CoachPublicProfilePage({
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Communauté
+          {t("Communauté")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Profil</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Profil")}</h1>
       </div>
 
       <ProfileHeader profile={profile} postCount={postCount} avatarSrc={avatarSrc} />

@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, getAllMessageableMembers, roleBadge } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -22,6 +23,7 @@ const LAST_MESSAGES_SCAN_LIMIT = 1000;
 const NO_CONVERSATION = ["00000000-0000-0000-0000-000000000000"];
 
 export default async function CoachMessagesPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -121,10 +123,10 @@ export default async function CoachMessagesPage() {
       <PushPermission userId={user.id} />
 
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Messagerie</p>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Messagerie")}</p>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h1 className="ep-h1">
-            Messages
+            {t("Messages")}
           </h1>
           {totalUnread > 0 && (
             <span className="animate-pulse-glow" style={{
@@ -145,7 +147,7 @@ export default async function CoachMessagesPage() {
             style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, color: "rgba(245,237,237,0.4)", fontSize: 11, textDecoration: "none" }}
           >
             <Mail size={11} />
-            Besoin d&apos;aide ? Aide et tutoriels
+            {t("Besoin d'aide ? Aide et tutoriels")}
           </a>
         )}
       </div>
@@ -157,10 +159,10 @@ export default async function CoachMessagesPage() {
           style={{ padding: "12px 16px", marginBottom: 14, borderColor: "rgba(224,30,30,0.4)" }}
         >
           <p style={{ fontSize: 12, color: "#F5EDED", margin: 0, fontWeight: 700 }}>
-            Impossible de charger les derniers messages.
+            {t("Impossible de charger les derniers messages.")}
           </p>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "2px 0 0" }}>
-            Les aperçus et les non lus peuvent être incomplets. Recharge la page dans un instant.
+            {t("Les aperçus et les non lus peuvent être incomplets. Recharge la page dans un instant.")}
           </p>
         </div>
       )}
@@ -168,10 +170,10 @@ export default async function CoachMessagesPage() {
       {clients.length === 0 ? (
         <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,237,237,0.55)", margin: "0 0 4px" }}>
-            Aucun membre pour l&apos;instant
+            {t("Aucun membre pour l'instant")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-            Dès qu&apos;un membre rejoint ta communauté, sa conversation apparaît ici.
+            {t("Dès qu'un membre rejoint ta communauté, sa conversation apparaît ici.")}
           </p>
         </div>
       ) : (

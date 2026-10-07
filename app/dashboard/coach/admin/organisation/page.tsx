@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -76,6 +77,7 @@ const CONTRACTS = [
 ];
 
 export default async function OrganisationAdminPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -175,25 +177,23 @@ export default async function OrganisationAdminPage() {
         href="/dashboard/coach"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
-        <ChevronLeft size={13} /> Retour
+        <ChevronLeft size={13} />{" "}{t("Retour")}
       </Link>
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Administration
+          {t("Administration")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Organisation</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Organisation")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
-          Une structure de référence pour préparer les futures embauches : qui fait quoi,
-          à qui chaque poste rapporte, comment on les forme avant même de les embaucher,
-          et ce qu&apos;il faudra régler légalement avant de signer qui que ce soit.
+          {t("Une structure de référence pour préparer les futures embauches : qui fait quoi, à qui chaque poste rapporte, comment on les forme avant même de les embaucher, et ce qu'il faudra régler légalement avant de signer qui que ce soit.")}
         </p>
         <Link
           href="/carrieres"
           target="_blank"
           className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] border border-[#E01E1E]/30 rounded-lg px-3 py-2 hover:bg-[#E01E1E]/10 transition-colors mt-4"
         >
-          Voir la page publique de candidature <ExternalLink size={11} />
+          {t("Voir la page publique de candidature")}{" "}<ExternalLink size={11} />
         </Link>
       </div>
 
@@ -201,12 +201,12 @@ export default async function OrganisationAdminPage() {
           pôle un par un pour savoir où on en est globalement. */}
       <div className="ep-card" style={{ padding: "16px 18px", marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
-          <p className="ep-label" style={{ margin: 0 }}>Postes pourvus</p>
+          <p className="ep-label" style={{ margin: 0 }}>{t("Postes pourvus")}</p>
           <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
             {filledRoles} / {totalRoles}
             {inRecruitmentRoles > 0 && (
               <span style={{ fontSize: 11, fontWeight: 600, color: "#facc15", marginLeft: 8 }}>
-                · {inRecruitmentRoles} en recrutement
+                · {inRecruitmentRoles}{" "}{t("en recrutement")}
               </span>
             )}
           </p>

@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, FileSignature, FileText, FolderOpen } from "lucide-react";
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
 // contrat tel que signé dans l'appli), CV reçus sur /carrieres, et les
 // documents partagés avec l'équipe, un métier ou une personne.
 export default async function FounderTeamDocumentsPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
   // Fondateur ou coach en mode entreprise : chacun ne voit que SON équipe.
@@ -60,17 +62,17 @@ export default async function FounderTeamDocumentsPage() {
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
-        <ChevronLeft size={13} /> Pilotage de l&apos;équipe
+        <ChevronLeft size={13} />{" "}{t("Pilotage de l'équipe")}
       </Link>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Administration</p>
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-2">Documents de l&apos;équipe</h1>
-      <p className="text-sm text-[#F5EDED]/45 mb-6">Contrats, CV et documents partagés : tout le papier de l&apos;équipe au même endroit.</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Administration")}</p>
+      <h1 className="text-3xl font-black uppercase tracking-tight mb-2">{t("Documents de l'équipe")}</h1>
+      <p className="text-sm text-[#F5EDED]/45 mb-6">{t("Contrats, CV et documents partagés : tout le papier de l'équipe au même endroit.")}</p>
 
       <section className="ep-card" style={{ padding: "16px 18px", marginBottom: 14 }}>
         <p className="ep-label" style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-          <FileSignature size={12} /> Contrats ({members.filter((m) => m.contract_signed_at).length}/{members.length} signés)
+          <FileSignature size={12} />{" "}{t("Contrats (")}{members.filter((m) => m.contract_signed_at).length}/{members.length}{" "}{t("signés)")}
         </p>
-        {members.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>Personne dans l&apos;équipe pour l&apos;instant.</p>}
+        {members.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Personne dans l'équipe pour l'instant.")}</p>}
         {members.map((m) => {
           const pdf = contractPdfs.get(m.user_id);
           const upToDate = m.contract_signed_at && m.contract_version === STAFF_CONTRACT_VERSION;
@@ -82,22 +84,22 @@ export default async function FounderTeamDocumentsPage() {
                   {getRoleCard(m.role_key)?.role.title ?? m.role_key} ·{" "}
                   {m.contract_signed_at ? (
                     <span style={{ color: upToDate ? "#4ade80" : "#facc15" }}>
-                      signé le {new Date(m.contract_signed_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}
-                      {upToDate ? "" : " (ancienne version)"}
-                      {m.contract_signature?.includes("JotForm") ? " via JotForm" : ""}
+                      {t("signé le")}{" "}{new Date(m.contract_signed_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}
+                      {upToDate ? "" : t(" (ancienne version)")}
+                      {m.contract_signature?.includes("JotForm") ? t(" via JotForm") : ""}
                     </span>
                   ) : (
-                    <span style={{ color: "#facc15" }}>pas encore signé</span>
+                    <span style={{ color: "#facc15" }}>{t("pas encore signé")}</span>
                   )}
                 </p>
               </div>
               {pdf?.href && (
                 <a href={pdf.href} style={link}>
-                  PDF signé
+                  {t("PDF signé")}
                 </a>
               )}
               <Link href={`/dashboard/coach/admin/equipe/${m.user_id}/contrat`} style={link}>
-                Lire le contrat
+                {t("Lire le contrat")}
               </Link>
             </div>
           );
@@ -106,9 +108,9 @@ export default async function FounderTeamDocumentsPage() {
 
       <section className="ep-card" style={{ padding: "16px 18px", marginBottom: 14 }}>
         <p className="ep-label" style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-          <FileText size={12} /> CV reçus ({cvs.length})
+          <FileText size={12} />{" "}{t("CV reçus (")}{cvs.length})
         </p>
-        {cvs.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>Aucun CV reçu pour l&apos;instant (page Carrières).</p>}
+        {cvs.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Aucun CV reçu pour l'instant (page Carrières).")}</p>}
         {cvs.slice(0, 60).map((a) => (
           <div key={a.id} style={row}>
             <div style={{ flex: 1, minWidth: 180 }}>
@@ -118,18 +120,18 @@ export default async function FounderTeamDocumentsPage() {
               </p>
             </div>
             <a href={a.cvUrl!} target="_blank" rel="noopener noreferrer" style={link}>
-              Ouvrir le CV
+              {t("Ouvrir le CV")}
             </a>
           </div>
         ))}
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "8px 0 0" }}>Liens sécurisés temporaires (contrats 10 minutes, CV une heure) : recharge la page pour en générer de nouveaux.</p>
+        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "8px 0 0" }}>{t("Liens sécurisés temporaires (contrats 10 minutes, CV une heure) : recharge la page pour en générer de nouveaux.")}</p>
       </section>
 
       <section>
         <p className="ep-label" style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-          <FolderOpen size={12} /> Documents partagés
+          <FolderOpen size={12} />{" "}{t("Documents partagés")}
         </p>
-        <p className="text-sm text-[#F5EDED]/45 mb-4">Ce que tu partages ici apparaît dans l&apos;onglet Documents des personnes concernées.</p>
+        <p className="text-sm text-[#F5EDED]/45 mb-4">{t("Ce que tu partages ici apparaît dans l'onglet Documents des personnes concernées.")}</p>
         <DocumentsPanel documents={otherDocs} meId={user.id} founder targets={targets} />
       </section>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare, AlertTriangle, ClipboardPaste } from "lucide-react";
@@ -43,6 +44,7 @@ function EditableTitle({
   textStyle: React.CSSProperties;
   inputStyle?: React.CSSProperties;
 }) {
+  const t = useT();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -66,7 +68,7 @@ function EditableTitle({
         autoFocus
         value={text}
         disabled={saving}
-        aria-label="Modifier le titre"
+        aria-label={t("Modifier le titre")}
         onClick={(e) => e.stopPropagation()}
         onChange={(e) => setText(e.target.value)}
         onBlur={commit}
@@ -103,7 +105,7 @@ function EditableTitle({
         setText(value);
         setEditing(true);
       }}
-      title="Cliquer pour modifier le titre"
+      title={t("Cliquer pour modifier le titre")}
       style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", ...textStyle }}
     >
       {value}
@@ -227,6 +229,7 @@ function AddItemButton({
 }
 
 export default function CoachFormationEditor({ formation }: { formation: FormationWithModules }) {
+  const t = useT();
   const router = useRouter();
   const confirm = useConfirm();
   const [saving, setSaving] = useState<string | null>(null);
@@ -418,14 +421,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             onClick={() => setActionError(null)}
             style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: 4 }}
           >
-            OK
+            {t("OK")}
           </button>
         </div>
       )}
       {/* Formation meta */}
       <div className="ep-card" style={{ padding: "16px 18px" }}>
         <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
-          <p className="ep-label" style={{ marginBottom: 4 }}>Titre de la formation</p>
+          <p className="ep-label" style={{ marginBottom: 4 }}>{t("Titre de la formation")}</p>
           <EditableTitle
             value={formation.title}
             onSave={renameFormation}
@@ -435,7 +438,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
         <div style={{ display: "flex", gap: 14, marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
           <div style={{ flexShrink: 0, width: 80 }}>
-            <p className="ep-label" style={{ marginBottom: 4 }}>Emoji</p>
+            <p className="ep-label" style={{ marginBottom: 4 }}>{t("Emoji")}</p>
             <EditableTitle
               value={formation.emoji}
               onSave={(v) => saveMetaField("emoji", v)}
@@ -443,7 +446,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p className="ep-label" style={{ marginBottom: 4 }}>Sous-titre</p>
+            <p className="ep-label" style={{ marginBottom: 4 }}>{t("Sous-titre")}</p>
             <EditableTitle
               value={formation.subtitle ?? "Ajouter un sous-titre"}
               onSave={(v) => saveMetaField("subtitle", v)}
@@ -453,7 +456,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
         </div>
 
         <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
-          <p className="ep-label" style={{ marginBottom: 4 }}>Description</p>
+          <p className="ep-label" style={{ marginBottom: 4 }}>{t("Description")}</p>
           <EditableTitle
             value={formation.description ?? "Ajouter une description"}
             onSave={(v) => saveMetaField("description", v)}
@@ -464,9 +467,9 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
           <div style={{ flex: "1 1 180px", minWidth: 0 }}>
-            <p className="ep-label" style={{ marginBottom: 4 }}>Statut publication</p>
+            <p className="ep-label" style={{ marginBottom: 4 }}>{t("Statut publication")}</p>
             <p style={{ fontSize: 13, fontWeight: 700, color: formation.is_published ? "#4ade80" : "rgba(245,237,237,0.4)", margin: 0 }}>
-              {formation.is_published ? "✓ Publiée : visible par les membres" : "Brouillon : les membres ne voient que le titre, en Bientôt disponible"}
+              {formation.is_published ? t("✓ Publiée : visible par les membres") : t("Brouillon : les membres ne voient que le titre, en Bientôt disponible")}
             </p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -476,12 +479,12 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
               className="ep-btn-secondary"
               style={{ padding: "8px 14px", fontSize: 11 }}
             >
-              {formation.is_published ? <><EyeOff size={13} /> Masquer</> : <><Eye size={13} /> Publier</>}
+              {formation.is_published ? <><EyeOff size={13} />{" "}{t("Masquer")}</> : <><Eye size={13} />{" "}{t("Publier")}</>}
             </button>
             <button
               onClick={handleDeleteFormation}
-              title="Supprimer la formation"
-              aria-label="Supprimer la formation"
+              title={t("Supprimer la formation")}
+              aria-label={t("Supprimer la formation")}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.2)",
@@ -533,14 +536,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                   textStyle={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em" }}
                 />
                 <span style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 600, flexShrink: 0 }}>
-                  ({mod.sections.length} module{mod.sections.length !== 1 ? "s" : ""} · {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""})
+                  ({mod.sections.length}{" "}{t("module")}{mod.sections.length !== 1 ? "s" : ""} · {totalLessons}{" "}{t("vidéo")}{totalLessons !== 1 ? "s" : ""})
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleMoveModule(mod.id, "up"); }}
                   disabled={mi === 0}
-                  title="Monter" aria-label="Monter"
+                  title={t("Monter")} aria-label={t("Monter")}
                   style={{ display: "flex", background: "none", border: "none", cursor: mi === 0 ? "default" : "pointer", padding: 2, opacity: mi === 0 ? 0.2 : 1 }}
                 >
                   <ArrowUp size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
@@ -548,7 +551,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                 <button
                   onClick={(e) => { e.stopPropagation(); handleMoveModule(mod.id, "down"); }}
                   disabled={mi === formation.modules.length - 1}
-                  title="Descendre" aria-label="Descendre"
+                  title={t("Descendre")} aria-label={t("Descendre")}
                   style={{ display: "flex", background: "none", border: "none", cursor: mi === formation.modules.length - 1 ? "default" : "pointer", padding: 2, opacity: mi === formation.modules.length - 1 ? 0.2 : 1 }}
                 >
                   <ArrowDown size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
@@ -556,14 +559,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDuplicateModule(mod.id); }}
                   disabled={saving === `dup-${mod.id}`}
-                  title="Dupliquer cette section (structure, sans les vidéos)" aria-label="Dupliquer cette section (structure, sans les vidéos)"
+                  title={t("Dupliquer cette section (structure, sans les vidéos)")} aria-label={t("Dupliquer cette section (structure, sans les vidéos)")}
                   style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                 >
                   <Copy size={13} style={{ color: "rgba(245,237,237,0.3)" }} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteModule(mod.id, mod.title); }}
-                  title="Supprimer la section" aria-label="Supprimer la section"
+                  title={t("Supprimer la section")} aria-label={t("Supprimer la section")}
                   style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                 >
                   <Trash2 size={13} style={{ color: "rgba(224,30,30,0.4)" }} />
@@ -619,7 +622,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                             e.stopPropagation();
                             setPasteOpen((cur) => (cur === sec.id ? null : sec.id));
                           }}
-                          title="Coller les vidéos de ce module" aria-label="Coller les vidéos de ce module"
+                          title={t("Coller les vidéos de ce module")} aria-label={t("Coller les vidéos de ce module")}
                           aria-expanded={pasteOpen === sec.id}
                           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                         >
@@ -641,7 +644,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMoveSection(mod.id, sec.id, "up"); }}
                           disabled={si === 0}
-                          title="Monter" aria-label="Monter"
+                          title={t("Monter")} aria-label={t("Monter")}
                           style={{ display: "flex", background: "none", border: "none", cursor: si === 0 ? "default" : "pointer", padding: 2, opacity: si === 0 ? 0.2 : 1 }}
                         >
                           <ArrowUp size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
@@ -649,14 +652,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMoveSection(mod.id, sec.id, "down"); }}
                           disabled={si === mod.sections.length - 1}
-                          title="Descendre" aria-label="Descendre"
+                          title={t("Descendre")} aria-label={t("Descendre")}
                           style={{ display: "flex", background: "none", border: "none", cursor: si === mod.sections.length - 1 ? "default" : "pointer", padding: 2, opacity: si === mod.sections.length - 1 ? 0.2 : 1 }}
                         >
                           <ArrowDown size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteSection(sec.id, sec.title); }}
-                          title="Supprimer le module" aria-label="Supprimer le module"
+                          title={t("Supprimer le module")} aria-label={t("Supprimer le module")}
                           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                         >
                           <Trash2 size={12} style={{ color: "rgba(224,30,30,0.35)" }} />
@@ -768,6 +771,7 @@ function LessonEditor({
   onDelete: () => void;
   onMove: (direction: "up" | "down") => void;
 }) {
+  const t = useT();
   const [url, setUrl] = useState(lesson.youtube_id ?? "");
   const [published, setPublished] = useState(lesson.is_published);
   // MASTERCLASS.md Axe E : "Publier toutes les vidéos du module" (bouton
@@ -822,7 +826,7 @@ function LessonEditor({
             />
             <button
               onClick={() => setShowDetails((v) => !v)}
-              title="Description et durée" aria-label="Description et durée"
+              title={t("Description et durée")} aria-label={t("Description et durée")}
               aria-expanded={showDetails}
               style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}
             >
@@ -845,7 +849,7 @@ function LessonEditor({
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="URL ou ID YouTube" aria-label="URL ou ID YouTube"
+                placeholder={t("URL ou ID YouTube")} aria-label={t("URL ou ID YouTube")}
                 style={{
                   width: "100%",
                   background: "rgba(0,0,0,0.4)",
@@ -903,8 +907,8 @@ function LessonEditor({
             <button
               onClick={() => onMove("up")}
               disabled={!canMoveUp}
-              title="Monter"
-              aria-label="Monter"
+              title={t("Monter")}
+              aria-label={t("Monter")}
               style={{ display: "flex", background: "none", border: "none", cursor: canMoveUp ? "pointer" : "default", padding: 2, opacity: canMoveUp ? 1 : 0.2 }}
             >
               <ChevronUp size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
@@ -912,8 +916,8 @@ function LessonEditor({
             <button
               onClick={() => onMove("down")}
               disabled={!canMoveDown}
-              title="Descendre"
-              aria-label="Descendre"
+              title={t("Descendre")}
+              aria-label={t("Descendre")}
               style={{ display: "flex", background: "none", border: "none", cursor: canMoveDown ? "pointer" : "default", padding: 2, opacity: canMoveDown ? 1 : 0.2 }}
             >
               <ChevronDown size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
@@ -921,8 +925,8 @@ function LessonEditor({
 
             <button
               onClick={onDelete}
-              title="Supprimer la vidéo"
-              aria-label="Supprimer la vidéo"
+              title={t("Supprimer la vidéo")}
+              aria-label={t("Supprimer la vidéo")}
               style={{
                 background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8,
                 padding: "7px 9px", cursor: "pointer", display: "flex", alignItems: "center",
@@ -937,7 +941,7 @@ function LessonEditor({
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description affichée au client sous la vidéo…" aria-label="Description affichée au client sous la vidéo…"
+                placeholder={t("Description affichée au client sous la vidéo…")} aria-label={t("Description affichée au client sous la vidéo…")}
                 rows={2}
                 style={{
                   width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.07)",
@@ -946,8 +950,8 @@ function LessonEditor({
                 }}
               />
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>Durée (min)</label>
-                <input aria-label="Durée (min)"
+                <label style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>{t("Durée (min)")}</label>
+                <input aria-label={t("Durée (min)")}
                   type="number"
                   min={1}
                   value={durationMin}
@@ -967,7 +971,7 @@ function LessonEditor({
                       fontSize: 10, fontWeight: 700, color: "#E01E1E",
                     }}
                   >
-                    <Save size={12} /> {isSavingDetails ? "…" : "Enregistrer"}
+                    <Save size={12} /> {isSavingDetails ? "…" : t("Enregistrer")}
                   </button>
                 )}
               </div>

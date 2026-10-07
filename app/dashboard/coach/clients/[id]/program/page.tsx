@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -13,6 +14,7 @@ export default async function CoachClientProgramPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const { id } = await params;
 
   const user = await getUser();
@@ -42,7 +44,7 @@ export default async function CoachClientProgramPage({
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Programme
+          {t("Programme")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}

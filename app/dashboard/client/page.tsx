@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { INSTAGRAM_URL } from "@/lib/brand-links";
 import { timeAwareGreeting, nowInParis } from "@/lib/dates";
 import { getAppSetup } from "@/lib/app-setup-server";
@@ -545,6 +546,7 @@ export default async function ClientDashboard({
 }: {
   searchParams: Promise<{ onboarded?: string }>;
 }) {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -677,7 +679,7 @@ export default async function ClientDashboard({
         >
           <Gift size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
           <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", flex: 1 }}>
-            Essai coaching gratuit, se termine dans {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""}
+            {t("Essai coaching gratuit, se termine dans")}{" "}{trialDaysLeft}{" "}{t("jour")}{trialDaysLeft > 1 ? "s" : ""}
           </p>
         </div>
       )}
@@ -695,7 +697,7 @@ export default async function ClientDashboard({
             color: "rgba(245,237,237,0.3)",
             fontWeight: 500,
           }}>
-            Sem. {weekNumber} &nbsp;·&nbsp; {weeksSinceStart} sem. de coaching
+            {t("Sem.")}{" "}{weekNumber} &nbsp;·&nbsp; {weeksSinceStart}{" "}{t("sem. de coaching")}
           </p>
         )}
       </div>
@@ -720,9 +722,9 @@ export default async function ClientDashboard({
       >
         <Sunrise size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>Aujourd&apos;hui</p>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{t("Aujourd'hui")}</p>
           <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>
-            Programme, habitudes, sommeil et journal du jour
+            {t("Programme, habitudes, sommeil et journal du jour")}
           </p>
         </div>
         <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
@@ -735,7 +737,7 @@ export default async function ClientDashboard({
       <div>
       {/* ── Mon coach ───────────────────────────────────────────────────────── */}
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 16 }}>
-        <p className="ep-section-title">Mon coach</p>
+        <p className="ep-section-title">{t("Mon coach")}</p>
 
         {latestNote ? (
           <div className="ep-card" style={{ padding: "20px 20px 16px" }}>
@@ -755,7 +757,7 @@ export default async function ClientDashboard({
                   color: "#F5EDED",
                   letterSpacing: "-0.01em",
                 }}>
-                  Bilan · Semaine {latestNote.week_number ?? "·"}
+                  {t("Bilan · Semaine")}{" "}{latestNote.week_number ?? "·"}
                 </p>
               </div>
               {latestNote.rating != null && (
@@ -780,7 +782,7 @@ export default async function ClientDashboard({
 
             {latestNote.observations && (
               <div style={{ marginBottom: latestNote.next_actions ? 14 : 0 }}>
-                <p className="ep-label" style={{ marginBottom: 6 }}>Observations</p>
+                <p className="ep-label" style={{ marginBottom: 6 }}>{t("Observations")}</p>
                 <p style={{
                   fontSize: 13,
                   color: "rgba(245,237,237,0.7)",
@@ -799,7 +801,7 @@ export default async function ClientDashboard({
             {latestNote.next_actions && (
               <div>
                 <div className="ep-divider-subtle" style={{ margin: "12px 0" }} />
-                <p className="ep-label" style={{ marginBottom: 6 }}>Actions prévues</p>
+                <p className="ep-label" style={{ marginBottom: 6 }}>{t("Actions prévues")}</p>
                 <p style={{
                   fontSize: 13,
                   color: "rgba(245,237,237,0.7)",
@@ -832,7 +834,7 @@ export default async function ClientDashboard({
             >
               <MessageCircle size={14} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
               <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.7)", flex: 1 }}>
-                Ouvrir les messages
+                {t("Ouvrir les messages")}
               </span>
               <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
             </Link>
@@ -858,10 +860,10 @@ export default async function ClientDashboard({
                 <Star size={18} style={{ color: "rgba(245,237,237,0.2)" }} strokeWidth={1.5} />
               </div>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>
-                Ton coach prépare ton bilan
+                {t("Ton coach prépare ton bilan")}
               </p>
               <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.22)" }}>
-                Les retours apparaîtront ici chaque semaine
+                {t("Les retours apparaîtront ici chaque semaine")}
               </p>
             </div>
           </div>
@@ -874,7 +876,7 @@ export default async function ClientDashboard({
       {/* ── Objectifs & poids ───────────────────────────────────────────────── */}
       {(startWeight != null || currentWeight != null || profile?.goal) && (
         <section className="animate-fade-up stagger-4" style={{ marginBottom: 16 }}>
-          <p className="ep-section-title">Mes objectifs</p>
+          <p className="ep-section-title">{t("Mes objectifs")}</p>
           <div className="ep-card" style={{ padding: "20px" }}>
 
             {/* Weight row */}
@@ -904,7 +906,7 @@ export default async function ClientDashboard({
                           <>
                             {val}
                             <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(245,237,237,0.3)", marginLeft: 3 }}>
-                              kg
+                              {t("kg")}
                             </span>
                           </>
                         ) : (
@@ -939,16 +941,16 @@ export default async function ClientDashboard({
             {/* Info grid */}
             {weeksSinceStart != null && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: profile?.goal ? 12 : 0 }}>
-                <span className="ep-label">Coaching</span>
+                <span className="ep-label">{t("Coaching")}</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,237,237,0.65)" }}>
-                  {weeksSinceStart} semaine{weeksSinceStart !== 1 ? "s" : ""}
+                  {weeksSinceStart}{" "}{t("semaine")}{weeksSinceStart !== 1 ? "s" : ""}
                 </span>
               </div>
             )}
 
             {profile?.goal && (
               <div>
-                <p className="ep-label" style={{ marginBottom: 6 }}>Mon objectif</p>
+                <p className="ep-label" style={{ marginBottom: 6 }}>{t("Mon objectif")}</p>
                 <p style={{
                   fontSize: 13,
                   color: "rgba(245,237,237,0.65)",
@@ -978,10 +980,10 @@ export default async function ClientDashboard({
             <Trophy size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-                Bilan envoyé, et ta victoire de la semaine ?
+                {t("Bilan envoyé, et ta victoire de la semaine ?")}
               </p>
               <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.45)" }}>
-                Partage la avec la communauté, ça motive tout le monde (et ça rapporte des points).
+                {t("Partage la avec la communauté, ça motive tout le monde (et ça rapporte des points).")}
               </p>
             </div>
             <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
@@ -991,7 +993,7 @@ export default async function ClientDashboard({
 
       {/* ── Partage & échange ───────────────────────────────────────────────── */}
       <section className="animate-fade-up stagger-5">
-        <p className="ep-section-title">Partage & échange</p>
+        <p className="ep-section-title">{t("Partage & échange")}</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {ENGAGEMENT_ITEMS.map(({ href, icon: Icon, title, desc }) => (
             <Link

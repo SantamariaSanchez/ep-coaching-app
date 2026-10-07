@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ExternalLink, Zap, RefreshCw, Target } from "lucide-react";
@@ -52,6 +53,7 @@ function daysBetween(a: string, b: string): number {
 }
 
 export default async function MySocialStatsPage({ searchParams }: { searchParams: Promise<{ p?: string; periode?: string; tri?: string; type?: string }> }) {
+  const tr = await getT();
   const user = await getUser();
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
@@ -76,7 +78,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
   if (!data.ready) {
     return (
       <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto">
-        <p className="ep-card" style={{ padding: 16, fontSize: 13, color: "rgba(245,237,237,0.6)" }}>Les stats réseaux ne sont pas disponibles pour le moment.</p>
+        <p className="ep-card" style={{ padding: 16, fontSize: 13, color: "rgba(245,237,237,0.6)" }}>{tr("Les stats réseaux ne sont pas disponibles pour le moment.")}</p>
       </div>
     );
   }
@@ -96,10 +98,10 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
 
   return (
     <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Business</p>
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">Mes stats réseaux</h1>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{tr("Business")}</p>
+      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{tr("Mes stats réseaux")}</h1>
       <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(245,237,237,0.6)", fontSize: 16, margin: "0 0 18px" }}>
-        Tes vrais chiffres, pour savoir quoi refaire.
+        {tr("Tes vrais chiffres, pour savoir quoi refaire.")}
       </p>
 
       {/* En bref (2026-10-07, « que ça soit hyper simple ») : la semaine en
@@ -112,14 +114,14 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
         const bestHour = ins.byHour[0]?.key ?? null;
         return (
           <div className="ep-card-hero" style={{ padding: "14px 16px", marginBottom: 14 }}>
-            <p className="ep-label" style={{ marginBottom: 6 }}>En bref</p>
+            <p className="ep-label" style={{ marginBottom: 6 }}>{tr("En bref")}</p>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#F5EDED", lineHeight: 1.45 }}>
               {hasWeek ? `${week >= 0 ? "+" : ""}${week.toLocaleString("fr-FR")} abonnés en 7 jours` : `${fmt(totalFollowers)} abonnés au total`}
               {ins.postCount > 0 ? `, ${ins.perWeek ?? 0} publication${(ins.perWeek ?? 0) > 1 ? "s" : ""} par semaine.` : "."}
             </p>
             {(bestFormat || bestDay || bestHour) && (
               <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.55 }}>
-                Ce qui marche le mieux chez toi : {[bestFormat && `format ${bestFormat.toLowerCase()}`, bestDay && `le ${String(bestDay).toLowerCase()}`, bestHour && `vers ${bestHour}`].filter(Boolean).join(", ")}.
+                {tr("Ce qui marche le mieux chez toi :")}{" "}{[bestFormat && `format ${bestFormat.toLowerCase()}`, bestDay && `le ${String(bestDay).toLowerCase()}`, bestHour && `vers ${bestHour}`].filter(Boolean).join(", ")}.
               </p>
             )}
           </div>
@@ -129,7 +131,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
       <div style={{ marginBottom: 14 }}>
         <ClaudePrompt
           compact
-          title="Demander à Claude quoi publier cette semaine"
+          title={tr("Demander à Claude quoi publier cette semaine")}
           hint="Claude lit tes vraies stats (connecteur EP Coaching, Plus > Claude et Notion), compare tes meilleures et pires publications et te donne 3 choses à refaire."
           prompt="Analyse mes stats réseaux des 30 derniers jours dans EP Coaching (outil mes_stats_reseaux) et mon positionnement (outil mon_positionnement). Compare mon top 5 et mon flop 5 : sujets, accroches, formats. Donne-moi 3 choses à refaire cette semaine, 1 chose à arrêter, et 3 idées de reels précises que j'ajouterai à mon Studio si je valide (outil ajouter_idee_contenu)."
         />
@@ -137,16 +139,16 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
 
       {profile?.is_platform_owner && (
         <Link href="/dashboard/coach/admin/stats-reseaux" className="ep-card" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", marginBottom: 14, textDecoration: "none", fontSize: 12.5, color: "rgba(245,237,237,0.75)" }}>
-          <RefreshCw size={14} style={{ color: "#E01E1E" }} /> Synchro automatique, audience et récap hebdo : ouvrir la vue Administration
+          <RefreshCw size={14} style={{ color: "#E01E1E" }} />{" "}{tr("Synchro automatique, audience et récap hebdo : ouvrir la vue Administration")}
         </Link>
       )}
 
       {needsUpdate.length > 0 && (
         <div className="ep-card-hero" style={{ padding: "12px 14px", marginBottom: 14 }}>
           <p style={{ fontSize: 13, color: "#F5EDED", margin: 0, fontWeight: 700 }}>
-            À mettre à jour : {needsUpdate.map((a) => PLATFORM_LABELS[a.platform]).join(", ")}
+            {tr("À mettre à jour :")}{" "}{needsUpdate.map((a) => PLATFORM_LABELS[a.platform]).join(", ")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "2px 0 0" }}>1 minute par semaine suffit pour voir ta vraie progression.</p>
+          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "2px 0 0" }}>{tr("1 minute par semaine suffit pour voir ta vraie progression.")}</p>
         </div>
       )}
 
@@ -154,20 +156,20 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
       {data.overview.length > 0 && (
         <>
           <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8 }} className="no-scrollbar">
-            <Link href={href({ p: null, type: null })} style={chip(!platform)}>Toutes</Link>
+            <Link href={href({ p: null, type: null })} style={chip(!platform)}>{tr("Toutes")}</Link>
             {platforms.map((p) => (
               <Link key={p} href={href({ p, type: null })} style={chip(platform === p)}>{PLATFORM_LABELS[p]}</Link>
             ))}
           </div>
           <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 12 }} className="no-scrollbar">
             {PERIODS.map((d) => (
-              <Link key={d} href={href({ periode: String(d) })} style={chip(days === d)}>{d === 365 ? "1 an" : `${d} jours`}</Link>
+              <Link key={d} href={href({ periode: String(d) })} style={chip(days === d)}>{d === 365 ? tr("1 an") : `${d} jours`}</Link>
             ))}
           </div>
 
           {!platform && data.overview.length > 1 && (
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", margin: "0 0 10px" }}>
-              <strong style={{ color: "#F5EDED", fontSize: 18 }}>{fmt(totalFollowers)}</strong> abonnés au total sur {data.overview.length} plateformes
+              <strong style={{ color: "#F5EDED", fontSize: 18 }}>{fmt(totalFollowers)}</strong>{" "}{tr("abonnés au total sur")}{" "}{data.overview.length}{" "}{tr("plateformes")}
             </p>
           )}
 
@@ -184,8 +186,8 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                   </p>
                   <p style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: 0, lineHeight: 1.1 }}>{fmt(a.followers)}</p>
                   <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>
-                    abonnés{a.followersDate ? ` au ${new Date(`${a.followersDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}
-                    {a.source === "windsor" ? " · synchro auto" : ""}
+                    {tr("abonnés")}{a.followersDate ? ` au ${new Date(`${a.followersDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}
+                    {a.source === "windsor" ? tr(" · synchro auto") : ""}
                   </p>
                   <div style={{ display: "flex", gap: 10, fontSize: 11.5, marginBottom: 8 }}>
                     {(["d7", "d30", "d90"] as const).filter((k) => a.growth[k] !== null).map((k) => (
@@ -195,7 +197,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                     ))}
                   </div>
                   <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.65)", margin: 0, lineHeight: 1.6 }}>
-                    Sur {days === 365 ? "1 an" : `${days} jours`} : {fmt(a.period.views || a.period.impressions)} {a.period.views ? "vues" : "impressions"}, {fmt(a.period.reach)} de portée, {fmt(a.period.engagements || a.period.likes + a.period.comments + a.period.shares)} interactions
+                    {tr("Sur")}{" "}{days === 365 ? tr("1 an") : `${days} jours`} : {fmt(a.period.views || a.period.impressions)} {a.period.views ? tr("vues") : tr("impressions")}, {fmt(a.period.reach)}{" "}{tr("de portée,")}{" "}{fmt(a.period.engagements || a.period.likes + a.period.comments + a.period.shares)}{" "}{tr("interactions")}
                   </p>
                   {a.goal && (
                     <div style={{ marginTop: 10 }}>
@@ -206,7 +208,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                       <div style={{ height: 5, borderRadius: 99, background: "rgba(245,237,237,0.07)" }}>
                         <div style={{ width: `${goalPct ?? 0}%`, height: "100%", borderRadius: 99, background: "linear-gradient(90deg, #890404, #E01E1E)" }} />
                       </div>
-                      {perWeekNeeded !== null && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.45)", margin: "4px 0 0" }}>Il te faut environ +{fmt(perWeekNeeded)} abonnés par semaine.</p>}
+                      {perWeekNeeded !== null && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.45)", margin: "4px 0 0" }}>{tr("Il te faut environ +")}{fmt(perWeekNeeded)}{" "}{tr("abonnés par semaine.")}</p>}
                     </div>
                   )}
                 </div>
@@ -218,7 +220,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
 
       {/* Saisie */}
       <section style={{ marginBottom: 18 }}>
-        <p className="ep-label" style={{ marginBottom: 8 }}>{data.overview.length ? "Mettre à jour mes chiffres" : "Commence ici : tes chiffres du moment"}</p>
+        <p className="ep-label" style={{ marginBottom: 8 }}>{data.overview.length ? tr("Mettre à jour mes chiffres") : tr("Commence ici : tes chiffres du moment")}</p>
         <AccountEntryForm platforms={formPlatforms} today={today} handles={handles} goals={goals} />
       </section>
 
@@ -226,11 +228,11 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
       {ins.postCount > 0 && (
         <section style={{ marginBottom: 18 }}>
           <p className="ep-label" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-            <Zap size={12} /> Ce qui marche chez toi (90 derniers jours)
+            <Zap size={12} />{" "}{tr("Ce qui marche chez toi (90 derniers jours)")}
           </p>
           <div className="ep-card" style={{ padding: "14px 16px" }}>
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", margin: "0 0 10px", lineHeight: 1.6 }}>
-              {ins.postCount} publication{ins.postCount > 1 ? "s" : ""}, soit {ins.perWeek ?? 0} par semaine, {fmt(ins.avgViews)} vues en moyenne
+              {ins.postCount}{" "}{tr("publication")}{ins.postCount > 1 ? "s" : ""}{tr(", soit")}{" "}{ins.perWeek ?? 0}{" "}{tr("par semaine,")}{" "}{fmt(ins.avgViews)}{" "}{tr("vues en moyenne")}
               {ins.avgEngagement !== null ? `, engagement moyen ${pct(ins.avgEngagement)}` : ""}.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
@@ -242,12 +244,12 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                 <div key={b.title}>
                   <p style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(245,237,237,0.45)", margin: "0 0 6px" }}>{b.title}</p>
                   {b.rows.length === 0 ? (
-                    <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>Pas encore assez de publications (2 minimum par groupe).</p>
+                    <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>{tr("Pas encore assez de publications (2 minimum par groupe).")}</p>
                   ) : (
                     b.rows.slice(0, 3).map((r, i) => (
                       <p key={r.key} style={{ fontSize: 12.5, margin: "0 0 3px", color: i === 0 ? "#F5EDED" : "rgba(245,237,237,0.6)" }}>
                         {i === 0 ? "★ " : ""}
-                        {r.key} : {fmt(r.avgViews)} vues moy. <span style={{ color: "rgba(245,237,237,0.35)" }}>({r.count})</span>
+                        {r.key} : {fmt(r.avgViews)}{" "}{tr("vues moy.")}{" "}<span style={{ color: "rgba(245,237,237,0.35)" }}>({r.count})</span>
                       </p>
                     ))
                   )}
@@ -256,7 +258,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
             </div>
             {ins.scripted.withScript > 0 && ins.scripted.avgWith !== null && ins.scripted.avgWithout !== null && ins.postCount > ins.scripted.withScript && (
               <p style={{ fontSize: 12, color: "rgba(245,237,237,0.65)", margin: "10px 0 0" }}>
-                Avec un script du Studio : {fmt(ins.scripted.avgWith)} vues moy., sans : {fmt(ins.scripted.avgWithout)}.
+                {tr("Avec un script du Studio :")}{" "}{fmt(ins.scripted.avgWith)}{" "}{tr("vues moy., sans :")}{" "}{fmt(ins.scripted.avgWithout)}.
               </p>
             )}
           </div>
@@ -266,7 +268,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
       {/* Courbes */}
       {data.overview.length > 0 && (
         <section style={{ marginBottom: 18 }}>
-          <p className="ep-label" style={{ marginBottom: 8 }}>Évolution</p>
+          <p className="ep-label" style={{ marginBottom: 8 }}>{tr("Évolution")}</p>
           <SocialCharts series={data.series} labels={data.labels} />
         </section>
       )}
@@ -274,7 +276,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
       {/* Publications */}
       <section style={{ marginBottom: 18 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-          <p className="ep-label" style={{ margin: 0 }}>Mes publications ({data.posts.length})</p>
+          <p className="ep-label" style={{ margin: 0 }}>{tr("Mes publications (")}{data.posts.length})</p>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {SORTS.map((s) => (
               <Link key={s.key} href={href({ tri: s.key })} style={chip(sort === s.key)}>{s.label}</Link>
@@ -283,7 +285,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
         </div>
         {data.types.length > 1 && (
           <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8 }} className="no-scrollbar">
-            <Link href={href({ type: null })} style={chip(!type)}>Tous formats</Link>
+            <Link href={href({ type: null })} style={chip(!type)}>{tr("Tous formats")}</Link>
             {data.types.map((t) => (
               <Link key={t} href={href({ type: t })} style={chip(type === t)}>{TYPE_LABELS[t] ?? t}</Link>
             ))}
@@ -294,7 +296,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
         </div>
         {data.posts.length === 0 ? (
           <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>
-            Aucune publication sur cette période. Ajoute tes derniers contenus avec leurs chiffres pour voir ce qui marche.
+            {tr("Aucune publication sur cette période. Ajoute tes derniers contenus avec leurs chiffres pour voir ce qui marche.")}
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -311,9 +313,9 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                     {p.post_type ? ` · ${TYPE_LABELS[p.post_type] ?? p.post_type}` : ""}
                     {p.published_at ? ` · ${new Date(p.published_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}
                   </p>
-                  <p style={{ fontSize: 13, color: "#F5EDED", margin: "0 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{p.caption || p.scriptTitle || "(sans titre)"}</p>
+                  <p style={{ fontSize: 13, color: "#F5EDED", margin: "0 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{p.caption || p.scriptTitle || tr("(sans titre)")}</p>
                   <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.7)", margin: "0 0 6px", lineHeight: 1.6 }}>
-                    <strong style={{ color: "#F5EDED" }}>{fmt(p.views ?? p.impressions ?? p.reach)}</strong> {p.views !== null ? "vues" : p.impressions !== null ? "impressions" : "portée"}
+                    <strong style={{ color: "#F5EDED" }}>{fmt(p.views ?? p.impressions ?? p.reach)}</strong> {p.views !== null ? tr("vues") : p.impressions !== null ? tr("impressions") : tr("portée")}
                     {p.reach !== null && p.views !== null ? ` · ${fmt(p.reach)} portée` : ""}
                     {p.likes !== null ? ` · ${fmt(p.likes)} j'aime` : ""}
                     {p.comments !== null ? ` · ${fmt(p.comments)} com.` : ""}
@@ -327,10 +329,10 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
                     {!p.manual && <PostScriptLink postId={p.id} scriptId={p.script_id} source={p.script_link_source} scripts={data.scripts} />}
-                    {p.manual && p.scriptTitle && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)" }}>Script : {p.scriptTitle.slice(0, 50)}</span>}
+                    {p.manual && p.scriptTitle && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)" }}>{tr("Script :")}{" "}{p.scriptTitle.slice(0, 50)}</span>}
                     {p.url && (
                       <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11.5, fontWeight: 800, color: "#ff6b6b", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        Voir <ExternalLink size={11} />
+                        {tr("Voir")}{" "}<ExternalLink size={11} />
                       </a>
                     )}
                     {p.manual && <PostEntryForm platforms={formPlatforms} scripts={data.scripts} nowLocal={nowLocal} post={p} />}

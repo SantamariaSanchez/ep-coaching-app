@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -15,6 +16,7 @@ const INCLUDES = [
 // l'accompagnement — distinct de /communaute/coach qui est le fil des
 // publications du coach, pas une page dédiée à la relation elle-même.
 export default async function ClientMonCoachPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -40,9 +42,9 @@ export default async function ClientMonCoachPage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon accompagnement
+          {t("Mon accompagnement")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Mon coach</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon coach")}</h1>
       </div>
 
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-2xl p-6 mb-6">
@@ -59,7 +61,7 @@ export default async function ClientMonCoachPage() {
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-lg font-black text-white truncate">{coach.full_name ?? "Ton coach"}</p>
+            <p className="text-lg font-black text-white truncate">{coach.full_name ?? t("Ton coach")}</p>
             {coach.instagram_handle && (
               <p className="text-xs text-[#F5EDED]/40 flex items-center gap-1 mt-0.5">
                 <AtSign size={11} /> {coach.instagram_handle}
@@ -77,13 +79,13 @@ export default async function ClientMonCoachPage() {
           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest text-white no-underline"
           style={{ background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.35)" }}
         >
-          <MessageCircle size={14} /> Envoyer un message
+          <MessageCircle size={14} />{" "}{t("Envoyer un message")}
         </Link>
       </div>
 
       <section className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Ce qui est inclus dans ton accompagnement
+          {t("Ce qui est inclus dans ton accompagnement")}
         </p>
         <div className="flex flex-col gap-2">
           {INCLUDES.map(({ icon: Icon, text }) => (
@@ -100,8 +102,8 @@ export default async function ClientMonCoachPage() {
         className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5 no-underline"
       >
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white">Mot du coach</p>
-          <p className="text-[10px] text-[#F5EDED]/35">Les dernières publications de ton coach</p>
+          <p className="text-sm font-bold text-white">{t("Mot du coach")}</p>
+          <p className="text-[10px] text-[#F5EDED]/35">{t("Les dernières publications de ton coach")}</p>
         </div>
         <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
       </Link>

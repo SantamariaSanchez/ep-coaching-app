@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import NotInIOSApp from "@/components/native/NotInIOSApp";
 import Link from "next/link";
@@ -13,6 +14,7 @@ export default async function FormationDetailPage({
 }: {
   params: Promise<{ formationId: string }>;
 }) {
+  const t = await getT();
   const { formationId } = await params;
 
   const user = await getUser();
@@ -63,7 +65,7 @@ export default async function FormationDetailPage({
         }}
         className="animate-fade-in"
       >
-        <ChevronLeft size={13} /> Formations
+        <ChevronLeft size={13} />{" "}{t("Formations")}
       </Link>
 
       {/* Header card */}
@@ -82,7 +84,7 @@ export default async function FormationDetailPage({
             {formation.emoji}
           </div>
           <div>
-            <p className="ep-section-title" style={{ marginBottom: 2 }}>Formation</p>
+            <p className="ep-section-title" style={{ marginBottom: 2 }}>{t("Formation")}</p>
             <h1 style={{
               fontSize: 20, fontWeight: 900, letterSpacing: "-0.03em",
               color: "#F5EDED", margin: 0, lineHeight: 1.1,
@@ -117,7 +119,7 @@ export default async function FormationDetailPage({
         {/* Progress bar */}
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span className="ep-label">Progression</span>
+            <span className="ep-label">{t("Progression")}</span>
             <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(245,237,237,0.5)" }}>
               {pct}%
             </span>
@@ -137,15 +139,15 @@ export default async function FormationDetailPage({
       {locked && coachFormation && (
         <div className="ep-card animate-fade-up" style={{ padding: "16px 18px", marginBottom: 20, background: "linear-gradient(135deg, rgba(224,30,30,0.1) 0%, rgba(137,4,4,0.04) 100%)", border: "1px solid rgba(224,30,30,0.25)" }}>
           <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: "0 0 6px", display: "flex", alignItems: "center", gap: 8 }}>
-            <Lock size={13} style={{ color: "#E01E1E" }} /> Formation proposée par ton coach{formation.price_eur ? ` · ${formation.price_eur} €` : ""}
+            <Lock size={13} style={{ color: "#E01E1E" }} />{" "}{t("Formation proposée par ton coach")}{formation.price_eur ? ` · ${formation.price_eur} €` : ""}
           </p>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: "0 0 10px", lineHeight: 1.5 }}>
-            Tu peux parcourir tout le programme. Les vidéos se débloquent dès que ton coach t&apos;a donné l&apos;accès.
+            {t("Tu peux parcourir tout le programme. Les vidéos se débloquent dès que ton coach t'a donné l'accès.")}
           </p>
           {formation.payment_url && (
             <NotInIOSApp>
               <a href={formation.payment_url} target="_blank" rel="noopener noreferrer" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
-                Acheter la formation
+                {t("Acheter la formation")}
               </a>
             </NotInIOSApp>
           )}
@@ -166,14 +168,14 @@ export default async function FormationDetailPage({
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <Crown size={13} style={{ color: "#E01E1E" }} />
             <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
-              Vidéos réservées aux clients coachés
+              {t("Vidéos réservées aux clients coachés")}
             </p>
           </div>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: "0 0 10px", lineHeight: 1.5 }}>
-            Tu peux parcourir tout le programme dès maintenant. Les vidéos se débloquent avec l&apos;accompagnement.
+            {t("Tu peux parcourir tout le programme dès maintenant. Les vidéos se débloquent avec l'accompagnement.")}
           </p>
           <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
-            Réserver un appel découverte
+            {t("Réserver un appel découverte")}
           </Link>
         </div>
       )}
@@ -183,7 +185,7 @@ export default async function FormationDetailPage({
         {formation.modules.length === 0 ? (
           <div className="ep-card" style={{ padding: "36px 20px", textAlign: "center" }}>
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>
-              Les sections seront disponibles prochainement
+              {t("Les sections seront disponibles prochainement")}
             </p>
           </div>
         ) : (
@@ -212,7 +214,7 @@ export default async function FormationDetailPage({
                       textTransform: "uppercase", color: "rgba(224,30,30,0.55)",
                       margin: "0 0 2px",
                     }}>
-                      Section {mi + 1}
+                      {t("Section")}{" "}{mi + 1}
                     </p>
                     <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
                       {mod.title}
@@ -234,7 +236,7 @@ export default async function FormationDetailPage({
                   {mod.sections.length === 0 && (
                     <div style={{ padding: "16px 18px" }}>
                       <p style={{ fontSize: 12, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
-                        Vidéos bientôt disponibles
+                        {t("Vidéos bientôt disponibles")}
                       </p>
                     </div>
                   )}
@@ -247,7 +249,7 @@ export default async function FormationDetailPage({
                             {sec.title}
                           </p>
                           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
-                            Bientôt disponible
+                            {t("Bientôt disponible")}
                           </p>
                         </div>
                       );
@@ -316,7 +318,7 @@ export default async function FormationDetailPage({
                                   </div>
                                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                                     <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
-                                      {lesson.duration_min}min
+                                      {lesson.duration_min}{t("min")}
                                     </span>
                                     <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
                                   </div>
@@ -344,12 +346,12 @@ export default async function FormationDetailPage({
                                     </p>
                                     {isPremiumLocked && (
                                       <p style={{ fontSize: 9.5, color: "rgba(224,30,30,0.6)", margin: "2px 0 0", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                        Réservé aux clients coachés
+                                        {t("Réservé aux clients coachés")}
                                       </p>
                                     )}
                                   </div>
                                   <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)" }}>
-                                    {lesson.duration_min}min
+                                    {lesson.duration_min}{t("min")}
                                   </span>
                                 </div>
                               )}

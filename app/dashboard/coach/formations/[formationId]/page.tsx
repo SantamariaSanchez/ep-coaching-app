@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getFormationWithModules } from "@/utils/formations";
@@ -15,6 +16,7 @@ export default async function CoachFormationDetailPage({
 }: {
   params: Promise<{ formationId: string }>;
 }) {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
@@ -43,11 +45,11 @@ export default async function CoachFormationDetailPage({
         }}
         className="animate-fade-in"
       >
-        <ChevronLeft size={13} /> Formations
+        <ChevronLeft size={13} />{" "}{t("Formations")}
       </Link>
 
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>{formation.emoji} Formation</p>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{formation.emoji}{" "}{t("Formation")}</p>
         <h1 className="ep-h1">{formation.title}</h1>
       </div>
 

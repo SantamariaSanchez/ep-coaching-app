@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 ﻿import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -9,6 +10,7 @@ export default async function NoteTemplatesPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const { id } = await params;
 
   const user = await getUser();
@@ -30,19 +32,19 @@ export default async function NoteTemplatesPage({
           className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
         >
           <ChevronLeft size={14} />
-          Notes
+          {t("Notes")}
         </Link>
       </div>
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Modèles de messages
+          {t("Modèles de messages")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}
         </h1>
         <p className="mt-1 text-xs text-[#F5EDED]/30">
-          Clique sur un modèle pour le déplier, copie le message puis colle-le dans sa conversation.
+          {t("Clique sur un modèle pour le déplier, copie le message puis colle-le dans sa conversation.")}
         </p>
       </div>
 

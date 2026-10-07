@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { notFound } from "next/navigation";
 import { FileSignature } from "lucide-react";
 import { requireStaffPage } from "@/lib/staff-page";
@@ -29,6 +30,7 @@ export default async function StaffModulePage({
   params: Promise<{ module: string }>;
   searchParams: Promise<{ avec?: string }>;
 }) {
+  const t = await getT();
   const { module } = await params;
   const { avec } = await searchParams;
   const ctx = await requireStaffPage();
@@ -73,7 +75,7 @@ export default async function StaffModulePage({
       body = (
         <>
           <TemplatesLibrary templates={templatesFor(member.role_key)} />
-          <p className="ep-label" style={{ marginBottom: 8 }}>Mes modèles</p>
+          <p className="ep-label" style={{ marginBottom: 8 }}>{t("Mes modèles")}</p>
           <RecordBoard kind="template" records={records.filter((r) => r.kind === "template")} />
         </>
       );
@@ -89,10 +91,10 @@ export default async function StaffModulePage({
           <a href={contractHref} className="ep-card" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", marginBottom: 14, textDecoration: "none" }}>
             <FileSignature size={18} style={{ color: "#4ade80", flexShrink: 0 }} />
             <span style={{ flex: 1 }}>
-              <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>Mon contrat de collaboration</span>
+              <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{t("Mon contrat de collaboration")}</span>
               <span style={{ display: "block", fontSize: 11.5, color: "rgba(245,237,237,0.5)" }}>
-                Signé le {member.contract_signed_at ? new Date(member.contract_signed_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?"}
-                {signedPdf ? " · télécharger le PDF signé" : templatePdf ? " · télécharger le PDF" : ", avec ta fiche technique"}
+                {t("Signé le")}{" "}{member.contract_signed_at ? new Date(member.contract_signed_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?"}
+                {signedPdf ? t(" · télécharger le PDF signé") : templatePdf ? t(" · télécharger le PDF") : t(", avec ta fiche technique")}
               </span>
             </span>
           </a>
@@ -123,8 +125,8 @@ export default async function StaffModulePage({
       body =
         member.contract_version === "hors-ep" ? (
           <div className="ep-card" style={{ padding: "16px 18px" }}>
-            <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>Les offres de ton entreprise</p>
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: 0, lineHeight: 1.6 }}>Ton responsable partage ses offres, prix et liens de paiement dans l&apos;onglet Documents. Demande-lui dans la messagerie s&apos;il manque quelque chose.</p>
+            <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>{t("Les offres de ton entreprise")}</p>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: 0, lineHeight: 1.6 }}>{t("Ton responsable partage ses offres, prix et liens de paiement dans l'onglet Documents. Demande-lui dans la messagerie s'il manque quelque chose.")}</p>
           </div>
         ) : (
           <OffersPanel />

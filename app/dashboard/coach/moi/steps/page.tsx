@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
@@ -8,6 +9,7 @@ import StepsClient from "@/components/steps/StepsClient";
 import { updateStepGoal, addRoutineItem, deleteRoutineItem, logSteps, createReminderFromRoutine } from "@/app/dashboard/client/steps/actions";
 
 export default async function CoachMoiStepsPage() {
+  const t = await getT();
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/coach");
@@ -27,9 +29,9 @@ export default async function CoachMoiStepsPage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon suivi
+          {t("Mon suivi")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Steps</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Steps")}</h1>
       </div>
 
       <StepsClient

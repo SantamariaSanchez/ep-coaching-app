@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { todayInParis } from "@/lib/dates";
 import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { redirect, notFound } from "next/navigation";
@@ -75,6 +76,7 @@ export default async function ClientDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const { id } = await params;
 
   const user = await getUser();
@@ -200,13 +202,13 @@ export default async function ClientDetailPage({
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Tous les clients
+        {t("Tous les clients")}
       </Link>
 
       <div className="flex items-center gap-3 mb-8 flex-wrap">
         <div>
           <h1 className="text-3xl font-black uppercase tracking-tight">
-            {client.full_name ?? "Client"}
+            {client.full_name ?? t("Client")}
           </h1>
         </div>
         <span
@@ -222,14 +224,14 @@ export default async function ClientDetailPage({
           className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
         >
           <LayoutTemplate size={12} />
-          Modèles
+          {t("Modèles")}
         </Link>
         <Link
           href={`/dashboard/coach/clients/${id}/notes`}
           className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
         >
           <FileText size={12} />
-          Mes notes
+          {t("Mes notes")}
         </Link>
       </div>
 

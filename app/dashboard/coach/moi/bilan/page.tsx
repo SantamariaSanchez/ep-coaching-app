@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
@@ -21,6 +22,7 @@ function fmt(d: string) {
 }
 
 export default async function CoachMonBilanPage({ searchParams }: { searchParams: Promise<{ jour?: string }> }) {
+  const t = await getT();
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/coach");
@@ -68,7 +70,7 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
     <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{date === today ? fmt(today) : `Rattrapage · ${fmt(date)}`}</p>
-        <h1 className="ep-h1">Mon bilan &amp; ma progression</h1>
+        <h1 className="ep-h1">{t("Mon bilan & ma progression")}</h1>
       </div>
 
       <BilanDayPicker basePath="/dashboard/coach/moi/bilan" today={today} selected={date} logs={allLogs} />

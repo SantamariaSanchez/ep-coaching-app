@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -15,6 +16,7 @@ export default async function CoachMoiFormationDetailPage({
 }: {
   params: Promise<{ formationId: string }>;
 }) {
+  const t = await getT();
   const { formationId } = await params;
 
   const user = await getUser();
@@ -55,7 +57,7 @@ export default async function CoachMoiFormationDetailPage({
         }}
         className="animate-fade-in"
       >
-        <ChevronLeft size={13} /> Formations
+        <ChevronLeft size={13} />{" "}{t("Formations")}
       </Link>
 
       {/* Seul le fondateur arrive ici sur un brouillon (notFound pour les
@@ -66,12 +68,12 @@ export default async function CoachMoiFormationDetailPage({
           style={{ padding: "12px 16px", marginBottom: 16, border: "1px solid rgba(224,30,30,0.25)" }}
         >
           <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px" }}>
-            Brouillon, aperçu
+            {t("Brouillon, aperçu")}
           </p>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.5 }}>
-            Les membres ne voient que le titre de cette formation, en Bientôt disponible.{" "}
+            {t("Les membres ne voient que le titre de cette formation, en Bientôt disponible.")}{" "}
             <Link href={`/dashboard/coach/formations/${formation.id}`} style={{ color: "#E01E1E", fontWeight: 700, textDecoration: "none" }}>
-              Publier depuis l&apos;éditeur
+              {t("Publier depuis l'éditeur")}
             </Link>
           </p>
         </div>
@@ -92,7 +94,7 @@ export default async function CoachMoiFormationDetailPage({
             {formation.emoji}
           </div>
           <div>
-            <p className="ep-section-title" style={{ marginBottom: 2 }}>Formation</p>
+            <p className="ep-section-title" style={{ marginBottom: 2 }}>{t("Formation")}</p>
             <h1 style={{
               fontSize: 20, fontWeight: 900, letterSpacing: "-0.03em",
               color: "#F5EDED", margin: 0, lineHeight: 1.1,
@@ -125,7 +127,7 @@ export default async function CoachMoiFormationDetailPage({
 
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span className="ep-label">Progression</span>
+            <span className="ep-label">{t("Progression")}</span>
             <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(245,237,237,0.5)" }}>
               {pct}%
             </span>
@@ -145,7 +147,7 @@ export default async function CoachMoiFormationDetailPage({
         {formation.modules.length === 0 ? (
           <div className="ep-card" style={{ padding: "36px 20px", textAlign: "center" }}>
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>
-              Les sections seront disponibles prochainement
+              {t("Les sections seront disponibles prochainement")}
             </p>
           </div>
         ) : (
@@ -173,7 +175,7 @@ export default async function CoachMoiFormationDetailPage({
                       textTransform: "uppercase", color: "rgba(224,30,30,0.55)",
                       margin: "0 0 2px",
                     }}>
-                      Section {mi + 1}
+                      {t("Section")}{" "}{mi + 1}
                     </p>
                     <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
                       {mod.title}
@@ -194,7 +196,7 @@ export default async function CoachMoiFormationDetailPage({
                   {mod.sections.length === 0 && (
                     <div style={{ padding: "16px 18px" }}>
                       <p style={{ fontSize: 12, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
-                        Vidéos bientôt disponibles
+                        {t("Vidéos bientôt disponibles")}
                       </p>
                     </div>
                   )}
@@ -207,7 +209,7 @@ export default async function CoachMoiFormationDetailPage({
                             {sec.title}
                           </p>
                           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
-                            Bientôt disponible
+                            {t("Bientôt disponible")}
                           </p>
                         </div>
                       );
@@ -272,7 +274,7 @@ export default async function CoachMoiFormationDetailPage({
                                   </div>
                                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                                     <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
-                                      {lesson.duration_min}min
+                                      {lesson.duration_min}{t("min")}
                                     </span>
                                     <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
                                   </div>
@@ -297,7 +299,7 @@ export default async function CoachMoiFormationDetailPage({
                                     </p>
                                   </div>
                                   <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)" }}>
-                                    {lesson.duration_min}min
+                                    {lesson.duration_min}{t("min")}
                                   </span>
                                 </div>
                               )}

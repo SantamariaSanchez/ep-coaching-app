@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAgentTasks } from "@/utils/ai-agents";
@@ -16,6 +17,7 @@ import { Bot, ShieldCheck, MessageCircle } from "lucide-react";
 // manuellement, mais un clic direct depuis la conversation d'un client
 // ("Relance agent IA") reste toujours possible.
 export default async function CoachAssistantPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -28,15 +30,14 @@ export default async function CoachAssistantPage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-2">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon espace
+          {t("Mon espace")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
           <Bot size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
-          Mon assistant
+          {t("Mon assistant")}
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
-          Chaque jour, ton assistant vérifie tes clients : ceux dont le bilan est à l&apos;arrêt reçoivent
-          une relance automatiquement, et tout problème réel trouvé apparaît ici.
+          {t("Chaque jour, ton assistant vérifie tes clients : ceux dont le bilan est à l'arrêt reçoivent une relance automatiquement, et tout problème réel trouvé apparaît ici.")}
         </p>
       </div>
 
@@ -44,21 +45,19 @@ export default async function CoachAssistantPage() {
         <div className="ep-card flex items-start gap-3" style={{ padding: "16px 18px" }}>
           <MessageCircle size={16} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
           <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">
-            Relance automatique dès qu&apos;un client n&apos;a pas fait son bilan depuis 3 jours, jamais
-            plus d&apos;une fois tous les 3 jours pour le même client.
+            {t("Relance automatique dès qu'un client n'a pas fait son bilan depuis 3 jours, jamais plus d'une fois tous les 3 jours pour le même client.")}
           </p>
         </div>
         <div className="ep-card flex items-start gap-3" style={{ padding: "16px 18px" }}>
           <ShieldCheck size={16} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
           <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">
-            Audit qualité quotidien : programmes laissés inachevés, décrochages réels, jamais un
-            rapport creux, seulement ce qui mérite vraiment ton attention.
+            {t("Audit qualité quotidien : programmes laissés inachevés, décrochages réels, jamais un rapport creux, seulement ce qui mérite vraiment ton attention.")}
           </p>
         </div>
       </div>
 
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-        À vérifier
+        {t("À vérifier")}
       </p>
       <AssistantTaskList initialTasks={tasks} />
     </div>

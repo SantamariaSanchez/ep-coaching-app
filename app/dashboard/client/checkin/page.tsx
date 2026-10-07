@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
@@ -195,6 +196,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
 }
 
 export default async function CheckinPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -202,7 +204,7 @@ export default async function CheckinPage() {
   if (profile?.role === "coach") redirect("/dashboard/coach");
   // Bilan hebdo lu et repondu par un vrai coach, sans coach personne pour le
   // lire de l'autre cote — reserve aux clients coaches (voir CoachOnlyGate).
-  if (!isSubscribed(profile)) return <CoachOnlyGate icon={CalendarDays} title="Check-in hebdomadaire" />;
+  if (!isSubscribed(profile)) return <CoachOnlyGate icon={CalendarDays} title={t("Check-in hebdomadaire")} />;
 
   const [existing, pastCheckins, recentLogs] = await Promise.all([
     getThisWeekCheckin(user.id),
@@ -230,8 +232,8 @@ export default async function CheckinPage() {
 
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Semaine {weekNum}</p>
-        <h1 className="ep-h1">Check-in</h1>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Semaine")}{" "}{weekNum}</p>
+        <h1 className="ep-h1">{t("Check-in")}</h1>
       </div>
 
       {existing ? (
@@ -249,7 +251,7 @@ export default async function CheckinPage() {
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#4ade80" }}>
-                  Check-in envoyé
+                  {t("Check-in envoyé")}
                 </p>
                 <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.3)" }}>
                   {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" })
@@ -261,19 +263,19 @@ export default async function CheckinPage() {
 
           {/* This week recap */}
           <div className="ep-card" style={{ padding: "18px" }}>
-            <p className="ep-section-title" style={{ marginBottom: 14 }}>Ton bilan de la semaine</p>
+            <p className="ep-section-title" style={{ marginBottom: 14 }}>{t("Ton bilan de la semaine")}</p>
             {(existing.weight != null || existing.weight_avg != null) && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 14 }}>
                 {existing.weight != null && (
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Poids</p>
-                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight} kg</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>{t("Poids")}</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight}{" "}{t("kg")}</p>
                   </div>
                 )}
                 {existing.weight_avg != null && (
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
-                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight_avg} kg</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>{t("Moy. semaine")}</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight_avg}{" "}{t("kg")}</p>
                   </div>
                 )}
               </div>
@@ -281,7 +283,7 @@ export default async function CheckinPage() {
             {existing.attitude_rating != null && (
               <div style={{ marginBottom: 12 }}>
                 <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
-                  Attitude sur la semaine
+                  {t("Attitude sur la semaine")}
                 </p>
                 <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.attitude_rating}/10</p>
               </div>
@@ -307,7 +309,7 @@ export default async function CheckinPage() {
                 {existing.video_url && (
                   <a href={safeExternalUrl(existing.video_url) ?? "#"} target="_blank" rel="noopener noreferrer"
                     style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
-                    <ExternalLink size={11} /> Vidéo
+                    <ExternalLink size={11} />{" "}{t("Vidéo")}
                   </a>
                 )}
               </div>
@@ -317,13 +319,13 @@ export default async function CheckinPage() {
                 {existing.photo_drive_link && (
                   <a href={existing.photo_drive_link} target="_blank" rel="noopener noreferrer"
                     style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
-                    <ExternalLink size={11} /> Photos
+                    <ExternalLink size={11} />{" "}{t("Photos")}
                   </a>
                 )}
                 {existing.video_drive_link && (
                   <a href={existing.video_drive_link} target="_blank" rel="noopener noreferrer"
                     style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
-                    <ExternalLink size={11} /> Vidéo
+                    <ExternalLink size={11} />{" "}{t("Vidéo")}
                   </a>
                 )}
               </div>
@@ -336,7 +338,7 @@ export default async function CheckinPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                 <Star size={13} style={{ color: "#E01E1E" }} />
                 <p className="ep-section-title" style={{ margin: 0 }}>
-                  Bilan de ton coach
+                  {t("Bilan de ton coach")}
                   {(existing.coach_rating ?? existing.bilan_rating) != null && (
                     <span style={{ marginLeft: 8, color: "#fbbf24" }}>{existing.coach_rating ?? existing.bilan_rating}/10</span>
                   )}
@@ -364,7 +366,7 @@ export default async function CheckinPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Clock size={14} style={{ color: "rgba(251,191,36,0.5)" }} />
                 <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-                  En attente du bilan coach…
+                  {t("En attente du bilan coach…")}
                 </p>
               </div>
             </div>
@@ -378,7 +380,7 @@ export default async function CheckinPage() {
               {/* Point de départ pour la question "Performances entraînement"
                   du formulaire : le résumé factuel, prêt à être complété. */}
               <div className="ep-card" style={{ padding: "12px 16px" }}>
-                <p className="ep-label" style={{ margin: "0 0 4px", fontSize: 9 }}>Pour la question entraînement</p>
+                <p className="ep-label" style={{ margin: "0 0 4px", fontSize: 9 }}>{t("Pour la question entraînement")}</p>
                 <p style={{ margin: 0, fontSize: 13, color: "rgba(245,237,237,0.75)", lineHeight: 1.5 }}>
                   {trainingSummary(weekReview)}
                 </p>
@@ -393,10 +395,10 @@ export default async function CheckinPage() {
         <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>
           <CalendarDays size={22} style={{ color: "rgba(224,30,30,0.5)", margin: "0 auto 10px" }} />
           <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>
-            Ton jour de check-in, c&apos;est le {DAY_NAMES[checkinDay]}
+            {t("Ton jour de check-in, c'est le")}{" "}{DAY_NAMES[checkinDay]}
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.35)", margin: 0, lineHeight: 1.5 }}>
-            Reviens ce jour-là pour l&apos;envoyer. Continue de remplir ton bilan quotidien en attendant.
+            {t("Reviens ce jour-là pour l'envoyer. Continue de remplir ton bilan quotidien en attendant.")}
           </p>
         </div>
       )}
@@ -404,8 +406,8 @@ export default async function CheckinPage() {
       {/* Past checkins */}
       {pastCheckins.length > 0 && (
         <section style={{ marginTop: 40 }}>
-          <p className="ep-section-title" style={{ marginBottom: 4 }}>Historique</p>
-          <h2 className="ep-h2" style={{ marginBottom: 16 }}>Mes bilans</h2>
+          <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Historique")}</p>
+          <h2 className="ep-h2" style={{ marginBottom: 16 }}>{t("Mes bilans")}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {pastCheckins.map((c) => (
               <PastCheckinCard key={c.id} checkin={c} />

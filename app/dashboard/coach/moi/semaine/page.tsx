@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { isOn } from "@/lib/app-setup";
@@ -18,6 +19,7 @@ export default async function CoachMoiSemainePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -36,12 +38,11 @@ export default async function CoachMoiSemainePage({
     <div className="px-5 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1 flex items-center gap-1.5">
-          <CalendarCheck size={11} /> Mon suivi
+          <CalendarCheck size={11} />{" "}{t("Mon suivi")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Ma semaine</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ma semaine")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Ta semaine en chiffres, à partir de ce que tu as déjà noté. Puis 2 minutes de recul pour
-          caler la suivante.
+          {t("Ta semaine en chiffres, à partir de ce que tu as déjà noté. Puis 2 minutes de recul pour caler la suivante.")}
         </p>
       </div>
 
@@ -60,10 +61,10 @@ export default async function CoachMoiSemainePage({
       ) : (
         <div className="ep-card" style={{ padding: "20px 18px" }} role="alert">
           <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#fbbf24", display: "flex", alignItems: "center", gap: 8 }}>
-            <AlertTriangle size={15} /> Impossible de charger ta semaine
+            <AlertTriangle size={15} />{" "}{t("Impossible de charger ta semaine")}
           </p>
           <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>
-            Tes données sont intactes, c&apos;est la lecture qui a échoué. Recharge la page dans un instant.
+            {t("Tes données sont intactes, c'est la lecture qui a échoué. Recharge la page dans un instant.")}
           </p>
         </div>
       )}

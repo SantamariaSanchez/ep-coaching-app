@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ExternalLink, AlertTriangle } from "lucide-react";
@@ -60,6 +61,7 @@ function chip(active: boolean): React.CSSProperties {
 }
 
 export default async function SocialStatsPage({ searchParams }: { searchParams: Promise<{ p?: string; periode?: string; tri?: string; type?: string }> }) {
+  const tr = await getT();
   const user = await getUser();
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
@@ -83,28 +85,28 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
   return (
     <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
       <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
-        <ChevronLeft size={13} /> Administration
+        <ChevronLeft size={13} />{" "}{tr("Administration")}
       </Link>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Administration</p>
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">Stats réseaux</h1>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{tr("Administration")}</p>
+      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{tr("Stats réseaux")}</h1>
       <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(245,237,237,0.6)", fontSize: 16, margin: "0 0 20px" }}>
-        Tes vraies stats, pour savoir quoi réitérer.
+        {tr("Tes vraies stats, pour savoir quoi réitérer.")}
       </p>
 
       {!hasKey && (
         <div className="ep-card" style={{ padding: "14px 16px", marginBottom: 14, borderColor: "rgba(250,204,21,0.35)", display: "flex", gap: 10 }}>
           <AlertTriangle size={16} style={{ color: "#facc15", flexShrink: 0, marginTop: 2 }} />
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.75)", margin: 0, lineHeight: 1.6 }}>
-            La synchro automatique des réseaux n&apos;est pas encore branchée sur ce déploiement : aucune mise à jour automatique ne peut tourner. Tu peux toujours saisir tes chiffres à la main dans Mes stats réseaux.
+            {tr("La synchro automatique des réseaux n'est pas encore branchée sur ce déploiement : aucune mise à jour automatique ne peut tourner. Tu peux toujours saisir tes chiffres à la main dans Mes stats réseaux.")}
           </p>
         </div>
       )}
 
       {!data.ready ? (
         <div className="ep-card" style={{ padding: "16px 18px" }}>
-          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 6px" }}>Les tables des stats ne sont pas encore créées.</p>
+          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 6px" }}>{tr("Les tables des stats ne sont pas encore créées.")}</p>
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: 0, lineHeight: 1.6 }}>
-            Exécute la migration <code>supabase/migrations/20260929_social_stats.sql</code> dans le SQL Editor de Supabase, puis recharge cette page. Détail : {data.error}
+            {tr("Exécute la migration")}{" "}<code>{tr("supabase/migrations/20260929_social_stats.sql")}</code>{" "}{tr("dans le SQL Editor de Supabase, puis recharge cette page. Détail :")}{" "}{data.error}
           </p>
         </div>
       ) : (
@@ -113,22 +115,22 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
           <section className="ep-card-hero" style={{ padding: "16px 18px", marginBottom: 16 }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-start", justifyContent: "space-between" }}>
               <div style={{ minWidth: 0 }}>
-                <p className="ep-label" style={{ marginBottom: 6 }}>Dernières synchros</p>
+                <p className="ep-label" style={{ marginBottom: 6 }}>{tr("Dernières synchros")}</p>
                 {data.overview.map((a) => (
                   <p key={a.id} style={{ fontSize: 12.5, margin: "0 0 3px", color: "rgba(245,237,237,0.75)" }}>
                     <strong style={{ color: "#F5EDED" }}>{PLATFORM_LABELS[a.platform]}</strong> :{" "}
                     {a.lastRun ? (
                       <span style={{ color: a.lastRun.status === "success" ? "#4ade80" : a.lastRun.status === "running" ? "#facc15" : "#fca5a5" }}>
-                        {a.lastRun.status === "success" ? "ok" : a.lastRun.status === "partial" ? "incomplète" : a.lastRun.status === "running" ? "en cours" : "en échec"} le{" "}
+                        {a.lastRun.status === "success" ? tr("ok") : a.lastRun.status === "partial" ? tr("incomplète") : a.lastRun.status === "running" ? tr("en cours") : tr("en échec")}{" "}{tr("le")}{" "}
                         {new Date(a.lastRun.finished_at ?? a.lastRun.started_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                       </span>
                     ) : (
-                      <span style={{ color: "rgba(245,237,237,0.45)" }}>jamais synchronisé</span>
+                      <span style={{ color: "rgba(245,237,237,0.45)" }}>{tr("jamais synchronisé")}</span>
                     )}
-                    {a.backfillDone ? <span style={{ color: "rgba(245,237,237,0.4)" }}> · historique complet</span> : a.backfillUntil ? <span style={{ color: "rgba(245,237,237,0.4)" }}> · historique remonté jusqu&apos;au {a.backfillUntil}</span> : null}
+                    {a.backfillDone ? <span style={{ color: "rgba(245,237,237,0.4)" }}>{" "}{tr("· historique complet")}</span> : a.backfillUntil ? <span style={{ color: "rgba(245,237,237,0.4)" }}>{" "}{tr("· historique remonté jusqu'au")}{" "}{a.backfillUntil}</span> : null}
                   </p>
                 ))}
-                <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "6px 0 0" }}>Synchro automatique chaque lundi à 6h (heure de Paris).</p>
+                <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "6px 0 0" }}>{tr("Synchro automatique chaque lundi à 6h (heure de Paris).")}</p>
               </div>
               <SyncNowButton platform={platform} />
             </div>
@@ -137,14 +139,14 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
           {/* Filtres */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
             <div style={{ display: "flex", gap: 6, overflowX: "auto" }} className="no-scrollbar">
-              <Link href={href({ p: null, type: null })} style={chip(!platform)}>Toutes</Link>
+              <Link href={href({ p: null, type: null })} style={chip(!platform)}>{tr("Toutes")}</Link>
               {PLATFORMS.map((p) => (
                 <Link key={p} href={href({ p, type: null })} style={chip(platform === p)}>{PLATFORM_LABELS[p]}</Link>
               ))}
             </div>
             <div style={{ display: "flex", gap: 6, overflowX: "auto" }} className="no-scrollbar">
               {PERIODS.map((d) => (
-                <Link key={d} href={href({ periode: String(d) })} style={chip(days === d)}>{d === 365 ? "1 an" : `${d} jours`}</Link>
+                <Link key={d} href={href({ periode: String(d) })} style={chip(days === d)}>{d === 365 ? tr("1 an") : `${d} jours`}</Link>
               ))}
             </div>
           </div>
@@ -157,7 +159,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                 <div key={a.id} className="ep-card" style={{ padding: "14px 16px" }}>
                   <p className="ep-label" style={{ marginBottom: 4 }}>{PLATFORM_LABELS[a.platform]}</p>
                   <p style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: 0, lineHeight: 1.1 }}>{fmt(a.followers)}</p>
-                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>abonnés{a.followersDate ? ` au ${new Date(`${a.followersDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}</p>
+                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>{tr("abonnés")}{a.followersDate ? ` au ${new Date(`${a.followersDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}</p>
                   <div style={{ display: "flex", gap: 10, fontSize: 11.5, marginBottom: 8 }}>
                     {(["d7", "d30", "d90"] as const).filter((k) => a.growth[k] !== null).map((k) => (
                       <span key={k} style={{ color: (a.growth[k] ?? 0) > 0 ? "#4ade80" : (a.growth[k] ?? 0) < 0 ? "#fca5a5" : "rgba(245,237,237,0.5)" }}>
@@ -166,7 +168,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                     ))}
                   </div>
                   <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.65)", margin: 0, lineHeight: 1.6 }}>
-                    Sur {days === 365 ? "1 an" : `${days} jours`} : {fmt(a.period.views || a.period.impressions)} {a.period.views ? "vues" : "impressions"}, {fmt(a.period.reach)} de portée, {fmt(a.period.engagements || a.period.likes + a.period.comments + a.period.shares)} engagements
+                    {tr("Sur")}{" "}{days === 365 ? tr("1 an") : `${days} jours`} : {fmt(a.period.views || a.period.impressions)} {a.period.views ? tr("vues") : tr("impressions")}, {fmt(a.period.reach)}{" "}{tr("de portée,")}{" "}{fmt(a.period.engagements || a.period.likes + a.period.comments + a.period.shares)}{" "}{tr("engagements")}
                   </p>
                 </div>
               ))}
@@ -174,14 +176,14 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
 
           {/* Courbes */}
           <section style={{ marginBottom: 18 }}>
-            <p className="ep-label" style={{ marginBottom: 8 }}>Évolution</p>
+            <p className="ep-label" style={{ marginBottom: 8 }}>{tr("Évolution")}</p>
             <SocialCharts series={data.series} labels={data.labels} />
           </section>
 
           {/* Classement des publications */}
           <section style={{ marginBottom: 18 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-              <p className="ep-label" style={{ margin: 0 }}>Publications ({data.posts.length})</p>
+              <p className="ep-label" style={{ margin: 0 }}>{tr("Publications (")}{data.posts.length})</p>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {SORTS.map((s) => (
                   <Link key={s.key} href={href({ tri: s.key })} style={chip(sort === s.key)}>{s.label}</Link>
@@ -190,14 +192,14 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
             </div>
             {data.types.length > 1 && (
               <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8 }} className="no-scrollbar">
-                <Link href={href({ type: null })} style={chip(!type)}>Tous formats</Link>
+                <Link href={href({ type: null })} style={chip(!type)}>{tr("Tous formats")}</Link>
                 {data.types.map((t) => (
                   <Link key={t} href={href({ type: t })} style={chip(type === t)}>{t}</Link>
                 ))}
               </div>
             )}
             {data.posts.length === 0 ? (
-              <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>Aucune publication sur cette période.</p>
+              <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>{tr("Aucune publication sur cette période.")}</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {data.posts.map((p, i) => (
@@ -213,9 +215,9 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                         {p.post_type ? ` · ${p.post_type}` : ""}
                         {p.published_at ? ` · ${new Date(p.published_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}
                       </p>
-                      <p style={{ fontSize: 13, color: "#F5EDED", margin: "0 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{p.caption || "(sans légende)"}</p>
+                      <p style={{ fontSize: 13, color: "#F5EDED", margin: "0 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{p.caption || tr("(sans légende)")}</p>
                       <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.7)", margin: "0 0 6px", lineHeight: 1.6 }}>
-                        <strong style={{ color: "#F5EDED" }}>{fmt(p.views ?? p.impressions)}</strong> {p.views !== null ? "vues" : "impressions"}
+                        <strong style={{ color: "#F5EDED" }}>{fmt(p.views ?? p.impressions)}</strong> {p.views !== null ? tr("vues") : tr("impressions")}
                         {p.reach !== null ? ` · ${fmt(p.reach)} portée` : ""}
                         {` · ${fmt(p.likes)} j'aime · ${fmt(p.comments)} com. · ${fmt(p.shares)} partages`}
                         {p.saves !== null ? ` · ${fmt(p.saves)} enregistrements` : ""}
@@ -229,7 +231,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                         <PostScriptLink postId={p.id} scriptId={p.script_id} source={p.script_link_source} scripts={data.scripts} />
                         {p.url && (
                           <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11.5, fontWeight: 800, color: "#ff6b6b", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                            Voir <ExternalLink size={11} />
+                            {tr("Voir")}{" "}<ExternalLink size={11} />
                           </a>
                         )}
                       </div>
@@ -242,9 +244,9 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
 
           {/* Audience */}
           <section style={{ marginBottom: 18 }}>
-            <p className="ep-label" style={{ marginBottom: 8 }}>Audience</p>
+            <p className="ep-label" style={{ marginBottom: 8 }}>{tr("Audience")}</p>
             {data.audience.length === 0 ? (
-              <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>Pas encore de données d&apos;audience.</p>
+              <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>{tr("Pas encore de données d'audience.")}</p>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
                 {data.audience.map((d) => {
@@ -268,7 +270,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                           </div>
                         );
                       })}
-                      <p style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", margin: "6px 0 0" }}>au {d.date}</p>
+                      <p style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", margin: "6px 0 0" }}>{tr("au")}{" "}{d.date}</p>
                     </div>
                   );
                 })}
@@ -278,23 +280,23 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
 
           {/* Récap hebdo */}
           <section style={{ marginBottom: 18 }}>
-            <p className="ep-label" style={{ marginBottom: 8 }}>Récap de la semaine</p>
+            <p className="ep-label" style={{ marginBottom: 8 }}>{tr("Récap de la semaine")}</p>
             {data.recap ? (
               <div className="ep-card" style={{ padding: "14px 16px" }}>
                 <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: 12.5, color: "rgba(245,237,237,0.8)", margin: 0, lineHeight: 1.6 }}>{data.recap.markdown}</pre>
-                <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "8px 0 0" }}>{data.recap.notion_page_id ? "Aussi écrit dans Notion." : "Notion pas encore relié (NOTION_API_KEY et NOTION_STATS_DATABASE_ID)."}</p>
+                <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "8px 0 0" }}>{data.recap.notion_page_id ? tr("Aussi écrit dans Notion.") : tr("Notion pas encore relié (NOTION_API_KEY et NOTION_STATS_DATABASE_ID).")}</p>
               </div>
             ) : (
-              <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>Le premier récap arrive lundi après la synchro de 6h.</p>
+              <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>{tr("Le premier récap arrive lundi après la synchro de 6h.")}</p>
             )}
           </section>
 
           {/* Journal + limites */}
           <section style={{ marginBottom: 8 }}>
-            <p className="ep-label" style={{ marginBottom: 8 }}>Journal des synchros</p>
+            <p className="ep-label" style={{ marginBottom: 8 }}>{tr("Journal des synchros")}</p>
             <div className="ep-card" style={{ padding: "12px 14px" }}>
               {data.runs.length === 0 ? (
-                <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", margin: 0 }}>Aucune synchro pour l&apos;instant.</p>
+                <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", margin: 0 }}>{tr("Aucune synchro pour l'instant.")}</p>
               ) : (
                 data.runs.map((r, i) => {
                   const missing = (r.details?.missingFields ?? {}) as Record<string, string[]>;
@@ -302,9 +304,9 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                   return (
                     <div key={i} style={{ padding: "6px 0", borderTop: i ? "1px solid rgba(245,237,237,0.06)" : "none" }}>
                       <p style={{ fontSize: 12, color: "rgba(245,237,237,0.75)", margin: 0 }}>
-                        {new Date(r.started_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {PLATFORM_LABELS[r.platform as Platform] ?? r.platform} · {r.trigger === "manual" || r.trigger === "manuel" ? "lancée à la main" : "automatique"} ·{" "}
-                        <span style={{ color: r.status === "success" ? "#4ade80" : r.status === "partial" || r.status === "running" ? "#facc15" : "#fca5a5" }}>{r.status === "success" ? "réussie" : r.status === "partial" ? "partielle" : r.status === "running" ? "en cours" : "échec"}</span> · {r.rows_written} chiffre(s) mis à jour
-                        {missingCount ? <span style={{ color: "rgba(245,237,237,0.45)" }}> · {missingCount} chiffre(s) non fournis par la plateforme</span> : null}
+                        {new Date(r.started_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {PLATFORM_LABELS[r.platform as Platform] ?? r.platform} · {r.trigger === "manual" || r.trigger === "manuel" ? tr("lancée à la main") : tr("automatique")} ·{" "}
+                        <span style={{ color: r.status === "success" ? "#4ade80" : r.status === "partial" || r.status === "running" ? "#facc15" : "#fca5a5" }}>{r.status === "success" ? tr("réussie") : r.status === "partial" ? tr("partielle") : r.status === "running" ? tr("en cours") : tr("échec")}</span> · {r.rows_written}{" "}{tr("chiffre(s) mis à jour")}
+                        {missingCount ? <span style={{ color: "rgba(245,237,237,0.45)" }}> · {missingCount}{" "}{tr("chiffre(s) non fournis par la plateforme")}</span> : null}
                       </p>
                       {r.error && <p style={{ fontSize: 11.5, color: "#fca5a5", margin: "2px 0 0", wordBreak: "break-word" }}>{r.error.slice(0, 400)}</p>}
                     </div>

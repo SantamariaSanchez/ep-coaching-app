@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachPosts, getViewedPostIds, recordCoachPostView } from "@/utils/coach-posts";
@@ -12,6 +13,7 @@ function formatDate(dateStr: string) {
 }
 
 export default async function ClientCoachPostsPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -30,15 +32,15 @@ export default async function ClientCoachPostsPage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Communauté
+          {t("Communauté")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Mot du coach</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mot du coach")}</h1>
       </div>
 
       {posts.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl p-10 text-center">
           <MessageSquareText size={28} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/40">Aucune publication pour l&apos;instant.</p>
+          <p className="text-sm text-[#F5EDED]/40">{t("Aucune publication pour l'instant.")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -48,7 +50,7 @@ export default async function ClientCoachPostsPage() {
                 <p className="text-base font-black text-white flex-1">{post.title}</p>
                 {!viewedIds.has(post.id) && (
                   <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E01E1E]/15 border border-[#E01E1E]/40 text-[#E01E1E] flex-shrink-0">
-                    <Sparkles size={9} /> Nouveau
+                    <Sparkles size={9} />{" "}{t("Nouveau")}
                   </span>
                 )}
               </div>

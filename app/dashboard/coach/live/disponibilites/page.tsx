@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { Eye } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
@@ -8,6 +9,7 @@ import AvailabilityManager from "@/components/coach/AvailabilityManager";
 import BackButton from "@/components/ui/BackButton";
 
 export default async function CoachAvailabilityPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -29,34 +31,32 @@ export default async function CoachAvailabilityPage() {
       <BackButton fallbackHref="/dashboard/coach/live" />
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Live
+          {t("Live")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Mes disponibilités</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mes disponibilités")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Définis tes créneaux récurrents : tes clients réservent directement un appel 1:1 dans un
-          créneau libre, sans que tu aies à le programmer toi-même. Toutes les heures sont en heure
-          de Paris, et un créneau qui chevauche un live déjà au planning n&apos;est jamais proposé.
+          {t("Définis tes créneaux récurrents : tes clients réservent directement un appel 1:1 dans un créneau libre, sans que tu aies à le programmer toi-même. Toutes les heures sont en heure de Paris, et un créneau qui chevauche un live déjà au planning n'est jamais proposé.")}
         </p>
       </div>
 
       {rules.length > 0 && (
         <div className="ep-card" style={{ padding: "14px 16px", marginBottom: 20 }}>
           <p className="ep-label" style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
-            <Eye size={11} /> Ce que voient tes clients
+            <Eye size={11} />{" "}{t("Ce que voient tes clients")}
           </p>
           {preview.length > 0 ? (
             <>
               <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", margin: 0, lineHeight: 1.6 }}>
-                Prochains créneaux libres :{" "}
+                {t("Prochains créneaux libres :")}{" "}
                 {preview.map((s) => capitalize(formatLiveDateTime(s.startsAt))).join(", ")}.
               </p>
               <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "4px 0 0" }}>
-                {slots.length} créneau{slots.length > 1 ? "x" : ""} proposé{slots.length > 1 ? "s" : ""} sur les 14 prochains jours.
+                {slots.length}{" "}{t("créneau")}{slots.length > 1 ? "x" : ""}{" "}{t("proposé")}{slots.length > 1 ? "s" : ""}{" "}{t("sur les 14 prochains jours.")}
               </p>
             </>
           ) : (
             <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", margin: 0 }}>
-              Aucun créneau libre sur les 14 prochains jours : ton planning est plein ou tes plages sont trop courtes.
+              {t("Aucun créneau libre sur les 14 prochains jours : ton planning est plein ou tes plages sont trop courtes.")}
             </p>
           )}
         </div>

@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -16,6 +17,7 @@ const FORMATION_COLORS = [
 ];
 
 export default async function FormationsPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
@@ -76,13 +78,13 @@ export default async function FormationsPage() {
     >
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Académie EP</p>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Académie EP")}</p>
         <h1 className="ep-h1" style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <BookOpen size={26} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-          Formations
+          {t("Formations")}
         </h1>
         <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
-          {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} disponible{totalLessons !== 1 ? "s" : ""}
+          {totalLessons}{" "}{t("vidéo")}{totalLessons !== 1 ? "s" : ""}{" "}{t("disponible")}{totalLessons !== 1 ? "s" : ""}
           {totalMin > 0 && ` · ${formatDuration(totalMin)} de contenu`}
         </p>
       </div>
@@ -112,7 +114,7 @@ export default async function FormationsPage() {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", margin: "0 0 3px" }}>
-              Reprendre {resumeLesson.formationEmoji} {resumeLesson.formationTitle}
+              {t("Reprendre")}{" "}{resumeLesson.formationEmoji} {resumeLesson.formationTitle}
             </p>
             <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {resumeLesson.lessonTitle}
@@ -138,14 +140,14 @@ export default async function FormationsPage() {
             <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
               {totalLessons > 0
                 ? `${totalLessons} vidéo${totalLessons !== 1 ? "s" : ""} t'attend${totalLessons !== 1 ? "ent" : ""}`
-                : "L'Académie EP arrive bientôt"}
+                : t("L'Académie EP arrive bientôt")}
             </p>
           </div>
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "0 0 12px", lineHeight: 1.5 }}>
-            Parcours le catalogue librement. Les vidéos se débloquent dès que tu rejoins l&apos;accompagnement.
+            {t("Parcours le catalogue librement. Les vidéos se débloquent dès que tu rejoins l'accompagnement.")}
           </p>
           <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
-            Réserver un appel découverte
+            {t("Réserver un appel découverte")}
           </Link>
         </div>
       )}
@@ -154,7 +156,7 @@ export default async function FormationsPage() {
       {!isFreeTier && totalLessons > 0 && (
         <div className="ep-card animate-fade-up stagger-2" style={{ padding: "16px 20px", marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span className="ep-label">Progression globale</span>
+            <span className="ep-label">{t("Progression globale")}</span>
             <span style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
               {totalCompleted} / {totalLessons}
             </span>
@@ -176,10 +178,10 @@ export default async function FormationsPage() {
         <div className="ep-card" style={{ padding: "48px 24px", textAlign: "center" }}>
           <BookOpen size={36} style={{ color: "rgba(224,30,30,0.25)", margin: "0 auto 16px" }} strokeWidth={1.3} />
           <p style={{ fontSize: 14, fontWeight: 700, color: "rgba(245,237,237,0.5)", margin: "0 0 6px" }}>
-            Formations à venir
+            {t("Formations à venir")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.25)", margin: 0 }}>
-            Le contenu sera disponible très prochainement
+            {t("Le contenu sera disponible très prochainement")}
           </p>
         </div>
       ) : (
@@ -240,11 +242,11 @@ export default async function FormationsPage() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
                         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: `${col.from}`, margin: 0 }}>
-                          {formation.owner_id ? "Par ton coach" : `Formation ${i + 1}`}
+                          {formation.owner_id ? t("Par ton coach") : `Formation ${i + 1}`}
                         </p>
                         {formation.owner_id && !accessById.get(formation.id) && (
                           <span style={{ fontSize: 10, fontWeight: 800, color: "#F5EDED", background: "rgba(224,30,30,0.18)", border: "1px solid rgba(224,30,30,0.4)", borderRadius: 99, padding: "1px 7px" }}>
-                            {formation.price_eur ? `${formation.price_eur} €` : "Accès sur demande"}
+                            {formation.price_eur ? `${formation.price_eur} €` : t("Accès sur demande")}
                           </span>
                         )}
                         {!isAvailable && (
@@ -268,7 +270,7 @@ export default async function FormationsPage() {
                         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                           <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
                             <PlayCircle size={10} />
-                            {published} vidéo{published !== 1 ? "s" : ""}
+                            {published}{" "}{t("vidéo")}{published !== 1 ? "s" : ""}
                           </span>
                           {fMin > 0 && (
                             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
@@ -293,7 +295,7 @@ export default async function FormationsPage() {
                     <div style={{ marginTop: 14 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                         <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.25)", letterSpacing: "0.08em" }}>
-                          PROGRESSION
+                          {t("PROGRESSION")}
                         </span>
                         <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(245,237,237,0.4)" }}>
                           {completedCount}/{published}
@@ -313,7 +315,7 @@ export default async function FormationsPage() {
 
                   {!isAvailable && (
                     <div style={{ marginTop: 12 }}>
-                      <span className="ep-badge-subtle">Bientôt disponible</span>
+                      <span className="ep-badge-subtle">{t("Bientôt disponible")}</span>
                     </div>
                   )}
                 </div>

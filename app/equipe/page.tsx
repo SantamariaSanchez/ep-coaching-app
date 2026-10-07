@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import Link from "next/link";
 import { CalendarDays, FileBarChart, ChevronRight, PartyPopper, Target } from "lucide-react";
 import { requireStaffPage } from "@/lib/staff-page";
@@ -20,6 +21,7 @@ export const dynamic = "force-dynamic";
 // de SON métier : ce qu'il faut faire maintenant en premier, ses chiffres
 // ensuite.
 export default async function StaffDashboardPage({ searchParams }: { searchParams: Promise<{ bienvenue?: string }> }) {
+  const t = await getT();
   const ctx = await requireStaffPage();
   const { bienvenue } = await searchParams;
   const { member, cfg, role } = ctx;
@@ -54,15 +56,14 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
         <div className="ep-card-hero" style={{ padding: "16px 18px", marginBottom: 18, display: "flex", gap: 12, alignItems: "center" }}>
           <PartyPopper size={20} style={{ color: "#4ade80", flexShrink: 0 }} />
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", margin: 0, lineHeight: 1.55 }}>
-            Contrat signé, bienvenue dans l&apos;équipe. Ta copie, ta fiche de poste et ton parcours d&apos;intégration
-            viennent de partir par email. Ta journée type est juste en dessous.
+            {t("Contrat signé, bienvenue dans l'équipe. Ta copie, ta fiche de poste et ton parcours d'intégration viennent de partir par email. Ta journée type est juste en dessous.")}
           </p>
         </div>
       )}
 
       <p className="ep-label" style={{ marginBottom: 4 }}>{role.title}</p>
       <h1 style={{ fontSize: 28, fontWeight: 900, color: "#F5EDED", margin: "0 0 10px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
-        Salut {firstName}
+        {t("Salut")}{" "}{firstName}
       </h1>
       <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 18 }}>
         <Target size={15} style={{ color: "#E01E1E", marginTop: 2, flexShrink: 0 }} />
@@ -81,12 +82,12 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
           <section className="ep-card" style={{ padding: "15px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                <CalendarDays size={12} /> Rendez-vous du jour
+                <CalendarDays size={12} />{" "}{t("Rendez-vous du jour")}
               </p>
-              <Link href="/equipe/agenda" style={{ fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>Agenda</Link>
+              <Link href="/equipe/agenda" style={{ fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>{t("Agenda")}</Link>
             </div>
             {agenda.length === 0 ? (
-              <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>Aucun rendez-vous aujourd&apos;hui.</p>
+              <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Aucun rendez-vous aujourd'hui.")}</p>
             ) : (
               agenda.map((a) => (
                 <div key={a.id} style={{ display: "flex", gap: 10, padding: "7px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
@@ -111,24 +112,24 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
 
         <section className="ep-card" style={{ padding: "15px 16px" }}>
           <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
-            <FileBarChart size={12} /> Rapport de fin de journée
+            <FileBarChart size={12} />{" "}{t("Rapport de fin de journée")}
           </p>
           <p style={{ fontSize: 12.5, color: reportedToday ? "#4ade80" : "rgba(245,237,237,0.6)", margin: "0 0 12px", lineHeight: 1.55 }}>
-            {reportedToday ? "Envoyé pour aujourd'hui. Tu peux encore le compléter." : "Pas encore envoyé aujourd'hui. Deux minutes, tes chiffres et ta journée."}
+            {reportedToday ? t("Envoyé pour aujourd'hui. Tu peux encore le compléter.") : t("Pas encore envoyé aujourd'hui. Deux minutes, tes chiffres et ta journée.")}
           </p>
           <Link href="/equipe/rapports" className="ep-btn-primary" style={{ height: 38, padding: "0 16px", fontSize: 11.5, textDecoration: "none", display: "inline-flex" }}>
-            {reportedToday ? "Voir mon rapport" : "Faire mon rapport"}
+            {reportedToday ? t("Voir mon rapport") : t("Faire mon rapport")}
           </Link>
         </section>
       </div>
 
-      <p className="ep-label" style={{ marginBottom: 8 }}>Mes chiffres du mois</p>
+      <p className="ep-label" style={{ marginBottom: 8 }}>{t("Mes chiffres du mois")}</p>
       <KpiGrid kpis={kpis} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12, marginTop: 18, alignItems: "start" }}>
         {playbook && <LoggingGuide playbook={playbook} />}
         <section className="ep-card" style={{ padding: "15px 16px" }}>
-          <p className="ep-label" style={{ margin: "0 0 8px" }}>Mon espace</p>
+          <p className="ep-label" style={{ margin: "0 0 8px" }}>{t("Mon espace")}</p>
           {allModules(cfg).map((k) => (
             <Link
               key={k}

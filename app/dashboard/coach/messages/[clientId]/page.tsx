@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 ﻿import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById, roleBadge } from "@/utils/auth";
 import { PushPermission } from "@/components/messaging/PushPermission";
@@ -12,6 +13,7 @@ export default async function CoachClientMessagesPage({
 }: {
   params: Promise<{ clientId: string }>;
 }) {
+  const t = await getT();
   const { clientId } = await params;
 
   // Guard: clientId must be a valid UUID
@@ -59,7 +61,7 @@ export default async function CoachClientMessagesPage({
         </div>
         <div>
           <p className="text-sm font-black text-white flex items-center gap-1.5">
-            {client.full_name ?? "Client"}
+            {client.full_name ?? t("Client")}
             <RoleBadge label={roleBadge(client)} />
           </p>
         </div>

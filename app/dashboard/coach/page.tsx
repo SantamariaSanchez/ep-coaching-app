@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { isBlockOnDate } from "@/lib/agenda-day";
 import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
@@ -28,6 +29,7 @@ import { messagePreview } from "@/components/messaging/message-format";
 import { getAllMessageableMembers } from "@/utils/auth";
 
 export default async function CoachDashboard() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -187,7 +189,7 @@ export default async function CoachDashboard() {
       {/* ── Header ───────────────────────────────────────────────────────────── */}
       <div className="animate-fade-up" style={{ marginBottom: 32 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>
-          Espace Coach &nbsp;·&nbsp; {formattedDate}
+          {t("Espace Coach  · ")}{" "}{formattedDate}
         </p>
         {/* Idée #1 : salutation adaptée à l'heure plutôt que "Bonjour" figé
             toute la journée, y compris à 22h. */}

@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAppSetup } from "@/lib/app-setup-server";
@@ -21,6 +22,7 @@ export default async function CoachStudioPage({
 }: {
   searchParams: Promise<{ onglet?: string; script?: string; idee?: string }>;
 }) {
+  const t = await getT();
   // Liens profonds (recherche globale, voir CommandPalette.tsx) : ouvre le
   // bon onglet et met en avant le script ou l'idée trouvés.
   const { onglet, script: focusScriptId, idee: focusIdeaId } = await searchParams;
@@ -62,11 +64,11 @@ export default async function CoachStudioPage({
     <div className="px-4 sm:px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Business
+          {t("Business")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Studio créatif</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Studio créatif")}</h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
-          De l&apos;idée à la vidéo publiée : idées, scripts prêts à tourner, prompteur, puis tes chiffres dans Mes stats réseaux.
+          {t("De l'idée à la vidéo publiée : idées, scripts prêts à tourner, prompteur, puis tes chiffres dans Mes stats réseaux.")}
         </p>
       </div>
 

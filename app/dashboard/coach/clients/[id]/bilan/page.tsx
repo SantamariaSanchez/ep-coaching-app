@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 export const dynamic = "force-dynamic";
 
 import { redirect, notFound } from "next/navigation";
@@ -12,6 +13,7 @@ export default async function CoachClientBilanPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const { id } = await params;
 
   const user = await getUser();
@@ -42,10 +44,10 @@ export default async function CoachClientBilanPage({
           href={`/dashboard/coach/clients/${id}`}
           style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.3)", textDecoration: "none", marginBottom: 14, letterSpacing: "0.06em", textTransform: "uppercase" }}
         >
-          <ArrowLeft size={13} /> Retour
+          <ArrowLeft size={13} />{" "}{t("Retour")}
         </Link>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Bilans quotidiens</p>
-        <h1 className="ep-h1">{clientProfile.full_name ?? "Membre"}</h1>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Bilans quotidiens")}</p>
+        <h1 className="ep-h1">{clientProfile.full_name ?? t("Membre")}</h1>
       </div>
 
       <ClientBilanView weeks={weeks} clientId={id} />

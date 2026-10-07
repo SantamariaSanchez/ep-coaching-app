@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 ﻿import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -12,6 +13,7 @@ export default async function ClientCheckinsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const { id } = await params;
 
   const user = await getUser();
@@ -50,16 +52,16 @@ export default async function ClientCheckinsPage({
       <div className="flex items-start justify-between mb-8">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Check-ins
+            {t("Check-ins")}
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">
             {client.full_name}
           </h1>
           <p className="mt-1 text-xs text-[#F5EDED]/30">
-            {checkins.length} check-in{checkins.length !== 1 ? "s" : ""}
+            {checkins.length}{" "}{t("check-in")}{checkins.length !== 1 ? "s" : ""}
             {pendingCount > 0 && (
               <span className="ml-2 text-amber-400 font-semibold">
-                · {pendingCount} sans réponse
+                · {pendingCount}{" "}{t("sans réponse")}
               </span>
             )}
           </p>
@@ -71,10 +73,10 @@ export default async function ClientCheckinsPage({
       {checkins.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
-            Aucun check-in pour l&apos;instant
+            {t("Aucun check-in pour l'instant")}
           </p>
           <p className="text-xs text-[#F5EDED]/25 mt-1">
-            Le client n&apos;a pas encore soumis de bilan hebdomadaire.
+            {t("Le client n'a pas encore soumis de bilan hebdomadaire.")}
           </p>
         </div>
       ) : (

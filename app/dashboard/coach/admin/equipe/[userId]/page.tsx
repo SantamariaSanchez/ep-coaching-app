@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ListChecks, MessagesSquare, GraduationCap, FileBarChart, FolderOpen, AlertCircle, Table } from "lucide-react";
@@ -35,6 +36,7 @@ function Section({ icon: Icon, title, children, action }: { icon: typeof ListChe
 // Fiche d'un membre de l'équipe côté fondateur (demande directe 2026-09-25 :
 // "je dois pouvoir voir, manager, communiquer et assigner des tâches").
 export default async function TeamMemberPage({ params }: { params: Promise<{ userId: string }> }) {
+  const tr = await getT();
   const { userId } = await params;
   const user = await getUser();
   if (!user) redirect("/");
@@ -95,7 +97,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
   return (
     <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
       <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
-        <ChevronLeft size={13} /> Pilotage de l&apos;équipe
+        <ChevronLeft size={13} />{" "}{tr("Pilotage de l'équipe")}
       </Link>
       <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: card?.pole.color }}>{card?.pole.name}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight">{member.full_name}</h1>
@@ -103,8 +105,8 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
         {card?.role.title} · {member.email}
       </p>
       <p className="text-xs mb-6" style={{ color: member.status === "actif" ? "#4ade80" : "#f87171" }}>
-        Accès {member.status} · {isContractSigned(member) ? `contrat signé le ${new Date(member.contract_signed_at!).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}` : "contrat pas encore signé"} · formation {doneSet.size}/{lessons.length} ·{" "}
-        <Link href="/dashboard/coach/admin/organisation" className="text-[#E01E1E] font-bold">gérer l&apos;accès</Link>
+        {tr("Accès")}{" "}{member.status} · {isContractSigned(member) ? `contrat signé le ${new Date(member.contract_signed_at!).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}` : tr("contrat pas encore signé")}{" "}{tr("· formation")}{" "}{doneSet.size}/{lessons.length} ·{" "}
+        <Link href="/dashboard/coach/admin/organisation" className="text-[#E01E1E] font-bold">{tr("gérer l'accès")}</Link>
       </p>
 
       <div style={{ marginBottom: 14 }}>
@@ -112,12 +114,12 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 12, marginBottom: 12 }}>
-        <Section icon={ListChecks} title="Tâches">
+        <Section icon={ListChecks} title={tr("Tâches")}>
           <div style={{ marginBottom: 14 }}>
             <AssignTaskForm memberId={userId} memberName={member.full_name.split(" ")[0]} />
           </div>
           {tasks.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>Aucune tâche.</p>
+            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{tr("Aucune tâche.")}</p>
           ) : (
             tasks.map((t) => {
               const st = taskStage(t.status);
@@ -127,7 +129,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
                   <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: st?.color, minWidth: 64 }}>{st?.label}</span>
                   <span style={{ flex: 1, fontSize: 12.5, color: t.status === "fait" ? "rgba(245,237,237,0.4)" : "#F5EDED", textDecoration: t.status === "fait" ? "line-through" : undefined }}>
                     {t.title}
-                    {typeof t.data?._assigned_by_name === "string" && <span style={{ fontSize: 10.5, color: "#facc15" }}> · de toi</span>}
+                    {typeof t.data?._assigned_by_name === "string" && <span style={{ fontSize: 10.5, color: "#facc15" }}>{" "}{tr("· de toi")}</span>}
                   </span>
                   {t.occurred_on && (
                     <span style={{ fontSize: 11, color: late ? "#f87171" : "rgba(245,237,237,0.45)" }}>
@@ -146,16 +148,16 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12, marginBottom: 12 }}>
-        <Section icon={AlertCircle} title="Ce qui l'attend maintenant">
+        <Section icon={AlertCircle} title={tr("Ce qui l'attend maintenant")}>
           {urgent.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "#4ade80", margin: 0 }}>Rien d&apos;urgent en attente.</p>
+            <p style={{ fontSize: 12.5, color: "#4ade80", margin: 0 }}>{tr("Rien d'urgent en attente.")}</p>
           ) : (
             urgent.map((a) => (
               <p key={a.id} style={{ fontSize: 12.5, color: a.priority === 1 ? "#fca5a5" : "rgba(245,237,237,0.75)", margin: "0 0 6px", lineHeight: 1.5 }}>{a.title}</p>
             ))
           )}
         </Section>
-        <Section icon={GraduationCap} title="Formation">
+        <Section icon={GraduationCap} title={tr("Formation")}>
           {PHASES.map((p) => {
             const list = lessons.filter((l) => l.phase === p.key);
             if (!list.length) return null;
@@ -168,9 +170,9 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
             );
           })}
         </Section>
-        <Section icon={FileBarChart} title="Derniers rapports">
+        <Section icon={FileBarChart} title={tr("Derniers rapports")}>
           {reports.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>Aucun rapport envoyé.</p>
+            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{tr("Aucun rapport envoyé.")}</p>
           ) : (
             reports.map((r) => {
               const metrics = (r.data?.metrics as Record<string, number> | undefined) ?? {};
@@ -181,9 +183,9 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
                     {new Date(`${r.occurred_on}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}
                   </p>
                   <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.55)", margin: 0 }}>
-                    {Object.entries(metrics).map(([k, v]) => `${labels[k] ?? k} : ${v}`).join(" · ") || "Aucun chiffre"}
+                    {Object.entries(metrics).map(([k, v]) => `${labels[k] ?? k} : ${v}`).join(" · ") || tr("Aucun chiffre")}
                   </p>
-                  {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "#facc15", margin: 0 }}>Blocage : {r.data.blocker as string}</p>}
+                  {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "#facc15", margin: 0 }}>{tr("Blocage :")}{" "}{r.data.blocker as string}</p>}
                 </div>
               );
             })
@@ -193,7 +195,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
 
       {boards.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          <Section icon={Table} title="Ses tableaux">
+          <Section icon={Table} title={tr("Ses tableaux")}>
             {boards.map((k) => (
               <div key={k} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
                 <span style={{ fontSize: 12.5, color: "#F5EDED" }}>
@@ -206,10 +208,10 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
         </div>
       )}
 
-      <Section icon={FolderOpen} title="Documents">
+      <Section icon={FolderOpen} title={tr("Documents")}>
         <DocumentsPanel documents={documents} meId={user.id} founder targets={docTargets} defaultTarget={`user:${userId}`} />
       </Section>
-      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)", marginTop: 10 }}>Poste : {card?.role.mission}</p>
+      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)", marginTop: 10 }}>{tr("Poste :")}{" "}{card?.role.mission}</p>
     </div>
   );
 }

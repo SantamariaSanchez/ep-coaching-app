@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Video } from "lucide-react";
@@ -47,6 +48,7 @@ function TypeCard({ type }: { type: LiveType }) {
 }
 
 export default async function ClientLivePage() {
+  const tr = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -57,7 +59,7 @@ export default async function ClientLivePage() {
   // jamais soumis à ce paywall entre professionnels (voir Lot 1). Message
   // explicite au lieu d'un redirect silencieux vers /abonnement.
   if (profile?.role !== "coach" && !isSubscribed(profile)) {
-    return <CoachOnlyGate icon={Video} title="Coaching live" />;
+    return <CoachOnlyGate icon={Video} title={tr("Coaching live")} />;
   }
 
   // Les lives passés étaient invisibles côté client — seuls les "à venir"
@@ -75,17 +77,17 @@ export default async function ClientLivePage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Live
+          {tr("Live")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Coaching live</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Coaching live")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Tout ton accompagnement en direct avec ton coach : 1:1, suivi hebdo, points flash, ateliers.
+          {tr("Tout ton accompagnement en direct avec ton coach : 1:1, suivi hebdo, points flash, ateliers.")}
         </p>
       </div>
 
       <div className="mb-6">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Tes rendez-vous individuels
+          {tr("Tes rendez-vous individuels")}
         </p>
         <div className="grid grid-cols-2 gap-2.5">
           {INDIVIDUAL_TYPES.map((t) => (
@@ -96,7 +98,7 @@ export default async function ClientLivePage() {
 
       <div className="mb-2">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Lives collectifs
+          {tr("Lives collectifs")}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
           {GROUP_TYPES.map((t) => (
@@ -107,7 +109,7 @@ export default async function ClientLivePage() {
 
       <div style={{ marginTop: 24 }}>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Mes lives
+          {tr("Mes lives")}
         </p>
         <LiveEventsList
           initialEvents={events}

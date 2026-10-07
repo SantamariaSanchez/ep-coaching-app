@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -17,6 +18,7 @@ export default async function EditProgramPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const { id } = await params;
 
   const user = await getUser();
@@ -46,19 +48,18 @@ export default async function EditProgramPage({
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Retour au programme
+        {t("Retour au programme")}
       </Link>
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          {program ? "Concevoir le programme" : "Nouveau programme"}
+          {program ? t("Concevoir le programme") : t("Nouveau programme")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}
         </h1>
         <p className="mt-1 text-xs text-[#F5EDED]/30 max-w-2xl">
-          Structure d&apos;abord (split, fréquence, objectif de phase), exercices ensuite. Tout ce que tu
-          construis ici est le programme réel de ce client, pas un modèle.
+          {t("Structure d'abord (split, fréquence, objectif de phase), exercices ensuite. Tout ce que tu construis ici est le programme réel de ce client, pas un modèle.")}
         </p>
       </div>
 

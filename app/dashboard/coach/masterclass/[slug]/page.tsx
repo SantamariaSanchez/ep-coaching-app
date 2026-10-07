@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -13,6 +14,7 @@ export default async function MasterclassGuidePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -33,7 +35,7 @@ export default async function MasterclassGuidePage({
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Masterclass
+        {t("Masterclass")}
       </Link>
 
       <MasterclassGuideView guide={guide} initialCompletedSteps={completedSteps} />

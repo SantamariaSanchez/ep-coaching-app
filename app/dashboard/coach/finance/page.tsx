@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getAllCoaches, getAllActiveClientsSystemWide } from "@/utils/auth";
@@ -36,6 +37,7 @@ function StatCard({ label, value, sub, color = "#F5EDED" }: { label: string; val
 }
 
 export default async function CoachFinancePage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -116,18 +118,16 @@ export default async function CoachFinancePage() {
         href="/dashboard/coach"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
-        <ChevronLeft size={13} /> Retour
+        <ChevronLeft size={13} />{" "}{t("Retour")}
       </Link>
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Administration
+          {t("Administration")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Finance</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Finance")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Revenus réels traités par Stripe. Abonnements plateforme des coachs tiers et abonnements
-          directs des clients. Les paiements gérés hors app (lien externe d&apos;un coach, virement) n&apos;y
-          figurent pas.
+          {t("Revenus réels traités par Stripe. Abonnements plateforme des coachs tiers et abonnements directs des clients. Les paiements gérés hors app (lien externe d'un coach, virement) n'y figurent pas.")}
         </p>
       </div>
 
@@ -142,12 +142,12 @@ export default async function CoachFinancePage() {
           rien de la direction (croissance ou ralentissement). */}
       <div className="ep-card" style={{ padding: "14px 16px", marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ flex: 1 }}>
-          <p className="ep-label" style={{ marginBottom: 4 }}>Activations ce mois-ci</p>
+          <p className="ep-label" style={{ marginBottom: 4 }}>{t("Activations ce mois-ci")}</p>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{activationsThisMonth}</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 4, color: trendColor, fontSize: 12, fontWeight: 800 }}>
           <TrendIcon size={13} strokeWidth={2.5} />
-          {activationsDelta === 0 ? "stable" : `${activationsDelta > 0 ? "+" : ""}${activationsDelta} vs mois dernier`}
+          {activationsDelta === 0 ? t("stable") : `${activationsDelta > 0 ? "+" : ""}${activationsDelta} vs mois dernier`}
         </div>
       </div>
 
@@ -156,7 +156,7 @@ export default async function CoachFinancePage() {
       {expiringTrials.length > 0 && (
         <section className="mb-6">
           <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-400/80 mb-3">
-            <Crown size={12} /> Essais qui expirent bientôt
+            <Crown size={12} />{" "}{t("Essais qui expirent bientôt")}
           </p>
           <div className="space-y-2">
             {expiringTrials.map(({ coach, daysLeft }) => (
@@ -167,7 +167,7 @@ export default async function CoachFinancePage() {
                 style={{ padding: "12px 16px" }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{coach.full_name ?? "Sans nom"}</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{coach.full_name ?? t("Sans nom")}</p>
                   <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{coach.email}</p>
                 </div>
                 <span style={{
@@ -176,7 +176,7 @@ export default async function CoachFinancePage() {
                   border: `1px solid ${daysLeft <= 2 ? "#E01E1E" : "#facc15"}55`, borderRadius: 999, padding: "3px 9px",
                   flexShrink: 0,
                 }}>
-                  {daysLeft <= 0 ? "Aujourd'hui" : daysLeft === 1 ? "Demain" : `${daysLeft} jours`}
+                  {daysLeft <= 0 ? t("Aujourd'hui") : daysLeft === 1 ? t("Demain") : `${daysLeft} jours`}
                 </span>
               </Link>
             ))}
@@ -188,27 +188,27 @@ export default async function CoachFinancePage() {
       <section className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            <Crown size={12} className="text-[#E01E1E]" /> Abonnements plateforme (coachs tiers)
+            <Crown size={12} className="text-[#E01E1E]" />{" "}{t("Abonnements plateforme (coachs tiers)")}
           </p>
           <Link href="/dashboard/coach/admin" className="text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444]">
-            Gérer →
+            {t("Gérer →")}
           </Link>
         </div>
         <div className="ep-card" style={{ padding: "14px 16px" }}>
           {coaches.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.35)" }}>Aucun coach tiers inscrit pour l&apos;instant.</p>
+            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.35)" }}>{t("Aucun coach tiers inscrit pour l'instant.")}</p>
           ) : (
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <p className="ep-label" style={{ marginBottom: 2 }}>Actifs</p>
+                <p className="ep-label" style={{ marginBottom: 2 }}>{t("Actifs")}</p>
                 <p style={{ fontSize: 15, fontWeight: 800, color: "#4ade80", margin: 0 }}>{coachesActive}</p>
               </div>
               <div>
-                <p className="ep-label" style={{ marginBottom: 2 }}>En essai</p>
+                <p className="ep-label" style={{ marginBottom: 2 }}>{t("En essai")}</p>
                 <p style={{ fontSize: 15, fontWeight: 800, color: "#facc15", margin: 0 }}>{coachesTrialing}</p>
               </div>
               <div>
-                <p className="ep-label" style={{ marginBottom: 2 }}>Total inscrits</p>
+                <p className="ep-label" style={{ marginBottom: 2 }}>{t("Total inscrits")}</p>
                 <p style={{ fontSize: 15, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{coaches.length}</p>
               </div>
             </div>
@@ -222,19 +222,19 @@ export default async function CoachFinancePage() {
       {/* Clients directs */}
       <section className="mb-6">
         <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          <Users size={12} className="text-[#E01E1E]" /> Abonnements clients (paiement direct)
+          <Users size={12} className="text-[#E01E1E]" />{" "}{t("Abonnements clients (paiement direct)")}
         </p>
         <div className="ep-card" style={{ padding: "14px 16px" }}>
           {activeClients.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.35)" }}>Aucun client payant pour l&apos;instant.</p>
+            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.35)" }}>{t("Aucun client payant pour l'instant.")}</p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="ep-label" style={{ marginBottom: 2 }}>Via Stripe</p>
+                <p className="ep-label" style={{ marginBottom: 2 }}>{t("Via Stripe")}</p>
                 <p style={{ fontSize: 15, fontWeight: 800, color: "#4ade80", margin: 0 }}>{clientsWithStripe}</p>
               </div>
               <div>
-                <p className="ep-label" style={{ marginBottom: 2 }}>Activés manuellement</p>
+                <p className="ep-label" style={{ marginBottom: 2 }}>{t("Activés manuellement")}</p>
                 <p style={{ fontSize: 15, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{clientsManual}</p>
               </div>
             </div>
@@ -248,10 +248,10 @@ export default async function CoachFinancePage() {
       {/* Historique */}
       <section>
         <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          <History size={12} className="text-[#E01E1E]" /> Historique récent
+          <History size={12} className="text-[#E01E1E]" />{" "}{t("Historique récent")}
         </p>
         {!recentEvents || recentEvents.length === 0 ? (
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.3)" }}>Aucun changement de statut pour l&apos;instant.</p>
+          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.3)" }}>{t("Aucun changement de statut pour l'instant.")}</p>
         ) : (
           <div className="space-y-2">
             {recentEvents.map((e) => (
@@ -259,8 +259,8 @@ export default async function CoachFinancePage() {
                 <TrendingUp size={13} style={{ color: e.status === "active" ? "#4ade80" : "rgba(245,237,237,0.3)", flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 12, color: "#F5EDED", margin: 0 }}>
-                    <strong>{nameById.get(e.client_id) ?? "Client"}</strong>{" "}
-                    {e.status === "active" ? "activé" : e.status === "canceled" ? "résilié" : "repassé gratuit"}
+                    <strong>{nameById.get(e.client_id) ?? t("Client")}</strong>{" "}
+                    {e.status === "active" ? t("activé") : e.status === "canceled" ? t("résilié") : t("repassé gratuit")}
                     {e.plan ? ` · ${e.plan}` : ""}
                   </p>
                   {e.note && <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "2px 0 0" }}>{e.note}</p>}
@@ -275,9 +275,9 @@ export default async function CoachFinancePage() {
       </section>
 
       <p style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", marginTop: 20, display: "flex", alignItems: "center", gap: 4 }}>
-        <ExternalLink size={10} /> Détail complet des paiements sur le{" "}
+        <ExternalLink size={10} />{" "}{t("Détail complet des paiements sur le")}{" "}
         <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E" }}>
-          dashboard Stripe
+          {t("dashboard Stripe")}
         </a>.
       </p>
     </div>

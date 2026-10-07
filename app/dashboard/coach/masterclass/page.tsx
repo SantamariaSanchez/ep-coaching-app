@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { MASTERCLASS_GUIDES } from "@/lib/masterclass-guides";
@@ -10,6 +11,7 @@ import MasterclassList from "@/components/coach/MasterclassList";
 // résultat réel produit, pas juste avoir lu. Contenu statique (voir
 // lib/masterclass-guides.ts), seule la progression vit en base par coach.
 export default async function MasterclassPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -22,12 +24,11 @@ export default async function MasterclassPage() {
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon business
+          {t("Mon business")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Masterclass</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Masterclass")}</h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
-          Des guides pas à pas pour repartir avec un résultat réel en main, pas juste avoir lu. Suis les
-          étapes dans l&apos;ordre, coche au fur et à mesure.
+          {t("Des guides pas à pas pour repartir avec un résultat réel en main, pas juste avoir lu. Suis les étapes dans l'ordre, coche au fur et à mesure.")}
         </p>
       </div>
 

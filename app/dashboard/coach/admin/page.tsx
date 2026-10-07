@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getAllCoaches, getClients } from "@/utils/auth";
@@ -25,6 +26,7 @@ function formatDate(iso: string | null): string | null {
 // et affiche l'état réel de leur abonnement Stripe (paiement, essai,
 // prochaine échéance).
 export default async function CoachAdminPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -50,25 +52,25 @@ export default async function CoachAdminPage() {
         href="/dashboard/coach"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
-        <ChevronLeft size={13} /> Retour
+        <ChevronLeft size={13} />{" "}{t("Retour")}
       </Link>
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Administration
+          {t("Administration")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Coachs</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Coachs")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Coachs tiers inscrits sur la plateforme. Chacun ne voit que ses propres clients, toi seul peux consulter la liste de chacun ci-dessous (lecture seule, sans y accéder toi-même).
+          {t("Coachs tiers inscrits sur la plateforme. Chacun ne voit que ses propres clients, toi seul peux consulter la liste de chacun ci-dessous (lecture seule, sans y accéder toi-même).")}
         </p>
       </div>
 
       <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 24, marginBottom: 24 }}>
         <div>
-          <p className="ep-label" style={{ marginBottom: 4 }}>Coachs inscrits</p>
+          <p className="ep-label" style={{ marginBottom: 4 }}>{t("Coachs inscrits")}</p>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{coaches.length}</p>
         </div>
         <div>
-          <p className="ep-label" style={{ marginBottom: 4 }}>Revenu mensuel estimé</p>
+          <p className="ep-label" style={{ marginBottom: 4 }}>{t("Revenu mensuel estimé")}</p>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#4ade80", margin: 0 }}>
             {mrr.toLocaleString("fr-FR", { maximumFractionDigits: 0 })}€
           </p>
@@ -76,7 +78,7 @@ export default async function CoachAdminPage() {
       </div>
 
       {coaches.length === 0 ? (
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)" }}>Aucun coach tiers inscrit pour l&apos;instant.</p>
+        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)" }}>{t("Aucun coach tiers inscrit pour l'instant.")}</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {coaches.map((coach, i) => {
@@ -87,7 +89,7 @@ export default async function CoachAdminPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-                      {coach.full_name ?? "Sans nom"}
+                      {coach.full_name ?? t("Sans nom")}
                     </p>
                     <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{coach.email}</p>
                   </div>
@@ -103,21 +105,21 @@ export default async function CoachAdminPage() {
                       {statusInfo.label}
                     </span>
                   ) : (
-                    <span style={{ fontSize: 11, color: "rgba(245,237,237,0.35)" }}>Pas encore de paiement Stripe</span>
+                    <span style={{ fontSize: 11, color: "rgba(245,237,237,0.35)" }}>{t("Pas encore de paiement Stripe")}</span>
                   )}
                   {b?.amount != null && (
                     <span style={{ fontSize: 12, color: "rgba(245,237,237,0.55)" }}>
-                      {b.amount}€ / {b.intervalMonths === 1 ? "mois" : `${b.intervalMonths} mois`}
+                      {b.amount}€ / {b.intervalMonths === 1 ? t("mois") : `${b.intervalMonths} mois`}
                     </span>
                   )}
                   {b?.status === "trialing" && b.trialEnd && (
                     <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-                      Essai jusqu&apos;au {formatDate(b.trialEnd)}
+                      {t("Essai jusqu'au")}{" "}{formatDate(b.trialEnd)}
                     </span>
                   )}
                   {b?.status === "active" && b.currentPeriodEnd && (
                     <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-                      Prochain prélèvement le {formatDate(b.currentPeriodEnd)}
+                      {t("Prochain prélèvement le")}{" "}{formatDate(b.currentPeriodEnd)}
                     </span>
                   )}
                   {b?.stripeCustomerUrl && (
@@ -127,7 +129,7 @@ export default async function CoachAdminPage() {
                       rel="noopener noreferrer"
                       style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "#E01E1E", textDecoration: "none", fontWeight: 700, marginLeft: "auto" }}
                     >
-                      Voir sur Stripe <ExternalLink size={11} />
+                      {t("Voir sur Stripe")}{" "}<ExternalLink size={11} />
                     </a>
                   )}
                 </div>

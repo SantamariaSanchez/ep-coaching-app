@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
@@ -50,6 +51,7 @@ const COACHING_PILLARS = [
 export const dynamic = "force-dynamic";
 
 export default async function AbonnementPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -93,7 +95,7 @@ export default async function AbonnementPage() {
             marginBottom: 4,
           }}
         >
-          Mon coaching
+          {t("Mon coaching")}
         </p>
         <h1
           style={{
@@ -106,7 +108,7 @@ export default async function AbonnementPage() {
             textTransform: "uppercase",
           }}
         >
-          Le coaching individuel
+          {t("Le coaching individuel")}
         </h1>
         <p
           style={{
@@ -116,7 +118,7 @@ export default async function AbonnementPage() {
             margin: "0 0 14px",
           }}
         >
-          Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l&apos;app (programme, logbook, nutrition, bilan, communauté...) reste gratuit, à vie, que tu réserves un appel ou non.
+          {t("Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l'app (programme, logbook, nutrition, bilan, communauté...) reste gratuit, à vie, que tu réserves un appel ou non.")}
         </p>
         {/* Item 46 : distinct de "jamais été client" — quelqu'un qui vient de
             perdre l'accès mérite un message qui reconnaît ce qui s'est
@@ -128,8 +130,7 @@ export default async function AbonnementPage() {
             borderRadius: "var(--radius-lg)", padding: "12px 16px", marginBottom: 14,
           }}>
             <p style={{ margin: 0, fontSize: 12.5, color: "#fbbf24", fontWeight: 600, lineHeight: 1.5 }}>
-              Ton coaching payant s&apos;est arrêté. Tu gardes l&apos;accès à tous les outils gratuits, pour
-              réactiver le suivi avec ton coach, réserve un nouvel appel ci-dessous.
+              {t("Ton coaching payant s'est arrêté. Tu gardes l'accès à tous les outils gratuits, pour réactiver le suivi avec ton coach, réserve un nouvel appel ci-dessous.")}
             </p>
           </div>
         )}
@@ -140,7 +141,7 @@ export default async function AbonnementPage() {
             border: "1px solid rgba(74,222,128,0.3)", background: "rgba(74,222,128,0.06)",
             borderRadius: 999, padding: "5px 12px",
           }}>
-            <CheckCircle2 size={12} /> Aucune obligation, l&apos;appel est gratuit et sans engagement
+            <CheckCircle2 size={12} />{" "}{t("Aucune obligation, l'appel est gratuit et sans engagement")}
           </div>
         )}
       </div>
@@ -169,10 +170,10 @@ export default async function AbonnementPage() {
                 margin: "0 0 2px",
               }}
             >
-              Tu es déjà client EP Coaching
+              {t("Tu es déjà client EP Coaching")}
             </p>
             <p style={{ fontSize: 11, color: "rgba(74,222,128,0.6)", margin: 0 }}>
-              Tout le contenu est débloqué pour toi.
+              {t("Tout le contenu est débloqué pour toi.")}
             </p>
           </div>
         </div>
@@ -211,12 +212,12 @@ export default async function AbonnementPage() {
               textTransform: "uppercase",
             }}
           >
-            Prochaine étape
+            {t("Prochaine étape")}
           </p>
           {showWaitlist ? (
             <>
               <h2 className="ep-h2" style={{ marginBottom: 12 }}>
-                Coaching complet pour le moment
+                {t("Coaching complet pour le moment")}
               </h2>
               <p
                 style={{
@@ -226,8 +227,7 @@ export default async function AbonnementPage() {
                   margin: "0 0 24px",
                 }}
               >
-                Ton coach n&apos;ouvre pas de nouvelle place tout de suite. Rejoins la liste d&apos;attente,
-                il te contactera dès qu&apos;une place se libère.
+                {t("Ton coach n'ouvre pas de nouvelle place tout de suite. Rejoins la liste d'attente, il te contactera dès qu'une place se libère.")}
               </p>
               <WaitlistJoinButton alreadyOnWaitlist={onWaitlist} />
             </>
@@ -237,7 +237,7 @@ export default async function AbonnementPage() {
                 className="ep-h2"
                 style={{ marginBottom: 12 }}
               >
-                Un appel de 30 min pour voir si le coaching te correspond
+                {t("Un appel de 30 min pour voir si le coaching te correspond")}
               </h2>
               <p
                 style={{
@@ -247,7 +247,7 @@ export default async function AbonnementPage() {
                   margin: "0 0 24px",
                 }}
               >
-                Pas de pression. On fait le point sur tes objectifs, tes blocages, et on voit ensemble si l&apos;accompagnement est fait pour toi.
+                {t("Pas de pression. On fait le point sur tes objectifs, tes blocages, et on voit ensemble si l'accompagnement est fait pour toi.")}
               </p>
               <a
                 href={prequalificationUrl}
@@ -269,7 +269,7 @@ export default async function AbonnementPage() {
                 }}
               >
                 <PhoneCall size={16} />
-                Réserve ton appel découverte
+                {t("Réserve ton appel découverte")}
                 <ArrowRight size={15} />
               </a>
             </>
@@ -306,12 +306,10 @@ export default async function AbonnementPage() {
               color: "#F5EDED", margin: "0 0 6px",
             }}
           >
-            Ton coach, c&apos;est moi. Pas un algorithme.
+            {t("Ton coach, c'est moi. Pas un algorithme.")}
           </h2>
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.7, margin: 0 }}>
-            Je regarde ton programme, ton bilan et ta nutrition chaque semaine. J&apos;ajuste
-            ce qui marche pas. Tu me parles, je te réponds, moi, pas un bot. Aucun plan
-            généré automatiquement.
+            {t("Je regarde ton programme, ton bilan et ta nutrition chaque semaine. J'ajuste ce qui marche pas. Tu me parles, je te réponds, moi, pas un bot. Aucun plan généré automatiquement.")}
           </p>
         </div>
       </section>
@@ -328,7 +326,7 @@ export default async function AbonnementPage() {
             marginBottom: 14,
           }}
         >
-          Concrètement, ce que ça change au quotidien
+          {t("Concrètement, ce que ça change au quotidien")}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {COACHING_PILLARS.map(({ icon: Icon, title, body }, i) => (
@@ -409,7 +407,7 @@ export default async function AbonnementPage() {
                 lineHeight: 1.5,
               }}
             >
-              Prêt à arrêter de tâtonner seul ?
+              {t("Prêt à arrêter de tâtonner seul ?")}
             </p>
             <a
               href={prequalificationUrl}
@@ -430,7 +428,7 @@ export default async function AbonnementPage() {
               }}
             >
               <PhoneCall size={14} />
-              Réserve ton appel découverte
+              {t("Réserve ton appel découverte")}
             </a>
           </div>
         </section>
@@ -461,7 +459,7 @@ export default async function AbonnementPage() {
             marginBottom: 12,
           }}
         >
-          Ta progression dans l&apos;app
+          {t("Ta progression dans l'app")}
         </p>
         <PointsProgressCard points={points} isSubscribed={alreadySubscribed} />
       </section>

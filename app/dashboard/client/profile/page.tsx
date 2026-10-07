@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Settings, ChevronRight } from "lucide-react";
@@ -28,6 +29,7 @@ function InfoRow({ label, value }: { label: string; value: string | null | undef
 }
 
 export default async function ClientProfilePage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -49,9 +51,9 @@ export default async function ClientProfilePage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon espace
+          {t("Mon espace")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Mon profil</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon profil")}</h1>
       </div>
 
       <ProfileHeader profile={profile} postCount={postCount} points={points} avatarSrc={avatarSrc} />
@@ -67,7 +69,7 @@ export default async function ClientProfilePage() {
       {profile.subscription_status === "active" && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-            Mon coaching
+            {t("Mon coaching")}
           </p>
           {weeks !== null && <InfoRow label="Semaines de coaching" value={`${weeks} semaine${weeks !== 1 ? "s" : ""}`} />}
           <InfoRow label="Objectif" value={profile.goal} />
@@ -98,7 +100,7 @@ export default async function ClientProfilePage() {
         }}
       >
         <Settings size={16} style={{ color: "#E01E1E" }} />
-        <span style={{ flex: 1 }}>Paramètres</span>
+        <span style={{ flex: 1 }}>{t("Paramètres")}</span>
         <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)" }} />
       </Link>
     </div>

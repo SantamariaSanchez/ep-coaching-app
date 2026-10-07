@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Users2, CalendarClock, ArrowUp, ArrowDown, Minus, Zap } from "lucide-react";
@@ -88,6 +89,7 @@ export default async function CoachLivePage({
 }: {
   searchParams: Promise<{ recap?: string | string[] }>;
 }) {
+  const tr = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -116,25 +118,25 @@ export default async function CoachLivePage({
     <div className="px-6 py-8 ep-page-wide pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Live
+          {tr("Live")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Coaching live</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Coaching live")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          1:1, audits, suivi hebdo, accès direct, ateliers... tout ton accompagnement en direct, réuni ici.
+          {tr("1:1, audits, suivi hebdo, accès direct, ateliers... tout ton accompagnement en direct, réuni ici.")}
         </p>
         <Link
           href="/dashboard/coach/live/disponibilites"
           className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#E01E1E] mt-2"
         >
           <CalendarClock size={13} />
-          Gérer mes disponibilités 1:1 (réservation libre-service)
+          {tr("Gérer mes disponibilités 1:1 (réservation libre-service)")}
         </Link>
       </div>
 
       <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 24, marginBottom: 24, flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 auto", minWidth: 0 }}>
           <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
-            <Calendar size={11} /> Prochain live
+            <Calendar size={11} />{" "}{tr("Prochain live")}
           </p>
           {next ? (
             <>
@@ -147,23 +149,23 @@ export default async function CoachLivePage({
                   href={`/dashboard/coach/live/${next.id}`}
                   className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-white bg-[#E01E1E] hover:bg-[#B00202] rounded-lg px-3 py-1.5 mt-2 transition-colors"
                 >
-                  Ouvrir la salle
+                  {tr("Ouvrir la salle")}
                 </Link>
               )}
             </>
           ) : (
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Rien de programmé. Planifie ton prochain live ci-dessous.</p>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>{tr("Rien de programmé. Planifie ton prochain live ci-dessous.")}</p>
           )}
         </div>
         <div>
           <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
-            <Users2 size={11} /> Cette semaine
+            <Users2 size={11} />{" "}{tr("Cette semaine")}
           </p>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{thisWeekCount}</p>
         </div>
         <div>
           <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
-            <Calendar size={11} /> Tenus cette semaine
+            <Calendar size={11} />{" "}{tr("Tenus cette semaine")}
           </p>
           <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
             {heldThisCalWeek}
@@ -176,7 +178,7 @@ export default async function CoachLivePage({
         {flashRequests.length > 0 && (
           <div>
             <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
-              Points flash
+              {tr("Points flash")}
             </p>
             <p style={{ fontSize: 20, fontWeight: 900, color: "#E01E1E", margin: 0 }}>{flashRequests.length}</p>
           </div>
@@ -188,7 +190,7 @@ export default async function CoachLivePage({
         {flashResponseStats.avgMinutes != null && (
           <div>
             <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
-              <Zap size={11} /> Réponse moyenne (30j)
+              <Zap size={11} />{" "}{tr("Réponse moyenne (30j)")}
             </p>
             <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
               {formatMinutes(flashResponseStats.avgMinutes)}

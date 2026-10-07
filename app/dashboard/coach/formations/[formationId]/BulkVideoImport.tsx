@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import { ClipboardPaste, Clock, Loader2, RefreshCw, X } from "lucide-react";
 import type { FormationLesson, FormationSection } from "@/utils/formations";
@@ -59,6 +60,7 @@ export function BulkVideoImport({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useT();
   const [text, setText] = useState("");
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [publishNow, setPublishNow] = useState(false);
@@ -227,12 +229,12 @@ export function BulkVideoImport({
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
         <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6, color: "rgba(245,237,237,0.5)" }}>
-          <ClipboardPaste size={12} style={{ color: "#E01E1E" }} /> Coller les vidéos de ce module
+          <ClipboardPaste size={12} style={{ color: "#E01E1E" }} />{" "}{t("Coller les vidéos de ce module")}
         </p>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Fermer"
+          aria-label={t("Fermer")}
           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 4 }}
         >
           <X size={14} style={{ color: "rgba(245,237,237,0.4)" }} />
@@ -247,7 +249,7 @@ export function BulkVideoImport({
             className="ep-input"
             rows={6}
             placeholder={"Une URL YouTube par ligne, dans l'ordre des vidéos\nhttps://youtu.be/...\nhttps://www.youtube.com/watch?v=..."}
-            aria-label="Une URL YouTube par ligne, dans l'ordre des vidéos"
+            aria-label={t("Une URL YouTube par ligne, dans l'ordre des vidéos")}
             style={{ fontSize: 12, padding: "10px 12px", resize: "vertical", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}
           />
           {checkbox(
@@ -257,7 +259,7 @@ export function BulkVideoImport({
           )}
           <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
             {targets.length === 0
-              ? "Aucune leçon sans vidéo dans ce module."
+              ? t("Aucune leçon sans vidéo dans ce module.")
               : `${plural(targets.length, "leçon")} à remplir dans ce module.`}
           </p>
           <button
@@ -267,7 +269,7 @@ export function BulkVideoImport({
             className="ep-btn-secondary"
             style={{ alignSelf: "flex-start", padding: "9px 16px", fontSize: 11 }}
           >
-            {checking ? <><Loader2 size={13} className="animate-spin" /> Vérification…</> : "Prévisualiser"}
+            {checking ? <><Loader2 size={13} className="animate-spin" />{" "}{t("Vérification…")}</> : t("Prévisualiser")}
           </button>
         </>
       ) : (
@@ -293,7 +295,7 @@ export function BulkVideoImport({
                     </span>
                     {row.lesson.youtube_id && (
                       <span style={{ fontSize: 9.5, fontWeight: 700, color: "#fb923c", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                        Remplace
+                        {t("Remplace")}
                       </span>
                     )}
                   </div>
@@ -313,7 +315,7 @@ export function BulkVideoImport({
                       <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 600, color: "rgba(245,237,237,0.45)", flexShrink: 0 }}>
                         <Clock size={10} />
                         {row.durationSec === undefined
-                          ? <Loader2 size={10} className="animate-spin" aria-label="Détection de la durée" />
+                          ? <Loader2 size={10} className="animate-spin" aria-label={t("Détection de la durée")} />
                           : row.durationSec === null ? "?" : formatSeconds(row.durationSec)}
                       </span>
                     )}
@@ -325,22 +327,22 @@ export function BulkVideoImport({
 
           {extraLines > 0 && (
             <p style={{ margin: 0, fontSize: 11, color: "#fb923c", lineHeight: 1.5 }}>
-              {plural(extraLines, "URL")} en trop ignorée{extraLines > 1 ? "s" : ""} : ce module n&apos;a que {plural(targets.length, "leçon")} à remplir. Ajoute des leçons ou coche Remplacer.
+              {plural(extraLines, "URL")}{" "}{t("en trop ignorée")}{extraLines > 1 ? "s" : ""}{" "}{t(": ce module n'a que")}{" "}{plural(targets.length, "leçon")}{" "}{t("à remplir. Ajoute des leçons ou coche Remplacer.")}
             </p>
           )}
           {privateCount > 0 && (
             <p style={{ margin: 0, fontSize: 11, color: "#fb923c", lineHeight: 1.5 }}>
-              {privateCount > 1 ? `${privateCount} vidéos sont privées` : "1 vidéo est privée"} ou non intégrable : enregistrée{privateCount > 1 ? "s" : ""} mais jamais publiée{privateCount > 1 ? "s" : ""}. Passe-la en Non répertoriée sur YouTube pour qu&apos;un membre puisse la lire.
+              {privateCount > 1 ? `${privateCount} vidéos sont privées` : t("1 vidéo est privée")}{" "}{t("ou non intégrable : enregistrée")}{privateCount > 1 ? "s" : ""}{" "}{t("mais jamais publiée")}{privateCount > 1 ? "s" : ""}{t(". Passe-la en Non répertoriée sur YouTube pour qu'un membre puisse la lire.")}
             </p>
           )}
           {unusableCount > 0 && (
             <p style={{ margin: 0, fontSize: 11, color: "#f87171", lineHeight: 1.5 }}>
-              {unusableCount > 1 ? `${unusableCount} lignes ne seront pas enregistrées` : "1 ligne ne sera pas enregistrée"} (URL non reconnue ou vidéo introuvable) : la leçon correspondante reste vide.
+              {unusableCount > 1 ? `${unusableCount} lignes ne seront pas enregistrées` : t("1 ligne ne sera pas enregistrée")}{" "}{t("(URL non reconnue ou vidéo introuvable) : la leçon correspondante reste vide.")}
             </p>
           )}
           {detecting && (
             <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.5 }}>
-              Détection des durées en cours. Tu peux enregistrer maintenant : une durée non détectée garde sa valeur actuelle.
+              {t("Détection des durées en cours. Tu peux enregistrer maintenant : une durée non détectée garde sa valeur actuelle.")}
             </p>
           )}
 
@@ -354,7 +356,7 @@ export function BulkVideoImport({
               className="ep-btn-primary"
               style={{ padding: "10px 16px", fontSize: 11 }}
             >
-              {saving ? <><Loader2 size={13} className="animate-spin" /> Enregistrement…</> : `Enregistrer ${plural(savable.length, "vidéo")}`}
+              {saving ? <><Loader2 size={13} className="animate-spin" />{" "}{t("Enregistrement…")}</> : `Enregistrer ${plural(savable.length, "vidéo")}`}
             </button>
             <button
               type="button"
@@ -363,7 +365,7 @@ export function BulkVideoImport({
               className="ep-btn-secondary"
               style={{ padding: "10px 16px", fontSize: 11 }}
             >
-              Modifier la liste
+              {t("Modifier la liste")}
             </button>
           </div>
         </>
@@ -390,6 +392,7 @@ export function RecalcDurationsButton({
   lessons: FormationLesson[];
   onSaved: () => void;
 }) {
+  const t = useT();
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   // Vidéos déjà mesurées pendant cette visite (clé leçon + vidéo). Une vidéo
@@ -462,8 +465,8 @@ export function RecalcDurationsButton({
           style={{ alignSelf: "flex-start", padding: "8px 14px", fontSize: 11 }}
         >
           {progress
-            ? <><Loader2 size={13} className="animate-spin" /> Détection {progress.done}/{progress.total}…</>
-            : <><RefreshCw size={13} /> Recalculer les durées ({plural(candidates.length, "vidéo")})</>}
+            ? <><Loader2 size={13} className="animate-spin" />{" "}{t("Détection")}{" "}{progress.done}/{progress.total}…</>
+            : <><RefreshCw size={13} />{" "}{t("Recalculer les durées (")}{plural(candidates.length, "vidéo")})</>}
         </button>
       )}
       {message && (

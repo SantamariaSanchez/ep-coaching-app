@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAccessType } from "@/utils/auth-client";
@@ -20,6 +21,7 @@ import { Dumbbell, Play, MessageCircle } from "lucide-react";
 const SESSION_BASE_PATH = "/dashboard/client/logbook";
 
 export default async function ClientProgramPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -46,9 +48,9 @@ export default async function ClientProgramPage() {
       <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Training
+            {t("Training")}
           </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight">Mon programme</h1>
+          <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon programme")}</h1>
         </div>
 
         {/* Retour direct 2026-09-09 : "dans programme je veux les séances en
@@ -98,9 +100,9 @@ export default async function ClientProgramPage() {
 
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Entraînement</p>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Entraînement")}</p>
         <h1 className="ep-h1">
-          Mon programme
+          {t("Mon programme")}
         </h1>
         {program && (
           <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
@@ -138,11 +140,10 @@ export default async function ClientProgramPage() {
             <Dumbbell size={22} style={{ color: "rgba(245,237,237,0.2)" }} strokeWidth={1.5} />
           </div>
           <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(245,237,237,0.35)", margin: 0 }}>
-            Aucun programme disponible
+            {t("Aucun programme disponible")}
           </p>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
-            Ton coach prépare ton programme. En attendant, tu peux déjà loguer une séance libre :
-            tes charges seront gardées pour la suite.
+            {t("Ton coach prépare ton programme. En attendant, tu peux déjà loguer une séance libre : tes charges seront gardées pour la suite.")}
           </p>
           {/* Cet écran était un cul-de-sac (aucune action possible) : les
               deux gestes utiles en attendant le programme, à un tap. */}
@@ -151,13 +152,13 @@ export default async function ClientProgramPage() {
               href={SESSION_BASE_PATH}
               className="inline-flex items-center gap-2 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2.5 transition-colors shadow-[0_0_18px_rgba(224,30,30,0.25)]"
             >
-              <Play size={12} fill="currentColor" /> Séance libre
+              <Play size={12} fill="currentColor" />{" "}{t("Séance libre")}
             </Link>
             <Link
               href="/dashboard/client/messages"
               className="inline-flex items-center gap-2 rounded-xl border border-[#890404]/40 hover:border-[#E01E1E]/60 text-[#F5EDED]/80 text-[11px] font-bold uppercase tracking-widest px-4 py-2.5 transition-colors"
             >
-              <MessageCircle size={12} /> Écrire à mon coach
+              <MessageCircle size={12} />{" "}{t("Écrire à mon coach")}
             </Link>
           </div>
         </div>

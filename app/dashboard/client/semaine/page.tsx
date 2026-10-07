@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import Link from "next/link";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { isOn } from "@/lib/app-setup";
@@ -18,6 +19,7 @@ export default async function ClientSemainePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -37,12 +39,11 @@ export default async function ClientSemainePage({
     <div className="px-5 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1 flex items-center gap-1.5">
-          <CalendarCheck size={11} /> Suivi
+          <CalendarCheck size={11} />{" "}{t("Suivi")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Ma semaine</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ma semaine")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Tout ce que tu as noté cette semaine, en un coup d&apos;œil. Puis 2 minutes de recul pour
-          préparer la suivante.
+          {t("Tout ce que tu as noté cette semaine, en un coup d'œil. Puis 2 minutes de recul pour préparer la suivante.")}
         </p>
       </div>
 
@@ -61,10 +62,10 @@ export default async function ClientSemainePage({
       ) : (
         <div className="ep-card" style={{ padding: "20px 18px" }} role="alert">
           <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#fbbf24", display: "flex", alignItems: "center", gap: 8 }}>
-            <AlertTriangle size={15} /> Impossible de charger ta semaine
+            <AlertTriangle size={15} />{" "}{t("Impossible de charger ta semaine")}
           </p>
           <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>
-            Tes données sont intactes, c&apos;est la lecture qui a échoué. Recharge la page dans un instant.
+            {t("Tes données sont intactes, c'est la lecture qui a échoué. Recharge la page dans un instant.")}
           </p>
         </div>
       )}
@@ -79,10 +80,10 @@ export default async function ClientSemainePage({
         >
           <div className="min-w-0">
             <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-              Envoie ta revue à un coach chaque semaine
+              {t("Envoie ta revue à un coach chaque semaine")}
             </p>
             <p style={{ margin: "3px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.45 }}>
-              Avec l&apos;accompagnement, ton coach la lit et te répond avec tes ajustements.
+              {t("Avec l'accompagnement, ton coach la lit et te répond avec tes ajustements.")}
             </p>
           </div>
           <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />

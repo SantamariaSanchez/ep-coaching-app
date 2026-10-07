@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ExternalLink, FileSignature } from "lucide-react";
@@ -15,6 +16,7 @@ export const dynamic = "force-dynamic";
 // sinon le texte du contrat, avec date, version, IP et signature ; plus le
 // modèle vierge du poste.
 export default async function MemberContractPage({ params }: { params: Promise<{ userId: string }> }) {
+  const t = await getT();
   const { userId } = await params;
   const user = await getUser();
   if (!user) redirect("/");
@@ -40,26 +42,26 @@ export default async function MemberContractPage({ params }: { params: Promise<{
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <Link href="/dashboard/coach/admin/equipe/documents" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
-        <ChevronLeft size={13} /> Documents de l&apos;équipe
+        <ChevronLeft size={13} />{" "}{t("Documents de l'équipe")}
       </Link>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <FileSignature size={16} style={{ color: "#E01E1E" }} />
-        <p className="ep-label" style={{ margin: 0 }}>Contrat de {m.full_name}</p>
+        <p className="ep-label" style={{ margin: 0 }}>{t("Contrat de")}{" "}{m.full_name}</p>
       </div>
       <div className="ep-card" style={{ padding: "14px 16px", marginBottom: 14 }}>
         {m.contract_signed_at ? (
           <p style={{ fontSize: 13, color: "#F5EDED", margin: 0, lineHeight: 1.7 }}>
-            Signé le <strong>{new Date(m.contract_signed_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", dateStyle: "long", timeStyle: "short" })}</strong>
+            {t("Signé le")}{" "}<strong>{new Date(m.contract_signed_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", dateStyle: "long", timeStyle: "short" })}</strong>
             <br />
-            Version {m.contract_version} · signature : {m.contract_signature} · IP {m.contract_signed_ip ?? "inconnue"}
+            {t("Version")}{" "}{m.contract_version}{" "}{t("· signature :")}{" "}{m.contract_signature}{" "}{t("· IP")}{" "}{m.contract_signed_ip ?? t("inconnue")}
           </p>
         ) : (
-          <p style={{ fontSize: 13, color: "#facc15", margin: 0 }}>Pas encore signé.</p>
+          <p style={{ fontSize: 13, color: "#facc15", margin: 0 }}>{t("Pas encore signé.")}</p>
         )}
       </div>
       {template && (
         <a href={template.viewUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800, color: "#ff6b6b", textDecoration: "none", marginBottom: 14 }}>
-          <ExternalLink size={13} /> Voir le modèle du poste ({roleTitle}, version {m.contract_version ?? "actuelle"})
+          <ExternalLink size={13} />{" "}{t("Voir le modèle du poste (")}{roleTitle}{t(", version")}{" "}{m.contract_version ?? t("actuelle")})
         </a>
       )}
       {signedPdf ? (
@@ -67,7 +69,7 @@ export default async function MemberContractPage({ params }: { params: Promise<{
       ) : (
         <>
           {m.contract_signed_at && (
-            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "0 0 10px" }}>Signé dans l&apos;appli (pas de PDF JotForm) : voici le texte accepté.</p>
+            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "0 0 10px" }}>{t("Signé dans l'appli (pas de PDF JotForm) : voici le texte accepté.")}</p>
           )}
           <div className="ep-card" style={{ padding: "22px 20px" }}>{contract && <ContractView contract={contract} />}</div>
         </>

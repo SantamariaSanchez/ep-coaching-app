@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getResourceRequests } from "@/utils/resource-requests";
@@ -12,6 +13,7 @@ import {
 } from "@/app/dashboard/client/ressources/request-actions";
 
 export default async function CoachRessourcesPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -35,11 +37,11 @@ export default async function CoachRessourcesPage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Contenu
+          {t("Contenu")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ressources")}</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Bibliothèque ouverte à tes clients accompagnés. Les membres gratuits y accèdent seulement par lien direct.
+          {t("Bibliothèque ouverte à tes clients accompagnés. Les membres gratuits y accèdent seulement par lien direct.")}
         </p>
       </div>
 

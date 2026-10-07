@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Users, MessagesSquare, FolderOpen, LayoutDashboard, Briefcase, Wallet } from "lucide-react";
@@ -52,6 +53,7 @@ function tile(label: string, value: string | number) {
 const linkStyle: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 12px", borderRadius: 12, border: "1px solid rgba(137,4,4,0.45)", color: "rgba(245,237,237,0.85)", fontSize: 12, fontWeight: 800, textDecoration: "none" };
 
 export default async function MyTeamPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
@@ -83,10 +85,10 @@ export default async function MyTeamPage() {
 
   return (
     <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Mon business</p>
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">Mon équipe</h1>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Mon business")}</p>
+      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{t("Mon équipe")}</h1>
       <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(245,237,237,0.6)", fontSize: 16, margin: "0 0 20px" }}>
-        Seul, en binôme, pour une marque ou à la tête d&apos;une équipe : l&apos;appli suit ton parcours.
+        {t("Seul, en binôme, pour une marque ou à la tête d'une équipe : l'appli suit ton parcours.")}
       </p>
 
       {memberships.invites.length > 0 && (
@@ -98,20 +100,20 @@ export default async function MyTeamPage() {
       )}
 
       <section style={{ marginBottom: 20 }}>
-        <p className="ep-label" style={{ marginBottom: 8 }}>Comment tu travailles</p>
+        <p className="ep-label" style={{ marginBottom: 8 }}>{t("Comment tu travailles")}</p>
         <CareerPicker current={mode} options={options} />
       </section>
 
       {(memberships.active.length > 0 || staffSelf) && (
         <section style={{ marginBottom: 20 }}>
-          <p className="ep-label" style={{ marginBottom: 8 }}>Tu travailles avec</p>
+          <p className="ep-label" style={{ marginBottom: 8 }}>{t("Tu travailles avec")}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {memberships.active.map((l) => (
               <div key={l.id} className="ep-card" style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{l.ownerName}</p>
                   <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "2px 0 0" }}>
-                    {l.title || "Coach"}
+                    {l.title || t("Coach")}
                     {l.share_pct !== null ? ` · ${Number(l.share_pct)} % reversé` : ""}
                     {l.accepted_at ? ` · depuis le ${new Date(l.accepted_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "long", year: "numeric" })}` : ""}
                   </p>
@@ -121,7 +123,7 @@ export default async function MyTeamPage() {
             ))}
             {staffSelf && (
               <Link href="/equipe" className="ep-card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "#F5EDED", fontSize: 13.5, fontWeight: 700 }}>
-                <Briefcase size={15} style={{ color: "#E01E1E" }} /> Mon espace {getRoleCard(staffSelf.role_key)?.role.title ?? "équipe"}
+                <Briefcase size={15} style={{ color: "#E01E1E" }} />{" "}{t("Mon espace")}{" "}{getRoleCard(staffSelf.role_key)?.role.title ?? t("équipe")}
               </Link>
             )}
           </div>
@@ -130,9 +132,9 @@ export default async function MyTeamPage() {
 
       {!owner ? (
         <section className="ep-card" style={{ padding: "16px 18px" }}>
-          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>Tu veux recruter ?</p>
+          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>{t("Tu veux recruter ?")}</p>
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: 0, lineHeight: 1.6 }}>
-            Choisis « Mon entreprise, avec une équipe » juste au-dessus : tu pourras inviter des coachs et donner des accès à ton staff (setter, closer, monteur, community manager...), chacun avec un espace adapté à son métier.
+            {t("Choisis « Mon entreprise, avec une équipe » juste au-dessus : tu pourras inviter des coachs et donner des accès à ton staff (setter, closer, monteur, community manager...), chacun avec un espace adapté à son métier.")}
           </p>
         </section>
       ) : (
@@ -146,14 +148,14 @@ export default async function MyTeamPage() {
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-            <Link href="/dashboard/coach/admin/equipe" style={linkStyle}><LayoutDashboard size={14} /> Cockpit</Link>
-            <Link href="/dashboard/coach/admin/equipe/messages" style={linkStyle}><MessagesSquare size={14} /> Messagerie d&apos;équipe</Link>
-            <Link href="/dashboard/coach/admin/equipe/documents" style={linkStyle}><FolderOpen size={14} /> Documents</Link>
+            <Link href="/dashboard/coach/admin/equipe" style={linkStyle}><LayoutDashboard size={14} />{" "}{t("Cockpit")}</Link>
+            <Link href="/dashboard/coach/admin/equipe/messages" style={linkStyle}><MessagesSquare size={14} />{" "}{t("Messagerie d'équipe")}</Link>
+            <Link href="/dashboard/coach/admin/equipe/documents" style={linkStyle}><FolderOpen size={14} />{" "}{t("Documents")}</Link>
           </div>
 
           <section style={{ marginBottom: 20 }}>
             <p className="ep-label" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-              <Users size={12} /> Mes coachs ({activeCoaches.length})
+              <Users size={12} />{" "}{t("Mes coachs (")}{activeCoaches.length})
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
               {activeCoaches.map((l) => {
@@ -164,11 +166,11 @@ export default async function MyTeamPage() {
                       <div style={{ minWidth: 0 }}>
                         <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{s?.name ?? l.email}</p>
                         <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "2px 0 6px" }}>
-                          {l.title || "Coach"}
+                          {l.title || t("Coach")}
                           {l.share_pct !== null ? ` · ${l.share_pct} % reversé` : ""}
                         </p>
                         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.75)", margin: 0, lineHeight: 1.6 }}>
-                          {s ? `${s.clients} clients dont ${s.paying} payants · +${s.newThisMonth} ce mois · ${s.bilansToday} bilans aujourd'hui · ${s.checkinsWaiting} bilans hebdo à traiter` : "Pas encore de chiffres."}
+                          {s ? `${s.clients} clients dont ${s.paying} payants · +${s.newThisMonth} ce mois · ${s.bilansToday} bilans aujourd'hui · ${s.checkinsWaiting} bilans hebdo à traiter` : t("Pas encore de chiffres.")}
                         </p>
                         {l.note && <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: "4px 0 0", fontStyle: "italic" }}>{l.note}</p>}
                       </div>
@@ -180,13 +182,13 @@ export default async function MyTeamPage() {
               {pendingCoaches.map((l) => (
                 <div key={l.id} className="ep-card" style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", opacity: 0.85 }}>
                   <p style={{ fontSize: 13, color: "rgba(245,237,237,0.75)", margin: 0 }}>
-                    {l.email} <span style={{ color: "rgba(245,237,237,0.4)" }}>· invité le {new Date(l.created_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short" })}, en attente</span>
+                    {l.email} <span style={{ color: "rgba(245,237,237,0.4)" }}>{t("· invité le")}{" "}{new Date(l.created_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short" })}{t(", en attente")}</span>
                   </p>
                   <CoachLinkActions id={l.id} title={l.title} share={l.share_pct} note={l.note} pendingInvite />
                 </div>
               ))}
               {!activeCoaches.length && !pendingCoaches.length && (
-                <p className="ep-card" style={{ padding: "12px 14px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>Pas encore de coach dans ton équipe.</p>
+                <p className="ep-card" style={{ padding: "12px 14px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>{t("Pas encore de coach dans ton équipe.")}</p>
               )}
             </div>
             <InviteCoachForm />
@@ -194,7 +196,7 @@ export default async function MyTeamPage() {
 
           <section style={{ marginBottom: 20 }}>
             <p className="ep-label" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-              <Briefcase size={12} /> Mon staff ({staff?.members.length ?? 0})
+              <Briefcase size={12} />{" "}{t("Mon staff (")}{staff?.members.length ?? 0})
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
               {staff?.members.map((m) => (
@@ -202,7 +204,7 @@ export default async function MyTeamPage() {
                   <div style={{ minWidth: 0 }}>
                     <Link href={`/dashboard/coach/admin/equipe/${m.user_id}`} style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", textDecoration: "none" }}>{m.full_name}</Link>
                     <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "2px 0 0" }}>
-                      {getRoleCard(m.role_key)?.role.title ?? m.role_key} · accès {STATUS_LABEL[m.status] ?? m.status}
+                      {getRoleCard(m.role_key)?.role.title ?? m.role_key}{" "}{t("· accès")}{" "}{STATUS_LABEL[m.status] ?? m.status}
                     </p>
                   </div>
                   <StaffStatus userId={m.user_id} status={m.status} />
@@ -211,7 +213,7 @@ export default async function MyTeamPage() {
               {staff?.invites.map((i) => (
                 <div key={i.id} className="ep-card" style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", opacity: 0.85 }}>
                   <p style={{ fontSize: 13, color: "rgba(245,237,237,0.75)", margin: 0 }}>
-                    {i.email} <span style={{ color: "rgba(245,237,237,0.4)" }}>· {getRoleCard(i.role_key)?.role.title ?? i.role_key}, accès pas encore créé</span>
+                    {i.email} <span style={{ color: "rgba(245,237,237,0.4)" }}>· {getRoleCard(i.role_key)?.role.title ?? i.role_key}{t(", accès pas encore créé")}</span>
                   </p>
                   <RevokeStaffInvite id={i.id} />
                 </div>
@@ -223,11 +225,11 @@ export default async function MyTeamPage() {
           {payroll && payroll.lines.length > 0 && (
             <section style={{ marginBottom: 20 }}>
               <p className="ep-label" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                <Wallet size={12} /> Paie du mois ({new Date(`${payroll.month}-15T12:00:00`).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })})
+                <Wallet size={12} />{" "}{t("Paie du mois (")}{new Date(`${payroll.month}-15T12:00:00`).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })})
               </p>
               <div className="ep-card-hero" style={{ padding: "14px 16px", marginBottom: 8 }}>
                 <p style={{ fontSize: 24, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{Math.round(payroll.total).toLocaleString("fr-FR")} €</p>
-                <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "2px 0 0" }}>à verser à ton staff pour ce mois, calculé sur leurs vraies ventes et livraisons</p>
+                <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "2px 0 0" }}>{t("à verser à ton staff pour ce mois, calculé sur leurs vraies ventes et livraisons")}</p>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {payroll.lines.map((l) => (

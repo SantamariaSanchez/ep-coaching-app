@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -15,6 +16,7 @@ import { ChevronLeft, ArrowUp, ArrowDown, Minus, Link2 } from "lucide-react";
 // app/dashboard/coach/admin — les leads captés sur /ressources sont une
 // donnée plateforme, pas rattachée à un coach en particulier.
 export default async function LeadsAdminPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -60,17 +62,17 @@ export default async function LeadsAdminPage() {
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Retour
+        {t("Retour")}
       </Link>
 
       <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Marketing
+            {t("Marketing")}
           </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight">Leads</h1>
+          <h1 className="text-3xl font-black uppercase tracking-tight">{t("Leads")}</h1>
           <p className="text-sm text-[#F5EDED]/45 mt-2">
-            Emails et numéros captés sur les lead magnets de /ressources.
+            {t("Emails et numéros captés sur les lead magnets de /ressources.")}
           </p>
         </div>
         <LeadsExportButton leads={leads} originLabelById={origin.labelById} />
@@ -79,19 +81,19 @@ export default async function LeadsAdminPage() {
       <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-8" style={{ WebkitOverflowScrolling: "touch" }}>
         <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
           <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
-            Total leads
+            {t("Total leads")}
           </span>
           <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{leads.length}</span>
         </div>
         <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
           <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#60a5fa" }}>
-            Qualifiés par Santiago (IA)
+            {t("Qualifiés par Santiago (IA)")}
           </span>
           <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{qualifiedCount}</span>
         </div>
         <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
           <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4ade80" }}>
-            Taux de conversion
+            {t("Taux de conversion")}
           </span>
           <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>
             {conversionRate}% <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>({convertedCount})</span>
@@ -99,7 +101,7 @@ export default async function LeadsAdminPage() {
         </div>
         <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
           <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
-            Cette semaine
+            {t("Cette semaine")}
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>
             {leadsThisWeek}
@@ -123,14 +125,13 @@ export default async function LeadsAdminPage() {
       </div>
 
       <section className="ep-card mb-8" style={{ padding: "18px 18px 16px" }} aria-labelledby="leads-origine">
-        <h2 id="leads-origine" className="text-sm font-black uppercase tracking-wide mb-1">D&apos;où viennent tes leads</h2>
+        <h2 id="leads-origine" className="text-sm font-black uppercase tracking-wide mb-1">{t("D'où viennent tes leads")}</h2>
         <p className="text-[11.5px] text-[#F5EDED]/45 mb-4">
-          Plateforme détectée à l&apos;arrivée, et contenu exact quand le visiteur est passé par le lien suivi d&apos;un script
-          (bouton « Lien suivi du guide » dans Studio créatif, à coller en description ou en bio).
+          {t("Plateforme détectée à l'arrivée, et contenu exact quand le visiteur est passé par le lien suivi d'un script (bouton « Lien suivi du guide » dans Studio créatif, à coller en description ou en bio).")}
         </p>
 
         {leads.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/35">Aucun lead pour l&apos;instant.</p>
+          <p className="text-xs text-[#F5EDED]/35">{t("Aucun lead pour l'instant.")}</p>
         ) : (
           <>
             <div className="space-y-1.5 mb-5">
@@ -153,12 +154,11 @@ export default async function LeadsAdminPage() {
               ))}
             </div>
 
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#facc15] mb-2">Contenus qui amènent des leads (lien suivi)</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#facc15] mb-2">{t("Contenus qui amènent des leads (lien suivi)")}</p>
             {origin.byContent.length === 0 ? (
               <p className="text-xs text-[#F5EDED]/40 mb-4">
-                Aucun lead encore arrivé par un lien suivi. Copie le lien d&apos;un script dans{" "}
-                <Link href="/dashboard/coach/studio" className="text-[#E01E1E] font-semibold">Studio créatif</Link> et colle-le sous ta
-                prochaine vidéo : les leads s&apos;afficheront ici, contenu par contenu.
+                {t("Aucun lead encore arrivé par un lien suivi. Copie le lien d'un script dans")}{" "}
+                <Link href="/dashboard/coach/studio" className="text-[#E01E1E] font-semibold">{t("Studio créatif")}</Link>{" "}{t("et colle-le sous ta prochaine vidéo : les leads s'afficheront ici, contenu par contenu.")}
               </p>
             ) : (
               <ol className="space-y-1.5 mb-4">
@@ -172,7 +172,7 @@ export default async function LeadsAdminPage() {
                         <p className="text-[10px] text-[#F5EDED]/40">
                           {pl}
                           {pl && " · "}
-                          {c.last30Days} sur 30 jours{c.converted > 0 && ` · ${c.converted} converti${c.converted > 1 ? "s" : ""}`}
+                          {c.last30Days}{" "}{t("sur 30 jours")}{c.converted > 0 && ` · ${c.converted} converti${c.converted > 1 ? "s" : ""}`}
                         </p>
                       </div>
                       <span className="text-sm font-black text-white">{c.total}</span>
@@ -185,20 +185,20 @@ export default async function LeadsAdminPage() {
             {origin.untrackedTotal > 0 && (
               <details className="group">
                 <summary className="cursor-pointer text-[11px] font-semibold text-[#F5EDED]/55 flex items-center gap-1.5">
-                  <Link2 size={12} /> {origin.untrackedTotal} lead{origin.untrackedTotal > 1 ? "s" : ""} sans lien suivi : pistes par guide
+                  <Link2 size={12} /> {origin.untrackedTotal}{" "}{t("lead")}{origin.untrackedTotal > 1 ? "s" : ""}{" "}{t("sans lien suivi : pistes par guide")}
                 </summary>
                 <p className="text-[10.5px] text-[#F5EDED]/35 mt-2 mb-2">
-                  Scripts dont le CTA cite le même guide. Ce sont des pistes, pas une attribution : plusieurs contenus peuvent citer le même numéro.
+                  {t("Scripts dont le CTA cite le même guide. Ce sont des pistes, pas une attribution : plusieurs contenus peuvent citer le même numéro.")}
                 </p>
                 <ul className="space-y-2">
                   {origin.untracked.map((u) => (
                     <li key={u.slug} className="text-[11px]">
                       <span className="font-bold text-white">{magnetsBySlug.get(u.slug)?.title ?? u.slug}</span>
-                      <span className="text-[#F5EDED]/40"> · {u.total} lead{u.total > 1 ? "s" : ""}</span>
+                      <span className="text-[#F5EDED]/40"> · {u.total}{" "}{t("lead")}{u.total > 1 ? "s" : ""}</span>
                       <p className="text-[10.5px] text-[#F5EDED]/45 mt-0.5">
                         {u.candidateScripts.length > 0
                           ? u.candidateScripts.map((s) => s.title).join(" · ")
-                          : "Aucun script ne cite ce guide (arrivée directe, partage ou recherche)."}
+                          : t("Aucun script ne cite ce guide (arrivée directe, partage ou recherche).")}
                       </p>
                     </li>
                   ))}

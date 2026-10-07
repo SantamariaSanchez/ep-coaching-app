@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -11,6 +12,7 @@ export default async function EditRoadmapTemplatePage({
 }: {
   params: Promise<{ templateId: string }>;
 }) {
+  const t = await getT();
   const { templateId } = await params;
 
   const user = await getUser();
@@ -29,12 +31,12 @@ export default async function EditRoadmapTemplatePage({
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Bibliothèque de modèles
+        {t("Bibliothèque de modèles")}
       </Link>
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Modifier le modèle
+          {t("Modifier le modèle")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{template.name}</h1>
       </div>

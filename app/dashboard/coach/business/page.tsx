@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -18,6 +19,7 @@ import { Rocket } from "lucide-react";
 // réelles (tableau de bord, objectifs, roadmap, modèle économique, funnel,
 // réseau, checklist) plutôt qu'une page qui défile, voir BusinessHub.
 export default async function CoachBusinessPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -74,15 +76,14 @@ export default async function CoachBusinessPage() {
     <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon espace
+          {t("Mon espace")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
           <Rocket size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
-          Développer mon business
+          {t("Développer mon business")}
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
-          Suivre tes clients, c&apos;est déjà couvert partout ailleurs dans l&apos;appli. Ici, c&apos;est
-          ton propre business de coach : où tu en es, où tu vas, et un système pour y arriver.
+          {t("Suivre tes clients, c'est déjà couvert partout ailleurs dans l'appli. Ici, c'est ton propre business de coach : où tu en es, où tu vas, et un système pour y arriver.")}
         </p>
       </div>
 

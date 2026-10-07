@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -11,6 +12,7 @@ import { HeartPulse, ChevronRight, ShieldAlert } from "lucide-react";
 // jamais un système de diagnostic ni un contenu confié à un coach IA (voir
 // lib/ai-coaches.ts, qui exclut explicitement ces sujets).
 export default async function CoachContraintesPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -21,25 +23,21 @@ export default async function CoachContraintesPage() {
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-2">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Bibliothèque
+          {t("Bibliothèque")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
           <HeartPulse size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
-          Contraintes & populations spécifiques
+          {t("Contraintes & populations spécifiques")}
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
-          Blessures, maladies chroniques, handicap, grossesse, ménopause, TCA, véganisme, Ramadan,
-          obésité : comment adapter un programme, et surtout quand orienter vers un professionnel
-          plutôt que d&apos;essayer de gérer la situation seul.
+          {t("Blessures, maladies chroniques, handicap, grossesse, ménopause, TCA, véganisme, Ramadan, obésité : comment adapter un programme, et surtout quand orienter vers un professionnel plutôt que d'essayer de gérer la situation seul.")}
         </p>
       </div>
 
       <div className="flex items-start gap-3 bg-amber-500/5 border border-amber-500/25 rounded-xl px-4 py-3.5 mt-6 mb-8">
         <ShieldAlert size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
         <p className="text-[11.5px] text-amber-300/85 leading-relaxed">
-          Ce contenu est un repère pour construire un programme, jamais un substitut à un avis médical
-          individualisé. Face à un signal d&apos;alerte listé dans une fiche, oriente toujours vers un
-          professionnel de santé avant d&apos;ajuster le programme toi-même.
+          {t("Ce contenu est un repère pour construire un programme, jamais un substitut à un avis médical individualisé. Face à un signal d'alerte listé dans une fiche, oriente toujours vers un professionnel de santé avant d'ajuster le programme toi-même.")}
         </p>
       </div>
 

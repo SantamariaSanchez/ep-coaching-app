@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { todayInParis } from "@/lib/dates";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import { addFoodLog, createCustomFood } from "../actions";
 import { ChevronLeft } from "lucide-react";
 
 export default async function BilanRapidePage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -34,27 +36,27 @@ export default async function BilanRapidePage() {
         className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} />
-        Retour nutrition
+        {t("Retour nutrition")}
       </Link>
 
       {/* Header */}
       <div className="mb-6">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Nutrition
+          {t("Nutrition")}
         </p>
         <h1 className="text-2xl font-black uppercase tracking-tight mb-2">
-          ⚡ Bilan rapide
+          {t("⚡ Bilan rapide")}
         </h1>
         <p className="text-sm text-[#F5EDED]/45 leading-relaxed">
-          Repas par repas, aliment par aliment. ~2 min, log automatique à la fin.
+          {t("Repas par repas, aliment par aliment. ~2 min, log automatique à la fin.")}
         </p>
 
         {!nutritionProfile?.calories_target && (
           <div className="bg-amber-900/20 border border-amber-700/30 rounded-xl px-4 py-3 mt-4">
             <p className="text-xs text-amber-400 font-semibold">
-              Aucun objectif calorique défini.{" "}
+              {t("Aucun objectif calorique défini.")}{" "}
               <Link href={backHref} className="underline">
-                Définir mon objectif →
+                {t("Définir mon objectif →")}
               </Link>
             </p>
           </div>

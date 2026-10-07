@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
 import { getPointsMap } from "@/lib/gamification";
@@ -9,6 +10,7 @@ import { relaunchMember } from "@/app/dashboard/coach/communaute/membres/actions
 import ClientsSection from "@/components/ui/ClientsSection";
 
 export default async function ClientsPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -41,8 +43,8 @@ export default async function ClientsPage() {
   return (
     <div className="page-transition ep-page-wide" style={{ padding: "32px 24px 48px" }}>
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Gestion</p>
-        <h1 className="ep-h1">Mes clients</h1>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Gestion")}</p>
+        <h1 className="ep-h1">{t("Mes clients")}</h1>
       </div>
 
       <ClientsSection

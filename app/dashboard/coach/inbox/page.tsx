@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -23,6 +24,7 @@ export const dynamic = "force-dynamic";
 // regroupés en une seule vue triée par ancienneté — avant, il fallait
 // ouvrir chaque fiche client une par une pour savoir ce qui traînait.
 export default async function CoachInboxPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -34,10 +36,10 @@ export default async function CoachInboxPage() {
   return (
     <div className="page-transition ep-page-wide" style={{ padding: "32px 24px 48px", maxWidth: 720 }}>
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Gestion</p>
-        <h1 className="ep-h1">Boîte de réception</h1>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Gestion")}</p>
+        <h1 className="ep-h1">{t("Boîte de réception")}</h1>
         <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
-          {items.length === 0 ? "Rien en attente" : `${items.length} point${items.length > 1 ? "s" : ""} à traiter`}
+          {items.length === 0 ? t("Rien en attente") : `${items.length} point${items.length > 1 ? "s" : ""} à traiter`}
         </p>
       </div>
 
@@ -60,10 +62,10 @@ export default async function CoachInboxPage() {
             <InboxIcon size={24} style={{ color: "#4ade80" }} strokeWidth={1.5} />
           </div>
           <p style={{ fontSize: 15, fontWeight: 700, color: "#F5EDED", margin: "0 0 6px" }}>
-            Tu es à jour
+            {t("Tu es à jour")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-            Aucun bilan, correction ou photo en attente de réponse.
+            {t("Aucun bilan, correction ou photo en attente de réponse.")}
           </p>
         </div>
       ) : (

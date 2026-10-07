@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Lock, Gift, X, Copy } from "lucide-react";
@@ -56,6 +57,7 @@ export default function FormationSalesPanel({
   granted: { userId: string; name: string; email: string | null; grantedAt: string; source: string }[];
   clients: { id: string; name: string }[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [mode, setMode] = useState(accessMode);
   const [p, setP] = useState(price === null ? "" : String(price));
@@ -82,31 +84,31 @@ export default function FormationSalesPanel({
 
   return (
     <section className="ep-card" style={{ padding: "16px 16px", marginBottom: 18 }}>
-      <p className="ep-label" style={{ margin: "0 0 10px" }}>Vente et accès</p>
+      <p className="ep-label" style={{ margin: "0 0 10px" }}>{t("Vente et accès")}</p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
         <button type="button" style={chip(mode === "inclus")} onClick={() => setMode("inclus")}>
-          <Gift size={15} color="#E01E1E" /> Incluse pour mes clients
+          <Gift size={15} color="#E01E1E" />{" "}{t("Incluse pour mes clients")}
         </button>
         <button type="button" style={chip(mode === "payant")} onClick={() => setMode("payant")}>
-          <Lock size={15} color="#E01E1E" /> Payante
+          <Lock size={15} color="#E01E1E" />{" "}{t("Payante")}
         </button>
       </div>
       {mode === "payant" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginBottom: 10 }}>
           <div>
-            <label style={lbl}>Prix (€)</label>
-            <input style={input} inputMode="decimal" value={p} onChange={(e) => setP(e.target.value)} placeholder="97" aria-label="Prix" />
+            <label style={lbl}>{t("Prix (€)")}</label>
+            <input style={input} inputMode="decimal" value={p} onChange={(e) => setP(e.target.value)} placeholder="97" aria-label={t("Prix")} />
           </div>
           <div>
-            <label style={lbl}>Ton lien de paiement</label>
-            <input style={input} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://buy.stripe.com/..." aria-label="Lien de paiement" />
+            <label style={lbl}>{t("Ton lien de paiement")}</label>
+            <input style={input} value={url} onChange={(e) => setUrl(e.target.value)} placeholder={t("https://buy.stripe.com/...")} aria-label={t("Lien de paiement")} />
           </div>
         </div>
       )}
       <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: "0 0 10px", lineHeight: 1.5 }}>
         {mode === "inclus"
-          ? "Tous tes clients la voient dès qu'elle est publiée. Tu peux aussi l'offrir à quelqu'un d'autre ci-dessous."
-          : "Tes clients voient la formation et son prix, avec ton lien de paiement. Après l'achat, donne l'accès à la personne ci-dessous."}
+          ? t("Tous tes clients la voient dès qu'elle est publiée. Tu peux aussi l'offrir à quelqu'un d'autre ci-dessous.")
+          : t("Tes clients voient la formation et son prix, avec ton lien de paiement. Après l'achat, donne l'accès à la personne ci-dessous.")}
       </p>
       <button
         type="button"
@@ -114,16 +116,16 @@ export default function FormationSalesPanel({
         onClick={() => run(() => updateFormation(formationId, { access_mode: mode, price_eur: mode === "payant" && p.trim() ? Number(p.replace(",", ".")) : null, payment_url: mode === "payant" ? url : null }), "Réglages enregistrés.")}
         style={{ width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}
       >
-        Enregistrer
+        {t("Enregistrer")}
       </button>
 
       <div style={{ borderTop: "1px solid rgba(245,237,237,0.07)", marginTop: 14, paddingTop: 12 }}>
-        <p style={{ ...lbl, marginBottom: 8 }}>Donner l&apos;accès</p>
+        <p style={{ ...lbl, marginBottom: 8 }}>{t("Donner l'accès")}</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
           {grantable.length > 0 && (
             <div style={{ display: "flex", gap: 6 }}>
-              <select style={input} value={who} onChange={(e) => setWho(e.target.value)} aria-label="Client">
-                <option value="">Un de mes clients</option>
+              <select style={input} value={who} onChange={(e) => setWho(e.target.value)} aria-label={t("Client")}>
+                <option value="">{t("Un de mes clients")}</option>
                 {grantable.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -134,7 +136,7 @@ export default function FormationSalesPanel({
             </div>
           )}
           <div style={{ display: "flex", gap: 6 }}>
-            <input style={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ou son email" aria-label="Email" />
+            <input style={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("ou son email")} aria-label={t("Email")} />
             <button type="button" disabled={pending || !email.trim()} style={ghost} onClick={() => run(() => grantFormationAccessAction(formationId, { email }), "Accès donné.", () => setEmail(""))}>
               <Check size={12} />
             </button>
@@ -149,7 +151,7 @@ export default function FormationSalesPanel({
                   {g.name}
                   {g.email ? <span style={{ color: "rgba(245,237,237,0.4)" }}> · {g.email}</span> : null}
                 </span>
-                <button type="button" disabled={pending} aria-label="Retirer l'accès" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer" }} onClick={() => run(() => revokeFormationAccessAction(formationId, g.userId), "Accès retiré.")}>
+                <button type="button" disabled={pending} aria-label={t("Retirer l'accès")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer" }} onClick={() => run(() => revokeFormationAccessAction(formationId, g.userId), "Accès retiré.")}>
                   <X size={14} />
                 </button>
               </div>
@@ -169,7 +171,7 @@ export default function FormationSalesPanel({
             }).catch(() => {});
           }}
         >
-          <Copy size={12} /> {copied ? "Lien copié" : "Copier le lien de paiement"}
+          <Copy size={12} /> {copied ? t("Lien copié") : t("Copier le lien de paiement")}
         </button>
       )}
       {msg && <p style={{ fontSize: 12, color: msg.ok ? "#4ade80" : "#fca5a5", margin: "10px 0 0" }}>{msg.text}</p>}

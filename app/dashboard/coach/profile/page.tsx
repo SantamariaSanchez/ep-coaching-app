@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Settings, ChevronRight } from "lucide-react";
@@ -12,6 +13,7 @@ import ClientIntakeForm from "@/components/ui/ClientIntakeForm";
 import { createAdminClient } from "@/lib/supabase-admin";
 
 export default async function CoachProfilePage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -33,9 +35,9 @@ export default async function CoachProfilePage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon espace
+          {t("Mon espace")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Mon profil</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon profil")}</h1>
       </div>
 
       <ProfileHeader profile={profile} postCount={postCount} avatarSrc={avatarSrc} />
@@ -50,9 +52,9 @@ export default async function CoachProfilePage() {
 
       <div className="mt-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Ma fiche
+          {t("Ma fiche")}
         </p>
-        <h2 className="text-xl font-black uppercase tracking-tight mb-4">Mes infos personnelles</h2>
+        <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Mes infos personnelles")}</h2>
         <ClientIntakeForm clientId={user.id} existingIntake={intake} saveClientIntake={saveClientIntake} isSelf />
       </div>
 
@@ -66,7 +68,7 @@ export default async function CoachProfilePage() {
         }}
       >
         <Settings size={16} style={{ color: "#E01E1E" }} />
-        <span style={{ flex: 1 }}>Paramètres</span>
+        <span style={{ flex: 1 }}>{t("Paramètres")}</span>
         <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)" }} />
       </Link>
     </div>

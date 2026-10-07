@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Trophy, Rocket, EyeOff } from "lucide-react";
@@ -48,6 +49,7 @@ function LeaderboardRow({ entry, isMe }: { entry: LeaderboardEntry; isMe: boolea
 }
 
 export default async function ClassementPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -64,16 +66,14 @@ export default async function ClassementPage() {
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Communauté
+          {t("Communauté")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
           <Trophy size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
-          Classement
+          {t("Classement")}
         </h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Séances, repas notés, bilans, partages : chaque action réelle rapporte des points. Membres gratuits
-          et clients accompagnés, tous coachs confondus, sur un seul classement. Tu peux t&apos;en retirer depuis
-          tes paramètres.
+          {t("Séances, repas notés, bilans, partages : chaque action réelle rapporte des points. Membres gratuits et clients accompagnés, tous coachs confondus, sur un seul classement. Tu peux t'en retirer depuis tes paramètres.")}
         </p>
       </div>
 
@@ -81,13 +81,12 @@ export default async function ClassementPage() {
         <div className="mb-4 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3 flex items-start gap-3">
           <EyeOff size={16} className="text-[#F5EDED]/45 flex-shrink-0 mt-0.5" strokeWidth={1.8} />
           <p className="text-xs text-[#F5EDED]/55 leading-relaxed">
-            Tu es masqué du classement : les autres membres ne te voient pas, ta position ici n&apos;est visible
-            que par toi.{" "}
+            {t("Tu es masqué du classement : les autres membres ne te voient pas, ta position ici n'est visible que par toi.")}{" "}
             <Link
               href="/dashboard/client/parametres"
               className="font-bold text-[#E01E1E] hover:text-[#F5EDED] transition-colors"
             >
-              Modifier
+              {t("Modifier")}
             </Link>
           </p>
         </div>
@@ -103,16 +102,15 @@ export default async function ClassementPage() {
         <div className="mb-6 bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 flex items-start gap-3">
           <Rocket size={18} className="text-[#E01E1E] flex-shrink-0 mt-0.5" strokeWidth={1.8} />
           <div>
-            <p className="text-sm font-bold text-white">Tu n&apos;es pas encore classé</p>
+            <p className="text-sm font-bold text-white">{t("Tu n'es pas encore classé")}</p>
             <p className="text-xs text-[#F5EDED]/45 mt-1 leading-relaxed">
-              Logue une séance, note un repas ou fais ton bilan du jour : le premier point t&apos;inscrit au
-              classement.
+              {t("Logue une séance, note un repas ou fais ton bilan du jour : le premier point t'inscrit au classement.")}
             </p>
             <Link
               href="/dashboard/client"
               className="inline-block mt-3 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#F5EDED] transition-colors"
             >
-              Voir mes actions à faire →
+              {t("Voir mes actions à faire →")}
             </Link>
           </div>
         </div>
@@ -120,7 +118,7 @@ export default async function ClassementPage() {
 
       {top.length === 0 ? (
         <p className="text-sm text-[#F5EDED]/35 text-center py-10">
-          Personne n&apos;a encore de points. Sois le ou la première.
+          {t("Personne n'a encore de points. Sois le ou la première.")}
         </p>
       ) : (
         <div className="flex flex-col gap-2">

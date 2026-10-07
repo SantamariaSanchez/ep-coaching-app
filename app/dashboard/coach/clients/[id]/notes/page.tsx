@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 ﻿import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -16,6 +17,7 @@ export default async function CoachClientNotesPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getT();
   const { id } = await params;
 
   const user = await getUser();
@@ -58,20 +60,20 @@ export default async function CoachClientNotesPage({
           className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-[#890404]/30 hover:border-[#890404]/60 px-3 py-2 rounded-lg transition-colors"
         >
           <FileText size={12} />
-          Templates messages
+          {t("Templates messages")}
         </Link>
       </div>
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Notes coach
+          {t("Notes coach")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}
         </h1>
         <p className="mt-1 text-xs text-[#F5EDED]/30">
-          Semaine {weekNumber} · {notes.length} note{notes.length !== 1 ? "s" : ""}{" "}
-          · {decisions.length} décision{decisions.length !== 1 ? "s" : ""}
+          {t("Semaine")}{" "}{weekNumber} · {notes.length}{" "}{t("note")}{notes.length !== 1 ? "s" : ""}{" "}
+          · {decisions.length}{" "}{t("décision")}{decisions.length !== 1 ? "s" : ""}
         </p>
       </div>
 

@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -13,6 +14,7 @@ export default async function CoachContraintePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const t = await getT();
   const { slug } = await params;
 
   const user = await getUser();
@@ -30,7 +32,7 @@ export default async function CoachContraintePage({
         href="/dashboard/coach/contraintes"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
-        <ChevronLeft size={13} /> Contraintes & populations
+        <ChevronLeft size={13} />{" "}{t("Contraintes & populations")}
       </Link>
 
       <h1 className="text-2xl font-black uppercase tracking-tight mb-3">{constraint.title}</h1>
@@ -39,7 +41,7 @@ export default async function CoachContraintePage({
       <div className="ep-card" style={{ padding: "18px 20px", marginBottom: 20 }}>
         <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
           <ListChecks size={13} className="text-[#E01E1E]" />
-          Principes d&apos;adaptation
+          {t("Principes d'adaptation")}
         </p>
         <ul className="space-y-2.5">
           {constraint.adaptationPrinciples.map((p, i) => (
@@ -54,7 +56,7 @@ export default async function CoachContraintePage({
       <div className="bg-amber-500/5 border border-amber-500/25 rounded-xl px-4 py-3.5 mb-8">
         <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-2.5">
           <ShieldAlert size={13} />
-          Signaux d&apos;alerte : orienter vers un professionnel
+          {t("Signaux d'alerte : orienter vers un professionnel")}
         </p>
         <ul className="space-y-2">
           {constraint.redFlags.map((f, i) => (
@@ -69,7 +71,7 @@ export default async function CoachContraintePage({
       <div>
         <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
           <BookOpen size={12} />
-          Sources
+          {t("Sources")}
         </p>
         <ul className="space-y-1">
           {constraint.sources.map((s, i) => (

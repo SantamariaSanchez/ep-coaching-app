@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -15,6 +16,7 @@ export default async function AgentChatPage({
 }: {
   params: Promise<{ key: string }>;
 }) {
+  const t = await getT();
   const { key } = await params;
   const user = await getUser();
   if (!user) redirect("/");
@@ -36,12 +38,12 @@ export default async function AgentChatPage({
         href="/dashboard/coach/admin/organisation"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
-        <ChevronLeft size={13} /> Organisation
+        <ChevronLeft size={13} />{" "}{t("Organisation")}
       </Link>
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Agent IA
+          {t("Agent IA")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{agent.name}</h1>
       </div>

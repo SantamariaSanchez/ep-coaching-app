@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getClientDailyLogs } from "@/utils/daily-logs";
@@ -21,6 +22,7 @@ function fmt(dateStr: string) {
 }
 
 export default async function ClientBilanPage({ searchParams }: { searchParams: Promise<{ jour?: string }> }) {
+  const t = await getT();
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/client");
@@ -73,7 +75,7 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
     <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{date === today ? fmt(today) : `Rattrapage · ${fmt(date)}`}</p>
-        <h1 className="ep-h1">Bilan &amp; progression</h1>
+        <h1 className="ep-h1">{t("Bilan & progression")}</h1>
       </div>
 
       <BilanDayPicker basePath="/dashboard/client/bilan" today={today} selected={date} logs={allLogs} />

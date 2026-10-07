@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -28,6 +29,7 @@ import { ChevronLeft } from "lucide-react";
 // création, outreach) et les 5 objectifs du mois sont une vraie saisie
 // manuelle, faute d'exister ailleurs.
 export default async function BusinessPilotagePage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -51,17 +53,16 @@ export default async function BusinessPilotagePage() {
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Retour
+        {t("Retour")}
       </Link>
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon business
+          {t("Mon business")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Pilotage</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Pilotage")}</h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
-          Tes non-négociables quotidiens, tes objectifs du mois, et les chiffres de la semaine
-          (audience, contenu, leads, ventes).
+          {t("Tes non-négociables quotidiens, tes objectifs du mois, et les chiffres de la semaine (audience, contenu, leads, ventes).")}
         </p>
       </div>
 

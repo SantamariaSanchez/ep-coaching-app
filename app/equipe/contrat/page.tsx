@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { FileSignature } from "lucide-react";
 import { requireStaffPage } from "@/lib/staff-page";
 import { buildStaffContract } from "@/lib/staff-contract";
@@ -15,6 +16,7 @@ export const dynamic = "force-dynamic";
 // changement de version du contrat) : lecture puis signature électronique.
 // Une copie part par email dès la signature (voir signStaffContract).
 export default async function StaffContractPage({ searchParams }: { searchParams: Promise<{ jotform?: string }> }) {
+  const t = await getT();
   const { jotform } = await searchParams;
   const ctx = await requireStaffPage("contract");
   // Le contrat de référence est le PDF du poste (bucket staff-contracts) ;
@@ -32,15 +34,15 @@ export default async function StaffContractPage({ searchParams }: { searchParams
     <div style={{ maxWidth: 760, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <FileSignature size={18} style={{ color: "#E01E1E" }} />
-        <p className="ep-label" style={{ margin: 0 }}>{isResign ? "Contrat mis à jour" : "Étape 2 sur 2"}</p>
+        <p className="ep-label" style={{ margin: 0 }}>{isResign ? t("Contrat mis à jour") : t("Étape 2 sur 2")}</p>
       </div>
       <h1 style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "-0.02em" }}>
-        Ton contrat de collaboration
+        {t("Ton contrat de collaboration")}
       </h1>
       <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.65, margin: "0 0 20px" }}>
         {isResign
-          ? "Le contrat a évolué depuis ta dernière signature. Relis-le et signe la nouvelle version pour retrouver ton espace."
-          : "Lis-le tranquillement. Dès que tu signes, ton espace s'ouvre et tu reçois par email une copie du contrat, ta fiche de poste et ton parcours d'intégration."}
+          ? t("Le contrat a évolué depuis ta dernière signature. Relis-le et signe la nouvelle version pour retrouver ton espace.")
+          : t("Lis-le tranquillement. Dès que tu signes, ton espace s'ouvre et tu reçois par email une copie du contrat, ta fiche de poste et ton parcours d'intégration.")}
       </p>
 
       {pdf ? (

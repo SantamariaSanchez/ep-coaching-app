@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Lock, ArrowRight } from "lucide-react";
@@ -11,6 +12,7 @@ import LeadMagnetsExplorer from "@/components/ressources/LeadMagnetsExplorer";
 import { createResourceRequest, respondToResourceRequest, deleteResourceRequest } from "./request-actions";
 
 export default async function ClientRessourcesPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -32,9 +34,9 @@ export default async function ClientRessourcesPage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Contenu
+          {t("Contenu")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ressources")}</h1>
       </div>
 
       {canBrowse ? (
@@ -56,17 +58,15 @@ export default async function ClientRessourcesPage() {
           >
             <Lock size={18} style={{ color: "var(--ep-gold)" }} />
           </div>
-          <h2 className="text-lg font-black text-white mb-2">La bibliothèque est réservée aux clients accompagnés</h2>
+          <h2 className="text-lg font-black text-white mb-2">{t("La bibliothèque est réservée aux clients accompagnés")}</h2>
           <p className="text-[12.5px] text-[#F5EDED]/50 leading-relaxed mb-5 max-w-sm mx-auto">
-            Les guides que je t&apos;envoie restent accessibles par leur lien, et tu continueras à en
-            recevoir. Le catalogue complet, lui, fait partie de l&apos;accompagnement : il est
-            construit pour être utilisé avec un coach qui te dit lequel lire, et quand.
+            {t("Les guides que je t'envoie restent accessibles par leur lien, et tu continueras à en recevoir. Le catalogue complet, lui, fait partie de l'accompagnement : il est construit pour être utilisé avec un coach qui te dit lequel lire, et quand.")}
           </p>
           <Link
             href="/dashboard/client/abonnement"
             className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
-            Voir l&apos;accompagnement <ArrowRight size={13} />
+            {t("Voir l'accompagnement")}{" "}<ArrowRight size={13} />
           </Link>
         </div>
       )}
