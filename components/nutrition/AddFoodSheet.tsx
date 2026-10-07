@@ -7,6 +7,7 @@ import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { FAMILY_LABELS, macrosFor, normalize, planTotals, searchFoods, slotLabel, type Family, type PlanItem, type SearchContext, type SearchFilter } from "@/lib/nutrition-engine";
 import type { Food } from "@/utils/nutrition";
 import type { SavedMeal } from "@/utils/saved-meals";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 export interface TrackerRecipe {
   id: string;
@@ -112,7 +113,7 @@ export default function AddFoodSheet({
   const recipeResults = useMemo(() => {
     const q = normalize(recipeQuery);
     return recipes
-      .filter((r) => (!recipeMeal || r.meal === recipeMeal) && (!q || normalize(r.name).includes(q)))
+      .filter((r) => (!recipeMeal || r.meal === recipeMeal) && (!q || fuzzyMatchAny([r.name], q)))
       .sort((a, b) => b.protein / Math.max(1, b.kcal) - a.protein / Math.max(1, a.kcal))
       .slice(0, 60);
   }, [recipes, recipeQuery, recipeMeal]);

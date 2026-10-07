@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Pin, PinOff, Trash2, StickyNote, Search } from "lucide-react";
 import { createIdeationNote, updateIdeationNote, deleteIdeationNote } from "@/app/dashboard/coach/studio/actions";
 import type { IdeationNote } from "@/lib/coach-ideation";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Prise de notes libre du coach (Idéation, 2026-08-15) — tout ce qui ne
 // rentre pas dans le pipeline idée/brouillon/prêt/publié de ContentStudio :
@@ -30,7 +31,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return notes;
-    return notes.filter((n) => n.title.toLowerCase().includes(q) || n.body?.toLowerCase().includes(q));
+    return notes.filter((n) => fuzzyMatchAny([n.title, n.body], q));
   }, [notes, query]);
 
   function submitNew() {

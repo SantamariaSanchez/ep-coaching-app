@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight, Search, X } from "lucide-react";
 import RoleBadge from "@/components/ui/RoleBadge";
 import type { RoleBadge as RoleBadgeLabel } from "@/utils/auth-client";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 export interface ConversationRow {
   id: string;
@@ -53,7 +54,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
   const visible = useMemo(() => {
     const q = normalize(query.trim());
     return rows.filter((r) => {
-      if (q && !normalize(r.fullName ?? "").includes(q)) return false;
+      if (q && !fuzzyMatchAny([r.fullName], q)) return false;
       if (filter === "unread") return r.unread > 0;
       if (filter === "silent") return isSilent(r);
       return true;

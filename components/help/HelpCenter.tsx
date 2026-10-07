@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronUp, PlayCircle, Search } from "lucide-react";
 import { GUIDES, type HelpSpace } from "@/lib/help-content";
 import { restartTour } from "@/components/help/WelcomeTour";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Aide et tutoriels (2026-09-30) : la visite en 5 écrans, puis des guides
 // courts, pas à pas, filtrés selon le profil.
@@ -15,7 +16,7 @@ export default function HelpCenter({ space }: { space: HelpSpace }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const base = `/dashboard/${space}`;
-  const guides = GUIDES.filter((g) => g.for.includes(space)).filter((g) => !q || `${g.title} ${g.steps.join(" ")}`.toLowerCase().includes(q.toLowerCase()));
+  const guides = GUIDES.filter((g) => g.for.includes(space)).filter((g) => !q || fuzzyMatchAny([g.title, g.steps.join(" ")], q));
 
   return (
     <div className="page-transition" style={{ padding: "22px 16px 110px", maxWidth: 720, margin: "0 auto" }}>

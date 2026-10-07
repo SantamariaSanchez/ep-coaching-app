@@ -34,6 +34,7 @@ import type { ClientIntake } from "@/utils/client-intake";
 import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch, type FoodWatchContext } from "@/lib/food-watch-keywords";
 import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz";
 import { notifyGateRefresh } from "@/lib/gate-events";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -870,8 +871,7 @@ export default function ClientNutritionView({
     return foods
       .filter(
         (f) =>
-          f.name.toLowerCase().includes(q) ||
-          (f.category ?? "").toLowerCase().includes(q)
+          fuzzyMatchAny([f.name, f.category], q)
       )
       .slice(0, 40);
   }, [foods, searchQuery]);
@@ -2236,7 +2236,7 @@ export default function ClientNutritionView({
                 {searchTab === "recettes" && (
                   <div className="flex-1 overflow-y-auto px-2 pb-2">
                     {(searchQuery
-                      ? allRecipes.filter((r) => r.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                      ? allRecipes.filter((r) => fuzzyMatchAny([r.name], searchQuery))
                       : allRecipes
                     ).slice(0, 40).map((r) => (
                       <button

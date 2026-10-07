@@ -6,6 +6,7 @@ import ArticleCard from "./ArticleCard";
 import SeedLibraryButton from "@/components/ui/SeedLibraryButton";
 import { SCIENCE_TOPICS, ARTICLE_TYPE_LABELS, type ScienceArticle, type ScienceArticleType } from "@/utils/science-types";
 import type { UpdateArticleInput } from "@/app/dashboard/client/science/actions";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -51,11 +52,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
       if (activeType && a.article_type !== activeType) return false;
       if (!q) return true;
       return (
-        a.title.toLowerCase().includes(q) ||
-        (a.title_fr ?? "").toLowerCase().includes(q) ||
-        (a.authors ?? "").toLowerCase().includes(q) ||
-        (a.journal ?? "").toLowerCase().includes(q) ||
-        (a.summary_fr ?? "").toLowerCase().includes(q)
+        fuzzyMatchAny([a.title, a.title_fr, a.authors, a.journal, a.summary_fr], q)
       );
     });
   }, [articles, search, activeTopic, activeType]);

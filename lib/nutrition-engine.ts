@@ -13,6 +13,7 @@
 // - la recherche d'aliments classée (plan, récents, plus mangés).
 
 import type { DietPlanMeal, DietPlanWithMeals, Food } from "@/utils/nutrition";
+import { fuzzyScore } from "@/lib/fuzzy-search";
 
 export interface Macros {
   calories: number;
@@ -416,6 +417,9 @@ export function searchFoods(foods: Food[], query: string, ctx: SearchContext, fi
         else if (new RegExp(`(^|[\\s(,'-])${escapeRe(w)}`).test(name)) score += 40;
         else if (name.includes(w)) score += 20;
         else if (cat.includes(w)) score += 8;
+        // Faute de frappe ou pluriel (« bannane », « bananes ») : correspondance
+        // approximative, classée après toutes les correspondances exactes.
+        else if (fuzzyScore(name, w) >= 0) score += 6;
         else {
           ok = false;
           break;

@@ -9,6 +9,7 @@ import {
 } from "@/lib/exercise-library-content";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import { createExercise } from "@/app/dashboard/client/exercises/actions";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 interface Props {
   onAdd: (input: { name: string; muscleGroup: string | null }) => void;
@@ -166,9 +167,7 @@ export default function ExercisePicker({ onAdd }: Props) {
       if (activeGroup && e.muscle_group !== activeGroup) return false;
       if (!q) return true;
       return (
-        e.name.toLowerCase().includes(q) ||
-        (e.muscle_subgroup ?? "").toLowerCase().includes(q) ||
-        (e.equipment ?? "").toLowerCase().includes(q)
+        fuzzyMatchAny([e.name, e.muscle_subgroup, e.equipment], q)
       );
     });
   }, [library, search, activeGroup]);

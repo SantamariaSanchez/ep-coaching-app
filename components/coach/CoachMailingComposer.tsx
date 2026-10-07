@@ -26,6 +26,7 @@ import {
   MAX_RECIPIENTS_PER_SEND,
 } from "@/lib/mailing-audience";
 import { getMailTemplatesByCategory, MAIL_TEMPLATES, type MailTemplate } from "@/lib/mail-templates";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Axe 2 (VISION.md) : mailing par coach — segmentation par tag/liste sous
 // le compte Brevo unique (décision prise avec l'utilisateur, 2026-08-14).
@@ -160,7 +161,7 @@ export default function CoachMailingComposer({
     const q = templateSearch.trim().toLowerCase();
     if (!q) return templateGroups;
     return templateGroups
-      .map((g) => ({ ...g, templates: g.templates.filter((t) => t.name.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q)) }))
+      .map((g) => ({ ...g, templates: g.templates.filter((t) => fuzzyMatchAny([t.name, t.subject], q)) }))
       .filter((g) => g.templates.length > 0);
   }, [templateGroups, templateSearch]);
 

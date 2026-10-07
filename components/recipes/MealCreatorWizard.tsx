@@ -16,6 +16,7 @@ import {
 } from "@/lib/meal-creator";
 import type { Food } from "@/utils/nutrition";
 import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actions";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const FOOD_GROUP_ORDER: FoodGroupKey[] = ["proteine", "glucide", "legume", "matiere_grasse"];
 
@@ -108,7 +109,7 @@ function FoodGroupPicker({
   onCreateFood?: (name: string, macros: { calories: number; protein: number; carbs: number; fat: number }) => Promise<void>;
 }) {
   const query = search.trim().toLowerCase();
-  const filtered = query ? options.filter((o) => o.name.toLowerCase().includes(query)) : options;
+  const filtered = query ? options.filter((o) => fuzzyMatchAny([o.name], query)) : options;
 
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);

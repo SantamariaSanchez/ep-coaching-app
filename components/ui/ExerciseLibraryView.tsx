@@ -33,6 +33,7 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import type { LibraryExercise, ExerciseCategory, ExerciseDifficulty } from "@/utils/exercise-library";
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
 import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 async function uploadExerciseVideo(file: File): Promise<string | null> {
   try {
@@ -614,10 +615,7 @@ export default function ExerciseLibraryView({
       if (activeEquipmentType && getEquipmentType(e.equipment) !== activeEquipmentType) return false;
       if (!q) return true;
       return (
-        e.name.toLowerCase().includes(q) ||
-        (e.muscle_subgroup ?? "").toLowerCase().includes(q) ||
-        (e.equipment ?? "").toLowerCase().includes(q) ||
-        (e.brand ?? "").toLowerCase().includes(q)
+        fuzzyMatchAny([e.name, e.muscle_subgroup, e.equipment, e.brand], q)
       );
     });
   }, [exercises, search, activeGroup, activeBrand, activeEquipmentType]);

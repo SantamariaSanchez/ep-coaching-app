@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Mail, Phone, Bot, Search, X, StickyNote } from "lucide-react";
 import type { Lead, LeadStatus } from "@/utils/leads";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Pipeline de suivi manuel des leads (20260909b/c) : avant, cet écran
 // n'était qu'un journal en lecture seule (email/tel/date), aucune façon de
@@ -209,7 +210,7 @@ export default function LeadsPipeline({
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
       if (!q) return true;
       const haystack = `${l.email ?? ""} ${l.phone ?? ""} ${magnetTitleBySlug[l.lead_magnet_slug] ?? ""} ${originLabelById?.[l.id] ?? ""}`.toLowerCase();
-      return haystack.includes(q);
+      return fuzzyMatchAny([haystack], q);
     });
   }, [leads, query, statusFilter, magnetTitleBySlug, originLabelById]);
 

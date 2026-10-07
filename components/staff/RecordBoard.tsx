@@ -6,6 +6,7 @@ import { Plus, Search, ChevronDown, Trash2, ExternalLink, Save, X } from "lucide
 import { KINDS, type FieldDef, type KindDef, type RecordKind } from "@/lib/staff-roles";
 import { isoToParisLocal, parisDate, type StaffRecord } from "@/lib/staff-kpis";
 import { createStaffRecord, updateStaffRecord, setStaffRecordStatus, deleteStaffRecord } from "@/app/equipe/actions";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 type EditableKind = Exclude<RecordKind, "report">;
 type Values = Record<string, string>;
@@ -347,7 +348,7 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
       if (filter === "actifs" && def.stages.find((s) => s.value === r.status)?.closed) return false;
       if (filter !== "actifs" && filter !== "tous" && r.status !== filter) return false;
       if (!q) return true;
-      return [r.title, ...Object.values(r.data ?? {}).filter((v) => typeof v === "string")].some((v) => String(v).toLowerCase().includes(q));
+      return fuzzyMatchAny([r.title, ...Object.values(r.data ?? {}).filter((v): v is string => typeof v === "string")], q);
     });
     if (def.sort === "due_asc") {
       list = [...list].sort((a, b) => {

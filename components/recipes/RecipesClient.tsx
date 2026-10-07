@@ -32,6 +32,7 @@ import AddRecipeForm from "@/components/recipes/AddRecipeForm";
 import MealCreatorWizard from "@/components/recipes/MealCreatorWizard";
 import { MACRO_PROFILE_LABELS, type MacroProfile } from "@/lib/meal-creator";
 import { todayInParis } from "@/lib/dates";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Le créateur de repas connaît le créneau food_logs (breakfast/lunch/...)
 // alors que les recettes utilisent leur propre typage MealType
@@ -552,7 +553,7 @@ export default function RecipesClient({
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return recipes.filter((r) => {
-      if (q && !r.name.toLowerCase().includes(q) && !r.ingredients.some((i) => i.toLowerCase().includes(q))) return false;
+      if (q && !fuzzyMatchAny([r.name, ...r.ingredients], q)) return false;
       if (meals.size && !meals.has(r.meal)) return false;
       if (diets.size && !r.diet.some((d) => diets.has(d))) return false;
       if (phases.size && !r.phases.some((p) => phases.has(p))) return false;

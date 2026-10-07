@@ -1440,7 +1440,7 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return CONTENT_PROMPTS;
-    return CONTENT_PROMPTS.filter((p) => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+    return CONTENT_PROMPTS.filter((p) => fuzzyMatchAny([p.title, p.category], q));
   }, [query]);
 
   return (
@@ -1495,7 +1495,7 @@ function HookLibrary() {
     return HOOK_BANK.filter((h) => {
       if (kindFilter !== "all" && h.kind !== kindFilter) return false;
       if (!q) return true;
-      return h.text.toLowerCase().includes(q) || h.category.toLowerCase().includes(q);
+      return fuzzyMatchAny([h.text, h.category], q);
     });
   }, [query, kindFilter]);
 

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Mic, MicOff, ImagePlus, Send, Search, Pin, PinOff, Trash2, X, Check, Link2, Hash, Inbox, ListChecks, FileText } from "lucide-react";
 import { createNoteAction, createCaptureAction, updateNoteAction, deleteNoteAction } from "@/app/actions/notes";
 import type { Note, NoteTag } from "@/lib/notes";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Notes façon Obsidian/Tana (2026-09-30) : on jette tout en vrac (texte,
 // lien, capture, dictée), ça se range avec des #supertags, on relie des
@@ -28,8 +29,7 @@ function fmtDate(iso: string): string {
 
 function matches(n: Note, q: string): boolean {
   if (!q) return true;
-  const hay = `${n.title} ${n.body} ${n.tags.map((t) => `#${t}`).join(" ")}`.toLowerCase();
-  return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
+  return fuzzyMatchAny([n.title, n.body, n.tags.map((t) => `#${t}`).join(" ")], q);
 }
 
 type SpeechRec = { lang: string; continuous: boolean; interimResults: boolean; start: () => void; stop: () => void; onresult: ((e: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };

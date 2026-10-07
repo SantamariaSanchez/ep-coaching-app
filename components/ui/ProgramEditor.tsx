@@ -64,6 +64,7 @@ import {
 // nom. ExerciseNameField (composant à part, pas de collision) n'était pas
 // concerné.
 import { updateExercise as updateLibraryExercise } from "@/app/dashboard/client/exercises/actions";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 export interface ExerciseRow {
   localId: string;
@@ -637,7 +638,7 @@ export function ExerciseNameField({
   const matches =
     q.length >= 2 || hasActiveFilters
       ? library
-          .filter((l) => !q || l.name.toLowerCase().includes(q))
+          .filter((l) => !q || fuzzyMatchAny([l.name], q))
           .filter((l) => !filterGroup || l.muscle_group === filterGroup)
           .filter((l) => !filterEquipment || getEquipmentType(l.equipment) === filterEquipment)
           .slice(0, 20)

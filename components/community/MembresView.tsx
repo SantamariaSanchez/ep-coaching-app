@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, Mail, MessageCircle, Bell, CheckCircle2, Flame, MoonStar, Sparkles } from "lucide-react";
 import type { CommunityMemberWithActivity } from "@/utils/auth";
 import RankBadge from "@/components/ui/RankBadge";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -166,7 +167,7 @@ export default function MembresView({
     });
     if (q) {
       list = list.filter(
-        (m) => (m.full_name ?? "").toLowerCase().includes(q) || (m.email ?? "").toLowerCase().includes(q)
+        (m) => fuzzyMatchAny([m.full_name, m.email], q)
       );
     }
     if (sort === "active") {

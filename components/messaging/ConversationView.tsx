@@ -14,6 +14,7 @@ import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
 import { safeExternalUrl } from "@/lib/sanitize";
 import { triggerAICoachReply } from "@/app/dashboard/client/messages/actions";
 import { formatClock, formatDayLabel, parisDayKey } from "@/components/messaging/message-format";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Taille d'une page d'historique. On charge les PLUS RÉCENTS d'abord : avant,
 // la requête triait du plus ancien au plus récent avec une limite de 100,
@@ -378,7 +379,7 @@ export default function ConversationView({
   const [searchQuery, setSearchQuery] = useState("");
   const searchTerm = searchQuery.trim().toLowerCase();
   const visibleMessages = searchTerm
-    ? messages.filter((m) => m.content?.toLowerCase().includes(searchTerm))
+    ? messages.filter((m) => fuzzyMatchAny([m.content], searchTerm))
     : messages;
 
   // Load messages and mark as read

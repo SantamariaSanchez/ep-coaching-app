@@ -14,6 +14,7 @@ import { PHASE_LABELS } from "@/lib/coaching-phase-helpers";
 import type { ClientActivity } from "@/lib/client-activity";
 import { weekNumber } from "@/lib/dates";
 import { ClientCard } from "./ClientCard";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Silencieux depuis 5 jours ou plus (ou jamais vu sur la fenêtre regardée) —
 // même seuil pour le filtre "Inactifs" et pour le point de couleur affiché
@@ -117,7 +118,7 @@ export default function ClientsSection({
   const visible = useMemo(() => {
     const q = normalize(query.trim());
     const filtered = clients.filter((c) => {
-      if (q && !normalize(c.full_name ?? "").includes(q)) return false;
+      if (q && !fuzzyMatchAny([c.full_name], q)) return false;
       if (filter === "alerts") return alertCount(c.id) > 0;
       if (filter === "silent") return isSilent(activity[c.id]?.daysSinceActivity);
       if (filter === "recent_activity") return isRecentlyActive(c);

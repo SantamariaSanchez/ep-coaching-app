@@ -13,31 +13,31 @@
 // longueur du mot : un mot de 3 lettres ne tolère aucune erreur (sinon tout
 // matche), un mot long en tolère 2.
 
-/** Distance de Levenshtein classique (nombre minimal d'insertions/suppressions/substitutions). */
+/**
+ * Distance d'édition avec inversion de deux lettres voisines comptée comme
+ * une seule faute (« sqaut » pour « squat ») : variante « alignement
+ * optimal » de Damerau-Levenshtein.
+ */
 function levenshtein(a: string, b: string): number {
   if (a === b) return 0;
   const al = a.length;
   const bl = b.length;
   if (al === 0) return bl;
   if (bl === 0) return al;
-
-  let prev = new Array(bl + 1);
-  let curr = new Array(bl + 1);
-  for (let j = 0; j <= bl; j++) prev[j] = j;
-
+  const d: number[][] = Array.from({ length: al + 1 }, (_, i) => {
+    const row = new Array<number>(bl + 1).fill(0);
+    row[0] = i;
+    return row;
+  });
+  for (let j = 0; j <= bl; j++) d[0][j] = j;
   for (let i = 1; i <= al; i++) {
-    curr[0] = i;
     for (let j = 1; j <= bl; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      curr[j] = Math.min(
-        prev[j] + 1, // suppression
-        curr[j - 1] + 1, // insertion
-        prev[j - 1] + cost // substitution
-      );
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
     }
-    [prev, curr] = [curr, prev];
   }
-  return prev[bl];
+  return d[al][bl];
 }
 
 function toleranceFor(wordLength: number): number {
@@ -46,45 +46,100 @@ function toleranceFor(wordLength: number): number {
   return 2;
 }
 
-/** minuscule + accents retirés (NFD, retire les diacritiques combinants). */
+/** minuscule, accents retirés, ligatures dépliées, ponctuation en espaces. */
 export function normalizeForSearch(s: string): string {
   return s
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z0-9#@\s]/g, " ");
+}
+
+// Pluriel simple du français : « bananes » trouve « banane », « noix »
+// reste « noix » (mot court), « chevaux » n'est pas géré (rare ici).
+function singular(w: string): string {
+  return w.length > 3 && (w.endsWith("s") || w.endsWith("x")) ? w.slice(0, -1) : w;
+}
+
+/**
+ * Score de correspondance d'un mot de requête dans un texte normalisé :
+ * 3 début du texte, 2 début d'un mot, 1 sous-chaîne, 0.5 faute tolérée
+ * (Levenshtein sur un mot entier ou sur le début d'un mot, pour une saisie
+ * en cours), -1 si aucune correspondance.
+ */
+function wordScore(qw: string, h: string, words: string[]): number {
+  const variants = qw === singular(qw) ? [qw] : [qw, singular(qw)];
+  for (const v of variants) {
+    if (h.startsWith(v)) return 3;
+    if (words.some((w) => w.startsWith(v))) return 2;
+    if (h.includes(v)) return 1;
+  }
+  const tolerance = toleranceFor(qw.length);
+  if (tolerance === 0) return -1;
+  for (const w of words) {
+    const ws = singular(w);
+    for (const cand of [w, ws, w.slice(0, qw.length)]) {
+      if (Math.abs(cand.length - qw.length) > tolerance) continue;
+      if (levenshtein(cand, qw) <= tolerance || levenshtein(cand, singular(qw)) <= tolerance) return 0.5;
+    }
+  }
+  return -1;
 }
 
 /**
  * true si chaque mot de `query` correspond à au moins un mot de `haystack`,
- * soit en sous-chaîne exacte soit à une distance de Levenshtein tolérée
- * (voir `toleranceFor`). Les deux chaînes sont normalisées ici, pas besoin
- * de le faire avant d'appeler.
+ * en sous-chaîne, en début de mot, au singulier, ou avec une faute de frappe
+ * tolérée (voir `toleranceFor`). Les deux chaînes sont normalisées ici.
  */
 export function fuzzyMatch(haystack: string, query: string): boolean {
+  return fuzzyScore(haystack, query) >= 0;
+}
+
+/**
+ * Score de pertinence (plus haut = meilleur), -1 si pas de correspondance.
+ * Sert à trier : le nom exact d'abord, puis les débuts de mots, puis les
+ * correspondances approximatives.
+ */
+export function fuzzyScore(haystack: string, query: string): number {
   const q = normalizeForSearch(query).trim();
-  if (!q) return true;
-  const h = normalizeForSearch(haystack);
-
-  const queryWords = q.split(/\s+/).filter(Boolean);
-  const haystackWords = h.split(/\s+/).filter(Boolean);
-
-  return queryWords.every((qw) => {
-    if (h.includes(qw)) return true;
-    const tolerance = toleranceFor(qw.length);
-    if (tolerance === 0) return false;
-    return haystackWords.some((hw) => {
-      // Filet rapide avant le calcul complet : une trop grande différence de
-      // longueur ne peut jamais rester sous la tolérance.
-      if (Math.abs(hw.length - qw.length) > tolerance) return false;
-      return levenshtein(hw, qw) <= tolerance;
-    });
-  });
+  if (!q) return 0;
+  const h = normalizeForSearch(haystack).trim();
+  const words = h.split(/\s+/).filter(Boolean);
+  let total = 0;
+  for (const qw of q.split(/\s+/).filter(Boolean)) {
+    const s = wordScore(qw, h, words);
+    if (s < 0) return -1;
+    total += s;
+  }
+  if (h === q) total += 5;
+  else if (h.startsWith(q)) total += 2;
+  return total;
 }
 
 /** Variante pratique pour filtrer une liste sur plusieurs champs texte à la fois. */
 export function fuzzyMatchAny(fields: Array<string | null | undefined>, query: string): boolean {
   const q = query.trim();
   if (!q) return true;
-  const haystack = fields.filter(Boolean).join(" ");
-  return fuzzyMatch(haystack, q);
+  return fuzzyMatch(fields.filter(Boolean).join(" "), q);
+}
+
+/**
+ * Filtre et trie une liste par pertinence. Le premier champ compte double
+ * (en général le nom), pour qu'un titre qui correspond passe avant une
+ * description qui correspond.
+ */
+export function fuzzyFilter<T>(items: T[], fields: (item: T) => Array<string | null | undefined>, query: string): T[] {
+  const q = query.trim();
+  if (!q) return items;
+  const scored: { item: T; score: number; i: number }[] = [];
+  items.forEach((item, i) => {
+    const f = fields(item);
+    const primary = fuzzyScore(f[0] ?? "", q);
+    const all = primary >= 0 ? primary * 2 : fuzzyScore(f.filter(Boolean).join(" "), q);
+    if (all >= 0) scored.push({ item, score: all, i });
+  });
+  scored.sort((a, b) => b.score - a.score || a.i - b.i);
+  return scored.map((s) => s.item);
 }

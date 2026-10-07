@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { fuzzyFilter } from "@/lib/fuzzy-search";
 
 // Notes façon Obsidian/Tana (2026-09-30). Lectures en service role,
 // toujours filtrées sur la personne connectée (passée par la page).
@@ -98,6 +99,11 @@ export async function searchNotes(ownerId: string, q: string, limit = 6): Promis
     const like = `%${q.replace(/[%_,()*]/g, " ").trim()}%`;
     const { data: fallback } = await admin.from("notes").select("id, title, body").eq("owner_id", ownerId).or(`title.ilike.${like},body.ilike.${like}`).limit(limit);
     rows = (fallback ?? []) as typeof rows;
+  }
+  if (!rows.length) {
+    // Faute de frappe : recherche tolérante sur les notes récentes.
+    const { data: recent } = await admin.from("notes").select("id, title, body").eq("owner_id", ownerId).order("updated_at", { ascending: false }).limit(400);
+    rows = fuzzyFilter((recent ?? []) as typeof rows, (n) => [n.title, n.body], q).slice(0, limit);
   }
   return rows.map((r) => ({ id: r.id, title: r.title || deriveTitle(r.body) || "Note", excerpt: r.body.replace(/\s+/g, " ").slice(0, 90) }));
 }

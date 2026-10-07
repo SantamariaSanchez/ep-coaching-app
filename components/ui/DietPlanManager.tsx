@@ -37,6 +37,7 @@ import PhaseHeader from "./PhaseHeader";
 import RoadmapContextPanel from "./RoadmapContextPanel";
 import MicroBarList from "./MicroBarList";
 import { useConfirm } from "./ConfirmDialogProvider";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 export interface MacroTargets {
   calories: number;
@@ -469,7 +470,7 @@ export function PlanBuilder({
   const searchMatches = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return foods;
-    return foods.filter((f) => f.name.toLowerCase().includes(q) || (f.category ?? "").toLowerCase().includes(q));
+    return foods.filter((f) => fuzzyMatchAny([f.name, f.category], q));
   }, [foods, search]);
 
   const diet = watchContext.diet;

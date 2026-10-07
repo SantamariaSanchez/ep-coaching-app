@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Copy, Check, Search } from "lucide-react";
 import { SALES_CALL_LIBRARY } from "@/lib/sales-call-library";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Bibliothèque de questions de closing (retour direct 2026-09-18 : "met
 // du contenu et plein de question à poser selon les situations, des
@@ -53,8 +54,7 @@ export default function SalesCallScripts() {
         questions: cat.questions.filter(
           (question) =>
             !q ||
-            question.text.toLowerCase().includes(q) ||
-            question.note.toLowerCase().includes(q)
+            fuzzyMatchAny([question.text, question.note], q)
         ),
       }))
       .filter((cat) => cat.questions.length > 0);

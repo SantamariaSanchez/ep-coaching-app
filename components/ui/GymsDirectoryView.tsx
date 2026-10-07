@@ -7,6 +7,7 @@ import type { CreateGymInput } from "@/app/dashboard/client/gyms/actions";
 import type { GymType } from "@/lib/gyms-seed";
 import { EQUIPMENT_TYPES, EQUIPMENT_TYPE_LABELS, type EquipmentType } from "@/lib/exercise-library-content";
 import { safeExternalUrl } from "@/lib/sanitize";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -469,7 +470,7 @@ export default function GymsDirectoryView({
       if (activeType && g.type !== activeType) return false;
       if (activeEquipment && !g.equipment_types.includes(activeEquipment)) return false;
       if (!q) return true;
-      return g.name.toLowerCase().includes(q) || (g.city ?? "").toLowerCase().includes(q);
+      return fuzzyMatchAny([g.name, g.city], q);
     });
   }, [gyms, search, activeType, activeEquipment]);
 
