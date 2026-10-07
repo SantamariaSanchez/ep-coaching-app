@@ -8,6 +8,8 @@ import StaffShell from "@/components/staff/StaffShell";
 import NativeBridge from "@/components/native/NativeBridge";
 import WelcomeTour from "@/components/help/WelcomeTour";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
+import { I18nProvider } from "@/components/i18n/I18nProvider";
+import { getLocale } from "@/lib/i18n-server";
 
 // Espace métier des recrues (demande directe 2026-09-25 : "pour chaque
 // métier il faut que l'appli soit adaptée à son métier"). Hors de
@@ -24,7 +26,9 @@ export default async function EquipeLayout({ children }: { children: React.React
 
   const unlocked = ctx.emailVerified && ctx.contractSigned;
   const unread = unlocked ? Object.values(await getUnreadBySender(ctx.member.owner_id, ctx.userId)).reduce((a, b) => a + b, 0) : 0;
+  const locale = await getLocale(ctx.userId);
   return (
+    <I18nProvider locale={locale}>
     <StaffShell
       fullName={ctx.member.full_name}
       roleTitle={ctx.role.title}
@@ -39,5 +43,6 @@ export default async function EquipeLayout({ children }: { children: React.React
       {unlocked && <WelcomeTour />}
       {children}
     </StaffShell>
+    </I18nProvider>
   );
 }

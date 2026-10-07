@@ -1015,3 +1015,9 @@ html.ep-native .ep-selectable {
   -webkit-user-select: text;
   user-select: text;
 }
+
+/* Paramètres rangés par rubriques : les anciennes cartes gardent leur
+   marge haute (mt-8) pensée pour une page en colonne, inutile en tête de
+   rubrique. */
+.settings-section-body > :first-child { margin-top: 0 !important; }
+.settings-section-body > * + * { margin-top: 18px !important; }

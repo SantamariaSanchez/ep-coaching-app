@@ -21,6 +21,7 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
 import CommandPalette from "@/components/ui/CommandPalette";
+import { useT } from "@/components/i18n/I18nProvider";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -494,6 +495,7 @@ export default function DashboardNav({
   children: React.ReactNode;
   initialIsFreeTier?: boolean;
 }) {
+  const t = useT();
   const [isFreeTier, setIsFreeTier] = useState(initialIsFreeTier);
   const [showCycleTab, setShowCycleTab] = useState(false);
   const [isPlatformOwner, setIsPlatformOwner] = useState(false);
@@ -512,15 +514,15 @@ export default function DashboardNav({
   // nav déjà calculée ci-dessus, réutilisée telle quelle.
   const commandPaletteNavItems = useMemo(
     () => [
-      ...tabs.map((t) => ({ label: t.label, href: t.href })),
+      ...tabs.map((tab) => ({ label: t(tab.label), href: tab.href })),
       ...sidebar.flatMap((g) =>
         g.items.map(({ label, segment, href: hrefOverride }) => ({
-          label,
+          label: t(label),
           href: hrefOverride ?? (segment ? `${base}/${segment}` : base),
         }))
       ),
     ],
-    [tabs, sidebar, base]
+    [tabs, sidebar, base, t]
   );
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
@@ -793,7 +795,7 @@ export default function DashboardNav({
           }}
         >
           <Search size={13} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}>Rechercher</span>
+          <span style={{ flex: 1 }}>{t("Rechercher")}</span>
           <span style={{
             fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.25)",
             border: "1px solid rgba(245,237,237,0.15)", borderRadius: 4, padding: "1px 5px",
@@ -818,7 +820,7 @@ export default function DashboardNav({
                   padding: "14px 10px 5px",
                   margin: 0,
                 }}>
-                  {group.group}
+                  {t(group.group)}
                 </p>
               )}
               {group.items.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }, i) => {
@@ -887,7 +889,7 @@ export default function DashboardNav({
                       strokeWidth={active ? 2.2 : 1.7}
                       style={{ color: active ? "#E01E1E" : "inherit", flexShrink: 0 }}
                     />
-                    <span style={{ flex: 1 }}>{label}</span>
+                    <span style={{ flex: 1 }}>{t(label)}</span>
                     {locked && (
                       <Lock size={11} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} strokeWidth={2} />
                     )}
@@ -1022,7 +1024,7 @@ export default function DashboardNav({
               }}
             >
               <Crown size={14} strokeWidth={1.7} />
-              Mon coaching
+              {t("Mon coaching")}
             </Link>
           )}
 
@@ -1055,7 +1057,7 @@ export default function DashboardNav({
             }}
           >
             <LogOut size={14} strokeWidth={1.7} />
-            Déconnexion
+            {t("Déconnexion")}
           </button>
         </div>
       </aside>
@@ -1126,7 +1128,7 @@ export default function DashboardNav({
                   }}
                 >
                   <Icon size={13} strokeWidth={active ? 2.2 : 1.7} />
-                  {label}
+                  {t(label)}
                   {locked && <Lock size={10} style={{ flexShrink: 0 }} strokeWidth={2} />}
                   {count > 0 && (
                     <span
@@ -1195,14 +1197,14 @@ export default function DashboardNav({
         }}
       >
         {!pathname.endsWith("/notes") && (
-          <Link href={`${base}/notes?capture=1`} aria-label="Note rapide" className="ep-btn-icon" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Link href={`${base}/notes?capture=1`} aria-label={t("Note rapide")} className="ep-btn-icon" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(245,237,237,0.5)" }} />
           </Link>
         )}
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event("ep:open-search"))}
-          aria-label="Rechercher"
+          aria-label={t("Rechercher")}
           className="ep-btn-icon"
           style={{ width: 36, height: 36 }}
         >
@@ -1312,7 +1314,7 @@ export default function DashboardNav({
                   lineHeight: 1,
                   whiteSpace: "nowrap",
                 }}>
-                  {tab.label}
+                  {t(tab.label)}
                 </span>
               </Link>
             );

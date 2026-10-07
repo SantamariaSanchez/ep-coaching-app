@@ -54,6 +54,7 @@ scripts/*
 !scripts/generate-contract-pdfs.ts
 !scripts/upload-contract-templates.ts
 !scripts/social-sync.ts
+!scripts/i18n-*.mjs
 !scripts/social-report.ts
 !scripts/demo-accounts.ts
 !scripts/screenshots.ts

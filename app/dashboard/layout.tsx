@@ -22,6 +22,8 @@ import { isStrongSession } from "@/lib/mfa";
 import { getDailyGateStatus } from "@/lib/daily-gate";
 import { freeTierStatus, freeTierUrgencyLabel } from "@/lib/free-tier";
 import { getAccessType } from "@/utils/auth-client";
+import { I18nProvider } from "@/components/i18n/I18nProvider";
+import { getLocale } from "@/lib/i18n-server";
 
 // Double authentification : le mot de passe seul ne donne accès à aucune page
 // du dashboard tant que la session n'est pas passée en aal2.
@@ -142,6 +144,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // vérifiés, seules les nouvelles inscriptions le voient.
   const showEmailBanner = !!profile && !isEmailVerified(profile);
   const isCoach = profile?.role === "coach";
+  const locale = await getLocale(user?.id);
   // Suspense fallback={null} : rien ne s'affiche tant que le calcul n'est
   // pas prêt (la carte n'apparaissait déjà qu'après coup dans l'ancien
   // comportement bloquant, ce n'est donc pas une régression visuelle,
@@ -154,6 +157,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     ) : null;
 
   return (
+    <I18nProvider locale={locale}>
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
       <NativeBridge />
@@ -183,5 +187,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {children}
       </DashboardNav>
     </div>
+    </I18nProvider>
   );
 }
