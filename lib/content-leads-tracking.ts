@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
-import { extractLeadMagnetKeywords, getLeadMagnetByAnyKeyword } from "@/lib/lead-magnets";
+import { extractLeadMagnetKeywords, getLeadMagnetSlugByAnyKeyword } from "@/lib/lead-magnets";
 import type { CoachScript } from "@/lib/coach-ideation";
 import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 
@@ -68,8 +68,7 @@ export async function getRealLeadsByScriptId(
 
   async function resolveSlug(keyword: string): Promise<string | null> {
     if (slugCache.has(keyword)) return slugCache.get(keyword) ?? null;
-    const magnet = await getLeadMagnetByAnyKeyword(keyword);
-    const slug = magnet?.slug ?? null;
+    const slug = await getLeadMagnetSlugByAnyKeyword(keyword);
     slugCache.set(keyword, slug);
     return slug;
   }
@@ -175,7 +174,7 @@ export async function getLeadOriginReport(leads: LeadOriginRow[]): Promise<LeadO
     const slugCache = new Map<string, string | null>();
     for (const sc of (citing ?? []) as { id: string; title: string; platform: string | null; source_reference: string | null }[]) {
       for (const keyword of extractLeadMagnetKeywords(sc.source_reference)) {
-        if (!slugCache.has(keyword)) slugCache.set(keyword, (await getLeadMagnetByAnyKeyword(keyword))?.slug ?? null);
+        if (!slugCache.has(keyword)) slugCache.set(keyword, await getLeadMagnetSlugByAnyKeyword(keyword));
         const slug = slugCache.get(keyword);
         if (!slug || !wanted.has(slug)) continue;
         const list = candidatesBySlug.get(slug) ?? [];
@@ -208,7 +207,7 @@ export async function getLeadMagnetSlugByScriptId(scripts: CoachScript[]): Promi
   const cache = new Map<string, string | null>();
   for (const script of scripts) {
     for (const keyword of extractLeadMagnetKeywords(script.source_reference)) {
-      if (!cache.has(keyword)) cache.set(keyword, (await getLeadMagnetByAnyKeyword(keyword))?.slug ?? null);
+      if (!cache.has(keyword)) cache.set(keyword, await getLeadMagnetSlugByAnyKeyword(keyword));
       const slug = cache.get(keyword);
       if (slug) {
         out[script.id] = slug;

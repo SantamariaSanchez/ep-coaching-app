@@ -202,27 +202,37 @@ const getAllLeadMagnetSummariesCached = unstable_cache(
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 
-// Cache "complet" (avec `content`/`sources`) : réservé aux deux seuls
-// usages qui ont vraiment besoin du texte intégral — la page de détail
-// /ressources/[slug] (un seul lead magnet) et le générateur de prompts du
-// Studio (guides.tsx / SocialGenerator, qui a besoin du texte de tous les
-// guides pour en tirer des idées de reels).
-const getAllLeadMagnetsFullCached = unstable_cache(
-  async (): Promise<LeadMagnet[]> => {
-    try {
-      const supabase = createAdminClient();
-      const { data } = await supabase
-        .from("lead_magnets")
-        .select(SELECT_FIELDS_FULL)
-        .eq("published", true)
-        .order("created_at", { ascending: false });
-      return ((data as unknown as LeadMagnetRow[]) ?? []).map(rowToMagnet);
-    } catch {
-      return [];
-    }
-  },
-  // v2 : ajout de coach_id, pour ne pas relire une entrée de cache d'avant.
-  ["lead-magnets-all-v2"],
+// Texte intégral (2026-10-08, chantier vitesse) : l'ancien cache "complet"
+// chargeait les ~1000 lead magnets avec leur contenu (plus de 2 Mo de JSON).
+// Au delà de 2 Mo, unstable_cache refuse d'enregistrer : chaque page de
+// détail, chaque lien suivi du Studio et chaque stat de leads relançait la
+// requête entière (1,9 s en moyenne, des milliers d'appels). Désormais on lit
+// UNE ligne, mise en cache par slug ou par numéro.
+async function fetchOneFull(column: "slug" | "keyword", value: string): Promise<LeadMagnet | null> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("lead_magnets")
+      .select(SELECT_FIELDS_FULL)
+      .eq("published", true)
+      .eq(column, value)
+      .limit(1)
+      .maybeSingle();
+    return data ? rowToMagnet(data as unknown as LeadMagnetRow) : null;
+  } catch {
+    return null;
+  }
+}
+
+const getLeadMagnetBySlugCached = unstable_cache(
+  async (slug: string) => fetchOneFull("slug", slug),
+  ["lead-magnet-one-v1"],
+  { tags: ["lead-magnets"], revalidate: 3600 }
+);
+
+const getLeadMagnetByKeywordCached = unstable_cache(
+  async (keyword: string) => fetchOneFull("keyword", keyword),
+  ["lead-magnet-kw-v1"],
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 
@@ -241,13 +251,23 @@ export async function getAllLeadMagnets(): Promise<LeadMagnetSummary[]> {
 // SocialGenerator (guide.intro/sections/conclusion absents de la version
 // liste).
 export async function getAllGuidesWithContent(): Promise<GuideMagnet[]> {
-  const all = await getAllLeadMagnetsFullCached();
-  return all.filter((m): m is GuideMagnet => m.format === "guide");
+  // Appel ponctuel (action du Studio) : trop gros pour le cache, lu à la demande.
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("lead_magnets")
+      .select(SELECT_FIELDS_FULL)
+      .eq("published", true)
+      .eq("format", "guide")
+      .order("created_at", { ascending: false });
+    return ((data as unknown as LeadMagnetRow[]) ?? []).map(rowToMagnet) as GuideMagnet[];
+  } catch {
+    return [];
+  }
 }
 
 export async function getLeadMagnet(slug: string): Promise<LeadMagnet | undefined> {
-  const all = await getAllLeadMagnetsFullCached();
-  return all.find((m) => m.slug === slug);
+  return (await getLeadMagnetBySlugCached(slug)) ?? undefined;
 }
 
 // Normalise une saisie utilisateur ("76", "076", " 076 ") vers le format
@@ -264,20 +284,22 @@ export function normalizeKeyword(raw: string): string | null {
 export async function getLeadMagnetByKeyword(raw: string): Promise<LeadMagnet | undefined> {
   const keyword = normalizeKeyword(raw);
   if (!keyword) return undefined;
-  const all = await getAllLeadMagnetsFullCached();
-  return all.find((m) => m.keyword === keyword);
+  return (await getLeadMagnetByKeywordCached(keyword)) ?? undefined;
 }
 
-// Ajouté le 2026-09-17 (chantier tracking Insider-like, retour direct :
-// "quels sont les reels qui vous rapportent le plus de cash, qu'est-ce
-// qui convertit") — contrairement à getLeadMagnetByKeyword, accepte aussi
-// les keywords non numériques (UUID généré pour les quiz/checklists créés
-// hors du catalogue numéroté 001-999, voir lead_magnets.keyword) plutôt
-// que de rejeter silencieusement tout ce qui n'est pas que des chiffres.
+// Accepte aussi les keywords non numériques (UUID des quiz/checklists créés
+// hors du catalogue numéroté 001-999).
 export async function getLeadMagnetByAnyKeyword(raw: string): Promise<LeadMagnet | undefined> {
-  const all = await getAllLeadMagnetsFullCached();
   const normalized = normalizeKeyword(raw);
-  return all.find((m) => m.keyword === raw || (normalized !== null && m.keyword === normalized));
+  return (await getLeadMagnetByKeywordCached(normalized ?? raw)) ?? undefined;
+}
+
+// Numéro → slug, depuis la liste légère déjà en cache (aucune requête en
+// plus) : c'est tout ce dont ont besoin les liens suivis et les stats.
+export async function getLeadMagnetSlugByAnyKeyword(raw: string): Promise<string | null> {
+  const all = await getAllLeadMagnetSummariesCached();
+  const normalized = normalizeKeyword(raw);
+  return all.find((m) => m.keyword === raw || (normalized !== null && m.keyword === normalized))?.slug ?? null;
 }
 
 // Extrait chaque token "lead_magnets:<keyword>" d'une source_reference de
@@ -290,9 +312,9 @@ export function extractLeadMagnetKeywords(sourceReference: string | null | undef
   return [...sourceReference.matchAll(/lead_magnets:(\S+)/g)].map((m) => m[1]);
 }
 
-export async function getLeadMagnetsByCategory(): Promise<Record<ResourceCategory, LeadMagnet[]>> {
-  const all = await getAllLeadMagnetsFullCached();
-  const map = {} as Record<ResourceCategory, LeadMagnet[]>;
+export async function getLeadMagnetsByCategory(): Promise<Record<ResourceCategory, LeadMagnetSummary[]>> {
+  const all = await getAllLeadMagnetSummariesCached();
+  const map = {} as Record<ResourceCategory, LeadMagnetSummary[]>;
   for (const m of all) {
     if (!map[m.category]) map[m.category] = [];
     map[m.category].push(m);
