@@ -5167,4 +5167,7 @@ export const EN: Record<string, string> = {
 
   // ── Accueil ───────────────────────────────────────────────────────────────
   "sem. {n}": "wk {n}",
+
+  // ── Accueil ───────────────────────────────────────────────────────────────
+  "Ta journée, en un coup d'œil.": "Your day, at a glance.",
 };

@@ -80,6 +80,19 @@ export function isSlotUpcoming(slot: string, hhmm: string): boolean {
   return hhmm < (SLOT_END[slot] ?? "23:59");
 }
 
+/**
+ * Le repas a-t-il commencé à cette heure ? (il commence quand le précédent
+ * se termine). Sert à compter ce qui est réellement mangé : la journée est
+ * pré-remplie avec le plan dès le matin, les repas à venir n'ont pas encore
+ * été mangés (2026-10-08, la jauge affichait 100 % à 8 h).
+ */
+export function isSlotStarted(slot: string, hhmm: string): boolean {
+  const keys = MEAL_SLOTS.map((s) => s.key);
+  const i = (keys as string[]).indexOf(slot);
+  if (i <= 0) return true;
+  return hhmm >= (SLOT_END[keys[i - 1]] ?? "00:00");
+}
+
 export function slotLabel(key: string): string {
   return MEAL_SLOTS.find((s) => s.key === key)?.label ?? key;
 }
