@@ -632,10 +632,13 @@ export default function NutritionTracker({
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm text-white truncate">{l.foods?.name ?? tr("Aliment")}</span>
                     <span className="block text-[10.5px] text-[#F5EDED]/40">
-                      {Math.round(Number(l.quantity_g))} g · P {Math.round(l.proteins ?? 0)} · G {Math.round(l.carbs ?? 0)} · L {Math.round(l.fats ?? 0)}
+                      {Math.round(l.calories ?? 0)} kcal · P {Math.round(l.proteins ?? 0)} · G {Math.round(l.carbs ?? 0)} · L {Math.round(l.fats ?? 0)}
                     </span>
                   </span>
-                  <span className="text-xs font-bold text-[#F5EDED]/70">{Math.round(l.calories ?? 0)}</span>
+                  {/* Les grammes en gros (2026-10-08) : avant, le chiffre en gras
+                      à droite était les kcal sans unité, lu comme des grammes
+                      (« 15 » pour 100 g de légumes verts). */}
+                  <span className="text-sm font-black text-white tabular-nums whitespace-nowrap">{Math.round(Number(l.quantity_g) * 10) / 10} g</span>
                 </button>
               ))}
 
@@ -649,11 +652,11 @@ export default function NutritionTracker({
                         {s.overridden && <Shuffle size={11} className="inline ml-1.5 -mt-0.5 text-[#ff6b6b]" />}
                       </span>
                       <span className="block text-[10.5px] text-[#F5EDED]/40">
-                        {s.grams} g
+                        {Math.round(macrosFor(s.food, s.grams).calories)} kcal
                         {s.adjusted && <span className="text-amber-300/80">{" "}{tr("· ajusté (plan")}{" "}{s.planGrams} g)</span>}
                       </span>
                     </span>
-                    <span className="text-xs font-bold text-[#F5EDED]/45">{Math.round(macrosFor(s.food, s.grams).calories)}</span>
+                    <span className="text-sm font-black text-[#F5EDED]/80 tabular-nums whitespace-nowrap">{s.grams} g</span>
                   </button>
                 ))}
 
