@@ -72,6 +72,14 @@ export const MEAL_SLOTS = [
 
 export type SlotKey = (typeof MEAL_SLOTS)[number]["key"];
 
+/** Heure après laquelle un repas est considéré comme passé (HH:MM). */
+export const SLOT_END: Record<string, string> = { breakfast: "10:00", morning: "11:30", lunch: "14:30", afternoon: "17:30", preworkout: "18:30", postworkout: "20:30", dinner: "23:59" };
+
+/** Le repas est-il encore à venir à cette heure ? */
+export function isSlotUpcoming(slot: string, hhmm: string): boolean {
+  return hhmm < (SLOT_END[slot] ?? "23:59");
+}
+
 export function slotLabel(key: string): string {
   return MEAL_SLOTS.find((s) => s.key === key)?.label ?? key;
 }
@@ -317,7 +325,7 @@ export interface Adjustable {
  * proportions du plan, on ne fait que re-grammer. Les légumes, sauces et
  * boissons ne bougent jamais.
  */
-export function rebalance(adjustable: Adjustable[], locked: Macros, target: Macros): Map<string, number> {
+export function rebalance(adjustable: Adjustable[], locked: Macros, target: Macros, bounds: { min: number; max: number } = { min: 0, max: 3 }): Map<string, number> {
   const out = new Map<string, number>();
   const groups: Record<"proteins" | "carbs" | "fats", Adjustable[]> = { proteins: [], carbs: [], fats: [] };
   let fixedExtra = ZERO;
@@ -352,7 +360,7 @@ export function rebalance(adjustable: Adjustable[], locked: Macros, target: Macr
   const lambda = 0.02;
   const M = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => A.reduce((s, row) => s + row[i] * row[j], 0) + (i === j ? lambda : 0)));
   const v = Array.from({ length: n }, (_, i) => A.reduce((s, row, k) => s + row[i] * b[k], 0) + lambda);
-  const scale = solve(M, v).map((s) => Math.min(3, Math.max(0, Number.isFinite(s) ? s : 1)));
+  const scale = solve(M, v).map((s) => Math.min(bounds.max, Math.max(bounds.min, Number.isFinite(s) ? s : 1)));
 
   keys.forEach((g, i) => {
     // Écart négligeable (moins de 4 %) : on ne touche à rien, pas de
@@ -360,6 +368,52 @@ export function rebalance(adjustable: Adjustable[], locked: Macros, target: Macr
     const k = Math.abs(scale[i] - 1) < 0.04 ? 1 : scale[i];
     for (const a of groups[g]) out.set(a.key, k === 1 ? a.grams : roundGrams(a.grams * k));
   });
+  return out;
+}
+
+// ── Adapter la suite de la journée (2026-10-08) ──────────────────────────
+// Retour direct du fondateur : « si je modifie une cerise le soir, c'est pas
+// possible que ça modifie tout le plan et les aliments déjà mangés ». Règles :
+// 1. le plan de base n'est jamais modifié, seul le journal du jour s'adapte ;
+// 2. un petit écart (une banane, 20 g de crème de riz) ne change rien ;
+// 3. seuls les repas à venir s'adaptent, jamais ceux déjà passés ;
+// 4. l'écart est absorbé d'abord par le repas suivant (« le repas d'après
+//    est plus garni »), en gardant ses proportions, puis par le suivant si
+//    besoin, chaque repas restant entre 50 % et 160 % de sa quantité.
+
+/** Écart du jour assez grand pour justifier d'adapter la suite ? */
+export function isSignificantGap(gap: Macros, target: Macros): boolean {
+  return (
+    Math.abs(gap.calories) >= Math.max(150, target.calories * 0.06) ||
+    Math.abs(gap.proteins) >= 20 ||
+    Math.abs(gap.carbs) >= 30 ||
+    Math.abs(gap.fats) >= 12
+  );
+}
+
+/**
+ * Nouvelles quantités des repas à venir (`upcoming`, rangés par repas dans
+ * l'ordre de la journée) pour absorber l'écart entre `target` et ce qui est
+ * déjà mangé ou choisi (`locked`). Rien ne change si l'écart est petit.
+ */
+export function adaptUpcoming(upcoming: { slot: string; items: Adjustable[] }[], locked: Macros, target: Macros): Map<string, number> {
+  const out = new Map<string, number>();
+  const planned = sumMacros(upcoming.flatMap((m) => m.items.map((a) => macrosFor(a.food, a.grams))));
+  let gap = subMacros(target, addMacros(locked, planned));
+  if (!isSignificantGap(gap, target)) return out;
+  for (const meal of upcoming) {
+    if (!meal.items.length) continue;
+    const mealMacros = sumMacros(meal.items.map((a) => macrosFor(a.food, a.grams)));
+    const res = rebalance(meal.items, ZERO, addMacros(mealMacros, gap), { min: 0.5, max: 1.6 });
+    let after = ZERO;
+    for (const a of meal.items) {
+      const g = res.get(a.key) ?? a.grams;
+      if (g !== a.grams) out.set(a.key, g);
+      after = addMacros(after, macrosFor(a.food, g));
+    }
+    gap = subMacros(gap, subMacros(after, mealMacros));
+    if (!isSignificantGap(gap, target)) break;
+  }
   return out;
 }
 

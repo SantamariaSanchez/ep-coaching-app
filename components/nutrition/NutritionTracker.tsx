@@ -13,7 +13,8 @@ import {
   macrosFor,
   planItemsFor,
   planTotals,
-  rebalance,
+  adaptUpcoming,
+  isSlotUpcoming,
   slotLabel,
   slotRank,
   sumMacros,
@@ -102,6 +103,18 @@ function Ring({ label, value, target, color }: { label: string; value: number; t
       <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/45">{label}</span>
     </div>
   );
+}
+
+// Heure actuelle (HH:MM), pour savoir quels repas sont encore à venir.
+function nowHHMM(): string {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+// Regroupe par repas, dans l'ordre de la journée.
+function groupBySlot(items: { slot: string; key: string; food: Food; grams: number }[]): { slot: string; items: { key: string; food: Food; grams: number }[] }[] {
+  const order = [...new Set(items.map((i) => i.slot))].sort((a, b) => slotRank(a) - slotRank(b));
+  return order.map((slot) => ({ slot, items: items.filter((i) => i.slot === slot).map(({ key, food, grams }) => ({ key, food, grams })) }));
 }
 
 export default function NutritionTracker({
@@ -252,13 +265,20 @@ export default function NutritionTracker({
       free.push(i);
     }
     const locked = addMacros(consumed, sumMacros(pinned.map((p) => macrosFor(p.food, p.grams))));
-    const res = rebalance(free.map((i) => ({ key: i.planMealId, food: i.food, grams: i.grams })), locked, planTarget);
+    // Seuls les repas encore à venir s'adaptent, et seulement si l'écart du
+    // jour est réel (pas pour une banane en plus), en commençant par le
+    // prochain repas (voir adaptUpcoming).
+    const hhmm = nowHHMM();
+    const upcomingFree = date === today ? free.filter((i) => isSlotUpcoming(i.slot, hhmm)) : free;
+    const passedFree = free.filter((i) => !upcomingFree.includes(i));
+    const lockedAll = addMacros(locked, sumMacros(passedFree.map((i) => macrosFor(i.food, i.grams))));
+    const res = adaptUpcoming(groupBySlot(upcomingFree.map((i) => ({ slot: i.slot, key: i.planMealId, food: i.food, grams: i.grams }))), lockedAll, planTarget);
     const adjusted = free.map((i) => {
       const g = res.get(i.planMealId) ?? i.grams;
       return { ...i, grams: g, planGrams: i.grams, adjusted: g !== i.grams, overridden: false };
     });
     return [...pinned.map((p) => ({ ...p, adjusted: false })), ...adjusted].sort((a, b) => slotRank(a.slot) - slotRank(b.slot));
-  }, [mode, hasPlanToday, planItems, slotsWithLogs, dayOverrides, foodById, consumed, planTarget]);
+  }, [mode, hasPlanToday, planItems, slotsWithLogs, dayOverrides, foodById, consumed, planTarget, date, today]);
   const projected = useMemo(() => addMacros(consumed, sumMacros(suggestions.map((s) => macrosFor(s.food, s.grams)))), [consumed, suggestions]);
 
   // ── Contexte de recherche : plan, récents, habitudes ──────────────────
@@ -303,12 +323,15 @@ export default function NutritionTracker({
   // ── Ré-équilibrage fixe-flexible (aujourd'hui seulement) ──────────────
   async function rebalanceAfter(slot: string, dayLogs: FoodLogWithFood[]) {
     if (mode !== "fixed_flexible" || date !== today || !hasPlanToday) return;
-    const later = dayLogs.filter((l) => slotRank(l.meal_slot ?? "") > slotRank(slot) && l.diet_plan_meal_id && l.food_id && l.foods);
+    // Repas suivants ET pas encore passés à l'heure qu'il est : un repas du
+    // matin n'est jamais retouché à 17 h, et le plan de base ne bouge jamais.
+    const hhmm = nowHHMM();
+    const later = dayLogs.filter((l) => slotRank(l.meal_slot ?? "") > slotRank(slot) && isSlotUpcoming(l.meal_slot ?? "", hhmm) && l.diet_plan_meal_id && l.food_id && l.foods);
     if (later.length === 0) return;
     const laterIds = new Set(later.map((l) => l.id));
     const locked = sumMacros(dayLogs.filter((l) => !laterIds.has(l.id)).map(logMacros));
-    const res = rebalance(later.map((l) => ({ key: l.id, food: l.foods!, grams: Number(l.quantity_g) })), locked, planTarget);
-    const changes = later.filter((l) => res.get(l.id) !== Number(l.quantity_g) && (res.get(l.id) ?? 0) > 0).map((l) => ({ id: l.id, quantityG: res.get(l.id)! }));
+    const res = adaptUpcoming(groupBySlot(later.map((l) => ({ slot: l.meal_slot ?? "", key: l.id, food: l.foods!, grams: Number(l.quantity_g) }))), locked, planTarget);
+    const changes = later.filter((l) => res.has(l.id) && res.get(l.id) !== Number(l.quantity_g) && (res.get(l.id) ?? 0) > 0).map((l) => ({ id: l.id, quantityG: res.get(l.id)! }));
     if (changes.length === 0) return;
     const out = await updateTrackerLogs(changes);
     if (out.error) return setError(out.error);
@@ -717,7 +740,7 @@ export default function NutritionTracker({
           foods={foods}
           ctx={ctxFor(sheetLog.meal_slot)}
           allowSwap={mode !== "fixed"}
-          hint={mode === "fixed_flexible" && date === today ? tr("Les repas suivants s'ajustent tout seuls pour tenir tes macros.") : undefined}
+          hint={mode === "fixed_flexible" && date === today ? tr("Petit écart : rien ne bouge. Gros changement ou repas sauté : seuls les repas à venir s'ajustent. Ton plan ne change jamais.") : undefined}
           busy={busy}
           onSave={(next) => saveLog(sheetLog, next)}
           onRemove={() => removeLog(sheetLog)}
@@ -734,7 +757,7 @@ export default function NutritionTracker({
           foods={foods}
           ctx={ctxFor(sheetSuggest.slot)}
           allowSwap
-          hint={tr("Le reste de ta journée se recalcule tout seul.")}
+          hint={tr("Seuls les repas à venir s'ajustent si l'écart est important. Ton plan ne change jamais.")}
           onSave={(next) => setOverride(sheetSuggest.planMealId, { foodId: next.food.id, grams: next.grams })}
           onRemove={() => setOverride(sheetSuggest.planMealId, { removed: true })}
           onClose={() => setSheet(null)}

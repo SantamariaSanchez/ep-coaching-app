@@ -5084,4 +5084,8 @@ export const EN: Record<string, string> = {
   // ── Leads ─────────────────────────────────────────────────────────────────
   "Supprimer ce lead définitivement ?": "Delete this lead permanently?",
   "Supprimer ce lead": "Delete this lead",
+
+  // ── Nutrition adaptée ─────────────────────────────────────────────────────
+  "Petit écart : rien ne bouge. Gros changement ou repas sauté : seuls les repas à venir s'ajustent. Ton plan ne change jamais.": "Small difference: nothing changes. Big change or skipped meal: only upcoming meals adjust. Your plan never changes.",
+  "Seuls les repas à venir s'ajustent si l'écart est important. Ton plan ne change jamais.": "Only upcoming meals adjust if the difference is big. Your plan never changes.",
 };

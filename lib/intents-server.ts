@@ -6,13 +6,11 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { todayInParis, nowInParis } from "@/lib/dates";
 import { getActivePlan } from "@/lib/nutrition-sync";
-import { MEAL_SLOTS, planItemsFor, slotLabel } from "@/lib/nutrition-engine";
+import { MEAL_SLOTS, SLOT_END, planItemsFor, slotLabel } from "@/lib/nutrition-engine";
 import type { Translator } from "@/lib/i18n";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
-// Heure à partir de laquelle chaque repas devient « le prochain ».
-const SLOT_END: Record<string, string> = { breakfast: "10:00", morning: "11:30", lunch: "14:30", afternoon: "17:30", preworkout: "18:30", postworkout: "20:00", dinner: "23:59" };
 
 const fr = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
