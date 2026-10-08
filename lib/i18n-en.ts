@@ -5170,4 +5170,18 @@ export const EN: Record<string, string> = {
 
   // ── Accueil ───────────────────────────────────────────────────────────────
   "Ta journée, en un coup d'œil.": "Your day, at a glance.",
+
+  // ── Notifs appli fermée ───────────────────────────────────────────────────
+  "Tester appli fermée (notif dans 2 min)": "Test with the app closed (notification in 2 min)",
+  "Programmation…": "Scheduling…",
+  "Prévue à {h} : ferme l'appli et verrouille ton téléphone": "Scheduled at {h}: close the app and lock your phone",
+  "Les notifs arrivent seulement quand j'ouvre l'appli": "Notifications only arrive when I open the app",
+  "L'appli envoie bien chaque notif à l'heure. Si elle n'arrive qu'à l'ouverture, ton téléphone endort Chrome pour économiser la batterie. À régler une seule fois :": "The app sends every notification on time. If it only shows up when you open the app, your phone is putting Chrome to sleep to save battery. Fix it once:",
+  "1. Paramètres > Applications > Chrome > Batterie : choisis « Sans restriction » (ou « Non optimisée »).": "1. Settings > Apps > Chrome > Battery: choose \"Unrestricted\" (or \"Not optimized\").",
+  "2. Si l'appli EP Coaching est installée sur l'écran d'accueil, fais pareil pour elle.": "2. If the EP Coaching app is installed on your home screen, do the same for it.",
+  "3. Samsung : Paramètres > Batterie > Limites d'utilisation en arrière-plan, retire Chrome des applis en veille.": "3. Samsung: Settings > Battery > Background usage limits, remove Chrome from sleeping apps.",
+  "4. Xiaomi, Oppo, Huawei : active aussi le « Démarrage automatique » de Chrome.": "4. Xiaomi, Oppo, Huawei: also turn on Chrome \"Autostart\".",
+  "5. Paramètres > Notifications > Chrome : autorise les notifications de ep-coaching.vercel.app avec le son.": "5. Settings > Notifications > Chrome: allow notifications from ep-coaching.vercel.app with sound.",
+  "Puis touche « Tester appli fermée » et verrouille ton téléphone.": "Then tap \"Test with the app closed\" and lock your phone.",
+  "Impossible de programmer le test.": "Couldn't schedule the test.",
 };

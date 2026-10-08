@@ -232,10 +232,14 @@ export async function getLastWeekCheckinCount(): Promise<number> {
 export async function getPendingReplies(): Promise<CheckInWithClient[]> {
   try {
     const supabase = await createServerSupabase();
-    const { data } = await supabase
+    // Jamais ses propres bilans (le coach peut être son propre coach).
+    const { data: { user } } = await supabase.auth.getUser();
+    let q = supabase
       .from("check_ins")
       .select("*, profiles:client_id(full_name)")
-      .is("coach_replied_at", null)
+      .is("coach_replied_at", null);
+    if (user) q = q.neq("client_id", user.id);
+    const { data } = await q
       .order("created_at", { ascending: false })
       .limit(10);
     return (data as CheckInWithClient[]) ?? [];

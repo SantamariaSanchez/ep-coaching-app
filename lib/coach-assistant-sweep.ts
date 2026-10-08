@@ -43,6 +43,18 @@ export async function runCoachAssistantSweep(): Promise<CoachAssistantSweepResul
     errors: [],
   };
 
+  // Alertes automatiques périmées (2026-10-08, retour direct : « il y a 0
+  // membre, il n'y a pas censé avoir de tâche sur Rayane ou Zacharia ») :
+  // une alerte « bilan à l'arrêt » de plus de 14 jours ne dit plus rien
+  // (le membre est revenu, est parti ou n'existe plus). Le prochain audit
+  // en recrée une si le problème est toujours réel.
+  await admin
+    .from("ai_agent_tasks")
+    .delete()
+    .eq("agent_key", "head-coach")
+    .eq("status", "a_faire")
+    .lt("created_at", new Date(Date.now() - 14 * 86400000).toISOString());
+
   const { data: coaches } = await admin
     .from("profiles")
     .select("id")

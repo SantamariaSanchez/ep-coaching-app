@@ -7,7 +7,7 @@ import { Bell, Footprints, ChevronRight, AlertTriangle, Moon, Camera, MapPin, Co
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import { PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
 import { setQuietHours } from "@/app/actions/quiet-hours";
-import { sendTestPush } from "@/app/actions/notifications";
+import { sendTestPush, scheduleLockedTestPush } from "@/app/actions/notifications";
 
 // Item 50 : même défaut que lib/quiet-hours.ts côté serveur — affiché tel
 // quel tant que l'utilisateur n'a rien choisi explicitement.
@@ -50,6 +50,14 @@ export default function PermissionsCard({
 
   // Nouveau : vérifier que le push arrive VRAIMENT (son, vibration) sans
   // attendre un vrai événement — voir app/actions/notifications.ts.
+  const [lockedTest, setLockedTest] = useState<string | null>(null);
+  const [showAndroidHelp, setShowAndroidHelp] = useState(false);
+  async function handleLockedTest() {
+    setLockedTest("…");
+    const res = await scheduleLockedTestPush();
+    setLockedTest(res.ok ? res.at ?? "" : "error");
+  }
+
   async function handleTestPush() {
     setTestPushState("sending");
     const res = await sendTestPush();
@@ -316,6 +324,45 @@ export default function PermissionsCard({
             {testPushState === "error" && tr("Échec, réessaie")}
             {testPushState === "idle" && tr("M'envoyer une notification de test")}
           </button>
+        )}
+
+        {/* Test appli fermée + aide Android (2026-10-08) : la notif part
+            pile à l'heure côté serveur ; si elle n'arrive qu'à l'ouverture,
+            c'est l'économie de batterie du téléphone qui endort Chrome. */}
+        {push && (
+          <button
+            onClick={handleLockedTest}
+            disabled={lockedTest === "…"}
+            className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors text-left"
+          >
+            <Moon size={11} />
+            {lockedTest === null && tr("Tester appli fermée (notif dans 2 min)")}
+            {lockedTest === "…" && tr("Programmation…")}
+            {lockedTest === "error" && tr("Échec, réessaie")}
+            {lockedTest && lockedTest !== "…" && lockedTest !== "error" && tr("Prévue à {h} : ferme l'appli et verrouille ton téléphone", { h: lockedTest })}
+          </button>
+        )}
+        {push && (
+          <div className="mt-2">
+            <button
+              onClick={() => setShowAndroidHelp((v) => !v)}
+              className="flex items-center gap-1.5 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors"
+            >
+              <AlertTriangle size={11} />
+              {tr("Les notifs arrivent seulement quand j'ouvre l'appli")}
+            </button>
+            {showAndroidHelp && (
+              <div className="mt-2 rounded-lg border border-[#890404]/25 bg-black/30 p-3 text-[11.5px] leading-relaxed text-[#F5EDED]/70 space-y-1.5">
+                <p>{tr("L'appli envoie bien chaque notif à l'heure. Si elle n'arrive qu'à l'ouverture, ton téléphone endort Chrome pour économiser la batterie. À régler une seule fois :")}</p>
+                <p>{tr("1. Paramètres > Applications > Chrome > Batterie : choisis « Sans restriction » (ou « Non optimisée »).")}</p>
+                <p>{tr("2. Si l'appli EP Coaching est installée sur l'écran d'accueil, fais pareil pour elle.")}</p>
+                <p>{tr("3. Samsung : Paramètres > Batterie > Limites d'utilisation en arrière-plan, retire Chrome des applis en veille.")}</p>
+                <p>{tr("4. Xiaomi, Oppo, Huawei : active aussi le « Démarrage automatique » de Chrome.")}</p>
+                <p>{tr("5. Paramètres > Notifications > Chrome : autorise les notifications de ep-coaching.vercel.app avec le son.")}</p>
+                <p>{tr("Puis touche « Tester appli fermée » et verrouille ton téléphone.")}</p>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Retour direct 2026-09-10 ("les notifs, corrige, j'en reçois

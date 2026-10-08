@@ -56,7 +56,9 @@ export async function getCoachInbox(coachId: string): Promise<InboxItem[]> {
       .limit(30),
   ]);
 
-  const mine = (row: RowWithProfile) => row.profiles?.coach_id === coachId;
+  // Jamais soi-même (2026-10-08) : le fondateur est aussi son propre coach
+  // (coach_id = son id), ses bilans et photos à lui ne sont pas « à traiter ».
+  const mine = (row: RowWithProfile) => row.profiles?.coach_id === coachId && row.client_id !== coachId;
 
   const items: InboxItem[] = [
     ...(((checkins ?? []) as unknown as RowWithProfile[]).filter(mine).map((c) => ({
