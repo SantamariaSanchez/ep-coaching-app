@@ -5164,4 +5164,7 @@ export const EN: Record<string, string> = {
   "Photos faites aujourd'hui ✓": "Photos taken today ✓",
   "Dernières photos il y a {n} j": "Last photos {n} d ago",
   "Plus de repas prévu aujourd'hui": "No more meals planned today",
+
+  // ── Accueil ───────────────────────────────────────────────────────────────
+  "sem. {n}": "wk {n}",
 };

@@ -164,7 +164,7 @@ async function WelcomeGuide({
     <div className="page-transition ep-page-medium" style={{ padding: "20px 16px 100px" }}>
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>{dateLabel}</p>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{dateLabel}</p>
           <h1 className="ep-h1" style={{ margin: "2px 0 0", fontSize: 24 }}>{t("Salut")}{firstName ? ` ${firstName}` : ""}</h1>
           {!started && (
             <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>{personalization.welcomeSubtitle}</p>
@@ -321,9 +321,9 @@ export default async function ClientDashboard({
 
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {formattedDate}
-            {weeksSinceStart != null && ` · ${t("sem. {n} de coaching", { n: weeksSinceStart + 1 })}`}
+            {weeksSinceStart != null && ` · ${t("sem. {n}", { n: weeksSinceStart + 1 })}`}
           </p>
           <h1 className="ep-h1" style={{ margin: "2px 0 0", fontSize: 24 }}>{greeting}{firstName ? `, ${firstName}` : ""}</h1>
         </div>

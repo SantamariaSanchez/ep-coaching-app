@@ -58,7 +58,7 @@ export default function ClientWidgets({ userId, focus, coachId, coached }: { use
       case "prepa":
         return <W key={k}><PrepW userId={userId} href={`${C}/roadmap`} /></W>;
       case "agenda":
-        return <W key={k}><AgendaW userId={userId} href={`${C}/agenda`} /></W>;
+        return <W key={k}><AgendaW userId={userId} href={`${C}/agenda`} hideEmpty /></W>;
       case "note":
         return <QuickNote key={k} notesHref={`${C}/notes`} />;
       default:

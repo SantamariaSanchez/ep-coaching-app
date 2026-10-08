@@ -39,8 +39,10 @@ export function WidgetSkeleton({ h = 96 }: { h?: number }) {
 }
 
 // ── Agenda ─────────────────────────────────────────────────────────────────
-export async function AgendaW({ userId, href }: { userId: string; href: string }) {
+export async function AgendaW({ userId, href, hideEmpty = false }: { userId: string; href: string; hideEmpty?: boolean }) {
   const [t, a] = await Promise.all([getT(), loadAgenda(userId)]);
+  // Membre qui n'utilise pas l'agenda : pas de carte vide sur son accueil.
+  if (hideEmpty && a.total === 0) return null;
   if (!a.current && !a.upcoming.length) {
     return (
       <Card href={href} icon={CalendarDays} title={t("Agenda")}>
