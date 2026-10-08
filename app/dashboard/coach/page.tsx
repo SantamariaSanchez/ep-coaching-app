@@ -2,41 +2,30 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getT, getLocale } from "@/lib/i18n-server";
 import { intlLocale } from "@/lib/i18n";
-import { isBlockOnDate } from "@/lib/agenda-day";
 import { getUser, getProfile, getAllMessageableMembers } from "@/utils/auth";
-import { getScheduleBlocks } from "@/utils/agenda";
 import { getPendingReplies } from "@/utils/checkins";
 import { getCoachAlertsCached } from "@/lib/coach-analytics";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { todayInParis, nowInParis, timeAwareGreeting } from "@/lib/dates";
+import { nowInParis, timeAwareGreeting } from "@/lib/dates";
 import { messagePreview } from "@/components/messaging/message-format";
 import IntentLauncher from "@/components/home/IntentLauncher";
-import NowCard from "@/components/home/NowCard";
 import InboxList, { type InboxItem } from "@/components/home/InboxList";
-import { loadLauncher } from "@/lib/launcher-server";
+import QuickNote from "@/components/home/QuickNote";
+import { AgendaW, MealW, WorkoutW, LiveW, StatsW, DeskW, ContentW, WidgetSkeleton } from "@/components/home/Widgets";
+import { loadLauncherLite } from "@/lib/launcher-server";
 
-// Accueil coach, version courte (2026-10-08, retour direct : « l'onglet est
-// devenu un peu long, mets vraiment les choses utiles et pas juste des cards
-// qui prennent tout l'espace, applique les principes d'ergonomie d'une vraie
-// application »). Trois blocs seulement, du plus urgent au plus fréquent :
-//   1. Maintenant / ensuite (une ligne, agenda)
-//   2. Je veux (6 tuiles personnalisées, avec la réponse dessous)
-//   3. À traiter (alertes clients, messages non lus, bilans sans réponse)
-// Retirés : astuce du jour, cinq mini-cartes (nutrition, sommeil, live, pas :
-// déjà dans les tuiles), raccourcis en doublon des tuiles, quatre grosses
-// tuiles de stats et la grille complète des clients (onglet Clients). Moins
-// de requêtes aussi : la page s'affiche avant que « À traiter » soit prêt.
+// Accueil coach en widgets (2026-10-08, retour direct : « j'ouvre l'appli,
+// direct j'ai l'agenda, mes clients, mes lives, mon repas, prendre des
+// notes, mes stats organiques, ce qu'il me faut pour moi, pas tous les
+// boutons n'importe comment »). Chaque carte montre l'info elle-même (le
+// repas avec ses grammes, la séance avec ses exercices, les abonnés avec la
+// courbe...), et charge seule dans sa Suspense : la page s'affiche tout de
+// suite. Tout le reste de l'appli reste à un geste via le bouton grille.
 export default async function CoachDashboard() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const launcherP = loadLauncher(user.id, "coach");
-  const [t, locale, profile, blocks] = await Promise.all([
-    getT(),
-    getLocale(user.id),
-    getProfile(user.id),
-    getScheduleBlocks(user.id),
-  ]);
+  const [t, locale, profile, launcher] = await Promise.all([getT(), getLocale(user.id), getProfile(user.id), loadLauncherLite(user.id, "coach")]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
 
@@ -56,54 +45,61 @@ export default async function CoachDashboard() {
     const s = new Intl.DateTimeFormat(intlLocale(locale), { weekday: "long", day: "numeric", month: "long" }).format(new Date());
     return s.charAt(0).toUpperCase() + s.slice(1);
   })();
+  const { hhmm } = nowInParis();
+  const id = user.id;
+  const isOwner = !!profile?.is_platform_owner;
+  // Créateur ou business : stats et contenu remontent avant les clients.
+  const contentFirst = launcher.persona.key === "coach_createur" || launcher.persona.key === "coach_business";
 
-  const todayStr = todayInParis();
-  const { isoDow, hhmm } = nowInParis();
-  const today = blocks.filter((b) => isBlockOnDate(b, todayStr, isoDow)).sort((a, b) => a.start_time.localeCompare(b.start_time));
-  const current = today.find((b) => b.start_time <= hhmm && b.end_time > hhmm) ?? null;
-  // Le prochain moment qui compte : on saute les longs blocs de travail.
-  const next = today.find((b) => b.start_time > hhmm && b.icon !== "travail") ?? today.find((b) => b.start_time > hhmm) ?? null;
-  const seance = today.find((b) => b.icon === "salle");
-  const seanceLabel = seance?.label.replace(/^Séance\s*:\s*/i, "").trim() ?? null;
+
+  const clients = (
+    <div style={pair}>
+      <W h={120}><DeskW userId={id} isOwner={isOwner} href="/dashboard/coach/clients" /></W>
+      <W h={120}><LiveW userId={id} role="coach" coachId={null} href="/dashboard/coach/live" /></W>
+    </div>
+  );
+  const content = (
+    <>
+      <W h={130}><StatsW userId={id} href="/dashboard/coach/stats-reseaux" /></W>
+      <W h={90}><ContentW userId={id} href="/dashboard/coach/studio?onglet=scripts" /></W>
+    </>
+  );
 
   return (
-    <div className="page-transition ep-page-wide" style={{ padding: "20px 16px 40px" }}>
-      <header style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
-        <div style={{ minWidth: 0 }}>
+    <div className="page-transition ep-page-medium" style={{ padding: "18px 16px 40px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <header style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>{dateLabel}</p>
-          <h1 className="ep-h1" style={{ margin: "2px 0 0", fontSize: 24 }}>
+          <h1 className="ep-h1" style={{ margin: "2px 0 0", fontSize: 24, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {t(timeAwareGreeting(Number(hhmm.split(":")[0])))}, {firstName}
           </h1>
         </div>
-        <span
-          style={{
-            flexShrink: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase",
-            padding: "4px 9px", borderRadius: 999,
-            color: seanceLabel ? "#E01E1E" : "#4ade80",
-            background: seanceLabel ? "rgba(224,30,30,0.1)" : "rgba(74,222,128,0.1)",
-            border: `1px solid ${seanceLabel ? "rgba(224,30,30,0.25)" : "rgba(74,222,128,0.25)"}`,
-            maxWidth: 150, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-          }}
-        >
-          {seanceLabel ? `${t("Jour ON")} · ${seanceLabel}` : t("Jour OFF")}
-        </span>
+        <IntentLauncher {...launcher} space="coach" variant="button" />
       </header>
 
-      <NowCard
-        href="/dashboard/coach/moi/agenda"
-        current={current ? { label: current.label, until: current.end_time.slice(0, 5) } : null}
-        next={next ? { label: next.label, at: next.start_time.slice(0, 5) } : null}
-        labels={{ now: t("Maintenant"), next: t("Ensuite"), free: t("Rien de prévu dans ton agenda aujourd'hui"), until: t("jusqu'à"), at: t("à") }}
-      />
+      <W h={120}><AgendaW userId={id} href="/dashboard/coach/moi/agenda" /></W>
 
-      <IntentLauncher {...(await launcherP)} space="coach" />
+      <div style={pair}>
+        <W h={130}><MealW userId={id} href="/dashboard/coach/moi/nutrition" /></W>
+        <W h={130}><WorkoutW userId={id} href="/dashboard/coach/moi/programme" /></W>
+      </div>
 
-      <Suspense fallback={<div className="ep-skeleton" style={{ height: 120, borderRadius: 14 }} />}>
-        <CoachInbox userId={user.id} />
+      <QuickNote notesHref="/dashboard/coach/notes" />
+
+      {contentFirst ? content : clients}
+      {contentFirst ? clients : content}
+
+      <Suspense fallback={null}>
+        <CoachInbox userId={id} />
       </Suspense>
     </div>
   );
 }
+
+function W({ children, h }: { children: React.ReactNode; h?: number }) {
+  return <Suspense fallback={<WidgetSkeleton h={h} />}>{children}</Suspense>;
+}
+const pair: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, alignItems: "stretch" };
 
 async function CoachInbox({ userId }: { userId: string }) {
   const t = await getT();
@@ -154,15 +150,19 @@ async function CoachInbox({ userId }: { userId: string }) {
       href: `/dashboard/coach/clients/${c.client_id}/checkins`,
     })),
   ];
+  // Rien à traiter : rien du tout (pas de bandeau « tout va bien » en plus).
+  if (!items.length) return null;
 
   return (
-    <InboxList
-      title={t("À traiter")}
-      items={items.slice(0, 5)}
-      total={items.length}
-      moreHref={byConv.size > 0 && alerts.length === 0 ? "/dashboard/coach/messages" : "/dashboard/coach/prioritaires"}
-      moreLabel={t("Tout voir")}
-      emptyLabel={t("Rien à traiter. Tout est à jour.")}
-    />
+    <div style={{ marginTop: 6 }}>
+      <InboxList
+        title={t("À traiter")}
+        items={items.slice(0, 5)}
+        total={items.length}
+        moreHref={byConv.size > 0 && alerts.length === 0 ? "/dashboard/coach/messages" : "/dashboard/coach/prioritaires"}
+        moreLabel={t("Tout voir")}
+        emptyLabel=""
+      />
+    </div>
   );
 }

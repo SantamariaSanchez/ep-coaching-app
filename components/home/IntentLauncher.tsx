@@ -61,7 +61,7 @@ export interface LauncherIntent {
   keywords: string;
 }
 
-export default function IntentLauncher({ intents, focus, hints, space, count = 6 }: { intents: LauncherIntent[]; focus: string[]; hints: Record<string, string>; space: IntentSpace; count?: number }) {
+export default function IntentLauncher({ intents, focus, hints, count = 6, variant = "tiles" }: { intents: LauncherIntent[]; focus: string[]; hints: Record<string, string>; space: IntentSpace; count?: number; variant?: "tiles" | "button" }) {
   const t = useT();
   const usage = useSyncExternalStore(subscribe, readUsage, () => EMPTY);
   const [open, setOpen] = useState(false);
@@ -77,6 +77,49 @@ export default function IntentLauncher({ intents, focus, hints, space, count = 6
 
   const top = ranked.slice(0, count);
   const filtered = q.trim() ? ranked.filter((i) => fuzzyMatchAny([t(i.label), i.label, i.keywords], q)) : ranked;
+
+  const sheet = open && (
+    <div role="dialog" aria-modal="true" aria-label={t("Tout ce que tu peux faire")} onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "86vh", overflowY: "auto", background: "#160101", border: "1px solid rgba(137,4,4,0.4)", borderRadius: "18px 18px 0 0", padding: "14px 14px calc(18px + env(safe-area-inset-bottom))" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ position: "relative", flex: 1 }}>
+            <Search size={15} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.4)" }} />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Je veux... (manger, séance, stats, carrousel)")} aria-label={t("Chercher ce que je veux faire")} className="ep-input" style={{ width: "100%", paddingLeft: 34 }} />
+          </div>
+          <button type="button" onClick={() => setOpen(false)} aria-label={t("Fermer")} style={{ width: 40, height: 40, background: "none", border: "none", color: "rgba(245,237,237,0.6)", cursor: "pointer" }}>
+            <X size={18} />
+          </button>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {filtered.map((i) => {
+            const Icon = ICONS[i.icon] ?? Sparkles;
+            return (
+              <Link key={i.id} href={i.href} onClick={() => { recordUse(i.id); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 8px", minHeight: 52, borderRadius: 12, textDecoration: "none", color: "#F5EDED" }}>
+                <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(224,30,30,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon size={16} style={{ color: "#E01E1E" }} />
+                </span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 700 }}>{t(i.label)}</span>
+                <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)" }} />
+              </Link>
+            );
+          })}
+          {filtered.length === 0 && <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", textAlign: "center", padding: 18 }}>{t("Rien ne correspond. Essaie la loupe en haut.")}</p>}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Simple bouton (accueil en widgets) : ouvre la liste complète des actions.
+  if (variant === "button") {
+    return (
+      <>
+        <button type="button" onClick={() => setOpen(true)} aria-label={t("Tout ce que tu peux faire")} className="ep-press" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 12, background: "rgba(245,237,237,0.05)", border: "1px solid rgba(245,237,237,0.1)", color: "rgba(245,237,237,0.75)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <LayoutGrid size={17} />
+        </button>
+        {sheet}
+      </>
+    );
+  }
 
   return (
     <section aria-label={t("Je veux")} style={{ marginBottom: 18 }}>

@@ -25,3 +25,18 @@ export async function loadLauncher(userId: string, space: "coach" | "client", op
   const hints = await getIntentHints(userId, space, ids, t);
   return { intents: list, focus: persona.focus, hints, persona };
 }
+
+/** Version sans les réponses : juste la liste (bouton « tout » de l'accueil). */
+export async function loadLauncherLite(userId: string, space: "coach" | "client"): Promise<{ intents: LauncherIntent[]; focus: string[]; hints: Record<string, string>; persona: Persona }> {
+  const [setup, prefs] = await Promise.all([getAppSetup(userId), getMemberPreferences(userId)]);
+  const persona = derivePersona({ role: space, setup, prefs });
+  const hidden = hiddenSegments(setup, space);
+  const intents = availableIntents(space, hidden).map((i) => ({
+    id: i.id,
+    label: i.label,
+    icon: i.icon,
+    keywords: i.keywords,
+    href: i.id === "comprendre" && persona.learn ? `${i.href[space]}/${persona.learn}` : (i.href[space] as string),
+  }));
+  return { intents, focus: persona.focus, hints: {}, persona };
+}
