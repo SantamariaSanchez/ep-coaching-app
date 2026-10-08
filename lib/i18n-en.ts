@@ -4409,7 +4409,6 @@ export const EN: Record<string, string> = {
   "Choisis un nouveau mot de passe": "Choose a new password",
   "METTRE À JOUR": "UPDATE",
   "Retour à l'accueil": "Back to home",
-<<<<<<< HEAD
   // ── Notifications (cloche et push, traduites pour le destinataire, voir lib/notification-i18n.ts)
   "👋 Nouveau membre inscrit": "👋 New member signed up",
   "{name} vient de rejoindre la communauté.": "{name} just joined the community.",
@@ -4576,7 +4575,6 @@ export const EN: Record<string, string> = {
   "Belle régularité": "Great consistency",
   "Séance, nutrition, bilan : tu as déjà tout testé. La suite, c'est de tenir.": "Session, nutrition, daily check: you've tried it all. Next step is sticking with it.",
   "La suite, c'est maintenant": "What's next starts now",
-=======
 
   // ── Écrans (20) ───────────────────────────────────────────────────────────
   "Un imprévu": "Something unexpected",
@@ -4961,5 +4959,4 @@ export const EN: Record<string, string> = {
   "Accès non autorisé à ce client.": "Access to this client denied.",
   "Accès réservé au client.": "Client access only.",
   "Accès réservé au propriétaire de la plateforme.": "Platform owner only.",
->>>>>>> 0956c03 (feat: messages d'erreur traduits en anglais (380) + les pages serveur suivent la langue du compte)
 };
