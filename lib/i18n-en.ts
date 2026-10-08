@@ -5076,4 +5076,8 @@ export const EN: Record<string, string> = {
   "Publication impossible, réessaie.": "Couldn't publish, try again.",
   "Posts à publier": "Posts to publish",
   "Cliquer une fois posté : le script sort du Studio": "Click once posted: the script leaves the Studio",
+
+  // ── Top 10 ────────────────────────────────────────────────────────────────
+  "Top 10 de tes meilleurs contenus": "Your top 10 best content",
+  "Mes publications, 30 derniers jours (": "My posts, last 30 days (",
 };

@@ -1,7 +1,7 @@
 import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ExternalLink, Zap, RefreshCw, Target } from "lucide-react";
+import { ExternalLink, Zap, RefreshCw, Target, Trophy } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { todayInParis } from "@/lib/dates";
 import { getSocialDashboard } from "@/lib/social/queries";
@@ -273,10 +273,35 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
         </section>
       )}
 
+      {/* Top 10 de tous les temps (2026-10-08) : les meilleurs contenus restent
+          toujours visibles, peu importe leur date, pendant que la liste
+          ci-dessous ne garde que les 30 derniers jours. */}
+      {data.top.length > 0 && (
+        <section style={{ marginBottom: 18 }}>
+          <p className="ep-label" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <Trophy size={12} /> {tr("Top 10 de tes meilleurs contenus")}
+          </p>
+          <div className="ep-card" style={{ padding: "6px 0", overflow: "hidden" }}>
+            {data.top.map((p, i) => (
+              <a key={p.id} href={p.url ?? undefined} target={p.url ? "_blank" : undefined} rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", textDecoration: "none", color: "#F5EDED", borderTop: i ? "1px solid rgba(245,237,237,0.05)" : "none" }}>
+                <span style={{ width: 22, fontSize: 14, fontWeight: 900, color: i < 3 ? "#E01E1E" : "rgba(245,237,237,0.35)", flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.scriptTitle || p.caption || tr("(sans titre)")}</span>
+                  <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.45)" }}>
+                    {PLATFORM_LABELS[p.platform]}{p.post_type ? ` · ${TYPE_LABELS[p.post_type] ?? p.post_type}` : ""}{p.published_at ? ` · ${new Date(p.published_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })}` : ""}
+                  </span>
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 900, color: "#F5EDED", flexShrink: 0 }}>{fmt(p.views ?? p.impressions)}<span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}> {tr("vues")}</span></span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Publications */}
       <section style={{ marginBottom: 18 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-          <p className="ep-label" style={{ margin: 0 }}>{tr("Mes publications (")}{data.posts.length})</p>
+          <p className="ep-label" style={{ margin: 0 }}>{tr("Mes publications, 30 derniers jours (")}{data.posts.length})</p>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {SORTS.map((s) => (
               <Link key={s.key} href={href({ tri: s.key })} style={chip(sort === s.key)}>{s.label}</Link>
