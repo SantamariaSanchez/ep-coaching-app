@@ -91,6 +91,7 @@ export default async function CoachParametresPage() {
 
   return (
     <SettingsShell
+      backHref="/dashboard/coach/plus"
       sections={[
         {
           id: "affichage",

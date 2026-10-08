@@ -5,6 +5,7 @@ import { getAppSetup } from "@/lib/app-setup-server";
 import { defaultAnswers } from "@/lib/app-setup-defaults";
 import { getClientIntake } from "@/utils/client-intake";
 import AppSetupWizard from "@/components/setup/AppSetupWizard";
+import BackLink from "@/components/ui/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function ClientAppSetupPage() {
   const initial = defaultAnswers(setup, { role: "client", isWoman: intake?.gender === "Femme", coachNiches });
   return (
     <div className="page-transition" style={{ maxWidth: 560, margin: "0 auto", padding: "28px 16px 90px" }}>
+      <BackLink fallback="/dashboard/client/plus" />
       <h1 className="ep-h1" style={{ marginBottom: 6 }}>{t("Mon appli")}</h1>
       <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.55)", margin: "0 0 18px", lineHeight: 1.6 }}>
         {t("Dis-nous ce que tu veux suivre : ton menu et ton bilan ne garderont que ça. Tu peux changer à tout moment.")}

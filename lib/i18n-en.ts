@@ -5080,4 +5080,8 @@ export const EN: Record<string, string> = {
   // ── Top 10 ────────────────────────────────────────────────────────────────
   "Top 10 de tes meilleurs contenus": "Your top 10 best content",
   "Mes publications, 30 derniers jours (": "My posts, last 30 days (",
+
+  // ── Leads ─────────────────────────────────────────────────────────────────
+  "Supprimer ce lead définitivement ?": "Delete this lead permanently?",
+  "Supprimer ce lead": "Delete this lead",
 };

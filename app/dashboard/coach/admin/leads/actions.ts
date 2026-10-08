@@ -56,3 +56,18 @@ export async function updateLeadNote(leadId: string, note: string): Promise<{ er
     return { error: "Erreur inattendue." };
   }
 }
+
+// Supprimer un lead (doublon, test, spam). Définitif, demandé sur l'écran.
+export async function deleteLead(leadId: string): Promise<{ error?: string }> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { error: guard.error };
+  try {
+    const { error } = await createAdminClient().from("leads").delete().eq("id", leadId);
+    if (error) return { error: "Suppression impossible." };
+    revalidatePath("/dashboard/coach/admin/leads");
+    return {};
+  } catch (e) {
+    console.error("deleteLead error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}

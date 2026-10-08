@@ -2,7 +2,8 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
-import { Mail, Phone, Bot, Search, X, StickyNote } from "lucide-react";
+import { Mail, Phone, Bot, Search, X, StickyNote, Trash2 } from "lucide-react";
+import { deleteLead } from "@/app/dashboard/coach/admin/leads/actions";
 import type { Lead, LeadStatus } from "@/utils/leads";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
@@ -58,6 +59,17 @@ function LeadRow({
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState(lead.coach_note ?? "");
   const [savingNote, setSavingNote] = useState(false);
+  const [gone, setGone] = useState(false);
+
+  async function handleDelete() {
+    if (!window.confirm(t("Supprimer ce lead définitivement ?"))) return;
+    setGone(true);
+    const res = await deleteLead(lead.id);
+    if (res.error) {
+      setGone(false);
+      window.alert(t(res.error));
+    }
+  }
 
   async function handleStatusChange(next: LeadStatus) {
     const prev = status;
@@ -73,6 +85,7 @@ function LeadRow({
     if (!res.error) setNoteOpen(false);
   }
 
+  if (gone) return null;
   return (
     <div className="rounded-xl bg-[#1f0101] border border-[#890404]/20 px-4 py-3.5">
       <div className="flex items-center gap-3">
@@ -110,6 +123,14 @@ function LeadRow({
           </div>
         </div>
 
+        <button
+          type="button"
+          onClick={handleDelete}
+          aria-label={t("Supprimer ce lead")}
+          className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg text-[#F5EDED]/35 hover:text-red-400"
+        >
+          <Trash2 size={14} />
+        </button>
         <select
           value={status}
           onChange={(e) => handleStatusChange(e.target.value as LeadStatus)}

@@ -4,6 +4,7 @@ import { ChevronRight, Clock, ArrowRight } from "lucide-react";
 import { getT } from "@/lib/i18n-server";
 import { LEARN_BY_SLUG, LEARN_GUIDES } from "@/lib/learn";
 import { INTENT_BY_ID } from "@/lib/intents";
+import BackLink from "@/components/ui/BackLink";
 
 // Rendu commun des guides « Comprendre » (client et espace Moi du coach).
 
@@ -12,6 +13,7 @@ export async function LearnIndex({ space }: { space: "coach" | "client" }) {
   const base = space === "coach" ? "/dashboard/coach/moi/comprendre" : "/dashboard/client/comprendre";
   return (
     <div className="px-4 sm:px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <BackLink fallback={space === "coach" ? "/dashboard/coach" : "/dashboard/client"} />
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Comprendre")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight mb-2">{t("Comment ça marche")}</h1>
       <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.6)", margin: "0 0 18px", lineHeight: 1.6 }}>

@@ -433,9 +433,15 @@ function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: b
     return exact || tab.matchSegments.some((seg) => pathname.startsWith(`${base}/${seg}`));
   }
 
+  // Un seul élément actif : le chemin le plus précis gagne (sur
+  // /admin/leads, « Leads » est actif, pas aussi « Coachs » qui pointe sur
+  // /admin, retour direct 2026-10-08).
+  const allSegments = sidebar.flatMap((g) => g.items.map((i) => i.segment)).filter(Boolean);
+  const matches = (seg: string) => pathname === `${base}/${seg}` || pathname.startsWith(`${base}/${seg}/`);
+  const bestSegment = allSegments.filter(matches).sort((a, b) => b.length - a.length)[0] ?? null;
   function isSidebarActive(segment: string): boolean {
     if (segment === "") return pathname === base;
-    return pathname.startsWith(`${base}/${segment}`);
+    return segment === bestSegment;
   }
 
   // Items belonging to the currently active bottom tab — surfaced as a

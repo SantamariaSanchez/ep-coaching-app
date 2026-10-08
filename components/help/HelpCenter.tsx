@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, PlayCircle, Search } from "lucide-react";
 import { GUIDES, type HelpSpace } from "@/lib/help-content";
 import { restartTour } from "@/components/help/WelcomeTour";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import BackLink from "@/components/ui/BackLink";
 
 // Aide et tutoriels (2026-09-30) : la visite en 5 écrans, puis des guides
 // courts, pas à pas, filtrés selon le profil.
@@ -22,6 +23,7 @@ export default function HelpCenter({ space }: { space: HelpSpace }) {
 
   return (
     <div className="page-transition" style={{ padding: "22px 16px 110px", maxWidth: 720, margin: "0 auto" }}>
+      <BackLink fallback={space === "staff" ? "/equipe" : `/dashboard/${space}/plus`} />
       <h1 className="ep-h1" style={{ marginBottom: 4 }}>{t("Aide et tutoriels")}</h1>
       <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 16px" }}>{t("Tout ce qu'il faut pour utiliser l'appli sans te poser de question.")}</p>
 

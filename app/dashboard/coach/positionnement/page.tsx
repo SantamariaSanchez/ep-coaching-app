@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { getPositioning } from "@/lib/positioning-server";
 import { getT } from "@/lib/i18n-server";
 import PositioningBuilder from "@/components/coach/PositioningBuilder";
+import BackLink from "@/components/ui/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function PositioningPage() {
 
   return (
     <div className="px-4 sm:px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <BackLink fallback="/dashboard/coach" />
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Business")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{t("Ma niche et mon avatar")}</h1>
       <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.6)", margin: "0 0 18px", lineHeight: 1.6 }}>

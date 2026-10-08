@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import BackLink from "@/components/ui/BackLink";
 
 export interface SettingsSection {
   id: string;
@@ -16,7 +17,7 @@ export interface SettingsSection {
 // Page Paramètres rangée par rubriques (2026-10-07) : sommaire en pastilles
 // pour sauter à une rubrique, et recherche tolérante aux fautes ("vibration",
 // "langue", "mot de passe") qui ne garde que les rubriques concernées.
-export default function SettingsShell({ sections }: { sections: SettingsSection[] }) {
+export default function SettingsShell({ sections, backHref = "/dashboard/client/plus" }: { sections: SettingsSection[]; backHref?: string }) {
   const t = useT();
   const [query, setQuery] = useState("");
   const visible = useMemo(() => {
@@ -27,6 +28,7 @@ export default function SettingsShell({ sections }: { sections: SettingsSection[
 
   return (
     <div className="px-4 sm:px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <BackLink fallback={backHref} />
       <div className="mb-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Mon espace")}</p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Paramètres")}</h1>
