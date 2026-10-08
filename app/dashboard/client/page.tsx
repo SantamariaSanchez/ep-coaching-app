@@ -1,6 +1,7 @@
 import { getT, getLocale } from "@/lib/i18n-server";
 import IntentLauncher from "@/components/home/IntentLauncher";
-import { loadLauncher } from "@/lib/launcher-server";
+import { loadLauncherLite } from "@/lib/launcher-server";
+import ClientWidgets from "@/components/home/ClientWidgets";
 import { intlLocale } from "@/lib/i18n";
 import { timeAwareGreeting, nowInParis } from "@/lib/dates";
 import { getAppSetup } from "@/lib/app-setup-server";
@@ -144,8 +145,10 @@ async function WelcomeGuide({
   activityStreak,
   totalPoints,
   launcher,
+  allButton,
 }: {
   launcher: React.ReactNode;
+  allButton: React.ReactNode;
   firstName: string;
   dateLabel: string;
   hasCoach: boolean;
@@ -159,8 +162,8 @@ async function WelcomeGuide({
   const started = checklist.some((i) => i.done);
   return (
     <div className="page-transition ep-page-medium" style={{ padding: "20px 16px 100px" }}>
-      <header style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
-        <div style={{ minWidth: 0 }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>{dateLabel}</p>
           <h1 className="ep-h1" style={{ margin: "2px 0 0", fontSize: 24 }}>{t("Salut")}{firstName ? ` ${firstName}` : ""}</h1>
           {!started && (
@@ -168,11 +171,12 @@ async function WelcomeGuide({
           )}
         </div>
         <StreakChip streakDays={activityStreak} points={totalPoints} href="/dashboard/client/profile" label={t("Ma régularité")} />
+        {allButton}
       </header>
 
-      {launcher}
-
       <StartChecklist items={checklist} />
+
+      <div style={{ marginBottom: 12 }}>{launcher}</div>
 
       {hasCoach ? <StagnationBanner /> : <NoCoachBanner pitch={pitch} />}
     </div>
@@ -211,7 +215,7 @@ export default async function ClientDashboard({
   if (profile && !profile.onboarding_completed_at && onboarded !== "1") redirect("/onboarding");
 
   // « Je veux... » : lancé tout de suite, en parallèle du reste de l'accueil.
-  const launcherP = loadLauncher(user.id, "client");
+  const launcherP = loadLauncherLite(user.id, "client");
 
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
@@ -235,7 +239,8 @@ export default async function ClientDashboard({
           checklist={checklist}
           activityStreak={activityStreak}
           totalPoints={totalPoints}
-          launcher={<IntentLauncher {...(await launcherP)} space="client" />}
+          launcher={<ClientWidgets userId={user.id} focus={(await launcherP).focus} coachId={profile?.coach_id ?? null} coached={false} />}
+          allButton={<IntentLauncher {...(await launcherP)} space="client" variant="button" />}
         />
       </>
     );
@@ -314,8 +319,8 @@ export default async function ClientDashboard({
         />
       )}
 
-      <header style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
-        <div style={{ minWidth: 0 }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>
             {formattedDate}
             {weeksSinceStart != null && ` · ${t("sem. {n} de coaching", { n: weeksSinceStart + 1 })}`}
@@ -323,9 +328,10 @@ export default async function ClientDashboard({
           <h1 className="ep-h1" style={{ margin: "2px 0 0", fontSize: 24 }}>{greeting}{firstName ? `, ${firstName}` : ""}</h1>
         </div>
         <StreakChip streakDays={activityStreak} points={totalPoints} href="/dashboard/client/profile" label={t("Ma régularité")} />
+        <IntentLauncher {...(await launcherP)} space="client" variant="button" />
       </header>
 
-      <IntentLauncher {...(await launcherP)} space="client" />
+      <div style={{ marginBottom: 12 }}><ClientWidgets userId={user.id} focus={(await launcherP).focus} coachId={profile?.coach_id ?? null} coached /></div>
 
       {latestNote && (
         <Link
