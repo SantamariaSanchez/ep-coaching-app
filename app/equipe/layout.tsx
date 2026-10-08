@@ -10,6 +10,7 @@ import WelcomeTour from "@/components/help/WelcomeTour";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { getLocale } from "@/lib/i18n-server";
+import { LocaleSync } from "@/components/i18n/LocaleSync";
 
 // Espace métier des recrues (demande directe 2026-09-25 : "pour chaque
 // métier il faut que l'appli soit adaptée à son métier"). Hors de
@@ -39,6 +40,7 @@ export default async function EquipeLayout({ children }: { children: React.React
       unlocked={unlocked}
     >
       <ServiceWorkerRegister />
+      <LocaleSync locale={locale} />
       <NativeBridge />
       {unlocked && <WelcomeTour />}
       {children}

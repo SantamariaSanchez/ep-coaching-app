@@ -2,6 +2,7 @@ import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { isWithinQuietHours } from "@/lib/quiet-hours";
 import { sendNativePush } from "@/lib/native-push";
+import { localizeForRecipient } from "@/lib/notification-i18n";
 
 function initVapid() {
   if (
@@ -38,6 +39,8 @@ export async function sendPushToUser(
   try {
     initVapid();
     const supabase = createAdminClient();
+    // Dans la langue du destinataire, web comme natif (voir lib/notification-i18n.ts).
+    ({ title, body } = await localizeForRecipient(userId, title, body));
 
     // .maybeSingle(), pas .single() : l'immense majorité des utilisateurs
     // n'ont aucune ligne ici (push jamais activé), un cas normal et attendu,

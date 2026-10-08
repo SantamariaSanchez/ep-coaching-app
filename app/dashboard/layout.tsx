@@ -24,6 +24,7 @@ import { freeTierStatus, freeTierUrgencyLabel } from "@/lib/free-tier";
 import { getAccessType } from "@/utils/auth-client";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { getLocale } from "@/lib/i18n-server";
+import { LocaleSync } from "@/components/i18n/LocaleSync";
 
 // Double authentification : le mot de passe seul ne donne accès à aucune page
 // du dashboard tant que la session n'est pas passée en aal2.
@@ -160,6 +161,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <I18nProvider locale={locale}>
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
+      {user && <LocaleSync locale={locale} />}
       <NativeBridge />
       <WelcomeTour />
       <AlarmPlayer />

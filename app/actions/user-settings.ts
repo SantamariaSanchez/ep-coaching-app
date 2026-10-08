@@ -56,3 +56,17 @@ export async function setPantryAutoAction(enabled: boolean): Promise<{ error?: s
   }
   return {};
 }
+
+/**
+ * Retient la langue dans laquelle l'appli s'affiche sur l'appareil de la
+ * personne (son choix, sinon la langue du téléphone). Sert uniquement aux
+ * notifications envoyées sans elle (voir lib/notification-i18n.ts) : ne
+ * remplace jamais un choix explicite, rangé à part dans `locale`.
+ */
+export async function rememberUiLocaleAction(locale: string): Promise<void> {
+  if (!isLocale(locale)) return;
+  const user = await getUser();
+  if (!user) return;
+  const { error } = await upsert(user.id, { ui_locale: locale });
+  if (error) console.error("rememberUiLocaleAction error:", error);
+}

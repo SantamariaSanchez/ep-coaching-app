@@ -95,5 +95,8 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
 
 ## Reste à faire (anglais)
 
-- [ ] Pages de connexion et d'inscription en anglais (hors espace connecté)
-- [ ] Textes générés côté serveur (messages d'erreur des actions, notifications, e-mails)
+- [x] Pages de connexion et d'inscription en anglais (hors espace connecté)
+- [x] Notifications (cloche et push) dans la langue de la personne qui les reçoit, même envoyées
+      par un rappel automatique ou par le coach (~150 textes traduits)
+- [ ] Récaps hebdo (sommeil, progrès) : texte calculé, encore en français
+- [ ] E-mails et messages d'erreur des actions

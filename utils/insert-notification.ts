@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { startOfTodayInParis } from "@/lib/dates";
+import { localizeForRecipient } from "@/lib/notification-i18n";
 
 interface NotificationPayload {
   userId: string;
@@ -22,11 +23,13 @@ export async function insertNotification({
   senderId,
 }: NotificationPayload): Promise<void> {
   const supabase = createAdminClient();
+  // Enregistrée dans la langue du destinataire (voir lib/notification-i18n.ts).
+  const text = await localizeForRecipient(userId, title, body ?? "");
   await supabase.from("notifications").insert({
     user_id: userId,
     type,
-    title,
-    body: body ?? null,
+    title: text.title,
+    body: body == null ? null : text.body,
     url: url ?? null,
     sender_id: senderId ?? null,
   });
