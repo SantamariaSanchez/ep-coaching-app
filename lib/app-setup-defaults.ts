@@ -15,7 +15,9 @@ export function defaultAnswers(setup: AppSetup, opts: { role: "coach" | "client"
     bilan: ["sommeil", "pas", "stress", "digestion", "faim"],
     entrainement: "salle",
     nutrition: "tracker",
-    extras: [...(opts.isWoman ? ["cycle"] : []), "mindset", "notes"],
+    // Notes : outil de créateur, proposé d'office aux coachs seulement (un
+    // powerlifter n'a pas à voir d'onglet Notes s'il ne l'a pas demandé).
+    extras: [...(opts.isWoman ? ["cycle"] : []), "mindset", ...(opts.role === "coach" ? ["notes"] : [])],
   };
   // Réponses déjà données ailleurs (ex. mode de travail choisi dans Mon
   // équipe) : gardées par-dessus les valeurs par défaut.
