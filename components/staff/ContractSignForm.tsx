@@ -65,7 +65,7 @@ export default function ContractSignForm({ expectedName }: { expectedName: strin
       />
 
       {error && (
-        <p role="alert" style={{ fontSize: 12.5, color: "#FDC4C4", margin: "12px 0 0" }}>{error}</p>
+        <p role="alert" style={{ fontSize: 12.5, color: "#FDC4C4", margin: "12px 0 0" }}>{t(error)}</p>
       )}
 
       <button

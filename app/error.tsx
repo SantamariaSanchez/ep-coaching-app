@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect } from "react";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 import Link from "next/link";
@@ -16,6 +17,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
   useEffect(() => {
     console.error("Erreur non interceptée:", error);
   }, [error]);
@@ -65,7 +67,7 @@ export default function Error({
             marginBottom: 10,
           }}
         >
-          Un imprévu
+          {t("Un imprévu")}
         </p>
 
         <h1
@@ -77,7 +79,7 @@ export default function Error({
             marginBottom: 10,
           }}
         >
-          Quelque chose s&apos;est mal passé
+          {t("Quelque chose s'est mal passé")}
         </h1>
 
         <p
@@ -88,8 +90,7 @@ export default function Error({
             marginBottom: 28,
           }}
         >
-          Rien n&apos;a été perdu de ton côté. Réessaie, et si ça persiste,
-          reviens un peu plus tard, le temps que ce soit corrigé.
+          {t("Rien n'a été perdu de ton côté. Réessaie, et si ça persiste, reviens un peu plus tard, le temps que ce soit corrigé.")}
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -105,7 +106,7 @@ export default function Error({
               width: "100%",
             }}
           >
-            <RotateCcw size={14} /> Réessayer
+            <RotateCcw size={14} />{" "}{t("Réessayer")}
           </button>
           <Link
             href="/"
@@ -118,7 +119,7 @@ export default function Error({
               width: "100%",
             }}
           >
-            <Home size={14} /> Retour à l&apos;accueil
+            <Home size={14} />{" "}{t("Retour à l'accueil")}
           </Link>
         </div>
       </div>

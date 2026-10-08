@@ -63,7 +63,7 @@ export default function FlashRequestButton() {
               {t("Annuler")}
             </button>
           </div>
-          {error && <p style={{ color: "#ff6b6b", fontSize: 11, marginTop: 8 }}>{error}</p>}
+          {error && <p style={{ color: "#ff6b6b", fontSize: 11, marginTop: 8 }}>{t(error)}</p>}
         </>
       )}
     </div>

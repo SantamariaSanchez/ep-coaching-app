@@ -581,7 +581,7 @@ export default function ProgramTemplateEditor({
       {error && (
         <div className="flex items-center gap-2.5 bg-red-950/40 border border-red-500/30 rounded-lg px-4 py-3">
           <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
-          <p className="text-sm text-red-400">{error}</p>
+          <p className="text-sm text-red-400">{tr(error)}</p>
         </div>
       )}
 

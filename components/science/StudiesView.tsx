@@ -105,7 +105,7 @@ function StudyForm({ initial, onSave, onCancel }: {
         <textarea aria-label={t("Résultats (optionnel)")} value={results} onChange={(e) => setResults(e.target.value)} rows={3} className={`${inputCls} resize-none`} />
       </div>
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{t(error)}</p>}
 
       <div className="flex gap-2">
         <button

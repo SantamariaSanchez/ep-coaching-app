@@ -134,7 +134,7 @@ export default function ResourceRequests({
               {t("Envoyer")}
             </button>
           </div>
-          {error && <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {error}</p>}
+          {error && <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {t(error)}</p>}
         </div>
       )}
 

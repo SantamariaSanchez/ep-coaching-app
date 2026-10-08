@@ -106,7 +106,7 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
         </div>
       </div>
 
-      {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-xs text-red-400">{t(error)}</p>}
 
       {view === "racheter" && (
         <BuyListView suggestions={buyList} source={source} onBought={markBought} pending={pending} onAll={() => run(() => addToPantryAction(buyList.map((s) => ({ foodId: s.foodId, name: s.name, category: s.category, unit: s.unit, quantity: s.quantity, gramsPerUnit: s.gramsPerUnit }))))} />

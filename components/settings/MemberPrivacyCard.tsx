@@ -72,7 +72,7 @@ export default function MemberPrivacyCard({ initialVisible }: { initialVisible: 
           </button>
         </div>
         {error && (
-          <p role="alert" style={{ margin: "10px 0 0", fontSize: 11, color: "#E01E1E" }}>{error}</p>
+          <p role="alert" style={{ margin: "10px 0 0", fontSize: 11, color: "#E01E1E" }}>{t(error)}</p>
         )}
         <p style={{ margin: "12px 0 0", fontSize: 11, color: "rgba(245,237,237,0.35)", lineHeight: 1.5 }}>
           {t("Ce réglage concerne uniquement le classement. Tes publications dans la communauté restent signées de ton nom, et si tu es accompagné, ton coach voit toujours ton suivi.")}{" "}

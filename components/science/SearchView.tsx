@@ -246,7 +246,7 @@ export default function SearchView({ isCoach, importArticle }: {
         </div>
       )}
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{tr(error)}</p>}
 
       <div className="space-y-2">
         {results.map((r) => (

@@ -222,7 +222,7 @@ export default function WeeklyReviewReflection({
 
         {error && (
           <p role="alert" style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "#f87171" }}>
-            {error}
+            {t(error)}
           </p>
         )}
 

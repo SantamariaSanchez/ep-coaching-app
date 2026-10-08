@@ -748,7 +748,7 @@ export default function MealCreatorWizard({
                     )}
                   </div>
                   {saveStatus === "error" && (
-                    <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {saveError}</p>
+                    <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {tr(saveError)}</p>
                   )}
                 </div>
               )}

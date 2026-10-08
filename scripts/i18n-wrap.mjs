@@ -15,7 +15,9 @@ const ENTITIES = { "&apos;": "'", "&quot;": '"', "&amp;": "&", "&nbsp;": " ", "
 const decode = (s) => s.replace(/&[a-z]+;/g, (e) => ENTITIES[e] ?? e);
 const hasWords = (s) => /[A-Za-zÀ-ÿ]{2,}/.test(s.replace(/&[a-z]+;/g, ""));
 
-for (const file of process.argv.slice(2)) {
+// --errors : entoure aussi les messages d'erreur affichés ({error}).
+const ERRORS = process.argv.includes("--errors");
+for (const file of process.argv.slice(2).filter((a) => !a.startsWith("--"))) {
   let src = readFileSync(file, "utf8");
   // Composant client : hook useT(). Page ou composant serveur async :
   // await getT(). Un composant serveur non async est laissé de côté.
@@ -93,6 +95,14 @@ for (const file of process.argv.slice(2)) {
       const comp = componentOf(node);
       if (comp) {
         edits.push({ start: node.getStart(sf), end: node.getEnd(), text: `${T}(${JSON.stringify(node.text)})` });
+        components.add(comp);
+      }
+    } else if (ERRORS && ts.isIdentifier(node) && /^(error|err|errorMsg|errorMessage|formError|saveError|loadError)$/.test(node.text) && inJsxText(node) && !(ts.isPropertyAccessExpression(node.parent))) {
+      // Message d'erreur renvoyé par une action serveur ({error}) : le texte
+      // français sert de clé, comme le reste.
+      const comp = componentOf(node);
+      if (comp) {
+        edits.push({ start: node.getStart(sf), end: node.getEnd(), text: `${T}(${node.text})` });
         components.add(comp);
       }
     } else if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {

@@ -87,7 +87,7 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
           </button>
         </div>
       ))}
-      {error && <p style={{ color: "#ff6b6b", fontSize: 11.5, marginTop: 4 }}>{error}</p>}
+      {error && <p style={{ color: "#ff6b6b", fontSize: 11.5, marginTop: 4 }}>{t(error)}</p>}
     </div>
   );
 }

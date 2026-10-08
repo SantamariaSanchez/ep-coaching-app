@@ -159,7 +159,7 @@ export default function ProgramPresetSelector({
       </div>
 
       {error && (
-        <p className="text-xs text-red-400 mb-3">{error}</p>
+        <p className="text-xs text-red-400 mb-3">{t(error)}</p>
       )}
       {success && (
         <p className="text-xs text-green-400 mb-3">{t("Programme activé avec succès.")}</p>

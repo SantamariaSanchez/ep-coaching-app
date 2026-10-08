@@ -54,7 +54,7 @@ export default function NewsletterPreferenceCard({ initialSubscribed }: { initia
           </button>
         )}
       </div>
-      {error && <p className="text-[11px] text-[#FDC4C4] mt-2">{error}</p>}
+      {error && <p className="text-[11px] text-[#FDC4C4] mt-2">{t(error)}</p>}
     </div>
   );
 }

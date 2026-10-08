@@ -280,7 +280,7 @@ function WeeklyNoteForm({
       {error && (
         <div className="flex items-center gap-2 bg-red-950/40 border border-red-500/30 rounded-lg px-4 py-2.5">
           <AlertCircle size={13} className="text-red-400 flex-shrink-0" />
-          <p className="text-xs text-red-400">{error}</p>
+          <p className="text-xs text-red-400">{tr(error)}</p>
         </div>
       )}
 
@@ -493,7 +493,7 @@ function KeyDecisionForm({
             />
           </div>
           {error && (
-            <p className="text-xs text-red-400">{error}</p>
+            <p className="text-xs text-red-400">{tr(error)}</p>
           )}
           <div className="flex gap-2 justify-end">
             <button

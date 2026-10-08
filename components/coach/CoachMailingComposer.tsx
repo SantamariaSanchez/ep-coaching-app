@@ -539,7 +539,7 @@ export default function CoachMailingComposer({
         </div>
         )}
 
-        {error && <p className="text-[12px] text-red-400 mt-2.5">{error}</p>}
+        {error && <p className="text-[12px] text-red-400 mt-2.5">{tr(error)}</p>}
         {success && <p className="text-[12px] text-green-400 mt-2.5">{success}</p>}
         {overLimit && (
           <p className="text-[11.5px] text-amber-400 mt-2.5">

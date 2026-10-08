@@ -173,7 +173,7 @@ function ProfileTab({
   if (showQuiz) {
     return (
       <div className="space-y-4">
-        {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+        {error && <p className="text-xs text-red-400 text-center">{tr(error)}</p>}
         {saving ? (
           <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-8 text-center">
             <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">{tr("Sauvegarde…")}</p>
@@ -330,7 +330,7 @@ function HabitsTab({
 
   return (
     <div className="space-y-5">
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{tr(error)}</p>}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">{tr("Aujourd'hui")}</p>
@@ -552,7 +552,7 @@ function JournalTab({
 
   return (
     <div className="space-y-5">
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{tr(error)}</p>}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">{tr("Choisis un thème")}</p>
         <div className="flex gap-2 overflow-x-auto pb-3">

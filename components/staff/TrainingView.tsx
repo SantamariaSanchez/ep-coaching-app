@@ -54,7 +54,7 @@ export default function TrainingView({ lessons, done }: { lessons: Lesson[]; don
         <div style={{ height: 6, borderRadius: 3, background: "rgba(224,30,30,0.1)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#4ade80,#22c55e)" : "linear-gradient(90deg,#890404,#E01E1E)" }} />
         </div>
-        {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "10px 0 0" }}>{error}</p>}
+        {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "10px 0 0" }}>{t(error)}</p>}
       </div>
 
       {PHASES.map((phase) => {

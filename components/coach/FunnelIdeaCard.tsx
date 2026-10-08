@@ -58,7 +58,7 @@ export default function FunnelIdeaCard({
         </button>
       </div>
       <p className="text-[10.5px] text-[#F5EDED]/50 leading-relaxed">{idea}</p>
-      {error && <p className="text-[9.5px] text-red-400 mt-1.5">{error}</p>}
+      {error && <p className="text-[9.5px] text-red-400 mt-1.5">{t(error)}</p>}
     </div>
   );
 }

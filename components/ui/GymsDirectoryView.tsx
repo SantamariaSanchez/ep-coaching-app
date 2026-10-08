@@ -163,7 +163,7 @@ function GymForm({
         <label className={labelCls}>{tr("Site web (optionnel)")}</label>
         <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder={tr("https://…")} aria-label={tr("https://…")} className={inputCls} />
       </div>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{tr(error)}</p>}
       <div className="flex gap-2">
         <button
           onClick={handleSubmit}

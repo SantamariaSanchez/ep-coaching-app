@@ -419,7 +419,7 @@ export default function TrackingClient({
           </button>
           {saveError && (
             <p className="flex items-center gap-1.5 text-[11px] text-red-400 mt-2">
-              <AlertTriangle size={12} /> {saveError}
+              <AlertTriangle size={12} /> {t(saveError)}
             </p>
           )}
         </div>

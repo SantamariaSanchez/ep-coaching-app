@@ -128,7 +128,7 @@ export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
           <Plus size={14} />{" "}{t("Ajouter")}
         </button>
       </form>
-      {error && <p style={{ color: "#f87171", fontSize: 12, marginBottom: 12 }}>{error}</p>}
+      {error && <p style={{ color: "#f87171", fontSize: 12, marginBottom: 12 }}>{t(error)}</p>}
 
       <div className="space-y-2">
         {calls.map((c) => (

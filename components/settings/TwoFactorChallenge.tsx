@@ -70,7 +70,7 @@ export default function TwoFactorChallenge({ redirectTo }: { redirectTo: string 
       {error && (
         <div className="flex items-center gap-2.5 px-4 py-3 bg-[#E01E1E]/8 border border-[#E01E1E]/25 rounded-lg">
           <span className="text-[#E01E1E] flex-shrink-0">⚠</span>
-          <p className="text-[13px] text-[#FDC4C4] m-0 font-medium">{error}</p>
+          <p className="text-[13px] text-[#FDC4C4] m-0 font-medium">{t(error)}</p>
         </div>
       )}
 

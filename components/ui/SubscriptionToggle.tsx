@@ -127,7 +127,7 @@ export default function SubscriptionToggle({
               ? `${planLabel(displayPlan)}${displayBillingDate ? ` · échéance le ${new Date(displayBillingDate).toLocaleDateString("fr-FR")}` : ""}`
               : t("Autonome, accès aux outils gratuits uniquement.")}
           </p>
-          {error && <p className="text-[11px] text-red-400 mt-1">{error}</p>}
+          {error && <p className="text-[11px] text-red-400 mt-1">{t(error)}</p>}
         </div>
         <button
           onClick={() => setExpanded((v) => !v)}

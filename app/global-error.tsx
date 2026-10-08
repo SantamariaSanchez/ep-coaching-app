@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect } from "react";
 
 // MASTERCLASS.md Axe H : filet de dernier recours, seulement si la mise en
@@ -16,6 +17,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
   useEffect(() => {
     console.error("Erreur racine non interceptée:", error);
   }, [error]);
@@ -55,7 +57,7 @@ export default function GlobalError({
               marginBottom: 10,
             }}
           >
-            Un imprévu
+            {t("Un imprévu")}
           </p>
           <h1
             style={{
@@ -65,7 +67,7 @@ export default function GlobalError({
               marginBottom: 10,
             }}
           >
-            Quelque chose s&apos;est mal passé
+            {t("Quelque chose s'est mal passé")}
           </h1>
           <p
             style={{
@@ -75,8 +77,7 @@ export default function GlobalError({
               marginBottom: 28,
             }}
           >
-            Rien n&apos;a été perdu de ton côté. Réessaie, et si ça persiste,
-            reviens un peu plus tard.
+            {t("Rien n'a été perdu de ton côté. Réessaie, et si ça persiste, reviens un peu plus tard.")}
           </p>
           <button
             type="button"
@@ -93,7 +94,7 @@ export default function GlobalError({
               cursor: "pointer",
             }}
           >
-            Réessayer
+            {t("Réessayer")}
           </button>
         </div>
       </body>

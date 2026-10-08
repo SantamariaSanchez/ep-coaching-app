@@ -229,7 +229,7 @@ function Composer({
         </p>
       )}
       {error && (
-        <p className="animate-slide-up text-[11px] text-red-400 font-semibold mt-2">⚠ {error}</p>
+        <p className="animate-slide-up text-[11px] text-red-400 font-semibold mt-2">⚠ {t(error)}</p>
       )}
       {justPosted && (
         <p className="animate-slide-up text-[11px] font-bold text-emerald-400 mt-2 flex items-center gap-1.5">
@@ -357,7 +357,7 @@ function CommentsThread({
         </button>
       </div>
       {error && (
-        <p className="animate-slide-up text-[10px] text-red-400 font-semibold mt-1.5">⚠ {error}</p>
+        <p className="animate-slide-up text-[10px] text-red-400 font-semibold mt-1.5">⚠ {t(error)}</p>
       )}
     </>
   );

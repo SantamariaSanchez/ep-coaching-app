@@ -201,7 +201,7 @@ export default function AddFoodSheet({
         <p className="text-sm text-[#F5EDED]/70 mt-4">
           <b className="text-white">{Math.round(m.calories)}{" "}{tr("kcal")}</b> · P {Math.round(m.proteins)} g · G {Math.round(m.carbs)} g · L {Math.round(m.fats)} g
         </p>
-        {error && <p className="text-xs text-red-300 mt-2">{error}</p>}
+        {error && <p className="text-xs text-red-300 mt-2">{tr(error)}</p>}
       </Sheet>
     );
   }
@@ -216,7 +216,7 @@ export default function AddFoodSheet({
           </button>
         ))}
       </div>
-      {error && <p className="text-xs text-red-300 mb-2">{error}</p>}
+      {error && <p className="text-xs text-red-300 mb-2">{tr(error)}</p>}
 
       {tab === "aliments" && (
         <>

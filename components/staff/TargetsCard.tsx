@@ -72,7 +72,7 @@ export default function TargetsCard({
               />
             </label>
           ))}
-          {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: 0 }}>{error}</p>}
+          {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: 0 }}>{tr(error)}</p>}
           <button type="button" onClick={save} disabled={pending} className="ep-btn-primary" style={{ height: 40, fontSize: 12 }}>
             <Save size={13} /> {pending ? tr("Enregistrement...") : tr("Enregistrer mes objectifs")}
           </button>

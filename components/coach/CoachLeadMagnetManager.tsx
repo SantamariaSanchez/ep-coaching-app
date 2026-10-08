@@ -200,7 +200,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               {t("Publier")}
             </button>
           </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-red-400">{t(error)}</p>}
         </div>
       )}
 

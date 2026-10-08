@@ -95,7 +95,7 @@ export default function PersonalCoachCard({
         </>
       )}
 
-      {error && <p className="text-red-400 text-xs font-semibold mt-3">{error}</p>}
+      {error && <p className="text-red-400 text-xs font-semibold mt-3">{t(error)}</p>}
     </div>
   );
 }

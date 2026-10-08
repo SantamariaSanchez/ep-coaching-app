@@ -153,7 +153,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
             rows={4}
             style={{ ...inputStyle, marginTop: 10, resize: "vertical", fontFamily: "inherit" }}
           />
-          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
+          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{tr(error)}</p>}
           <button type="button" onClick={submitNew} disabled={isPending} style={submitButtonStyle(isPending)}>
             {isPending ? "..." : tr("Ajouter")}
           </button>

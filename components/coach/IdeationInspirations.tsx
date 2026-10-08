@@ -115,7 +115,7 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
             aria-label={t("Pourquoi tu gardes ça")}
             style={{ ...inputStyle, marginTop: 10 }}
           />
-          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
+          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{t(error)}</p>}
           <button type="button" onClick={submitNew} disabled={isPending} style={submitButtonStyle(isPending)}>
             {isPending ? "..." : t("Sauvegarder")}
           </button>

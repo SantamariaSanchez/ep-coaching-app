@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { getUser } from "@/utils/auth";
 import { isLocale, LOCALE_COOKIE, makeT, type Locale, type Translator } from "@/lib/i18n";
 
 /**
@@ -24,7 +25,13 @@ export async function getLocale(userId?: string): Promise<Locale> {
 }
 
 export async function getT(): Promise<Translator> {
-  return makeT(await getLocale());
+  // Même résolution que le layout (cookie, puis choix du compte, puis
+  // téléphone) : getUser est mémoïsé pour le rendu, aucun appel en plus.
+  let userId: string | undefined;
+  try {
+    userId = (await getUser())?.id;
+  } catch {}
+  return makeT(await getLocale(userId));
 }
 
 /**

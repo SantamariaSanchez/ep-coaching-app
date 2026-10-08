@@ -425,7 +425,7 @@ export default function NutritionBilanQuiz({
           </div>
         </div>
 
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-red-400">{t(error)}</p>}
 
         <div className="flex gap-2">
           <button

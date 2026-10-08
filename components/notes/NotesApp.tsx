@@ -198,7 +198,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
             <Send size={13} />{" "}{tr("Ranger")}
           </button>
         </div>
-        {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "8px 0 0" }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "8px 0 0" }}>{tr(error)}</p>}
       </div>
 
       {/* Recherche */}

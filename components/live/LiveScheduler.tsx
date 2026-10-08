@@ -359,7 +359,7 @@ export default function LiveScheduler({
 
       {error && (
         <div className="flex items-center gap-2 text-red-400 text-xs font-semibold mt-3">
-          <AlertCircle size={12} /> {error}
+          <AlertCircle size={12} /> {tr(error)}
         </div>
       )}
     </div>

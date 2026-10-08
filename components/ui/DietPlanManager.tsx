@@ -1339,7 +1339,7 @@ export function PlanBuilder({
 
       {/* Toujours visible quelle que soit la phase ouverte : enregistrer ne
           doit jamais dépendre de l'accordéon sur lequel on se trouve. */}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{tr(error)}</p>}
 
       <button
         onClick={handleSave}

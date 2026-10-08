@@ -214,7 +214,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
         >
           <Plus size={13} /> {isPending ? tr("Ajout en cours…") : tr("Ajouter ce créneau")}
         </button>
-        {error && <p className="text-red-400 text-xs font-semibold mt-2">{error}</p>}
+        {error && <p className="text-red-400 text-xs font-semibold mt-2">{tr(error)}</p>}
       </div>
 
       {/* Semaine type, groupée par jour */}

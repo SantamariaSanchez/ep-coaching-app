@@ -272,7 +272,7 @@ export default function CoachVideoRecorder({
           </div>
         )}
 
-        {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+        {error && <p className="text-xs text-red-400 text-center">{tr(error)}</p>}
       </div>
     </div>
   );

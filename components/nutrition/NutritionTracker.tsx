@@ -570,7 +570,7 @@ export default function NutritionTracker({
       )}
 
       {notice && <p className="text-xs text-emerald-300/90 text-center">{notice}</p>}
-      {error && <p className="text-xs text-red-300 text-center">{error}</p>}
+      {error && <p className="text-xs text-red-300 text-center">{tr(error)}</p>}
 
       {/* Repas */}
       {shownSlots.map((slot) => {

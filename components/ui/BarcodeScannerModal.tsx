@@ -113,7 +113,7 @@ export default function BarcodeScannerModal({
         ) : error ? (
           <div className="p-6 flex flex-col items-center gap-3 text-center">
             <AlertTriangle size={24} className="text-amber-400" />
-            <p className="text-sm text-[#F5EDED]/70">{error}</p>
+            <p className="text-sm text-[#F5EDED]/70">{tr(error)}</p>
           </div>
         ) : (
           <div className="relative aspect-square bg-black">

@@ -116,7 +116,7 @@ export default function LiveEditForm({
 
       {error && (
         <div className="flex items-center gap-2 text-red-400 text-xs font-semibold">
-          <AlertCircle size={12} /> {error}
+          <AlertCircle size={12} /> {t(error)}
         </div>
       )}
     </div>

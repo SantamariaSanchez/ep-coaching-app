@@ -182,7 +182,7 @@ export default function ClientPeriodTracking({
             <label className={labelClass}>{t("Notes")}</label>
             <textarea aria-label={t("Notes")} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputClass} resize-none`} />
           </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-red-400">{t(error)}</p>}
           <div className="flex gap-2">
             <button onClick={() => setShowForm(false)} className="flex-1 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 border border-[#890404]/25 rounded-lg py-2.5">
               {t("Annuler")}

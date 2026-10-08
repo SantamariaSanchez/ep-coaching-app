@@ -161,7 +161,7 @@ function RecoveryLogTool({
             rows={2}
             className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
           />
-          {error && <p className="text-[11px] text-red-400">{error}</p>}
+          {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
           <div className="flex gap-2">
             <button
               type="button"

@@ -1494,7 +1494,7 @@ export default function WeeklyAgenda({
               </span>
             </button>
 
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs text-red-400">{tr(error)}</p>}
 
             <div className="flex gap-2 pt-1">
               {editingBlockId && (

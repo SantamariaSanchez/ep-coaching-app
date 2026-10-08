@@ -95,7 +95,7 @@ export default function AppSetupWizard({ role, initialAnswers, doneHref }: { rol
         })}
       </div>
 
-      {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "12px 0 0" }}>{error}</p>}
+      {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "12px 0 0" }}>{t(error)}</p>}
 
       <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
         {index > 0 && (

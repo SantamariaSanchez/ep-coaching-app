@@ -41,7 +41,7 @@ export default function PostScriptLink({ postId, scriptId, source, scripts }: { 
         ))}
       </select>
       {source === "auto" && value === scriptId && scriptId && <span style={{ display: "block", fontSize: 10, color: "rgba(245,237,237,0.4)", marginTop: 2 }}>{t("relié automatiquement")}</span>}
-      {error && <span style={{ display: "block", fontSize: 10.5, color: "#fca5a5", marginTop: 2 }}>{error}</span>}
+      {error && <span style={{ display: "block", fontSize: 10.5, color: "#fca5a5", marginTop: 2 }}>{t(error)}</span>}
     </div>
   );
 }

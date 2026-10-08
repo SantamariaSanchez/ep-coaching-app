@@ -73,7 +73,7 @@ export default function ClaudeConnect({ tokens, defaultOpen = false }: { tokens:
                   <p style={{ fontSize: 11, color: "#facc15", margin: "8px 0 0" }}>{tr("Garde-la pour toi : elle ne sera plus affichée.")}</p>
                 </div>
               )}
-              {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "6px 0 0" }}>{error}</p>}
+              {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "6px 0 0" }}>{tr(error)}</p>}
             </>
           )}
           {step(2, "Ajoute-la dans Claude", "Sur claude.ai (ordinateur ou navigateur du téléphone) : Paramètres, Connecteurs, Ajouter un connecteur personnalisé. Nom : EP Coaching. Adresse : colle celle de l'étape 1. Il apparaît ensuite aussi dans l'appli Claude.")}

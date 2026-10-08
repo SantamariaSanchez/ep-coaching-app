@@ -239,7 +239,7 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
           className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         />
       )}
-      {error && <p className="text-[11px] text-red-400">{error}</p>}
+      {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
       <div className="flex gap-2">
         <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2">
           {t("Annuler")}

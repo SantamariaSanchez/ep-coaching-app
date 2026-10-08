@@ -219,7 +219,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
         />
       </label>
 
-      {error && <p className="text-[12px] text-red-400 mb-3">{error}</p>}
+      {error && <p className="text-[12px] text-red-400 mb-3">{tr(error)}</p>}
 
       {files.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
@@ -344,7 +344,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
         </button>
       </div>
 
-      {error && <p className="text-[12px] text-red-400 mb-3">{error}</p>}
+      {error && <p className="text-[12px] text-red-400 mb-3">{tr(error)}</p>}
 
       {notes.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">

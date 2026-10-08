@@ -58,7 +58,7 @@ export default function TrainingNutritionCard({ initialPantryAuto }: { initialPa
       >
         <Toggle on={pantryAuto} onChange={changePantry} label={t("Stock de courses automatique")} />
       </SettingRow>
-      {error && <p style={{ margin: 0, fontSize: 12, color: "#f87171" }}>{error}</p>}
+      {error && <p style={{ margin: 0, fontSize: 12, color: "#f87171" }}>{t(error)}</p>}
       <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.35)", lineHeight: 1.5 }}>
         {t("Le minuteur et les vibrations sont réglés pour cet appareil. Le stock suit ton compte.")}
       </p>

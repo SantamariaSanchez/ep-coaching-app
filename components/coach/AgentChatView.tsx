@@ -273,7 +273,7 @@ export default function AgentChatView({
           <div ref={bottomRef} />
         </div>
 
-        {error && <p className="text-[11px] text-red-400 mb-2">{error}</p>}
+        {error && <p className="text-[11px] text-red-400 mb-2">{tr(error)}</p>}
 
         <div className="flex items-end gap-2">
           <textarea

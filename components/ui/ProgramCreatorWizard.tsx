@@ -303,7 +303,7 @@ export default function ProgramCreatorWizard({
                     </button>
                   </div>
                   {saveStatus === "error" && (
-                    <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {saveError}</p>
+                    <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {t(saveError)}</p>
                   )}
                   {saveStatus === "saved" && (
                     <p className="text-[11px] text-[#F5EDED]/35 mt-2">

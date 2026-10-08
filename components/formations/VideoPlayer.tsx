@@ -133,7 +133,7 @@ export default function VideoPlayer({
 
         {error && (
           <p role="alert" style={{ fontSize: 11, color: "#f87171", margin: "10px 0 0", textAlign: "right", lineHeight: 1.4 }}>
-            {error}
+            {t(error)}
           </p>
         )}
 

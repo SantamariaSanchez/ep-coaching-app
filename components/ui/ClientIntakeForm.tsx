@@ -462,7 +462,7 @@ export default function ClientIntakeForm({
       <div className="sticky bottom-0 mt-8 pt-4 pb-1 bg-gradient-to-t from-[#0a0000] via-[#0a0000]/95 to-transparent">
         {error && (
           <div className="bg-red-950/80 border border-red-500/40 rounded-xl px-4 py-3 mb-3">
-            <p className="text-xs text-red-300 font-semibold leading-relaxed">⚠ {error}</p>
+            <p className="text-xs text-red-300 font-semibold leading-relaxed">⚠ {t(error)}</p>
           </div>
         )}
         <button

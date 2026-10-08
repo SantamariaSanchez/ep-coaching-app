@@ -136,7 +136,7 @@ export default function MasterclassGuideView({
         </div>
       </div>
 
-      {error && <p className="text-[12px] text-red-400 mb-3">{error}</p>}
+      {error && <p className="text-[12px] text-red-400 mb-3">{t(error)}</p>}
 
       <div className="space-y-2.5">
         {guide.steps.map((step, index) => {

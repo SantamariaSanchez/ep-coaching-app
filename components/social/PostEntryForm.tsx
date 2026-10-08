@@ -158,7 +158,7 @@ export default function PostEntryForm({
         <button type="button" onClick={remove} disabled={pending} aria-label={tr("Supprimer")} style={{ display: "inline-flex", alignItems: "center", background: "none", border: "none", padding: 0, color: "rgba(245,237,237,0.4)", cursor: "pointer" }}>
           <Trash2 size={12} />
         </button>
-        {error && <span style={{ fontSize: 10.5, color: "#fca5a5" }}>{error}</span>}
+        {error && <span style={{ fontSize: 10.5, color: "#fca5a5" }}>{tr(error)}</span>}
       </span>
     ) : (
       <button type="button" onClick={() => setOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px dashed rgba(224,30,30,0.55)", background: "rgba(224,30,30,0.06)", color: "#F5EDED", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer" }}>
@@ -233,7 +233,7 @@ export default function PostEntryForm({
         ))}
       </div>
 
-      {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "10px 0 0" }}>{error}</p>}
+      {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "10px 0 0" }}>{tr(error)}</p>}
       <button type="button" disabled={pending} onClick={save} style={{ marginTop: 14, width: "100%", padding: "12px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}>
         {pending ? "..." : post ? tr("Enregistrer les chiffres") : tr("Ajouter")}
       </button>

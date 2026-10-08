@@ -58,7 +58,7 @@ function PostEditor({
         placeholder={t("Ta réflexion, ton conseil, ton retour d'expérience…")} aria-label={t("Ta réflexion, ton conseil, ton retour d'expérience…")}
         className={`${inputCls} resize-none`}
       />
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{t(error)}</p>}
       <div className="flex gap-2">
         <button
           onClick={handleSave}

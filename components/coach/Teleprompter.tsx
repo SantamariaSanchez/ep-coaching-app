@@ -900,7 +900,7 @@ export default function Teleprompter({
           <p className="text-[11px] text-amber-300 text-center mb-2">{recordError}</p>
         )}
         {saveError && (
-          <p className="text-[11px] text-amber-300 text-center mb-2">{saveError}</p>
+          <p className="text-[11px] text-amber-300 text-center mb-2">{tr(saveError)}</p>
         )}
         {orientationNote && (
           <p className="text-[11px] text-amber-300 text-center mb-2">{orientationNote}</p>

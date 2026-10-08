@@ -194,7 +194,7 @@ export default function CoachSignupFlow() {
           background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)", borderRadius: 10,
         }}>
           <span style={{ color: "#E01E1E", flexShrink: 0 }}>⚠</span>
-          <p style={{ fontSize: 13, color: "#FDC4C4", margin: 0, fontWeight: 500 }}>{error}</p>
+          <p style={{ fontSize: 13, color: "#FDC4C4", margin: 0, fontWeight: 500 }}>{t(error)}</p>
         </div>
       )}
 

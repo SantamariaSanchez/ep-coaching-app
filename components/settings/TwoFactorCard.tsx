@@ -64,7 +64,7 @@ export default function TwoFactorCard({
         )}
       </div>
 
-      {error && <p className="text-xs text-red-400 mt-3">{error}</p>}
+      {error && <p className="text-xs text-red-400 mt-3">{t(error)}</p>}
 
       {!enabled && (
         <div className="mt-4">

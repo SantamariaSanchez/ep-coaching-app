@@ -898,7 +898,7 @@ export default function RoadmapEditor({
             }}
           >
             <AlertCircle size={13} style={{ color: "#E01E1E", flexShrink: 0 }} />
-            <p style={{ margin: 0, fontSize: 12.5, color: "#FDC4C4" }}>{saveError}</p>
+            <p style={{ margin: 0, fontSize: 12.5, color: "#FDC4C4" }}>{tr(saveError)}</p>
           </div>
         )}
         <button onClick={handleSave} disabled={saving} className="ep-btn-primary" style={{ fontSize: 14, padding: "14px 32px" }}>

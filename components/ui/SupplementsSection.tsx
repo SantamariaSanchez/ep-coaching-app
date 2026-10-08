@@ -136,7 +136,7 @@ export default function SupplementsSection({
             rows={2}
             className={inputCls + " resize-none"}
           />
-          {error && <p className="text-[11px] text-red-400 font-semibold">⚠ {error}</p>}
+          {error && <p className="text-[11px] text-red-400 font-semibold">⚠ {tr(error)}</p>}
           <div className="flex justify-end">
             <button
               onClick={handleAdd}

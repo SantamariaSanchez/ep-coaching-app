@@ -122,7 +122,7 @@ export default function TeamChat({
       </div>
       {active && (
         <div style={{ padding: 10, borderTop: "1px solid rgba(245,237,237,0.06)" }}>
-          {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "0 0 6px" }}>{error}</p>}
+          {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "0 0 6px" }}>{tr(error)}</p>}
           <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
             <textarea
               value={text}

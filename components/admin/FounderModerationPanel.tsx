@@ -129,7 +129,7 @@ export default function FounderModerationPanel({
           {t("Session invalidée,")}{" "}{targetName}{" "}{t("devra se reconnecter.")}
         </p>
       )}
-      {error && <p className="text-red-400 text-[11px] font-semibold mt-3">{error}</p>}
+      {error && <p className="text-red-400 text-[11px] font-semibold mt-3">{t(error)}</p>}
     </div>
   );
 }

@@ -99,7 +99,7 @@ export default function PerformanceHub({
           <Plus size={16} />{" "}{t("Nouvelle saisie")}
         </button>
       )}
-      {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-xs text-red-400">{t(error)}</p>}
 
       {records.length > 0 && (
         <section className="rounded-xl bg-[#1f0101] border border-[#890404]/25 p-3">
@@ -202,7 +202,7 @@ function PracticePicker({ current, onSave, pending, error }: { current: string[]
           );
         })}
       </div>
-      {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-xs text-red-400">{t(error)}</p>}
       <button
         disabled={pending || sel.length === 0}
         onClick={() => onSave([...new Set([...current.filter((c) => !practices.has(c)), ...sel])])}
@@ -246,7 +246,7 @@ function EntrySheet({ kinds, title, onClose, onSubmit, pending, error }: { kinds
           {kind.fields.map((f) => (
             <FieldInput key={f.key} field={f} value={values[f.key] ?? ""} onChange={(v) => set(f.key, v)} />
           ))}
-          {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
+          {error && <p role="alert" className="text-xs text-red-400">{t(error)}</p>}
           <button disabled={pending} onClick={() => onSubmit(kind.key, date, values)} className="w-full min-h-[46px] rounded-xl bg-[#E01E1E] disabled:opacity-50 text-white text-sm font-bold">
             {pending ? t("Enregistrement...") : t("Enregistrer")}
           </button>

@@ -203,7 +203,7 @@ function RoleRow({
               <UserPlus size={12} />{" "}{t("Autoriser")}
             </button>
           </form>
-          {error && <p className="text-[11px] text-red-400">{error}</p>}
+          {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
         </div>
       )}
     </div>

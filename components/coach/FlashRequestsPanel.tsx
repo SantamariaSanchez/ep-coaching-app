@@ -101,7 +101,7 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
                     {t("Annuler")}
                   </button>
                 </div>
-                {error && <p className="text-red-400 text-[11px]">{error}</p>}
+                {error && <p className="text-red-400 text-[11px]">{t(error)}</p>}
               </div>
             ) : (
               <div className="flex gap-3 mt-2">

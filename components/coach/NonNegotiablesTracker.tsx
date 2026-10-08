@@ -225,7 +225,7 @@ export default function NonNegotiablesTracker({
           </div>
         </div>
 
-        {error && <p className="text-xs mt-3" style={{ color: "#f87171" }}>{error}</p>}
+        {error && <p className="text-xs mt-3" style={{ color: "#f87171" }}>{t(error)}</p>}
         {saved && !error && !isPending && (
           <p className="text-xs mt-3 flex items-center gap-1" style={{ color: "#4ade80" }}>
             <Check size={12} />{" "}{t("Enregistré")}

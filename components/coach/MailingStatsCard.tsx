@@ -127,7 +127,7 @@ export default function MailingStatsCard({
           )}
         </div>
       )}
-      {error && <p className="mt-1 text-[10.5px] text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-[10.5px] text-red-400">{t(error)}</p>}
     </div>
   );
 }

@@ -266,7 +266,7 @@ function CaptureForm({
           style={{ paddingLeft: 38 }}
         />
       </div>
-      {error && <p style={{ fontSize: 11.5, color: "#FDC4C4", margin: 0 }}>{error}</p>}
+      {error && <p style={{ fontSize: 11.5, color: "#FDC4C4", margin: 0 }}>{t(error)}</p>}
       <button
         type="submit"
         disabled={submitting}

@@ -65,7 +65,7 @@ export default function EmailVerificationBanner({ email }: { email: string | nul
       </button>
 
       {error && (
-        <span className="text-[10px] text-red-400 flex-shrink-0">{error}</span>
+        <span className="text-[10px] text-red-400 flex-shrink-0">{t(error)}</span>
       )}
     </div>
   );

@@ -237,7 +237,7 @@ export default function MeasurementsSection({
           </div>
           {error && (
             <p className="flex items-center gap-1.5 text-[11px] text-red-400">
-              <AlertTriangle size={12} className="flex-shrink-0" /> {error}
+              <AlertTriangle size={12} className="flex-shrink-0" /> {t(error)}
             </p>
           )}
           <div className="flex gap-2">

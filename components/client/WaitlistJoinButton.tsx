@@ -68,7 +68,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
         <Clock3 size={16} />
         {isPending ? "..." : t("Rejoindre la liste d'attente")}
       </button>
-      {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
+      {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{t(error)}</p>}
     </div>
   );
 }

@@ -161,7 +161,7 @@ function RecordForm({
         <FieldInput key={f.key} idPrefix={idPrefix} def={f} value={values[f.key] ?? ""} onChange={(v) => setValues((prev) => ({ ...prev, [f.key]: v }))} />
       ))}
       {error && (
-        <p role="alert" style={{ gridColumn: "1 / -1", fontSize: 12.5, color: "#FDC4C4", margin: 0 }}>{error}</p>
+        <p role="alert" style={{ gridColumn: "1 / -1", fontSize: 12.5, color: "#FDC4C4", margin: 0 }}>{t(error)}</p>
       )}
       <div style={{ gridColumn: "1 / -1", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <button type="submit" disabled={pending} className="ep-btn-primary" style={{ height: 42, padding: "0 20px", fontSize: 12 }}>
@@ -273,7 +273,7 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
           ))}
         </select>
       </div>
-      {error && !open && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "8px 0 0" }}>{error}</p>}
+      {error && !open && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "8px 0 0" }}>{t(error)}</p>}
       {open && (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(245,237,237,0.06)" }}>
           <RecordForm

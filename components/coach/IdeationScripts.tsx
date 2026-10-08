@@ -719,7 +719,7 @@ function MyScripts({
               ))}
             </select>
           </div>
-          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
+          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{tr(error)}</p>}
           <button
             type="button"
             onClick={submitNew}

@@ -520,7 +520,7 @@ function SubmissionForm({
         />
       </div>
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400">{tr(error)}</p>}
 
       <button
         type="submit"

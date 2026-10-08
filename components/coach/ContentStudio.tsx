@@ -220,7 +220,7 @@ export default function ContentStudio({
             rows={3}
             style={{ ...inputStyle, marginTop: 10, resize: "vertical", fontFamily: "inherit" }}
           />
-          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
+          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{tr(error)}</p>}
           <button
             type="button"
             onClick={submitNew}

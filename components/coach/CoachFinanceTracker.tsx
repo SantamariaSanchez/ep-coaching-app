@@ -199,7 +199,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
             />
           </div>
 
-          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
+          {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{t(error)}</p>}
 
           <button
             type="button"

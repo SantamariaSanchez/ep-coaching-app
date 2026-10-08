@@ -152,7 +152,7 @@ export default function BulkCalorieAdjustModal({
             {error && (
               <div className="mx-5 mb-2 flex items-center gap-2 bg-red-950/40 border border-red-500/30 rounded-lg px-3 py-2 flex-shrink-0">
                 <AlertCircle size={12} className="text-red-400 flex-shrink-0" />
-                <p className="text-xs text-red-400">{error}</p>
+                <p className="text-xs text-red-400">{t(error)}</p>
               </div>
             )}
 

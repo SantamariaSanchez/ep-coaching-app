@@ -164,7 +164,7 @@ export default function SlotPicker({
 
       {error && (
         <p role="alert" style={{ display: "flex", alignItems: "center", gap: 6, color: "#ff6b6b", fontSize: 12, margin: 0 }}>
-          <AlertCircle size={13} style={{ flexShrink: 0 }} /> {error}
+          <AlertCircle size={13} style={{ flexShrink: 0 }} /> {t(error)}
         </p>
       )}
 

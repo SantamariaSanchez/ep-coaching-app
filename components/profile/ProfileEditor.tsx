@@ -168,7 +168,7 @@ export default function ProfileEditor({
       )}
       {status === "error" && (
         <div className="animate-slide-up flex items-center gap-2 text-red-400 text-xs font-semibold mt-3">
-          <AlertCircle size={12} /> {errorMsg}
+          <AlertCircle size={12} /> {t(errorMsg)}
         </div>
       )}
     </div>

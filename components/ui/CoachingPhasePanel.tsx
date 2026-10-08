@@ -98,7 +98,7 @@ export default function CoachingPhasePanel({
             {isPending ? "..." : t("Démarrer le calibrage")}
           </button>
         </div>
-        {error && <p className="text-[11px] text-red-400 mt-2">{error}</p>}
+        {error && <p className="text-[11px] text-red-400 mt-2">{t(error)}</p>}
       </div>
     );
   }
@@ -194,7 +194,7 @@ export default function CoachingPhasePanel({
         ) : (
           <p className="text-[10.5px] text-[#F5EDED]/30 text-center">{t("Phase la plus avancée du parcours.")}</p>
         )}
-        {error && <p className="text-[11px] text-red-400 mt-2">{error}</p>}
+        {error && <p className="text-[11px] text-red-400 mt-2">{t(error)}</p>}
       </div>
 
       {/* Historique des transitions */}

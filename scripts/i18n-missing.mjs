@@ -67,5 +67,15 @@ for (const f of DATA_FILES) {
     }
   }
 }
+// Messages d'erreur renvoyés par les actions serveur ({ error: "..." }),
+// affichés côté écran avec t(error).
+for (const f of files) {
+  const src = readFileSync(f, "utf8");
+  if (!/^\s*["']use server["']/.test(src)) continue;
+  for (const m of src.matchAll(new RegExp(String.raw`error: ` + STR, "g"))) {
+    const k = JSON.parse(`"${m[1]}"`);
+    if (k && /[A-Za-zÀ-ÿ]{2,}/.test(k) && !keys.has(k)) missing.set(k, f);
+  }
+}
 for (const [k, f] of missing) console.log(`${JSON.stringify(k)}  <- ${f}`);
 console.log(`\n${missing.size} texte(s) sans traduction.`);

@@ -152,7 +152,7 @@ export default function TwoFactorSetup({
   if (!enrollment) {
     return (
       <div>
-        {error && <p className="text-xs text-red-400 mb-3">{error}</p>}
+        {error && <p className="text-xs text-red-400 mb-3">{t(error)}</p>}
         <button
           onClick={start}
           disabled={busy}
@@ -208,7 +208,7 @@ export default function TwoFactorSetup({
         className="w-full bg-black/40 border border-[#890404]/35 rounded-lg px-4 py-3 text-center text-lg tracking-[0.4em] text-[#F5EDED] outline-none focus:border-[#E01E1E]/60 mb-3"
       />
 
-      {error && <p className="text-xs text-red-400 mb-3">{error}</p>}
+      {error && <p className="text-xs text-red-400 mb-3">{t(error)}</p>}
 
       <button
         onClick={confirm}

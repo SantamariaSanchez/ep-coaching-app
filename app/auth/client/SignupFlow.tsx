@@ -223,7 +223,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)",
               borderRadius: 8, fontSize: 13, color: "#FDC4C4",
             }}>
-              ⚠ {error}
+              ⚠ {t(error)}
             </div>
           )}
 
