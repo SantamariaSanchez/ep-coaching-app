@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { localParts, minutesBetween, safeTimeZone } from "@/lib/schedule-time";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
@@ -55,12 +56,24 @@ export async function GET(req: Request) {
     .select("*")
     .eq("is_active", true);
 
-  const due = (reminders as ReminderRow[] | null)?.filter((r) => {
-    if (!r.days.includes(todayAbbr)) return false;
-    if (r.time > nowTime) return false; // not due yet today
-    if (r.last_sent_at && parisDateStr(new Date(r.last_sent_at)) === today) return false; // already sent today
+  // Chaque rappel à l'heure locale de son propriétaire (2026-10-08), et
+  // jamais en retard : au delà de 15 minutes après l'heure, il est sauté.
+  const list = (reminders as ReminderRow[] | null) ?? [];
+  const ownerIds = [...new Set(list.map((r) => r.client_id))];
+  const { data: settings } = ownerIds.length ? await supabase.from("user_settings").select("user_id, timezone").in("user_id", ownerIds) : { data: [] };
+  const tzOf = new Map(((settings ?? []) as { user_id: string; timezone: string | null }[]).map((r) => [r.user_id, safeTimeZone(r.timezone)]));
+  const ABBR = ["", "lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
+  const due = list.filter((r) => {
+    const tz = tzOf.get(r.client_id) ?? "Europe/Paris";
+    const local = localParts(now, tz);
+    const abbr = ABBR[local.isoDow];
+    if (!r.days.some((d) => d.toLowerCase().replace(".", "").startsWith(abbr))) return false;
+    const late = minutesBetween(r.time, local.time);
+    if (late < 0 || late > 15) return false;
+    if (r.last_sent_at && localParts(new Date(r.last_sent_at), tz).date === local.date) return false; // déjà envoyé aujourd'hui
     return true;
-  }) ?? [];
+  });
+  void today; void todayAbbr; void nowTime;
 
   let sent = 0;
   for (const reminder of due) {

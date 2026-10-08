@@ -8,6 +8,7 @@ import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import NativeBridge from "@/components/native/NativeBridge";
 import WelcomeTour from "@/components/help/WelcomeTour";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
+import TimezoneSync from "@/components/ui/TimezoneSync";
 import AlarmPlayer from "@/components/ui/AlarmPlayer";
 import PermissionsPrimer from "@/components/ui/PermissionsPrimer";
 import FreeTierGate from "@/components/ui/FreeTierGate";
@@ -161,6 +162,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <I18nProvider locale={locale}>
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
+      <TimezoneSync />
       {user && <LocaleSync locale={locale} />}
       <NativeBridge />
       <WelcomeTour />

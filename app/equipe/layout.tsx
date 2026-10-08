@@ -8,6 +8,7 @@ import StaffShell from "@/components/staff/StaffShell";
 import NativeBridge from "@/components/native/NativeBridge";
 import WelcomeTour from "@/components/help/WelcomeTour";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
+import TimezoneSync from "@/components/ui/TimezoneSync";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { getLocale } from "@/lib/i18n-server";
 import { LocaleSync } from "@/components/i18n/LocaleSync";
@@ -40,6 +41,7 @@ export default async function EquipeLayout({ children }: { children: React.React
       unlocked={unlocked}
     >
       <ServiceWorkerRegister />
+      <TimezoneSync />
       <LocaleSync locale={locale} />
       <NativeBridge />
       {unlocked && <WelcomeTour />}

@@ -3,7 +3,7 @@ import { isBlockOnDate } from "@/lib/agenda-day";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
-import { parisDateStr, parisTimeStr, parisIsoWeekday } from "@/lib/schedule-time";
+import { parisDateStr, localParts, minutesBetween, safeTimeZone } from "@/lib/schedule-time";
 
 // Notifie chaque propriétaire de bloc d'agenda (schedule_blocks) quand
 // l'heure du jour atteint le début d'un bloc marqué notify=true — même
@@ -41,11 +41,12 @@ interface ScheduleBlockRow {
 // après l'heure du bloc pour ne pas sonner indéfiniment si oublié.
 const ALARM_ESCALATION_WINDOW_MIN = 30;
 
-function minutesSince(startTime: string, nowTime: string): number {
-  const [sh, sm] = startTime.split(":").map(Number);
-  const [nh, nm] = nowTime.split(":").map(Number);
-  return (nh * 60 + nm) - (sh * 60 + sm);
-}
+// Fenêtre d'envoi d'un rappel normal (2026-10-08, retour direct : « quand il
+// y a des notifs, c'est pas les bonnes heures ») : avant, un bloc dont l'heure
+// était passée partait au passage suivant du cron, même des heures après
+// (bloc modifié, cron en retard), avec « commence maintenant ». Un rappel
+// n'a de sens qu'au moment du bloc : au delà de 10 minutes, il est sauté.
+const SEND_WINDOW_MIN = 10;
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
@@ -54,9 +55,10 @@ export async function GET(req: Request) {
   }
 
   const now = new Date();
-  const today = parisDateStr(now);
-  const todayDow = parisIsoWeekday(now);
-  const nowTime = parisTimeStr(now) + ":00"; // aligne sur le format start_time ("HH:MM:SS")
+  // Référence Paris seulement pour le nettoyage des blocs ponctuels passés
+  // (avec un jour de marge pour les fuseaux en retard sur Paris).
+  const parisToday = parisDateStr(now);
+  const yesterday = parisDateStr(new Date(now.getTime() - 86400000));
 
   const supabase = createAdminClient();
 
@@ -70,27 +72,38 @@ export async function GET(req: Request) {
   // semaine derniere" — l'affichage (WeeklyAgenda.tsx) filtre maintenant
   // aussi ces blocs, mais autant les supprimer réellement plutôt que de
   // laisser la table grossir pour rien.
-  await supabase.from("schedule_blocks").delete().not("specific_date", "is", null).lt("specific_date", today);
+  await supabase.from("schedule_blocks").delete().not("specific_date", "is", null).lt("specific_date", yesterday);
+  void parisToday;
 
+  // Tous les blocs à notifier, évalués chacun à l'heure locale de son
+  // propriétaire (user_settings.timezone, Paris par défaut).
   const { data: blocks } = await supabase
     .from("schedule_blocks")
     .select("id, owner_id, day_of_week, start_time, label, notify, last_notified_at, alarm_ack_date, specific_date, skipped_dates")
-    .eq("notify", true)
-    .eq("day_of_week", todayDow);
+    .eq("notify", true);
+  const rows = (blocks as ScheduleBlockRow[] | null) ?? [];
+  const owners = [...new Set(rows.map((b) => b.owner_id))];
+  const { data: settings } = owners.length
+    ? await supabase.from("user_settings").select("user_id, timezone").in("user_id", owners)
+    : { data: [] };
+  const tzOf = new Map(((settings ?? []) as { user_id: string; timezone: string | null }[]).map((r) => [r.user_id, safeTimeZone(r.timezone)]));
+  const localByOwner = new Map(owners.map((id) => [id, localParts(now, tzOf.get(id) ?? "Europe/Paris")]));
 
-  const due = (blocks as ScheduleBlockRow[] | null)?.filter((b) => {
-    if (!isBlockOnDate(b, today, todayDow)) return false; // bloc ponctuel d'un autre jour, ou remplacé aujourd'hui
-    if (b.start_time > nowTime) return false; // pas encore l'heure
+  const due = rows.filter((b) => {
+    const local = localByOwner.get(b.owner_id)!;
+    if (!isBlockOnDate(b, local.date, local.isoDow)) return false; // autre jour, ponctuel d'une autre date, ou sauté
+    const late = minutesBetween(b.start_time, local.time);
+    if (late < 0) return false; // pas encore l'heure
     const isAlarm = /r[ée]veil/i.test(b.label);
     if (isAlarm) {
       // Escalade : renvoyer tant que non acquitté, dans la fenêtre de 30 min.
-      if (b.alarm_ack_date === today) return false; // déjà arrêté par l'utilisateur
-      if (minutesSince(b.start_time, nowTime) > ALARM_ESCALATION_WINDOW_MIN) return false; // abandon, trop tard
-      return true;
+      if (b.alarm_ack_date === local.date) return false; // déjà arrêté par l'utilisateur
+      return late <= ALARM_ESCALATION_WINDOW_MIN;
     }
-    if (b.last_notified_at && parisDateStr(new Date(b.last_notified_at)) === today) return false; // déjà envoyé aujourd'hui
+    if (late > SEND_WINDOW_MIN) return false; // trop tard : un rappel en retard n'a plus de sens
+    if (b.last_notified_at && localParts(new Date(b.last_notified_at), tzOf.get(b.owner_id) ?? "Europe/Paris").date === local.date) return false; // déjà envoyé aujourd'hui
     return true;
-  }) ?? [];
+  });
 
   let sent = 0;
   for (const block of due) {
@@ -107,7 +120,7 @@ export async function GET(req: Request) {
     // pas juste afficher une notif silencieuse qu'on peut rater en dormant.
     const isAlarm = /r[ée]veil/i.test(block.label);
     const title = `🕐 ${block.label}`;
-    const body = `C'est l'heure, ${block.label} commence maintenant.`;
+    const body = `${block.start_time.slice(0, 5)} : ${block.label} commence maintenant.`;
     const result = await sendPushToUser(
       block.owner_id,
       title,
@@ -137,8 +150,9 @@ export async function GET(req: Request) {
     // de la journee). Les reveils gardent leur propre re-essai du push
     // (isAlarm, base sur alarm_ack_date, jamais sur last_notified_at) mais
     // n'ecrivent, eux aussi, qu'une seule ligne en cloche par jour.
+    const ownerTz = tzOf.get(block.owner_id) ?? "Europe/Paris";
     const alreadyNotifiedToday =
-      !!block.last_notified_at && parisDateStr(new Date(block.last_notified_at)) === today;
+      !!block.last_notified_at && localParts(new Date(block.last_notified_at), ownerTz).date === localByOwner.get(block.owner_id)!.date;
     if (!alreadyNotifiedToday) {
       await insertNotification({ userId: block.owner_id, type: "schedule_block", title, body, url });
     }

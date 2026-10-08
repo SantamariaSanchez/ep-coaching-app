@@ -40,3 +40,37 @@ export function isBlockTimeAlreadyPastToday(dayOfWeek: number, startTime: string
   const nowTime = parisTimeStr(now) + ":00";
   return startTime <= nowTime;
 }
+
+// ── Fuseau horaire de chaque personne (2026-10-08) ──────────────────────
+// Les rappels partaient à l'heure de Paris pour tout le monde : quelqu'un à
+// Montréal ou à Dubaï recevait son « repas de 12h » au mauvais moment. Le
+// fuseau est détecté sur le téléphone (user_settings.timezone) ; Paris reste
+// la valeur par défaut tant qu'il n'est pas connu.
+export const DEFAULT_TZ = "Europe/Paris";
+
+export function safeTimeZone(tz: string | null | undefined): string {
+  if (!tz) return DEFAULT_TZ;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return tz;
+  } catch {
+    return DEFAULT_TZ;
+  }
+}
+
+/** Date (AAAA-MM-JJ), heure (HH:MM) et jour ISO (1 = lundi) dans le fuseau donné. */
+export function localParts(date: Date, tz: string): { date: string; time: string; isoDow: number } {
+  const zone = safeTimeZone(tz);
+  const d = new Intl.DateTimeFormat("en-CA", { timeZone: zone }).format(date);
+  const time = new Intl.DateTimeFormat("fr-FR", { timeZone: zone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(date);
+  const w = new Intl.DateTimeFormat("en-US", { timeZone: zone, weekday: "short" }).format(date);
+  const map: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+  return { date: d, time, isoDow: map[w] ?? 1 };
+}
+
+/** Minutes écoulées depuis une heure « HH:MM(:SS) » à partir de « HH:MM ». */
+export function minutesBetween(start: string, now: string): number {
+  const [sh, sm] = start.split(":").map(Number);
+  const [nh, nm] = now.split(":").map(Number);
+  return nh * 60 + nm - (sh * 60 + sm);
+}

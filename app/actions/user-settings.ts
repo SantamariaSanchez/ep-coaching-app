@@ -70,3 +70,18 @@ export async function rememberUiLocaleAction(locale: string): Promise<void> {
   const { error } = await upsert(user.id, { ui_locale: locale });
   if (error) console.error("rememberUiLocaleAction error:", error);
 }
+
+/** Fuseau horaire de l'appareil (envoyé tout seul au lancement de l'appli). */
+export async function setTimezoneAction(tz: string): Promise<{ error?: string }> {
+  const user = await getUser();
+  if (!user) return { error: "Non authentifié." };
+  if (typeof tz !== "string" || tz.length > 64) return { error: "Fuseau invalide." };
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+  } catch {
+    return { error: "Fuseau invalide." };
+  }
+  const { error } = await upsert(user.id, { timezone: tz });
+  if (error) console.error("setTimezoneAction error:", error);
+  return {};
+}
