@@ -1,53 +1,47 @@
-import { getT } from "@/lib/i18n-server";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { getT, getLocale } from "@/lib/i18n-server";
+import { intlLocale } from "@/lib/i18n";
 import { isBlockOnDate } from "@/lib/agenda-day";
-import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
-import { getPointsMap } from "@/lib/gamification";
-import { isEligibleForLegendReward } from "@/lib/gamification-types";
-import { getCoachingPhaseOverview } from "@/lib/coaching-phase";
-import { getClientsLastActivity, getClientsWeeklyConsistency } from "@/lib/client-activity";
-import { getClientsIntakeCompletion } from "@/utils/client-intake";
-import { relaunchMember } from "@/app/dashboard/coach/communaute/membres/actions";
-import { getTodayLog } from "@/utils/daily-logs";
-import { getNutritionProfile, getTodayLogs } from "@/utils/nutrition";
+import { getUser, getProfile, getAllMessageableMembers } from "@/utils/auth";
 import { getScheduleBlocks } from "@/utils/agenda";
-import { getAllLiveEventsForCoach } from "@/utils/live-events";
-import { getActiveProgram } from "@/utils/programs";
-import { accessoriesForSession } from "@/lib/session-accessories";
-import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
-import { getStepSettings, getTodayStepsActual } from "@/utils/steps";
+import { getPendingReplies } from "@/utils/checkins";
+import { getTopUrgentAlerts } from "@/lib/coach-analytics";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { todayInParis, nowInParis } from "@/lib/dates";
-import { getTipOfTheDay } from "@/lib/coach-daily-tips";
-import ClientsSection from "@/components/ui/ClientsSection";
-import DashboardStats from "@/components/coach/DashboardStats";
-import UrgentAlertsSection from "@/components/coach/UrgentAlertsSection";
-import MyDayCard, { timeAwareGreeting } from "@/components/coach/MyDayCard";
-import CoachShortcuts from "@/components/coach/CoachShortcuts";
-import IntentLauncher from "@/components/home/IntentLauncher";
-import { loadLauncher } from "@/lib/launcher-server";
-import { getAppSetup } from "@/lib/app-setup-server";
+import { todayInParis, nowInParis, timeAwareGreeting } from "@/lib/dates";
 import { messagePreview } from "@/components/messaging/message-format";
-import { getAllMessageableMembers } from "@/utils/auth";
+import IntentLauncher from "@/components/home/IntentLauncher";
+import NowCard from "@/components/home/NowCard";
+import InboxList, { type InboxItem } from "@/components/home/InboxList";
+import { loadLauncher } from "@/lib/launcher-server";
 
+// Accueil coach, version courte (2026-10-08, retour direct : « l'onglet est
+// devenu un peu long, mets vraiment les choses utiles et pas juste des cards
+// qui prennent tout l'espace, applique les principes d'ergonomie d'une vraie
+// application »). Trois blocs seulement, du plus urgent au plus fréquent :
+//   1. Maintenant / ensuite (une ligne, agenda)
+//   2. Je veux (6 tuiles personnalisées, avec la réponse dessous)
+//   3. À traiter (alertes clients, messages non lus, bilans sans réponse)
+// Retirés : astuce du jour, cinq mini-cartes (nutrition, sommeil, live, pas :
+// déjà dans les tuiles), raccourcis en doublon des tuiles, quatre grosses
+// tuiles de stats et la grille complète des clients (onglet Clients). Moins
+// de requêtes aussi : la page s'affiche avant que « À traiter » soit prêt.
 export default async function CoachDashboard() {
-  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
   const launcherP = loadLauncher(user.id, "coach");
-  const [profile, clients] = await Promise.all([
+  const [t, locale, profile, blocks] = await Promise.all([
+    getT(),
+    getLocale(user.id),
     getProfile(user.id),
-    getClients(user.id),
+    getScheduleBlocks(user.id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
 
-  // Onboarding coach (Axe 9, VISION.md — gap confirmé 2026-08-19 : seul
-  // le membre/client avait un vrai parcours d'accueil). Seulement pour un
-  // coach tiers dont l'abonnement plateforme est déjà actif (paiement
-  // Stripe confirmé, voir app/api/webhooks/stripe/route.ts) — jamais le
-  // fondateur (déjà "onboardé" par définition), jamais avant paiement.
+  // Onboarding coach : seulement un coach tiers déjà abonné, jamais le
+  // fondateur, jamais avant paiement.
   if (
     profile?.role === "coach" &&
     !profile.is_platform_owner &&
@@ -57,201 +51,118 @@ export default async function CoachDashboard() {
     redirect("/onboarding/coach");
   }
 
-  // Retour direct 2026-09-09 : "onglet par onglet, masterclass" — la grille
-  // de clients ici réutilisait déjà ClientsSection mais sans lui passer les
-  // données d'enrichissement (alertes, phase de coaching, silence, fiche
-  // incomplète, constance hebdo, relance) que /dashboard/coach/clients lui
-  // passe pourtant — les cartes du tableau de bord affichaient donc les
-  // clients "à nu", sans aucun des signaux de triage visibles sur la vraie
-  // page Clients. Même chargement, dupliqué ici pour que les deux vues
-  // restent cohérentes.
-  const clientIds = clients.map((c) => c.id);
-  const [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency] = await Promise.all([
-    getPointsMap(clientIds),
-    getCoachingPhaseOverview(clientIds),
-    getClientsLastActivity(clientIds),
-    getClientsIntakeCompletion(clientIds),
-    getClientsWeeklyConsistency(clientIds),
-  ]);
-  const ouraEligibleIds = clients
-    .filter((c) => isEligibleForLegendReward(pointsMap[c.id] ?? 0, isSubscribed(c)))
-    .map((c) => c.id);
-
   const firstName = profile?.full_name?.split(" ")[0] ?? "Coach";
-  const today = new Date();
-  const formattedDate = (() => {
-    const s = new Intl.DateTimeFormat("fr-FR", {
-      weekday: "long", day: "numeric", month: "long",
-    }).format(today);
+  const dateLabel = (() => {
+    const s = new Intl.DateTimeFormat(intlLocale(locale), { weekday: "long", day: "numeric", month: "long" }).format(new Date());
     return s.charAt(0).toUpperCase() + s.slice(1);
   })();
 
-  // Section "Ma journée" (retour direct 2026-09-09, "au moins 20 idées") :
-  // rien de personnel n'apparaissait jusqu'ici sur le tableau de bord, alors
-  // que le coach s'entraîne et se suit lui-même au quotidien (voir Moi >
-  // Nutrition, Sommeil, Agenda). Même sources de données déjà utilisées par
-  // ces pages, agrégées ici pour un coup d'oeil sans naviguer.
   const todayStr = todayInParis();
   const { isoDow, hhmm } = nowInParis();
+  const today = blocks.filter((b) => isBlockOnDate(b, todayStr, isoDow)).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const current = today.find((b) => b.start_time <= hhmm && b.end_time > hhmm) ?? null;
+  // Le prochain moment qui compte : on saute les longs blocs de travail.
+  const next = today.find((b) => b.start_time > hhmm && b.icon !== "travail") ?? today.find((b) => b.start_time > hhmm) ?? null;
+  const seance = today.find((b) => b.icon === "salle");
+  const seanceLabel = seance?.label.replace(/^Séance\s*:\s*/i, "").trim() ?? null;
+
+  return (
+    <div className="page-transition ep-page-wide" style={{ padding: "20px 16px 40px" }}>
+      <header style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>{dateLabel}</p>
+          <h1 className="ep-h1" style={{ margin: "2px 0 0", fontSize: 24 }}>
+            {t(timeAwareGreeting(Number(hhmm.split(":")[0])))}, {firstName}
+          </h1>
+        </div>
+        <span
+          style={{
+            flexShrink: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase",
+            padding: "4px 9px", borderRadius: 999,
+            color: seanceLabel ? "#E01E1E" : "#4ade80",
+            background: seanceLabel ? "rgba(224,30,30,0.1)" : "rgba(74,222,128,0.1)",
+            border: `1px solid ${seanceLabel ? "rgba(224,30,30,0.25)" : "rgba(74,222,128,0.25)"}`,
+            maxWidth: 150, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          }}
+        >
+          {seanceLabel ? `${t("Jour ON")} · ${seanceLabel}` : t("Jour OFF")}
+        </span>
+      </header>
+
+      <NowCard
+        href="/dashboard/coach/moi/agenda"
+        current={current ? { label: current.label, until: current.end_time.slice(0, 5) } : null}
+        next={next ? { label: next.label, at: next.start_time.slice(0, 5) } : null}
+        labels={{ now: t("Maintenant"), next: t("Ensuite"), free: t("Rien de prévu dans ton agenda aujourd'hui"), until: t("jusqu'à"), at: t("à") }}
+      />
+
+      <IntentLauncher {...(await launcherP)} space="coach" />
+
+      <Suspense fallback={<div className="ep-skeleton" style={{ height: 120, borderRadius: 14 }} />}>
+        <CoachInbox userId={user.id} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function CoachInbox({ userId }: { userId: string }) {
+  const t = await getT();
   const supabase = await createServerSupabase();
-  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, stepSettings, todaySteps, accessoriesByName, unreadMsgs, appSetup, messageable] = await Promise.all([
-    getTodayLog(user.id),
-    getNutritionProfile(user.id),
-    getTodayLogs(user.id, todayStr),
-    getScheduleBlocks(user.id),
-    getAllLiveEventsForCoach(user.id),
-    getActiveProgram(user.id),
-    getStepSettings(user.id),
-    getTodayStepsActual(user.id),
-    getAccessoriesByExerciseName(),
-    // Audit friction coach (2026-09-16) : pas de `.limit(3)` ici, pour
-    // pouvoir distinguer "3 messages non lus" de "3 affichés sur 12" —
-    // voir unreadPreview / unreadTotal plus bas. Le volume réaliste (messages
-    // non lus reçus par le coach) reste faible, la requête n'a pas besoin
-    // d'être limitée côté base pour rester rapide.
+  const [alerts, pending, unread, messageable] = await Promise.all([
+    getTopUrgentAlerts(userId, 3).catch(() => []),
+    getPendingReplies(),
     supabase
       .from("messages")
       .select("id, conversation_id, content, type, created_at")
-      .eq("receiver_id", user.id)
+      .eq("receiver_id", userId)
       .eq("is_read", false)
-      .order("created_at", { ascending: false }),
-    getAppSetup(user.id),
-    // Membres gratuits compris : sinon leur message non lu s'affichait
-    // "Membre" au lieu de leur nom.
-    getAllMessageableMembers(user.id).catch(() => []),
+      .order("created_at", { ascending: false })
+      .limit(50),
+    getAllMessageableMembers(userId).catch(() => []),
   ]);
 
-  const nutritionLogged = todayFoodLogs.reduce((s, l) => s + (l.calories ?? 0), 0);
-  const nutrition = todayFoodLogs.length > 0 || nutritionProfile?.calories_target
-    ? { logged: nutritionLogged, target: nutritionProfile?.calories_target ?? null }
-    : null;
+  const nameOf = new Map(messageable.map((m) => [m.id, m.full_name ?? t("Membre")]));
+  const unreadRows = (unread.data ?? []) as { id: string; conversation_id: string; content: string | null; type: string }[];
+  // Un message par personne : 5 messages de la même personne = une ligne.
+  const byConv = new Map<string, { row: (typeof unreadRows)[number]; n: number }>();
+  for (const m of unreadRows) {
+    const e = byConv.get(m.conversation_id);
+    if (e) e.n++;
+    else byConv.set(m.conversation_id, { row: m, n: 1 });
+  }
 
-  // Idée "onglet Aujourd'hui, suite" (2026-09-09) : l'agenda vient d'être
-  // reconstruit avec du montage/tournage partout entre les moments qui
-  // comptent — "prochain créneau" tel quel tombait donc presque toujours sur
-  // "Travail : montage", jamais très utile à afficher. On saute les blocs de
-  // travail (icon "travail") pour ne surfacer que le prochain repas, trajet,
-  // live, formation ou séance — l'info qu'on a vraiment envie de voir d'un
-  // coup d'oeil.
-  const nextBlock = scheduleBlocks
-    .filter((b) => isBlockOnDate(b, todayStr, isoDow) && b.start_time >= hhmm && b.icon !== "travail")
-    .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] ?? null;
-
-  // Retour direct : "c'est mieux si ça dit le créneau actuel comme ça je
-  // sais je dois faire quoi" — celui-ci n'est volontairement PAS filtré sur
-  // "travail" contrairement à nextBlock ci-dessus : si c'est vraiment ce
-  // qu'il y a à faire là, tout de suite (même du montage), c'est ça qu'il
-  // faut afficher, pas le sauter pour une projection plus "intéressante".
-  const currentBlock = scheduleBlocks
-    .filter((b) => isBlockOnDate(b, todayStr, isoDow) && b.start_time <= hhmm && b.end_time > hhmm)
-    .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] ?? null;
-
-  // Idée "onglet Aujourd'hui, suite" : le nom de séance dans l'agenda
-  // ("Séance : Push"...) correspond exactement à un day_label du programme
-  // actif — accessoriesForSession() existait déjà pour "Programme" et
-  // "Logbook" mais nulle part sur le tableau de bord, alors que c'est
-  // justement le moment où on planifie sa journée, avant de partir.
-  const todaySeanceBlock = scheduleBlocks.find(
-    (b) => isBlockOnDate(b, todayStr, isoDow) && b.icon === "salle"
-  );
-  const todaySeanceLabel = todaySeanceBlock?.label.replace(/^Séance\s*:\s*/i, "").trim() ?? null;
-  const todayProgramDay = todaySeanceLabel
-    ? todayProgram?.days.find((d) => d.day_label === todaySeanceLabel) ?? null
-    : null;
-  const todayAccessories = todayProgramDay
-    ? accessoriesForSession(todayProgramDay.exercises.map((ex) => ex.name), accessoriesByName)
-    : [];
-
-  const nowMs = Date.now();
-  const nextLive = liveEvents
-    .filter((e) => e.status === "scheduled" && new Date(e.starts_at).getTime() > nowMs)
-    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null;
-
-  const clientNameById = new Map([...messageable, ...clients].map((c) => [c.id, c.full_name ?? "Client"]));
-  // Audit friction coach (2026-09-16) : chaque ligne pointait vers la liste
-  // générale des conversations (/dashboard/coach/messages) au lieu de la
-  // conversation déjà identifiée par son nom sur la carte — un clic de plus
-  // pour retrouver le bon membre. `conversation_id` correspond ici à l'id du
-  // client (une conversation par membre, voir CoachConversationsList), donc
-  // au segment [clientId] de /dashboard/coach/messages/[clientId].
-  const unreadMsgsData = (unreadMsgs.data ?? []) as { id: string; conversation_id: string; content: string | null; type: string; created_at: string }[];
-  const unreadTotal = unreadMsgsData.length;
-  const unreadPreview = unreadMsgsData.slice(0, 3).map((m) => ({
-    id: m.id,
-    clientId: m.conversation_id,
-    senderName: clientNameById.get(m.conversation_id) ?? "Membre",
-    content: messagePreview(m.type, m.content, 60),
-    createdAt: m.created_at,
-  }));
+  const items: InboxItem[] = [
+    ...alerts.map((a) => ({
+      id: `a-${a.clientId}`,
+      kind: (a.alert.severity === "high" ? "alert-high" : "alert") as InboxItem["kind"],
+      title: a.clientName ?? t("Client"),
+      sub: a.alert.label,
+      href: `/dashboard/coach/clients/${a.clientId}`,
+    })),
+    ...[...byConv.values()].map(({ row, n }) => ({
+      id: `m-${row.conversation_id}`,
+      kind: "message" as const,
+      title: n > 1 ? `${nameOf.get(row.conversation_id) ?? t("Membre")} (${n})` : nameOf.get(row.conversation_id) ?? t("Membre"),
+      sub: messagePreview(row.type, row.content, 70),
+      href: `/dashboard/coach/messages/${row.conversation_id}`,
+    })),
+    ...pending.map((c) => ({
+      id: `b-${c.id}`,
+      kind: "bilan" as const,
+      title: c.profiles?.full_name ?? t("Client"),
+      sub: t("Bilan semaine {n} sans réponse", { n: c.week_number }),
+      href: `/dashboard/coach/clients/${c.client_id}/checkins`,
+    })),
+  ];
 
   return (
-    <div
-      className="page-transition ep-page-wide"
-      style={{ padding: "32px 24px 48px" }}
-    >
-      {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <div className="animate-fade-up" style={{ marginBottom: 32 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>
-          {t("Espace Coach  · ")}{" "}{formattedDate}
-        </p>
-        {/* Idée #1 : salutation adaptée à l'heure plutôt que "Bonjour" figé
-            toute la journée, y compris à 22h. */}
-        <h1 className="ep-h1">{t(timeAwareGreeting(Number(hhmm.split(":")[0])))}, {firstName}</h1>
-      </div>
-
-      {/* Je veux... : les gestes fréquents du coach, avec la réponse dessous. */}
-      <IntentLauncher {...(await launcherP)} space="coach" />
-
-      {/* ── Urgent alerts ─────────────────────────────────────────────────────
-          Audit friction coach (2026-09-16) : remonté avant "Ma journée" et les
-          stats. Un signal client urgent (décrochage, silence prolongé...) est
-          l'information la plus critique du tableau de bord d'un coach qui a
-          peu de temps — elle ne doit pas attendre après ses propres infos
-          personnelles (nutrition, sommeil) pour apparaître. */}
-      <UrgentAlertsSection />
-
-      {/* Raccourcis selon les objectifs du coach (Mon appli). */}
-      <CoachShortcuts
-        configured={appSetup.completed}
-        objectives={[
-          ...(Array.isArray(appSetup.answers.objectifs) ? (appSetup.answers.objectifs as string[]) : []),
-          ...(appSetup.modules.equipe === true ? ["equipe"] : []),
-        ]}
-      />
-
-      {/* ── Ma journée ───────────────────────────────────────────────────────
-          Idée #18 : juste après les alertes, avant la gestion clients — c'est
-          ce qui est le plus pertinent au quotidien pour un coach qui se suit
-          lui-même. */}
-      <MyDayCard
-        tip={getTipOfTheDay(today)}
-        nutrition={nutrition}
-        sleepHours={todayLog?.sleep_hours ?? null}
-        currentBlock={currentBlock ? { label: currentBlock.label, endTime: currentBlock.end_time } : null}
-        nextBlock={nextBlock ? { label: nextBlock.label, startTime: nextBlock.start_time } : null}
-        nextLive={nextLive ? { title: nextLive.title, startsAt: nextLive.starts_at } : null}
-        unreadPreview={unreadPreview}
-        unreadTotal={unreadTotal}
-        todaySeanceLabel={todaySeanceLabel}
-        todayAccessories={todayAccessories}
-        steps={{ actual: todaySteps, goal: stepSettings.daily_goal }}
-      />
-
-      {/* ── Stats (client-side fetch) ────────────────────────────────────────── */}
-      <DashboardStats />
-
-      {/* ── Clients ─────────────────────────────────────────────────────────── */}
-      <section>
-        <ClientsSection
-          clients={clients}
-          ouraEligibleIds={ouraEligibleIds}
-          phaseOverview={phaseOverview}
-          activity={activity}
-          intakeComplete={intakeComplete}
-          weeklyConsistency={weeklyConsistency}
-          relaunchMember={relaunchMember}
-        />
-      </section>
-    </div>
+    <InboxList
+      title={t("À traiter")}
+      items={items.slice(0, 5)}
+      total={items.length}
+      moreHref={byConv.size > 0 && alerts.length === 0 ? "/dashboard/coach/messages" : "/dashboard/coach/prioritaires"}
+      moreLabel={t("Tout voir")}
+      emptyLabel={t("Rien à traiter. Tout est à jour.")}
+    />
   );
 }

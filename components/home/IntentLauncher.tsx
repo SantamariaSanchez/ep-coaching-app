@@ -66,13 +66,14 @@ export default function IntentLauncher({ intents, focus, hints, space, count = 6
   const usage = useSyncExternalStore(subscribe, readUsage, () => EMPTY);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  // Date figée au montage : le classement ne bouge pas pendant qu'on regarde.
+  const [mountedAt] = useState(() => Date.now());
 
   const ranked = useMemo(() => {
     const asIntents = intents.map((i) => ({ ...i, href: { client: i.href, coach: i.href } }) as unknown as Intent);
-    // Date figée par rendu : le classement ne bouge pas pendant qu'on regarde.
-    const now = usage === EMPTY ? 0 : Date.now();
+    const now = usage === EMPTY ? 0 : mountedAt;
     return rankIntents(asIntents, focus, usage, now).map((i) => intents.find((x) => x.id === i.id)!);
-  }, [intents, focus, usage]);
+  }, [intents, focus, usage, mountedAt]);
 
   const top = ranked.slice(0, count);
   const filtered = q.trim() ? ranked.filter((i) => fuzzyMatchAny([t(i.label), i.label, i.keywords], q)) : ranked;

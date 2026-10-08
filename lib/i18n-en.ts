@@ -5088,4 +5088,24 @@ export const EN: Record<string, string> = {
   // ── Nutrition adaptée ─────────────────────────────────────────────────────
   "Petit écart : rien ne bouge. Gros changement ou repas sauté : seuls les repas à venir s'ajustent. Ton plan ne change jamais.": "Small difference: nothing changes. Big change or skipped meal: only upcoming meals adjust. Your plan never changes.",
   "Seuls les repas à venir s'ajustent si l'écart est important. Ton plan ne change jamais.": "Only upcoming meals adjust if the difference is big. Your plan never changes.",
+
+  // ── Accueil coach court ───────────────────────────────────────────────────
+  "Jour ON": "Training day",
+  "Jour OFF": "Rest day",
+  "Maintenant": "Now",
+  "Ensuite": "Next",
+  "Rien de prévu dans ton agenda aujourd'hui": "Nothing planned in your agenda today",
+  "jusqu'à": "until",
+  "à": "at",
+  "Bilan semaine {n} sans réponse": "Week {n} check-in awaiting reply",
+  "À traiter": "To do",
+  "Tout voir": "See all",
+  "Rien à traiter. Tout est à jour.": "Nothing to handle. All caught up.",
+  "Fuseau invalide.": "Invalid time zone.",
+
+  // ── Accueil membre court ──────────────────────────────────────────────────
+  "Ma régularité": "My consistency",
+  "Essai coaching gratuit": "Free coaching trial",
+  "Se termine dans {n} jour(s)": "Ends in {n} day(s)",
+  "sem. {n} de coaching": "week {n} of coaching",
 };
