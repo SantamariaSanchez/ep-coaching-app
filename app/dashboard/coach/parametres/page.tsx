@@ -45,6 +45,8 @@ export default async function CoachParametresPage() {
     .from("push_subscriptions")
     .select("id, quiet_hours_start, quiet_hours_end")
     .eq("user_id", user.id)
+    .order("updated_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   let linkedCoachName: string | null = null;

@@ -62,6 +62,19 @@ export default function PermissionsCard({
   useEffect(() => {
     setPush(pushSubscribed);
   }, [pushSubscribed]);
+  // Multi-appareils (2026-10-08) : « Activées » doit dire si CET appareil
+  // reçoit les notifications, pas seulement qu'un autre appareil du compte
+  // les reçoit. Sinon le téléphone affichait « activées » sans rien recevoir.
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!("serviceWorker" in navigator) || typeof Notification === "undefined") return;
+        const reg = await navigator.serviceWorker.getRegistration();
+        const sub = await reg?.pushManager.getSubscription();
+        setPush(Notification.permission === "granted" && !!sub);
+      } catch {}
+    })();
+  }, []);
   useEffect(() => {
     setQuietStart(quietHoursStart ?? DEFAULT_QUIET_START);
     setQuietEnd(quietHoursEnd ?? DEFAULT_QUIET_END);

@@ -39,10 +39,24 @@ export async function POST(req: Request) {
 
     const supabase = await createServerSupabase();
 
+    // Un abonnement par appareil (téléphone, ordinateur...) : avant, le
+    // dernier appareil activé remplaçait les autres. Les heures de silence
+    // déjà réglées sont reprises pour le nouvel appareil.
+    const endpoint = (subscription as { endpoint: string }).endpoint;
+    const { data: existing } = await supabase
+      .from("push_subscriptions")
+      .select("id, endpoint, quiet_hours_start, quiet_hours_end, updated_at")
+      .eq("user_id", guard.userId)
+      .order("updated_at", { ascending: false });
+    const rows = (existing ?? []) as { id: string; endpoint: string | null; quiet_hours_start: number | null; quiet_hours_end: number | null }[];
+    const quiet = rows[0] ? { quiet_hours_start: rows[0].quiet_hours_start, quiet_hours_end: rows[0].quiet_hours_end } : {};
     await supabase.from("push_subscriptions").upsert(
-      { user_id: guard.userId, subscription },
-      { onConflict: "user_id" }
+      { user_id: guard.userId, subscription, endpoint, updated_at: new Date().toISOString(), ...quiet },
+      { onConflict: "user_id,endpoint" }
     );
+    // Au delà de 6 appareils, les plus anciens sont oubliés.
+    const stale = rows.filter((r) => r.endpoint !== endpoint).slice(5).map((r) => r.id);
+    if (stale.length) await supabase.from("push_subscriptions").delete().in("id", stale);
 
     return NextResponse.json({ ok: true });
   } catch (e) {

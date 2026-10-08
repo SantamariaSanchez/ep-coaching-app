@@ -39,6 +39,7 @@ async function checkPushSubscription(userId: string): Promise<boolean> {
     .from("push_subscriptions")
     .select("id")
     .eq("user_id", userId)
+    .limit(1)
     .maybeSingle();
   return !!data;
 }

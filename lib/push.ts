@@ -51,11 +51,13 @@ export async function sendPushToUser(
     // pourquoi last_reengagement_notified_at n'était renseigné pour AUCUN
     // client après un mois de cron hebdomadaire, alors que les emails de
     // vérification (même sendBrevoEmail) arrivent bien à tout le monde.
-    const { data } = await supabase
+    // Tous les appareils de la personne (un abonnement par appareil).
+    const { data: subs } = await supabase
       .from("push_subscriptions")
-      .select("subscription, quiet_hours_start, quiet_hours_end")
-      .eq("user_id", userId)
-      .maybeSingle();
+      .select("id, subscription, quiet_hours_start, quiet_hours_end")
+      .eq("user_id", userId);
+    const all = (subs ?? []) as { id: string; subscription: unknown; quiet_hours_start: number | null; quiet_hours_end: number | null }[];
+    const data = all[0] ?? null;
 
     // Appli native (iOS/Android) : envoyée en plus du push web, en
     // respectant les mêmes heures de silence (sauf réveil).
@@ -95,13 +97,23 @@ export async function sendPushToUser(
     // urgency "high" demande une remise immédiate, et un TTL court évite
     // qu'un envoi resté en attente ne "rattrape" son retard bien après coup
     // (une notif "repas 17h" livrée à 19h n'a plus de sens).
-    await webpush.sendNotification(
-      data.subscription as webpush.PushSubscription,
-      JSON.stringify({ title, body, url: url ?? "/", type, blockId }),
-      { urgency: "high", TTL: type === "alarm" ? 1800 : 900 }
-    );
-
-    return { ok: true };
+    const payload = JSON.stringify({ title, body, url: url ?? "/", type, blockId });
+    let delivered = 0;
+    let lastError: unknown = null;
+    for (const sub of all) {
+      try {
+        await webpush.sendNotification(sub.subscription as webpush.PushSubscription, payload, { urgency: "high", TTL: type === "alarm" ? 1800 : 900 });
+        delivered++;
+      } catch (e) {
+        const code = (e as { statusCode?: number })?.statusCode;
+        // Appareil désabonné (404/410) : on l'oublie, les autres continuent.
+        if (code === 404 || code === 410) await supabase.from("push_subscriptions").delete().eq("id", sub.id);
+        else lastError = e;
+      }
+    }
+    if (delivered > 0 || nativeSent > 0) return { ok: true };
+    if (lastError) throw lastError;
+    return { ok: false, reason: "subscription expired, removed" };
   } catch (e) {
     // Retour direct 2026-09-10 ("le réveil n'a pas sonné, aucune notif de
     // toute la journée") : cette erreur était avalée ici SANS AUCUNE trace

@@ -41,6 +41,8 @@ export default async function ClientParametresPage() {
       .from("push_subscriptions")
       .select("id, quiet_hours_start, quiet_hours_end")
       .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle(),
     // Colonne consultée uniquement ici, pas dans PROFILE_FIELDS (même
     // convention que accepting_new_clients côté coach) : lecture ciblée
