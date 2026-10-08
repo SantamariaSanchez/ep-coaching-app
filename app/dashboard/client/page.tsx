@@ -1,4 +1,6 @@
 import { getT, getLocale } from "@/lib/i18n-server";
+import IntentLauncher from "@/components/home/IntentLauncher";
+import { loadLauncher } from "@/lib/launcher-server";
 import { intlLocale } from "@/lib/i18n";
 import { INSTAGRAM_URL } from "@/lib/brand-links";
 import { timeAwareGreeting, nowInParis } from "@/lib/dates";
@@ -355,7 +357,9 @@ async function WelcomeGuide({
   activityStreak,
   totalPoints,
   show,
+  launcher,
 }: {
+  launcher: React.ReactNode;
   firstName: string;
   goal: string | null;
   level: string | null;
@@ -389,6 +393,8 @@ async function WelcomeGuide({
           {personalization.welcomeSubtitle}
         </p>
       </div>
+
+      {launcher}
 
       {!hasCoach && <NoCoachBanner />}
       {hasCoach && <StagnationBanner />}
@@ -567,6 +573,9 @@ export default async function ClientDashboard({
   const { onboarded } = await searchParams;
   if (profile && !profile.onboarding_completed_at && onboarded !== "1") redirect("/onboarding");
 
+  // « Je veux... » : lancé tout de suite, en parallèle du reste de l'accueil.
+  const launcherP = loadLauncher(user.id, "client");
+
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (getAccessType(profile) === "membre_gratuit") {
@@ -592,6 +601,7 @@ export default async function ClientDashboard({
           activityStreak={activityStreak}
           totalPoints={totalPoints}
           show={{ poids: isOn(appSetup, "poids"), nutrition: isOn(appSetup, "nutrition"), entrainement: isOn(appSetup, "entrainement"), sommeil: isOn(appSetup, "sommeil") }}
+          launcher={<IntentLauncher {...(await launcherP)} space="client" />}
         />
       </>
     );
@@ -707,6 +717,9 @@ export default async function ClientDashboard({
           </p>
         )}
       </div>
+
+      {/* ── Je veux... : les gestes du quotidien, avec la réponse ─────────────── */}
+      <IntentLauncher {...(await launcherP)} space="client" />
 
       {/* ── Régularité + rang (item 20) ──────────────────────────────────────── */}
       <RegularityCard streakDays={activityStreak} points={totalPoints} />

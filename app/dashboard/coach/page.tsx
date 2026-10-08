@@ -24,6 +24,8 @@ import DashboardStats from "@/components/coach/DashboardStats";
 import UrgentAlertsSection from "@/components/coach/UrgentAlertsSection";
 import MyDayCard, { timeAwareGreeting } from "@/components/coach/MyDayCard";
 import CoachShortcuts from "@/components/coach/CoachShortcuts";
+import IntentLauncher from "@/components/home/IntentLauncher";
+import { loadLauncher } from "@/lib/launcher-server";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { messagePreview } from "@/components/messaging/message-format";
 import { getAllMessageableMembers } from "@/utils/auth";
@@ -33,6 +35,7 @@ export default async function CoachDashboard() {
   const user = await getUser();
   if (!user) redirect("/");
 
+  const launcherP = loadLauncher(user.id, "coach");
   const [profile, clients] = await Promise.all([
     getProfile(user.id),
     getClients(user.id),
@@ -195,6 +198,9 @@ export default async function CoachDashboard() {
             toute la journée, y compris à 22h. */}
         <h1 className="ep-h1">{t(timeAwareGreeting(Number(hhmm.split(":")[0])))}, {firstName}</h1>
       </div>
+
+      {/* Je veux... : les gestes fréquents du coach, avec la réponse dessous. */}
+      <IntentLauncher {...(await launcherP)} space="coach" />
 
       {/* ── Urgent alerts ─────────────────────────────────────────────────────
           Audit friction coach (2026-09-16) : remonté avant "Ma journée" et les

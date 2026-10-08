@@ -6,7 +6,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 // records, historique et formulaire de saisie. Utilisé par le membre (et le
 // coach pour lui-même) en écriture, et dans la fiche client en lecture seule.
 import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Trash2, Trophy, X } from "lucide-react";
 import { addPerformanceEntryAction, deletePerformanceEntryAction } from "@/app/actions/performance";
 import { updatePracticeAction } from "@/app/actions/app-setup";
@@ -37,7 +37,9 @@ export default function PerformanceHub({
 }) {
   const t = useT();
   const router = useRouter();
-  const [active, setActive] = useState<DisciplineKey | null>(disciplines[0] ?? null);
+  // Lien direct : ?d=prepa ouvre la discipline demandée si elle est suivie.
+  const wanted = useSearchParams().get("d");
+  const [active, setActive] = useState<DisciplineKey | null>(disciplines.find((d) => d === wanted) ?? disciplines[0] ?? null);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();

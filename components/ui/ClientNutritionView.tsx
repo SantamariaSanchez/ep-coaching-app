@@ -356,7 +356,9 @@ export default function ClientNutritionView({
 }: Props) {
   const tr = useT();
   // ── State ──────────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
+  // Lien direct depuis « Je veux... » : ?vue=courses ouvre la liste de courses.
+  const initialVue = useSearchParams().get("vue");
+  const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">(initialVue === "courses" || initialVue === "history" ? initialVue : "today");
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
   const [foods, setFoods] = useState<Food[]>(initialFoods);
 
