@@ -126,7 +126,8 @@ export default function PostEntryForm({
 
   const set = (k: string, val: string) => setV((cur) => ({ ...cur, [k]: val }));
   const isVideo = ["reel", "video", "short", "live", ""].includes(v.postType);
-  const scriptOptions = scripts.filter((s) => !s.platform || s.platform === v.platform || s.id === v.scriptId);
+  // Un script « reel » se poste sur tous les réseaux au format court.
+  const scriptOptions = scripts.filter((s) => !s.platform || s.platform === v.platform || (s.platform === "reel" && v.platform !== "linkedin") || s.id === v.scriptId);
   const allPlatforms = platforms.includes(v.platform) ? platforms : [...platforms, v.platform];
 
   function save() {

@@ -74,7 +74,14 @@ function formatDuration(seconds: number | null): string | null {
 // (filmé, pas écrit) : un Reel Facebook se tourne pareil qu'un Reel Insta.
 // Instagram de retour le 2026-09-29 (nouveau compte @santamariasanchezep),
 // Threads aussi : toutes ces plateformes restent disponibles.
+// « Reel » (2026-10-08, retour direct : « un reel ça englobe TikTok,
+// Facebook, YouTube Shorts, tous les réseaux au format court, donc plus
+// simple tu mets reels ») : un seul format court, tourné une fois et posté
+// partout. Les anciennes plateformes restent pour l'affichage des vieux
+// scripts mais ne se proposent plus à la création (Instagram et Threads
+// bannis depuis le 2026-10-08).
 export const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
+  reel: { label: "Reel", color: "#E01E1E" },
   instagram: { label: "Instagram Reel", color: "#E1306C" },
   facebook: { label: "Facebook Reel", color: "#1877F2" },
   threads: { label: "Threads", color: "#F5EDED" },
@@ -90,6 +97,9 @@ export const PLATFORM_LABELS: Record<string, { label: string; color: string }> =
 // plateformes se crée directement en statut "publié" (voir submitNew),
 // jamais à_tourner/tourné qui n'a pas de sens ici.
 const WRITTEN_PLATFORMS = new Set(["linkedin", "threads"]);
+// Ce qu'on peut créer : le reel (format court, tous réseaux), la vidéo
+// YouTube longue et le post LinkedIn.
+const CREATABLE = ["reel", "youtube", "linkedin"];
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
 
@@ -262,7 +272,7 @@ function MyScripts({
 }) {
   const tr = useT();
   // Seules les plateformes où le coach publie (réglage "Mon appli").
-  const platformOptions = Object.entries(PLATFORM_LABELS).filter(([id]) => !platforms?.length || platforms.includes(id));
+  const platformOptions = Object.entries(PLATFORM_LABELS).filter(([id]) => CREATABLE.includes(id) && (id === "reel" || !platforms?.length || platforms.includes(id)));
   const [scripts, setScripts] = useState(initialScripts);
   const [seenInitial, setSeenInitial] = useState(initialScripts);
   if (initialScripts !== seenInitial) {
@@ -285,7 +295,7 @@ function MyScripts({
   // Plateforme par défaut à la création. Facebook pendant le ban Instagram
   // (2026-09-22), Instagram de nouveau depuis le 2026-09-29 : nouveau compte
   // propre @santamariasanchezep. Elle ne se change plus après la création.
-  const [newPlatform, setNewPlatform] = useState(() => (platformOptions.some(([id]) => id === "instagram") ? "instagram" : platformOptions[0]?.[0] ?? "instagram"));
+  const [newPlatform, setNewPlatform] = useState("reel");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -833,7 +843,7 @@ function MyScripts({
               style={selectStyle}
             >
               <option value="all">{tr("Toutes plateformes")}</option>
-              {Object.entries(PLATFORM_LABELS).map(([id, { label }]) => (
+              {Object.entries(PLATFORM_LABELS).filter(([id]) => scripts.some((sc) => sc.platform === id)).map(([id, { label }]) => (
                 <option key={id} value={id}>{label}</option>
               ))}
             </select>
