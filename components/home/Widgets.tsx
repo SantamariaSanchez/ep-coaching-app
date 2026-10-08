@@ -21,8 +21,8 @@ function Card({ href, icon: Icon, title, aside, children, tone = "#F06060" }: { 
     <Link href={href} className="ep-card ep-press" style={{ display: "block", padding: "12px 14px 13px", textDecoration: "none", color: "#F5EDED", minWidth: 0 }}>
       <span style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
         <Icon size={14} style={{ color: tone, flexShrink: 0 }} strokeWidth={2.2} />
-        <span style={{ flex: 1, minWidth: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
-        {aside}
+        <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)", whiteSpace: "nowrap" }}>{title}</span>
+        <span style={{ flex: 1, minWidth: 0, textAlign: "right", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{aside}</span>
         <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.22)", flexShrink: 0 }} />
       </span>
       {children}
@@ -30,7 +30,7 @@ function Card({ href, icon: Icon, title, aside, children, tone = "#F06060" }: { 
   );
 }
 
-const big: React.CSSProperties = { display: "block", fontSize: 17, fontWeight: 900, letterSpacing: "-0.02em", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+const big: React.CSSProperties = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontSize: 17, fontWeight: 900, letterSpacing: "-0.02em", lineHeight: 1.2, overflow: "hidden", wordBreak: "break-word" };
 const sub: React.CSSProperties = { display: "block", fontSize: 12, color: "rgba(245,237,237,0.55)", lineHeight: 1.45, marginTop: 3 };
 const line: React.CSSProperties = { display: "flex", alignItems: "baseline", gap: 8, fontSize: 13, lineHeight: 1.5, minWidth: 0 };
 
@@ -55,7 +55,7 @@ export async function AgendaW({ userId, href }: { userId: string; href: string }
         <span style={{ display: "block", marginBottom: a.upcoming.length ? 9 : 0 }}>
           <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 7, height: 7, borderRadius: 99, background: "#E01E1E", boxShadow: "0 0 8px rgba(224,30,30,0.8)", flexShrink: 0 }} />
-            <span style={{ ...big, flex: 1, minWidth: 0 }}>{a.current.label}</span>
+            <span style={{ ...big, WebkitLineClamp: 1, flex: 1, minWidth: 0 }}>{a.current.label}</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,237,237,0.5)", flexShrink: 0 }}>{t("jusqu'à")} {a.current.end}</span>
           </span>
           <span style={{ display: "block", height: 3, borderRadius: 99, background: "rgba(245,237,237,0.08)", marginTop: 7, overflow: "hidden" }}>
@@ -204,8 +204,8 @@ export async function StatsW({ userId, href }: { userId: string; href: string })
 }
 
 // ── Clients ────────────────────────────────────────────────────────────────
-export async function DeskW({ userId, isOwner, href }: { userId: string; isOwner: boolean; href: string }) {
-  const [t, d] = await Promise.all([getT(), loadDesk(userId, isOwner)]);
+export async function DeskW({ userId, isOwner, includeDemo, href }: { userId: string; isOwner: boolean; includeDemo: boolean; href: string }) {
+  const [t, d] = await Promise.all([getT(), loadDesk(userId, isOwner, includeDemo)]);
   if (!d) return null;
   const todo = d.unread + d.pendingBilans;
   return (

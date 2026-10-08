@@ -238,7 +238,9 @@ export async function loadSocial(userId: string): Promise<StatsWidget | null> {
   });
 }
 
-const DEMO = "%@epcoaching.app";
+const DEMO_ACCOUNTS = "%@epcoaching.app";
+// Un compte de démo voit ses clients de démo ; un vrai compte ne les voit jamais.
+const NO_MATCH = "%@@nomatch@@%";
 
 // ── Bureau du coach : clients, leads, messages ─────────────────────────────
 
@@ -251,10 +253,11 @@ export interface DeskWidget {
   pendingBilans: number;
 }
 
-export async function loadDesk(userId: string, isOwner: boolean): Promise<DeskWidget | null> {
+export async function loadDesk(userId: string, isOwner: boolean, includeDemo = false): Promise<DeskWidget | null> {
   return safe(async () => {
     const admin = createAdminClient();
     const since = new Date(Date.now() - 7 * 86400000).toISOString();
+    const DEMO = includeDemo ? NO_MATCH : DEMO_ACCOUNTS;
     // Le fondateur voit toute la plateforme (les membres gratuits n'ont pas
     // de coach attitré) ; un coach tiers, seulement les siens.
     // Les comptes de démonstration (@epcoaching.app) ne comptent jamais :

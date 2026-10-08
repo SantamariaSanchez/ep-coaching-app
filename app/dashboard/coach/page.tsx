@@ -54,7 +54,7 @@ export default async function CoachDashboard() {
 
   const clients = (
     <div style={pair}>
-      <W h={120}><DeskW userId={id} isOwner={isOwner} href="/dashboard/coach/clients" /></W>
+      <W h={120}><DeskW userId={id} isOwner={isOwner} includeDemo={(user.email ?? "").endsWith("@epcoaching.app")} href="/dashboard/coach/clients" /></W>
       <W h={120}><LiveW userId={id} role="coach" coachId={null} href="/dashboard/coach/live" /></W>
     </div>
   );
@@ -127,13 +127,22 @@ async function CoachInbox({ userId }: { userId: string }) {
     else byConv.set(m.conversation_id, { row: m, n: 1 });
   }
 
+  // Une ligne par client, même s'il a plusieurs alertes (la plus grave d'abord).
+  const byClient = new Map<string, { name: string | null; high: boolean; labels: string[] }>();
+  for (const a of alerts) {
+    const e = byClient.get(a.clientId) ?? { name: a.clientName, high: false, labels: [] };
+    e.high = e.high || a.alert.severity === "high";
+    if (a.alert.severity === "high") e.labels.unshift(a.alert.label);
+    else e.labels.push(a.alert.label);
+    byClient.set(a.clientId, e);
+  }
   const items: InboxItem[] = [
-    ...alerts.map((a) => ({
-      id: `a-${a.clientId}`,
-      kind: (a.alert.severity === "high" ? "alert-high" : "alert") as InboxItem["kind"],
-      title: a.clientName ?? t("Client"),
-      sub: a.alert.label,
-      href: `/dashboard/coach/clients/${a.clientId}`,
+    ...[...byClient.entries()].map(([clientId, e]) => ({
+      id: `a-${clientId}`,
+      kind: (e.high ? "alert-high" : "alert") as InboxItem["kind"],
+      title: e.name ?? t("Client"),
+      sub: e.labels.join(" · "),
+      href: `/dashboard/coach/clients/${clientId}`,
     })),
     ...[...byConv.values()].map(({ row, n }) => ({
       id: `m-${row.conversation_id}`,
@@ -159,7 +168,7 @@ async function CoachInbox({ userId }: { userId: string }) {
         title={t("À traiter")}
         items={items.slice(0, 5)}
         total={items.length}
-        moreHref={byConv.size > 0 && alerts.length === 0 ? "/dashboard/coach/messages" : "/dashboard/coach/prioritaires"}
+        moreHref={byConv.size > 0 && byClient.size === 0 ? "/dashboard/coach/messages" : "/dashboard/coach/prioritaires"}
         moreLabel={t("Tout voir")}
         emptyLabel=""
       />
