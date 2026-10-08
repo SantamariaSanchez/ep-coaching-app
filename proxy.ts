@@ -107,8 +107,11 @@ export async function proxy(request: NextRequest) {
     user = result.user;
     result.cookies.forEach((c) => supabaseResponse.cookies.set(c.name, c.value, c));
   } else {
-    const promise = supabase.auth.getUser().then(({ data }) => ({
-      user: data.user,
+    // getClaims (2026-10-08) : vérification locale de la signature ES256
+    // au lieu d'un aller-retour au serveur d'auth à chaque navigation. La
+    // session expirée est rafraîchie exactement comme avant.
+    const promise = supabase.auth.getClaims().then(({ data }) => ({
+      user: data?.claims?.sub ? ({ id: data.claims.sub } as User) : null,
       cookies: supabaseResponse.cookies.getAll(),
     }));
     if (lockKey) {

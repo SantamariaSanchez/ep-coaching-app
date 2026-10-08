@@ -1,4 +1,5 @@
 import { cache } from "react";
+import type { User } from "@supabase/supabase-js";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getPointsMap } from "@/lib/gamification";
@@ -33,6 +34,26 @@ export const getUser = cache(async function getUser() {
 
   try {
     const supabase = await createServerSupabase();
+    // Vitesse (2026-10-08, retour direct : « que ça soit instantané, là ça
+    // charge encore ») : les jetons de session sont signés en ES256, donc
+    // getClaims() vérifie la signature sur place avec la clé publique (mise
+    // en cache) au lieu d'un aller-retour au serveur d'auth à chaque page
+    // (~100 ms, et le proxy en faisait déjà un). Session rafraîchie si
+    // expirée, comme avant. Repli sur getUser() si jamais pas de claims.
+    const { data } = await supabase.auth.getClaims();
+    const c = data?.claims;
+    if (c?.sub) {
+      return {
+        id: c.sub,
+        email: (c.email as string | undefined) ?? undefined,
+        phone: (c.phone as string | undefined) ?? undefined,
+        aud: (Array.isArray(c.aud) ? c.aud[0] : c.aud) ?? "authenticated",
+        role: (c.role as string | undefined) ?? "authenticated",
+        app_metadata: (c.app_metadata ?? {}) as User["app_metadata"],
+        user_metadata: (c.user_metadata ?? {}) as User["user_metadata"],
+        created_at: "",
+      } as User;
+    }
     const {
       data: { user },
     } = await supabase.auth.getUser();

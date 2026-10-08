@@ -6,7 +6,7 @@ import { isBlockOnDate } from "@/lib/agenda-day";
 import { getUser, getProfile, getAllMessageableMembers } from "@/utils/auth";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getPendingReplies } from "@/utils/checkins";
-import { getTopUrgentAlerts } from "@/lib/coach-analytics";
+import { getCoachAlertsCached } from "@/lib/coach-analytics";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { todayInParis, nowInParis, timeAwareGreeting } from "@/lib/dates";
 import { messagePreview } from "@/components/messaging/message-format";
@@ -109,7 +109,7 @@ async function CoachInbox({ userId }: { userId: string }) {
   const t = await getT();
   const supabase = await createServerSupabase();
   const [alerts, pending, unread, messageable] = await Promise.all([
-    getTopUrgentAlerts(userId, 3).catch(() => []),
+    getCoachAlertsCached(userId).catch(() => []),
     getPendingReplies(),
     supabase
       .from("messages")

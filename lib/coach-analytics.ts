@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase-admin";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -823,3 +824,8 @@ export async function getPrioritizedCoachView(
 
   return { flagged, quiet };
 }
+
+// Même liste d'alertes pour la tuile « Qui a besoin de moi » et la section
+// « À traiter » de l'accueil : calculée une seule fois par rendu, pour que
+// les deux disent toujours la même chose.
+export const getCoachAlertsCached = cache((coachId: string) => getTopUrgentAlerts(coachId, 50));

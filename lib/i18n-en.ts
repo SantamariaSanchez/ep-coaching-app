@@ -5108,4 +5108,14 @@ export const EN: Record<string, string> = {
   "Essai coaching gratuit": "Free coaching trial",
   "Se termine dans {n} jour(s)": "Ends in {n} day(s)",
   "sem. {n} de coaching": "week {n} of coaching",
+
+  // ── Accueil tuiles ────────────────────────────────────────────────────────
+  "{n} message(s) non lu(s)": "{n} unread message(s)",
+  "Réponse de ton coach ici": "Your coach answers here",
+  "{n} client(s) à voir": "{n} client(s) to check",
+  "Aucun message en attente": "No pending messages",
+  "{n} nouveau(x) script(s) aujourd'hui": "{n} new script(s) today",
+  "Une idée, Claude t'aide à l'écrire": "Got an idea? Claude helps you write it",
+  "Je veux...": "I want to...",
+  "Ouvre ton programme du jour": "Open today's program",
 };

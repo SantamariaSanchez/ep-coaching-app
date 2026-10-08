@@ -8,6 +8,7 @@ import { todayInParis, nowInParis } from "@/lib/dates";
 import { getActivePlan } from "@/lib/nutrition-sync";
 import { MEAL_SLOTS, SLOT_END, planItemsFor, slotLabel } from "@/lib/nutrition-engine";
 import type { Translator } from "@/lib/i18n";
+import { getCoachAlertsCached } from "@/lib/coach-analytics";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
@@ -30,7 +31,14 @@ function blocksFor(blocks: Block[], date: string, isoDow: number): Block[] {
     .sort((a, b) => a.start_time.localeCompare(b.start_time));
 }
 
-const isWorkout = (b: Block) => b.icon === "salle" || /(séance|seance|training|muscu|jambes|push|pull|upper|lower|salle|course|run|hyrox|crossfit|wod)/i.test(`${b.label} ${b.notes ?? ""}`);
+// Un bloc typé (repas, pas, trajet, travail...) n'est jamais une séance,
+// même si son nom contient « salle » (bug 2026-10-08 : « Steps : trajet
+// vers la salle » sortait comme prochaine séance). Le nom ne compte que
+// pour un bloc sans type.
+const NOT_WORKOUT_ICONS = new Set(["repas", "pas", "trajet", "travail", "pause", "rendezvous", "etude", "sommeil", "reveil"]);
+const isWorkout = (b: Block) =>
+  b.icon === "salle" ||
+  (!NOT_WORKOUT_ICONS.has(b.icon ?? "") && /(séance|seance|training|muscu|jambes|push|pull|upper|lower|course|run|hyrox|crossfit|wod)/i.test(b.label));
 
 function shiftDate(date: string, days: number) {
   const d = new Date(`${date}T12:00:00Z`);
@@ -38,20 +46,35 @@ function shiftDate(date: string, days: number) {
   return d.toISOString().slice(0, 10);
 }
 
+// Prochain repas = le prochain créneau du plan PAR L'HEURE, pas « le premier
+// non noté » (2026-10-08, bug : la journée est pré-remplie avec le plan à
+// l'ouverture, donc tout semblait « noté » dès le matin et la tuile disait
+// « Tous les repas du jour sont notés » à 17 h, avant le pré-workout). Les
+// quantités affichées sont celles du journal pour ce repas s'il existe
+// (elles tiennent compte d'un écart rattrapé), sinon celles du plan.
 async function nextMeal(admin: Admin, userId: string, today: string, hhmm: string, t: Translator): Promise<string | null> {
   const [plan, { data: logs }] = await Promise.all([
     getActivePlan(admin, userId),
-    admin.from("food_logs").select("meal_slot, calories").eq("client_id", userId).eq("logged_at", today),
+    admin.from("food_logs").select("meal_slot, food_id, quantity_g, calories").eq("client_id", userId).eq("logged_at", today),
   ]);
-  const logged = new Set(((logs ?? []) as { meal_slot: string }[]).map((l) => l.meal_slot));
+  const rows = (logs ?? []) as { meal_slot: string; food_id: string; quantity_g: number; calories: number | null }[];
   const items = planItemsFor(plan, today);
   if (items.length) {
-    const slot = MEAL_SLOTS.map((s) => s.key).find((k) => items.some((i) => i.slot === k) && !logged.has(k) && hhmm <= (SLOT_END[k] ?? "23:59"));
-    if (!slot) return t("Tous les repas du jour sont notés");
-    const foods = items.filter((i) => i.slot === slot).slice(0, 3).map((i) => `${i.food.name} ${fr(i.grams)} g`);
+    const slots = MEAL_SLOTS.map((s) => s.key).filter((k) => items.some((i) => i.slot === k) || rows.some((r) => r.meal_slot === k));
+    const slot = slots.find((k) => hhmm <= (SLOT_END[k] ?? "23:59"));
+    if (!slot) return t("Plus de repas prévu aujourd'hui");
+    const logged = rows.filter((r) => r.meal_slot === slot);
+    let foods: string[];
+    if (logged.length) {
+      const { data: names } = await admin.from("foods").select("id, name").in("id", [...new Set(logged.map((r) => r.food_id))]);
+      const nameOf = new Map(((names ?? []) as { id: string; name: string }[]).map((f) => [f.id, f.name]));
+      foods = logged.slice(0, 3).map((r) => `${nameOf.get(r.food_id) ?? t("Aliment")} ${fr(Number(r.quantity_g))} g`);
+    } else {
+      foods = items.filter((i) => i.slot === slot).slice(0, 3).map((i) => `${i.food.name} ${fr(i.grams)} g`);
+    }
     return `${t(slotLabel(slot))} : ${foods.join(", ")}`;
   }
-  const eaten = ((logs ?? []) as { calories: number | null }[]).reduce((s, l) => s + Number(l.calories ?? 0), 0);
+  const eaten = rows.reduce((s, l) => s + Number(l.calories ?? 0), 0);
   const { data: target } = await admin.from("nutrition_profiles").select("calories_target").eq("client_id", userId).order("updated_at", { ascending: false }).limit(1);
   const goal = Number((target?.[0] as { calories_target?: number } | undefined)?.calories_target ?? 0);
   if (goal > 0) return t("Il te reste environ {n} kcal aujourd'hui", { n: fr(Math.max(0, goal - eaten)) });
@@ -70,7 +93,7 @@ async function nextWorkout(admin: Admin, userId: string, today: string, isoDow: 
       return `${found.label || t("Séance")} : ${when} ${found.start_time.slice(0, 5)}`;
     }
   }
-  return null;
+  return t("Ouvre ton programme du jour");
 }
 
 async function nextBlock(admin: Admin, userId: string, today: string, isoDow: number, hhmm: string, t: Translator): Promise<string | null> {
@@ -112,13 +135,27 @@ export async function getIntentHints(userId: string, space: "coach" | "client", 
     return count ? t("{n} saisie(s) ce mois", { n: count }) : null;
   });
 
+  if (space === "client") {
+    add("message_coach", async () => {
+      const { count } = await admin.from("messages").select("id", { count: "exact", head: true }).eq("receiver_id", userId).eq("is_read", false);
+      return count ? t("{n} message(s) non lu(s)", { n: count }) : t("Réponse de ton coach ici");
+    });
+  }
+
   if (space === "coach") {
     add("clients_attention", async () => {
-      const { data: clients } = await admin.from("profiles").select("id").eq("coach_id", userId).eq("role", "client").neq("id", userId);
-      const ids2 = ((clients ?? []) as { id: string }[]).map((c) => c.id);
-      if (!ids2.length) return t("Aucun client pour l'instant");
-      const { count } = await admin.from("check_ins").select("id", { count: "exact", head: true }).is("coach_replied_at", null).gte("week_start", shiftDate(today, -21)).in("client_id", ids2);
-      return count ? t("{n} bilan(s) en attente", { n: count }) : t("Tout le monde est suivi ✓");
+      const alerts = await getCoachAlertsCached(userId);
+      if (alerts.length) return t("{n} client(s) à voir", { n: alerts.length });
+      const { count } = await admin.from("profiles").select("id", { count: "exact", head: true }).eq("coach_id", userId).eq("role", "client").neq("id", userId);
+      return count ? t("Tout le monde est suivi ✓") : t("Aucun client pour l'instant");
+    });
+    add("message", async () => {
+      const { count } = await admin.from("messages").select("id", { count: "exact", head: true }).eq("receiver_id", userId).eq("is_read", false);
+      return count ? t("{n} message(s) non lu(s)", { n: count }) : t("Aucun message en attente");
+    });
+    add("ecrire", async () => {
+      const { count } = await admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", userId).gte("created_at", `${today}T00:00:00`);
+      return count ? t("{n} nouveau(x) script(s) aujourd'hui", { n: count }) : t("Une idée, Claude t'aide à l'écrire");
     });
     add("bilans_repondre", async () => {
       const { data: clients } = await admin.from("profiles").select("id").eq("coach_id", userId).eq("role", "client").neq("id", userId);
