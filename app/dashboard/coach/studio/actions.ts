@@ -440,3 +440,37 @@ export async function fetchGuidesForGenerator(): Promise<GuideMagnet[]> {
   if (!guard.ok) return [];
   return getAllGuidesWithContent();
 }
+
+// Publié = retiré du Studio (2026-10-08, retour direct : « quand c'est
+// posté, enlève le script, sinon on en aura à l'infini »). On garde juste
+// l'essentiel dans content_published_log (pour ne jamais répéter un sujet)
+// et sur les publications déjà reliées dans les stats réseaux.
+export async function publishScript(id: string): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+  const admin = createAdminClient();
+  const { data: script } = await admin
+    .from("coach_scripts")
+    .select("id, title, hook, pillar, platform, source_reference")
+    .eq("id", id)
+    .eq("coach_id", guard.userId)
+    .maybeSingle();
+  if (!script) return { error: "Script introuvable." };
+
+  const { data: linked } = await admin.from("social_posts").select("id, extra").eq("script_id", id);
+  for (const p of (linked ?? []) as { id: string; extra: Record<string, unknown> | null }[]) {
+    await admin.from("social_posts").update({ extra: { ...(p.extra ?? {}), script: { title: script.title, hook: script.hook, pillar: script.pillar } } }).eq("id", p.id);
+  }
+  await admin.from("content_published_log").insert({
+    coach_id: guard.userId,
+    title: script.title,
+    hook: script.hook,
+    pillar: script.pillar,
+    platform: script.platform,
+    source_reference: script.source_reference,
+  });
+  const { error } = await admin.from("coach_scripts").delete().eq("id", id).eq("coach_id", guard.userId);
+  if (error) return { error: "Publication impossible, réessaie." };
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}

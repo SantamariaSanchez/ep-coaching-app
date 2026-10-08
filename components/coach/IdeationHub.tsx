@@ -1,8 +1,9 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useState } from "react";
-import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles, Send } from "lucide-react";
+import WrittenPosts from "@/components/coach/WrittenPosts";
 import ContentStudio from "@/components/coach/ContentStudio";
 import IdeationNotes from "@/components/coach/IdeationNotes";
 import IdeationInspirations from "@/components/coach/IdeationInspirations";
@@ -13,12 +14,15 @@ import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideatio
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
 
-type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur";
+type Tab = "idees" | "scripts" | "posts" | "notes" | "inspirations" | "generateur";
+
+const WRITTEN = new Set(["linkedin", "threads"]);
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "idees", label: "Idées", icon: Lightbulb },
   { id: "generateur", label: "Générateur", icon: Sparkles },
   { id: "scripts", label: "Scripts", icon: Clapperboard },
+  { id: "posts", label: "Posts à publier", icon: Send },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "inspirations", label: "Inspirations", icon: BookmarkPlus },
 ];
@@ -60,6 +64,10 @@ export default function IdeationHub({
   focusIdeaId?: string;
 }) {
   const tr = useT();
+  // Posts écrits (LinkedIn, Threads) à part : ils se copient et se postent,
+  // ils ne se tournent pas.
+  const writtenPosts = useMemo(() => initialScripts.filter((s) => WRITTEN.has(s.platform)), [initialScripts]);
+  const videoScripts = useMemo(() => initialScripts.filter((s) => !WRITTEN.has(s.platform)), [initialScripts]);
   const tabFromLink = (): Tab =>
     TABS.some((t) => t.id === initialTab) ? (initialTab as Tab) : focusScriptId ? "scripts" : "idees";
   const [tab, setTab] = useState<Tab>(tabFromLink);
@@ -111,7 +119,8 @@ export default function IdeationHub({
               <Icon size={13} />
               {label}
               {id === "idees" && initialIdeas.length > 0 && <Count n={initialIdeas.length} active={active} />}
-              {id === "scripts" && initialScripts.length > 0 && <Count n={initialScripts.length} active={active} />}
+              {id === "scripts" && videoScripts.length > 0 && <Count n={videoScripts.length} active={active} />}
+              {id === "posts" && writtenPosts.length > 0 && <Count n={writtenPosts.length} active={active} />}
               {id === "notes" && initialNotes.length > 0 && <Count n={initialNotes.length} active={active} />}
               {id === "inspirations" && initialInspirations.length > 0 && <Count n={initialInspirations.length} active={active} />}
             </button>
@@ -136,7 +145,10 @@ export default function IdeationHub({
         <SocialGenerator active={hasOpenedGenerator} />
       </div>
       <div hidden={tab !== "scripts"}>
-        <IdeationScripts initialScripts={initialScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
+        <IdeationScripts initialScripts={videoScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
+      </div>
+      <div hidden={tab !== "posts"}>
+        <WrittenPosts initialPosts={writtenPosts} />
       </div>
       <div hidden={tab !== "notes"}>
         <IdeationNotes initialNotes={initialNotes} />

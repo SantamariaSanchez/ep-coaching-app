@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw } from "lucide-react";
-import { createScript, updateScript, deleteScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
+import { createScript, updateScript, deleteScript, publishScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
 import Teleprompter from "@/components/coach/Teleprompter";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
@@ -25,7 +25,7 @@ const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
 const STATUS_CYCLE: Record<ScriptStatus, ScriptStatus> = { a_tourner: "tourne", tourne: "publie", publie: "a_tourner" };
 const STATUS_TITLES: Record<ScriptStatus, string> = {
   a_tourner: "Cliquer une fois tourné",
-  tourne: "Cliquer une fois posté",
+  tourne: "Cliquer une fois posté : le script sort du Studio",
   publie: "Terminé, cliquer pour rouvrir en cas d'erreur",
 };
 // Retour direct 2026-09-29 : "le bouton tourner à tourner et poster est trop
@@ -612,6 +612,21 @@ function MyScripts({
   function cycleStatus(id: string, current: ScriptStatus) {
     const next = STATUS_CYCLE[current];
     const backup = scripts;
+    // Posté = terminé : le script sort du Studio (retour direct 2026-10-08,
+    // « sinon on en aura à l'infini »), son titre reste dans l'historique
+    // pour ne jamais retraiter le même sujet.
+    if (next === "publie") {
+      if (!window.confirm(tr("Posté ? Le script sort du Studio (son sujet reste mémorisé pour ne pas le refaire)."))) return;
+      setScripts((prev) => prev.filter((s) => s.id !== id));
+      startTransition(async () => {
+        const result = await publishScript(id);
+        if (result.error) {
+          setScripts(backup);
+          setError(result.error);
+        }
+      });
+      return;
+    }
     setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, status: next } : s)));
     startTransition(async () => {
       const result = await updateScript(id, { status: next });

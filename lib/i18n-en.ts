@@ -5066,4 +5066,14 @@ export const EN: Record<string, string> = {
   "Elles diminuent après les premières semaines. Une douleur vive dans une articulation, elle, n'est pas normale : arrête l'exercice et parles-en à ton coach.": "It fades after the first few weeks. Sharp pain in a joint, however, isn't normal: stop the exercise and talk to your coach.",
   "Le reste suit": "The rest follows",
   "Mange des protéines à chaque repas, dors correctement, marche dans ta journée. Fais ton bilan le matin : en quelques semaines, tu verras clairement ce qui change.": "Eat protein at every meal, sleep well, walk during your day. Do your check-in in the morning: within a few weeks, you'll clearly see what's changing.",
+
+  // ── Posts à publier ───────────────────────────────────────────────────────
+  "Posté ? Le script sort du Studio (son sujet reste mémorisé pour ne pas le refaire).": "Posted? The script leaves the Studio (its topic is remembered so it isn't redone).",
+  "Copie, poste, puis touche « Publié » : le post sort d'ici et son sujet est mémorisé pour ne pas être refait.": "Copy, post, then tap \"Published\": the post leaves this list and its topic is remembered so it isn't redone.",
+  "Aucun post à publier. Les nouveaux arrivent ici chaque jour.": "No posts to publish. New ones arrive here every day.",
+  "Retirer ce post sans le publier ?": "Remove this post without publishing it?",
+  "Retirer ce post": "Remove this post",
+  "Publication impossible, réessaie.": "Couldn't publish, try again.",
+  "Posts à publier": "Posts to publish",
+  "Cliquer une fois posté : le script sort du Studio": "Click once posted: the script leaves the Studio",
 };
