@@ -80,7 +80,7 @@ export async function SleepPage({ userId, canConnectOura, ouraStatus, isCoachVie
         updateAction={updateSleepSchedule}
       />
 
-      {(hasBiometrics || canConnectOura) && (
+      {(hasBiometrics || (canConnectOura && isOuraConfigured())) && (
         <section>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">{t("Récupération détaillée")}</p>
           <TrackingClient

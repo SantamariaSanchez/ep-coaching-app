@@ -84,7 +84,7 @@ export default async function SleepSummary({ nights }: { nights: SleepNight[] })
         {nights.slice(-14).map((n) => {
           const h = n.hours ?? 0;
           return (
-            <div key={n.date} className="flex-1 rounded-sm" style={{ height: `${Math.min(100, (h / 10) * 100)}%`, minHeight: h ? 4 : 2, background: !h ? "rgba(245,237,237,0.08)" : h < 7 ? "rgba(251,146,60,0.7)" : "rgba(129,140,248,0.75)" }} title={`${n.date} : ${h || "?"} h`} />
+            <div key={n.date} className="flex-1 rounded-sm" style={{ height: h ? `${Math.max(12, Math.min(100, ((h - 4) / 6) * 100))}%` : "6%", background: !h ? "rgba(245,237,237,0.08)" : h < 7 ? "rgba(251,146,60,0.7)" : "rgba(129,140,248,0.75)" }} title={`${n.date} : ${h || "?"} h`} />
           );
         })}
       </div>
