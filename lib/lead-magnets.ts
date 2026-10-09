@@ -272,8 +272,8 @@ export async function getLeadMagnet(slug: string): Promise<LeadMagnet | undefine
 
 // Normalise une saisie utilisateur ("76", "076", " 076 ") vers le format
 // stocké en base (3 chiffres minimum, zéro-paddé). Un keyword réel peut
-// dépasser 3 chiffres une fois la table au delà de 999 lignes (lpad ne
-// tronque jamais côté DB), donc on ne pad ici qu'à 3 chiffres minimum et on
+// dépasser 3 chiffres au delà de 999 (lead_magnet_next_keyword() en base
+// donne 1000, 1001...), donc on ne pad ici qu'à 3 chiffres minimum et on
 // laisse une saisie plus longue passer telle quelle.
 export function normalizeKeyword(raw: string): string | null {
   const digits = raw.trim();
