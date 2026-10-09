@@ -205,6 +205,7 @@ export default function TrackingClient({
   isCoachView = false,
   disconnectOura,
   ouraStatus,
+  compact = false,
 }: {
   logs: BiometricLog[];
   insights: BiometricInsight[];
@@ -222,6 +223,8 @@ export default function TrackingClient({
   disconnectOura?: () => Promise<{ error?: string }>;
   /** ?oura=... au retour de /api/oura/connect ou /callback */
   ouraStatus?: string;
+  /** Seulement le bandeau Oura (pas encore de données détaillées). */
+  compact?: boolean;
 }) {
   const t = useT();
   // MASTERCLASS.md Axe L : new Date().toISOString() rend la date en UTC,
@@ -399,6 +402,7 @@ export default function TrackingClient({
         </div>
       )}
 
+      {!compact && <>
       {!readOnly && logBiometrics && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
@@ -502,6 +506,7 @@ export default function TrackingClient({
           <MetricChart title={t("Écart de température")} icon={Thermometer} data={tempData} unit="°C" color="#fb923c" />
         )}
       </div>
+      </>}
     </div>
   );
 }
