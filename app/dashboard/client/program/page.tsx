@@ -14,6 +14,8 @@ import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
 import MesocycleStatusBanner from "@/components/ui/MesocycleStatusBanner";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
+import { getMemberPreferences } from "@/utils/member-preferences";
+import { recommendPreset } from "@/lib/preset-programs";
 import { saveOwnProgram } from "./actions";
 import Link from "next/link";
 import { Dumbbell, Play, MessageCircle } from "lucide-react";
@@ -44,6 +46,9 @@ export default async function ClientProgramPage() {
   // getAccessType() est la seule source de vérité du statut (voir
   // utils/auth-client.ts) : le coach est déjà redirigé juste au-dessus.
   if (getAccessType(profile) === "membre_gratuit") {
+    // Programme conseillé d'après le quiz d'onboarding, mis en avant et
+    // présélectionné dans la liste (voir recommendPreset).
+    const recommendation = recommendPreset(await getMemberPreferences(user.id));
     return (
       <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
         <div className="mb-6">
@@ -83,6 +88,7 @@ export default async function ClientProgramPage() {
               clientId={user.id}
               currentProgramName={program?.name ?? null}
               saveProgram={saveOwnProgram}
+              recommendation={recommendation}
             />
             <ProgramFromScratchSection
               clientId={user.id}

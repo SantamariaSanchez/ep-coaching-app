@@ -1,4 +1,5 @@
 import type { ProgramInput } from "@/utils/programs";
+import type { MemberPreferences } from "@/lib/personalization";
 
 export interface PresetProgram {
   id: string;
@@ -10,6 +11,78 @@ export interface PresetProgram {
 }
 
 export const PRESET_PROGRAMS: PresetProgram[] = [
+  // Les deux premiers sont pensés pour un membre qui démarre : jusqu'ici les
+  // trois seuls programmes proposés étaient "Intermédiaire" (squat barre en
+  // 5-6, développé couché lourd), rien pour quelqu'un qui débute ou qui n'a
+  // pas de salle. Voir recommendPreset() plus bas.
+  {
+    id: "debutant2",
+    name: "Débuter : Full Body 2 jours",
+    split: "Full Body",
+    description: "2 séances par semaine, environ 45 min. Machines et haltères, gestes simples, charges légères : tu apprends les mouvements et tu prends l'habitude avant de chercher la performance.",
+    frequency: 2,
+    input: {
+      name: "Programme Débuter Full Body 2 jours",
+      type: "Full Body",
+      frequency: 2,
+      days: [
+        {
+          day_label: "Séance A : Bases",
+          exercises: [
+            { name: "Presse à cuisses (leg press)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Pieds largeur d'épaules, descends tant que le bas du dos reste collé au dossier", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Développé couché haltères", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Charge légère pour apprendre la trajectoire, coudes à environ 45° du buste", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage vertical poulie haute (lat pulldown)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Tire la barre vers le haut de la poitrine, sans balancer le buste", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl assis", sets: 2, reps: "12-15", rir: 2, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Planche (plank)", sets: 3, reps: "20-30 s", rir: null, rest_seconds: 60, notes: "Corps gainé de la tête aux talons, respire normalement", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance B : Bases",
+          exercises: [
+            { name: "Squat gobelet (goblet squat)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Haltère tenu contre la poitrine, descends aussi bas que tu restes dos droit", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage horizontal haltère (rowing unilatéral)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 75, notes: "Un genou et une main sur le banc, tire le coude vers la hanche", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé militaire haltères", sets: 2, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Assis, dos contre le dossier", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Pont fessier (glute bridge)", sets: 3, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Serre les fessiers en haut une seconde", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Dead bug", sets: 2, reps: "8-10", rir: null, rest_seconds: 60, notes: "Répétitions par côté. Bas du dos plaqué au sol pendant tout le mouvement", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "maison",
+    name: "Reprise à la maison, sans matériel",
+    split: "Full Body",
+    description: "2 séances par semaine, environ 30 min, au poids du corps. Pour reprendre en douceur sans salle ni matériel. Tu ajoutes une 3e séance quand ça devient facile.",
+    frequency: 2,
+    input: {
+      name: "Programme Reprise maison",
+      type: "Full Body",
+      frequency: 2,
+      days: [
+        {
+          day_label: "Séance A : Corps entier",
+          exercises: [
+            { name: "Squat sumo", sets: 3, reps: "12-15", rir: 3, rest_seconds: 60, notes: "Au poids du corps, pieds écartés, pointes légèrement vers l'extérieur", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Pompes", sets: 3, reps: "6-12", rir: 2, rest_seconds: 75, notes: "Sur les genoux ou mains sur une table si besoin, c'est tout aussi utile", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Pont fessier (glute bridge)", sets: 3, reps: "15", rir: 2, rest_seconds: 60, notes: "Serre les fessiers en haut une seconde", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Superman (renfo lombaire)", sets: 3, reps: "10-12", rir: 2, rest_seconds: 60, notes: "Allongé sur le ventre, décolle bras et jambes sans forcer sur la nuque", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Planche (plank)", sets: 3, reps: "20-30 s", rir: null, rest_seconds: 45, notes: "Sur les genoux si besoin", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance B : Corps entier",
+          exercises: [
+            { name: "Fentes avant", sets: 3, reps: "8-10", rir: 3, rest_seconds: 60, notes: "Répétitions par jambe. Appui sur un mur si l'équilibre est difficile", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Pompes", sets: 3, reps: "6-12", rir: 2, rest_seconds: 75, notes: "Même variante que la séance A, essaie de faire une répétition de plus", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Prone Y-T-W (plancher)", sets: 2, reps: "8", rir: null, rest_seconds: 60, notes: "8 de chaque lettre. Allongé sur le ventre, bras en Y puis T puis W, pouces vers le haut", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Pont fessier (glute bridge)", sets: 3, reps: "12", rir: 2, rest_seconds: 60, notes: "Sur une jambe dès que la version à deux jambes devient facile (12 répétitions par jambe)", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Dead bug", sets: 2, reps: "8-10", rir: null, rest_seconds: 45, notes: "Répétitions par côté. Bas du dos plaqué au sol pendant tout le mouvement", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+      ],
+    },
+  },
   {
     id: "ppl",
     name: "Push / Pull / Legs",
@@ -150,3 +223,68 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
     },
   },
 ];
+
+export interface PresetRecommendation {
+  preset: PresetProgram;
+  reason: string;
+}
+
+// Programme de départ conseillé à partir des réponses au quiz d'onboarding
+// (lib/personalization.ts). Mêmes principes que derivePersonalization() :
+// des règles simples et explicables, jamais une décision cachée. La raison
+// est affichée telle quelle à la personne pour qu'elle sache pourquoi ce
+// programme et pas un autre, et elle peut toujours en changer.
+export function recommendPreset(
+  prefs: Partial<MemberPreferences> | null | undefined
+): PresetRecommendation {
+  const byId = (id: string) => PRESET_PROGRAMS.find((p) => p.id === id)!;
+  const level = prefs?.experience_level ?? null;
+  const goal = prefs?.primary_goal ?? null;
+  const freq = prefs?.training_frequency ?? null;
+
+  // Quiz passé sans réponse : on ne sait rien, donc le départ le plus
+  // simple plutôt qu'un programme "Intermédiaire" à barre lourde.
+  if (!level && !goal && !freq) {
+    return {
+      preset: byId("debutant2"),
+      reason: "Le départ le plus simple : 2 séances par semaine qui font travailler tout le corps. Tu pourras en changer à tout moment.",
+    };
+  }
+
+  if (freq === "0" || goal === "remise_en_forme") {
+    return {
+      preset: byId("maison"),
+      reason: goal === "remise_en_forme"
+        ? "Tu veux reprendre en douceur : 2 séances courtes à la maison, sans matériel, pour démarrer sans pression."
+        : "Tu ne t'entraînes pas encore : 2 séances courtes à la maison, sans matériel, c'est le plus simple pour commencer.",
+    };
+  }
+  if (level === "debutant") {
+    return {
+      preset: byId("debutant2"),
+      reason: "Tu débutes : 2 séances simples par semaine pour apprendre les mouvements et prendre l'habitude.",
+    };
+  }
+  if (freq === "1-2") {
+    return {
+      preset: byId("debutant2"),
+      reason: "Tu vises 1 à 2 séances par semaine : un full body sur 2 jours fait travailler tout le corps à chaque fois.",
+    };
+  }
+  if (freq === "5+" || (freq === "3-4" && level === "confirme")) {
+    return {
+      preset: byId("upperlower"),
+      reason: "Tu peux t'entraîner souvent : 4 séances haut et bas du corps pour plus de volume sur chaque muscle.",
+    };
+  }
+  if (goal === "prise_muscle") {
+    return {
+      preset: byId("ppl"),
+      reason: "Tu veux prendre du muscle sur 3 séances : poussée, tirage et jambes, chaque groupe a le temps de récupérer.",
+    };
+  }
+  return {
+    preset: byId("fullbody"),
+    reason: "3 séances corps entier par semaine, la base la plus solide pour progresser sur tout.",
+  };
+}

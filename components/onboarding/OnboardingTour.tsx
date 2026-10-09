@@ -2,14 +2,17 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Dumbbell, Apple, Heart, Crown, ArrowRight, X,
   Image as ImageIcon, Sparkles, FlaskConical, Trophy,
-  GraduationCap, Lightbulb, BookOpen,
+  GraduationCap, Lightbulb, BookOpen, Play,
 } from "lucide-react";
 import type { PersonalizationProfile } from "@/lib/personalization";
 import type { GuideRef } from "@/lib/reengagement";
+import type { PresetRecommendation } from "@/lib/preset-programs";
+import { completeOnboarding, installStarterProgram } from "@/app/onboarding/actions";
 
 interface Slide {
   icon: React.ElementType;
@@ -19,6 +22,7 @@ interface Slide {
   bullets?: string[];
   benefits?: { title: string; body: string }[];
   guideLink?: { href: string; label: string };
+  starter?: PresetRecommendation;
 }
 
 const SLIDES: Slide[] = [
@@ -98,7 +102,11 @@ const SLIDES: Slide[] = [
 // bouton "Passer" ait une chance d'être utilisé, pour maximiser les chances
 // qu'un membre gratuit reparte avec un vrai contenu reçu, pas juste une
 // visite guidée de fonctionnalités.
-function buildSlides(personalization: PersonalizationProfile, guide: GuideRef | null): Slide[] {
+function buildSlides(
+  personalization: PersonalizationProfile,
+  guide: GuideRef | null,
+  starter: PresetRecommendation | null
+): Slide[] {
   let slides = SLIDES;
 
   if (personalization.mythBusters.length > 0) {
@@ -123,6 +131,21 @@ function buildSlides(personalization: PersonalizationProfile, guide: GuideRef | 
     slides = [slides[0], guideSlide, ...slides.slice(1)];
   }
 
+  // Programme de départ (membre gratuit sans programme, voir
+  // OnboardingFlow) : en tout premier après l'accueil, parce que c'est la
+  // seule slide qui débouche sur une vraie action (une séance prête à
+  // lancer) et pas sur une présentation de fonctionnalité.
+  if (starter) {
+    const starterSlide: Slide = {
+      icon: Dumbbell,
+      eyebrow: "Ton programme de départ",
+      title: "Ta première séance est prête",
+      desc: starter.reason,
+      starter,
+    };
+    slides = [slides[0], starterSlide, ...slides.slice(1)];
+  }
+
   return slides;
 }
 
@@ -145,6 +168,68 @@ function BenefitCards({ items }: { items: { title: string; body: string }[] }) {
   );
 }
 
+function StarterCard({ starter }: { starter: PresetRecommendation }) {
+  const t = useT();
+  const router = useRouter();
+  const [installing, setInstalling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { preset } = starter;
+
+  async function install() {
+    setInstalling(true);
+    setError(null);
+    const res = await installStarterProgram(preset.id).catch(() => ({ error: "Erreur inattendue." }));
+    if (res.error) {
+      setError(res.error);
+      setInstalling(false);
+      return;
+    }
+    // Attendu ici (contrairement à goToApp) : la page programme ne renvoie
+    // pas vers /onboarding, mais l'accueil oui tant que l'écriture n'a pas
+    // atterri, et c'est là que la personne reviendra ensuite.
+    await completeOnboarding().catch(() => {});
+    router.push("/dashboard/client/program");
+    router.refresh();
+  }
+
+  return (
+    <div style={{ marginTop: 18, textAlign: "left" }}>
+      <div
+        style={{
+          padding: "14px 16px", borderRadius: 14,
+          background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.22)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
+          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{preset.name}</p>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.45)", whiteSpace: "nowrap" }}>
+            {preset.frequency}{t("x / semaine")}
+          </span>
+        </div>
+        {preset.input.days.map((day) => (
+          <p key={day.day_label} style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, margin: "4px 0 0" }}>
+            <span style={{ fontWeight: 700, color: "rgba(245,237,237,0.8)" }}>{day.day_label}</span>
+            {" · "}
+            {day.exercises.map((ex) => ex.name).join(", ")}
+          </p>
+        ))}
+      </div>
+      <button
+        onClick={install}
+        disabled={installing}
+        className="ep-btn-primary"
+        style={{ marginTop: 14, width: "100%", height: 48, fontSize: 13 }}
+      >
+        {installing ? t("Installation…") : <><Play size={14} fill="currentColor" />{" "}{t("Je le prends et je vois ma séance")}</>}
+      </button>
+      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", textAlign: "center", margin: "8px 0 0" }}>
+        {t("Modifiable ou remplaçable à tout moment dans Mon programme.")}
+      </p>
+      {error && <p style={{ fontSize: 12, color: "#f87171", textAlign: "center", margin: "8px 0 0" }}>{t(error)}</p>}
+    </div>
+  );
+}
+
 function BulletRow({ items }: { items: string[] }) {
   return (
     <div className="flex flex-wrap gap-2 justify-center mt-5">
@@ -163,12 +248,14 @@ function BulletRow({ items }: { items: string[] }) {
 export default function OnboardingTour({
   personalization,
   guide,
+  starter,
   onSkip,
   onFinish,
   finishing,
 }: {
   personalization: PersonalizationProfile;
   guide: GuideRef | null;
+  starter: PresetRecommendation | null;
   onSkip: () => void;
   onFinish: () => void;
   finishing: boolean;
@@ -177,7 +264,7 @@ export default function OnboardingTour({
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  const slides = buildSlides(personalization, guide);
+  const slides = buildSlides(personalization, guide, starter);
   const isLast = step === slides.length - 1;
   const slide = slides[step];
   const Icon = slide.icon;
@@ -241,10 +328,14 @@ export default function OnboardingTour({
         style={{
           flex: 1,
           display: "flex",
-          alignItems: "center",
           justifyContent: "center",
           padding: "20px 24px",
-          overflow: "hidden",
+          // Défilement vertical plutôt que coupure : la slide du programme de
+          // départ est plus haute que les autres sur un petit téléphone. Le
+          // centrage vertical passe par margin auto sur la slide (un
+          // alignItems center rendrait le haut inaccessible au défilement).
+          overflowX: "hidden",
+          overflowY: "auto",
         }}
       >
         <AnimatePresence mode="wait" custom={direction}>
@@ -261,7 +352,7 @@ export default function OnboardingTour({
             animate={{ opacity: 1, transform: "translateX(0px)" }}
             exit={{ opacity: 0, transform: `translateX(${direction > 0 ? -40 : 40}px)` }}
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            style={{ width: "100%", maxWidth: 420, textAlign: "center" }}
+            style={{ width: "100%", maxWidth: 420, textAlign: "center", margin: "auto 0" }}
           >
             <div
               style={{
@@ -295,6 +386,7 @@ export default function OnboardingTour({
 
             {slide.bullets && <BulletRow items={slide.bullets} />}
             {slide.benefits && <BenefitCards items={slide.benefits} />}
+            {slide.starter && <StarterCard starter={slide.starter} />}
             {slide.guideLink && (
               <a
                 href={slide.guideLink.href}

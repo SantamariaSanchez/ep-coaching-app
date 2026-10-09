@@ -4,27 +4,39 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dumbbell, Check, ChevronDown, ChevronUp } from "lucide-react";
-import { PRESET_PROGRAMS } from "@/lib/preset-programs";
+import { PRESET_PROGRAMS, type PresetRecommendation } from "@/lib/preset-programs";
 import type { ProgramInput } from "@/utils/programs";
 
 export default function ProgramPresetSelector({
   clientId,
   currentProgramName,
   saveProgram,
+  recommendation,
 }: {
   clientId: string;
   currentProgramName: string | null;
   saveProgram: (clientId: string, input: ProgramInput) => Promise<{ error?: string }>;
+  /** Programme conseillé d'après le quiz d'onboarding (recommendPreset). */
+  recommendation?: PresetRecommendation | null;
 }) {
   const t = useT();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selected, setSelected] = useState<string | null>(null);
+  const activePresetId = PRESET_PROGRAMS.find((p) => p.input.name === currentProgramName)?.id ?? null;
+  // Sans programme, le conseillé est présélectionné : un seul tap sur
+  // "Activer" suffit au lieu de devoir d'abord choisir parmi cinq.
+  const [selected, setSelected] = useState<string | null>(
+    !currentProgramName && recommendation ? recommendation.preset.id : null
+  );
   const [expanded, setExpanded] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const activePreset = PRESET_PROGRAMS.find((p) => p.input.name === currentProgramName);
+  const activePreset = PRESET_PROGRAMS.find((p) => p.id === activePresetId);
+  // Le conseillé en tête de liste, le reste dans l'ordre d'origine.
+  const presets = recommendation
+    ? [recommendation.preset, ...PRESET_PROGRAMS.filter((p) => p.id !== recommendation.preset.id)]
+    : PRESET_PROGRAMS;
 
   async function handleActivate() {
     if (!selected) return;
@@ -54,7 +66,8 @@ export default function ProgramPresetSelector({
       </div>
 
       <div className="space-y-3 mb-6">
-        {PRESET_PROGRAMS.map((preset) => {
+        {presets.map((preset) => {
+          const isRecommended = recommendation?.preset.id === preset.id;
           const isActive = activePreset?.id === preset.id;
           const isSelected = selected === preset.id;
           const isExpanded = expanded === preset.id;
@@ -105,10 +118,20 @@ export default function ProgramPresetSelector({
                         {t("Actif")}
                       </span>
                     )}
+                    {isRecommended && !isActive && (
+                      <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#E01E1E]/15 text-[#E01E1E]">
+                        {t("Conseillé pour toi")}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-[#F5EDED]/40 mt-0.5 leading-relaxed">
                     {preset.description}
                   </p>
+                  {isRecommended && (
+                    <p className="text-xs text-[#F5EDED]/60 mt-1.5 leading-relaxed">
+                      {recommendation?.reason}
+                    </p>
+                  )}
                 </div>
                 {isSelected ? (
                   <Check size={16} className="text-[#E01E1E] flex-shrink-0" />

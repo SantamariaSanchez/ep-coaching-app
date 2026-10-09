@@ -12,10 +12,11 @@ import {
   type PersonalizationProfile,
 } from "@/lib/personalization";
 import type { GuideRef } from "@/lib/reengagement";
+import { recommendPreset, type PresetRecommendation } from "@/lib/preset-programs";
 
 type Step = "profile" | "quiz" | "tour";
 
-export default function OnboardingFlow() {
+export default function OnboardingFlow({ canInstallStarter }: { canInstallStarter: boolean }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("profile");
   const [personalization, setPersonalization] = useState<PersonalizationProfile>(() =>
@@ -26,6 +27,9 @@ export default function OnboardingFlow() {
   // requête revienne. Reste null (slide simplement absente) si elle échoue.
   const [guide, setGuide] = useState<GuideRef | null>(null);
   const [finishing, setFinishing] = useState(false);
+  // Programme de départ conseillé d'après le quiz, proposé en un tap dans le
+  // tour (voir StarterProgramSlide). null si la personne n'y a pas droit.
+  const [starter, setStarter] = useState<PresetRecommendation | null>(null);
 
   // Skip et fin de tour font strictement la même chose : on marque
   // l'onboarding comme fait et on atterrit direct dans l'appli, sans détour.
@@ -51,6 +55,7 @@ export default function OnboardingFlow() {
       .catch(() => {
         // Best-effort — le tour reste utilisable sans slide guide.
       });
+    if (canInstallStarter) setStarter(recommendPreset(answers));
     setPersonalization(
       derivePersonalization({
         experience_level: answers.experience_level ?? null,
@@ -77,6 +82,7 @@ export default function OnboardingFlow() {
     <OnboardingTour
       personalization={personalization}
       guide={guide}
+      starter={starter}
       onSkip={goToApp}
       onFinish={goToApp}
       finishing={finishing}

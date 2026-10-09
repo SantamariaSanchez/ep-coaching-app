@@ -4,6 +4,9 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth-guards";
 import type { MemberPreferences, PrimaryGoal } from "@/lib/personalization";
 import { categoryForPrimaryGoal, pickGuide, type GuideCategory, type GuideRef } from "@/lib/reengagement";
+import { PRESET_PROGRAMS } from "@/lib/preset-programs";
+import { getAccessType } from "@/utils/auth-client";
+import { getActiveProgram, saveProgramForClient } from "@/utils/programs";
 
 // Labels historiques utilisés côté fiche client coach (profiles.goal /
 // profiles.level), conservés tels quels pour ne rien casser à l'affichage.
@@ -113,6 +116,40 @@ export async function completeOnboarding(): Promise<{ error?: string }> {
     return {};
   } catch (e) {
     console.error("completeOnboarding error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Installe le programme de départ choisi dans le tour d'onboarding (voir
+// recommendPreset() dans lib/preset-programs.ts) : un membre gratuit sort de
+// l'inscription avec une vraie séance prête à lancer au lieu d'un écran
+// "Créer mon programme" vide. Réservé aux membres gratuits (getAccessType,
+// seule source de vérité) : le programme d'un client accompagné est fait
+// par son coach, et on n'écrase jamais un programme déjà actif.
+export async function installStarterProgram(presetId: string): Promise<{ error?: string }> {
+  try {
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
+
+    const preset = PRESET_PROGRAMS.find((p) => p.id === presetId);
+    if (!preset) return { error: "Programme introuvable." };
+
+    const supabase = await createServerSupabase();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, subscription_status")
+      .eq("id", guard.userId)
+      .single();
+    if (getAccessType(profile) !== "membre_gratuit") {
+      return { error: "Ton programme est préparé par ton coach." };
+    }
+
+    const existing = await getActiveProgram(guard.userId);
+    if (existing && existing.days.length > 0) return {};
+
+    return await saveProgramForClient(supabase, guard.userId, preset.input);
+  } catch (e) {
+    console.error("installStarterProgram error:", e);
     return { error: "Erreur inattendue." };
   }
 }
