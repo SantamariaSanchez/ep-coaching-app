@@ -438,30 +438,41 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* ── Coachs : accès gratuit (décision du fondateur 2026-10-09 :
+            priorité aux utilisateurs, appli gratuite pour les coachs,
+            clients illimités, en échange de leurs retours). ── */}
+        <Link
+          href="/auth/coach"
+          className="animate-fade-up stagger-6"
+          style={{
+            display: "block",
+            marginTop: 24,
+            padding: "18px 18px 16px",
+            borderRadius: "var(--radius-xl)",
+            textDecoration: "none",
+            background: "linear-gradient(150deg, rgba(224,30,30,0.16), rgba(23,1,1,0.85) 65%)",
+            border: "1px solid rgba(224,30,30,0.35)",
+            boxShadow: "0 0 40px rgba(224,30,30,0.12)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#E01E1E", marginBottom: 6 }}>
+            <Shield size={13} /> Tu es coach ?
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
+            L&apos;appli complète, gratuite, pour tous tes clients
+          </div>
+          <p className="ep-tagline" style={{ margin: "6px 0 10px", fontSize: 14 }}>Tu gagnes un outil. On gagne tes retours.</p>
+          <div style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, marginBottom: 12 }}>
+            Clients illimités · Sans carte bancaire · Sans engagement
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, color: "#fff" }}>
+            Créer mon espace coach gratuit <ArrowRight size={15} />
+          </div>
+        </Link>
+
         {/* ── Newsletter ── */}
         <div className="ep-card-flat animate-fade-up stagger-6" style={{ padding: 16, marginTop: 24 }}>
           <NewsletterSignupForm source="app_home" />
-        </div>
-
-        {/* ── Coach link ── */}
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <Link
-            href="/auth/coach"
-            className="animate-fade-up stagger-6"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              marginTop: 32,
-              color: "rgba(245,237,237,0.7)",
-              textDecoration: "none",
-              fontSize: 16,
-              fontWeight: 600,
-            }}
-          >
-            <Shield size={17} />
-            Espace coach
-          </Link>
         </div>
 
         <InstallAppHint />

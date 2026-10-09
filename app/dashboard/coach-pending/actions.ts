@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { escapeHtml } from "@/lib/sanitize";
 
-// Passe un coach en attente de paiement sur le programme « Coach testeur »
+// Passe un coach en attente de paiement sur l'accès gratuit coach
 // (gratuit, clients illimités, en échange de retours). Voir COACH_TESTER_PLAN.
 export async function activateTesterPlan() {
   const user = await getUser();
@@ -16,7 +16,7 @@ export async function activateTesterPlan() {
 
   const admin = createAdminClient();
   await admin.from("profiles").update({ platform_subscription_status: "active" }).eq("id", user.id);
-  notifyAdmin("Nouveau coach testeur (gratuit)", [
+  notifyAdmin("Nouveau coach en accès gratuit", [
     `<strong>${escapeHtml(profile.full_name ?? "")}</strong> (${escapeHtml(profile.email ?? "")})`,
   ]).catch(() => {});
   redirect("/dashboard/coach");

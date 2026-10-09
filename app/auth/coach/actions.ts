@@ -124,7 +124,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
       status: "active",
       start_date: todayInParis(),
       is_platform_owner: false,
-      // Coach testeur : accès gratuit activé tout de suite, sans Stripe.
+      // Accès gratuit coach : activé tout de suite, sans Stripe.
       platform_subscription_status: isTester ? "active" : "inactive",
       invite_code: generateInviteCode(),
       terms_accepted_at: new Date().toISOString(),

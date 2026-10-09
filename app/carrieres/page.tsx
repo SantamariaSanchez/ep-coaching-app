@@ -8,7 +8,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import type { RoleStatus } from "@/components/ui/OrganisationView";
 import CareersClient from "@/components/careers/CareersClient";
 
-const TITLE = "Coach testeur, accès gratuit | EP Coaching";
+const TITLE = "Coachs, accès gratuit | EP Coaching";
 const DESCRIPTION = "Coachs : l'appli EP Coaching complète, gratuite, pour suivre tous tes clients. En échange, tes retours.";
 
 export const metadata: Metadata = {
@@ -57,12 +57,12 @@ export default async function CarrieresPage() {
 
       {/* Décision du fondateur 2026-10-09 : 0 € de CA, pas de recrutement
           salarié pour l'instant (les rémunérations ne sont pas assez
-          avantageuses). La page pousse le programme Coach testeur : appli
+          avantageuses). La page pousse l'accès gratuit coach : appli
           gratuite, clients illimités, en échange de retours. Les postes
           restent consultables plus bas, repliés. */}
       <div className="text-center mb-7">
         <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] mb-3">
-          <Users size={12} /> Programme Coach testeur
+          <Users size={12} /> Coachs : accès gratuit
         </div>
         <h1 className="text-2xl font-black text-white uppercase tracking-tight mb-3">
           Coachs : l&apos;appli complète, gratuite, pour tous tes clients
