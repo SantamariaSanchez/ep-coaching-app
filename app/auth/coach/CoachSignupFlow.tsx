@@ -5,7 +5,9 @@ import { useState } from "react";
 import Link from "next/link";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { signupCoach } from "./actions";
-import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
+import { COACH_PLATFORM_PLANS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
+
+const PLANS = [COACH_TESTER_PLAN, ...COACH_PLATFORM_PLANS];
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -35,7 +37,7 @@ export default function CoachSignupFlow() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [planId, setPlanId] = useState<string>(COACH_PLATFORM_PLANS[0].id);
+  const [planId, setPlanId] = useState<string>(COACH_TESTER_PLAN.id);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   // Consentement newsletter SÉPARÉ (2026-09-10), jamais pré-coché — même
   // principe que app/auth/client/SignupFlow.tsx.
@@ -97,8 +99,8 @@ export default function CoachSignupFlow() {
 
       <div>
         <label style={labelStyle}>{t("Formule")}</label>
-        <div style={{ display: "flex", gap: 10 }}>
-          {COACH_PLATFORM_PLANS.map((plan) => {
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {PLANS.map((plan) => {
             const active = planId === plan.id;
             return (
               <button
@@ -106,14 +108,15 @@ export default function CoachSignupFlow() {
                 type="button"
                 onClick={() => setPlanId(plan.id)}
                 style={{
+                  gridColumn: plan.id === COACH_TESTER_PLAN.id ? "1 / -1" : undefined,
                   flex: 1, textAlign: "left", padding: "12px 14px", borderRadius: 10, cursor: "pointer",
                   background: active ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.3)",
                   border: `1px solid ${active ? "rgba(224,30,30,0.5)" : "rgba(245,237,237,0.1)"}`,
                 }}
               >
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{plan.label}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#E01E1E" }}>{plan.priceLabel}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{plan.sublabel}</p>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{t(plan.label)}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: plan.id === COACH_TESTER_PLAN.id ? "#4ade80" : "#E01E1E" }}>{t(plan.priceLabel)}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{t(plan.sublabel)}</p>
               </button>
             );
           })}

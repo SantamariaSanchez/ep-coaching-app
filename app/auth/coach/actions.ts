@@ -5,7 +5,7 @@ import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
-import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
+import { COACH_PLATFORM_PLANS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { sendVerificationEmail } from "@/lib/email-verification";
@@ -90,7 +90,8 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
     return { error: PWNED_PASSWORD_MESSAGE };
   }
 
-  const plan = COACH_PLATFORM_PLANS.find((p) => p.id === input.planId);
+  const isTester = input.planId === COACH_TESTER_PLAN.id;
+  const plan = isTester ? COACH_TESTER_PLAN : COACH_PLATFORM_PLANS.find((p) => p.id === input.planId);
   if (!plan) return { error: "Formule invalide." };
 
   const admin = createAdminClient();
@@ -123,7 +124,8 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
       status: "active",
       start_date: todayInParis(),
       is_platform_owner: false,
-      platform_subscription_status: "inactive",
+      // Coach testeur : accès gratuit activé tout de suite, sans Stripe.
+      platform_subscription_status: isTester ? "active" : "inactive",
       invite_code: generateInviteCode(),
       terms_accepted_at: new Date().toISOString(),
       email_verified_at: null,
@@ -156,7 +158,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
     addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {});
   }
 
-  const checkoutUrl = `${plan.url}?client_reference_id=${authData.user.id}`;
+  const checkoutUrl = "url" in plan ? `${plan.url}?client_reference_id=${authData.user.id}` : "/dashboard/coach";
   return { success: true, checkoutUrl };
 }
 

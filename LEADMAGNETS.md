@@ -1,3 +1,5 @@
+> **Chantier terminé le 2026-10-09 : 1013 guides publiés, production arrêtée (routine supprimée par le fondateur).** Ce fichier reste comme archive.
+
 # Lead magnets : chantier "1000 en 1 mois"
 
 Contexte : demande du 2026-08-14, verbatim résumé : supprimer les ressources

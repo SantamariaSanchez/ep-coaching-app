@@ -2,7 +2,8 @@ import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import NotInIOSApp from "@/components/native/NotInIOSApp";
 import { getUser, getProfile } from "@/utils/auth";
-import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
+import { COACH_PLATFORM_PLANS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
+import { activateTesterPlan } from "./actions";
 import { Crown } from "lucide-react";
 import SignOutButton from "@/components/ui/SignOutButton";
 
@@ -34,8 +35,14 @@ export default async function CoachPendingPage() {
         </div>
         <h1 className="ep-h2" style={{ margin: "0 0 12px" }}>{t("Plus qu'une étape")}</h1>
         <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 28px" }}>
-          {t("Ton compte coach est créé. Active ton abonnement plateforme pour accéder à ton espace et commencer à suivre tes propres clients.")}
+          {t("Ton compte coach est créé. Choisis ta formule pour accéder à ton espace et suivre tes propres clients.")}
         </p>
+        <form action={activateTesterPlan} style={{ marginBottom: 10 }}>
+          <button type="submit" className="ep-btn-primary" style={{ width: "100%", display: "flex", flexDirection: "column", height: "auto", padding: "14px 20px", fontSize: 13 }}>
+            <span>{t(COACH_TESTER_PLAN.label)} : {t(COACH_TESTER_PLAN.priceLabel)}</span>
+            <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.85 }}>{t(COACH_TESTER_PLAN.sublabel)}</span>
+          </button>
+        </form>
         <NotInIOSApp fallback={<p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", lineHeight: 1.6, margin: 0 }}>{t("Ton abonnement se gère depuis ton espace sur le web. Une fois actif, reviens ici : tout sera prêt.")}</p>}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {COACH_PLATFORM_PLANS.map((plan) => (

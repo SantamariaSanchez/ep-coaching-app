@@ -42,70 +42,72 @@ interface FeatureSpot {
   cta: string;
 }
 
+// Ton Hormozi (retour fondateur 2026-10-09 : « faut plus charbonner ») :
+// phrases courtes, le vrai problème, ce qu'il coûte, une seule action.
 const FEATURES: FeatureSpot[] = [
   {
     path: "/dashboard/client/nutrition",
-    subject: "As-tu déjà loggé ton repas d'aujourd'hui ?",
+    subject: "Tu ne grossis pas. Tu ne sèches pas. Voilà pourquoi.",
     eyebrow: "Ta nutrition",
-    hook: "Scanner un code-barres, valider un repas prévu en un tap, voir tes macros du jour en temps réel.",
-    body: "Deux minutes par repas, et tu sais exactement où tu en es sur tes objectifs. Ton coach voit la même chose que toi, en direct, sans que tu aies à lui envoyer un message.",
+    hook: "La plupart des gens pensent qu'ils mangent bien. Ils ne savent pas. Ils devinent.",
+    body: "Et deviner, ça coûte des mois. Ouvre ta nutrition, valide tes repas en un tap ou scanne le code-barres. Deux minutes par repas. Tu sais enfin où tu en es, et ton coach aussi.",
     cta: "Ouvrir ma nutrition",
   },
   {
     path: "/dashboard/client/program",
-    subject: "Ton programme du jour t'attend",
+    subject: "Arrête d'improviser tes séances",
     eyebrow: "Ton programme",
-    hook: "Chaque exercice de ta séance a sa fiche complète : reps, séries, technique, note d'exécution.",
-    body: "Plus besoin de deviner ou de chercher sur internet en pleine séance. Tout est déjà dans l'appli, prêt à suivre.",
-    cta: "Voir mon programme",
+    hook: "Tu arrives à la salle, tu fais ce qui est libre, tu repars. C'est pour ça que rien ne bouge.",
+    body: "Ta séance est déjà écrite : exercices, séries, reps, technique. Tu n'as plus qu'à exécuter. Le gars qui exécute un plan moyen bat toujours le gars qui improvise un plan parfait.",
+    cta: "Voir ma séance",
   },
   {
     path: "/dashboard/client/recettes",
-    subject: "Une idée de repas qui rentre dans tes macros",
+    subject: "Manger bien sans manger triste",
     eyebrow: "Les recettes",
-    hook: "Une bibliothèque de recettes filtrable par macros, par temps de préparation, par ingrédients.",
-    body: "Fini le repas fade juste pour coller aux chiffres. Trouve une recette qui te fait plaisir ET qui rentre dans ton plan.",
+    hook: "Si ta diète est fade, tu vas craquer. Pas parce que tu es faible. Parce que personne ne tient en mangeant du riz poulet brocoli.",
+    body: "Filtre les recettes par macros, par temps, par ingrédients. Tu choisis un plat qui te fait envie et qui rentre dans ton plan. Ce que tu aimes, tu le tiens.",
     cta: "Trouver une recette",
   },
   {
     path: "/dashboard/client/steps",
-    subject: "Ton objectif de pas du jour, tu en es où ?",
+    subject: "Le levier que tout le monde oublie",
     eyebrow: "Tes pas",
-    hook: "Les pas comptent autant que la séance pour ta dépense énergétique totale sur la semaine.",
-    body: "Un objectif clair, un suivi simple, et tu vois l'impact réel sur ta progression, pas juste le jour de séance.",
+    hook: "Une séance, c'est une heure. Il t'en reste 23. C'est là que se joue ta dépense de la semaine.",
+    body: "Les pas, c'est le levier le plus simple et le plus ignoré. Un objectif clair, tu le suis, et tu vois la différence sur la balance sans toucher à ton assiette.",
     cta: "Suivre mes pas",
   },
   {
     path: "/dashboard/client/ressources",
-    subject: "Un guide gratuit qui peut vraiment t'aider",
-    eyebrow: "Les ressources",
-    hook: "Des centaines de guides, checklists et quiz gratuits, sourcés sur la vraie littérature scientifique.",
-    body: "Nutrition, entraînement, récupération, mental : il y a très probablement un guide sur exactement ce qui te bloque en ce moment.",
-    cta: "Parcourir les ressources",
+    subject: "La réponse à ta question existe déjà",
+    eyebrow: "Les guides gratuits",
+    hook: "Plus de 1000 guides, checklists et quiz. Gratuits. Chacun répond à une vraie question.",
+    body: "Ce qui te bloque en ce moment, il y a de grandes chances qu'un guide le règle en 5 minutes. Tape ton problème, lis, applique. C'est tout.",
+    cta: "Trouver mon guide",
   },
   {
     path: "/dashboard/client/science",
     subject: "Arrête de croire tout ce que tu lis sur les réseaux",
-    eyebrow: "La bibliothèque scientifique",
-    hook: "Une bibliothèque d'articles sourcés directement sur les études, pas sur des opinions.",
-    body: "Ce que dit vraiment la recherche sur ce qui marche, pas ce qu'un compte affirme sans preuve derrière.",
-    cta: "Explorer la bibliothèque",
+    eyebrow: "La bibliothèque",
+    hook: "Un conseil par vidéo, dix vidéos par jour, et elles se contredisent toutes. Tu ne manques pas d'infos. Tu en as trop.",
+    body: "La bibliothèque te donne ce que disent vraiment les études, en clair. Tu arrêtes de changer de méthode toutes les semaines.",
+    cta: "Ouvrir la bibliothèque",
   },
   {
     path: "/dashboard/client/communaute",
-    subject: "Tu n'es pas tout seul là-dedans",
+    subject: "Ceux qui réussissent ne le font pas seuls",
     eyebrow: "La communauté",
-    hook: "D'autres membres qui avancent sur les mêmes objectifs que toi, dans le même espace.",
-    body: "Partage une victoire, pose une question, vois où en sont les autres. Ça aide de ne pas être seul dans la durée.",
+    hook: "Seul, tu lâches le jour où la motivation tombe. Entouré, tu continues parce que les autres continuent.",
+    body: "Poste une victoire, même petite. Pose ta question. Regarde où en sont les autres. Ça prend 30 secondes et ça te tient des mois.",
     cta: "Voir la communauté",
   },
   {
     path: "/dashboard/client/mindset",
-    subject: "Le mental compte autant que l'entraînement",
+    subject: "Ton problème n'est pas ton programme",
     eyebrow: "Le mental",
-    hook: "Une section entière dédiée à la psychologie de la progression : motivation, discipline, gestion des échecs.",
-    body: "Le physique suit rarement quand la tête ne suit pas. Cette section existe pour ça, pas juste pour les macros.",
-    cta: "Découvrir cette section",
+    hook: "Tu sais quoi faire. Tu ne le fais pas. Ce n'est pas un problème d'info, c'est un problème de tête.",
+    body: "La section mental est là pour ça : discipline, rechutes, motivation qui disparaît. Règle ça et le reste suit.",
+    cta: "Travailler mon mental",
   },
 ];
 
@@ -151,9 +153,10 @@ function leadMagnetEmailBody(lm: LeadMagnetRow): string {
 
 function coachingNudgeBody(): string {
   return `<p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E01E1E;">Aller plus loin</p>
-<h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">Tu utilises déjà l'appli. Et si on allait plus loin ensemble ?</h1>
-<p style="margin:0 0 12px;">L'appli te donne les outils. Un accompagnement 1 à 1 te donne un plan qui s'adapte vraiment à toi, semaine après semaine, avec quelqu'un qui regarde tes résultats et ajuste avant que tu stagnes.</p>
-<p style="margin:0 0 4px;color:rgba(245,237,237,0.75);">Aucune pression. Si tu es curieux de voir si ça peut t'aider, réponds simplement à ce mail.</p>`;
+<h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">L'appli te donne les outils. Pas le plan.</h1>
+<p style="margin:0 0 12px;">Tu peux tout faire seul. Ça marche. Mais ça prend deux fois plus de temps, parce que personne ne te dit quand tu te trompes.</p>
+<p style="margin:0 0 12px;">En accompagnement, je regarde tes chiffres chaque semaine et j'ajuste avant que tu stagnes. Tu exécutes, je pilote.</p>
+<p style="margin:0 0 4px;color:rgba(245,237,237,0.75);">Si tu veux savoir si c'est pour toi, réponds juste « plan » à ce mail. Pas de pression, pas de discours.</p>`;
 }
 
 export async function GET(req: Request) {
@@ -172,7 +175,7 @@ export async function GET(req: Request) {
   let bodyHtml: string;
 
   if (slot === 6) {
-    subject = "Et si on allait plus loin ensemble ?";
+    subject = "L'appli te donne les outils. Pas le plan.";
     bodyHtml = coachingNudgeBody();
   } else if (slot % 2 === 0) {
     const lm = await pickLeadMagnet();

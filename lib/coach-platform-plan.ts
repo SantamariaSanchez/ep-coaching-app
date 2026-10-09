@@ -23,3 +23,15 @@ export const COACH_PLATFORM_PLANS = [
     url: "https://buy.stripe.com/4gMbJ19Gb3uj5bK41tfIs0a",
   },
 ] as const;
+
+// Programme « Coach testeur » (décision du fondateur 2026-10-09 : 0 € de
+// CA, la priorité est d'avoir des coachs qui utilisent l'appli et font des
+// retours). Gratuit, clients illimités (aucun plafond dans le code), en
+// échange de retours réguliers. Pas de Stripe : le compte est activé
+// directement à l'inscription.
+export const COACH_TESTER_PLAN = {
+  id: "testeur",
+  label: "Coach testeur",
+  priceLabel: "Gratuit",
+  sublabel: "Clients illimités, en échange de tes retours",
+} as const;
