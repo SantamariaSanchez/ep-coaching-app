@@ -600,10 +600,9 @@ export default async function ClientDashboard({
   // Tout début du coaching : le client remplit sa fiche complète une seule
   // fois, avant de voir le dashboard coaché — remplace l'ancien passage par
   // formulaire externe + email, les réponses vont directement dans sa fiche.
-  const intake = await getClientIntake(user.id);
-  if (!intake) redirect("/onboarding/intake");
-
-  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount, trialDaysLeft, appSetup] = await Promise.all([
+  // Fiche lue en même temps que le reste (perf 2026-10-13), redirection juste après.
+  const [intake, thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount, trialDaysLeft, appSetup] = await Promise.all([
+    getClientIntake(user.id),
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
     (async () => {
@@ -626,12 +625,13 @@ export default async function ClientDashboard({
     getTotalPoints(user.id),
     // Item 32 : uniquement pour savoir si la relance ci-dessous doit
     // s'afficher, évite d'aller chercher les logs pour tout le monde.
-    intake.gender === "Femme" ? getPeriodLogs(user.id).then((l) => l.length) : Promise.resolve(0),
+    getPeriodLogs(user.id).then((l) => l.length).catch(() => 0),
     // Item 43 : null pour la quasi-totalité des clients (coaching payant
     // classique, pas d'essai en cours) — juste une lecture ciblée en plus.
     getTrialDaysLeft(user.id),
     getAppSetup(user.id),
   ]);
+  if (!intake) redirect("/onboarding/intake");
   // Bilan de la semaine déjà envoyé mais rien partagé à la communauté :
   // moment naturel pour relancer, sans être insistant (une fois par semaine).
   const showVictoryNudge = !!thisWeekCheckin && !victoryPostedThisWeek;

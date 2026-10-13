@@ -129,12 +129,13 @@ export default function DailyGateOverlay({
         position: "fixed",
         left: 16,
         right: 16,
-        bottom: 16,
-        zIndex: 1500,
+        // Au-dessus de la barre d'onglets mobile (72 px + zone de sécurité),
+        // jamais par-dessus : elle bloquait les taps sur les onglets.
+        zIndex: 35,
         maxWidth: 420,
         margin: "0 auto",
       }}
-      className="ep-card"
+      className="ep-card bottom-[calc(84px+env(safe-area-inset-bottom))] md:bottom-4"
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 14px" }}>
         <div

@@ -620,9 +620,27 @@ export default function DashboardNav({
   // ou au survol) donc rien à ajouter à la main pour rester réactif.
   const tabHrefsKey = tabs.map((t) => t.href).join("|");
 
+  // Perf 2026-10-13 (mesuré : ~25 préchargements lancés dès l'ouverture,
+  // en concurrence avec la page affichée sur un téléphone en 4G) : les
+  // onglets se préchargent une fois la page affichée et le téléphone au
+  // repos, l'un après l'autre.
   useEffect(() => {
     const tabHrefs = tabHrefsKey ? tabHrefsKey.split("|") : [];
-    tabHrefs.forEach((href) => router.prefetch(href));
+    let cancelled = false;
+    const idle = (cb: () => void) =>
+      typeof (window as unknown as { requestIdleCallback?: unknown }).requestIdleCallback === "function" ? (window as unknown as { requestIdleCallback: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback(cb, { timeout: 4000 }) : setTimeout(cb, 1200);
+    const timer = window.setTimeout(() => {
+      const next = (i: number) => {
+        if (cancelled || i >= tabHrefs.length) return;
+        router.prefetch(tabHrefs[i]);
+        window.setTimeout(() => idle(() => next(i + 1)), 250);
+      };
+      idle(() => next(0));
+    }, 1500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [tabHrefsKey, router]);
 
   // Retour direct 2026-09-18 ("changer d'onglet ça charge à chaque fois, ça
@@ -642,9 +660,17 @@ export default function DashboardNav({
     .map(({ href: hrefOverride, segment }) => hrefOverride ?? (segment ? `${base}/${segment}` : base))
     .join("|");
 
+  // Sous-pages : seulement après les onglets, au repos, et pas au démarrage.
   useEffect(() => {
     const subHrefs = subItemHrefsKey ? subItemHrefsKey.split("|") : [];
-    subHrefs.forEach((href) => router.prefetch(href));
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      subHrefs.slice(0, 6).forEach((href, i) => window.setTimeout(() => !cancelled && router.prefetch(href), i * 400));
+    }, 6000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [subItemHrefsKey, router]);
 
   useEffect(() => {
@@ -667,7 +693,11 @@ export default function DashboardNav({
       .catch(() => {});
 
     const supabase = createClientSupabase();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    // getSession (lecture locale du cookie) au lieu de getUser (aller-retour
+    // de ~2 s mesuré vers le serveur d'auth au démarrage) : l'identifiant
+    // suffit ici, la base revérifie le jeton de toute façon (RLS).
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const user = session?.user;
       if (!user) return;
       supabase
         .from("profiles")
@@ -837,7 +867,7 @@ export default function DashboardNav({
                 const href = hrefOverride ?? (segment ? `${base}/${segment}` : base);
                 const count = getBadgeCount(badge);
                 return (
-                  <Link
+                  <Link prefetch={false}
                     key={href}
                     href={href}
                     className="animate-fade-up ep-nav-link"
@@ -970,7 +1000,7 @@ export default function DashboardNav({
           </div>
 
           {userRole === "coach" && hasPersonalCoach && (
-            <Link
+            <Link prefetch={false}
               href={isCoach ? "/dashboard/client" : "/dashboard/coach"}
               style={{
                 display: "flex",
@@ -1004,7 +1034,7 @@ export default function DashboardNav({
           )}
 
           {userRole === "client" && (
-            <Link
+            <Link prefetch={false}
               href="/dashboard/client/abonnement"
               style={{
                 display: "flex",
@@ -1115,7 +1145,7 @@ export default function DashboardNav({
               const href = hrefOverride ?? (segment ? `${base}/${segment}` : base);
               const count = getBadgeCount(badge);
               return (
-                <Link
+                <Link prefetch={false}
                   key={href}
                   href={href}
                   className="ep-nav-link"
@@ -1206,7 +1236,7 @@ export default function DashboardNav({
         }}
       >
         {!pathname.endsWith("/notes") && (
-          <Link href={`${base}/notes?capture=1`} aria-label={t("Note rapide")} className="ep-btn-icon" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Link prefetch={false} href={`${base}/notes?capture=1`} aria-label={t("Note rapide")} className="ep-btn-icon" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }} />
           </Link>
         )}
@@ -1239,7 +1269,7 @@ export default function DashboardNav({
             const count = getBadgeCount(tab.badge);
 
             return (
-              <Link
+              <Link prefetch={false}
                 key={tab.href}
                 href={tab.href}
                 className="ep-nav-tab"

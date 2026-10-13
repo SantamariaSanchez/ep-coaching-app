@@ -75,7 +75,8 @@ export default function NotificationBell({
     // canal (le client Supabase est partagé : le même nom renvoyait le canal
     // déjà abonné d'une autre instance).
     let cancelled = false;
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const user = session?.user;
       if (!user || cancelled) return;
       channel = supabase
         .channel(`nav-notifications-${user.id}-${Math.random().toString(36).slice(2)}`)

@@ -126,7 +126,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // (isFreeTier=false par défaut) avant que le fetch client ne corrige le tir,
   // ce qui donnait l'impression que la nav "dupliquait" ou redirigeait au hasard.
   const user = await getUser();
-  const profile = user ? await getProfile(user.id) : null;
+  // En parallèle (perf 2026-10-13) : profil et langue ne dépendent pas l'un de l'autre.
+  const [profile, locale] = await Promise.all([user ? getProfile(user.id) : Promise.resolve(null), getLocale(user?.id)]);
 
   // Garde de sécurité dure (redirige si besoin) : doit rester bloquante,
   // mais ne coûte rien pour l'immense majorité des comptes (sans MFA
@@ -147,7 +148,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // vérifiés, seules les nouvelles inscriptions le voient.
   const showEmailBanner = !!profile && !isEmailVerified(profile);
   const isCoach = profile?.role === "coach";
-  const locale = await getLocale(user?.id);
   // Suspense fallback={null} : rien ne s'affiche tant que le calcul n'est
   // pas prêt (la carte n'apparaissait déjà qu'après coup dans l'ancien
   // comportement bloquant, ce n'est donc pas une régression visuelle,
