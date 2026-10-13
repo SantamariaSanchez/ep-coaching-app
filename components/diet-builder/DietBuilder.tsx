@@ -38,6 +38,7 @@ import { MEAL_SLOTS, DAY_TABS, MODE_LABELS, MacroCoverage, autoAdjustQuantities,
 import MicroBarList from "@/components/ui/MicroBarList";
 import { Section, KV } from "@/components/program-builder/ClientContextPanel";
 import FoodCell from "./FoodCell";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Conception de diète façon tableur (2026-10-13, même refonte que le
 // programme) : un tableau par repas, on tape l'aliment, Entrée, la quantité,
@@ -162,6 +163,7 @@ export default function DietBuilder({
   const [showExtras, setShowExtras] = useState(false);
   const [mobilePanel, setMobilePanel] = useState(false);
   const pendingFocus = useRef<string | null>(null);
+  const isMobile = useIsMobile();
 
   useLayoutEffect(() => {
     if (!pendingFocus.current) return;
@@ -600,6 +602,71 @@ export default function DietBuilder({
                       <b className="text-(--ep-strong)">{Math.round(st.calories)}</b> kcal · P {Math.round(st.proteins)} · G {Math.round(st.carbs)} · L {Math.round(st.fats)}
                     </p>
                   </div>
+                  {isMobile ? (
+                    <div className="divide-y divide-(--ep-line)/15">
+                      {list.map((r) => {
+                        const n = nutrientsOf(r);
+                        const f = foodById.get(r.foodId);
+                        const hits = f && hasWatch ? checkFoodWatch(f, watch) : [];
+                        const alt = r.variant > 1;
+                        return (
+                          <div key={r.id} className={`px-3 py-2.5 ${alt ? "opacity-70" : ""}`}>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="flex items-center gap-1.5 text-[15px] font-semibold text-(--ep-strong)">
+                                  {alt && <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-(--ep-shade)/20">{tr("ou")}</span>}
+                                  <span className="truncate">{r.foodName}</span>
+                                  {hits.length > 0 && <AlertTriangle size={14} className="text-amber-400 flex-shrink-0" />}
+                                </p>
+                                <p className="text-[12px] text-(--ep-ink)/55">
+                                  {Math.round(n.calories)} kcal · P {Math.round(n.proteins)} · G {Math.round(n.carbs)} · L {Math.round(n.fats)}
+                                </p>
+                              </div>
+                              <label className="flex items-center gap-1 flex-shrink-0">
+                                <input
+                                  data-dcell={`${slot.key}:${r.id}:qty`}
+                                  value={r.qty}
+                                  inputMode="decimal"
+                                  onChange={(e) => patch(r.id, { qty: e.target.value.replace(",", ".").replace(/[^\d.]/g, "").slice(0, 5) })}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      focusNext(slot.key);
+                                    }
+                                  }}
+                                  aria-label={tr("Grammes")}
+                                  className="w-20 h-11 rounded-lg bg-(--ep-shade)/15 border border-(--ep-line)/25 text-center text-[16px] font-bold text-(--ep-strong) outline-none focus:border-(--ep-accent)"
+                                />
+                                <span className="text-[12px] text-(--ep-ink)/50">g</span>
+                              </label>
+                              <button type="button" aria-label={tr("Autre choix")} onClick={() => patch(r.id, { variant: alt ? 1 : 2 })} className={`w-9 h-11 flex items-center justify-center ${alt ? "text-(--ep-accent)" : "text-(--ep-ink)/40"}`}>
+                                <Shuffle size={16} />
+                              </button>
+                              <button type="button" aria-label={tr("Supprimer")} onClick={() => setRows((p) => p.filter((x) => x.id !== r.id))} className="w-9 h-11 flex items-center justify-center text-(--ep-ink)/40">
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className="flex items-center px-3 py-1.5">
+                        <Plus size={15} className="text-(--ep-ink)/35 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <FoodCell
+                            value={draft}
+                            foods={foods}
+                            watch={hasWatch ? watch : null}
+                            hideIncompatibleDiet={watch.diet ?? null}
+                            cellId={`${slot.key}:new:food`}
+                            placeholder={tr("Ajouter un aliment…")}
+                            onChange={(v) => setDrafts((d) => ({ ...d, [slot.key]: v }))}
+                            onPick={(food) => addFood(slot.key, food)}
+                            onNavKey={() => {}}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse table-fixed min-w-[640px]">
                       <colgroup>
@@ -711,6 +778,7 @@ export default function DietBuilder({
                       </tbody>
                     </table>
                   </div>
+                  )}
                 </section>
               );
             })}
