@@ -33,6 +33,8 @@ export type ModuleKey =
   | "mindset"
   | "competition"
   | "notes"
+  // Veille scientifique (recherche, actualité, bibliothèque, études)
+  | "science"
   // Disciplines (moteur Performances, lib/disciplines.ts)
   | "perf_course"
   | "perf_hyrox"
@@ -222,8 +224,9 @@ export const MEMBER_QUESTIONS: SetupQuestion[] = [
       { value: "mindset", label: "Mon mental", hint: "Habitudes, journal" },
       { value: "competition", label: "Je prépare une compétition" },
       { value: "notes", label: "Prendre des notes", hint: "Idées, captures, dictées, relié à Claude" },
+      { value: "science", label: "Les études et l'actu scientifique", hint: "Recherche, bibliothèque, nouveautés" },
     ],
-    toModules: (a) => ({ cycle: has(a, "cycle"), mindset: has(a, "mindset"), competition: has(a, "competition"), notes: has(a, "notes") }),
+    toModules: (a) => ({ cycle: has(a, "cycle"), mindset: has(a, "mindset"), competition: has(a, "competition"), notes: has(a, "notes"), science: has(a, "science") }),
   },
 ];
 
@@ -270,6 +273,9 @@ export const COACH_QUESTIONS: SetupQuestion[] = [
     title: "Tes objectifs du moment ?",
     subtitle: "L'appli met en avant les outils qui vont avec.",
     multi: true,
+    // Appliquée après les questions de l'espace Moi : pour un coach, c'est
+    // ce choix qui décide de la veille scientifique dans son menu.
+    applyLast: true,
     options: [
       { value: "coacher", label: "Coacher des clients en individuel" },
       { value: "contenu", label: "Créer du contenu et grossir mon audience" },
@@ -277,8 +283,13 @@ export const COACH_QUESTIONS: SetupQuestion[] = [
       { value: "lives", label: "Animer des lives et des groupes" },
       { value: "business", label: "Structurer mon business", hint: "Offre, ventes, pub, compta" },
       { value: "equipe", label: "Recruter et manager une équipe" },
+      { value: "science", label: "Faire ma veille scientifique", hint: "Études, actu, bibliothèque" },
     ],
+    // Personnalisation (2026-10-13, retour direct : « une fille qui coache,
+    // faut pas lui mettre en avant la science ») : la veille scientifique
+    // n'apparaît que pour qui la coche.
     toModules: (a) => ({
+      science: has(a, "science"),
       coaching_clients: has(a, "coacher"),
       contenu: has(a, "contenu"),
       stats_reseaux: has(a, "contenu"),
@@ -339,7 +350,10 @@ export function modulesFromAnswers(questions: SetupQuestion[], answers: Record<s
 // /dashboard/client ou /dashboard/coach). Le contenu reste accessible par
 // son adresse : on allège le menu, on ne verrouille rien.
 
+const SCIENCE_SEGMENTS = ["science", "science/recherche", "science/actualite", "science/bibliotheque", "science/etudes"];
+
 const MEMBER_SEGMENTS: Partial<Record<ModuleKey, string[]>> = {
+  science: SCIENCE_SEGMENTS,
   photos: ["photos"],
   sommeil: ["tracking"],
   pas: ["steps"],
@@ -351,6 +365,7 @@ const MEMBER_SEGMENTS: Partial<Record<ModuleKey, string[]>> = {
 };
 
 const COACH_SEGMENTS: Partial<Record<ModuleKey, string[]>> = {
+  science: SCIENCE_SEGMENTS,
   contenu: ["studio", "masterclass"],
   stats_reseaux: ["stats-reseaux"],
   lives: ["live"],
