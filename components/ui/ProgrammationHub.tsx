@@ -22,7 +22,8 @@ import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type { RoadmapTemplateWithDetails } from "@/utils/roadmap-templates";
 import type { Food, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
-import { PlanBuilder, MODE_LABELS } from "@/components/ui/DietPlanManager";
+import { MODE_LABELS } from "@/components/ui/DietPlanManager";
+import DietBuilder from "@/components/diet-builder/DietBuilder";
 import ApplyTemplateModal, { type ApplyTemplateClient } from "@/components/ui/ApplyTemplateModal";
 import BulkCalorieAdjustModal from "@/components/ui/BulkCalorieAdjustModal";
 import { PHASE_COLORS } from "@/lib/roadmap-colors";
@@ -192,8 +193,8 @@ export default function ProgrammationHub({
 
       {/*
         `hidden` plutôt qu'un rendu conditionnel `{tab === "x" && ...}` :
-        même bug de démontage React que MASTERCLASS.md Axe CB. PlanBuilder
-        (ouvert ici via "Nouveau modèle") est un vrai formulaire de
+        même bug de démontage React que MASTERCLASS.md Axe CB. Le tableur de
+        diète (ouvert ici via "Nouveau modèle") est un vrai formulaire de
         construction de diète, parfois des dizaines de repas saisis à la
         main (voir son propre commentaire dans DietPlanManager.tsx, Axe B).
         Cliquer par réflexe sur l'onglet "Programmes" ou "Road Map" pendant
@@ -229,17 +230,20 @@ export default function ProgrammationHub({
             </div>
           </div>
 
+          {/* Même tableur que la diète d'un client (2026-10-13) : un modèle se
+              construit exactement comme un plan, au téléphone comme sur
+              ordinateur, puis s'applique en un geste à chaque nouveau client. */}
           {showDietBuilder && (
-            <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-4">
-              <PlanBuilder
-                foods={foods}
-                onCreate={async (name, mode, meals, structure, objective) => {
-                  const result = await createDietTemplate(name, mode, meals, structure, objective);
-                  if (!result.error) setShowDietBuilder(false);
-                  return result;
-                }}
-              />
-            </div>
+            <DietBuilder
+              template
+              clientName={tr("modèle")}
+              foods={foods}
+              onClose={() => setShowDietBuilder(false)}
+              onCreate={async (name, mode, meals, structure, objective) => {
+                const result = await createDietTemplate(name, mode, meals, structure, objective);
+                return { error: result.error };
+              }}
+            />
           )}
 
           {dietTemplates.length === 0 ? (

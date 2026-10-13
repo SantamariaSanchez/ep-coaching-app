@@ -3,13 +3,16 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
+import { PlansListView } from "@/components/ui/DietPlanManager";
+import DietBuilder from "@/components/diet-builder/DietBuilder";
 import type { Food, DietPlanWithMeals, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 interface Props {
   foods: Food[];
   plans: DietPlanWithMeals[];
+  /** Cibles macro de la personne : le tableur peut ajuster les grammages dessus. */
+  targets?: { calories: number; proteins: number; carbs: number; fats: number } | null;
   createOwnDietPlan: (name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
   activateOwnDietPlan: (planId: string) => Promise<{ error?: string }>;
   deactivateOwnDietPlan: (planId: string) => Promise<{ error?: string }>;
@@ -19,6 +22,7 @@ interface Props {
 export default function OwnDietPlansSection({
   foods,
   plans,
+  targets = null,
   createOwnDietPlan,
   activateOwnDietPlan,
   deactivateOwnDietPlan,
@@ -28,7 +32,7 @@ export default function OwnDietPlansSection({
   const [showBuilder, setShowBuilder] = useState(plans.length === 0);
 
   return (
-    <div className="max-w-2xl mx-auto px-6 mb-8 space-y-5">
+    <div className={`${showBuilder ? "max-w-5xl px-3 sm:px-6" : "max-w-2xl px-6"} mx-auto mb-8 space-y-5`}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
@@ -47,17 +51,22 @@ export default function OwnDietPlansSection({
         </button>
       </div>
 
+      {/* Le tableur de diète (2026-10-13) : le même outil que celui des
+          coachs, en version perso (pas de fiche, pas de notification). Un
+          membre qui veut juste se faire son plan le fait en 2 minutes, aliment
+          par aliment, avec ses macros qui se calculent en direct. */}
       {showBuilder && (
-        <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-4">
-          <PlanBuilder
-            foods={foods}
-            onCreate={async (name, mode, meals, structure) => {
-              const result = await createOwnDietPlan(name, mode, meals, structure);
-              if (!result.error) setShowBuilder(false);
-              return result;
-            }}
-          />
-        </div>
+        <DietBuilder
+          self
+          clientName={t("moi")}
+          foods={foods}
+          targets={targets}
+          onClose={() => setShowBuilder(false)}
+          onCreate={async (name, mode, meals, structure) => {
+            const result = await createOwnDietPlan(name, mode, meals, structure);
+            return { error: result.error };
+          }}
+        />
       )}
 
       <PlansListView

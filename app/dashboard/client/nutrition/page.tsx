@@ -129,6 +129,11 @@ export default async function ClientNutritionPage() {
         <OwnDietPlansSection
           foods={foods}
           plans={ownPlans}
+          targets={
+            nutritionProfile?.calories_target
+              ? { calories: nutritionProfile.calories_target, proteins: nutritionProfile.proteins_target ?? 0, carbs: nutritionProfile.carbs_target ?? 0, fats: nutritionProfile.fats_target ?? 0 }
+              : null
+          }
           createOwnDietPlan={createOwnDietPlan}
           activateOwnDietPlan={activateOwnDietPlan}
           deactivateOwnDietPlan={deactivateOwnDietPlan}

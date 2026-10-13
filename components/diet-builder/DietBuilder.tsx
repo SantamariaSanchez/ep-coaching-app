@@ -68,10 +68,10 @@ const DEFAULT_SLOTS_BY_COUNT: Record<number, string[]> = {
   6: ["breakfast", "morning", "lunch", "afternoon", "postworkout", "dinner"],
   7: MEAL_SLOTS.map((s) => s.key),
 };
-const MODES: { key: DietMode; label: string; hint: string }[] = [
-  { key: "fixed", label: "Fixe", hint: "Il coche chaque aliment au fil de la journée." },
-  { key: "fixed_flexible", label: "Fixe + échanges", hint: "Même plan, il peut échanger un aliment par un autre de la même catégorie." },
-  { key: "flexible", label: "Flexible", hint: "Pas de repas imposés : il vise les macros et logue librement." },
+const MODES: { key: DietMode; label: string; hint: string; selfHint: string }[] = [
+  { key: "fixed", label: "Fixe", hint: "Il coche chaque aliment au fil de la journée.", selfHint: "Tu coches chaque aliment au fil de la journée." },
+  { key: "fixed_flexible", label: "Fixe + échanges", hint: "Même plan, il peut échanger un aliment par un autre de la même catégorie.", selfHint: "Même plan, tu peux échanger un aliment par un autre de la même catégorie." },
+  { key: "flexible", label: "Flexible", hint: "Pas de repas imposés : il vise les macros et logue librement.", selfHint: "Pas de repas imposés : tu vises tes macros et tu logues librement." },
 ];
 
 type Seed = {
@@ -109,6 +109,7 @@ export default function DietBuilder({
   onEditTargets,
   onClose,
   self = false,
+  template = false,
 }: {
   clientName: string;
   foods: Food[];
@@ -131,6 +132,11 @@ export default function DietBuilder({
   onClose?: () => void;
   /** Le coach conçoit sa propre diète (pas de fiche client, pas de notif). */
   self?: boolean;
+  /**
+   * Modèle réutilisable (Programmation > Diète) : même tableur que pour un
+   * client, sans fiche ni notification, le bouton enregistre le modèle.
+   */
+  template?: boolean;
 }) {
   const tr = useT();
   const confirm = useConfirm();
@@ -378,7 +384,7 @@ export default function DietBuilder({
       <div className="rounded-xl border border-green-500/40 bg-(--ep-okbg) px-4 py-6 text-center">
         <Check size={28} className="mx-auto text-green-400 mb-2" />
         <p className="text-sm font-bold text-(--ep-strong)">
-          {self ? tr("Plan activé.") : tr("Plan activé. {name} a reçu une notification.", { name: firstName })}
+          {template ? tr("Modèle enregistré.") : self ? tr("Plan activé.") : tr("Plan activé. {name} a reçu une notification.", { name: firstName })}
         </p>
         <div className="mt-3 flex justify-center gap-4">
           <button type="button" onClick={() => setDone(false)} className="text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/60 hover:text-(--ep-strong)">
@@ -394,7 +400,7 @@ export default function DietBuilder({
     );
   }
 
-  const panel = !self ? (
+  const panel = !self && !template ? (
     <NutritionContext clientName={clientName} intake={intake} socialNotes={socialNotes} onSocialNotes={setSocialNotes} />
   ) : null;
   const pct = (v: number, t: number) => (t > 0 ? Math.round((v / t) * 100) : 0);
@@ -422,7 +428,7 @@ export default function DietBuilder({
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={tr("Nom du plan (ex. Sèche, semaine 1)")}
+              placeholder={template ? tr("Nom du modèle (ex. Sèche 1800 kcal, 4 repas)") : tr("Nom du plan (ex. Sèche, semaine 1)")}
               aria-label={tr("Nom du plan")}
               className="flex-1 min-w-[180px] bg-transparent text-lg font-black text-(--ep-strong) placeholder:text-(--ep-ink)/25 placeholder:font-semibold focus:outline-none border-b border-transparent focus:border-(--ep-accent)/50"
             />
@@ -457,7 +463,7 @@ export default function DietBuilder({
                 <button
                   key={m.key}
                   type="button"
-                  title={tr(m.hint)}
+                  title={tr(self ? m.selfHint : m.hint)}
                   onClick={() => setMode(m.key)}
                   aria-pressed={mode === m.key}
                   className={`px-2.5 h-8 text-[11.5px] font-semibold ${mode === m.key ? "bg-(--ep-accent) text-white" : "bg-(--ep-shade)/15 text-(--ep-ink)/60 hover:text-(--ep-strong)"}`}
@@ -487,12 +493,12 @@ export default function DietBuilder({
               </div>
             )}
           </div>
-          <p className="text-[11px] text-(--ep-ink)/45 -mt-1">{tr(MODES.find((m) => m.key === mode)!.hint)}</p>
+          <p className="text-[11px] text-(--ep-ink)/45 -mt-1">{(() => { const m = MODES.find((x) => x.key === mode)!; return tr(self ? m.selfHint : m.hint); })()}</p>
 
           <input
             value={objective}
             onChange={(e) => setObjective(e.target.value)}
-            placeholder={tr("Objectif en une phrase (le client le voit), ex. Sèche douce, 400 kcal sous la maintenance")}
+            placeholder={self ? tr("Ton objectif en une phrase, ex. Perdre 4 kg avant l'été") : tr("Objectif en une phrase (le client le voit), ex. Sèche douce, 400 kcal sous la maintenance")}
             aria-label={tr("Objectif du plan")}
             className="w-full bg-(--ep-shade)/10 border border-(--ep-line)/25 focus:border-(--ep-accent)/50 rounded-lg px-3 py-2 text-[12.5px] text-(--ep-strong) placeholder:text-(--ep-ink)/30 outline-none"
           />
@@ -554,7 +560,7 @@ export default function DietBuilder({
 
         {mode === "flexible" ? (
           <div className="rounded-xl border border-(--ep-line)/30 bg-(--ep-s1) p-5 text-center text-[13px] text-(--ep-ink)/60">
-            {tr("En mode Flexible, pas de repas à construire : {name} vise ses macros et logue ce qu'il mange.", { name: firstName })}
+            {self ? tr("En mode Flexible, pas de repas à construire : tu vises tes macros et tu logues ce que tu manges.") : tr("En mode Flexible, pas de repas à construire : {name} vise ses macros et logue ce qu'il mange.", { name: firstName })}
           </div>
         ) : (
           <>
@@ -812,7 +818,7 @@ export default function DietBuilder({
           </div>
         )}
 
-        {saveAsTemplate && rows.length > 0 && (
+        {saveAsTemplate && !template && rows.length > 0 && (
           <div>
             {templateForm ? (
               <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--ep-line)/30 bg-(--ep-s1) p-2.5">
@@ -858,11 +864,11 @@ export default function DietBuilder({
             )}
             <span className="text-[11px] text-(--ep-ink)/45 flex-1 min-w-[120px]">
               {rows.length} {tr("aliments")}
-              {!self && ` · ${tr("{name} reçoit une notification", { name: firstName })}`}
+              {!self && !template && ` · ${tr("{name} reçoit une notification", { name: firstName })}`}
             </span>
             <button type="button" onClick={activate} disabled={saving} title="Ctrl+S" className="inline-flex items-center gap-2 rounded-lg bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60 px-4 py-2.5 text-[12px] font-black uppercase tracking-widest text-white">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              {self ? tr("Activer") : tr("Activer pour {name}", { name: firstName })}
+              {template ? tr("Enregistrer le modèle") : self ? tr("Activer") : tr("Activer pour {name}", { name: firstName })}
             </button>
             {error && (
               <p className="w-full inline-flex items-center gap-1.5 text-[12px] text-red-400">
