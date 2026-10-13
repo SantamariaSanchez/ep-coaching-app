@@ -302,7 +302,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   notifyAdmin("Nouvelle inscription membre/client", [
     `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
     `Rattaché à : ${escapeHtml(coach?.full_name ?? "aucun coach")}`,
-  ]).catch(() => {});
+  ], { url: "/dashboard/coach/communaute/membres" }).catch(() => {});
 
   // Fire-and-forget : si le coach rattaché (lien d'invitation) est un coach
   // IA, il se présente vraiment au nouveau membre — voir lib/ai-coach-welcome.ts.

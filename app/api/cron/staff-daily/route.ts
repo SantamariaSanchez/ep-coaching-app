@@ -134,6 +134,6 @@ export async function GET(req: Request) {
     const top = computeKpis(m.role_key, records.get(m.user_id) ?? []).slice(0, 2).map((k) => `${k.label} : ${k.value}`).join(" · ");
     return `<strong>${escapeHtml(m.full_name)}</strong> (${escapeHtml(role)}) ${reportedToday(m.user_id) ? "rapport envoyé" : "<span style=\"color:#facc15\">pas de rapport</span>"}<br/><span style="opacity:0.7">${escapeHtml(top)}</span>`;
   });
-  await notifyAdmin("Récap de l'équipe du jour", [...lines, `<a href="${APP_URL}/dashboard/coach/admin/equipe" style="color:#E01E1E">Ouvrir le pilotage de l'équipe</a>`]);
+  await notifyAdmin("Récap de l'équipe du jour", [...lines, `<a href="${APP_URL}/dashboard/coach/admin/equipe" style="color:#E01E1E">Ouvrir le pilotage de l'équipe</a>`], { push: false });
   return NextResponse.json({ ok: true, recap: members.length });
 }

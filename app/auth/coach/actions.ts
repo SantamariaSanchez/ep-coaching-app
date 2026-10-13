@@ -152,7 +152,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   notifyAdmin("Nouvelle inscription coach tiers", [
     `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
     `Formule choisie : ${escapeHtml(plan.label)} (${escapeHtml(plan.priceLabel)})`,
-  ]).catch(() => {});
+  ], { url: "/dashboard/coach/admin" }).catch(() => {});
 
   if (input.wantsNewsletter === true) {
     addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {});

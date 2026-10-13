@@ -241,7 +241,7 @@ export async function runOnboarding(today: string): Promise<{ sent: number }> {
         step.key === "j28" ? "Cale le point du premier mois avec lui ou elle." : step.key === "j90" ? "C'est l'évaluation des 3 mois." : "",
         `<a href="${APP_URL}/dashboard/coach/admin/equipe/${m.user_id}" style="color:#E01E1E">Ouvrir sa fiche</a>`,
       ].filter(Boolean);
-      await notifyAdmin(`Intégration : ${m.full_name}, jour ${age}`, lines);
+      await notifyAdmin(`Intégration : ${m.full_name}, jour ${age}`, lines, { push: false });
       await notifyUser(m.owner_id, { type: "staff", title: `Intégration de ${m.full_name}`, body: `Jour ${age} : ${pr.done.size}/${pr.lessons.length} leçons, ${pr.reports} rapport(s).`, url: `/dashboard/coach/admin/equipe/${m.user_id}` }).catch(() => {});
     }
   }

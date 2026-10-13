@@ -10,6 +10,8 @@ import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { getLeadMagnet } from "@/lib/lead-magnets";
 import { maybeSendLeadQualification } from "@/lib/lead-qualification";
 import { escapeHtml } from "@/lib/sanitize";
+import { pushFounder } from "@/lib/admin-notify";
+import { notifyUser } from "@/lib/notify";
 import { LEAD_ORIGIN_PLATFORMS, normalizeLeadPlatform, platformFromReferrerHost, UUID_RE, type LeadOriginInput, type LeadOriginPlatform } from "@/lib/lead-origin";
 
 // Origine envoyée par le navigateur (voir lib/lead-origin.ts) : jamais crue
@@ -80,6 +82,19 @@ export async function captureLead({
       stage: "nouveau",
       summary: `A téléchargé le guide gratuit "${magnet.title}".${originFields.origin_platform ? ` Arrivé depuis : ${LEAD_ORIGIN_PLATFORMS[originFields.origin_platform as LeadOriginPlatform] ?? originFields.origin_platform}.` : ""}`,
     });
+
+    // Le propriétaire du guide le sait tout de suite (2026-10-13, retour
+    // direct : « que j'aie direct les infos »). Guide officiel : le
+    // fondateur ; guide d'un coach tiers : ce coach.
+    const leadBody = `${email || phone || "Contact"} · guide « ${magnet.title} »${originFields.origin_platform ? ` · depuis ${LEAD_ORIGIN_PLATFORMS[originFields.origin_platform as LeadOriginPlatform] ?? originFields.origin_platform}` : ""}`;
+    if (magnet.isOfficial) {
+      pushFounder({ title: "🧲 Nouveau lead", body: leadBody, url: "/dashboard/coach/admin/leads" }).catch(() => {});
+    } else {
+      const { data: owner } = await supabase.from("lead_magnets").select("coach_id").eq("slug", slug).maybeSingle();
+      if (owner?.coach_id) {
+        notifyUser(owner.coach_id as string, { type: "lead_captured", title: "🧲 Nouveau lead", body: leadBody, url: "/dashboard/coach/ressources" }).catch(() => {});
+      }
+    }
 
     if (email) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";

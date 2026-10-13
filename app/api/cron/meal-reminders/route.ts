@@ -4,6 +4,7 @@ import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
 import { MEAL_SLOT_TIMES as DEFAULT_SLOT_TIMES, MEAL_SLOT_LABELS as SLOT_LABELS, timeToMinutes, parisNow as parisNowBase } from "@/lib/meal-slots";
 import { todayInParis } from "@/lib/dates";
+import { runAdherenceReminders } from "@/lib/adherence-reminders";
 
 // Rappel automatique à l'heure habituelle de chaque repas — zéro
 // configuration : des horaires usuels par créneau (pas par client), voir
@@ -38,6 +39,11 @@ export async function GET(req: Request) {
 
   const { minutes: nowMinutes, today, dow } = parisNow();
 
+  // Rappels d'adhérence (bilan du matin, bilan du soir, check-in), même pas
+  // de 15 min et à l'heure de chaque personne : voir lib/adherence-reminders.ts.
+  // Jamais bloquant pour les rappels de repas.
+  const adherence = await runAdherenceReminders().catch(() => null);
+
   // Créneaux dus dans les 15 prochaines minutes — bornes alignées sur le pas
   // du cron (*/15, et toutes les heures par défaut ci-dessus tombent aussi
   // sur des multiples de 15) : chaque créneau n'est donc touché que par un
@@ -50,7 +56,7 @@ export async function GET(req: Request) {
     .map(([slot]) => slot);
 
   if (dueSlots.length === 0) {
-    return NextResponse.json({ ok: true, notified: 0, dueSlots: [] });
+    return NextResponse.json({ ok: true, notified: 0, dueSlots: [], adherence });
   }
 
   const admin = createAdminClient();

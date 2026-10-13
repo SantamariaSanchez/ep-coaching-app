@@ -72,7 +72,7 @@ export async function GET(req: Request) {
         notifyAdmin("Compte gratuit supprimé pour inactivité", [
           `<strong>${row.full_name ?? "Utilisateur"}</strong> (${row.email ?? row.id})`,
           `${inactiveDays} jours sans connexion, 2 avertissements envoyés au préalable.`,
-        ]).catch(() => {});
+        ], { push: false }).catch(() => {});
       }
       continue;
     }

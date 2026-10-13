@@ -18,6 +18,6 @@ export async function activateTesterPlan() {
   await admin.from("profiles").update({ platform_subscription_status: "active" }).eq("id", user.id);
   notifyAdmin("Nouveau coach en accès gratuit", [
     `<strong>${escapeHtml(profile.full_name ?? "")}</strong> (${escapeHtml(profile.email ?? "")})`,
-  ]).catch(() => {});
+  ], { url: "/dashboard/coach/admin" }).catch(() => {});
   redirect("/dashboard/coach");
 }

@@ -6,6 +6,7 @@ import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { getPlatformOwnerId } from "@/lib/job-applications";
 import { QUALIFYING_QUESTIONS, type QualifyingAnswers } from "@/lib/job-applications-shared";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { pushFounder } from "@/lib/admin-notify";
 import { POLES } from "@/lib/org-roles";
 import { routeApplicationToHr } from "@/lib/staff-automation";
 import { cleanText, escapeHtml, safeExternalUrl, LIMITS } from "@/lib/sanitize";
@@ -161,6 +162,7 @@ export async function submitApplication(formData: FormData): Promise<{ error?: s
         </div>
       `,
     }).catch(() => {});
+    pushFounder({ title: "📨 Nouvelle candidature", body: `${name} · ${roleTitle}`, url: "/dashboard/coach/admin/organisation" }).catch(() => {});
 
     return { ok: true };
   } catch (e) {
