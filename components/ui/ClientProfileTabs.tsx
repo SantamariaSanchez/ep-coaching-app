@@ -93,6 +93,14 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
+// Fiche client allégée (2026-10-13, retour direct : « les espaces de travail
+// doivent être optimisés et d'une efficacité irréprochable ») : 16 onglets,
+// soit 6 rangées de boutons avant le moindre contenu au téléphone. Les 8
+// onglets du quotidien d'un coach restent en vue, le reste se range sous
+// « Plus » (toujours à un tap, et ouvert d'office si un de ces onglets a une
+// alerte ou est ouvert par un lien).
+const PRIMARY_TABS: readonly TabKey[] = ["profil", "intake", "programme", "nutrition", "roadmap", "checkins", "bilans", "logbook"];
+
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "Non renseigné";
   return new Intl.DateTimeFormat("fr-FR", {
@@ -265,6 +273,7 @@ export default function ClientProfileTabs({
   toggleClientConstraint,
   addRecoveryLog,
   deleteRecoveryLog,
+  initialTab,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -364,10 +373,13 @@ export default function ClientProfileTabs({
     data: { log_date: string; zone: string; load_note: string | null; pain: number; note: string | null }
   ) => Promise<{ error?: string }>;
   deleteRecoveryLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
+  /** Onglet ouvert à l'arrivée (lien « ?tab=intake » depuis la mise en route). */
+  initialTab?: string;
 }) {
   const t = useT();
   const { rank, next, progressPct } = getRankForPoints(points);
-  const [activeTab, setActiveTab] = useState<TabKey>("profil");
+  const [activeTab, setActiveTab] = useState<TabKey>(() => (TABS.some((x) => x.key === initialTab) ? (initialTab as TabKey) : "profil"));
+  const [showMoreTabs, setShowMoreTabs] = useState(() => !!initialTab && !PRIMARY_TABS.includes(initialTab as TabKey));
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [roadmapLoading, setRoadmapLoading] = useState(true);
   // Repasse "petit détail utile" (2026-09-10) : `roadmapData === null`
@@ -424,13 +436,19 @@ export default function ClientProfileTabs({
           une seule ligne — avec 9 sections, la rangée dépassait largement la
           largeur de l'écran sur mobile, forçant à zoomer/dézoomer et
           défiler sur le côté pour juste choisir un onglet. */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-6">
-        {TABS.filter(({ key }) => (key !== "cycle" || intake?.gender === "Femme") && (key !== "performances" || (performance && (performance.disciplines.length > 0 || performance.entries.length > 0))))
+      {(() => {
+        const visibleTabs = TABS.filter(({ key }) => (key !== "cycle" || intake?.gender === "Femme") && (key !== "performances" || (performance && (performance.disciplines.length > 0 || performance.entries.length > 0))))
           // Onglet "Photos" = suivi de pose de préparation compétition, pas
           // les photos de check-in (gérées ailleurs). Masqué sauf pour un
           // client réellement en préparation, pour ne pas paraître cassé/vide.
-          .filter(({ key }) => key !== "photos" || !!client.competition_category)
-          .map(({ key, label, icon: Icon }) => {
+          .filter(({ key }) => key !== "photos" || !!client.competition_category);
+        const secondary = visibleTabs.filter(({ key }) => !PRIMARY_TABS.includes(key));
+        const secondaryAlert = secondary.some(({ key }) => suggestionsByTab[key]);
+        const moreOpen = showMoreTabs || secondaryAlert || !PRIMARY_TABS.includes(activeTab);
+        const shown = moreOpen ? visibleTabs : visibleTabs.filter(({ key }) => PRIMARY_TABS.includes(key));
+        return (
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-6">
+        {shown.map(({ key, label, icon: Icon }) => {
           const badge = suggestionsByTab[key];
           return (
           <button
@@ -456,7 +474,20 @@ export default function ClientProfileTabs({
           </button>
           );
         })}
+        {secondary.length > 0 && !(secondaryAlert || !PRIMARY_TABS.includes(activeTab)) && (
+          <button
+            type="button"
+            onClick={() => setShowMoreTabs((v) => !v)}
+            aria-expanded={moreOpen}
+            className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border border-dashed border-(--ep-line)/35 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 transition-colors"
+          >
+            <span className="text-[15px] font-black leading-none">{moreOpen ? "−" : `+${secondary.length}`}</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider leading-tight">{moreOpen ? t("Moins") : t("Plus")}</span>
+          </button>
+        )}
       </div>
+        );
+      })()}
 
       {/*
         `hidden` plutôt qu'un rendu conditionnel `{activeTab === "x" && ...}` :

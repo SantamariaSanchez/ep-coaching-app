@@ -53,6 +53,7 @@ import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
 import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhaseSuggestions } from "@/lib/coaching-phase";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
+import ClientSetupCard from "@/components/coach/ClientSetupCard";
 import { loadPerformance } from "@/lib/performance-server";
 import { ChevronLeft, FileText, LayoutTemplate } from "lucide-react";
 
@@ -73,19 +74,18 @@ const STATUS_BADGE = {
 
 export default async function ClientDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const t = await getT();
-  const { id } = await params;
-
-  const user = await getUser();
+  const [t, { id }, { tab: initialTab }, user] = await Promise.all([getT(), params, searchParams, getUser()]);
   if (!user) redirect("/");
 
-  const profile = await getProfile(user.id);
+  // Profil du coach et fiche du client en même temps (avant : l'un après
+  // l'autre, un aller-retour base de données de plus à chaque ouverture).
+  const [profile, client] = await Promise.all([getProfile(user.id), getClientById(id, user.id)]);
   if (profile?.role === "client") redirect("/dashboard/client");
-
-  const client = await getClientById(id, user.id);
   if (!client) notFound();
 
   const today = todayInParis();
@@ -130,6 +130,8 @@ export default async function ClientDetailPage({
     medicalConstraints,
     recoveryLogs,
     accessoriesByName,
+    performance,
+    roadmapRow,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -170,6 +172,9 @@ export default async function ClientDetailPage({
     getClientConstraints(id),
     getRecoveryLogs(id),
     getAccessoriesByExerciseName(),
+    // Chargé avec tout le reste (avant : attendu seul, après tout le reste).
+    loadPerformance(id),
+    createAdminClient().from("roadmaps").select("id").eq("client_id", id).maybeSingle(),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -235,8 +240,21 @@ export default async function ClientDetailPage({
         </Link>
       </div>
 
+      {(client.subscription_status === "active" || !profile?.is_platform_owner) && (
+        <ClientSetupCard
+          clientId={id}
+          firstName={(client.full_name ?? t("Client")).split(" ")[0]}
+          hasIntake={!!intake}
+          hasProgram={!!program}
+          hasDiet={!!activePlan}
+          hasRoadmap={!!roadmapRow.data}
+          checkinDay={(client.checkin_day as number | null) ?? null}
+        />
+      )}
+
       <ClientProfileTabs
-        performance={await loadPerformance(id)}
+        performance={performance}
+        initialTab={initialTab}
         client={client}
         latestWeight={latestWeight}
         measurements={measurements}
