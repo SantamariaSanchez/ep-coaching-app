@@ -30,11 +30,11 @@ import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 import { ALL_LIVE_TYPES } from "@/lib/live-types";
-import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
+import { entityGraph, faqNode } from "@/lib/seo-entity";
 
-const TITLE = "EP Coaching : coaching bodybuilding et performance en ligne";
+const TITLE = "EP Coaching : coach sportif à Annecy et en ligne, appli musculation et nutrition";
 const DESCRIPTION =
-  "Coaching sportif en ligne (bodybuilding, nutrition, performance) : accompagnement live, audits, formations, suivi quotidien et communauté. Programme adapté à ton niveau.";
+  "EP Coaching, coaching sportif en musculation et nutrition fondé à Annecy par Santamaria Sanchéz : programme sur mesure, plan alimentaire, bilans et suivi dans l'appli, partout en France. Gratuit pour commencer.";
 
 // Sans openGraph/twitter dédiés ici, un partage de la page d'accueil (lien
 // en bio Instagram, la destination la plus partagée du site) retombait sur
@@ -99,19 +99,7 @@ const STATS = [
 // vers des profils réels et confirmés (Instagram, TikTok, YouTube) —
 // jamais une URL LinkedIn inventée, aucune URL vanity confirmée à ce jour
 // (voir 🎥 Guide production scripts YouTube).
-const STRUCTURED_DATA = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "EP Coaching",
-  url: "https://ep-coaching.vercel.app",
-  description: DESCRIPTION,
-  founder: {
-    "@type": "Person",
-    name: "Santamaria Sanchéz",
-    sameAs: SANTAMARIA_SOCIALS,
-  },
-  sameAs: SANTAMARIA_SOCIALS,
-};
+// Graphe d'entité (entreprise à Annecy, fondateur, site, appli) : voir lib/seo-entity.ts.
 
 // FAQPage (retour direct 2026-09-18 : "travaille sur le GEO, pour qu'on soit
 // sûr d'apparaître dans les résultats de recherche de l'IA") — les moteurs
@@ -136,7 +124,11 @@ const FAQS = [
   },
   {
     q: "Qui est Santamaria Sanchéz ?",
-    a: "Santamaria Sanchéz est le fondateur d'EP Coaching, coach en bodybuilding et coach pour les coachs.",
+    a: "Santamaria Sanchéz est le fondateur d'EP Coaching, coach en musculation et nutrition basé à Annecy, athlète naturel (objectif Heroes Cup WNBF France en Classic Physique) et coach pour les coachs.",
+  },
+  {
+    q: "Où est basé EP Coaching ?",
+    a: "EP Coaching est basé à Annecy, en Haute-Savoie. L'accompagnement se fait en ligne dans l'appli EP Coaching, donc à Annecy comme partout en France.",
   },
   {
     q: "Qu'est-ce qui est inclus dans EP Coaching ?",
@@ -148,15 +140,7 @@ const FAQS = [
   },
 ] as const;
 
-const FAQ_STRUCTURED_DATA = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQS.map(({ q, a }) => ({
-    "@type": "Question",
-    name: q,
-    acceptedAnswer: { "@type": "Answer", text: a },
-  })),
-};
+const STRUCTURED_DATA = entityGraph([faqNode(FAQS)]);
 
 export default function HomePage() {
   return (
@@ -176,11 +160,6 @@ export default function HomePage() {
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
-      />
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_STRUCTURED_DATA) }}
       />
 
       <div style={{ width: "100%", maxWidth: 480, position: "relative", zIndex: 1 }}>
@@ -406,6 +385,26 @@ export default function HomePage() {
             <BookOpen size={14} /> Pas encore prêt(e) ? Ressources gratuites sans inscription
           </Link>
         </div>
+
+        {/* ── Qui et où (SEO/GEO 2026-10-13) : le nom du fondateur et Annecy
+            en texte visible, liés aux pages À propos et Coach à Annecy. ── */}
+        <section className="ep-card animate-fade-up stagger-6" style={{ marginTop: 32, padding: "18px 18px 16px" }}>
+          <h2 style={{ fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+            Fondé à Annecy par Santamaria Sanchéz
+          </h2>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.6)", margin: "0 0 12px", lineHeight: 1.55 }}>
+            Coach en musculation et nutrition, athlète naturel. EP Coaching est né à Annecy, en Haute-Savoie, et accompagne en ligne
+            partout en France : programme, nutrition, bilans et messages, dans une seule appli.
+          </p>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <Link href="/a-propos" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-accent)", textDecoration: "none" }}>
+              Qui suis-je →
+            </Link>
+            <Link href="/coach-sportif-annecy" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-accent)", textDecoration: "none" }}>
+              Coach sportif à Annecy →
+            </Link>
+          </div>
+        </section>
 
         {/* ── FAQ ── contenu visible qui correspond exactement au JSON-LD
             FAQPage ci-dessus (voir FAQS) : jamais de données structurées

@@ -13,15 +13,15 @@ const BASE_URL = "https://ep-coaching.vercel.app";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE_URL, changeFrequency: "weekly", priority: 1 },
+    { url: `${BASE_URL}/a-propos`, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${BASE_URL}/coach-sportif-annecy`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE_URL}/ressources`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/reussites`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/carrieres`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/coachs`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/outils`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/support`, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${BASE_URL}/legal/cgu`, changeFrequency: "yearly", priority: 0.1 },
-    { url: `${BASE_URL}/legal/cgv`, changeFrequency: "yearly", priority: 0.1 },
-    { url: `${BASE_URL}/legal/confidentialite`, changeFrequency: "yearly", priority: 0.1 },
+    // Pages légales retirées (noindex depuis le 2026-10-13).
   ];
 
   // Le vrai volume de contenu indexable : chaque lead magnet publié a sa

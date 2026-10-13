@@ -6,6 +6,9 @@ import { LEGAL_LAST_UPDATED } from "@/lib/legal";
 export const metadata: Metadata = {
   title: "Conditions Générales d'Utilisation · EP Coaching",
   alternates: { canonical: "/legal/cgu" },
+  // Pages légales hors des résultats de recherche (2026-10-13) : elles
+  // sortaient en premier sur « EP Coaching Annecy » faute de mieux.
+  robots: { index: false, follow: true },
 };
 
 const sections: LegalSection[] = [

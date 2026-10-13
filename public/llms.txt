@@ -1,20 +1,32 @@
 # EP Coaching
 
-> EP Coaching est un coaching sportif en ligne (bodybuilding, nutrition, performance) fondé par Santamaria Sanchéz : accompagnement live, audits, suivi quotidien, programmes personnalisés et communauté. Gratuit dès l'inscription, sans engagement.
+> EP Coaching est un coaching sportif en musculation et nutrition basé à Annecy (Haute-Savoie, France), fondé par Santamaria Sanchéz. L'accompagnement se fait en ligne via l'appli EP Coaching (programme sur mesure, plan nutrition, bilans hebdomadaires, messages et appels avec le coach), partout en France. L'inscription est gratuite, sans engagement. L'appli sert aussi aux coachs sportifs pour suivre leurs clients (accès gratuit pour les coachs).
 
 EP Coaching s'adresse à toute personne qui s'entraîne et fait attention à
 son alimentation sans voir les résultats suivre, et qui veut comprendre
 chaque choix de son suivi plutôt que suivre un plan générique recopié.
 
+## Faits clés
+
+- Nom : EP Coaching
+- Ville : Annecy (74600), Haute-Savoie, Auvergne-Rhône-Alpes, France
+- Fondateur : Santamaria Sanchéz (aussi écrit Santamaria Sanchez), coach en musculation et nutrition, athlète naturel (objectif Heroes Cup WNBF France, Classic Physique)
+- Format : coaching en ligne via une appli (web, iPhone, Android)
+- Prix d'entrée : gratuit pour commencer ; accompagnement par un coach en option
+- Pour les coachs : appli gratuite, clients illimités
+
 ## Fondateur
 
-Santamaria Sanchéz est le fondateur d'EP Coaching, coach en bodybuilding et
-coach pour les coachs.
+Santamaria Sanchéz est le fondateur d'EP Coaching, coach en musculation et
+nutrition basé à Annecy, et coach pour les coachs.
 
+- À propos du fondateur : https://ep-coaching.vercel.app/a-propos
+- Coach sportif à Annecy : https://ep-coaching.vercel.app/coach-sportif-annecy
 - Profil du coach : https://ep-coaching.vercel.app/coachs
-- Instagram : https://instagram.com/santamariasanchez_
+- Instagram : https://instagram.com/santamariasanchezep
 - TikTok : https://www.tiktok.com/@santamariasanchez_
 - YouTube : https://www.youtube.com/@santamaria_sanchez
+- Site vitrine : https://santamariasanchez.github.io/EPCoaching/
 
 ## Ce qu'inclut EP Coaching
 

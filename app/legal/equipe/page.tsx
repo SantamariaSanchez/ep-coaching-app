@@ -5,6 +5,9 @@ import { LegalPage, P, Ul, Strong, type LegalSection } from "@/components/legal/
 export const metadata: Metadata = {
   title: "Conditions de collaboration de l'équipe · EP Coaching",
   alternates: { canonical: "/legal/equipe" },
+  // Pages légales hors des résultats de recherche (2026-10-13) : elles
+  // sortaient en premier sur « EP Coaching Annecy » faute de mieux.
+  robots: { index: false, follow: true },
 };
 
 // Équivalent des CGU pour les recrues de l'équipe (espace /equipe), acceptées

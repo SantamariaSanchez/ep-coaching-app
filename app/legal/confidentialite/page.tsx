@@ -4,6 +4,9 @@ import { LegalPage, P, Ul, Strong, type LegalSection } from "@/components/legal/
 export const metadata: Metadata = {
   title: "Politique de confidentialité · EP Coaching",
   alternates: { canonical: "/legal/confidentialite" },
+  // Pages légales hors des résultats de recherche (2026-10-13) : elles
+  // sortaient en premier sur « EP Coaching Annecy » faute de mieux.
+  robots: { index: false, follow: true },
 };
 
 const sections: LegalSection[] = [
