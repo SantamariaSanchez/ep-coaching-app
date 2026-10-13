@@ -3,7 +3,8 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, Mic } from "lucide-react";
+import { useDictation } from "@/hooks/useDictation";
 import type { CheckIn } from "@/utils/checkins";
 import type { WeeklyAverages } from "@/utils/daily-logs";
 import { replyToCheckin, attachCoachVideo, attachCoachVideoLink } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
@@ -100,6 +101,15 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
   const [videoLinkInput, setVideoLinkInput] = useState("");
   const [videoLink, setVideoLink] = useState<string | null>(null);
   const [linkPending, setLinkPending] = useState(false);
+  // Retour plus rapide (2026-10-13) : dictée vocale et trame en un tap.
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+  function appendToNotes(text: string) {
+    const el = notesRef.current;
+    if (!el) return;
+    el.value = el.value ? `${el.value.trimEnd()}${el.value.endsWith("\n") ? "" : " "}${text}` : text;
+    el.focus();
+  }
+  const dictation = useDictation(appendToNotes);
 
   useEffect(() => {
     if (state && "success" in state) {
@@ -156,9 +166,35 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
         <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", marginBottom: 6 }}>
           {t("Ton retour au client")}
         </label>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+          <button
+            type="button"
+            onClick={dictation.toggle}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 999, border: "1px solid rgba(var(--ep-line-rgb),0.4)", background: dictation.listening ? "var(--ep-accent)" : "transparent", color: dictation.listening ? "#fff" : "rgba(var(--ep-ink-rgb),0.7)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+          >
+            <Mic size={12} /> {dictation.listening ? t("J'écoute… touche pour arrêter") : t("Dicter")}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const el = notesRef.current;
+              if (!el) return;
+              const scaffold = t("✅ Ce qui est top cette semaine :\n\n🎯 Ce qu'on ajuste :\n\n📌 Ton focus pour la semaine :\n");
+              el.value = el.value.trim() ? `${el.value.trimEnd()}\n\n${scaffold}` : scaffold;
+              el.focus();
+            }}
+            style={{ padding: "6px 10px", borderRadius: 999, border: "1px dashed rgba(var(--ep-line-rgb),0.45)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.7)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+          >
+            {t("Trame : top / ajuster / focus")}
+          </button>
+          {dictation.unsupported && (
+            <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)" }}>{t("Dictée indisponible ici : utilise le micro du clavier.")}</span>
+          )}
+        </div>
         <textarea
+          ref={notesRef}
           name="coach_notes"
-          rows={4}
+          rows={6}
           required
           defaultValue={checkin.coach_notes ?? ""}
           placeholder={t("Analyse, conseils, encouragements…")} aria-label={t("Analyse, conseils, encouragements…")}
