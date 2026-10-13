@@ -7,6 +7,7 @@ import { createScript, updateScript, deleteScript, publishScript, type ScriptDel
 import Teleprompter from "@/components/coach/Teleprompter";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
+import { checkVocabulary, usesVous, VOCABULARY_PROMPT_BLOCK, type VocabularyIssue } from "@/lib/content-vocabulary";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
@@ -79,8 +80,9 @@ function formatDuration(seconds: number | null): string | null {
 // Facebook, YouTube Shorts, tous les réseaux au format court, donc plus
 // simple tu mets reels ») : un seul format court, tourné une fois et posté
 // partout. Les anciennes plateformes restent pour l'affichage des vieux
-// scripts mais ne se proposent plus à la création (Instagram et Threads
-// bannis depuis le 2026-10-08).
+// scripts mais ne se proposent plus à la création. Instagram et Threads de
+// retour le 2026-10-13 (nouveau compte @santamariasanchezep_) : Instagram
+// est couvert par « Reel », Threads redevient un format écrit à part.
 export const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
   reel: { label: "Reel", color: "var(--ep-accent)" },
   instagram: { label: "Instagram Reel", color: "#E1306C" },
@@ -98,9 +100,9 @@ export const PLATFORM_LABELS: Record<string, { label: string; color: string }> =
 // plateformes se crée directement en statut "publié" (voir submitNew),
 // jamais à_tourner/tourné qui n'a pas de sens ici.
 const WRITTEN_PLATFORMS = new Set(["linkedin", "threads"]);
-// Ce qu'on peut créer : le reel (format court, tous réseaux), la vidéo
-// YouTube longue et le post LinkedIn.
-const CREATABLE = ["reel", "youtube", "linkedin"];
+// Ce qu'on peut créer : le reel (format court, tous réseaux, Instagram
+// compris), la vidéo YouTube longue, le post LinkedIn et le post Threads.
+const CREATABLE = ["reel", "youtube", "linkedin", "threads"];
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
 
@@ -193,6 +195,49 @@ export default function IdeationScripts({
       <div hidden={subTab !== "technique"}>
         <TechnicalLibrary />
       </div>
+    </div>
+  );
+}
+
+// ── Vocabulaire (Dictionnaire EP Coaching) ─────────────────────────────
+// Retour direct 2026-10-13 : « il y a des mots dans les scripts actuels qui
+// ne sont pas dans le vocabulaire ». Chaque carte signale ce qui sort du
+// dictionnaire (lib/content-vocabulary.ts) avec la formule qui le remplace,
+// et le contrôle tourne en direct pendant qu'on modifie un script.
+
+function textVocabularyIssues(text: string | null | undefined): VocabularyIssue[] {
+  const issues = checkVocabulary(text);
+  if (usesVous(text)) {
+    issues.push({ found: "vous", why: "Le tutoiement est la règle", fix: "Passe en « tu » : « tu vois », « ta séance », « tes macros »." });
+  }
+  return issues;
+}
+
+function scriptVocabularyIssues(script: CoachScript): VocabularyIssue[] {
+  return textVocabularyIssues([script.title, script.hook, script.content, script.cta, script.instagram_caption].filter(Boolean).join("\n"));
+}
+
+function VocabularyWarnings({ issues, live }: { issues: VocabularyIssue[]; live?: boolean }) {
+  const tr = useT();
+  if (!issues.length) {
+    return live ? (
+      <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 700, color: "var(--ep-ok)" }}>✓ {tr("Vocabulaire du dictionnaire respecté")}</p>
+    ) : null;
+  }
+  return (
+    <div style={{ marginTop: 10, background: "rgba(var(--ep-yellow-rgb),0.07)", border: "1px solid rgba(var(--ep-yellow-rgb),0.3)", borderRadius: 10, padding: "10px 12px" }}>
+      <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-yellow)" }}>
+        {tr("Hors vocabulaire du dictionnaire")}
+      </p>
+      <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+        {issues.map((it, i) => (
+          <li key={i} style={{ fontSize: 12, lineHeight: 1.45, color: "rgba(var(--ep-ink-rgb),0.75)" }}>
+            <strong style={{ color: "var(--ep-ink)" }}>« {it.found} »</strong> · {tr(it.why)}
+            <br />
+            <span style={{ color: "rgba(var(--ep-ink-rgb),0.55)" }}>→ {tr(it.fix)}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -295,7 +340,7 @@ function MyScripts({
   const [format, setFormat] = useState<ScriptFormat>("court");
   // Plateforme par défaut à la création. Facebook pendant le ban Instagram
   // (2026-09-22), Instagram de nouveau depuis le 2026-09-29 : nouveau compte
-  // propre @santamariasanchezep. Elle ne se change plus après la création.
+  // @santamariasanchezep_ (2026-10-13). Elle ne se change plus après la création.
   const [newPlatform, setNewPlatform] = useState("reel");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -1071,6 +1116,24 @@ function MyScripts({
                     {script.pillar}
                   </span>
                 )}
+                {(() => {
+                  const n = scriptVocabularyIssues(script).length;
+                  if (!n) return null;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedId(script.id)}
+                      title={tr("Mots hors vocabulaire : ouvre le script pour voir quoi changer")}
+                      style={{
+                        fontSize: 9, fontWeight: 800, padding: "3px 8px", borderRadius: 999, cursor: "pointer",
+                        background: "rgba(var(--ep-yellow-rgb),0.14)", color: "var(--ep-yellow)",
+                        border: "1px solid rgba(var(--ep-yellow-rgb),0.4)",
+                      }}
+                    >
+                      {n} {n > 1 ? tr("mots à revoir") : tr("mot à revoir")}
+                    </button>
+                  );
+                })()}
                 <button
                   type="button"
                   onClick={() => toggleExpanded(script.id)}
@@ -1139,6 +1202,7 @@ function MyScripts({
 
               {isExpanded ? (
                 <>
+              <VocabularyWarnings issues={scriptVocabularyIssues(script)} />
               {/* Script mot pour mot — retour direct 2026-09-02 : "le script
                   que je dois lire mot pour mot y'a pas encore" — c'était déjà
                   là en base, mais noyé sous la description Instagram et
@@ -1167,6 +1231,7 @@ function MyScripts({
                       style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
                       autoFocus
                     />
+                    <VocabularyWarnings issues={textVocabularyIssues(draft)} live />
                     <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                       <button
                         type="button"
@@ -1538,6 +1603,9 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
           </p>
         </div>
       )}
+      <p style={{ margin: "0 0 12px", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
+        {tr("Chaque prompt copié emporte aussi les règles d'écriture du dictionnaire (mots à utiliser, mots interdits, appel à l'action selon la plateforme) : Claude écrit avec le vocabulaire des créateurs de ta niche, pas avec le sien.")}
+      </p>
       <LibrarySearch query={query} onChange={setQuery} placeholder={tr("Chercher un prompt...")} />
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {filtered.map((p, i) => (
@@ -1547,7 +1615,7 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
                 {p.category}
               </span>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)", flex: 1 }}>{p.title}</p>
-              <CopyButton text={context ? context + p.prompt : p.prompt} />
+              <CopyButton text={(context ?? "") + VOCABULARY_PROMPT_BLOCK + "\n\n---\n\n" + p.prompt} />
             </div>
             <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>{p.prompt}</p>
           </div>

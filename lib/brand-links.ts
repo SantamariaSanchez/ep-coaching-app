@@ -2,13 +2,13 @@
 // vitrine globale). Utilisé par /bio (lien en bio Insta/TikTok) et par le
 // générateur de contenu (lib/social-content.ts) pour signer les visuels.
 //
-// Instagram et Threads : nouveau compte propre @santamariasanchezep depuis
-// le 2026-09-29 (retour direct : "Instagram on a re enfin, nouveau compte
-// propre santamariasanchezep", "on a re Threads"). Threads reprend toujours
+// Instagram et Threads : compte @santamariasanchezep_ depuis le 2026-10-13
+// (retour direct : « grande nouvelle, on a re Instagram, c'est
+// santamariasanchezep_, donc re Threads »). Threads reprend toujours
 // l'identifiant Instagram.
-export const INSTAGRAM_HANDLE = "santamariasanchezep";
-export const INSTAGRAM_URL = `https://instagram.com/${INSTAGRAM_HANDLE}`;
-export const THREADS_URL = `https://www.threads.net/@${INSTAGRAM_HANDLE}`;
+export const INSTAGRAM_HANDLE = "santamariasanchezep_";
+export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;
+export const THREADS_URL = `https://www.threads.com/@${INSTAGRAM_HANDLE}`;
 
 export const BRAND_SOCIALS = {
   instagram: {

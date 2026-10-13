@@ -24,31 +24,31 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     title: "10 hooks pour un sujet donné",
     category: "Hook",
     prompt:
-      "Tu es coach sportif/nutrition, marque EP Coaching, ton direct et sans blabla, jamais de tiret dans le texte. Écris-moi 10 hooks (première phrase d'une vidéo courte) sur le sujet suivant : [SUJET]. Contrainte : chaque hook doit créer une tension ou une curiosité en une phrase, sans jamais révéler la réponse. Varie les angles : question directe, chiffre choc, erreur commune, affirmation contre-intuitive, storytelling en une phrase. Numérote-les, une phrase par hook, pas de blabla explicatif autour.",
+      "Tu es coach sportif/nutrition, marque EP Coaching, ton direct et sans blabla, jamais de tiret dans le texte. Écris-moi 10 hooks (première phrase d'une vidéo courte) sur le sujet suivant : [SUJET]. Contrainte : chaque hook doit créer une tension ou une curiosité en une phrase, sans jamais révéler la réponse. Varie les angles : question qui revient, faux problème (« tu penses que t'as un problème de X, c'est pas du tout le cas »), mythe à casser, paradoxe, ciblage (« si tu... t'es exactement sur la bonne vidéo »), aveu. Jamais de chiffre inventé. Numérote-les, une phrase par hook, pas de blabla explicatif autour.",
   },
   {
     title: "Script Reel/Short (30-60s)",
     category: "Script",
     prompt:
-      "Écris-moi le script complet d'un Reel/Short de 30 à 45 secondes sur : [SUJET]. Structure imposée : hook (1 phrase, 0-2s), problème/tension (2-3 phrases), le point clé à retenir (le cœur du contenu, avec un exemple concret si possible), CTA final court. Ton : coach direct, tutoiement, jamais de tiret. Indique aussi entre crochets ce qui doit être filmé/montré à chaque étape (ex. [face caméra], [démo geste technique], [texte à l'écran]).",
+      "Écris-moi le script complet d'un Reel/Short de 30 à 45 secondes sur : [SUJET]. Structure imposée : hook (1 phrase, 0-2s), problème/tension (2-3 phrases), le point clé à retenir (le cœur du contenu, avec un exemple concret si possible), punchline courte, puis l'appel à commenter (numéro du guide ou mot clé, jamais « lien en bio »). Ton : coach direct, tutoiement, jamais de tiret. Indique aussi entre crochets ce qui doit être filmé/montré à chaque étape (ex. [face caméra], [démo geste technique], [texte à l'écran]).",
   },
   {
     title: "10 variantes de concept vidéo sur un thème",
     category: "Concept",
     prompt:
-      "À partir de ce thème : [THÈME], propose-moi 10 concepts de vidéo totalement différents (pas 10 variations du même angle) : un format liste, un format mythe/réalité, un format \"j'ai testé X pendant Y jours\", un format réaction à une pratique courante, un format avant/après une erreur corrigée, un format question de communauté, un format duo (2 avis qui s'opposent), un format démonstration technique, un format storytelling personnel, un format chiffre/étude expliquée simplement. Une phrase de pitch par concept.",
+      "À partir de ce thème : [THÈME], propose-moi 10 concepts de vidéo totalement différents (pas 10 variations du même angle) : un format liste, un format mythe/réalité, un format \"j'ai testé X pendant Y jours\", un format réaction à une pratique courante, un format avant/après une erreur corrigée, un format question de communauté, un format duo (2 avis qui s'opposent), un format démonstration technique, un format storytelling personnel, un format calcul simple fait à l'écran (« regarde bien ce calcul »). Une phrase de pitch par concept.",
   },
   {
-    title: "Description + tags pour une vidéo",
+    title: "Description d'un reel ou d'une vidéo YouTube",
     category: "Description",
     prompt:
-      "Écris-moi la description YouTube/Instagram de cette vidéo : [RÉSUMÉ DE LA VIDÉO]. Format : 2-3 phrases qui donnent envie et résument la valeur sans spoiler le hook, puis une liste de ce que la vidéo couvre, puis un CTA vers [OFFRE/COMPTE]. Termine par une liste de 8-10 hashtags pertinents pour la musculation/nutrition en français.",
+      "Écris-moi la description de cette vidéo : [RÉSUMÉ DE LA VIDÉO], plateforme : [REEL ou YOUTUBE]. REEL (Instagram, TikTok, Shorts, Facebook) : ligne 1 « Abonne toi », puis 3 à 4 lignes courtes en tu avec les mots de la vidéo (la fausse croyance, ce qu'elle coûte, le vrai déclic), dernière ligne : le même appel à commenter que dans la vidéo (« Commente [NUMÉRO DU GUIDE] pour recevoir le guide » ou un mot clé). Jamais de lien, jamais « lien en bio ». YOUTUBE : première ligne = le lien du guide gratuit [LIEN] avec une phrase qui donne envie, puis 2 ou 3 phrases simples, puis le lien de l'appli, puis 3 à 5 hashtags. Jamais de chapitres ni de timecodes.",
   },
   {
     title: "10 CTA différents pour la même offre",
     category: "CTA",
     prompt:
-      "Écris-moi 10 CTA différents (une phrase chacun) pour donner envie de [ACTION : télécharger le guide gratuit / essayer l'appli / prendre RDV]. Chaque CTA renvoie vers UN lien direct (jamais « commente tel mot »). Contrainte : jamais \"clique sur le lien en bio\" tout seul sans raison, toujours relier le CTA à un bénéfice concret évoqué juste avant. Varie le registre : urgence douce, curiosité, preuve sociale, question directe, défi.",
+      "Écris-moi 10 appels à l'action différents (une phrase chacun) pour donner envie de [ACTION : recevoir le guide gratuit / essayer l'appli / prendre un appel], plateforme : [REEL / YOUTUBE / LINKEDIN / THREADS]. REEL : on fait commenter le numéro du guide ([NUMÉRO]) ou un mot clé en majuscules (PROG, DIETE, COACHING, APPLI...), ex. « Commente 131, ça prend 15 secondes, et je te l'envoie ». YOUTUBE : « le lien est dans la description ». LINKEDIN et THREADS : le lien seul sur sa ligne, ou une question, jamais les deux. Jamais « lien en bio ». Toujours relier l'appel à ce que la personne obtient tout de suite. Varie le registre : simple, curiosité, défi, question directe.",
   },
   {
     title: "Réponse à un commentaire qui mérite un vrai contenu",
@@ -102,7 +102,7 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     title: "Plan de vidéo YouTube longue (8-15 min)",
     category: "YouTube",
     prompt:
-      "Écris-moi un plan détaillé (pas le script mot à mot) d'une vidéo YouTube de 8 à 15 minutes sur : [SUJET]. Structure : accroche (20-30s, ce que la vidéo va vraiment apporter, sans sur-promettre), contexte/problème (1-2 min), 3 à 5 parties principales avec pour chacune le point clé + un exemple concret + une transition, un rappel du bénéfice toutes les 2-3 minutes pour garder l'attention, récap final + CTA. Ajoute des timestamps de chapitres YouTube correspondant exactement à cette structure. Public : pratiquants de musculation qui veulent des réponses fiables, pas du contenu marketing creux.",
+      "Écris-moi un plan détaillé (pas le script mot à mot) d'une vidéo YouTube de 8 à 15 minutes sur : [SUJET]. Structure : accroche (20-30s, ce que la vidéo va vraiment apporter, sans sur-promettre), contexte/problème (1-2 min), 3 à 5 parties principales avec pour chacune le point clé + un exemple concret + une transition, un rappel du bénéfice toutes les 2-3 minutes pour garder l'attention, récap final (« donc si je devais récapituler ») + appel à l'action (« le lien est dans la description »). Les parties s'annoncent à l'oral (« premier point », « on passe au deuxième »), JAMAIS de chapitres ni de timecodes. Public : pratiquants qui veulent des réponses fiables, pas du contenu marketing creux.",
   },
   {
     title: "Script vidéo YouTube \"vlog/dans les coulisses\"",
@@ -126,7 +126,7 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     title: "Contenu qui s'adresse aux coachs (pas aux clients finaux)",
     category: "Business",
     prompt:
-      "Écris-moi un script court (30-45s) qui s'adresse spécifiquement à des coachs sportifs qui veulent scaler leur activité (pas à mes clients finaux en musculation), sur ce sujet : [SUJET, ex. un outil, une erreur de business, un chiffre à suivre]. Ton toujours direct et concret, jamais de langage \"business coach\" générique, un vrai retour d'expérience ou un vrai raisonnement, jamais de statistique ou de résultat client inventé.",
+      "Écris-moi un script court (30-45s) qui s'adresse spécifiquement à des coachs sportifs qui veulent plus de clients (pas à mes clients finaux), sur ce sujet : [SUJET, ex. un outil, une erreur de business, un chiffre à suivre]. Ton toujours direct et concret, jamais de langage \"business coach\" générique, un vrai retour d'expérience ou un vrai raisonnement, jamais de statistique ou de résultat client inventé.",
   },
   {
     title: "Transformer une leçon business en contenu",
@@ -165,10 +165,22 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
       "Voici le contenu d'un [REEL ou CAROUSEL] : [CONTENU]. Transforme-le dans l'autre format ([CAROUSEL ou REEL], l'inverse de ce que je viens de donner) en gardant le même message central mais en adaptant vraiment la structure au nouveau format (un carousel a besoin d'un titre de slide 1 qui donne envie de swiper, un reel a besoin d'un rythme parlé et d'un hook filmable), pas juste couper-coller le texte.",
   },
   {
-    title: "Adapter un contenu Instagram en post LinkedIn",
+    title: "Adapter un reel en post LinkedIn",
     category: "Repurposing",
     prompt:
-      "Voici le script ou le sujet d'un contenu Instagram : [CONTENU/SUJET]. Réécris-le en post LinkedIn texte (pas de vidéo), destiné à des coachs sportifs ou entrepreneurs qui suivent mon activité de scaling via l'app. Structure LinkedIn classique : accroche courte en une ligne qui donne envie de cliquer \"voir plus\", corps en paragraphes courts et aérés (pas un pavé), la leçon ou l'angle business qui en ressort, question ouverte en fin de post pour lancer la discussion en commentaire.",
+      "Voici le script ou le sujet d'un reel : [CONTENU/SUJET]. Réécris-le en post LinkedIn texte (pas de vidéo). Les 2 premières lignes font tout : une phrase courte qui frappe une douleur ou une idée reçue, puis une ligne qui donne envie de lire la suite. Une idée par ligne, beaucoup d'air, rythme parlé, du vécu réel (jamais inventé). Fin : UNE phrase qui donne une raison de cliquer puis le lien seul sur sa ligne, OU une question qui fait réagir. Zéro hashtag en rafale, zéro emoji décoratif.",
+  },
+  {
+    title: "Adapter un reel en post Threads",
+    category: "Repurposing",
+    prompt:
+      "Voici le script ou le sujet d'un reel : [CONTENU/SUJET]. Transforme-le en post Threads : 3 à 6 lignes maximum, tutoiement, une seule idée, une prise de position assumée dès la première ligne, comme si tu parlais à un pote à la salle. Pas de lien (sauf si je te le demande), pas de hashtag. Termine par une question courte ou une phrase qui marque. Donne-moi 3 versions avec un angle différent.",
+  },
+  {
+    title: "5 titres hook + description à partir du transcript de mon reel",
+    category: "Script",
+    prompt:
+      "Voici le transcript d'un reel que j'ai déjà tourné : [TRANSCRIPT]. Comprends d'abord de quoi parle VRAIMENT la vidéo et reste strictement dans ce sujet. Livre uniquement : 5 titres hook (texte à l'écran) de 3 à 7 mots, AUCUNE ponctuation, chacun sur une douleur précise et avec une mécanique différente ; puis la description : ligne 1 « Abonne toi », 3 à 4 lignes courtes avec les mots du transcript, dernière ligne = l'appel à commenter dit dans la vidéo. Uniquement des mots présents dans le transcript ou dans les règles d'écriture ci-dessus. Relis-toi et corrige avant de répondre.",
   },
 ];
 
@@ -178,86 +190,69 @@ export interface Hook {
   category: string;
 }
 
-// ~90 hooks — pas un chiffre magique, mais volontairement large pour
-// couvrir assez d'angles différents sans jamais réutiliser deux fois la
-// même mécanique dans une même catégorie.
+// Banque refaite le 2026-10-13 avec le Dictionnaire EP Coaching (Notion) :
+// uniquement des tournures réellement dites par les créateurs de la niche,
+// adaptées au fitness. L'ancienne banque contenait des hooks qui sortaient
+// des règles (« une étude sur N personnes », pourcentages inventés,
+// témoignages client inventés) : retirés. Les hooks visuels restent, ce ne
+// sont pas des mots mais des plans à filmer.
 export const HOOK_BANK: Hook[] = [
-  // Texte — question directe
-  { text: "Tu fais cette erreur depuis combien de temps sans le savoir ?", kind: "texte", category: "Question" },
-  { text: "Et si le problème n'était pas ta motivation ?", kind: "texte", category: "Question" },
-  { text: "Pourquoi tu stagnes alors que tu fais tout comme il faut ?", kind: "texte", category: "Question" },
-  { text: "Tu veux savoir ce que je change en premier chez un nouveau client ?", kind: "texte", category: "Question" },
-  { text: "C'est quoi le truc que personne ne te dit sur [SUJET] ?", kind: "texte", category: "Question" },
-  { text: "Tu t'es déjà demandé pourquoi certains progressent plus vite avec moins d'efforts ?", kind: "texte", category: "Question" },
-  { text: "Depuis combien de temps tu répètes cette erreur sans t'en rendre compte ?", kind: "texte", category: "Question" },
-  // Texte — chiffre choc
-  { text: "90% des gens font ça à l'envers.", kind: "texte", category: "Chiffre choc" },
-  { text: "Une étude sur [N] personnes a trouvé un résultat qui surprend même les coachs.", kind: "texte", category: "Chiffre choc" },
-  { text: "3 minutes par jour suffisent à changer ce chiffre-là.", kind: "texte", category: "Chiffre choc" },
-  { text: "Ce détail change les résultats de 30% sans changer une seule série.", kind: "texte", category: "Chiffre choc" },
-  { text: "1 client sur 2 fait cette erreur la première semaine.", kind: "texte", category: "Chiffre choc" },
-  { text: "En 6 semaines, voilà ce qui a vraiment changé (pas ce qu'Instagram montre).", kind: "texte", category: "Chiffre choc" },
-  // Texte — erreur commune
-  { text: "Arrête de faire ça si tu veux vraiment progresser.", kind: "texte", category: "Erreur commune" },
-  { text: "J'ai vu cette erreur chez presque tous mes clients débutants.", kind: "texte", category: "Erreur commune" },
-  { text: "Cette habitude en apparence saine te fait en réalité stagner.", kind: "texte", category: "Erreur commune" },
-  { text: "Tu penses bien faire, mais voilà ce que tu loupes.", kind: "texte", category: "Erreur commune" },
-  { text: "Le conseil que tout le monde donne, et qui est faux dans 80% des cas.", kind: "texte", category: "Erreur commune" },
-  { text: "Voilà pourquoi ton programme parfait sur le papier ne marche pas.", kind: "texte", category: "Erreur commune" },
-  // Texte — affirmation contre-intuitive
-  { text: "Manger plus peut te faire perdre du poids. Voilà comment.", kind: "texte", category: "Contre-intuitif" },
-  { text: "Moins de séances, plus de résultats : voilà pourquoi ça marche.", kind: "texte", category: "Contre-intuitif" },
-  { text: "Le repos compte plus que la séance elle-même. Preuve à l'appui.", kind: "texte", category: "Contre-intuitif" },
-  { text: "Se peser tous les jours peut ralentir ta progression.", kind: "texte", category: "Contre-intuitif" },
-  { text: "Le cardio n'est pas ton pire ennemi en prise de masse.", kind: "texte", category: "Contre-intuitif" },
-  // Texte — storytelling personnel
-  { text: "Il y a 2 ans, j'aurais donné ce conseil à l'envers.", kind: "texte", category: "Storytelling" },
-  { text: "Un client m'a écrit un message qui m'a fait changer ma façon de coacher.", kind: "texte", category: "Storytelling" },
-  { text: "J'ai fait cette erreur pendant 3 ans avant de comprendre.", kind: "texte", category: "Storytelling" },
-  { text: "Voilà ce qui s'est vraiment passé la première fois qu'un client a abandonné avec moi.", kind: "texte", category: "Storytelling" },
-  // Texte — urgence/actualité douce
-  { text: "Si tu commences ta prépa cette semaine, lis ça d'abord.", kind: "texte", category: "Urgence" },
-  { text: "Avant de reprendre après tes vacances, regarde ça.", kind: "texte", category: "Urgence" },
-  { text: "Dans 30 jours tu vas soit regretter, soit être content d'avoir commencé aujourd'hui.", kind: "texte", category: "Urgence" },
-  // Texte — controverse douce
-  { text: "Je vais me faire des ennemis avec cette vidéo, mais voilà la vérité sur [SUJET].", kind: "texte", category: "Controverse" },
-  { text: "Ton coach ne te le dira peut-être pas, mais voilà ce qui compte vraiment.", kind: "texte", category: "Controverse" },
-  { text: "Ce que l'industrie du fitness ne veut pas que tu saches.", kind: "texte", category: "Controverse" },
-  // Texte — liste/format
-  { text: "3 signes que ton programme ne te correspond plus.", kind: "texte", category: "Liste" },
-  { text: "5 choses que je changerais si je recommençais de zéro.", kind: "texte", category: "Liste" },
-  { text: "Les 3 questions à te poser avant de changer de programme.", kind: "texte", category: "Liste" },
-  { text: "4 signaux que ton corps t'envoie et que tu ignores.", kind: "texte", category: "Liste" },
+  // Question ou douleur qui revient
+  { text: "Comment [construire ta diète en sèche] ? C'est une question qui revient extrêmement souvent.", kind: "texte", category: "Question" },
+  { text: "Tu sais c'est quoi le vrai problème aujourd'hui ?", kind: "texte", category: "Question" },
+  { text: "C'est quoi la croyance qui t'a le plus bloqué ?", kind: "texte", category: "Question" },
+  { text: "Qu'est-ce qui pourrait t'empêcher de [perdre tes 5 derniers kilos] ?", kind: "texte", category: "Question" },
+  { text: "Ça fait [trois mois] que [tu t'entraînes dur] et rien ne bouge ?", kind: "texte", category: "Question" },
+  // Faux problème, mythe
+  { text: "Tu penses que t'as un problème de [motivation]. C'est pas du tout le cas.", kind: "texte", category: "Faux problème" },
+  { text: "La majorité des gens pensent qu'ils ont un problème de [génétique]. C'est pas du tout le cas.", kind: "texte", category: "Faux problème" },
+  { text: "Tu ne manques pas d'infos sur la muscu. Tu manques de priorités.", kind: "texte", category: "Faux problème" },
+  { text: "J'aimerais casser un petit peu un mythe : [tu vas détruire ton métabolisme].", kind: "texte", category: "Mythe" },
+  { text: "Et si ce qu'on te répète sur [la sèche] était faux ? Pas un peu faux. Complètement faux.", kind: "texte", category: "Mythe" },
+  { text: "C'est probablement la phrase la plus répétée dans le coaching : [phrase].", kind: "texte", category: "Mythe" },
+  { text: "Tu penses que [prendre du muscle] c'est compliqué. En vrai, c'est beaucoup plus simple que tu ne le penses.", kind: "texte", category: "Mythe" },
+  { text: "La grosse chose évidente, c'est ça le problème. Pas les 100 détails.", kind: "texte", category: "Faux problème" },
+  { text: "Une douleur n'arrive jamais sans raison.", kind: "texte", category: "Mise en garde" },
+  { text: "Quand t'as une douleur en séance, c'est jamais normal.", kind: "texte", category: "Mise en garde" },
+  // Paradoxe et règle courte
+  { text: "Tu peux t'entraîner plus dur que tout le monde et ne rien voir bouger.", kind: "texte", category: "Paradoxe" },
+  { text: "Proposer tout, c'est proposer rien.", kind: "texte", category: "Paradoxe" },
+  { text: "Le meilleur plan, c'est celui que tu suis.", kind: "texte", category: "Règle courte" },
+  { text: "Avant de changer de programme, fais mieux celui qui marche déjà.", kind: "texte", category: "Règle courte" },
+  { text: "Ta diète se juge sur la semaine. Pas sur une journée.", kind: "texte", category: "Règle courte" },
+  // Ciblage
+  { text: "Si tu t'entraînes depuis un an et que rien ne bouge, t'es exactement sur la bonne vidéo.", kind: "texte", category: "Ciblage" },
+  { text: "Si tu manges énormément et que tu prends rien, écoute bien cette courte vidéo jusqu'au bout.", kind: "texte", category: "Ciblage" },
+  { text: "Coachs : si ton agenda est plein mais que tu gagnes pas ta vie, t'es sur la bonne vidéo.", kind: "texte", category: "Ciblage" },
+  // Ton direct, aveu
+  { text: "Je vais aller droit au but : [ta prise de masse] bloque pour une raison très simple.", kind: "texte", category: "Direct" },
+  { text: "Ras le bol, on met les choses au clair : [un coach ne peut pas faire tes séances à ta place].", kind: "texte", category: "Direct" },
+  { text: "Je me suis fait avoir aussi quand j'ai commencé. L'objectif, c'est que ça soit la dernière fois pour toi.", kind: "texte", category: "Aveu" },
+  { text: "Tout le monde s'est fait avoir au moins une fois, et moi le premier.", kind: "texte", category: "Aveu" },
+  { text: "Je suis désolé, mais je me dois de te dire quelque chose.", kind: "texte", category: "Direct" },
+  // Promesse
+  { text: "[Perdre du poids] et [perdre du gras], c'est pas la même chose. Et je vais t'expliquer pourquoi.", kind: "texte", category: "Promesse" },
+  { text: "Tu vas plus jamais regarder [ta balance] de la même manière.", kind: "texte", category: "Promesse" },
+  { text: "On va pas se soucier des opinions. On va regarder ce qui marche.", kind: "texte", category: "Promesse" },
   // Visuel — action immédiate
   { text: "Commencer le geste technique dès la 1re seconde, sans intro parlée.", kind: "visuel", category: "Action" },
   { text: "Filmer le \"avant\" (posture, charge, ressenti) puis couper direct sur le \"après\" corrigé.", kind: "visuel", category: "Action" },
   { text: "Zoomer brutalement sur le détail du mouvement qui pose problème.", kind: "visuel", category: "Action" },
-  { text: "Montrer l'échec d'une tentative (rep ratée) avant d'expliquer pourquoi.", kind: "visuel", category: "Action" },
-  { text: "Chronométrer à l'écran une action en cours (compte à rebours visible).", kind: "visuel", category: "Action" },
+  { text: "Montrer une rep ratée avant d'expliquer pourquoi.", kind: "visuel", category: "Action" },
   // Visuel — texte à l'écran
-  { text: "Un chiffre énorme en plein écran, sans autre contexte, 1 seconde avant de parler.", kind: "visuel", category: "Texte à l'écran" },
-  { text: "Une question en gros texte blanc sur fond noir, silence total pendant 1 seconde.", kind: "visuel", category: "Texte à l'écran" },
-  { text: "Le mot \"FAUX\" en rouge qui claque à l'écran sur une pratique courante montrée juste avant.", kind: "visuel", category: "Texte à l'écran" },
-  { text: "Un avant/après écrit à l'écran (\"Semaine 1\" -> \"Semaine 8\") avant même de montrer les images.", kind: "visuel", category: "Texte à l'écran" },
-  // Visuel — expression/réaction
-  { text: "Visage neutre qui se fige en gros plan avant de parler (crée l'attente).", kind: "visuel", category: "Réaction" },
-  { text: "Réaction de surprise/choc filmée en train de lire un message ou un commentaire réel.", kind: "visuel", category: "Réaction" },
+  { text: "Une question en gros texte sur fond noir, silence total pendant 1 seconde.", kind: "visuel", category: "Texte à l'écran" },
+  { text: "Le mot \"FAUX\" qui claque à l'écran sur une pratique courante montrée juste avant.", kind: "visuel", category: "Texte à l'écran" },
+  { text: "Le calcul écrit à l'écran pendant que tu le dis (« regarde bien ce calcul »).", kind: "visuel", category: "Texte à l'écran" },
+  // Visuel — réaction, opposition
   { text: "Regard caméra direct et silence de 1 seconde avant la première phrase.", kind: "visuel", category: "Réaction" },
-  // Visuel — split-screen / opposition
+  { text: "Une personne en filme une autre en train d'utiliser l'appli, comme un snap (format duo).", kind: "visuel", category: "Réaction" },
   { text: "Split-screen : toi qui joues 2 avis opposés sur le même sujet (voir fiche technique \"clone\").", kind: "visuel", category: "Opposition" },
   { text: "Côte à côte : la mauvaise version du geste à gauche, la bonne à droite, en simultané.", kind: "visuel", category: "Opposition" },
-  { text: "Avant/après en split-screen vertical plutôt qu'en séquence (impact immédiat).", kind: "visuel", category: "Opposition" },
-  // Visuel — objet/décor
-  { text: "Montrer l'objet du contenu en gros plan avant de montrer ton visage (plat, appareil, carnet...).", kind: "visuel", category: "Objet" },
-  { text: "Écrire à la main sur un carnet/tableau ce qui va être expliqué, filmé en train de s'écrire.", kind: "visuel", category: "Objet" },
-  { text: "Ouvrir une appli/un tableau de suivi à l'écran comme preuve concrète (chiffres réels).", kind: "visuel", category: "Objet" },
-  // Texte — comparaison sociale douce
-  { text: "Ce que font différemment les 10% qui progressent vraiment.", kind: "texte", category: "Comparaison" },
-  { text: "La différence entre quelqu'un qui stagne et quelqu'un qui progresse n'est pas ce que tu crois.", kind: "texte", category: "Comparaison" },
-  // Texte — promesse claire
-  { text: "Dans cette vidéo, tu vas repartir avec un plan concret, pas juste de la théorie.", kind: "texte", category: "Promesse" },
-  { text: "À la fin de cette vidéo, tu sauras exactement quoi faire cette semaine.", kind: "texte", category: "Promesse" },
-  { text: "Voilà la méthode exacte, étape par étape, pas un résumé vague.", kind: "texte", category: "Promesse" },
+  // Visuel — objet, preuve
+  { text: "Filmer le téléphone avec un autre téléphone : l'appli en vrai, un hook par-dessus (jamais un enregistrement d'écran collé).", kind: "visuel", category: "Preuve" },
+  { text: "Montrer l'assiette pesée en gros plan avant de montrer ton visage.", kind: "visuel", category: "Objet" },
+  { text: "Écrire à la main sur un carnet ce qui va être expliqué, filmé en train de s'écrire.", kind: "visuel", category: "Objet" },
+  { text: "Green screen sur une actu ou un post qui tourne, puis ta réponse face cam.", kind: "visuel", category: "Actu" },
 ];
 
 export interface CTAExample {
@@ -265,23 +260,24 @@ export interface CTAExample {
   goal: string;
 }
 
-// Retour direct 2026-09-30 : plus de « commente tel mot-clé », chaque
-// contenu envoie directement vers un guide gratuit ou vers l'appli (lien
-// suivi ?src= depuis le Studio). Les CTA vers un lien passent en premier.
+// Refait le 2026-10-13 (règles du fondateur du 2026-10-08, Instagram et
+// Threads de retour) : un reel fait COMMENTER (numéro du guide ou mot clé),
+// une vidéo YouTube renvoie en description, un post écrit met un lien OU
+// une question. Plus jamais « lien en bio ». Formules du Dictionnaire.
 export const CTA_EXAMPLES: CTAExample[] = [
-  { text: "Si t'as reconnu au moins 2 de ces signes, le plan complet est gratuit, lien en bio.", goal: "Lead magnet" },
-  { text: "Tout ce que je viens de t'expliquer est déjà calculé pour toi dans l'appli, essai gratuit en bio.", goal: "Appli" },
-  { text: "Abonne-toi si tu veux la suite de cette méthode la semaine prochaine.", goal: "Abonnement" },
-  { text: "Le guide complet est en lien dans ma bio, gratuit, pas d'excuse.", goal: "Lead magnet" },
-  { text: "Tu veux qu'on regarde ta situation ensemble ? Le lien pour un appel est en bio.", goal: "Prise de RDV" },
-  { text: "Dis-moi en commentaire depuis combien de temps tu galères avec ça.", goal: "Engagement" },
-  { text: "Sauvegarde cette vidéo, tu vas en avoir besoin la prochaine fois que tu doutes.", goal: "Sauvegarde/reach" },
-  { text: "Partage-la à la personne qui a besoin de l'entendre aujourd'hui.", goal: "Partage/reach" },
-  { text: "Si cette vidéo t'a aidé, la suivante répond à la question que tout le monde me pose après ça.", goal: "Rétention série" },
-  { text: "Tu veux le tableau exact que j'utilise avec mes clients ? Il est gratuit, lien en bio.", goal: "Lead magnet" },
-  { text: "3 places de coaching se libèrent ce mois-ci, le lien est en bio si tu veux candidater.", goal: "Vente (rare, avec vraie rareté)" },
-  { text: "Écris ta réponse en commentaire, je réponds à chacune aujourd'hui.", goal: "Engagement fort" },
-  { text: "Suis-moi si tu veux qu'on démonte un mythe comme celui-là chaque semaine.", goal: "Abonnement thématique" },
+  { text: "Commente [131] et je te l'envoie.", goal: "Reel · guide gratuit (numéro du guide)" },
+  { text: "Commente [131], ça prend 15 secondes, et je t'envoie le guide.", goal: "Reel · guide gratuit" },
+  { text: "Mets [290] en commentaire, un seul, et je t'envoie la checklist.", goal: "Reel · guide gratuit" },
+  { text: "Commente PROG, un seul mot, et je t'envoie ton programme dans l'appli.", goal: "Reel · appli (programme)" },
+  { text: "Mets DIETE en commentaire et je t'envoie tout.", goal: "Reel · appli (diète)" },
+  { text: "Commente COACHING si tu veux qu'on regarde ta situation ensemble.", goal: "Reel · coaching" },
+  { text: "Le lien du guide gratuit est dans la description, c'est évidemment gratuit.", goal: "YouTube · guide" },
+  { text: "Si tu veux qu'on regarde ta situation ensemble, le lien pour réserver un appel est dans la description. Sinon, applique ce que tu vois dans cette vidéo, c'est gratuit.", goal: "YouTube · appel" },
+  { text: "Abonne-toi si c'est pas déjà fait, il y aura toujours quelque chose d'utile pour ta progression.", goal: "YouTube · abonnement" },
+  { text: "Dis-moi en commentaire où tu bloques en ce moment.", goal: "Engagement (tous formats)" },
+  { text: "Envoie cette vidéo à quelqu'un qui s'entraîne dur et qui ne voit rien bouger.", goal: "Partage" },
+  { text: "Le guide qui fait tout le calcul pour toi est juste ici :\nep-coaching.vercel.app/ressources/[slug]", goal: "LinkedIn · lien seul sur sa ligne" },
+  { text: "Et toi, c'est quoi la croyance qui t'a le plus bloqué ?", goal: "LinkedIn / Threads · question" },
 ];
 
 export interface TechnicalSheet {

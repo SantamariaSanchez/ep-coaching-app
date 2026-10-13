@@ -23,7 +23,8 @@ nutrition basé à Annecy, et coach pour les coachs.
 - À propos du fondateur : https://ep-coaching.vercel.app/a-propos
 - Coach sportif à Annecy : https://ep-coaching.vercel.app/coach-sportif-annecy
 - Profil du coach : https://ep-coaching.vercel.app/coachs
-- Instagram : https://instagram.com/santamariasanchezep
+- Instagram : https://www.instagram.com/santamariasanchezep_/
+- Threads : https://www.threads.com/@santamariasanchezep_
 - TikTok : https://www.tiktok.com/@santamariasanchez_
 - YouTube : https://www.youtube.com/@santamaria_sanchez
 - Site vitrine : https://santamariasanchez.github.io/EPCoaching/
