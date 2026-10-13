@@ -70,30 +70,30 @@ export default async function TwoFactorPage() {
           <EPLogo size="md" showCoaching />
         </div>
 
-        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-2xl p-7">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-2xl p-7">
           <div className="flex items-center gap-2 mb-2">
-            <ShieldCheck size={13} className="text-[#E01E1E]/70" strokeWidth={2} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E01E1E]/70">
+            <ShieldCheck size={13} className="text-(--ep-accent)/70" strokeWidth={2} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--ep-accent)/70">
               {t("Double authentification")}
             </span>
           </div>
 
           {mode === "challenge" ? (
             <>
-              <h1 className="text-xl font-extrabold text-[#F5EDED] tracking-tight mb-2">
+              <h1 className="text-xl font-extrabold text-(--ep-ink) tracking-tight mb-2">
                 {t("Saisis ton code")}
               </h1>
-              <p className="text-[12.5px] text-[#F5EDED]/40 leading-relaxed mb-5">
+              <p className="text-[12.5px] text-(--ep-ink)/40 leading-relaxed mb-5">
                 {t("Ouvre ton application d'authentification et recopie le code à 6 chiffres associé à EP Coaching.")}
               </p>
               <TwoFactorChallenge redirectTo={dest} />
             </>
           ) : (
             <>
-              <h1 className="text-xl font-extrabold text-[#F5EDED] tracking-tight mb-2">
+              <h1 className="text-xl font-extrabold text-(--ep-ink) tracking-tight mb-2">
                 {t("Activation requise")}
               </h1>
-              <p className="text-[12.5px] text-[#F5EDED]/40 leading-relaxed mb-5">
+              <p className="text-[12.5px] text-(--ep-ink)/40 leading-relaxed mb-5">
                 {t("Ce compte donne accès à l'ensemble de la plateforme et à tous les membres. La double authentification y est obligatoire.")}
               </p>
               <TwoFactorSetup redirectTo={dest} />

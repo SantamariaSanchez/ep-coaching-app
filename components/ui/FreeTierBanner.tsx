@@ -16,8 +16,8 @@ export default function FreeTierBanner({ label }: { label: string }) {
   return (
     <Link
       href="/dashboard/client/abonnement"
-      className="flex items-center justify-center gap-2 px-4 py-2 text-[11.5px] font-bold text-white transition-opacity hover:opacity-90"
-      style={{ background: "linear-gradient(90deg, #890404, #E01E1E)" }}
+      className="flex items-center justify-center gap-2 px-4 py-2 text-[11.5px] font-bold text-(--ep-strong) transition-opacity hover:opacity-90"
+      style={{ background: "linear-gradient(90deg, var(--ep-line), var(--ep-accent))" }}
     >
       <Clock size={12} className="flex-shrink-0" />
       <span>{label}</span>

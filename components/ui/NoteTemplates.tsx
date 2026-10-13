@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { Copy, Check, MessageCircle, Zap, TrendingUp, BarChart2, Heart, Flame, Send } from "lucide-react";
+import { withAlpha } from "@/lib/theme-color";
 
 interface Template {
   id: string;
@@ -21,7 +22,7 @@ function buildTemplates(clientName: string): Template[] {
       id: "checkin",
       label: "Check-in hebdo",
       icon: BarChart2,
-      color: "#60a5fa",
+      color: "var(--ep-info)",
       subject: "Check-in semaine",
       body: `Salut ${first} 👋
 
@@ -40,7 +41,7 @@ Prends le temps de répondre précisément, c'est ce qui me permet d'ajuster au 
       id: "positif",
       label: "Retour positif",
       icon: TrendingUp,
-      color: "#4ade80",
+      color: "var(--ep-ok)",
       subject: "Excellent travail cette semaine",
       body: `${first} 💪
 
@@ -68,7 +69,7 @@ Qu'est-ce qui s'est passé cette semaine ? Dis-moi franchement, qu'on puisse aju
       id: "calories",
       label: "Ajustement calorique",
       icon: Flame,
-      color: "#E01E1E",
+      color: "var(--ep-accent)",
       subject: "Ajustement de tes calories",
       body: `${first} 👋
 
@@ -98,7 +99,7 @@ Reste concentré, reste régulier. Le reste suivra. On est ensemble dans cette a
       id: "refeed",
       label: "Refeed / Semaine de relâche",
       icon: MessageCircle,
-      color: "#fbbf24",
+      color: "var(--ep-warn)",
       subject: "Refeed cette semaine",
       body: `${first} 👋
 
@@ -141,7 +142,7 @@ function CopyButton({ text }: { text: string }) {
         className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all ${
           copied
             ? "bg-green-500/20 text-green-400 border border-green-500/30"
-            : "bg-[#F5EDED]/5 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 hover:bg-[#F5EDED]/10 border border-[#890404]/20"
+            : "bg-(--ep-ink)/5 text-(--ep-ink)/40 hover:text-(--ep-ink)/70 hover:bg-(--ep-ink)/10 border border-(--ep-line)/20"
         }`}
       >
         {copied ? (
@@ -177,21 +178,21 @@ function TemplateCard({
   const Icon = template.icon;
 
   return (
-    <div className="bg-[#1f0101]/60 border border-[#890404]/20 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s1)/60 border border-(--ep-line)/20 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-(--ep-hi)/[0.02] transition-colors"
       >
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: `${template.color}18`, border: `1px solid ${template.color}30` }}
+            style={{ backgroundColor: `${withAlpha(template.color, "18")}`, border: `1px solid ${withAlpha(template.color, "30")}` }}
           >
             <Icon size={15} style={{ color: template.color }} />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">{template.label}</p>
-            <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest mt-0.5 font-semibold">
+            <p className="text-sm font-bold text-(--ep-strong)">{template.label}</p>
+            <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest mt-0.5 font-semibold">
               {template.subject}
             </p>
           </div>
@@ -201,7 +202,7 @@ function TemplateCard({
           height="14"
           viewBox="0 0 14 14"
           fill="none"
-          className={`flex-shrink-0 transition-transform text-[#F5EDED]/30 ${expanded ? "rotate-180" : ""}`}
+          className={`flex-shrink-0 transition-transform text-(--ep-ink)/30 ${expanded ? "rotate-180" : ""}`}
         >
           <path
             d="M2.5 5L7 9.5L11.5 5"
@@ -214,8 +215,8 @@ function TemplateCard({
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-[#890404]/20">
-          <pre className="mt-4 text-sm text-[#F5EDED]/75 whitespace-pre-wrap leading-relaxed font-sans bg-black/20 rounded-lg px-4 py-3 border border-[#890404]/15">
+        <div className="px-5 pb-5 border-t border-(--ep-line)/20">
+          <pre className="mt-4 text-sm text-(--ep-ink)/75 whitespace-pre-wrap leading-relaxed font-sans bg-(--ep-shade)/20 rounded-lg px-4 py-3 border border-(--ep-line)/15">
             {template.body}
           </pre>
           {/* Copier puis ouvrir la conversation : le modèle contient des
@@ -225,7 +226,7 @@ function TemplateCard({
             {conversationHref && (
               <Link
                 href={conversationHref}
-                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-[#E01E1E]/15 text-[#F5EDED]/80 hover:text-white hover:bg-[#E01E1E]/25 border border-[#E01E1E]/30 transition-colors"
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-(--ep-accent)/15 text-(--ep-ink)/80 hover:text-(--ep-strong) hover:bg-(--ep-accent)/25 border border-(--ep-accent)/30 transition-colors"
               >
                 <Send size={11} />
                 {t("Ouvrir sa conversation")}

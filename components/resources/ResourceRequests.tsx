@@ -99,32 +99,32 @@ export default function ResourceRequests({
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Lightbulb size={15} className="text-[#E01E1E]" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+        <Lightbulb size={15} className="text-(--ep-accent)" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
           {t("Demandes de guides")}
         </p>
       </div>
 
       {!isCoach && (
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 mb-4">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("Sujet du guide souhaité (ex. Comment gérer une stagnation)")} aria-label={t("Sujet du guide souhaité (ex. Comment gérer une stagnation)")}
-            className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 mb-2"
+            className="w-full bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40 mb-2"
           />
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={t("Détaille ta demande...")} aria-label={t("Détaille ta demande...")}
             rows={2}
-            className="w-full bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none resize-none mb-2"
+            className="w-full bg-transparent text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none resize-none mb-2"
           />
-          <div className="flex items-center justify-end pt-2 border-t border-[#890404]/15">
+          <div className="flex items-center justify-end pt-2 border-t border-(--ep-line)/15">
             <button
               onClick={handleSubmit}
               disabled={!title.trim() || !content.trim() || posting}
-              className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
               {posting ? (
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -139,18 +139,18 @@ export default function ResourceRequests({
       )}
 
       {requests.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center">
-          <MessageCircle size={22} className="text-[#F5EDED]/15 mx-auto mb-2" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{t("Aucune demande pour l'instant.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-10 text-center">
+          <MessageCircle size={22} className="text-(--ep-ink)/15 mx-auto mb-2" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{t("Aucune demande pour l'instant.")}</p>
         </div>
       ) : (
         <div className="space-y-2">
           {requests.map((r) => (
-            <div key={r.id} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+            <div key={r.id} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-white">{r.title}</p>
-                  <p className="text-[10px] text-[#F5EDED]/30">
+                  <p className="text-sm font-bold text-(--ep-strong)">{r.title}</p>
+                  <p className="text-[10px] text-(--ep-ink)/30">
                     {r.author_name} · {timeAgo(r.created_at)}
                   </p>
                 </div>
@@ -164,19 +164,19 @@ export default function ResourceRequests({
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#F5EDED]/65 mt-2 whitespace-pre-wrap">{r.content}</p>
+              <p className="text-xs text-(--ep-ink)/65 mt-2 whitespace-pre-wrap">{r.content}</p>
 
               {r.coach_response && (
-                <div className="mt-3 pt-3 border-t border-[#890404]/15">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1">
+                <div className="mt-3 pt-3 border-t border-(--ep-line)/15">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) mb-1">
                     {t("Réponse du coach")}
                   </p>
-                  <p className="text-xs text-[#F5EDED]/70 whitespace-pre-wrap">{r.coach_response}</p>
+                  <p className="text-xs text-(--ep-ink)/70 whitespace-pre-wrap">{r.coach_response}</p>
                 </div>
               )}
 
               {isCoach && r.status === "open" && (
-                <div className="mt-3 pt-3 border-t border-[#890404]/15">
+                <div className="mt-3 pt-3 border-t border-(--ep-line)/15">
                   {respondingId === r.id ? (
                     <div>
                       <textarea
@@ -184,19 +184,19 @@ export default function ResourceRequests({
                         onChange={(e) => setResponseText(e.target.value)}
                         placeholder={t("Ta réponse...")} aria-label={t("Ta réponse...")}
                         rows={2}
-                        className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 mb-2 resize-none"
+                        className="w-full bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40 mb-2 resize-none"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleRespond(r.id)}
                           disabled={!responseText.trim() || savingResponse}
-                          className="text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white px-3 py-1.5 rounded-lg"
+                          className="text-[10px] font-bold uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) px-3 py-1.5 rounded-lg"
                         >
                           {t("Répondre")}
                         </button>
                         <button
                           onClick={() => setRespondingId(null)}
-                          className="text-[10px] font-bold text-[#F5EDED]/40"
+                          className="text-[10px] font-bold text-(--ep-ink)/40"
                         >
                           {t("Annuler")}
                         </button>
@@ -205,7 +205,7 @@ export default function ResourceRequests({
                   ) : (
                     <button
                       onClick={() => setRespondingId(r.id)}
-                      className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]"
+                      className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent)"
                     >
                       {t("Répondre à cette demande")}
                     </button>
@@ -216,7 +216,7 @@ export default function ResourceRequests({
               {isCoach && (
                 <button
                   onClick={() => handleDelete(r.id)}
-                  className="flex items-center gap-1 text-[10px] text-[#F5EDED]/25 hover:text-red-400 transition-colors mt-2"
+                  className="flex items-center gap-1 text-[10px] text-(--ep-ink)/25 hover:text-red-400 transition-colors mt-2"
                 >
                   <Trash2 size={10} />{" "}{t("Supprimer")}
                 </button>

@@ -32,7 +32,7 @@ export default function PlusMenu({ space, hidden, isFounder, isFreeTier }: { spa
         type="button"
         onClick={() => window.dispatchEvent(new Event("ep:open-search"))}
         className="ep-card"
-        style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", marginBottom: 20, cursor: "pointer", color: "rgba(245,237,237,0.5)", fontSize: 14, textAlign: "left" }}
+        style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", marginBottom: 20, cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.5)", fontSize: 14, textAlign: "left" }}
       >
         <Search size={17} /> {t("Rechercher une page, un client, une info...")}
       </button>
@@ -50,14 +50,14 @@ export default function PlusMenu({ space, hidden, isFounder, isFreeTier }: { spa
                   <Link
                     key={href}
                     href={href}
-                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 14px", minHeight: 52, textDecoration: "none", color: "#F5EDED", borderTop: idx ? "1px solid rgba(245,237,237,0.06)" : "none" }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 14px", minHeight: 52, textDecoration: "none", color: "var(--ep-ink)", borderTop: idx ? "1px solid rgba(var(--ep-ink-rgb),0.06)" : "none" }}
                   >
-                    <span style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(224,30,30,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Icon size={16} style={{ color: "#E01E1E" }} />
+                    <span style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(var(--ep-accent-rgb),0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon size={16} style={{ color: "var(--ep-accent)" }} />
                     </span>
                     <span style={{ flex: 1, fontSize: 14.5, fontWeight: 700 }}>{t(item.label)}</span>
-                    {locked && <Lock size={13} style={{ color: "rgba(245,237,237,0.35)" }} />}
-                    <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.25)" }} />
+                    {locked && <Lock size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.35)" }} />}
+                    <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }} />
                   </Link>
                 );
               })}

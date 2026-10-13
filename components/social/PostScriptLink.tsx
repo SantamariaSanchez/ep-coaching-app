@@ -31,7 +31,7 @@ export default function PostScriptLink({ postId, scriptId, source, scripts }: { 
             }
           });
         }}
-        style={{ maxWidth: "100%", width: 220, background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.35)", borderRadius: 8, padding: "5px 8px", fontSize: 11.5, color: "#F5EDED" }}
+        style={{ maxWidth: "100%", width: 220, background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.35)", borderRadius: 8, padding: "5px 8px", fontSize: 11.5, color: "var(--ep-ink)" }}
       >
         <option value="">{t("Aucun script")}</option>
         {scripts.map((s) => (
@@ -40,7 +40,7 @@ export default function PostScriptLink({ postId, scriptId, source, scripts }: { 
           </option>
         ))}
       </select>
-      {source === "auto" && value === scriptId && scriptId && <span style={{ display: "block", fontSize: 10, color: "rgba(245,237,237,0.4)", marginTop: 2 }}>{t("relié automatiquement")}</span>}
+      {source === "auto" && value === scriptId && scriptId && <span style={{ display: "block", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.4)", marginTop: 2 }}>{t("relié automatiquement")}</span>}
       {error && <span style={{ display: "block", fontSize: 10.5, color: "#fca5a5", marginTop: 2 }}>{t(error)}</span>}
     </div>
   );

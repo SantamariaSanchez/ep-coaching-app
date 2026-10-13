@@ -56,11 +56,11 @@ const RECIPE_MEALS = [
 
 const chip = (active: boolean) =>
   `shrink-0 px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap transition-colors ${
-    active ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-[#ff6b6b]" : "border-[#890404]/30 text-[#F5EDED]/55"
+    active ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-accent-hi2)" : "border-(--ep-line)/30 text-(--ep-ink)/55"
   }`;
 
 const input =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60";
 
 export default function AddFoodSheet({
   slot,
@@ -176,14 +176,14 @@ export default function AddFoodSheet({
         onClose={onClose}
         footer={
           <div className="flex gap-2">
-            <button type="button" onClick={() => setPicked(null)} className="px-4 py-3 rounded-xl border border-[#890404]/40 text-[#F5EDED]/70 text-xs font-bold uppercase tracking-widest">
+            <button type="button" onClick={() => setPicked(null)} className="px-4 py-3 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/70 text-xs font-bold uppercase tracking-widest">
               {tr("Retour")}
             </button>
             <button
               type="button"
               disabled={busy || g <= 0}
               onClick={() => onAddFoods([{ food: picked, grams: g }])}
-              className="flex-1 px-4 py-3 rounded-xl bg-[#E01E1E] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40"
+              className="flex-1 px-4 py-3 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-xs font-black uppercase tracking-widest disabled:opacity-40"
             >
               {busy ? "..." : `Ajouter ${g} g`}
             </button>
@@ -198,8 +198,8 @@ export default function AddFoodSheet({
             </button>
           ))}
         </div>
-        <p className="text-sm text-[#F5EDED]/70 mt-4">
-          <b className="text-white">{Math.round(m.calories)}{" "}{tr("kcal")}</b> · P {Math.round(m.proteins)} g · G {Math.round(m.carbs)} g · L {Math.round(m.fats)} g
+        <p className="text-sm text-(--ep-ink)/70 mt-4">
+          <b className="text-(--ep-strong)">{Math.round(m.calories)}{" "}{tr("kcal")}</b> · P {Math.round(m.proteins)} g · G {Math.round(m.carbs)} g · L {Math.round(m.fats)} g
         </p>
         {error && <p className="text-xs text-red-300 mt-2">{tr(error)}</p>}
       </Sheet>
@@ -222,14 +222,14 @@ export default function AddFoodSheet({
         <>
           <div className="flex gap-2 mb-2.5">
             <div className="relative flex-1">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" />
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Riz, poulet, skyr...")} aria-label={tr("Chercher un aliment")} autoFocus className={`${input} pl-9`} />
             </div>
-            <button type="button" onClick={() => setScanning(true)} aria-label={tr("Scanner un code-barres")} className="px-3 rounded-lg border border-[#890404]/35 text-[#F5EDED]/70">
+            <button type="button" onClick={() => setScanning(true)} aria-label={tr("Scanner un code-barres")} className="px-3 rounded-lg border border-(--ep-line)/35 text-(--ep-ink)/70">
               <ScanBarcode size={18} />
             </button>
           </div>
-          {scanMsg && <p className="text-xs text-[#F5EDED]/60 mb-2">{scanMsg}</p>}
+          {scanMsg && <p className="text-xs text-(--ep-ink)/60 mb-2">{scanMsg}</p>}
           <div className="flex gap-1.5 overflow-x-auto -mx-4 px-4 pb-2.5 no-scrollbar">
             {FILTERS.filter((f) => f.key !== "plan" || ctx.planIds.size > 0).map((f) => (
               <button key={f.key} type="button" onClick={() => setFilter(f.key)} className={chip(filter === f.key)}>
@@ -238,7 +238,7 @@ export default function AddFoodSheet({
             ))}
           </div>
           {!query && filter === "tout" && (
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5 flex items-center gap-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5 flex items-center gap-1.5">
               <Sparkles size={11} />{" "}{tr("Ton plan, tes récents et tes habitudes d'abord")}
             </p>
           )}
@@ -246,12 +246,12 @@ export default function AddFoodSheet({
             {results.map((f) => {
               const tag = ctx.slotPlanIds?.has(f.id) ? "Plan de ce repas" : ctx.planIds.has(f.id) ? "Dans ton plan" : ctx.recentIds.includes(f.id) ? "Récent" : null;
               return (
-                <button key={f.id} type="button" onClick={() => pick(f)} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#1f0101] transition-colors">
-                  <p className="text-sm text-white font-medium leading-tight">
+                <button key={f.id} type="button" onClick={() => pick(f)} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-(--ep-s1) transition-colors">
+                  <p className="text-sm text-(--ep-strong) font-medium leading-tight">
                     {f.name}
-                    {tag && <span className="ml-2 text-[9px] font-bold uppercase tracking-wider text-[#ff6b6b]">{tag}</span>}
+                    {tag && <span className="ml-2 text-[9px] font-bold uppercase tracking-wider text-(--ep-accent-hi2)">{tag}</span>}
                   </p>
-                  <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
+                  <p className="text-[10.5px] text-(--ep-ink)/40 mt-0.5">
                     {Math.round(f.calories_per_100)}{" "}{tr("kcal/100 g · P")}{" "}{f.proteins_per_100} · G {f.carbs_per_100} · L {f.fats_per_100}
                   </p>
                 </button>
@@ -259,14 +259,14 @@ export default function AddFoodSheet({
             })}
             {results.length === 0 && (
               <div className="py-4 text-center">
-                <p className="text-sm text-[#F5EDED]/50">{tr("Aucun aliment trouvé.")}</p>
+                <p className="text-sm text-(--ep-ink)/50">{tr("Aucun aliment trouvé.")}</p>
                 <button
                   type="button"
                   onClick={() => {
                     setQuick((q) => ({ ...q, name: query }));
                     setTab("rapide");
                   }}
-                  className="mt-2 text-xs font-bold text-[#ff6b6b] underline"
+                  className="mt-2 text-xs font-bold text-(--ep-accent-hi2) underline"
                 >
                   {tr("Ajouter «")}{" "}{query}{" "}{tr("» en ajout rapide")}
                 </button>
@@ -285,7 +285,7 @@ export default function AddFoodSheet({
             .filter((s) => s.list.length > 0)
             .map((s) => (
               <div key={s.title}>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5 mt-1">{s.title}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5 mt-1">{s.title}</p>
                 {s.list.map((meal) => {
                   const t = planTotals(meal.items);
                   return (
@@ -294,11 +294,11 @@ export default function AddFoodSheet({
                       type="button"
                       disabled={busy}
                       onClick={() => onAddFoods(meal.items.map((i) => ({ food: i.food, grams: i.grams, planMealId: i.planMealId })))}
-                      className="w-full text-left rounded-xl border border-[#890404]/25 bg-black/25 px-3 py-2.5 mb-1.5 hover:border-[#E01E1E]/40 disabled:opacity-50"
+                      className="w-full text-left rounded-xl border border-(--ep-line)/25 bg-(--ep-shade)/25 px-3 py-2.5 mb-1.5 hover:border-(--ep-accent)/40 disabled:opacity-50"
                     >
-                      <p className="text-sm font-bold text-white">{meal.label}</p>
-                      <p className="text-[11px] text-[#F5EDED]/45 mt-0.5 line-clamp-2">{meal.items.map((i) => `${i.food.name} ${i.grams} g`).join(", ")}</p>
-                      <p className="text-[10.5px] text-[#F5EDED]/60 mt-1">
+                      <p className="text-sm font-bold text-(--ep-strong)">{meal.label}</p>
+                      <p className="text-[11px] text-(--ep-ink)/45 mt-0.5 line-clamp-2">{meal.items.map((i) => `${i.food.name} ${i.grams} g`).join(", ")}</p>
+                      <p className="text-[10.5px] text-(--ep-ink)/60 mt-1">
                         {Math.round(t.calories)}{" "}{tr("kcal · P")}{" "}{Math.round(t.proteins)} · G {Math.round(t.carbs)} · L {Math.round(t.fats)}
                       </p>
                     </button>
@@ -312,11 +312,11 @@ export default function AddFoodSheet({
       {tab === "recettes" &&
         (recipe ? (
           <div>
-            <p className="text-base font-black text-white">{recipe.name}</p>
-            <p className="text-xs text-[#F5EDED]/50 mt-1">
+            <p className="text-base font-black text-(--ep-strong)">{recipe.name}</p>
+            <p className="text-xs text-(--ep-ink)/50 mt-1">
               {tr("Par portion :")}{" "}{recipe.kcal}{" "}{tr("kcal · P")}{" "}{recipe.protein} · G {recipe.carbs} · L {recipe.fat}
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mt-4 mb-1.5">{tr("Portions")}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mt-4 mb-1.5">{tr("Portions")}</p>
             <div className="flex gap-1.5">
               {[0.5, 1, 1.5, 2].map((v) => (
                 <button key={v} type="button" onClick={() => setServings(v)} className={chip(servings === v)}>
@@ -325,14 +325,14 @@ export default function AddFoodSheet({
               ))}
             </div>
             <div className="flex gap-2 mt-5">
-              <button type="button" onClick={() => setRecipe(null)} className="px-4 py-3 rounded-xl border border-[#890404]/40 text-[#F5EDED]/70 text-xs font-bold uppercase tracking-widest">
+              <button type="button" onClick={() => setRecipe(null)} className="px-4 py-3 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/70 text-xs font-bold uppercase tracking-widest">
                 {tr("Retour")}
               </button>
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => onAddPortion({ name: recipe.name, kind: "recette", kcal: recipe.kcal, protein: recipe.protein, carbs: recipe.carbs, fat: recipe.fat, servings })}
-                className="flex-1 px-4 py-3 rounded-xl bg-[#E01E1E] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40"
+                className="flex-1 px-4 py-3 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-xs font-black uppercase tracking-widest disabled:opacity-40"
               >
                 {busy ? "..." : `Ajouter · ${Math.round(recipe.kcal * servings)} kcal`}
               </button>
@@ -341,7 +341,7 @@ export default function AddFoodSheet({
         ) : (
           <>
             <div className="relative mb-2.5">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" />
               <input value={recipeQuery} onChange={(e) => setRecipeQuery(e.target.value)} placeholder={tr("Chercher une recette")} aria-label={tr("Chercher une recette")} className={`${input} pl-9`} />
             </div>
             <div className="flex gap-1.5 overflow-x-auto -mx-4 px-4 pb-2.5 no-scrollbar">
@@ -351,20 +351,20 @@ export default function AddFoodSheet({
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-[#F5EDED]/35 mb-1.5">{tr("Les plus riches en protéines d'abord.")}</p>
+            <p className="text-[10px] text-(--ep-ink)/35 mb-1.5">{tr("Les plus riches en protéines d'abord.")}</p>
             <div className="space-y-0.5">
               {recipeResults.map((r) => (
-                <button key={`${r.source}-${r.id}`} type="button" onClick={() => { setRecipe(r); setServings(1); }} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#1f0101]">
-                  <p className="text-sm text-white font-medium leading-tight">
+                <button key={`${r.source}-${r.id}`} type="button" onClick={() => { setRecipe(r); setServings(1); }} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-(--ep-s1)">
+                  <p className="text-sm text-(--ep-strong) font-medium leading-tight">
                     {r.name}
-                    {r.source === "communaute" && <span className="ml-2 text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/40">{tr("Communauté")}</span>}
+                    {r.source === "communaute" && <span className="ml-2 text-[9px] font-bold uppercase tracking-wider text-(--ep-ink)/40">{tr("Communauté")}</span>}
                   </p>
-                  <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
+                  <p className="text-[10.5px] text-(--ep-ink)/40 mt-0.5">
                     {r.kcal}{" "}{tr("kcal · P")}{" "}{r.protein} · G {r.carbs} · L {r.fat}
                   </p>
                 </button>
               ))}
-              {recipeResults.length === 0 && <p className="text-sm text-[#F5EDED]/50 py-4 text-center">{tr("Aucune recette.")}</p>}
+              {recipeResults.length === 0 && <p className="text-sm text-(--ep-ink)/50 py-4 text-center">{tr("Aucune recette.")}</p>}
             </div>
           </>
         ))}
@@ -380,11 +380,11 @@ export default function AddFoodSheet({
                 type="button"
                 disabled={busy || items.length === 0}
                 onClick={() => onAddFoods(items.map((i) => ({ food: i.foods!, grams: i.quantity_g })))}
-                className="w-full text-left rounded-xl border border-[#890404]/25 bg-black/25 px-3 py-2.5 hover:border-[#E01E1E]/40 disabled:opacity-50"
+                className="w-full text-left rounded-xl border border-(--ep-line)/25 bg-(--ep-shade)/25 px-3 py-2.5 hover:border-(--ep-accent)/40 disabled:opacity-50"
               >
-                <p className="text-sm font-bold text-white">{meal.name}</p>
-                <p className="text-[11px] text-[#F5EDED]/45 mt-0.5 line-clamp-2">{items.map((i) => `${i.foods!.name} ${i.quantity_g} g`).join(", ")}</p>
-                <p className="text-[10.5px] text-[#F5EDED]/60 mt-1">{Math.round(kcal)}{" "}{tr("kcal")}</p>
+                <p className="text-sm font-bold text-(--ep-strong)">{meal.name}</p>
+                <p className="text-[11px] text-(--ep-ink)/45 mt-0.5 line-clamp-2">{items.map((i) => `${i.foods!.name} ${i.quantity_g} g`).join(", ")}</p>
+                <p className="text-[10.5px] text-(--ep-ink)/60 mt-1">{Math.round(kcal)}{" "}{tr("kcal")}</p>
               </button>
             );
           })}
@@ -393,7 +393,7 @@ export default function AddFoodSheet({
 
       {tab === "rapide" && (
         <div className="space-y-2.5">
-          <p className="text-xs text-[#F5EDED]/50">{tr("Restaurant, plat sans étiquette : entre le total du repas, il est gardé pour la prochaine fois.")}</p>
+          <p className="text-xs text-(--ep-ink)/50">{tr("Restaurant, plat sans étiquette : entre le total du repas, il est gardé pour la prochaine fois.")}</p>
           <input value={quick.name} onChange={(e) => setQuick({ ...quick, name: e.target.value })} placeholder={tr("Nom (ex : burger resto)")} aria-label={tr("Nom")} className={input} />
           <div className="grid grid-cols-2 gap-2">
             {(
@@ -421,7 +421,7 @@ export default function AddFoodSheet({
                 servings: 1,
               })
             }
-            className="w-full px-4 py-3 rounded-xl bg-[#E01E1E] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40"
+            className="w-full px-4 py-3 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-xs font-black uppercase tracking-widest disabled:opacity-40"
           >
             {busy ? "..." : tr("Ajouter")}
           </button>

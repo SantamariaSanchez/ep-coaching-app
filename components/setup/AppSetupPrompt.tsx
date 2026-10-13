@@ -18,9 +18,9 @@ export default function AppSetupPrompt({ href }: { href: string }) {
   return (
     <div style={{ padding: "12px 16px 0" }}>
       <div className="ep-card-hero" style={{ maxWidth: 760, margin: "0 auto", padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-        <SlidersHorizontal size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
-        <p style={{ flex: 1, fontSize: 13, color: "rgba(245,237,237,0.8)", margin: 0, lineHeight: 1.5 }}>
-          <strong style={{ color: "#F5EDED" }}>{t("Configure ton appli en 1 minute")}</strong>{" "}{t(": garde seulement ce que tu utilises vraiment.")}
+        <SlidersHorizontal size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+        <p style={{ flex: 1, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.8)", margin: 0, lineHeight: 1.5 }}>
+          <strong style={{ color: "var(--ep-ink)" }}>{t("Configure ton appli en 1 minute")}</strong>{" "}{t(": garde seulement ce que tu utilises vraiment.")}
         </p>
         <Link href={href} className="ep-btn-primary" style={{ fontSize: 11, padding: "8px 12px", textDecoration: "none", flexShrink: 0 }}>
           {t("C'est parti")}
@@ -34,7 +34,7 @@ export default function AppSetupPrompt({ href }: { href: string }) {
             } catch {}
             setClosed(true);
           }}
-          style={{ background: "none", border: "none", color: "rgba(245,237,237,0.4)", cursor: "pointer", padding: 4 }}
+          style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.4)", cursor: "pointer", padding: 4 }}
         >
           <X size={16} />
         </button>

@@ -13,7 +13,7 @@ export default function SignupGateModal() {
         position: "fixed",
         inset: 0,
         zIndex: 100,
-        background: "rgba(0,0,0,0.82)",
+        background: "rgba(var(--ep-shade-rgb),0.82)",
         backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
@@ -26,12 +26,12 @@ export default function SignupGateModal() {
         style={{
           width: "100%",
           maxWidth: 420,
-          background: "#0D0000",
-          border: "1px solid rgba(224,30,30,0.3)",
+          background: "var(--ep-bg)",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
           borderRadius: 18,
           padding: "36px 28px",
           textAlign: "center",
-          boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+          boxShadow: "0 24px 60px rgba(var(--ep-shade-rgb),0.6)",
         }}
       >
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
@@ -44,7 +44,7 @@ export default function SignupGateModal() {
         >
           {t("Accède à toutes les ressources gratuitement.")}
         </h2>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6, margin: "0 0 26px" }}>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6, margin: "0 0 26px" }}>
           {t("Crée ton compte EP Coaching en 30 secondes.")}
         </p>
 
@@ -63,7 +63,7 @@ export default function SignupGateModal() {
             marginTop: 16,
             fontSize: 12,
             fontWeight: 600,
-            color: "rgba(245,237,237,0.3)",
+            color: "rgba(var(--ep-ink-rgb),0.3)",
             textDecoration: "none",
           }}
         >

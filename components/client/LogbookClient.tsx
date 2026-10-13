@@ -41,7 +41,7 @@ interface Props {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+    <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
       {children}
     </p>
   );
@@ -72,20 +72,20 @@ function StartSessionButton({
     <button
       onClick={handleStart}
       disabled={loading}
-      className="w-full flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 hover:border-[#E01E1E]/50 rounded-xl px-4 py-4 transition-all group disabled:opacity-50 text-left"
+      className="w-full flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/25 hover:border-(--ep-accent)/50 rounded-xl px-4 py-4 transition-all group disabled:opacity-50 text-left"
     >
-      <div className="w-10 h-10 rounded-xl bg-[#E01E1E]/10 border border-[#E01E1E]/20 flex items-center justify-center flex-shrink-0">
-        <Dumbbell size={18} className="text-[#E01E1E]" strokeWidth={1.8} />
+      <div className="w-10 h-10 rounded-xl bg-(--ep-accent)/10 border border-(--ep-accent)/20 flex items-center justify-center flex-shrink-0">
+        <Dumbbell size={18} className="text-(--ep-accent)" strokeWidth={1.8} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-black text-white">{dayLabel}</p>
+        <p className="text-sm font-black text-(--ep-strong)">{dayLabel}</p>
         {muscleGroups.length > 0 && (
-          <p className="text-[10px] text-[#F5EDED]/40 truncate">
+          <p className="text-[10px] text-(--ep-ink)/40 truncate">
             {muscleGroups.join(" · ")}
           </p>
         )}
         {lastSession && (
-          <p className="text-[9px] text-[#F5EDED]/25 mt-0.5">
+          <p className="text-[9px] text-(--ep-ink)/25 mt-0.5">
             {t("Dernier passage :")}{" "}
             {new Intl.DateTimeFormat("fr-FR", {
               day: "numeric",
@@ -96,15 +96,15 @@ function StartSessionButton({
       </div>
       <div className="flex items-center gap-2">
         {loading ? (
-          <div className="w-4 h-4 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-(--ep-accent) border-t-transparent rounded-full animate-spin" />
         ) : (
           <>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent) opacity-0 group-hover:opacity-100 transition-opacity">
               {t("Démarrer")}
             </span>
             <ChevronRight
               size={14}
-              className="text-[#F5EDED]/25 group-hover:text-[#E01E1E] transition-colors"
+              className="text-(--ep-ink)/25 group-hover:text-(--ep-accent) transition-colors"
             />
           </>
         )}
@@ -132,8 +132,8 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
 
   if (asking) {
     return (
-      <div className="border border-dashed border-[#890404]/30 rounded-xl px-4 py-3.5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">
+      <div className="border border-dashed border-(--ep-line)/30 rounded-xl px-4 py-3.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-2">
           {t("Quelle séance veux-tu faire ?")}
         </p>
         <div className="flex gap-2">
@@ -143,17 +143,17 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
             onChange={(e) => setDayLabel(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleStart(); } }}
             placeholder={t("Ex. Dos triceps quad")} aria-label={t("Nom de la séance")}
-            className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+            className="flex-1 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
           />
           <button
             onClick={handleStart}
             disabled={loading}
-            className="px-4 rounded-lg bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest transition-colors"
+            className="px-4 rounded-lg bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest transition-colors"
           >
             {loading ? "…" : t("Démarrer")}
           </button>
         </div>
-        <p className="text-[9px] text-[#F5EDED]/25 mt-2">
+        <p className="text-[9px] text-(--ep-ink)/25 mt-2">
           {t("Sert à proposer un échauffement adapté, modifiable ensuite si besoin.")}
         </p>
         {startError && (
@@ -166,7 +166,7 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
   return (
     <button
       onClick={() => setAsking(true)}
-      className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+      className="w-full flex items-center justify-center gap-2 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/60 rounded-xl px-4 py-3.5 text-sm text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
     >
       <Plus size={15} strokeWidth={1.8} />
       {t("Séance libre")}
@@ -244,10 +244,10 @@ function ImportLogbookButton() {
       <button
         onClick={() => inputRef.current?.click()}
         disabled={importing}
-        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/60 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors disabled:opacity-50"
       >
         {importing ? (
-          <div className="w-4 h-4 border-2 border-[#F5EDED]/40 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-(--ep-ink)/40 border-t-transparent rounded-full animate-spin" />
         ) : (
           <Upload size={14} strokeWidth={1.8} />
         )}
@@ -324,7 +324,7 @@ export default function LogbookClient({
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Logbook")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
@@ -340,25 +340,25 @@ export default function LogbookClient({
       {activeSession && (
         <Link
           href={`${sessionBasePath}/session/${activeSession.id}`}
-          className="flex items-center gap-4 bg-[#E01E1E] rounded-2xl px-5 py-4 mb-6 active:scale-[0.98] transition-transform"
+          className="flex items-center gap-4 bg-(--ep-accent) rounded-2xl px-5 py-4 mb-6 active:scale-[0.98] transition-transform"
         >
-          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-            <Play size={18} className="text-white fill-white" />
+          <div className="w-10 h-10 rounded-xl bg-(--ep-hi)/15 flex items-center justify-center flex-shrink-0">
+            <Play size={18} className="text-(--ep-strong) fill-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-0.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-strong)/70 mb-0.5">
               {t("Séance en cours")}
             </p>
-            <p className="text-sm font-black text-white truncate">
+            <p className="text-sm font-black text-(--ep-strong) truncate">
               {activeSession.day_label}
             </p>
             {activeSession.muscle_groups && activeSession.muscle_groups.length > 0 && (
-              <p className="text-[10px] text-white/60 truncate">
+              <p className="text-[10px] text-(--ep-strong)/60 truncate">
                 {activeSession.muscle_groups.join(" · ")}
               </p>
             )}
           </div>
-          <ChevronRight size={20} className="text-white/70 flex-shrink-0" />
+          <ChevronRight size={20} className="text-(--ep-strong)/70 flex-shrink-0" />
         </Link>
       )}
 
@@ -388,8 +388,8 @@ export default function LogbookClient({
           })}
 
           {(!program || program.days.length === 0) && (
-            <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4 mb-2">
-              <p className="text-xs text-[#F5EDED]/40">
+            <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-5 py-4 mb-2">
+              <p className="text-xs text-(--ep-ink)/40">
                 {isFree
                   ? t("Aucun programme actif. Crée ton programme ou démarre une séance libre.")
                   : t("Aucun programme actif. Démarre une séance libre ou contacte ton coach.")}
@@ -442,7 +442,7 @@ export default function LogbookClient({
           {!showingAllHistory && !historyError && sessions.length >= historyLimit && (
             <Link
               href={`${sessionBasePath}?historique=tout`}
-              className="mt-3 w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-[#F5EDED]/75 transition-colors"
+              className="mt-3 w-full flex items-center justify-center gap-1.5 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/60 rounded-xl px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-ink)/75 transition-colors"
             >
               {t("Voir tout l'historique")}
               <ChevronRight size={13} />
@@ -451,13 +451,13 @@ export default function LogbookClient({
           {showingAllHistory && (
             <div className="mt-3 flex flex-col items-center gap-1">
               {sessions.length >= historyLimit && (
-                <p className="text-[10px] text-[#F5EDED]/30 text-center">
+                <p className="text-[10px] text-(--ep-ink)/30 text-center">
                   {t("Les")}{" "}{historyLimit}{" "}{t("séances les plus récentes sont affichées.")}
                 </p>
               )}
               <Link
                 href={sessionBasePath}
-                className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/65 transition-colors py-2"
+                className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/65 transition-colors py-2"
               >
                 {t("Revenir aux dernières séances")}
               </Link>

@@ -52,7 +52,7 @@ export default function BilanBackfillView({
 
   return (
     <div>
-      <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4">
+      <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed mb-4">
         {t("Un jour manqué ? Complète-le ici, jusqu'à")}{" "}{BILAN_BACKFILL_DAYS}{" "}{t("jours en arrière.")}
       </p>
       <div className="space-y-2">
@@ -65,7 +65,7 @@ export default function BilanBackfillView({
           const isOpen = expanded === date;
 
           return (
-            <div key={date} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
+            <div key={date} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden">
               <div
                 role="button"
                 tabIndex={0}
@@ -75,18 +75,18 @@ export default function BilanBackfillView({
                 className="w-full flex items-center justify-between gap-3 px-4 py-3 cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  <CalendarClock size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
-                  <span className="text-[13px] font-bold text-white capitalize">{fmtDate(date)}</span>
+                  <CalendarClock size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
+                  <span className="text-[13px] font-bold text-(--ep-strong) capitalize">{fmtDate(date)}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <span
                     className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                     style={
                       complete
-                        ? { background: "rgba(74,222,128,0.1)", color: "#4ade80" }
+                        ? { background: "rgba(var(--ep-ok-rgb),0.1)", color: "var(--ep-ok)" }
                         : partial
-                        ? { background: "rgba(251,191,36,0.1)", color: "#fbbf24" }
-                        : { background: "rgba(245,237,237,0.06)", color: "rgba(245,237,237,0.35)" }
+                        ? { background: "rgba(var(--ep-warn-rgb),0.1)", color: "var(--ep-warn)" }
+                        : { background: "rgba(var(--ep-ink-rgb),0.06)", color: "rgba(var(--ep-ink-rgb),0.35)" }
                     }
                   >
                     {complete ? <Check size={10} /> : <CircleDashed size={10} />}
@@ -94,13 +94,13 @@ export default function BilanBackfillView({
                   </span>
                   <ChevronDown
                     size={15}
-                    className="text-[#F5EDED]/30 transition-transform flex-shrink-0"
+                    className="text-(--ep-ink)/30 transition-transform flex-shrink-0"
                     style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                   />
                 </div>
               </div>
               {isOpen && (
-                <div className="px-4 pb-4 pt-1 border-t border-[#890404]/15">
+                <div className="px-4 pb-4 pt-1 border-t border-(--ep-line)/15">
                   <DailyBilanForm today={date} existing={log ?? null} action={action} />
                 </div>
               )}
@@ -112,7 +112,7 @@ export default function BilanBackfillView({
       {!showAll && visibleDays < BILAN_BACKFILL_DAYS && (
         <button
           onClick={() => setShowAll(true)}
-          className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+          className="mt-3 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
         >
           {t("Voir les")}{" "}{BILAN_BACKFILL_DAYS}{" "}{t("derniers jours")}
         </button>

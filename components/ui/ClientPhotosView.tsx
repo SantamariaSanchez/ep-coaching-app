@@ -45,7 +45,7 @@ async function uploadFile(file: File): Promise<string | null> {
 }
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 // "video_perf" (vidéo d'exercice/perf) retiré — hors-sujet ici, un exercice
 // filmé n'a rien à faire dans le suivi physique/posing ; le retour vidéo
@@ -92,7 +92,7 @@ function SelfCategoryPicker({
         name="competition_category"
         defaultValue=""
         aria-label={tr("Catégorie de compétition")}
-        className="flex-1 bg-[#150000] border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/60"
+        className="flex-1 bg-(--ep-s2) border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-(--ep-strong) focus:outline-none focus:border-amber-500/60"
       >
         <option value="">{tr("Choisis ta catégorie")}</option>
         <optgroup label={tr("Femmes")}>
@@ -224,15 +224,15 @@ function SubmissionForm({
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <CheckCircle2 size={40} className="text-green-400" strokeWidth={1.5} />
-        <p className="text-sm font-black text-white uppercase tracking-wider">
+        <p className="text-sm font-black text-(--ep-strong) uppercase tracking-wider">
           {isSelfTracking ? tr("Ajoutée à ton historique !") : tr("Mise à jour envoyée !")}
         </p>
-        <p className="text-xs text-[#F5EDED]/35">
+        <p className="text-xs text-(--ep-ink)/35">
           {isSelfTracking ? tr("Retrouve-la dans ton suivi ci-dessous.") : tr("Ton coach recevra une notification.")}
         </p>
         <button
           onClick={() => { setSuccess(false); setPhotos([]); setVideo(null); setVideoLink(""); setShowVideoLinkInput(false); setNotes(""); }}
-          className="text-xs text-[#E01E1E] hover:underline mt-2"
+          className="text-xs text-(--ep-accent) hover:underline mt-2"
         >
           {tr("Envoyer une autre update")}
         </button>
@@ -255,13 +255,13 @@ function SubmissionForm({
             onClick={() => setType(key)}
             className={`flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border transition-all text-center ${
               type === key
-                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
-                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/35 hover:border-[#890404]/50"
+                ? "bg-(--ep-accent)/12 border-(--ep-accent)/40 text-(--ep-accent)"
+                : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/35 hover:border-(--ep-line)/50"
             }`}
           >
             <Icon size={18} strokeWidth={type === key ? 2.5 : 1.8} />
             <span className="text-[9px] font-black uppercase tracking-widest leading-tight">{label}</span>
-            <span className="text-[8px] text-[#F5EDED]/30 leading-tight hidden sm:block">{desc}</span>
+            <span className="text-[8px] text-(--ep-ink)/30 leading-tight hidden sm:block">{desc}</span>
           </button>
           );
         })}
@@ -269,22 +269,22 @@ function SubmissionForm({
 
       {/* Type-specific content */}
       {type === "mandatory_poses" && posingData && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
             {tr("Poses obligatoires :")}{" "}{category}
           </p>
           <div className="space-y-1.5">
             {posingData.mandatory_poses.map((pose, i) => (
               <div key={i} className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded border border-[#890404]/30 bg-[#890404]/10 flex-shrink-0 flex items-center justify-center">
-                  <span className="text-[8px] text-[#F5EDED]/40">{i + 1}</span>
+                <div className="w-4 h-4 rounded border border-(--ep-line)/30 bg-(--ep-line)/10 flex-shrink-0 flex items-center justify-center">
+                  <span className="text-[8px] text-(--ep-ink)/40">{i + 1}</span>
                 </div>
-                <span className="text-xs text-[#F5EDED]/70">{pose}</span>
+                <span className="text-xs text-(--ep-ink)/70">{pose}</span>
               </div>
             ))}
           </div>
           {posingData.notes && (
-            <p className="mt-3 text-[10px] text-[#F5EDED]/30 italic border-t border-[#890404]/15 pt-2">
+            <p className="mt-3 text-[10px] text-(--ep-ink)/30 italic border-t border-(--ep-line)/15 pt-2">
               {posingData.notes}
             </p>
           )}
@@ -292,24 +292,24 @@ function SubmissionForm({
       )}
 
       {!posingData && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">{tr("Les 3 photos de la semaine")}</p>
+        <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">{tr("Les 3 photos de la semaine")}</p>
           <div className="space-y-1.5">
             {["Face, bras le long du corps, relâché", "Profil (côté droit), relâché", "Dos, bras le long du corps, relâché"].map((pose, i) => (
               <div key={i} className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded border border-[#890404]/30 bg-[#890404]/10 flex-shrink-0 flex items-center justify-center">
-                  <span className="text-[8px] text-[#F5EDED]/40">{i + 1}</span>
+                <div className="w-4 h-4 rounded border border-(--ep-line)/30 bg-(--ep-line)/10 flex-shrink-0 flex items-center justify-center">
+                  <span className="text-[8px] text-(--ep-ink)/40">{i + 1}</span>
                 </div>
-                <span className="text-xs text-[#F5EDED]/70">{pose}</span>
+                <span className="text-xs text-(--ep-ink)/70">{pose}</span>
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[10px] text-[#F5EDED]/35 border-t border-[#890404]/15 pt-2">
+          <p className="mt-3 text-[10px] text-(--ep-ink)/35 border-t border-(--ep-line)/15 pt-2">
             {tr("Même endroit, même lumière, même heure (idéalement le matin à jeun) : c'est ce qui rend la comparaison fiable.")}
           </p>
           {isSelfTracking && saveCompetitionSettings && (
-            <div className="mt-3 pt-3 border-t border-[#890404]/15">
-              <p className="text-[10px] text-[#F5EDED]/45 mb-2">{tr("Tu prépares une compétition ? Choisis ta catégorie pour avoir tes poses imposées.")}</p>
+            <div className="mt-3 pt-3 border-t border-(--ep-line)/15">
+              <p className="text-[10px] text-(--ep-ink)/45 mb-2">{tr("Tu prépares une compétition ? Choisis ta catégorie pour avoir tes poses imposées.")}</p>
               <SelfCategoryPicker coachId={profile.id} save={saveCompetitionSettings} />
             </div>
           )}
@@ -319,15 +319,15 @@ function SubmissionForm({
       {/* Astuces posing — pour que cet espace serve à progresser, pas juste
           à déposer des photos. */}
       {posingData && posingData.tips.length > 0 && (
-        <div className="bg-[#E01E1E]/6 border border-[#E01E1E]/15 rounded-xl p-4">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E]/70 mb-2.5 flex items-center gap-1.5">
+        <div className="bg-(--ep-accent)/6 border border-(--ep-accent)/15 rounded-xl p-4">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent)/70 mb-2.5 flex items-center gap-1.5">
             <Sparkles size={11} />
             {tr("Astuces posing ·")}{" "}{category}
           </p>
           <div className="space-y-2">
             {posingData.tips.map((tip, i) => (
-              <p key={i} className="text-[11px] text-[#F5EDED]/60 leading-relaxed flex gap-2">
-                <span className="text-[#E01E1E]/50 flex-shrink-0">•</span>
+              <p key={i} className="text-[11px] text-(--ep-ink)/60 leading-relaxed flex gap-2">
+                <span className="text-(--ep-accent)/50 flex-shrink-0">•</span>
                 {tip}
               </p>
             ))}
@@ -336,14 +336,14 @@ function SubmissionForm({
       )}
 
       {type === "posing_routine" && posingData && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 space-y-2">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4 space-y-2">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Instructions :")}{" "}{category}
           </p>
-          <p className="text-xs text-[#F5EDED]/60 leading-relaxed">
+          <p className="text-xs text-(--ep-ink)/60 leading-relaxed">
             {posingData.posing_routine.instructions}
           </p>
-          <p className="text-[10px] text-[#E01E1E]/70 font-bold">
+          <p className="text-[10px] text-(--ep-accent)/70 font-bold">
             {tr("⏱ Durée :")}{" "}{posingData.posing_routine.duration}
           </p>
         </div>
@@ -351,7 +351,7 @@ function SubmissionForm({
 
       {type === "posing_routine" && (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
             {tr("Durée de ta routine")}
           </label>
           <input
@@ -366,31 +366,31 @@ function SubmissionForm({
       {/* Médias */}
       {type === "mandatory_poses" ? (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            {tr("Photos (")}{photos.length}/{MAX_PHOTOS}) <span className="text-[#E01E1E]">*</span>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+            {tr("Photos (")}{photos.length}/{MAX_PHOTOS}) <span className="text-(--ep-accent)">*</span>
           </label>
           <div className="flex gap-2 flex-wrap">
             {photos.map((p) => (
-              <div key={p.localId} className="relative w-16 h-16 rounded-lg overflow-hidden border border-[#890404]/30">
+              <div key={p.localId} className="relative w-16 h-16 rounded-lg overflow-hidden border border-(--ep-line)/30">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.previewUrl} alt="" className="w-full h-full object-cover" />
                 {p.uploading && (
-                  <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin text-white" />
+                  <div className="absolute inset-0 bg-(--ep-shade)/55 flex items-center justify-center">
+                    <Loader2 size={16} className="animate-spin text-(--ep-strong)" />
                   </div>
                 )}
                 {p.error && (
-                  <div className="absolute inset-0 bg-[#E01E1E]/55 flex items-center justify-center">
-                    <span className="text-[9px] text-white font-black">{tr("Échec")}</span>
+                  <div className="absolute inset-0 bg-(--ep-accent)/55 flex items-center justify-center">
+                    <span className="text-[9px] text-(--ep-strong) font-black">{tr("Échec")}</span>
                   </div>
                 )}
                 <button
                   type="button"
                   onClick={() => setPhotos((prev) => prev.filter((x) => x.localId !== p.localId))}
-                  className="absolute top-0.5 right-0.5 w-4.5 h-4.5 rounded-full bg-black/65 flex items-center justify-center"
+                  className="absolute top-0.5 right-0.5 w-4.5 h-4.5 rounded-full bg-(--ep-shade)/65 flex items-center justify-center"
                   aria-label={tr("Retirer cette photo")}
                 >
-                  <X size={11} className="text-white" />
+                  <X size={11} className="text-(--ep-strong)" />
                 </button>
               </div>
             ))}
@@ -398,7 +398,7 @@ function SubmissionForm({
               <button
                 type="button"
                 onClick={() => photoInputRef.current?.click()}
-                className="w-16 h-16 rounded-lg border border-dashed border-[#890404]/40 bg-black/20 flex flex-col items-center justify-center gap-1 text-[#F5EDED]/40"
+                className="w-16 h-16 rounded-lg border border-dashed border-(--ep-line)/40 bg-(--ep-shade)/20 flex flex-col items-center justify-center gap-1 text-(--ep-ink)/40"
               >
                 <Camera size={16} />
                 <span className="text-[8px] font-bold uppercase">{tr("Photo")}</span>
@@ -420,18 +420,18 @@ function SubmissionForm({
         </div>
       ) : (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            {tr("Vidéo")}{" "}<span className="text-[#E01E1E]">*</span>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+            {tr("Vidéo")}{" "}<span className="text-(--ep-accent)">*</span>
           </label>
           {video ? (
-            <div className="flex items-center gap-2.5 bg-black/20 border border-[#890404]/30 rounded-lg px-3 py-2">
-              <Video size={14} className={video.error ? "text-[#E01E1E]" : "text-green-400"} />
-              <span className="text-[11px] text-[#F5EDED]/60 flex-1">
+            <div className="flex items-center gap-2.5 bg-(--ep-shade)/20 border border-(--ep-line)/30 rounded-lg px-3 py-2">
+              <Video size={14} className={video.error ? "text-(--ep-accent)" : "text-green-400"} />
+              <span className="text-[11px] text-(--ep-ink)/60 flex-1">
                 {video.uploading ? tr("Envoi en cours…") : video.error ? tr("Échec de l'envoi") : tr("Vidéo prête")}
               </span>
-              {video.uploading && <Loader2 size={13} className="animate-spin text-[#F5EDED]/40" />}
+              {video.uploading && <Loader2 size={13} className="animate-spin text-(--ep-ink)/40" />}
               <button type="button" onClick={() => setVideo(null)} aria-label={tr("Retirer la vidéo")}>
-                <X size={13} className="text-[#F5EDED]/40" />
+                <X size={13} className="text-(--ep-ink)/40" />
               </button>
             </div>
           ) : showVideoLinkInput ? (
@@ -447,7 +447,7 @@ function SubmissionForm({
                 type="button"
                 onClick={() => { setShowVideoLinkInput(false); setVideoLink(""); }}
                 aria-label={tr("Annuler le lien")}
-                className="flex-shrink-0 px-3 text-[#F5EDED]/40"
+                className="flex-shrink-0 px-3 text-(--ep-ink)/40"
               >
                 <X size={14} />
               </button>
@@ -457,7 +457,7 @@ function SubmissionForm({
               <button
                 type="button"
                 onClick={() => videoInputRef.current?.click()}
-                className="flex-1 flex items-center justify-center gap-2 border border-dashed border-[#890404]/40 bg-black/20 rounded-lg py-2.5 text-[#F5EDED]/40"
+                className="flex-1 flex items-center justify-center gap-2 border border-dashed border-(--ep-line)/40 bg-(--ep-shade)/20 rounded-lg py-2.5 text-(--ep-ink)/40"
               >
                 <Video size={14} />
                 <span className="text-[11px] font-bold uppercase tracking-widest">{tr("Filmer ma vidéo")}</span>
@@ -465,7 +465,7 @@ function SubmissionForm({
               <button
                 type="button"
                 onClick={() => setShowVideoLinkInput(true)}
-                className="text-[10.5px] font-bold text-[#F5EDED]/35 underline flex-shrink-0"
+                className="text-[10.5px] font-bold text-(--ep-ink)/35 underline flex-shrink-0"
               >
                 {tr("ou lien")}
               </button>
@@ -496,19 +496,19 @@ function SubmissionForm({
           href="https://apps.apple.com/search?term=lens%20buddy"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-[#E01E1E]/6 border border-[#E01E1E]/15 hover:border-[#E01E1E]/35 rounded-lg px-3 py-2.5 transition-colors"
+          className="flex items-center gap-2 bg-(--ep-accent)/6 border border-(--ep-accent)/15 hover:border-(--ep-accent)/35 rounded-lg px-3 py-2.5 transition-colors"
         >
-          <Sparkles size={13} className="text-[#E01E1E] flex-shrink-0" />
-          <span className="text-[11px] text-[#F5EDED]/55 leading-relaxed flex-1">
-            {tr("Utilise")}{" "}<strong className="text-[#F5EDED]">{tr("Lens Buddy")}</strong>{" "}{tr("pour reprendre la même pose au pixel près.")}
+          <Sparkles size={13} className="text-(--ep-accent) flex-shrink-0" />
+          <span className="text-[11px] text-(--ep-ink)/55 leading-relaxed flex-1">
+            {tr("Utilise")}{" "}<strong className="text-(--ep-ink)">{tr("Lens Buddy")}</strong>{" "}{tr("pour reprendre la même pose au pixel près.")}
           </span>
-          <ExternalLink size={12} className="text-[#E01E1E]/60 flex-shrink-0" />
+          <ExternalLink size={12} className="text-(--ep-accent)/60 flex-shrink-0" />
         </a>
       )}
 
       {/* Notes */}
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
           {tr("Notes / Ressenti (facultatif)")}
         </label>
         <textarea aria-label={tr("Notes / Ressenti (facultatif)")}
@@ -525,7 +525,7 @@ function SubmissionForm({
       <button
         type="submit"
         disabled={submitting || mediaUploading}
-        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
+        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-xl disabled:opacity-50 transition-colors"
       >
         {submitting ? tr("Envoi…") : mediaUploading ? tr("Envoi des médias…") : tr("Envoyer")}
       </button>
@@ -542,16 +542,16 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
   const typeLabel = TYPE_LABELS[photo.type] ?? photo.type;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 space-y-2">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4 space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold text-white">{typeLabel}</p>
-          <p className="text-[10px] text-[#F5EDED]/30">
+          <p className="text-xs font-bold text-(--ep-strong)">{typeLabel}</p>
+          <p className="text-[10px] text-(--ep-ink)/30">
             {date}
             {photo.week_number != null && ` · Semaine ${photo.week_number}`}
           </p>
           {photo.category && (
-            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#890404]/20 text-[#F5EDED]/40 border border-[#890404]/15 mt-1">
+            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-(--ep-line)/20 text-(--ep-ink)/40 border border-(--ep-line)/15 mt-1">
               {photo.category}
             </span>
           )}
@@ -576,7 +576,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
           {photo.photo_urls.map((url, i) => (
             <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`Photo ${i + 1}`} className="w-12 h-12 object-cover rounded-lg border border-[#890404]/30" />
+              <img src={url} alt={`Photo ${i + 1}`} className="w-12 h-12 object-cover rounded-lg border border-(--ep-line)/30" />
             </a>
           ))}
           {photo.video_url && (
@@ -584,7 +584,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
               href={safeExternalUrl(photo.video_url) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
             >
               <ExternalLink size={11} />
               {tr("Voir la vidéo")}
@@ -599,7 +599,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
           href={safeExternalUrl(photo.drive_link) ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
         >
           <ExternalLink size={11} />
           {tr("Ouvrir dans Drive")}
@@ -607,7 +607,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
       )}
 
       {photo.notes && (
-        <p className="text-[10px] text-[#F5EDED]/45 leading-relaxed border-t border-[#890404]/10 pt-2">
+        <p className="text-[10px] text-(--ep-ink)/45 leading-relaxed border-t border-(--ep-line)/10 pt-2">
           {photo.notes}
         </p>
       )}
@@ -617,7 +617,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70 mb-1">
             {tr("Retour de ton coach")}
           </p>
-          <p className="text-xs text-[#F5EDED]/75 leading-relaxed">
+          <p className="text-xs text-(--ep-ink)/75 leading-relaxed">
             {photo.coach_feedback}
           </p>
         </div>
@@ -682,7 +682,7 @@ export default function ClientPhotosView({
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       {/* Header */}
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {tr("Suivi")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Photos")}</h1>
@@ -691,17 +691,17 @@ export default function ClientPhotosView({
       {/* Frequency badge */}
       <div className="mb-6">
         {isDaily ? (
-          <div className="flex items-center gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3 bg-(--ep-accent)/10 border border-(--ep-accent)/30 rounded-xl px-4 py-3">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E01E1E] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#E01E1E]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-(--ep-accent) opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-(--ep-accent)" />
             </span>
             <div>
-              <p className="text-xs font-black text-[#E01E1E] uppercase tracking-widest">
+              <p className="text-xs font-black text-(--ep-accent) uppercase tracking-widest">
                 {tr("Suivi Quotidien : Compétition")}
               </p>
               {daysLeft != null && daysLeft > 0 && (
-                <p className="text-[10px] text-[#F5EDED]/50 mt-0.5">
+                <p className="text-[10px] text-(--ep-ink)/50 mt-0.5">
                   J-{daysLeft}{" "}{tr("avant la compétition")}
                 </p>
               )}
@@ -723,9 +723,9 @@ export default function ClientPhotosView({
       </div>
 
       {/* Submission section */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 mb-8">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5 mb-8">
         <div className="mb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
             {isDaily ? tr("Mise à jour du jour") : tr("Mise à jour de la semaine")}
           </p>
           <h2 className="text-lg font-black uppercase tracking-tight">
@@ -754,7 +754,7 @@ export default function ClientPhotosView({
       {showCompare && (
         <section className="mb-8">
           <div className="mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
               {tr("Progression")}
             </p>
             <h2 className="text-xl font-black uppercase tracking-tight">
@@ -769,7 +769,7 @@ export default function ClientPhotosView({
       {(photoHistory ?? []).length > 0 && (
         <section>
           <div className="mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
               {tr("Historique")}
             </p>
             <h2 className="text-xl font-black uppercase tracking-tight">

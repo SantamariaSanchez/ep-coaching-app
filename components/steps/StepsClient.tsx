@@ -103,12 +103,12 @@ function buildHeatmapWeeks(logs: StepLog[], today: string, todaySteps: number, w
 
 function cellColor(steps: number, goal: number, future: boolean): string {
   if (future) return "transparent";
-  if (steps <= 0) return "rgba(245,237,237,0.05)";
-  if (goal <= 0) return "rgba(245,237,237,0.15)";
+  if (steps <= 0) return "rgba(var(--ep-ink-rgb),0.05)";
+  if (goal <= 0) return "rgba(var(--ep-ink-rgb),0.15)";
   const ratio = steps / goal;
-  if (ratio >= 1) return "#4ade80";
-  if (ratio >= 0.5) return "rgba(224,30,30,0.55)";
-  return "rgba(224,30,30,0.25)";
+  if (ratio >= 1) return "var(--ep-ok)";
+  if (ratio >= 0.5) return "rgba(var(--ep-accent-rgb),0.55)";
+  return "rgba(var(--ep-accent-rgb),0.25)";
 }
 
 export default function StepsClient({
@@ -331,15 +331,15 @@ export default function StepsClient({
       {/* Statut Oura */}
       {!readOnly && (
         hasOura ? (
-          <div className="flex items-center gap-2" style={{ fontSize: 11, color: "rgba(74,222,128,0.85)" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", flexShrink: 0 }} />
+          <div className="flex items-center gap-2" style={{ fontSize: 11, color: "rgba(var(--ep-ok-rgb),0.85)" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--ep-ok)", flexShrink: 0 }} />
             {t("Connecté à Oura. Tes pas d'hier se synchronisent automatiquement chaque matin.")}
           </div>
         ) : (
           <Link
             href={ouraTrackingHref}
             className="flex items-center gap-2"
-            style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", textDecoration: "none" }}
+            style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", textDecoration: "none" }}
           >
             <Watch size={12} style={{ flexShrink: 0 }} />
             {t("Connecte ta Oura Ring pour ne plus saisir tes pas à la main")}
@@ -351,13 +351,13 @@ export default function StepsClient({
           ça ne compte que pendant que cette page est ouverte à l'écran, pas
           en tâche de fond façon montre connectée (impossible depuis le web). */}
       {!readOnly && logSteps && pedometer.status !== "unsupported" && (
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <Activity size={15} className={pedometer.status === "active" ? "text-green-400 flex-shrink-0" : "text-[#E01E1E] flex-shrink-0"} />
+              <Activity size={15} className={pedometer.status === "active" ? "text-green-400 flex-shrink-0" : "text-(--ep-accent) flex-shrink-0"} />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-white">{t("Podomètre automatique")}</p>
-                <p className="text-[10px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">
+                <p className="text-xs font-bold text-(--ep-strong)">{t("Podomètre automatique")}</p>
+                <p className="text-[10px] text-(--ep-ink)/35 mt-0.5 leading-relaxed">
                   {pedometer.status === "active"
                     ? t("Actif. Compte tes pas tant que l'appli reste ouverte à l'écran.")
                     : pedometer.status === "denied"
@@ -372,8 +372,8 @@ export default function StepsClient({
               onClick={handlePedometerToggle}
               className={
                 pedometer.status === "active"
-                  ? "text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-red-400 px-2.5 py-2 flex-shrink-0 transition-colors"
-                  : "flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+                  ? "text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-red-400 px-2.5 py-2 flex-shrink-0 transition-colors"
+                  : "flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
               }
             >
               {pedometer.status === "active" ? t("Désactiver") : t("Activer")}
@@ -388,17 +388,17 @@ export default function StepsClient({
       )}
 
       {/* Goal + today's progress */}
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Footprints size={16} className="text-[#E01E1E]" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+            <Footprints size={16} className="text-(--ep-accent)" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
               {t("Objectif quotidien")}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {streaks.current > 0 && (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]">
+              <span className="flex items-center gap-1 text-[10px] font-bold text-(--ep-accent)">
                 <Flame size={11} /> {streaks.current}{t("j d'affilée")}
               </span>
             )}
@@ -410,17 +410,17 @@ export default function StepsClient({
                     value={goal}
                     onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
                     aria-label={t("Objectif de pas")}
-                    className="w-20 bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
+                    className="w-20 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-2 py-1 text-xs text-(--ep-strong) focus:outline-none"
                   />
-                  <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[#E01E1E]">{t("OK")}</button>
+                  <button onClick={handleSaveGoal} className="text-[10px] font-bold text-(--ep-accent)">{t("OK")}</button>
                 </div>
               ) : (
-                <button onClick={() => setEditingGoal(true)} className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
+                <button onClick={() => setEditingGoal(true)} className="text-[10px] font-bold text-(--ep-ink)/40 flex items-center gap-1">
                   <Target size={11} /> {goal.toLocaleString("fr-FR")}{" "}{t("pas")}
                 </button>
               )
             ) : (
-              <span className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
+              <span className="text-[10px] font-bold text-(--ep-ink)/40 flex items-center gap-1">
                 <Target size={11} /> {goal.toLocaleString("fr-FR")}{" "}{t("pas/jour")}
               </span>
             )}
@@ -428,26 +428,26 @@ export default function StepsClient({
         </div>
 
         <div className="mb-3">
-          <p className="text-3xl font-black text-white tabular-nums">{todaySteps.toLocaleString("fr-FR")}</p>
-          <p className="text-[10px] text-[#F5EDED]/30">{t("pas aujourd'hui")}</p>
+          <p className="text-3xl font-black text-(--ep-strong) tabular-nums">{todaySteps.toLocaleString("fr-FR")}</p>
+          <p className="text-[10px] text-(--ep-ink)/30">{t("pas aujourd'hui")}</p>
         </div>
 
-        <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden mb-1">
+        <div className="h-2 bg-(--ep-line)/15 rounded-full overflow-hidden mb-1">
           <div
-            className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-green-500" : "bg-[#E01E1E]"}`}
+            className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-green-500" : "bg-(--ep-accent)"}`}
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-[10px] text-[#F5EDED]/30">{pct}{t("% de l'objectif")}</p>
+        <p className="text-[10px] text-(--ep-ink)/30">{pct}{t("% de l'objectif")}</p>
 
         {/* Masterclass 2026-08-15 : plus de saisie manuelle ici (doublon
             direct du champ "steps" du bilan du soir, qui alimente
             maintenant step_logs) — seul le bilan reste l'endroit où confirmer
             ou corriger le chiffre du jour. */}
         {!readOnly && !hasOura && pedometer.status !== "active" && (
-          <p className="text-[10px] text-[#F5EDED]/25 mt-3 pt-3 border-t border-[#890404]/10 leading-relaxed">
+          <p className="text-[10px] text-(--ep-ink)/25 mt-3 pt-3 border-t border-(--ep-line)/10 leading-relaxed">
             {t("Pas de podomètre actif ni de Oura connectée : renseigne ou corrige tes pas dans ton")}{" "}
-            <Link href={bilanHref} className="text-[#E01E1E] hover:text-[#ff4444] transition-colors">
+            <Link href={bilanHref} className="text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors">
               {t("bilan du soir")}
             </Link>
             {t(", ils remontent ici automatiquement.")}
@@ -456,70 +456,70 @@ export default function StepsClient({
       </div>
 
       {/* Routine */}
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
           {t("Ma routine du jour")}
         </p>
         {items.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/30 italic mb-3">{t("Aucune habitude programmée, ajoute des créneaux de marche dans ta journée.")}</p>
+          <p className="text-xs text-(--ep-ink)/30 italic mb-3">{t("Aucune habitude programmée, ajoute des créneaux de marche dans ta journée.")}</p>
         ) : (
           <div className="space-y-1.5 mb-3">
             {items.map((item) => {
               const done = completed.has(item.id);
               const rStatus = reminderStatus[item.id] ?? "idle";
               return (
-                <div key={item.id} className="bg-[#150000] border border-[#890404]/15 rounded-lg overflow-hidden">
+                <div key={item.id} className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg overflow-hidden">
                   <div className="flex items-center gap-2.5 px-3 py-2.5">
                     {!readOnly ? (
                       <button
                         onClick={() => toggleCompleted(item.id)}
                         className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-colors ${
-                          done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
+                          done ? "bg-(--ep-accent) border-(--ep-accent)" : "border-(--ep-line)/40"
                         }`}
                       >
-                        {done && <Check size={12} className="text-white" />}
+                        {done && <Check size={12} className="text-(--ep-strong)" />}
                       </button>
                     ) : (
-                      <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"}`}>
-                        {done && <Check size={12} className="text-white" />}
+                      <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${done ? "bg-(--ep-accent) border-(--ep-accent)" : "border-(--ep-line)/40"}`}>
+                        {done && <Check size={12} className="text-(--ep-strong)" />}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-semibold ${done ? "text-[#F5EDED]/40 line-through" : "text-white"}`}>{item.label}</p>
-                      {item.time_label && <p className="text-[10px] text-[#F5EDED]/30">{item.time_label}</p>}
+                      <p className={`text-xs font-semibold ${done ? "text-(--ep-ink)/40 line-through" : "text-(--ep-strong)"}`}>{item.label}</p>
+                      {item.time_label && <p className="text-[10px] text-(--ep-ink)/30">{item.time_label}</p>}
                     </div>
                     {!readOnly && createReminderFromRoutine && (
                       <button
                         onClick={() => { setReminderOpenFor(reminderOpenFor === item.id ? null : item.id); setReminderTime("12:00"); }}
                         title={t("Créer un rappel push")} aria-label={t("Créer un rappel push")}
-                        className={rStatus === "done" ? "text-green-400" : "text-[#F5EDED]/20 hover:text-[#E01E1E] transition-colors"}
+                        className={rStatus === "done" ? "text-green-400" : "text-(--ep-ink)/20 hover:text-(--ep-accent) transition-colors"}
                       >
                         {rStatus === "done" ? <Check size={13} /> : <Bell size={13} />}
                       </button>
                     )}
                     {!readOnly && deleteRoutineItem && (
-                      <button onClick={() => handleDeleteItem(item.id)} aria-label={t("Supprimer l'activité")} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
+                      <button onClick={() => handleDeleteItem(item.id)} aria-label={t("Supprimer l'activité")} className="text-(--ep-ink)/20 hover:text-red-400 transition-colors">
                         <Trash2 size={13} />
                       </button>
                     )}
                   </div>
                   {reminderOpenFor === item.id && (
-                    <div className="flex items-center gap-2 px-3 py-2.5 border-t border-[#890404]/15">
+                    <div className="flex items-center gap-2 px-3 py-2.5 border-t border-(--ep-line)/15">
                       <input
                         type="time"
                         value={reminderTime}
                         onChange={(e) => setReminderTime(e.target.value)}
                         aria-label={t("Heure du rappel")}
-                        className="bg-[#0D0000] border border-[#890404]/25 rounded-md px-2 py-1 text-xs text-white focus:outline-none"
+                        className="bg-(--ep-bg) border border-(--ep-line)/25 rounded-md px-2 py-1 text-xs text-(--ep-strong) focus:outline-none"
                       />
                       <button
                         onClick={() => handleCreateReminder(item)}
                         disabled={rStatus === "saving"}
-                        className="flex-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] disabled:opacity-40"
+                        className="flex-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) disabled:opacity-40"
                       >
                         {rStatus === "saving" ? "…" : t("Rappel chaque jour à cette heure")}
                       </button>
-                      <button onClick={() => setReminderOpenFor(null)} aria-label={t("Fermer")} className="text-[#F5EDED]/25 hover:text-white">
+                      <button onClick={() => setReminderOpenFor(null)} aria-label={t("Fermer")} className="text-(--ep-ink)/25 hover:text-(--ep-strong)">
                         <X size={13} />
                       </button>
                     </div>
@@ -537,18 +537,18 @@ export default function StepsClient({
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
                 placeholder={t("Heure")} aria-label={t("Heure")}
-                className="w-20 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
+                className="w-20 bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-2 py-1.5 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none"
               />
               <input
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 placeholder={t("Ex. Marche après le déjeuner")} aria-label={t("Nom de l'activité")}
-                className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
+                className="flex-1 bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-2 py-1.5 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none"
               />
-              <button onClick={handleAddItem} className="text-[10px] font-bold text-[#E01E1E] px-2">{t("OK")}</button>
+              <button onClick={handleAddItem} className="text-[10px] font-bold text-(--ep-accent) px-2">{t("OK")}</button>
             </div>
           ) : (
-            <button onClick={() => setShowAddItem(true)} className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]">
+            <button onClick={() => setShowAddItem(true)} className="flex items-center gap-1 text-[10px] font-bold text-(--ep-accent)">
               <Plus size={11} />{" "}{t("Ajouter une habitude")}
             </button>
           )
@@ -556,17 +556,17 @@ export default function StepsClient({
       </div>
 
       {/* Historique */}
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Flame size={14} className="text-[#E01E1E]" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <Flame size={14} className="text-(--ep-accent)" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {HEATMAP_WEEKS}{" "}{t("dernières semaines")}
           </p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
           {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
-            <p key={i} style={{ textAlign: "center", fontSize: 8, fontWeight: 700, color: "rgba(245,237,237,0.25)" }}>{d}</p>
+            <p key={i} style={{ textAlign: "center", fontSize: 8, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.25)" }}>{d}</p>
           ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -580,7 +580,7 @@ export default function StepsClient({
                     aspectRatio: "1",
                     borderRadius: 5,
                     background: cellColor(cell.steps, goal, cell.future),
-                    border: cell.isToday ? "1.5px solid #E01E1E" : "1px solid rgba(245,237,237,0.04)",
+                    border: cell.isToday ? "1.5px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.04)",
                   }}
                 />
               ))}
@@ -588,22 +588,22 @@ export default function StepsClient({
           ))}
         </div>
 
-        <div className="flex items-center gap-5 mt-4 pt-4" style={{ borderTop: "1px solid rgba(245,237,237,0.06)" }}>
+        <div className="flex items-center gap-5 mt-4 pt-4" style={{ borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)" }}>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Moyenne 7j")}</p>
-            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{avg7.toLocaleString("fr-FR")}</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 2px" }}>{t("Moyenne 7j")}</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{avg7.toLocaleString("fr-FR")}</p>
           </div>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Record")}</p>
-            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{bestDay.toLocaleString("fr-FR")}</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 2px" }}>{t("Record")}</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{bestDay.toLocaleString("fr-FR")}</p>
           </div>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Objectif atteint")}</p>
-            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{goalMetCount}/{pastCells.length}</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 2px" }}>{t("Objectif atteint")}</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{goalMetCount}/{pastCells.length}</p>
           </div>
           <div>
-            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>{t("Record série")}</p>
-            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{streaks.best}j</p>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 2px" }}>{t("Record série")}</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{streaks.best}j</p>
           </div>
         </div>
       </div>

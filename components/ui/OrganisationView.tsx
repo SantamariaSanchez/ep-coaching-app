@@ -10,6 +10,7 @@ import {
 import type { JobApplication, ApplicationStatus, OnboardingStepState } from "@/lib/job-applications";
 import { ONBOARDING_STEPS, QUALIFYING_QUESTIONS } from "@/lib/job-applications";
 import { getAgentByKey } from "@/lib/ai-agents";
+import { withAlpha } from "@/lib/theme-color";
 
 // Vue interactive de la page Administration > Organisation. Portée en
 // composant client à part le 2026-08-15 suite au retour direct : "au lieu
@@ -103,17 +104,17 @@ interface Contract {
 }
 
 const STATUS_META: Record<RoleStatus, { label: string; color: string }> = {
-  a_pourvoir: { label: "À pourvoir", color: "#F5EDED" },
-  en_recrutement: { label: "En recrutement", color: "#fbbf24" },
-  pourvu: { label: "Pourvu", color: "#4ade80" },
+  a_pourvoir: { label: "À pourvoir", color: "var(--ep-ink)" },
+  en_recrutement: { label: "En recrutement", color: "var(--ep-warn)" },
+  pourvu: { label: "Pourvu", color: "var(--ep-ok)" },
 };
 const STATUS_ORDER: RoleStatus[] = ["a_pourvoir", "en_recrutement", "pourvu"];
 
 const APPLICATION_STATUS_META: Record<ApplicationStatus, { label: string; color: string }> = {
-  nouvelle: { label: "Nouvelle", color: "#60a5fa" },
-  en_discussion: { label: "En discussion", color: "#fbbf24" },
-  acceptee: { label: "Acceptée", color: "#4ade80" },
-  refusee: { label: "Refusée", color: "rgba(245,237,237,0.35)" },
+  nouvelle: { label: "Nouvelle", color: "var(--ep-info)" },
+  en_discussion: { label: "En discussion", color: "var(--ep-warn)" },
+  acceptee: { label: "Acceptée", color: "var(--ep-ok)" },
+  refusee: { label: "Refusée", color: "rgba(var(--ep-ink-rgb),0.35)" },
 };
 const APPLICATION_STATUS_ORDER: ApplicationStatus[] = ["nouvelle", "en_discussion", "acceptee", "refusee"];
 
@@ -121,7 +122,7 @@ function ChevronToggle({ open }: { open: boolean }) {
   return (
     <ChevronDown
       size={15}
-      className="text-[#F5EDED]/35 transition-transform flex-shrink-0"
+      className="text-(--ep-ink)/35 transition-transform flex-shrink-0"
       style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
     />
   );
@@ -135,7 +136,7 @@ function RoleStatusPicker({
   onChange: (s: RoleStatus) => void;
 }) {
   return (
-    <div className="flex gap-1 pt-2.5 mt-2.5 border-t border-dashed border-[#890404]/15" onClick={(e) => e.stopPropagation()}>
+    <div className="flex gap-1 pt-2.5 mt-2.5 border-t border-dashed border-(--ep-line)/15" onClick={(e) => e.stopPropagation()}>
       {STATUS_ORDER.map((s) => {
         const meta = STATUS_META[s];
         const active = status === s;
@@ -146,8 +147,8 @@ function RoleStatusPicker({
             className="flex-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-1.5 rounded-md border transition-colors"
             style={
               active
-                ? { background: `${meta.color}1f`, borderColor: `${meta.color}70`, color: meta.color }
-                : { background: "transparent", borderColor: "rgba(137,4,4,0.2)", color: "rgba(245,237,237,0.3)" }
+                ? { background: `${withAlpha(meta.color, "1f")}`, borderColor: `${withAlpha(meta.color, "70")}`, color: meta.color }
+                : { background: "transparent", borderColor: "rgba(var(--ep-line-rgb),0.2)", color: "rgba(var(--ep-ink-rgb),0.3)" }
             }
           >
             {meta.label}
@@ -174,24 +175,24 @@ function RoleCardView({
   const tr = useT();
   const agent = getAgentByKey(role.key);
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 relative overflow-hidden">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4 relative overflow-hidden">
       <div className="absolute left-0 top-0 bottom-0" style={{ width: 3, background: color }} />
       <div className="flex items-start justify-between gap-2 mb-1">
-        <p className="text-sm font-black text-white">{role.title}</p>
+        <p className="text-sm font-black text-(--ep-strong)">{role.title}</p>
         <span
           className="text-[8.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0"
-          style={{ background: `${STATUS_META[status].color}1a`, color: STATUS_META[status].color }}
+          style={{ background: `${withAlpha(STATUS_META[status].color, "1a")}`, color: STATUS_META[status].color }}
         >
           {STATUS_META[status].label}
         </span>
       </div>
-      <p className="text-[12px] text-[#F5EDED]/55 leading-relaxed mb-3">{role.mission}</p>
+      <p className="text-[12px] text-(--ep-ink)/55 leading-relaxed mb-3">{role.mission}</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {role.levels.map((l) => (
           <span
             key={l}
             className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
-            style={{ background: `${color}18`, borderColor: `${color}55`, color }}
+            style={{ background: `${withAlpha(color, "18")}`, borderColor: `${withAlpha(color, "55")}`, color }}
           >
             {l}
           </span>
@@ -199,7 +200,7 @@ function RoleCardView({
       </div>
       <ul className="space-y-1 mb-1">
         {role.tasks.map((t, i) => (
-          <li key={i} className="text-[11.5px] text-[#F5EDED]/55 flex gap-2 leading-snug">
+          <li key={i} className="text-[11.5px] text-(--ep-ink)/55 flex gap-2 leading-snug">
             <span style={{ color, flexShrink: 0 }}>•</span> {t}
           </li>
         ))}
@@ -207,12 +208,12 @@ function RoleCardView({
       {/* Même rémunération que celle affichée publiquement sur /carrieres
           (2026-09-02) — vue interne, pour que le fondateur voie exactement
           ce qu'un candidat voit avant de publier un changement. */}
-      <div className="text-[10px] text-[#F5EDED]/40 pt-2 mt-2 border-t border-dashed border-[#890404]/15 space-y-0.5">
+      <div className="text-[10px] text-(--ep-ink)/40 pt-2 mt-2 border-t border-dashed border-(--ep-line)/15 space-y-0.5">
         {role.compensation.variable && <p>{tr("Variable :")}{" "}{role.compensation.variable}</p>}
         {role.compensation.fixed && <p>{tr("Fixe :")}{" "}{role.compensation.fixed}</p>}
       </div>
-      <p className="text-[10px] text-[#F5EDED]/30 pt-2 mt-2 border-t border-dashed border-[#890404]/15">
-        {tr("Rattaché à :")}{" "}<strong className="text-[#F5EDED]/55 font-bold">{role.reportsTo}</strong>
+      <p className="text-[10px] text-(--ep-ink)/30 pt-2 mt-2 border-t border-dashed border-(--ep-line)/15">
+        {tr("Rattaché à :")}{" "}<strong className="text-(--ep-ink)/55 font-bold">{role.reportsTo}</strong>
       </p>
       <RoleStatusPicker status={status} onChange={onChange} />
 
@@ -222,26 +223,26 @@ function RoleCardView({
       {agent && (
         <Link
           href={`/dashboard/coach/admin/organisation/agents/${role.key}`}
-          className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-dashed border-[#890404]/15 group"
+          className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-dashed border-(--ep-line)/15 group"
         >
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: `${color}1f`, color }}
+            style={{ background: `${withAlpha(color, "1f")}`, color }}
           >
             <Bot size={14} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold text-[#F5EDED]/75 truncate">
+            <p className="text-[11px] font-bold text-(--ep-ink)/75 truncate">
               {tr("Agent IA :")}{" "}{agent.name}
             </p>
-            <p className="text-[9.5px] text-[#F5EDED]/35 truncate">{tr("Discuter · assigner une tâche")}</p>
+            <p className="text-[9.5px] text-(--ep-ink)/35 truncate">{tr("Discuter · assigner une tâche")}</p>
           </div>
           {openTaskCount > 0 && (
-            <span className="text-[9px] font-black text-white bg-[#E01E1E] rounded-full px-1.5 py-0.5 min-w-[16px] text-center flex-shrink-0">
+            <span className="text-[9px] font-black text-(--ep-strong) bg-(--ep-accent) rounded-full px-1.5 py-0.5 min-w-[16px] text-center flex-shrink-0">
               {openTaskCount}
             </span>
           )}
-          <ArrowRight size={13} className="text-[#F5EDED]/25 group-hover:text-[#F5EDED]/60 transition-colors flex-shrink-0" />
+          <ArrowRight size={13} className="text-(--ep-ink)/25 group-hover:text-(--ep-ink)/60 transition-colors flex-shrink-0" />
         </Link>
       )}
     </div>
@@ -261,7 +262,7 @@ function PoleTabBar({
 }) {
   const tr = useT();
   return (
-    <div role="tablist" aria-label={tr("Pôles")} className="flex gap-1.5 overflow-x-auto mb-4 border-b border-[#890404]/20 pb-0.5">
+    <div role="tablist" aria-label={tr("Pôles")} className="flex gap-1.5 overflow-x-auto mb-4 border-b border-(--ep-line)/20 pb-0.5">
       {poles.map((pole) => {
         const active = pole.key === activeKey;
         const filled = pole.roles.filter((r) => statuses[r.key] === "pourvu").length;
@@ -276,20 +277,20 @@ function PoleTabBar({
             style={{
               border: "none",
               borderBottom: active ? `2px solid ${pole.color}` : "2px solid transparent",
-              background: active ? `${pole.color}14` : "transparent",
+              background: active ? `${withAlpha(pole.color, "14")}` : "transparent",
             }}
           >
             <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: pole.color }} />
             <span className="flex flex-col items-start">
               <span
                 className="text-[12px] font-extrabold uppercase tracking-tight"
-                style={{ color: active ? "#F5EDED" : "rgba(245,237,237,0.45)" }}
+                style={{ color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.45)" }}
               >
                 {pole.name}
               </span>
-              <span className="text-[9px] text-[#F5EDED]/30">
+              <span className="text-[9px] text-(--ep-ink)/30">
                 {pole.roles.length}{" "}{tr("poste")}{pole.roles.length > 1 ? "s" : ""}
-                {filled > 0 && <span style={{ color: "#4ade80" }}> · {filled}{" "}{tr("pourvu")}{filled > 1 ? "s" : ""}</span>}
+                {filled > 0 && <span style={{ color: "var(--ep-ok)" }}> · {filled}{" "}{tr("pourvu")}{filled > 1 ? "s" : ""}</span>}
               </span>
             </span>
           </button>
@@ -316,9 +317,9 @@ function OnboardingChecklist({
   const doneSet = new Set(steps.filter((s) => s.done).map((s) => s.step_key));
   const doneCount = ONBOARDING_STEPS.filter((s) => doneSet.has(s.key)).length;
   return (
-    <div className="mt-2.5 pt-2.5 border-t border-dashed border-[#890404]/15">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2 flex items-center gap-1.5">
-        <ListChecks size={11} className="text-[#4ade80]" />
+    <div className="mt-2.5 pt-2.5 border-t border-dashed border-(--ep-line)/15">
+      <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-2 flex items-center gap-1.5">
+        <ListChecks size={11} className="text-(--ep-ok)" />
         {tr("Parcours d'intégration ·")}{" "}{doneCount}/{ONBOARDING_STEPS.length}
       </p>
       <div className="space-y-1">
@@ -332,15 +333,15 @@ function OnboardingChecklist({
             >
               <span
                 className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                  done ? "bg-[#4ade80] border-[#4ade80]" : "border-[#890404]/40 bg-transparent"
+                  done ? "bg-(--ep-ok) border-(--ep-ok)" : "border-(--ep-line)/40 bg-transparent"
                 }`}
               >
-                {done && <Check size={10} className="text-[#0a1f0a]" strokeWidth={3} />}
+                {done && <Check size={10} className="text-(--ep-okbg)" strokeWidth={3} />}
               </span>
-              <span className={`text-[11px] ${done ? "text-[#F5EDED]/35 line-through" : "text-[#F5EDED]/65"}`}>
+              <span className={`text-[11px] ${done ? "text-(--ep-ink)/35 line-through" : "text-(--ep-ink)/65"}`}>
                 {step.label}
               </span>
-              <span className="text-[9px] text-[#F5EDED]/25 ml-auto flex-shrink-0">{step.when}</span>
+              <span className="text-[9px] text-(--ep-ink)/25 ml-auto flex-shrink-0">{step.when}</span>
             </button>
           );
         })}
@@ -370,32 +371,32 @@ function ApplicationRow({
   const [showNotes, setShowNotes] = useState(!!application.notes);
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="min-w-0">
-          <p className="text-sm font-black text-white truncate">{application.full_name}</p>
-          <p className="text-[10.5px] text-[#F5EDED]/35 mt-0.5">{roleTitle} · {fmtAppDate(application.created_at)}</p>
+          <p className="text-sm font-black text-(--ep-strong) truncate">{application.full_name}</p>
+          <p className="text-[10.5px] text-(--ep-ink)/35 mt-0.5">{roleTitle} · {fmtAppDate(application.created_at)}</p>
         </div>
         <span
           className="text-[8.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0"
-          style={{ background: `${meta.color}1a`, color: meta.color }}
+          style={{ background: `${withAlpha(meta.color, "1a")}`, color: meta.color }}
         >
           {meta.label}
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 mb-1">
-        <a href={`mailto:${application.email}`} className="text-[11.5px] text-[#F5EDED]/55 hover:text-white flex items-center gap-1.5">
-          <Mail size={11} className="text-[#E01E1E]" /> {application.email}
+        <a href={`mailto:${application.email}`} className="text-[11.5px] text-(--ep-ink)/55 hover:text-(--ep-strong) flex items-center gap-1.5">
+          <Mail size={11} className="text-(--ep-accent)" /> {application.email}
         </a>
         {application.phone && (
-          <span className="text-[11.5px] text-[#F5EDED]/55">{application.phone}</span>
+          <span className="text-[11.5px] text-(--ep-ink)/55">{application.phone}</span>
         )}
         {application.cvUrl && (
           <a
             href={application.cvUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11.5px] font-bold text-[#E01E1E] hover:underline"
+            className="text-[11.5px] font-bold text-(--ep-accent) hover:underline"
           >
             {tr("Voir le CV (PDF)")}
           </a>
@@ -406,21 +407,21 @@ function ApplicationRow({
           répondu lui-même à la candidature, jamais ce que le coach note à
           part (ça reste dans "notes" plus bas). */}
       {application.answers && Object.keys(application.answers).length > 0 && (
-        <div className="mt-2.5 pt-2.5 border-t border-dashed border-[#890404]/15 space-y-2">
+        <div className="mt-2.5 pt-2.5 border-t border-dashed border-(--ep-line)/15 space-y-2">
           {QUALIFYING_QUESTIONS.filter((q) => application.answers?.[q.key]).map((q) => (
             <div key={q.key}>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{q.label}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30">{q.label}</p>
               {q.key === "link" ? (
                 <a
                   href={application.answers![q.key]}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[11.5px] text-[#E01E1E] hover:underline break-all"
+                  className="text-[11.5px] text-(--ep-accent) hover:underline break-all"
                 >
                   {application.answers![q.key]}
                 </a>
               ) : (
-                <p className="text-[11.5px] text-[#F5EDED]/65 leading-relaxed whitespace-pre-wrap">
+                <p className="text-[11.5px] text-(--ep-ink)/65 leading-relaxed whitespace-pre-wrap">
                   {application.answers![q.key]}
                 </p>
               )}
@@ -429,7 +430,7 @@ function ApplicationRow({
         </div>
       )}
 
-      <div className="flex gap-1 pt-2.5 mt-2.5 border-t border-dashed border-[#890404]/15">
+      <div className="flex gap-1 pt-2.5 mt-2.5 border-t border-dashed border-(--ep-line)/15">
         {APPLICATION_STATUS_ORDER.map((s) => {
           const m = APPLICATION_STATUS_META[s];
           const active = application.status === s;
@@ -440,8 +441,8 @@ function ApplicationRow({
               className="flex-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-1.5 rounded-md border transition-colors"
               style={
                 active
-                  ? { background: `${m.color}1f`, borderColor: `${m.color}70`, color: m.color }
-                  : { background: "transparent", borderColor: "rgba(137,4,4,0.2)", color: "rgba(245,237,237,0.3)" }
+                  ? { background: `${withAlpha(m.color, "1f")}`, borderColor: `${withAlpha(m.color, "70")}`, color: m.color }
+                  : { background: "transparent", borderColor: "rgba(var(--ep-line-rgb),0.2)", color: "rgba(var(--ep-ink-rgb),0.3)" }
               }
             >
               {m.label}
@@ -459,12 +460,12 @@ function ApplicationRow({
           onBlur={() => onSaveNotes(notes)}
           placeholder={tr("Notes d'entretien, impressions, points à vérifier…")} aria-label={tr("Notes d'entretien, impressions, points à vérifier…")}
           rows={2}
-          className="w-full mt-2.5 bg-[#150000] border border-[#890404]/25 rounded-lg px-2.5 py-2 text-[11px] text-[#F5EDED]/70 placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
+          className="w-full mt-2.5 bg-(--ep-s2) border border-(--ep-line)/25 rounded-lg px-2.5 py-2 text-[11px] text-(--ep-ink)/70 placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50 resize-none"
         />
       ) : (
         <button
           onClick={() => setShowNotes(true)}
-          className="mt-2.5 inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+          className="mt-2.5 inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
         >
           <StickyNote size={11} />{" "}{tr("Ajouter une note")}
         </button>
@@ -492,7 +493,7 @@ function SimpleAccordionItem({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl overflow-hidden border border-[#890404]/20 mb-2.5 bg-[#1f0101]">
+    <div className="rounded-xl overflow-hidden border border-(--ep-line)/20 mb-2.5 bg-(--ep-s1)">
       <button onClick={onToggle} aria-expanded={open} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
         {header}
         <ChevronToggle open={open} />
@@ -648,28 +649,28 @@ rapides pour être sûr qu'on te fasse gagner du temps :
   return (
     <>
       {/* ── Vue d'ensemble ── */}
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <Building2 size={14} className="text-[#E01E1E]" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <Building2 size={14} className="text-(--ep-accent)" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Organigramme :")}{" "}{totalRoles}{" "}{tr("postes sur")}{" "}{poles.length}{" "}{tr("pôles")}
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5 text-center">
-            <p className="text-lg font-black text-white">{totalRoles - filledTotal - activeTotal}</p>
-            <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5 text-[#F5EDED]/45">{tr("À pourvoir")}</p>
+          <div className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2.5 text-center">
+            <p className="text-lg font-black text-(--ep-strong)">{totalRoles - filledTotal - activeTotal}</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5 text-(--ep-ink)/45">{tr("À pourvoir")}</p>
           </div>
-          <div className="bg-[#150000] border border-amber-500/20 rounded-lg px-3 py-2.5 text-center">
+          <div className="bg-(--ep-s2) border border-amber-500/20 rounded-lg px-3 py-2.5 text-center">
             <p className="text-lg font-black text-amber-400">{activeTotal}</p>
             <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5 text-amber-400/70">{tr("En recrutement")}</p>
           </div>
-          <div className="bg-[#150000] border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
+          <div className="bg-(--ep-s2) border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
             <p className="text-lg font-black text-green-400">{filledTotal}</p>
             <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5 text-green-400/70">{tr("Pourvus")}</p>
           </div>
         </div>
-        <p className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed">
+        <p className="text-[10.5px] text-(--ep-ink)/30 leading-relaxed">
           {tr("Chaque pôle peut démarrer à une seule personne, la structure tient même à 1 recrutement près. Clique un pôle ci-dessous pour voir ses postes, et le statut de chaque poste pour le mettre à jour.")}
         </p>
       </div>
@@ -692,14 +693,14 @@ rapides pour être sûr qu'on te fasse gagner du temps :
             onClick={() => setActiveSection(key)}
             className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
               activeSection === key
-                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
-                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/45 hover:border-[#890404]/40 hover:text-[#F5EDED]/70"
+                ? "bg-(--ep-accent)/12 border-(--ep-accent)/40 text-(--ep-accent)"
+                : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/45 hover:border-(--ep-line)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Icon size={17} strokeWidth={activeSection === key ? 2.2 : 1.7} />
             <span className="text-[9px] font-bold uppercase tracking-wider leading-tight">{label}</span>
             {!!badge && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[8px] font-black bg-[#E01E1E] text-white">
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[8px] font-black bg-(--ep-accent) text-(--ep-strong)">
                 {badge}
               </span>
             )}
@@ -722,43 +723,43 @@ rapides pour être sûr qu'on te fasse gagner du temps :
               <div className="flex items-center gap-2">
                 <Bot size={14} className="text-blue-400" />
                 <h2 className="text-base font-black uppercase tracking-tight">{tr("Coachs IA")}</h2>
-                <span className="text-[10px] font-bold text-[#F5EDED]/35">
+                <span className="text-[10px] font-bold text-(--ep-ink)/35">
                   {aiCoaches.length} · {acceptingAiCoaches}{" "}{tr("dispo ·")}{" "}{totalAiCoachClients}{" "}{tr("client")}{totalAiCoachClients !== 1 ? "s" : ""}
                 </span>
               </div>
             }
           >
-            <p className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed mb-3">
+            <p className="text-[10.5px] text-(--ep-ink)/30 leading-relaxed mb-3">
               {tr("Coachs à part entière dans ta structure, badgés « Coach IA » partout où un client les voit (annuaire, choix de coach, messagerie). Ils répondent réellement aux messages de leurs clients. Visible aussi sur")}{" "}
-              <Link href="/coachs" target="_blank" className="text-[#E01E1E] hover:underline">
+              <Link href="/coachs" target="_blank" className="text-(--ep-accent) hover:underline">
                 {tr("l'annuaire public")}
               </Link>.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {aiCoaches.map((coach) => (
-                <div key={coach.id} className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3">
+                <div key={coach.id} className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-3">
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <p className="text-xs font-black text-white truncate">{coach.full_name ?? tr("Coach IA")}</p>
+                    <p className="text-xs font-black text-(--ep-strong) truncate">{coach.full_name ?? tr("Coach IA")}</p>
                     <span
                       className="text-[8.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style={{
-                        background: coach.accepting_new_clients ? "rgba(74,222,128,0.15)" : "rgba(245,237,237,0.08)",
-                        color: coach.accepting_new_clients ? "#4ade80" : "rgba(245,237,237,0.4)",
+                        background: coach.accepting_new_clients ? "rgba(var(--ep-ok-rgb),0.15)" : "rgba(var(--ep-ink-rgb),0.08)",
+                        color: coach.accepting_new_clients ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.4)",
                       }}
                     >
                       {coach.accepting_new_clients ? tr("Dispo") : tr("Complet")}
                     </span>
                   </div>
                   {coach.bio && (
-                    <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed line-clamp-2">{coach.bio}</p>
+                    <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed line-clamp-2">{coach.bio}</p>
                   )}
                   <div className="flex flex-wrap items-center gap-1.5 mt-2">
                     {coach.specializations.slice(0, 2).map((s) => (
-                      <span key={s} className="text-[9px] font-bold text-[#F5EDED]/35 bg-white/5 rounded-full px-1.5 py-0.5">
+                      <span key={s} className="text-[9px] font-bold text-(--ep-ink)/35 bg-(--ep-hi)/5 rounded-full px-1.5 py-0.5">
                         {s}
                       </span>
                     ))}
-                    <span className="text-[9.5px] text-[#F5EDED]/25 ml-auto flex-shrink-0">
+                    <span className="text-[9.5px] text-(--ep-ink)/25 ml-auto flex-shrink-0">
                       {coach.clientCount}{" "}{tr("client")}{coach.clientCount !== 1 ? "s" : ""}
                     </span>
                   </div>
@@ -775,13 +776,13 @@ rapides pour être sûr qu'on te fasse gagner du temps :
         <button
           onClick={() => setAppsOpen((v) => !v)}
           aria-expanded={appsOpen}
-          className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 text-left mb-3"
+          className="w-full flex items-center justify-between gap-3 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5 text-left mb-3"
         >
           <div className="flex items-center gap-2">
-            <Inbox size={14} className="text-[#E01E1E]" />
+            <Inbox size={14} className="text-(--ep-accent)" />
             <h2 className="text-base font-black uppercase tracking-tight">{tr("Candidatures reçues")}</h2>
             {newApplications > 0 && (
-              <span className="text-[9px] font-black text-white bg-[#E01E1E] rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+              <span className="text-[9px] font-black text-(--ep-strong) bg-(--ep-accent) rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
                 {newApplications}
               </span>
             )}
@@ -790,9 +791,9 @@ rapides pour être sûr qu'on te fasse gagner du temps :
         </button>
         {appsOpen && (
           apps.length === 0 ? (
-            <p className="text-[11.5px] text-[#F5EDED]/30 italic px-1">
+            <p className="text-[11.5px] text-(--ep-ink)/30 italic px-1">
               {tr("Aucune candidature pour l'instant. Le lien public est")}{" "}
-              <span className="text-[#F5EDED]/50 font-mono">{tr("/carrieres")}</span>{tr(", à partager.")}
+              <span className="text-(--ep-ink)/50 font-mono">{tr("/carrieres")}</span>{tr(", à partager.")}
             </p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-3">
@@ -817,10 +818,10 @@ rapides pour être sûr qu'on te fasse gagner du temps :
       {activeSection === "poles" && (
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-1">
-          <Building2 size={14} className="text-[#E01E1E]" />
+          <Building2 size={14} className="text-(--ep-accent)" />
           <h2 className="text-base font-black uppercase tracking-tight">{tr("Pôles & postes")}</h2>
         </div>
-        <p className="text-[11px] text-[#F5EDED]/35 mb-3">
+        <p className="text-[11px] text-(--ep-ink)/35 mb-3">
           {tr("Un onglet par pôle. Chaque poste a son agent IA prêt à discuter en attendant un vrai titulaire.")}
         </p>
         <PoleTabBar poles={poles} activeKey={activePole} onChange={setActivePole} statuses={statuses} />
@@ -845,7 +846,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
       {activeSection === "parcours" && (
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <Users size={14} className="text-[#E01E1E]" />
+          <Users size={14} className="text-(--ep-accent)" />
           <h2 className="text-base font-black uppercase tracking-tight">{tr("Parcours d'intégration")}</h2>
         </div>
         {timeline.map((t, i) => (
@@ -855,12 +856,12 @@ rapides pour être sûr qu'on te fasse gagner du temps :
             onToggle={() => toggleIn(setOpenTimeline, i)}
             header={
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-[10px] font-black text-[#E01E1E] flex-shrink-0">{t.when}</span>
-                <span className="text-[13px] font-bold text-white truncate">{t.title}</span>
+                <span className="text-[10px] font-black text-(--ep-accent) flex-shrink-0">{t.when}</span>
+                <span className="text-[13px] font-bold text-(--ep-strong) truncate">{t.title}</span>
               </div>
             }
           >
-            <p className="text-[11.5px] text-[#F5EDED]/50 leading-relaxed">{t.desc}</p>
+            <p className="text-[11.5px] text-(--ep-ink)/50 leading-relaxed">{t.desc}</p>
           </SimpleAccordionItem>
         ))}
       </section>
@@ -870,7 +871,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
       {activeSection === "formation" && (
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <GraduationCap size={14} className="text-[#E01E1E]" />
+          <GraduationCap size={14} className="text-(--ep-accent)" />
           <h2 className="text-base font-black uppercase tracking-tight">{tr("Formation avant embauche")}</h2>
         </div>
         {phases.map((phase, i) => (
@@ -880,21 +881,21 @@ rapides pour être sûr qu'on te fasse gagner du temps :
             onToggle={() => toggleIn(setOpenPhases, i)}
             header={
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-6 h-6 rounded-full bg-[#E01E1E]/15 text-[#E01E1E] font-black text-[11px] flex items-center justify-center flex-shrink-0">
+                <div className="w-6 h-6 rounded-full bg-(--ep-accent)/15 text-(--ep-accent) font-black text-[11px] flex items-center justify-center flex-shrink-0">
                   {i + 1}
                 </div>
-                <span className="text-[13px] font-bold text-white truncate">{phase.title}</span>
+                <span className="text-[13px] font-bold text-(--ep-strong) truncate">{phase.title}</span>
               </div>
             }
           >
-            <p className="text-[11.5px] text-[#F5EDED]/50 leading-relaxed mb-2">{phase.desc}</p>
+            <p className="text-[11.5px] text-(--ep-ink)/50 leading-relaxed mb-2">{phase.desc}</p>
             {phase.status && (
               <span
                 className="inline-block text-[10px] font-bold px-2.5 py-1 rounded-full"
                 style={
                   phase.ok
-                    ? { background: "rgba(74,222,128,0.1)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.3)" }
-                    : { background: "rgba(251,191,36,0.1)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.3)" }
+                    ? { background: "rgba(var(--ep-ok-rgb),0.1)", color: "var(--ep-ok)", border: "1px solid rgba(var(--ep-ok-rgb),0.3)" }
+                    : { background: "rgba(var(--ep-warn-rgb),0.1)", color: "var(--ep-warn)", border: "1px solid rgba(var(--ep-warn-rgb),0.3)" }
                 }
               >
                 {phase.status}
@@ -911,62 +912,62 @@ rapides pour être sûr qu'on te fasse gagner du temps :
         <button
           onClick={() => setFicheOpen((v) => !v)}
           aria-expanded={ficheOpen}
-          className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 text-left"
+          className="w-full flex items-center justify-between gap-3 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5 text-left"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <FileText size={14} className="text-[#E01E1E] flex-shrink-0" />
+            <FileText size={14} className="text-(--ep-accent) flex-shrink-0" />
             <div className="min-w-0">
               <h2 className="text-sm font-black uppercase tracking-tight">{tr("Exemple de fiche technique")}</h2>
-              <p className="text-[10.5px] text-[#F5EDED]/35 truncate">{tr("Setter : script, étapes, critères de passage en poste")}</p>
+              <p className="text-[10.5px] text-(--ep-ink)/35 truncate">{tr("Setter : script, étapes, critères de passage en poste")}</p>
             </div>
           </div>
           <ChevronToggle open={ficheOpen} />
         </button>
 
         {ficheOpen && (
-          <div className="bg-[#1f0101] border border-t-0 border-[#890404]/25 rounded-b-xl -mt-2 pt-4 p-5">
+          <div className="bg-(--ep-s1) border border-t-0 border-(--ep-line)/25 rounded-b-xl -mt-2 pt-4 p-5">
             <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-              <p className="text-[15px] font-black text-white">{tr("Setter : qualification de leads")}</p>
+              <p className="text-[15px] font-black text-(--ep-strong)">{tr("Setter : qualification de leads")}</p>
               <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300">
                 {tr("Pôle Sales")}
               </span>
             </div>
 
             <div className="mb-4">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1.5">{tr("Objectif du poste")}</p>
-              <p className="text-[12px] text-[#F5EDED]/55 leading-relaxed">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent) mb-1.5">{tr("Objectif du poste")}</p>
+              <p className="text-[12px] text-(--ep-ink)/55 leading-relaxed">
                 {tr("Transformer un message ou un commentaire de quelqu'un d'intéressé en un rendez-vous qualifié dans l'agenda du closer, sans jamais faire perdre de temps au closer avec un lead qui n'ira nulle part.")}
               </p>
             </div>
 
             <div className="mb-4">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1.5">{tr("Étapes à maîtriser, dans l'ordre")}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent) mb-1.5">{tr("Étapes à maîtriser, dans l'ordre")}</p>
               <ol className="space-y-1 pl-4 list-decimal">
-                <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">{tr("Répondre en moins de 2h en journée, avec un message qui relance une vraie conversation (jamais un lien direct en premier message)")}</li>
-                <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">{tr("Poser 3 questions de qualification : objectif, disponibilité budgétaire approximative, urgence")}</li>
-                <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">{tr("Repérer les signaux d'un lead non qualifié et le laisser partir sans insister")}</li>
-                <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">{tr("Proposer 2 à 3 créneaux précis, jamais une question ouverte du type \"quand es-tu dispo\"")}</li>
-                <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">{tr("Confirmer le rendez-vous par écrit et programmer une relance automatique 24h avant")}</li>
-                <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">{tr("Mettre à jour la fiche CRM du lead à chaque étape")}</li>
+                <li className="text-[12px] text-(--ep-ink)/55 leading-relaxed">{tr("Répondre en moins de 2h en journée, avec un message qui relance une vraie conversation (jamais un lien direct en premier message)")}</li>
+                <li className="text-[12px] text-(--ep-ink)/55 leading-relaxed">{tr("Poser 3 questions de qualification : objectif, disponibilité budgétaire approximative, urgence")}</li>
+                <li className="text-[12px] text-(--ep-ink)/55 leading-relaxed">{tr("Repérer les signaux d'un lead non qualifié et le laisser partir sans insister")}</li>
+                <li className="text-[12px] text-(--ep-ink)/55 leading-relaxed">{tr("Proposer 2 à 3 créneaux précis, jamais une question ouverte du type \"quand es-tu dispo\"")}</li>
+                <li className="text-[12px] text-(--ep-ink)/55 leading-relaxed">{tr("Confirmer le rendez-vous par écrit et programmer une relance automatique 24h avant")}</li>
+                <li className="text-[12px] text-(--ep-ink)/55 leading-relaxed">{tr("Mettre à jour la fiche CRM du lead à chaque étape")}</li>
               </ol>
             </div>
 
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E]">{tr("Exemple de script de qualification")}</p>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent)">{tr("Exemple de script de qualification")}</p>
                 <button
                   onClick={handleCopyScript}
-                  className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors"
+                  className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-strong) hover:border-(--ep-accent)/50 transition-colors"
                 >
                   {copied ? <Check size={10} className="text-green-400" /> : <Copy size={10} />}
                   {copied ? tr("Copié") : tr("Copier")}
                 </button>
               </div>
-              <pre className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3 text-[11px] text-[#F5EDED]/60 leading-relaxed whitespace-pre-wrap font-mono">{script}</pre>
+              <pre className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-3 text-[11px] text-(--ep-ink)/60 leading-relaxed whitespace-pre-wrap font-mono">{script}</pre>
             </div>
 
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1.5">{tr("Critères de passage en poste rémunéré")}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent) mb-1.5">{tr("Critères de passage en poste rémunéré")}</p>
               <div className="grid sm:grid-cols-2 gap-2">
                 {[
                   { k: "Délai de réponse", v: "moins de 2h en journée sur 10 leads test" },
@@ -974,8 +975,8 @@ rapides pour être sûr qu'on te fasse gagner du temps :
                   { k: "Taux de présence", v: "au moins 70% des rendez-vous pris se présentent réellement" },
                   { k: "CRM à jour", v: "100% des leads traités ont une fiche complète" },
                 ].map((c) => (
-                  <div key={c.k} className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2">
-                    <p className="text-[11.5px] text-[#F5EDED]/60"><strong className="text-white font-bold">{c.k}</strong> : {c.v}</p>
+                  <div key={c.k} className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2">
+                    <p className="text-[11.5px] text-(--ep-ink)/60"><strong className="text-(--ep-strong) font-bold">{c.k}</strong> : {c.v}</p>
                   </div>
                 ))}
               </div>
@@ -994,9 +995,9 @@ rapides pour être sûr qu'on te fasse gagner du temps :
             key={c.title}
             open={openContracts.has(i)}
             onToggle={() => toggleIn(setOpenContracts, i)}
-            header={<span className="text-[13px] font-bold text-white">{c.title}</span>}
+            header={<span className="text-[13px] font-bold text-(--ep-strong)">{c.title}</span>}
           >
-            <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">{c.desc}</p>
+            <p className="text-[11.5px] text-(--ep-ink)/45 leading-relaxed">{c.desc}</p>
           </SimpleAccordionItem>
         ))}
 

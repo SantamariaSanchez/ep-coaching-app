@@ -58,8 +58,8 @@ function CreateExerciseForm({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4 space-y-3">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4 space-y-3">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
         {t("Créer un nouvel exercice")}
       </p>
       <input
@@ -67,14 +67,14 @@ function CreateExerciseForm({
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder={t("Nom de l'exercice")} aria-label={t("Nom de l'exercice")}
-        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+        className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50"
       />
       <div className="grid grid-cols-2 gap-2">
         <select
           value={muscleGroup}
           onChange={(e) => setMuscleGroup(e.target.value)}
           aria-label={t("Groupe musculaire")}
-          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
+          className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/50"
         >
           {LIBRARY_MUSCLE_GROUPS.map((g) => (
             <option key={g} value={g}>
@@ -86,7 +86,7 @@ function CreateExerciseForm({
           value={equipment}
           onChange={(e) => setEquipment(e.target.value)}
           aria-label={t("Matériel")}
-          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
+          className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/50"
         >
           <option value="">{t("Matériel (optionnel)")}</option>
           {EQUIPMENT_OPTIONS.map((e) => (
@@ -101,13 +101,13 @@ function CreateExerciseForm({
         <button
           onClick={submit}
           disabled={saving || !name.trim()}
-          className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="flex-1 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           {saving ? t("Création…") : t("Créer et ajouter à la séance")}
         </button>
         <button
           onClick={onCancel}
-          className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 transition-colors"
+          className="text-xs text-(--ep-ink)/40 hover:text-(--ep-ink)/70 px-4 transition-colors"
         >
           {t("Annuler")}
         </button>
@@ -208,7 +208,7 @@ export default function ExercisePicker({ onAdd }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/60 rounded-xl px-4 py-3.5 text-sm text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
       >
         <Plus size={15} strokeWidth={2} />
         {t("Ajouter un exercice")}
@@ -223,16 +223,16 @@ export default function ExercisePicker({ onAdd }: Props) {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="ep-modal-overlay absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
+      <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/60 backdrop-blur-sm" onClick={close} />
       <div
-        className="ep-modal-panel relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-5 space-y-3 overflow-y-auto flex flex-col"
+        className="ep-modal-panel relative w-full max-w-md bg-(--ep-s2) border-t border-(--ep-line)/40 rounded-t-2xl p-5 space-y-3 overflow-y-auto flex flex-col"
         style={{ maxHeight: "88dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
       >
         <div className="flex items-center justify-between">
-          <p className="text-sm font-black uppercase tracking-widest text-white">
+          <p className="text-sm font-black uppercase tracking-widest text-(--ep-strong)">
             {t("Ajouter un exercice")}
           </p>
-          <button onClick={close} aria-label={t("Fermer")} className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
+          <button onClick={close} aria-label={t("Fermer")} className="p-1 text-(--ep-ink)/40 hover:text-(--ep-strong) transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -249,13 +249,13 @@ export default function ExercisePicker({ onAdd }: Props) {
         ) : (
           <>
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
               <input
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t("Rechercher un exercice…")} aria-label={t("Rechercher un exercice…")}
-                className="w-full bg-[#1f0101] border border-[#890404]/30 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+                className="w-full bg-(--ep-s1) border border-(--ep-line)/30 rounded-lg pl-9 pr-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50"
               />
             </div>
 
@@ -264,8 +264,8 @@ export default function ExercisePicker({ onAdd }: Props) {
                 onClick={() => setActiveGroup(null)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   activeGroup === null
-                    ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                    : "border-[#890404]/25 text-[#F5EDED]/40"
+                    ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                    : "border-(--ep-line)/25 text-(--ep-ink)/40"
                 }`}
               >
                 {t("Tout")}
@@ -276,8 +276,8 @@ export default function ExercisePicker({ onAdd }: Props) {
                   onClick={() => setActiveGroup(g)}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
                     activeGroup === g
-                      ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                      : "border-[#890404]/25 text-[#F5EDED]/40"
+                      ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                      : "border-(--ep-line)/25 text-(--ep-ink)/40"
                   }`}
                 >
                   {g}
@@ -288,27 +288,27 @@ export default function ExercisePicker({ onAdd }: Props) {
             <div className="flex-1 overflow-y-auto space-y-1.5 min-h-[120px]">
               {loading && (
                 <div className="flex justify-center py-8">
-                  <div className="w-5 h-5 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-(--ep-accent) border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
 
               {!loading && !search && !activeGroup && recentExercises.length > 0 && (
                 <>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-0.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 pt-0.5">
                     {t("Récents")}
                   </p>
                   {recentExercises.map((ex) => (
                     <button
                       key={`recent-${ex.name}`}
                       onClick={() => selectRecent(ex)}
-                      className="w-full flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-lg px-3 py-2.5 text-left transition-colors"
+                      className="w-full flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 hover:border-(--ep-accent)/40 rounded-lg px-3 py-2.5 text-left transition-colors"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
-                        <Dumbbell size={14} className="text-[#F5EDED]/30" />
+                      <div className="w-8 h-8 rounded-lg bg-(--ep-s2) border border-(--ep-line)/25 flex items-center justify-center flex-shrink-0">
+                        <Dumbbell size={14} className="text-(--ep-ink)/30" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-white truncate">{ex.name}</p>
-                        <p className="text-[9px] text-[#F5EDED]/35 truncate">{ex.muscleGroup}</p>
+                        <p className="text-sm font-bold text-(--ep-strong) truncate">{ex.name}</p>
+                        <p className="text-[9px] text-(--ep-ink)/35 truncate">{ex.muscleGroup}</p>
                       </div>
                     </button>
                   ))}
@@ -317,21 +317,21 @@ export default function ExercisePicker({ onAdd }: Props) {
 
               {!loading && !search && !activeGroup && mostUsedExercises.length > 0 && (
                 <>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 pt-1.5">
                     {t("Plus loggués")}
                   </p>
                   {mostUsedExercises.map((ex) => (
                     <button
                       key={`mostused-${ex.name}`}
                       onClick={() => selectRecent(ex)}
-                      className="w-full flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-lg px-3 py-2.5 text-left transition-colors"
+                      className="w-full flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 hover:border-(--ep-accent)/40 rounded-lg px-3 py-2.5 text-left transition-colors"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
-                        <Dumbbell size={14} className="text-[#F5EDED]/30" />
+                      <div className="w-8 h-8 rounded-lg bg-(--ep-s2) border border-(--ep-line)/25 flex items-center justify-center flex-shrink-0">
+                        <Dumbbell size={14} className="text-(--ep-ink)/30" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-white truncate">{ex.name}</p>
-                        <p className="text-[9px] text-[#F5EDED]/35 truncate">{ex.muscleGroup}</p>
+                        <p className="text-sm font-bold text-(--ep-strong) truncate">{ex.name}</p>
+                        <p className="text-[9px] text-(--ep-ink)/35 truncate">{ex.muscleGroup}</p>
                       </div>
                     </button>
                   ))}
@@ -339,7 +339,7 @@ export default function ExercisePicker({ onAdd }: Props) {
               )}
 
               {!loading && !search && !activeGroup && (recentExercises.length > 0 || mostUsedExercises.length > 0) && (
-                <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-1.5">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 pt-1.5">
                   {t("Toute la bibliothèque")}
                 </p>
               )}
@@ -349,14 +349,14 @@ export default function ExercisePicker({ onAdd }: Props) {
                   <button
                     key={ex.id}
                     onClick={() => select(ex)}
-                    className="w-full flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-lg px-3 py-2.5 text-left transition-colors"
+                    className="w-full flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 hover:border-(--ep-accent)/40 rounded-lg px-3 py-2.5 text-left transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
-                      <Dumbbell size={14} className="text-[#F5EDED]/30" />
+                    <div className="w-8 h-8 rounded-lg bg-(--ep-s2) border border-(--ep-line)/25 flex items-center justify-center flex-shrink-0">
+                      <Dumbbell size={14} className="text-(--ep-ink)/30" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-white truncate">{ex.name}</p>
-                      <p className="text-[9px] text-[#F5EDED]/35 truncate">
+                      <p className="text-sm font-bold text-(--ep-strong) truncate">{ex.name}</p>
+                      <p className="text-[9px] text-(--ep-ink)/35 truncate">
                         {ex.muscle_group}
                         {ex.equipment && ` · ${ex.equipment}`}
                       </p>
@@ -365,13 +365,13 @@ export default function ExercisePicker({ onAdd }: Props) {
                 ))}
 
               {!loading && !fetched && (
-                <p className="text-xs text-[#F5EDED]/25 italic text-center py-8">
+                <p className="text-xs text-(--ep-ink)/25 italic text-center py-8">
                   {t("Chargement de la bibliothèque…")}
                 </p>
               )}
 
               {!loading && fetched && filtered.length === 0 && (
-                <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">
+                <p className="text-xs text-(--ep-ink)/25 italic text-center py-6">
                   {t("Aucun exercice trouvé.")}
                 </p>
               )}
@@ -379,7 +379,7 @@ export default function ExercisePicker({ onAdd }: Props) {
 
             <button
               onClick={() => setCreating(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 border border-dashed border-(--ep-line)/25 hover:border-(--ep-line)/50 rounded-lg transition-colors"
             >
               <Plus size={12} />
               {search.trim()

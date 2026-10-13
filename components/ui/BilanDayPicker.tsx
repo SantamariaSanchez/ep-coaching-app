@@ -32,7 +32,7 @@ export default function BilanDayPicker({ basePath, today, selected, logs }: { ba
           const st = bilanState(byDate.get(d));
           const active = d === selected;
           const dt = new Date(`${d}T12:00:00`);
-          const color = st === "complet" ? "#4ade80" : st === "partiel" ? "#facc15" : "rgba(245,237,237,0.25)";
+          const color = st === "complet" ? "var(--ep-ok)" : st === "partiel" ? "var(--ep-yellow)" : "rgba(var(--ep-ink-rgb),0.25)";
           return (
             <Link
               key={d}
@@ -46,22 +46,22 @@ export default function BilanDayPicker({ basePath, today, selected, logs }: { ba
                 gap: 3,
                 padding: "8px 0",
                 borderRadius: 12,
-                border: `1px solid ${active ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.3)"}`,
-                background: active ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.25)",
+                border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-line-rgb),0.3)"}`,
+                background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-shade-rgb),0.25)",
                 textDecoration: "none",
               }}
             >
-              <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(245,237,237,0.45)" }}>
+              <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(var(--ep-ink-rgb),0.45)" }}>
                 {d === today ? "Auj." : new Intl.DateTimeFormat("fr-FR", { weekday: "short" }).format(dt).replace(".", "")}
               </span>
-              <span style={{ fontSize: 15, fontWeight: 900, color: active ? "#fff" : "rgba(245,237,237,0.8)" }}>{dt.getDate()}</span>
+              <span style={{ fontSize: 15, fontWeight: 900, color: active ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.8)" }}>{dt.getDate()}</span>
               <span style={{ width: 6, height: 6, borderRadius: 99, background: color }} />
             </Link>
           );
         })}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+        <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
           {missing > 0 ? `${missing} bilan${missing > 1 ? "s" : ""} à compléter cette semaine, touche un jour pour le rattraper.` : "Semaine à jour."}
         </p>
         <form action={basePath} method="get" style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -72,9 +72,9 @@ export default function BilanDayPicker({ basePath, today, selected, logs }: { ba
             max={today}
             defaultValue={selected}
             aria-label="Choisir un autre jour"
-            style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "5px 8px", fontSize: 12, color: "#F5EDED", colorScheme: "dark" }}
+            style={{ background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 8, padding: "5px 8px", fontSize: 12, color: "var(--ep-ink)", colorScheme: "dark" }}
           />
-          <button type="submit" style={{ fontSize: 11, fontWeight: 800, color: "#ff6b6b", background: "none", border: "none", cursor: "pointer" }}>
+          <button type="submit" style={{ fontSize: 11, fontWeight: 800, color: "var(--ep-accent-hi2)", background: "none", border: "none", cursor: "pointer" }}>
             Ouvrir
           </button>
         </form>

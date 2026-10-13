@@ -175,23 +175,23 @@ export default async function OrganisationAdminPage() {
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
         href="/dashboard/coach"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} />{" "}{t("Retour")}
       </Link>
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Administration")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Organisation")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
+        <p className="text-sm text-(--ep-ink)/45 mt-2 leading-relaxed">
           {t("Une structure de référence pour préparer les futures embauches : qui fait quoi, à qui chaque poste rapporte, comment on les forme avant même de les embaucher, et ce qu'il faudra régler légalement avant de signer qui que ce soit.")}
         </p>
         <Link
           href="/carrieres"
           target="_blank"
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] border border-[#E01E1E]/30 rounded-lg px-3 py-2 hover:bg-[#E01E1E]/10 transition-colors mt-4"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) border border-(--ep-accent)/30 rounded-lg px-3 py-2 hover:bg-(--ep-accent)/10 transition-colors mt-4"
         >
           {t("Voir la page publique de candidature")}{" "}<ExternalLink size={11} />
         </Link>
@@ -202,20 +202,20 @@ export default async function OrganisationAdminPage() {
       <div className="ep-card" style={{ padding: "16px 18px", marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
           <p className="ep-label" style={{ margin: 0 }}>{t("Postes pourvus")}</p>
-          <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 800, color: "var(--ep-ink)", margin: 0 }}>
             {filledRoles} / {totalRoles}
             {inRecruitmentRoles > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 600, color: "#facc15", marginLeft: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--ep-yellow)", marginLeft: 8 }}>
                 · {inRecruitmentRoles}{" "}{t("en recrutement")}
               </span>
             )}
           </p>
         </div>
-        <div style={{ height: 5, background: "rgba(224,30,30,0.1)", borderRadius: 3, overflow: "hidden" }}>
+        <div style={{ height: 5, background: "rgba(var(--ep-accent-rgb),0.1)", borderRadius: 3, overflow: "hidden" }}>
           <div style={{
             height: "100%",
             width: `${totalRoles > 0 ? Math.round((filledRoles / totalRoles) * 100) : 0}%`,
-            background: "linear-gradient(90deg, #4ade80, #22c55e)",
+            background: "linear-gradient(90deg, var(--ep-ok), #22c55e)",
             borderRadius: 3,
           }} />
         </div>

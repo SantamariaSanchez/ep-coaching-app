@@ -40,15 +40,15 @@ export default function PersonalCoachCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
         {t("Mon coaching personnel")}
       </p>
 
       {linkedCoachName ? (
         <>
-          <p className="text-sm text-[#F5EDED]/65 mb-4">
-            {t("Tu es actuellement suivi par")}{" "}<strong className="text-[#F5EDED]">{linkedCoachName}</strong>.
+          <p className="text-sm text-(--ep-ink)/65 mb-4">
+            {t("Tu es actuellement suivi par")}{" "}<strong className="text-(--ep-ink)">{linkedCoachName}</strong>.
           </p>
           <div className="flex flex-wrap gap-2">
             <a
@@ -72,7 +72,7 @@ export default function PersonalCoachCard({
         </>
       ) : (
         <>
-          <p className="text-sm text-[#F5EDED]/50 mb-4 leading-relaxed">
+          <p className="text-sm text-(--ep-ink)/50 mb-4 leading-relaxed">
             {t("Toi aussi tu peux être suivi par un autre coach de la plateforme : renseigne son code d'invitation pour accéder à ton propre espace client.")}
           </p>
           <div className="flex gap-2">

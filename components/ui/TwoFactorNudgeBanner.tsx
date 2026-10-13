@@ -18,27 +18,27 @@ export default function TwoFactorNudgeBanner() {
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-2.5 bg-[#1f0101] border-b border-[#890404]/35"
-      style={{ boxShadow: "inset 0 -12px 24px -20px rgba(224,30,30,0.55)" }}
+      className="flex items-center gap-3 px-4 py-2.5 bg-(--ep-s1) border-b border-(--ep-line)/35"
+      style={{ boxShadow: "inset 0 -12px 24px -20px rgba(var(--ep-accent-rgb),0.55)" }}
     >
-      <ShieldAlert size={15} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2} />
-      <p className="text-[12px] text-[#F5EDED]/70 leading-snug flex-1 m-0">
+      <ShieldAlert size={15} className="text-(--ep-accent) flex-shrink-0" strokeWidth={2} />
+      <p className="text-[12px] text-(--ep-ink)/70 leading-snug flex-1 m-0">
         {t("Active la double authentification sur ton compte fondateur.")}
-        <span className="hidden sm:inline text-[#F5EDED]/40">
+        <span className="hidden sm:inline text-(--ep-ink)/40">
           {" "}
           {t("Ce compte voit tous les membres de la plateforme, une 2FA le protège si ton mot de passe fuite.")}
         </span>
       </p>
       <Link
         href="/dashboard/coach/parametres"
-        className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#F5EDED] transition-colors"
+        className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-ink) transition-colors"
       >
         {t("Activer")}
       </Link>
       <button
         onClick={() => setHidden(true)}
         aria-label={t("Masquer")}
-        className="flex-shrink-0 text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
+        className="flex-shrink-0 text-(--ep-ink)/25 hover:text-(--ep-ink)/60 transition-colors"
       >
         <X size={14} />
       </button>

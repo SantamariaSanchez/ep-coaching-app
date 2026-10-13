@@ -19,9 +19,9 @@ import type { CampaignStats } from "@/lib/coach-mailings";
 // marketing généralistes, pas propres à EP Coaching — affiché en clair
 // sous les chiffres pour donner un repère à un coach qui n'en a pas).
 export function rateColor(rate: number, thresholds: [number, number]): string {
-  if (rate >= thresholds[1]) return "#4ade80"; // vert : bon
-  if (rate >= thresholds[0]) return "#fbbf24"; // orange : moyen
-  return "#f87171"; // rouge : faible
+  if (rate >= thresholds[1]) return "var(--ep-ok)"; // vert : bon
+  if (rate >= thresholds[0]) return "var(--ep-warn)"; // orange : moyen
+  return "var(--ep-bad)"; // rouge : faible
 }
 
 export function pct(rate: number): string {
@@ -68,13 +68,13 @@ export default function MailingStatsCard({
   }
 
   return (
-    <div className="mt-2 pt-2 border-t border-dashed border-[#890404]/15">
+    <div className="mt-2 pt-2 border-t border-dashed border-(--ep-line)/15">
       {!stats ? (
         <button
           type="button"
           onClick={refresh}
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#E01E1E] disabled:opacity-40 transition-colors"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-accent) disabled:opacity-40 transition-colors"
         >
           <RefreshCw size={11} className={isPending ? "animate-spin" : ""} />
           {isPending ? t("Récupération…") : t("Voir les statistiques")}
@@ -89,7 +89,7 @@ export default function MailingStatsCard({
               {pct(stats.clickRate)}{" "}{t("clic")}
             </span>
             {stats.unsubscriptions > 0 && (
-              <span className="text-[11px] text-[#F5EDED]/40">
+              <span className="text-[11px] text-(--ep-ink)/40">
                 {stats.unsubscriptions}{" "}{t("désabonnement")}{stats.unsubscriptions > 1 ? "s" : ""}
               </span>
             )}
@@ -105,7 +105,7 @@ export default function MailingStatsCard({
               disabled={isPending}
               aria-label={t("Rafraîchir les stats")}
               title={t("Rafraîchir les stats")}
-              className="text-[#F5EDED]/25 hover:text-[#E01E1E] disabled:opacity-40 transition-colors"
+              className="text-(--ep-ink)/25 hover:text-(--ep-accent) disabled:opacity-40 transition-colors"
             >
               <RefreshCw size={11} className={isPending ? "animate-spin" : ""} />
             </button>
@@ -117,7 +117,7 @@ export default function MailingStatsCard({
             </p>
           )}
           {fetchedAt && (
-            <p className="mt-1 text-[9.5px] text-[#F5EDED]/25">
+            <p className="mt-1 text-[9.5px] text-(--ep-ink)/25">
               {t("Stats au")}{" "}
               {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(
                 new Date(fetchedAt)

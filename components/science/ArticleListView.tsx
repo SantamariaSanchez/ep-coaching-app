@@ -10,7 +10,7 @@ import type { UpdateArticleInput } from "@/app/dashboard/client/science/actions"
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 interface Props {
   articles: ScienceArticle[];
@@ -79,8 +79,8 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
           {showNeedsReview && (
             <div className="mt-3 pt-3 border-t border-amber-500/15 space-y-1">
               {needsReview.map((a) => (
-                <p key={a.id} className="text-xs text-[#F5EDED]/60 truncate">
-                  {a.title} <span className="text-[#F5EDED]/25">· {a.topic}</span>
+                <p key={a.id} className="text-xs text-(--ep-ink)/60 truncate">
+                  {a.title} <span className="text-(--ep-ink)/25">· {a.topic}</span>
                 </p>
               ))}
             </div>
@@ -94,7 +94,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -119,7 +119,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
         <button
           onClick={() => setActiveTopic(null)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-            activeTopic === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            activeTopic === null ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
           }`}
         >
           {tr("Tout (")}{articles.length})
@@ -129,7 +129,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
             key={t}
             onClick={() => setActiveTopic(t)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeTopic === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              activeTopic === t ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {t} ({topicCounts[t]})
@@ -178,7 +178,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
           />
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{emptyLabel}</p>
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-10">{emptyLabel}</p>
         )}
       </div>
     </div>

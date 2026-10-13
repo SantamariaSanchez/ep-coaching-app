@@ -28,7 +28,7 @@ export default function NativeBridge() {
         import("@capacitor/splash-screen"),
       ]);
       StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
-      if (platform === "android") StatusBar.setBackgroundColor({ color: "#0D0000" }).catch(() => {});
+      if (platform === "android") StatusBar.setBackgroundColor({ color: "var(--ep-bg)" }).catch(() => {});
       SplashScreen.hide().catch(() => {});
 
       const back = await App.addListener("backButton", ({ canGoBack }) => {

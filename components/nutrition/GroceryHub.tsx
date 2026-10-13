@@ -76,10 +76,10 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
   return (
     <div className="space-y-4">
       {/* Résumé + bascule des volets */}
-      <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-3">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-3">
         <div className="flex items-center gap-2 mb-3">
-          <ShoppingCart size={15} className="text-[#E01E1E]" />
-          <p className="text-[11px] text-[#F5EDED]/60 leading-snug flex-1">
+          <ShoppingCart size={15} className="text-(--ep-accent)" />
+          <p className="text-[11px] text-(--ep-ink)/60 leading-snug flex-1">
             {items === null
               ? t("Chargement de ton stock...")
               : items.length === 0
@@ -87,7 +87,7 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
                 : `${items.length} article${items.length > 1 ? "s" : ""} en stock${lowCount ? ` · ${lowCount} à surveiller` : ""}. Le stock baisse tout seul quand tu notes un repas.`}
           </p>
         </div>
-        <div role="tablist" aria-label={t("Courses")} className="grid grid-cols-3 gap-1 bg-[#150000] rounded-lg p-1">
+        <div role="tablist" aria-label={t("Courses")} className="grid grid-cols-3 gap-1 bg-(--ep-s2) rounded-lg p-1">
           {([
             ["racheter", `À racheter${buyList.length ? ` (${buyList.length})` : ""}`],
             ["stock", "Mon stock"],
@@ -98,7 +98,7 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
               role="tab"
               aria-selected={view === v}
               onClick={() => setView(v)}
-              className={`min-h-[40px] rounded-md text-[11px] font-bold transition-colors ${view === v ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/55"}`}
+              className={`min-h-[40px] rounded-md text-[11px] font-bold transition-colors ${view === v ? "bg-(--ep-accent) text-(--ep-strong)" : "text-(--ep-ink)/55"}`}
             >
               {label}
             </button>
@@ -114,36 +114,36 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
 
       {view === "stock" && (
         <div className="space-y-3">
-          <button onClick={() => setAdding(true)} className="w-full min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-[#E01E1E] text-white text-sm font-bold">
+          <button onClick={() => setAdding(true)} className="w-full min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-sm font-bold">
             <Plus size={16} />{" "}{t("Ajouter des courses")}
           </button>
           {items && items.length === 0 && (
-            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 px-4 text-center">
-              <Package size={22} className="mx-auto text-[#F5EDED]/25 mb-2" />
-              <p className="text-xs text-[#F5EDED]/45">{t("Ton stock est vide. Ajoute tes courses, ou coche ce que tu as acheté dans « À racheter ».")}</p>
+            <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-8 px-4 text-center">
+              <Package size={22} className="mx-auto text-(--ep-ink)/25 mb-2" />
+              <p className="text-xs text-(--ep-ink)/45">{t("Ton stock est vide. Ajoute tes courses, ou coche ce que tu as acheté dans « À racheter ».")}</p>
             </div>
           )}
           {groupByCategory(items ?? []).map(([category, list]) => (
-            <div key={category} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">{category}</p>
+            <div key={category} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">{category}</p>
               <ul className="space-y-1">
                 {list.map((item) => {
                   const st = statusOf(item, item.food_id ? dailyByFood.get(item.food_id) : undefined);
                   return (
                     <li key={item.id} className="flex items-center gap-2">
                       <button onClick={() => setEditing(item)} className="flex-1 min-w-0 text-left py-2">
-                        <span className="block text-sm text-white truncate">{item.name}</span>
-                        <span className="flex items-center gap-1.5 text-[11px] text-[#F5EDED]/45">
+                        <span className="block text-sm text-(--ep-strong) truncate">{item.name}</span>
+                        <span className="flex items-center gap-1.5 text-[11px] text-(--ep-ink)/45">
                           {formatQuantity(item.quantity, item.unit)}
                           {st.status === "vide" && <span className="text-red-400 font-bold">{t("· Vide")}</span>}
                           {st.status === "bas" && <span className="text-amber-400 font-bold">{t("· Bientôt vide")}</span>}
                           {st.status === "ok" && st.daysLeft != null && <span>· ≈ {Math.max(1, Math.round(st.daysLeft))} j</span>}
                         </span>
                       </button>
-                      <button aria-label={`Retirer ${item.name}`} onClick={() => bump(item, -1)} className="w-10 h-10 rounded-lg border border-[#890404]/40 flex items-center justify-center text-[#F5EDED]/70">
+                      <button aria-label={`Retirer ${item.name}`} onClick={() => bump(item, -1)} className="w-10 h-10 rounded-lg border border-(--ep-line)/40 flex items-center justify-center text-(--ep-ink)/70">
                         <Minus size={15} />
                       </button>
-                      <button aria-label={`Ajouter ${item.name}`} onClick={() => bump(item, 1)} className="w-10 h-10 rounded-lg border border-[#890404]/40 flex items-center justify-center text-[#F5EDED]/70">
+                      <button aria-label={`Ajouter ${item.name}`} onClick={() => bump(item, 1)} className="w-10 h-10 rounded-lg border border-(--ep-line)/40 flex items-center justify-center text-(--ep-ink)/70">
                         <Plus size={15} />
                       </button>
                     </li>
@@ -157,15 +157,15 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
 
       {view === "semaine" && (
         <div className="space-y-2">
-          <p className="text-[11px] text-[#F5EDED]/50 px-1">
+          <p className="text-[11px] text-(--ep-ink)/50 px-1">
             {source === "plan" ? t("Besoins de la semaine d'après ton plan, face à ton stock.") : t("Besoins de la semaine d'après ce que tu manges le plus, face à ton stock.")}
           </p>
           {needs.length === 0 ? (
-            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 text-center">
-              <p className="text-xs text-[#F5EDED]/40">{t("Pas encore assez de données. Note tes repas quelques jours, ou demande un plan à ton coach.")}</p>
+            <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-8 text-center">
+              <p className="text-xs text-(--ep-ink)/40">{t("Pas encore assez de données. Note tes repas quelques jours, ou demande un plan à ton coach.")}</p>
             </div>
           ) : (
-            <ul className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3 space-y-2">
+            <ul className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-3 space-y-2">
               {needs.map((n) => {
                 const item = items?.find((i) => i.food_id === n.foodId);
                 const have = item ? toGrams(item) : 0;
@@ -173,11 +173,11 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
                 return (
                   <li key={n.foodId}>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-white truncate">{n.name}</span>
-                      <span className="text-[11px] text-[#F5EDED]/50">{Math.round(have)} / {n.totalGrams} g</span>
+                      <span className="text-(--ep-strong) truncate">{n.name}</span>
+                      <span className="text-[11px] text-(--ep-ink)/50">{Math.round(have)} / {n.totalGrams} g</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-[#150000] mt-1 overflow-hidden" aria-hidden="true">
-                      <div className={`h-full rounded-full ${pct >= 100 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-400" : "bg-[#E01E1E]"}`} style={{ width: `${pct}%` }} />
+                    <div className="h-1.5 rounded-full bg-(--ep-s2) mt-1 overflow-hidden" aria-hidden="true">
+                      <div className={`h-full rounded-full ${pct >= 100 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-400" : "bg-(--ep-accent)"}`} style={{ width: `${pct}%` }} />
                     </div>
                   </li>
                 );
@@ -223,18 +223,18 @@ function BuyListView({ suggestions, source, onBought, onAll, pending }: { sugges
   const [qty, setQty] = useState<Record<string, number>>({});
   if (suggestions.length === 0) {
     return (
-      <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 px-4 text-center">
+      <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-8 px-4 text-center">
         <Check size={22} className="mx-auto text-emerald-400 mb-2" />
-        <p className="text-xs text-[#F5EDED]/55">{t("Rien à racheter pour l'instant. Ton stock couvre la semaine.")}</p>
+        <p className="text-xs text-(--ep-ink)/55">{t("Rien à racheter pour l'instant. Ton stock couvre la semaine.")}</p>
       </div>
     );
   }
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-[#F5EDED]/50 px-1">
+      <p className="text-[11px] text-(--ep-ink)/50 px-1">
         {source === "plan" ? t("Ce qui manque pour tenir ton plan cette semaine, plus ce qui est vide chez toi.") : t("Ce qui manque d'après tes habitudes, plus ce qui est vide chez toi.")}{" "}{t("Coche ce que tu as acheté : ça passe direct en stock.")}
       </p>
-      <ul className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-2 divide-y divide-[#890404]/15">
+      <ul className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-2 divide-y divide-(--ep-line)/15">
         {suggestions.map((s) => {
           const q = qty[s.key] ?? s.quantity;
           return (
@@ -243,13 +243,13 @@ function BuyListView({ suggestions, source, onBought, onAll, pending }: { sugges
                 aria-label={`J'ai acheté ${s.name}`}
                 disabled={pending}
                 onClick={() => onBought(s, q)}
-                className="w-10 h-10 rounded-lg border border-[#890404]/50 flex items-center justify-center text-[#F5EDED]/60 hover:border-[#E01E1E] hover:text-white"
+                className="w-10 h-10 rounded-lg border border-(--ep-line)/50 flex items-center justify-center text-(--ep-ink)/60 hover:border-(--ep-accent) hover:text-(--ep-strong)"
               >
                 <Check size={16} />
               </button>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-white truncate">{s.name}</p>
-                <p className="text-[10px] text-[#F5EDED]/40">{s.reason === "plan" ? t("Pour la semaine") : t("Vide ou presque")}</p>
+                <p className="text-sm text-(--ep-strong) truncate">{s.name}</p>
+                <p className="text-[10px] text-(--ep-ink)/40">{s.reason === "plan" ? t("Pour la semaine") : t("Vide ou presque")}</p>
               </div>
               <input
                 type="number"
@@ -259,14 +259,14 @@ function BuyListView({ suggestions, source, onBought, onAll, pending }: { sugges
                 value={q}
                 onChange={(e) => setQty((prev) => ({ ...prev, [s.key]: Number(e.target.value) }))}
                 aria-label={`Quantité de ${s.name}`}
-                className="w-20 h-10 rounded-lg bg-[#150000] border border-[#890404]/30 text-right px-2 text-sm text-white"
+                className="w-20 h-10 rounded-lg bg-(--ep-s2) border border-(--ep-line)/30 text-right px-2 text-sm text-(--ep-strong)"
               />
-              <span className="w-12 text-[11px] text-[#F5EDED]/45">{s.unit === "piece" ? t("pièce(s)") : s.unit}</span>
+              <span className="w-12 text-[11px] text-(--ep-ink)/45">{s.unit === "piece" ? t("pièce(s)") : s.unit}</span>
             </li>
           );
         })}
       </ul>
-      <button disabled={pending} onClick={onAll} className="w-full min-h-[44px] rounded-xl border border-[#E01E1E]/60 text-sm font-bold text-white">
+      <button disabled={pending} onClick={onAll} className="w-full min-h-[44px] rounded-xl border border-(--ep-accent)/60 text-sm font-bold text-(--ep-strong)">
         {t("J'ai tout acheté")}
       </button>
     </div>
@@ -276,11 +276,11 @@ function BuyListView({ suggestions, source, onBought, onAll, pending }: { sugges
 function SheetFrame({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   const t = useT();
   return (
-    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={title} className="w-full sm:max-w-md max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[#1a0101] border border-[#890404]/40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-(--ep-shade)/60" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label={title} className="w-full sm:max-w-md max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-(--ep-s3) border border-(--ep-line)/40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
-          <p className="text-base font-bold text-white">{title}</p>
-          <button aria-label={t("Fermer")} onClick={onClose} className="w-10 h-10 flex items-center justify-center text-[#F5EDED]/60"><X size={18} /></button>
+          <p className="text-base font-bold text-(--ep-strong)">{title}</p>
+          <button aria-label={t("Fermer")} onClick={onClose} className="w-10 h-10 flex items-center justify-center text-(--ep-ink)/60"><X size={18} /></button>
         </div>
         {children}
       </div>
@@ -310,24 +310,24 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
     <SheetFrame title={picked ? picked.name : t("Ajouter des courses")} onClose={onClose}>
       {!picked ? (
         <div className="space-y-2">
-          <label className="flex items-center gap-2 rounded-xl bg-[#150000] border border-[#890404]/40 px-3">
-            <Search size={15} className="text-[#F5EDED]/40" />
-            <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Banane, riz, poulet...")} aria-label={t("Chercher un aliment")} className="flex-1 h-11 bg-transparent text-sm text-white outline-none" />
+          <label className="flex items-center gap-2 rounded-xl bg-(--ep-s2) border border-(--ep-line)/40 px-3">
+            <Search size={15} className="text-(--ep-ink)/40" />
+            <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Banane, riz, poulet...")} aria-label={t("Chercher un aliment")} className="flex-1 h-11 bg-transparent text-sm text-(--ep-strong) outline-none" />
           </label>
           <ul className="space-y-1">
             {results.map((f) => (
               <li key={f.id}>
-                <button onClick={() => pick({ foodId: f.id, name: f.name, category: f.category ?? "Divers" })} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#2a0303]">
-                  <span className="text-sm text-white">{f.name}</span>
-                  <span className="block text-[10px] text-[#F5EDED]/40">{f.category ?? t("Divers")}</span>
+                <button onClick={() => pick({ foodId: f.id, name: f.name, category: f.category ?? "Divers" })} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-(--ep-s4)">
+                  <span className="text-sm text-(--ep-strong)">{f.name}</span>
+                  <span className="block text-[10px] text-(--ep-ink)/40">{f.category ?? t("Divers")}</span>
                 </button>
               </li>
             ))}
             {query.trim().length >= 2 && (
               <li>
-                <button onClick={() => pick({ foodId: null, name: query.trim(), category: "Divers" })} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-[#F5EDED]/70 hover:bg-[#2a0303]">
+                <button onClick={() => pick({ foodId: null, name: query.trim(), category: "Divers" })} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-(--ep-ink)/70 hover:bg-(--ep-s4)">
                   {t("Ajouter «")}{" "}{query.trim()}{" "}{t("» sans fiche aliment")}
-                  <span className="block text-[10px] text-[#F5EDED]/40">{t("Il ne baissera pas tout seul avec tes repas.")}</span>
+                  <span className="block text-[10px] text-(--ep-ink)/40">{t("Il ne baissera pas tout seul avec tes repas.")}</span>
                 </button>
               </li>
             )}
@@ -335,9 +335,9 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-1 bg-[#150000] rounded-lg p-1" role="radiogroup" aria-label={t("Unité")}>
+          <div className="grid grid-cols-3 gap-1 bg-(--ep-s2) rounded-lg p-1" role="radiogroup" aria-label={t("Unité")}>
             {(Object.keys(UNIT_LABELS) as PantryUnit[]).map((u) => (
-              <button key={u} role="radio" aria-checked={unit === u} onClick={() => setUnit(u)} className={`min-h-[40px] rounded-md text-xs font-bold ${unit === u ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/55"}`}>{UNIT_LABELS[u]}</button>
+              <button key={u} role="radio" aria-checked={unit === u} onClick={() => setUnit(u)} className={`min-h-[40px] rounded-md text-xs font-bold ${unit === u ? "bg-(--ep-accent) text-(--ep-strong)" : "text-(--ep-ink)/55"}`}>{UNIT_LABELS[u]}</button>
             ))}
           </div>
           <NumberField label={unit === "piece" ? t("Combien de pièces ?") : unit === "ml" ? t("Combien de ml ?") : t("Combien de grammes ?")} value={quantity} onChange={setQuantity} />
@@ -345,7 +345,7 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
           <NumberField label={t("Me prévenir sous (facultatif)")} value={threshold} onChange={setThreshold} hint={`En ${unit === "piece" ? "pièces" : unit}. Sinon, l'alerte se base sur ta consommation.`} />
           <button
             onClick={() => onAdd({ ...picked, unit, quantity: Number(quantity) || 0, gramsPerUnit: unit === "piece" ? Number(gpu) || 100 : null, lowThreshold: threshold === "" ? null : Number(threshold) })}
-            className="w-full min-h-[44px] rounded-xl bg-[#E01E1E] text-white text-sm font-bold"
+            className="w-full min-h-[44px] rounded-xl bg-(--ep-accent) text-(--ep-strong) text-sm font-bold"
           >
             {t("Mettre en stock")}
           </button>
@@ -367,7 +367,7 @@ function EditSheet({ item, onClose, onSave, onDelete }: { item: PantryItem; onCl
         <NumberField label={`Quantité en stock (${unit === "piece" ? "pièces" : unit})`} value={quantity} onChange={setQuantity} />
         {unit === "piece" && <NumberField label={t("Poids d'une pièce (g)")} value={gpu} onChange={setGpu} />}
         <NumberField label={t("Me prévenir sous (facultatif)")} value={threshold} onChange={setThreshold} />
-        <button onClick={() => onSave(Number(quantity) || 0, { unit, gramsPerUnit: unit === "piece" ? Number(gpu) || 100 : null, lowThreshold: threshold === "" ? null : Number(threshold) })} className="w-full min-h-[44px] rounded-xl bg-[#E01E1E] text-white text-sm font-bold">
+        <button onClick={() => onSave(Number(quantity) || 0, { unit, gramsPerUnit: unit === "piece" ? Number(gpu) || 100 : null, lowThreshold: threshold === "" ? null : Number(threshold) })} className="w-full min-h-[44px] rounded-xl bg-(--ep-accent) text-(--ep-strong) text-sm font-bold">
           {t("Enregistrer")}
         </button>
         <button onClick={onDelete} className="w-full min-h-[44px] rounded-xl border border-red-500/40 text-red-300 text-sm font-bold flex items-center justify-center gap-2">
@@ -381,9 +381,9 @@ function EditSheet({ item, onClose, onSave, onDelete }: { item: PantryItem; onCl
 function NumberField({ label, value, onChange, hint }: { label: string; value: string; onChange: (v: string) => void; hint?: string }) {
   return (
     <label className="block">
-      <span className="text-xs font-bold text-[#F5EDED]/70">{label}</span>
-      <input type="number" inputMode="decimal" min={0} value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full h-11 rounded-xl bg-[#150000] border border-[#890404]/40 px-3 text-sm text-white" />
-      {hint && <span className="block mt-1 text-[10px] text-[#F5EDED]/40">{hint}</span>}
+      <span className="text-xs font-bold text-(--ep-ink)/70">{label}</span>
+      <input type="number" inputMode="decimal" min={0} value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full h-11 rounded-xl bg-(--ep-s2) border border-(--ep-line)/40 px-3 text-sm text-(--ep-strong)" />
+      {hint && <span className="block mt-1 text-[10px] text-(--ep-ink)/40">{hint}</span>}
     </label>
   );
 }

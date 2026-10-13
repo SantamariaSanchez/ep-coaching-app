@@ -44,12 +44,12 @@ export default function ReferralCard({
 
   return (
     <div className="mt-8">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {t("Parrainage")}
       </p>
       <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Invite un ami")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
-        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: "0 0 12px", lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 12px", lineHeight: 1.6 }}>
           {t("Partage ton lien personnel. Dès qu'un ami s'inscrit avec, tu gagnes")}{" "}
           {pointsPerReferral}{" "}{t("points. Et le jour où il devient client payant, tu reçois un mois offert sur ton abonnement.")}
         </p>
@@ -59,10 +59,10 @@ export default function ReferralCard({
               <div style={{
                 flex: 1, display: "flex", alignItems: "center", gap: 8,
                 padding: "10px 14px", borderRadius: 10, minWidth: 0,
-                background: "rgba(0,0,0,0.3)", border: "1px solid rgba(224,30,30,0.15)",
+                background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
               }}>
-                <Link2 size={14} style={{ color: "#E01E1E", flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: "#F5EDED", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <Link2 size={14} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: "var(--ep-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {link}
                 </span>
               </div>
@@ -72,7 +72,7 @@ export default function ReferralCard({
                 style={{
                   display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
                   height: 38, padding: "0 14px", borderRadius: 8, border: "none",
-                  background: copied ? "#4ade80" : "#E01E1E", color: copied ? "#0a1f0a" : "#fff",
+                  background: copied ? "var(--ep-ok)" : "var(--ep-accent)", color: copied ? "var(--ep-okbg)" : "#fff",
                   fontWeight: 700, fontSize: 12, cursor: "pointer",
                 }}
               >
@@ -83,15 +83,15 @@ export default function ReferralCard({
             {referredCount > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Gift size={13} style={{ color: "#FACC15", flexShrink: 0 }} />
-                  <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>
+                  <Gift size={13} style={{ color: "var(--ep-yellow)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 600 }}>
                     {referredCount}{" "}{t("ami")}{referredCount > 1 ? "s" : ""}{" "}{t("déjà parrainé")}{referredCount > 1 ? "s" : ""}
                   </span>
                 </div>
                 {rewardedCount > 0 && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Gift size={13} style={{ color: "#4ade80", flexShrink: 0 }} />
-                    <span style={{ fontSize: 11.5, color: "#4ade80", fontWeight: 700 }}>
+                    <Gift size={13} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 11.5, color: "var(--ep-ok)", fontWeight: 700 }}>
                       {rewardedCount}{" "}{t("mois offert")}{rewardedCount > 1 ? "s" : ""}{" "}{t("déjà gagné")}{rewardedCount > 1 ? "s" : ""}
                     </span>
                   </div>
@@ -106,7 +106,7 @@ export default function ReferralCard({
             disabled={loading}
             style={{
               height: 40, padding: "0 18px", borderRadius: 8, border: "none",
-              background: "#E01E1E", color: "#fff", fontWeight: 700, fontSize: 12,
+              background: "var(--ep-accent)", color: "#fff", fontWeight: 700, fontSize: 12,
               textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer",
             }}
           >

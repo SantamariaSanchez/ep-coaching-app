@@ -19,5 +19,13 @@ export default async function OnboardingPage() {
     getAccessType(profile) === "membre_gratuit" &&
     !((await getActiveProgram(user.id))?.days.length);
 
-  return <OnboardingFlow canInstallStarter={canInstallStarter} />;
+  const DAYS = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+  const coached = getAccessType(profile) === "client_accompagne";
+  return (
+    <OnboardingFlow
+      canInstallStarter={canInstallStarter}
+      coached={coached}
+      checkinDayLabel={coached && profile.checkin_day ? DAYS[profile.checkin_day] ?? null : null}
+    />
+  );
 }

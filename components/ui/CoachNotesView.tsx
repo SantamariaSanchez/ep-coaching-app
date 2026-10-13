@@ -35,7 +35,7 @@ const DECISION_TYPE_COLORS: Record<string, string> = {
   nutrition: "bg-blue-500/15 text-blue-400 border-blue-500/25",
   programme: "bg-green-500/15 text-green-400 border-green-500/25",
   "stratégie": "bg-purple-500/15 text-purple-400 border-purple-500/25",
-  autre: "bg-[#F5EDED]/10 text-[#F5EDED]/40 border-[#F5EDED]/15",
+  autre: "bg-(--ep-ink)/10 text-(--ep-ink)/40 border-(--ep-ink)/15",
 };
 
 const RATING_COLORS: Record<number, string> = {
@@ -45,9 +45,9 @@ const RATING_COLORS: Record<number, string> = {
 };
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 const labelCls =
-  "text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block";
+  "text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block";
 const textareaCls = inputCls + " resize-none";
 
 function formatDate(dateStr: string) {
@@ -62,7 +62,7 @@ function PhaseBadge({ phase }: { phase: string | null }) {
   if (!phase) return null;
   return (
     <span
-      className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${PHASE_COLORS[phase] ?? "bg-[#F5EDED]/10 text-[#F5EDED]/40 border-[#F5EDED]/15"}`}
+      className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${PHASE_COLORS[phase] ?? "bg-(--ep-ink)/10 text-(--ep-ink)/40 border-(--ep-ink)/15"}`}
     >
       {phase}
     </span>
@@ -73,7 +73,7 @@ function RatingBadge({ rating }: { rating: number | null }) {
   if (!rating) return null;
   return (
     <span
-      className={`text-[9px] font-black px-2 py-0.5 rounded-full text-white ${RATING_COLORS[rating] ?? "bg-[#F5EDED]/20"}`}
+      className={`text-[9px] font-black px-2 py-0.5 rounded-full text-(--ep-strong) ${RATING_COLORS[rating] ?? "bg-(--ep-ink)/20"}`}
     >
       {rating}/10
     </span>
@@ -186,13 +186,13 @@ function WeeklyNoteForm({
   const isEditing = !!currentNote;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-5">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5 space-y-5">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
           {tr("Semaine")}{" "}{weekNumber} : {formatDate(weekStart)}
         </p>
         {isEditing && (
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/25 px-2 py-0.5 rounded-full">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent) bg-(--ep-accent)/10 border border-(--ep-accent)/25 px-2 py-0.5 rounded-full">
             {tr("Édition")}
           </span>
         )}
@@ -245,8 +245,8 @@ function WeeklyNoteForm({
                 onClick={() => set("rating", form.rating === n ? null : n)}
                 className={`w-7 h-7 rounded text-[10px] font-black transition-colors ${
                   form.rating === n
-                    ? `${RATING_COLORS[n]} text-white`
-                    : "bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/40 hover:text-white"
+                    ? `${RATING_COLORS[n]} text-(--ep-strong)`
+                    : "bg-(--ep-s2) border border-(--ep-line)/30 text-(--ep-ink)/40 hover:text-(--ep-strong)"
                 }`}
               >
                 {n}
@@ -288,10 +288,10 @@ function WeeklyNoteForm({
         <button
           onClick={handleSave}
           disabled={saving || saved}
-          className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
+          className={`inline-flex items-center gap-2 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
             saved
               ? "bg-green-800/60 border border-green-600/30"
-              : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
+              : "bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60"
           }`}
         >
           {saved ? <><Check size={13} />{" "}{tr("Enregistré")}</> : saving ? tr("Enregistrement…") : tr("Enregistrer la note")}
@@ -315,24 +315,24 @@ function NoteCard({ note }: { note: CoachNote }) {
   ].filter((f) => f.value);
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-[#890404]/5 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-(--ep-line)/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-sm font-bold text-white">
+          <span className="text-sm font-bold text-(--ep-strong)">
             S{note.week_number ?? "?"}
           </span>
-          <span className="text-xs text-[#F5EDED]/40">
+          <span className="text-xs text-(--ep-ink)/40">
             {formatDate(note.week_start)}
           </span>
           {note.weight != null && (
-            <span className="text-[10px] text-[#F5EDED]/50">
+            <span className="text-[10px] text-(--ep-ink)/50">
               {note.weight}{" "}{tr("kg")}
               {note.weight_variation != null && (
                 <span
-                  className={`ml-1 font-semibold ${note.weight_variation < 0 ? "text-blue-400" : note.weight_variation > 0 ? "text-amber-400" : "text-[#F5EDED]/40"}`}
+                  className={`ml-1 font-semibold ${note.weight_variation < 0 ? "text-blue-400" : note.weight_variation > 0 ? "text-amber-400" : "text-(--ep-ink)/40"}`}
                 >
                   ({note.weight_variation > 0 ? "+" : ""}
                   {note.weight_variation})
@@ -344,18 +344,18 @@ function NoteCard({ note }: { note: CoachNote }) {
           <RatingBadge rating={note.rating} />
         </div>
         {expanded ? (
-          <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+          <ChevronUp size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
         ) : (
-          <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+          <ChevronDown size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
         )}
       </button>
 
       {expanded && fields.length > 0 && (
-        <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15">
+        <div className="px-4 pb-4 space-y-3 border-t border-(--ep-line)/15">
           {fields.map(({ label, value }) => (
             <div key={label}>
               <p className={labelCls + " mt-3"}>{label}</p>
-              <p className="text-sm text-[#F5EDED]/75 whitespace-pre-wrap leading-relaxed">
+              <p className="text-sm text-(--ep-ink)/75 whitespace-pre-wrap leading-relaxed">
                 {value}
               </p>
             </div>
@@ -427,14 +427,14 @@ function KeyDecisionForm({
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           <Plus size={13} />
           {tr("Ajouter une décision")}
         </button>
       ) : (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5 space-y-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Nouvelle décision clé")}
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -498,14 +498,14 @@ function KeyDecisionForm({
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setOpen(false)}
-              className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2 transition-colors"
+              className="text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 px-4 py-2 transition-colors"
             >
               {tr("Annuler")}
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg disabled:opacity-60 transition-colors"
+              className="inline-flex items-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg disabled:opacity-60 transition-colors"
             >
               {saved ? <><Check size={13} />{" "}{tr("Ajouté")}</> : saving ? tr("Enregistrement…") : tr("Enregistrer")}
             </button>
@@ -548,14 +548,14 @@ function DecisionCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl overflow-hidden">
       <div className="flex items-start gap-3 px-4 py-3">
         <button
           onClick={() => setExpanded((e) => !e)}
           className="flex-1 text-left"
         >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] text-[#F5EDED]/35">
+            <span className="text-[10px] text-(--ep-ink)/35">
               {formatDate(decision.decision_date)}
             </span>
             {decision.type && (
@@ -566,23 +566,23 @@ function DecisionCard({
               </span>
             )}
           </div>
-          <p className="text-sm font-semibold text-white leading-snug">
+          <p className="text-sm font-semibold text-(--ep-strong) leading-snug">
             {decision.decision}
           </p>
           {expanded && decision.reason && (
             <div className="mt-2">
-              <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold mb-0.5">
+              <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest font-semibold mb-0.5">
                 {tr("Raison")}
               </p>
-              <p className="text-xs text-[#F5EDED]/60">{decision.reason}</p>
+              <p className="text-xs text-(--ep-ink)/60">{decision.reason}</p>
             </div>
           )}
           {expanded && decision.result && (
             <div className="mt-2">
-              <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold mb-0.5">
+              <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest font-semibold mb-0.5">
                 {tr("Résultat observé")}
               </p>
-              <p className="text-xs text-[#F5EDED]/60">{decision.result}</p>
+              <p className="text-xs text-(--ep-ink)/60">{decision.result}</p>
             </div>
           )}
         </button>
@@ -591,7 +591,7 @@ function DecisionCard({
             onClick={() => setExpanded((e) => !e)}
             aria-label={expanded ? tr("Réduire") : tr("Développer")}
             aria-expanded={expanded}
-            className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
+            className="text-(--ep-ink)/25 hover:text-(--ep-ink)/60 transition-colors"
           >
             {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
@@ -599,7 +599,7 @@ function DecisionCard({
             onClick={handleDelete}
             disabled={deleting}
             aria-label={tr("Supprimer")}
-            className="text-[#F5EDED]/20 hover:text-red-500 transition-colors disabled:opacity-40"
+            className="text-(--ep-ink)/20 hover:text-red-500 transition-colors disabled:opacity-40"
           >
             <Trash2 size={12} />
           </button>
@@ -653,15 +653,15 @@ export default function CoachNotesView({
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-[#890404]/20">
+      <div className="flex gap-1 border-b border-(--ep-line)/20">
         {(["journal", "decisions"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
               activeTab === tab
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-(--ep-accent) border-b-2 border-(--ep-accent)"
+                : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             {tab === "journal"
@@ -696,7 +696,7 @@ export default function CoachNotesView({
           {/* Past notes */}
           {pastNotes.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
                 {tr("Historique")}
               </p>
               <div className="space-y-2">
@@ -707,7 +707,7 @@ export default function CoachNotesView({
               {pastNotes.length > INITIAL_NOTES_SHOWN && (
                 <button
                   onClick={() => setShowAllNotes((s) => !s)}
-                  className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+                  className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
                 >
                   {showAllNotes ? (
                     <><ChevronUp size={13} />{" "}{tr("Réduire")}</>
@@ -730,14 +730,14 @@ export default function CoachNotesView({
           />
 
           {decisions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-1.5 py-12 px-6 bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl text-center">
-              <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
+            <div className="flex flex-col items-center justify-center gap-1.5 py-12 px-6 bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl text-center">
+              <p className="text-xs text-(--ep-ink)/30 uppercase tracking-widest font-semibold">
                 {tr("Aucune décision enregistrée")}
               </p>
               {/* Item 40 : le formulaire juste au-dessus suffit à comprendre
                   quoi faire, mais un mot sur l'utilité évite de se demander
                   si "décision" a un sens précis ici. */}
-              <p className="text-[11px] text-[#F5EDED]/22 max-w-xs leading-relaxed">
+              <p className="text-[11px] text-(--ep-ink)/22 max-w-xs leading-relaxed">
                 {tr("Sert à garder une trace des choix structurants pour ce client (changement de phase, ajustement majeur...), pas un journal de suivi au quotidien.")}
               </p>
             </div>

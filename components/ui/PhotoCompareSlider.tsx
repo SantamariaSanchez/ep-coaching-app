@@ -52,7 +52,7 @@ export default function PhotoCompareSlider({
         borderRadius: 10,
         overflow: "hidden",
         cursor: "ew-resize",
-        border: "1px solid rgba(137,4,4,0.25)",
+        border: "1px solid rgba(var(--ep-line-rgb),0.25)",
         touchAction: "none",
         userSelect: "none",
       }}
@@ -81,7 +81,7 @@ export default function PhotoCompareSlider({
           bottom: 0,
           left: `${percent}%`,
           width: 2,
-          background: "#E01E1E",
+          background: "var(--ep-accent)",
           transform: "translateX(-1px)",
           pointerEvents: "none",
         }}
@@ -95,22 +95,22 @@ export default function PhotoCompareSlider({
           width: 30,
           height: 30,
           borderRadius: "50%",
-          background: "#E01E1E",
+          background: "var(--ep-accent)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+          boxShadow: "0 2px 8px rgba(var(--ep-shade-rgb),0.4)",
           pointerEvents: "none",
         }}
       >
-        <ChevronsLeftRight size={14} style={{ color: "white" }} />
+        <ChevronsLeftRight size={14} style={{ color: "var(--ep-strong)" }} />
       </div>
 
       <span
         style={{
           position: "absolute", top: 8, left: 8, fontSize: 9, fontWeight: 800,
-          letterSpacing: "0.08em", textTransform: "uppercase", color: "white",
-          background: "rgba(0,0,0,0.5)", padding: "3px 8px", borderRadius: 999,
+          letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ep-strong)",
+          background: "rgba(var(--ep-shade-rgb),0.5)", padding: "3px 8px", borderRadius: 999,
           pointerEvents: "none",
         }}
       >
@@ -119,8 +119,8 @@ export default function PhotoCompareSlider({
       <span
         style={{
           position: "absolute", top: 8, right: 8, fontSize: 9, fontWeight: 800,
-          letterSpacing: "0.08em", textTransform: "uppercase", color: "white",
-          background: "rgba(0,0,0,0.5)", padding: "3px 8px", borderRadius: 999,
+          letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ep-strong)",
+          background: "rgba(var(--ep-shade-rgb),0.5)", padding: "3px 8px", borderRadius: 999,
           pointerEvents: "none",
         }}
       >

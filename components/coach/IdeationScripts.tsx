@@ -11,11 +11,12 @@ import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideati
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
 import Link from "next/link";
+import { withAlpha } from "@/lib/theme-color";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
-  a_tourner: { label: "À tourner", color: "#facc15" },
-  tourne: { label: "Tourné", color: "#60a5fa" },
-  publie: { label: "Publié", color: "#4ade80" },
+  a_tourner: { label: "À tourner", color: "var(--ep-yellow)" },
+  tourne: { label: "Tourné", color: "var(--ep-info)" },
+  publie: { label: "Publié", color: "var(--ep-ok)" },
 };
 // Cycle de vie confirmé le 2026-09-10 : écrire (déjà géré par le formulaire/
 // les routines) → tourner → poster, et une fois posté le script est FINI
@@ -33,9 +34,9 @@ const STATUS_TITLES: Record<ScriptStatus, string> = {
 // reste un simple badge, et l'étape suivante devient un vrai bouton
 // d'action (verbe + icône, fond plein) : on voit tout de suite quoi taper.
 const STATUS_ACTIONS: Record<ScriptStatus, { label: string; color: string; filled: boolean }> = {
-  a_tourner: { label: "J'ai tourné", color: "#60a5fa", filled: true },
-  tourne: { label: "J'ai posté", color: "#4ade80", filled: true },
-  publie: { label: "Rouvrir", color: "rgba(245,237,237,0.55)", filled: false },
+  a_tourner: { label: "J'ai tourné", color: "var(--ep-info)", filled: true },
+  tourne: { label: "J'ai posté", color: "var(--ep-ok)", filled: true },
+  publie: { label: "Rouvrir", color: "rgba(var(--ep-ink-rgb),0.55)", filled: false },
 };
 
 function formatDuration(seconds: number | null): string | null {
@@ -81,10 +82,10 @@ function formatDuration(seconds: number | null): string | null {
 // scripts mais ne se proposent plus à la création (Instagram et Threads
 // bannis depuis le 2026-10-08).
 export const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
-  reel: { label: "Reel", color: "#E01E1E" },
+  reel: { label: "Reel", color: "var(--ep-accent)" },
   instagram: { label: "Instagram Reel", color: "#E1306C" },
   facebook: { label: "Facebook Reel", color: "#1877F2" },
-  threads: { label: "Threads", color: "#F5EDED" },
+  threads: { label: "Threads", color: "var(--ep-ink)" },
   youtube: { label: "YouTube", color: "#FF0000" },
   tiktok: { label: "TikTok", color: "#25F4EE" },
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
@@ -153,9 +154,9 @@ export default function IdeationScripts({
               display: "flex", alignItems: "center", gap: 5,
               padding: "6px 12px", borderRadius: 999,
               fontSize: 11, fontWeight: 700,
-              border: subTab === id ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-              background: subTab === id ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-              color: subTab === id ? "#F5EDED" : "rgba(245,237,237,0.55)",
+              border: subTab === id ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+              background: subTab === id ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+              color: subTab === id ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
               cursor: "pointer",
             }}
           >
@@ -220,10 +221,10 @@ function CopyButton({ text }: { text: string }) {
       aria-label={tr("Copier")}
       style={{
         display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-        background: copied ? "rgba(74,222,128,0.15)" : "rgba(0,0,0,0.3)",
-        border: `1px solid ${copied ? "rgba(74,222,128,0.4)" : "rgba(245,237,237,0.15)"}`,
+        background: copied ? "rgba(var(--ep-ok-rgb),0.15)" : "rgba(var(--ep-shade-rgb),0.3)",
+        border: `1px solid ${copied ? "rgba(var(--ep-ok-rgb),0.4)" : "rgba(var(--ep-ink-rgb),0.15)"}`,
         borderRadius: 8, padding: "6px 10px", fontSize: 10.5, fontWeight: 700,
-        color: copied ? "#4ade80" : "rgba(245,237,237,0.5)", cursor: "pointer",
+        color: copied ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer",
       }}
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
@@ -236,20 +237,20 @@ function CopyButton({ text }: { text: string }) {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.2)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
   borderRadius: "var(--radius-lg)",
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "12px 16px",
   fontSize: 13,
   outline: "none",
 };
 
 const selectStyle: React.CSSProperties = {
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.2)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
   borderRadius: 999,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "6px 10px",
   fontSize: 11.5,
   fontWeight: 700,
@@ -686,9 +687,9 @@ function MyScripts({
           disabled={filmableScripts.length === 0}
           style={{
             display: "inline-flex", alignItems: "center", gap: 6,
-            background: "rgba(224,30,30,0.15)", color: "#E01E1E", padding: "8px 14px",
+            background: "rgba(var(--ep-accent-rgb),0.15)", color: "var(--ep-accent)", padding: "8px 14px",
             borderRadius: 999, fontWeight: 800, fontSize: 12,
-            border: "1px solid rgba(224,30,30,0.4)", cursor: filmableScripts.length === 0 ? "default" : "pointer",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.4)", cursor: filmableScripts.length === 0 ? "default" : "pointer",
             opacity: filmableScripts.length === 0 ? 0.4 : 1,
           }}
         >
@@ -699,7 +700,7 @@ function MyScripts({
           onClick={() => setShowForm((v) => !v)}
           style={{
             display: "inline-flex", alignItems: "center", gap: 6,
-            background: "#E01E1E", color: "#fff", padding: "8px 14px",
+            background: "var(--ep-accent)", color: "#fff", padding: "8px 14px",
             borderRadius: 999, fontWeight: 800, fontSize: 12, border: "none", cursor: "pointer",
           }}
         >
@@ -725,9 +726,9 @@ function MyScripts({
                 onClick={() => setFormat(f)}
                 style={{
                   fontSize: 11.5, fontWeight: 700, padding: "7px 14px", borderRadius: 999, cursor: "pointer",
-                  border: format === f ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-                  background: format === f ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-                  color: format === f ? "#F5EDED" : "rgba(245,237,237,0.55)",
+                  border: format === f ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+                  background: format === f ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+                  color: format === f ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
                 }}
               >
                 {tr("Format")}{" "}{f}
@@ -750,7 +751,7 @@ function MyScripts({
             onClick={submitNew}
             disabled={isPending}
             style={{
-              marginTop: 10, background: "#E01E1E", color: "#fff", padding: "9px 18px",
+              marginTop: 10, background: "var(--ep-accent)", color: "#fff", padding: "9px 18px",
               borderRadius: "var(--radius-lg)", fontWeight: 800, fontSize: 12.5, border: "none",
               cursor: "pointer", opacity: isPending ? 0.6 : 1,
             }}
@@ -761,47 +762,47 @@ function MyScripts({
       )}
 
       {scripts.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <FileText size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{tr("Aucun script pour l'instant. Pioche un prompt ou un hook dans les onglets à côté pour démarrer.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <FileText size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{tr("Aucun script pour l'instant. Pioche un prompt ou un hook dans les onglets à côté pour démarrer.")}</p>
         </div>
       ) : (
         <>
           {weeklyPerf && (
             <div className="ep-card" style={{ padding: 14, marginBottom: 14 }}>
-              <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(245,237,237,0.4)", marginBottom: 10 }}>
+              <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 10 }}>
                 {tr("Performance de la semaine")}
               </p>
               <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: weeklyPerf.missingViews > 0 ? 8 : 0 }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#F5EDED" }}>{weeklyPerf.publishedCount}</p>
-                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>{tr("publié")}{weeklyPerf.publishedCount > 1 ? "s" : ""}{" "}{tr("cette semaine")}</p>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ink)" }}>{weeklyPerf.publishedCount}</p>
+                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{tr("publié")}{weeklyPerf.publishedCount > 1 ? "s" : ""}{" "}{tr("cette semaine")}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#F5EDED" }}>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ink)" }}>
                     {weeklyPerf.views.toLocaleString("fr-FR")}
                     {weeklyPerf.lastWeekViews > 0 && (
-                      <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 6, color: weeklyPerf.views >= weeklyPerf.lastWeekViews ? "#4ade80" : "#f87171" }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 6, color: weeklyPerf.views >= weeklyPerf.lastWeekViews ? "var(--ep-ok)" : "var(--ep-bad)" }}>
                         {weeklyPerf.views >= weeklyPerf.lastWeekViews ? "▲" : "▼"}{" "}
                         {Math.abs(Math.round(((weeklyPerf.views - weeklyPerf.lastWeekViews) / weeklyPerf.lastWeekViews) * 100))}%
                       </span>
                     )}
                   </p>
-                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>
+                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                     {tr("vues loguées")}{" "}{weeklyPerf.lastWeekViews > 0 ? `(vs ${weeklyPerf.lastWeekViews.toLocaleString("fr-FR")} la semaine passée)` : tr("cette semaine")}
                   </p>
                 </div>
                 {weeklyPerf.best && (
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#4ade80" }}>{weeklyPerf.best.views!.toLocaleString("fr-FR")}</p>
-                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
+                    <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ok)" }}>{weeklyPerf.best.views!.toLocaleString("fr-FR")}</p>
+                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
                       {tr("🔥 meilleur :")}{" "}{weeklyPerf.best.title}
                     </p>
                   </div>
                 )}
               </div>
               {weeklyPerf.missingViews > 0 && (
-                <p style={{ margin: 0, fontSize: 11, color: "#facc15" }}>
+                <p style={{ margin: 0, fontSize: 11, color: "var(--ep-yellow)" }}>
                   {weeklyPerf.missingViews}{" "}{tr("script")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("publié")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("cette semaine sans vues loguées, ces chiffres restent incomplets tant qu'ils ne sont pas remplis (bouton « Loguer les résultats » sur chaque script publié).")}
                 </p>
               )}
@@ -809,7 +810,7 @@ function MyScripts({
           )}
 
           <div style={{ position: "relative", marginBottom: 10 }}>
-            <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+            <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -864,7 +865,7 @@ function MyScripts({
               <button
                 type="button"
                 onClick={() => { setStatusFilter("all"); setPlatformFilter("all"); setPillarFilter("all"); }}
-                style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}
+                style={{ fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}
               >
                 {tr("Réinitialiser")}
               </button>
@@ -872,8 +873,8 @@ function MyScripts({
           </div>
 
           {activeScripts.length === 0 && publishedScripts.length === 0 ? (
-            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
-              <p className="text-sm text-[#F5EDED]/35">
+            <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-10 text-center mb-3">
+              <p className="text-sm text-(--ep-ink)/35">
                 {searchQuery.trim().length > 0
                   ? <>{tr("Aucun script ne correspond à \"")}{searchQuery}&quot;.</>
                   : tr("Aucun script ne correspond à ces filtres.")}
@@ -892,8 +893,8 @@ function MyScripts({
               en premier), pas par date de création — pour vraiment faire
               remonter ce qui traîne et débloquer le pipeline. */}
           {activeScripts.length === 0 && publishedScripts.length > 0 ? (
-            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
-              <p className="text-sm text-[#F5EDED]/35">{tr("Tout ce qui était à produire est posté. 🎉")}</p>
+            <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-10 text-center mb-3">
+              <p className="text-sm text-(--ep-ink)/35">{tr("Tout ce qui était à produire est posté. 🎉")}</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -909,16 +910,16 @@ function MyScripts({
                 style={{
                   display: "flex", alignItems: "center", gap: 6, width: "100%",
                   background: "none", border: "none", cursor: "pointer", padding: "8px 0",
-                  borderTop: "1px solid rgba(245,237,237,0.08)",
+                  borderTop: "1px solid rgba(var(--ep-ink-rgb),0.08)",
                 }}
               >
-                <Check size={12} style={{ color: "#4ade80" }} strokeWidth={3} />
-                <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(245,237,237,0.4)" }}>
+                <Check size={12} style={{ color: "var(--ep-ok)" }} strokeWidth={3} />
+                <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                   {tr("Publiés, terminés (")}{publishedScripts.length})
                 </span>
                 <ChevronDown
                   size={13}
-                  style={{ color: "rgba(245,237,237,0.3)", marginLeft: "auto", transform: showPublished ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }}
+                  style={{ color: "rgba(var(--ep-ink-rgb),0.3)", marginLeft: "auto", transform: showPublished ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }}
                 />
               </button>
               {showPublished && (
@@ -935,28 +936,28 @@ function MyScripts({
       {deleteTarget && (
         <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm"
             onClick={() => setDeleteTarget(null)}
           />
-          <div className="relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl z-10 p-5">
-            <p style={{ fontSize: 13.5, color: "#fff", lineHeight: 1.5, marginBottom: 4 }}>
+          <div className="relative w-full sm:max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl z-10 p-5">
+            <p style={{ fontSize: 13.5, color: "var(--ep-strong)", lineHeight: 1.5, marginBottom: 4 }}>
               {tr("Supprimer «")}{" "}{deleteTarget.title} » ?
             </p>
-            <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", marginBottom: 16 }}>
+            <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 16 }}>
               {tr("Pourquoi ce script ne sert plus ? Ça aide à repérer les piliers/angles qui marchent le moins.")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <button
                 type="button"
                 onClick={() => remove(deleteTarget.id, "info_fausse")}
-                style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+                style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.15)", background: "rgba(var(--ep-shade-rgb),0.25)", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
               >
                 {tr("Information fausse ou dépassée")}
               </button>
               <button
                 type="button"
                 onClick={() => remove(deleteTarget.id, "sujet_nul")}
-                style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+                style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.15)", background: "rgba(var(--ep-shade-rgb),0.25)", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
               >
                 {tr("Sujet qui n'intéresse pas / angle raté")}
               </button>
@@ -964,7 +965,7 @@ function MyScripts({
                 <button
                   type="button"
                   onClick={() => setShowDeleteDetailInput(true)}
-                  style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+                  style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.15)", background: "rgba(var(--ep-shade-rgb),0.25)", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
                 >
                   {tr("Autre raison")}
                 </button>
@@ -982,7 +983,7 @@ function MyScripts({
                   <button
                     type="button"
                     onClick={() => remove(deleteTarget.id, "autre", deleteDetail)}
-                    style={{ padding: "10px 12px", borderRadius: 10, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
+                    style={{ padding: "10px 12px", borderRadius: 10, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
                   >
                     {tr("Confirmer la suppression")}
                   </button>
@@ -991,7 +992,7 @@ function MyScripts({
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                style={{ textAlign: "center", padding: "8px 12px", background: "none", border: "none", color: "rgba(245,237,237,0.4)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+                style={{ textAlign: "center", padding: "8px 12px", background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.4)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
               >
                 {tr("Annuler")}
               </button>
@@ -1035,7 +1036,7 @@ function MyScripts({
                 padding: 16,
                 scrollMarginTop: 80,
                 ...(script.id === focusScriptId
-                  ? { borderColor: "rgba(224,30,30,0.7)", boxShadow: "0 0 0 1px rgba(224,30,30,0.45), 0 0 28px rgba(224,30,30,0.22)" }
+                  ? { borderColor: "rgba(var(--ep-accent-rgb),0.7)", boxShadow: "0 0 0 1px rgba(var(--ep-accent-rgb),0.45), 0 0 28px rgba(var(--ep-accent-rgb),0.22)" }
                   : null),
               }}
             >
@@ -1047,9 +1048,9 @@ function MyScripts({
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
                     padding: "3px 8px", borderRadius: 999,
-                    background: `${(platformInfo ?? { color: "#F5EDED" }).color}22`,
-                    color: (platformInfo ?? { color: "#F5EDED" }).color,
-                    border: `1px solid ${(platformInfo ?? { color: "#F5EDED" }).color}44`,
+                    background: `${(platformInfo ?? { color: "var(--ep-ink)" }).color}22`,
+                    color: (platformInfo ?? { color: "var(--ep-ink)" }).color,
+                    border: `1px solid ${(platformInfo ?? { color: "var(--ep-ink)" }).color}44`,
                   }}
                 >
                   {platformInfo?.label ?? script.platform}
@@ -1057,16 +1058,16 @@ function MyScripts({
                 <span
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
-                    padding: "3px 8px", borderRadius: 999, background: "rgba(224,30,30,0.15)", color: "#E01E1E",
+                    padding: "3px 8px", borderRadius: 999, background: "rgba(var(--ep-accent-rgb),0.15)", color: "var(--ep-accent)",
                   }}
                 >
                   {script.format}
                 </span>
                 {duration && (
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(245,237,237,0.45)" }}>{duration}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{duration}</span>
                 )}
                 {script.pillar && (
-                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.4)", padding: "3px 8px", borderRadius: 999, border: "1px solid rgba(245,237,237,0.12)" }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", padding: "3px 8px", borderRadius: 999, border: "1px solid rgba(var(--ep-ink-rgb),0.12)" }}>
                     {script.pillar}
                   </span>
                 )}
@@ -1074,7 +1075,7 @@ function MyScripts({
                   type="button"
                   onClick={() => toggleExpanded(script.id)}
                   aria-expanded={isExpanded}
-                  style={{ margin: 0, padding: 0, background: "none", border: "none", cursor: "pointer", textAlign: "left", fontSize: 13.5, fontWeight: 800, color: "#F5EDED", flex: 1, minWidth: 120, fontFamily: "inherit" }}
+                  style={{ margin: 0, padding: 0, background: "none", border: "none", cursor: "pointer", textAlign: "left", fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)", flex: 1, minWidth: 120, fontFamily: "inherit" }}
                 >
                   {script.title}
                 </button>
@@ -1083,9 +1084,9 @@ function MyScripts({
                     title={`Dans cette étape depuis ${Math.floor(stageDays)} jour${Math.floor(stageDays) > 1 ? "s" : ""}, au-delà du délai normal`}
                     style={{
                       fontSize: 9, fontWeight: 800, padding: "3px 7px", borderRadius: 999,
-                      background: isVeryStale ? "rgba(248,113,113,0.18)" : "rgba(250,204,21,0.15)",
-                      color: isVeryStale ? "#f87171" : "#facc15",
-                      border: `1px solid ${isVeryStale ? "#f87171" : "#facc15"}55`,
+                      background: isVeryStale ? "rgba(var(--ep-bad-rgb),0.18)" : "rgba(var(--ep-yellow-rgb),0.15)",
+                      color: isVeryStale ? "var(--ep-bad)" : "var(--ep-yellow)",
+                      border: `1px solid ${withAlpha(isVeryStale ? "var(--ep-bad)" : "var(--ep-yellow)", "55")}`,
                     }}
                   >
                     ⏳ {Math.floor(stageDays)}j
@@ -1094,7 +1095,7 @@ function MyScripts({
                 <span
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em",
-                    padding: "3px 8px", borderRadius: 999, border: `1px solid ${statusInfo.color}55`, color: statusInfo.color,
+                    padding: "3px 8px", borderRadius: 999, border: `1px solid ${withAlpha(statusInfo.color, "55")}`, color: statusInfo.color,
                   }}
                 >
                   {statusInfo.label}
@@ -1112,10 +1113,10 @@ function MyScripts({
                         display: "inline-flex", alignItems: "center", gap: 5,
                         fontSize: 11, fontWeight: 800, letterSpacing: "0.02em",
                         padding: action.filled ? "6px 12px" : "4px 10px", borderRadius: 999, cursor: "pointer",
-                        border: `1px solid ${action.filled ? action.color : "rgba(245,237,237,0.18)"}`,
+                        border: `1px solid ${action.filled ? action.color : "rgba(var(--ep-ink-rgb),0.18)"}`,
                         background: action.filled ? action.color : "transparent",
-                        color: action.filled ? "#0D0000" : action.color,
-                        boxShadow: action.filled ? `0 0 14px ${action.color}55` : "none",
+                        color: action.filled ? "var(--ep-bg)" : action.color,
+                        boxShadow: action.filled ? `0 0 14px ${withAlpha(action.color, "55")}` : "none",
                       }}
                     >
                       <Icon size={12} strokeWidth={2.5} /> {action.label}
@@ -1130,7 +1131,7 @@ function MyScripts({
                     setShowDeleteDetailInput(false);
                   }}
                   aria-label={tr("Supprimer")}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0, padding: 4 }}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -1143,9 +1144,9 @@ function MyScripts({
                   là en base, mais noyé sous la description Instagram et
                   tronqué à 80px sans le moindre libellé. Maintenant en
                   premier, en entier, clairement identifié. */}
-              <div style={{ marginTop: 10, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.2)", borderRadius: 10, padding: "10px 12px" }}>
+              <div style={{ marginTop: 10, background: "rgba(var(--ep-accent-rgb),0.06)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)", borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#E01E1E" }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-accent)" }}>
                     {/* Retour direct 2026-09-18 : LinkedIn/Threads sont du
                         texte posté tel quel, jamais lu à voix haute. */}
                     {WRITTEN_PLATFORMS.has(script.platform) ? tr("Texte du post") : tr("Script (mot pour mot)")}
@@ -1171,7 +1172,7 @@ function MyScripts({
                         type="button"
                         onClick={() => saveContent(script.id)}
                         style={{
-                          background: "#E01E1E", color: "#fff", padding: "9px 18px", borderRadius: "var(--radius-lg)",
+                          background: "var(--ep-accent)", color: "#fff", padding: "9px 18px", borderRadius: "var(--radius-lg)",
                           fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
                         }}
                       >
@@ -1181,9 +1182,9 @@ function MyScripts({
                         type="button"
                         onClick={() => setOpenId(null)}
                         style={{
-                          background: "transparent", color: "rgba(245,237,237,0.5)", padding: "9px 18px",
+                          background: "transparent", color: "rgba(var(--ep-ink-rgb),0.5)", padding: "9px 18px",
                           borderRadius: "var(--radius-lg)", fontWeight: 700, fontSize: 12.5,
-                          border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer",
+                          border: "1px solid rgba(var(--ep-ink-rgb),0.15)", cursor: "pointer",
                         }}
                       >
                         {tr("Annuler")}
@@ -1203,12 +1204,12 @@ function MyScripts({
                       setDraft(script.content ?? "");
                     }}
                     style={{
-                      margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.6,
+                      margin: 0, fontSize: 13, color: "var(--ep-ink)", lineHeight: 1.6,
                       whiteSpace: "pre-wrap", cursor: "text",
                       maxHeight: "33vh", overflowY: "auto",
                     }}
                   >
-                    {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>{tr("Vide, clique pour écrire.")}</span>}
+                    {script.content || <span style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }}>{tr("Vide, clique pour écrire.")}</span>}
                   </p>
                 )}
               </div>
@@ -1216,17 +1217,17 @@ function MyScripts({
               {(script.hook || script.cta || script.source_reference) && (
                 <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
                   {script.hook && (
-                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>{tr("Hook")}{" "}</span>{script.hook}
+                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
+                      <span style={{ fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.35)" }}>{tr("Hook")}{" "}</span>{script.hook}
                     </p>
                   )}
                   {script.cta && (
-                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>{tr("CTA parlé")}{" "}</span>{script.cta}
+                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
+                      <span style={{ fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.35)" }}>{tr("CTA parlé")}{" "}</span>{script.cta}
                     </p>
                   )}
                   {script.source_reference && (
-                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)", fontStyle: "italic" }}>
+                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)", fontStyle: "italic" }}>
                       {tr("Source :")}{" "}{script.source_reference}
                     </p>
                   )}
@@ -1242,7 +1243,7 @@ function MyScripts({
                   différents peuvent citer le même numéro à des dates
                   différentes (voir lib/content-leads-tracking.ts). */}
               {realLeadsByScriptId[script.id] && (
-                <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 700, color: "#facc15" }}>
+                <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 700, color: "var(--ep-yellow)" }}>
                   📩 {realLeadsByScriptId[script.id].total}{" "}{tr("lead")}{realLeadsByScriptId[script.id].total > 1 ? "s" : ""}{" "}{tr("captés sur ce numéro")}
                   {realLeadsByScriptId[script.id].last30Days > 0 && ` (${realLeadsByScriptId[script.id].last30Days} sur les 30 derniers jours)`}
                 </p>
@@ -1256,13 +1257,13 @@ function MyScripts({
                 const link = `${TRACKED_LINK_BASE}/ressources/${encodeURIComponent(leadTracking.slugByScriptId[script.id])}`;
                 const tracked = leadTracking.trackedByScriptId[script.id];
                 return (
-                  <div style={{ marginTop: 8, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(250,204,21,0.18)", borderRadius: 10, padding: "8px 10px" }}>
+                  <div style={{ marginTop: 8, background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-yellow-rgb),0.18)", borderRadius: 10, padding: "8px 10px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ minWidth: 0 }}>
-                        <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#facc15" }}>
+                        <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-yellow)" }}>
                           {tr("Lien du guide")}
                         </span>
-                        <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.6)" }}>
+                        <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
                           {tracked
                             ? `${tracked.total} lead${tracked.total > 1 ? "s" : ""} arrivé${tracked.total > 1 ? "s" : ""} par ce lien${tracked.last30Days > 0 ? ` (${tracked.last30Days} sur 30 jours)` : ""}`
                             : tr("À coller en description ou en bio. La plateforme d'origine de chaque lead est détectée toute seule.")}
@@ -1270,7 +1271,7 @@ function MyScripts({
                       </div>
                       <CopyButton text={link} />
                     </div>
-                    <p style={{ margin: "4px 0 0", fontSize: 10, color: "rgba(245,237,237,0.3)", overflowWrap: "anywhere" }}>{link}</p>
+                    <p style={{ margin: "4px 0 0", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", overflowWrap: "anywhere" }}>{link}</p>
                   </div>
                 );
               })()}
@@ -1284,9 +1285,9 @@ function MyScripts({
                   lui-même, ce bloc entier n'a pas de sens et n'apparaît
                   plus pour ces deux plateformes. */}
               {!WRITTEN_PLATFORMS.has(script.platform) && (script.instagram_caption || captionOpenId === script.id) && (
-                <div style={{ marginTop: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(96,165,250,0.15)", borderRadius: 10, padding: "10px 12px" }}>
+                <div style={{ marginTop: 10, background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-info-rgb),0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#60a5fa" }}>
+                    <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-info)" }}>
                       {tr("Description")}{" "}{platformInfo?.label ?? ""}
                     </span>
                     {script.instagram_caption && <CopyButton text={script.instagram_caption} />}
@@ -1306,7 +1307,7 @@ function MyScripts({
                           type="button"
                           onClick={() => saveCaption(script.id)}
                           style={{
-                            background: "#60a5fa", color: "#000", padding: "9px 18px", borderRadius: "var(--radius-lg)",
+                            background: "var(--ep-info)", color: "#000", padding: "9px 18px", borderRadius: "var(--radius-lg)",
                             fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
                           }}
                         >
@@ -1316,9 +1317,9 @@ function MyScripts({
                           type="button"
                           onClick={() => setCaptionOpenId(null)}
                           style={{
-                            background: "transparent", color: "rgba(245,237,237,0.5)", padding: "9px 18px",
+                            background: "transparent", color: "rgba(var(--ep-ink-rgb),0.5)", padding: "9px 18px",
                             borderRadius: "var(--radius-lg)", fontWeight: 700, fontSize: 12.5,
-                            border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer",
+                            border: "1px solid rgba(var(--ep-ink-rgb),0.15)", cursor: "pointer",
                           }}
                         >
                           {tr("Annuler")}
@@ -1337,7 +1338,7 @@ function MyScripts({
                         setCaptionDraft(script.instagram_caption ?? "");
                       }}
                       style={{
-                        margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.5, cursor: "text",
+                        margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.5, cursor: "text",
                         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                       }}
                     >
@@ -1351,8 +1352,8 @@ function MyScripts({
                   type="button"
                   onClick={() => { setCaptionOpenId(script.id); setCaptionDraft(""); }}
                   style={{
-                    marginTop: 10, fontSize: 11, fontWeight: 700, color: "#60a5fa", background: "none",
-                    border: "1px dashed rgba(96,165,250,0.3)", borderRadius: 10, padding: "8px 12px", cursor: "pointer", width: "100%",
+                    marginTop: 10, fontSize: 11, fontWeight: 700, color: "var(--ep-info)", background: "none",
+                    border: "1px dashed rgba(var(--ep-info-rgb),0.3)", borderRadius: 10, padding: "8px 12px", cursor: "pointer", width: "100%",
                   }}
                 >
                   {tr("+ Ajouter une description")}{" "}{platformInfo?.label ?? ""}
@@ -1365,7 +1366,7 @@ function MyScripts({
                   (vues) pour rester rapide au quotidien, likes/commentaires
                   repliés en options plutôt qu'imposés. */}
               {script.status === "publie" && (
-                <div style={{ marginTop: 10, background: "rgba(74,222,128,0.05)", border: "1px solid rgba(74,222,128,0.15)", borderRadius: 10, padding: "10px 12px" }}>
+                <div style={{ marginTop: 10, background: "rgba(var(--ep-ok-rgb),0.05)", border: "1px solid rgba(var(--ep-ok-rgb),0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   {perfEditId === script.id ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1404,13 +1405,13 @@ function MyScripts({
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
                           type="button" onClick={() => savePerf(script.id)}
-                          style={{ background: "#4ade80", color: "#0a1f0a", padding: "7px 14px", borderRadius: 8, fontWeight: 800, fontSize: 11.5, border: "none", cursor: "pointer" }}
+                          style={{ background: "var(--ep-ok)", color: "var(--ep-okbg)", padding: "7px 14px", borderRadius: 8, fontWeight: 800, fontSize: 11.5, border: "none", cursor: "pointer" }}
                         >
                           {tr("Enregistrer")}
                         </button>
                         <button
                           type="button" onClick={() => setPerfEditId(null)}
-                          style={{ background: "transparent", color: "rgba(245,237,237,0.4)", padding: "7px 14px", borderRadius: 8, fontWeight: 700, fontSize: 11.5, border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer" }}
+                          style={{ background: "transparent", color: "rgba(var(--ep-ink-rgb),0.4)", padding: "7px 14px", borderRadius: 8, fontWeight: 700, fontSize: 11.5, border: "1px solid rgba(var(--ep-ink-rgb),0.15)", cursor: "pointer" }}
                         >
                           {tr("Annuler")}
                         </button>
@@ -1422,23 +1423,23 @@ function MyScripts({
                       onClick={() => openPerfEdit(script)}
                       style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", padding: 0, cursor: "pointer", width: "100%", textAlign: "left" }}
                     >
-                      <span style={{ fontSize: 12, fontWeight: 800, color: "#4ade80" }}>{script.views.toLocaleString("fr-FR")}{" "}{tr("vues")}</span>
-                      {script.likes != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.likes.toLocaleString("fr-FR")}{" "}{tr("likes")}</span>}
-                      {script.comments_count != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.comments_count.toLocaleString("fr-FR")}{" "}{tr("commentaires")}</span>}
-                      {script.shares != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.shares.toLocaleString("fr-FR")}{" "}{tr("partages")}</span>}
-                      {script.saves != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.saves.toLocaleString("fr-FR")}{" "}{tr("enreg.")}</span>}
+                      <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-ok)" }}>{script.views.toLocaleString("fr-FR")}{" "}{tr("vues")}</span>
+                      {script.likes != null && <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{script.likes.toLocaleString("fr-FR")}{" "}{tr("likes")}</span>}
+                      {script.comments_count != null && <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{script.comments_count.toLocaleString("fr-FR")}{" "}{tr("commentaires")}</span>}
+                      {script.shares != null && <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{script.shares.toLocaleString("fr-FR")}{" "}{tr("partages")}</span>}
+                      {script.saves != null && <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{script.saves.toLocaleString("fr-FR")}{" "}{tr("enreg.")}</span>}
                       {avgViews != null && script.views > avgViews && (
-                        <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#facc15", background: "rgba(250,204,21,0.12)", padding: "2px 7px", borderRadius: 999 }}>
+                        <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--ep-yellow)", background: "rgba(var(--ep-yellow-rgb),0.12)", padding: "2px 7px", borderRadius: 999 }}>
                           {tr("🔥 Au-dessus de la moyenne")}
                         </span>
                       )}
-                      <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 700 }}>{tr("Modifier")}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.25)", fontWeight: 700 }}>{tr("Modifier")}</span>
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => openPerfEdit(script)}
-                      style={{ fontSize: 11.5, fontWeight: 700, color: "#4ade80", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                      style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ep-ok)", background: "none", border: "none", padding: 0, cursor: "pointer" }}
                     >
                       {tr("+ Loguer les résultats (vues)")}
                     </button>
@@ -1446,7 +1447,7 @@ function MyScripts({
                 </div>
               )}
                   {expandedId === script.id && openId !== script.id && (
-                    <button type="button" onClick={() => toggleExpanded(script.id)} style={{ marginTop: 10, background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 800, color: "rgba(245,237,237,0.5)", padding: 0 }}>
+                    <button type="button" onClick={() => toggleExpanded(script.id)} style={{ marginTop: 10, background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.5)", padding: 0 }}>
                       {tr("Réduire")}
                     </button>
                   )}
@@ -1458,10 +1459,10 @@ function MyScripts({
                   aria-expanded={false}
                   style={{ marginTop: 8, width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 8 }}
                 >
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(245,237,237,0.55)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {script.hook || (script.content ?? "").replace(/\s+/g, " ").slice(0, 140) || tr("Script vide")}
                   </span>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: "#E01E1E", flexShrink: 0 }}>{tr("Ouvrir")}</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "var(--ep-accent)", flexShrink: 0 }}>{tr("Ouvrir")}</span>
                 </button>
               )}
 </div>
@@ -1474,7 +1475,7 @@ function MyScripts({
 function LibrarySearch({ query, onChange, placeholder }: { query: string; onChange: (v: string) => void; placeholder: string }) {
   return (
     <div style={{ position: "relative", marginBottom: 14 }}>
-      <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+      <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
       <input
         value={query}
         onChange={(e) => onChange(e.target.value)}
@@ -1519,18 +1520,18 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
   return (
     <div>
       {context ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
-          <Sparkles size={13} style={{ color: "#4ade80", flexShrink: 0 }} />
-          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(var(--ep-ok-rgb),0.06)", border: "1px solid rgba(var(--ep-ok-rgb),0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
+          <Sparkles size={13} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.5 }}>
             {tr("Ces prompts sont personnalisés avec ton Business Model Canvas : le contexte sur ton activité est automatiquement ajouté quand tu cliques Copier.")}
           </p>
         </div>
       ) : (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.18)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
-          <Sparkles size={13} style={{ color: "#E01E1E", flexShrink: 0 }} />
-          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(var(--ep-accent-rgb),0.06)", border: "1px solid rgba(var(--ep-accent-rgb),0.18)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
+          <Sparkles size={13} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.5, flex: 1 }}>
             {tr("Remplis ton")}{" "}
-            <Link href="/dashboard/coach/business" style={{ color: "#E01E1E", fontWeight: 700, textDecoration: "underline" }}>
+            <Link href="/dashboard/coach/business" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "underline" }}>
               {tr("Business Model Canvas")}
             </Link>{" "}
             {tr("(au moins ta clientèle cible et ta proposition de valeur) pour que ces prompts se personnalisent automatiquement à ta situation au lieu de rester génériques.")}
@@ -1542,13 +1543,13 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
         {filtered.map((p, i) => (
           <div key={i} className="ep-card" style={{ padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", padding: "3px 8px", borderRadius: 999, background: "rgba(224,30,30,0.15)", color: "#E01E1E" }}>
+              <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", padding: "3px 8px", borderRadius: 999, background: "rgba(var(--ep-accent-rgb),0.15)", color: "var(--ep-accent)" }}>
                 {p.category}
               </span>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED", flex: 1 }}>{p.title}</p>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)", flex: 1 }}>{p.title}</p>
               <CopyButton text={context ? context + p.prompt : p.prompt} />
             </div>
-            <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>{p.prompt}</p>
+            <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>{p.prompt}</p>
           </div>
         ))}
       </div>
@@ -1582,25 +1583,25 @@ function HookLibrary() {
             onClick={() => setKindFilter(k)}
             style={{
               fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer",
-              border: kindFilter === k ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-              background: kindFilter === k ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-              color: kindFilter === k ? "#F5EDED" : "rgba(245,237,237,0.55)",
+              border: kindFilter === k ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+              background: kindFilter === k ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+              color: kindFilter === k ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
             }}
           >
             {k === "all" ? tr("Tous") : k === "texte" ? tr("Texte") : tr("Visuel")}
           </button>
         ))}
-        <span style={{ marginLeft: "auto", fontSize: 10.5, color: "rgba(245,237,237,0.3)", alignSelf: "center" }}>
+        <span style={{ marginLeft: "auto", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", alignSelf: "center" }}>
           {filtered.length}{" "}{tr("hook")}{filtered.length > 1 ? "s" : ""}
         </span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {filtered.map((h, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.25)", border: "1px solid rgba(137,4,4,0.15)", borderRadius: 10, padding: "10px 12px" }}>
-            <span style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(245,237,237,0.3)", flexShrink: 0, width: 46 }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-line-rgb),0.15)", borderRadius: 10, padding: "10px 12px" }}>
+            <span style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0, width: 46 }}>
               {h.kind}
             </span>
-            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.75)", flex: 1, lineHeight: 1.5 }}>{h.text}</p>
+            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.75)", flex: 1, lineHeight: 1.5 }}>{h.text}</p>
             <CopyButton text={h.text} />
           </div>
         ))}
@@ -1615,10 +1616,10 @@ function CTALibrary() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {CTA_EXAMPLES.map((c, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.25)", border: "1px solid rgba(137,4,4,0.15)", borderRadius: 10, padding: "10px 12px" }}>
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-line-rgb),0.15)", borderRadius: 10, padding: "10px 12px" }}>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.75)", lineHeight: 1.5 }}>{c.text}</p>
-            <p style={{ margin: "3px 0 0", fontSize: 10, color: "rgba(245,237,237,0.3)" }}>{c.goal}</p>
+            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.75)", lineHeight: 1.5 }}>{c.text}</p>
+            <p style={{ margin: "3px 0 0", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)" }}>{c.goal}</p>
           </div>
           <CopyButton text={c.text} />
         </div>
@@ -1634,20 +1635,20 @@ function TechnicalLibrary() {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {TECHNICAL_SHEETS.map((sheet, i) => (
         <div key={i} className="ep-card" style={{ padding: 18 }}>
-          <p style={{ margin: "0 0 4px", fontSize: 14.5, fontWeight: 800, color: "#F5EDED" }}>{sheet.title}</p>
-          <p style={{ margin: "0 0 12px", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>{sheet.summary}</p>
+          <p style={{ margin: "0 0 4px", fontSize: 14.5, fontWeight: 800, color: "var(--ep-ink)" }}>{sheet.title}</p>
+          <p style={{ margin: "0 0 12px", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6 }}>{sheet.summary}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {sheet.steps.map((step, j) => (
               <div key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                 <span
                   style={{
-                    flexShrink: 0, width: 20, height: 20, borderRadius: "50%", background: "#E01E1E", color: "#fff",
+                    flexShrink: 0, width: 20, height: 20, borderRadius: "50%", background: "var(--ep-accent)", color: "#fff",
                     fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1,
                   }}
                 >
                   {j + 1}
                 </span>
-                <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.65)", lineHeight: 1.6 }}>{step}</p>
+                <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: 1.6 }}>{step}</p>
               </div>
             ))}
           </div>

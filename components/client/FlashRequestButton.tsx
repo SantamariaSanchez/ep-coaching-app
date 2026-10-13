@@ -30,7 +30,7 @@ export default function FlashRequestButton() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#E01E1E] mt-2"
+        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-(--ep-accent) mt-2"
       >
         <Zap size={13} />
         {t("Demander un point flash (décision clé)")}
@@ -41,10 +41,10 @@ export default function FlashRequestButton() {
   return (
     <div className="ep-card" style={{ padding: "16px 18px", marginTop: 10 }}>
       {sent ? (
-        <p style={{ fontSize: 13, color: "#4ade80", fontWeight: 700 }}>{t("Demande envoyée à ton coach !")}</p>
+        <p style={{ fontSize: 13, color: "var(--ep-ok)", fontWeight: 700 }}>{t("Demande envoyée à ton coach !")}</p>
       ) : (
         <>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 8 }}>
             {t("En 2 lignes, quelle décision dois-tu prendre ?")}
           </p>
           <textarea
@@ -63,7 +63,7 @@ export default function FlashRequestButton() {
               {t("Annuler")}
             </button>
           </div>
-          {error && <p style={{ color: "#ff6b6b", fontSize: 11, marginTop: 8 }}>{t(error)}</p>}
+          {error && <p style={{ color: "var(--ep-accent-hi2)", fontSize: 11, marginTop: 8 }}>{t(error)}</p>}
         </>
       )}
     </div>

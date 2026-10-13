@@ -11,10 +11,10 @@ const PLANS = [COACH_TESTER_PLAN, ...COACH_PLATFORM_PLANS];
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.15)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
   borderRadius: 8,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "11px 14px",
   fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
   fontWeight: 500,
@@ -28,7 +28,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.18em",
   textTransform: "uppercase",
-  color: "rgba(224,30,30,0.8)",
+  color: "rgba(var(--ep-accent-rgb),0.8)",
   marginBottom: 7,
 };
 
@@ -87,12 +87,12 @@ export default function CoachSignupFlow() {
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{
         padding: "14px 16px", borderRadius: 10,
-        background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.2)",
+        background: "rgba(var(--ep-accent-rgb),0.06)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
       }}>
-        <p style={{ fontSize: 13, color: "#F5EDED", margin: 0, fontWeight: 700 }}>
+        <p style={{ fontSize: 13, color: "var(--ep-ink)", margin: 0, fontWeight: 700 }}>
           {t("Utilise EP Coaching pour suivre tes propres clients")}
         </p>
-        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "6px 0 0", lineHeight: 1.5 }}>
+        <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "6px 0 0", lineHeight: 1.5 }}>
           {t("Tes clients restent les tiens, jamais visibles par un autre coach de la plateforme.")}
         </p>
       </div>
@@ -110,13 +110,13 @@ export default function CoachSignupFlow() {
                 style={{
                   gridColumn: plan.id === COACH_TESTER_PLAN.id ? "1 / -1" : undefined,
                   flex: 1, textAlign: "left", padding: "12px 14px", borderRadius: 10, cursor: "pointer",
-                  background: active ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.3)",
-                  border: `1px solid ${active ? "rgba(224,30,30,0.5)" : "rgba(245,237,237,0.1)"}`,
+                  background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-shade-rgb),0.3)",
+                  border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-ink-rgb),0.1)"}`,
                 }}
               >
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{t(plan.label)}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: plan.id === COACH_TESTER_PLAN.id ? "#4ade80" : "#E01E1E" }}>{t(plan.priceLabel)}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{t(plan.sublabel)}</p>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{t(plan.label)}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: plan.id === COACH_TESTER_PLAN.id ? "var(--ep-ok)" : "var(--ep-accent)" }}>{t(plan.priceLabel)}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{t(plan.sublabel)}</p>
               </button>
             );
           })}
@@ -153,7 +153,7 @@ export default function CoachSignupFlow() {
           placeholder="••••••••"
           inputStyle={inputStyle}
         />
-        <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "6px 0 0" }}>
+        <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", margin: "6px 0 0" }}>
           {t("8 caractères minimum.")}
         </p>
       </div>
@@ -163,15 +163,15 @@ export default function CoachSignupFlow() {
           type="checkbox"
           checked={acceptedTerms}
           onChange={(e) => setAcceptedTerms(e.target.checked)}
-          style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "#E01E1E" }}
+          style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "var(--ep-accent)" }}
         />
-        <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>
+        <span style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
           {t("J'accepte les")}{" "}
-          <Link href="/legal/cgu" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>
+          <Link href="/legal/cgu" target="_blank" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
             {t("CGU")}
           </Link>{" "}
           {t("et les")}{" "}
-          <Link href="/legal/cgv" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>
+          <Link href="/legal/cgv" target="_blank" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
             {t("CGV")}
           </Link>{" "}
           {t("d'EP Coaching, y compris la facturation dès la souscription selon la formule choisie.")}
@@ -184,9 +184,9 @@ export default function CoachSignupFlow() {
           type="checkbox"
           checked={wantsNewsletter}
           onChange={(e) => setWantsNewsletter(e.target.checked)}
-          style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "#E01E1E" }}
+          style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "var(--ep-accent)" }}
         />
-        <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>
+        <span style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
           {t("Je veux aussi recevoir la newsletter EP Coaching. Optionnel, désinscription en un clic à tout moment.")}
         </span>
       </label>
@@ -194,10 +194,10 @@ export default function CoachSignupFlow() {
       {error && (
         <div style={{
           display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-          background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)", borderRadius: 10,
+          background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)", borderRadius: 10,
         }}>
-          <span style={{ color: "#E01E1E", flexShrink: 0 }}>⚠</span>
-          <p style={{ fontSize: 13, color: "#FDC4C4", margin: 0, fontWeight: 500 }}>{t(error)}</p>
+          <span style={{ color: "var(--ep-accent)", flexShrink: 0 }}>⚠</span>
+          <p style={{ fontSize: 13, color: "var(--ep-pink)", margin: 0, fontWeight: 500 }}>{t(error)}</p>
         </div>
       )}
 

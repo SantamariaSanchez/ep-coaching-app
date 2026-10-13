@@ -15,7 +15,7 @@ export default function RankBadge({
   return (
     <span
       title={`${rank.label} · ${points} pts`}
-      className={`inline-flex items-center gap-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/55 font-bold uppercase tracking-wide flex-shrink-0 ${
+      className={`inline-flex items-center gap-1 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/55 font-bold uppercase tracking-wide flex-shrink-0 ${
         isSm ? "text-[9px] px-1.5 py-0.5" : "text-[10px] px-2 py-1"
       }`}
     >

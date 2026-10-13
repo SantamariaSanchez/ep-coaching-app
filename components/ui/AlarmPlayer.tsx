@@ -162,7 +162,7 @@ export default function AlarmPlayer() {
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        background: "radial-gradient(circle at 50% 30%, #3a0505 0%, #0D0000 70%)",
+        background: "radial-gradient(circle at 50% 30%, var(--ep-s4) 0%, var(--ep-bg) 70%)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -170,7 +170,7 @@ export default function AlarmPlayer() {
         gap: "1.5rem",
         padding: "2rem",
         textAlign: "center",
-        color: "#fff",
+        color: "var(--ep-strong)",
       }}
     >
       <div style={{ fontSize: "3.5rem", animation: "ep-alarm-pulse 1s ease-in-out infinite" }}>⏰</div>
@@ -192,7 +192,7 @@ export default function AlarmPlayer() {
           borderRadius: "999px",
           border: "none",
           background: "#fff",
-          color: "#3a0505",
+          color: "var(--ep-s4)",
           cursor: "pointer",
         }}
       >

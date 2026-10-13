@@ -70,20 +70,20 @@ function MacroCoverage({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2 mb-1">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">{label}</p>
-        <p className="text-[10px] text-[#F5EDED]/35">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35">{label}</p>
+        <p className="text-[10px] text-(--ep-ink)/35">
           <span className="font-black" style={{ color }}>{Math.round(current)}</span>
           {target > 0 ? ` / ${Math.round(target)}` : ""}{unit}
         </p>
       </div>
-      <div className="h-1.5 rounded-full bg-[#890404]/20 overflow-hidden">
+      <div className="h-1.5 rounded-full bg-(--ep-line)/20 overflow-hidden">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${pct}%`, background: color }}
         />
       </div>
       {target > 0 && (
-        <p className="text-[9px] mt-1 text-[#F5EDED]/30">
+        <p className="text-[9px] mt-1 text-(--ep-ink)/30">
           {delta > 0 ? `Reste ${delta}${unit}` : delta < 0 ? `Dépasse de ${-delta}${unit}` : tr("Pile sur la cible")}
         </p>
       )}
@@ -202,11 +202,11 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
   const tr = useT();
   if (!intake) {
     return (
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {tr("Contexte nutritionnel")}
         </p>
-        <p className="text-[11px] text-[#F5EDED]/30">
+        <p className="text-[11px] text-(--ep-ink)/30">
           {tr("Fiche client absente, impossible de raisonner appétit/stress/habitudes sans elle.")}
         </p>
       </div>
@@ -257,21 +257,21 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
   const highStressPoorSleep = (intake.stress_level ?? 0) >= 7 && (intake.sleep_quality ?? 10) <= 4;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {tr("Contexte nutritionnel")}
       </p>
-      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
+      <p className="text-[10.5px] text-(--ep-ink)/30 mb-3 leading-relaxed">
         {tr("Ce que la cible calorique/macro (onglet Objectifs TDEE) ne dit pas à elle seule, à prendre en compte avant de fixer un total définitif, pas après.")}
       </p>
       {signals.length === 0 ? (
-        <p className="text-[11px] text-[#F5EDED]/25 italic">{tr("Rien de renseigné sur ces points dans la fiche client.")}</p>
+        <p className="text-[11px] text-(--ep-ink)/25 italic">{tr("Rien de renseigné sur ces points dans la fiche client.")}</p>
       ) : (
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mb-3">
           {signals.map((s) => (
             <div key={s.label} className="flex flex-col gap-0.5">
-              <span className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30">{s.label}</span>
-              <span className={`text-xs leading-relaxed ${s.flag ? "text-amber-300" : "text-[#F5EDED]/75"}`}>{s.value}</span>
+              <span className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/30">{s.label}</span>
+              <span className={`text-xs leading-relaxed ${s.flag ? "text-amber-300" : "text-(--ep-ink)/75"}`}>{s.value}</span>
             </div>
           ))}
         </div>
@@ -319,7 +319,7 @@ export const MODE_LABELS: Record<DietMode, string> = {
 };
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 // ── Plan builder ──────────────────────────────────────────────────────────────
 
@@ -746,8 +746,8 @@ export function PlanBuilder({
     return (
       <div className="flex flex-col items-center gap-3 py-10">
         <CheckCircle2 size={40} className="text-green-400" />
-        <p className="text-sm font-bold text-white">{tr("Plan activé avec succès !")}</p>
-        <button onClick={() => setSuccess(false)} className="text-xs text-[#E01E1E] hover:underline">
+        <p className="text-sm font-bold text-(--ep-strong)">{tr("Plan activé avec succès !")}</p>
+        <button onClick={() => setSuccess(false)} className="text-xs text-(--ep-accent) hover:underline">
           {tr("Créer un autre plan")}
         </button>
       </div>
@@ -788,26 +788,26 @@ export function PlanBuilder({
       <>
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
       {(templates.length > 0 || templatesHref) && (
-        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4">
           <div className="flex items-center justify-between gap-3 mb-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              {tr("Point de départ")}{" "}<span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">{tr("(optionnel)")}</span>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
+              {tr("Point de départ")}{" "}<span className="text-(--ep-ink)/20 font-normal normal-case tracking-normal">{tr("(optionnel)")}</span>
             </p>
             {templates.length > 0 && (
               <button
                 onClick={() => setShowStartingPoint((v) => !v)}
-                className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+                className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors flex-shrink-0"
               >
                 {showStartingPoint ? tr("Masquer") : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
               </button>
             )}
           </div>
-          <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed">
+          <p className="text-[11px] text-(--ep-ink)/30 leading-relaxed">
             {tr("Pars d'un de tes modèles de diète et ajuste le pour")}{" "}{subjectLabel}{tr(", ou construis tout sur mesure ci dessous.")}
           </p>
 
           {loadedTemplateName && (
-            <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-lg px-3 py-1.5">
+            <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) bg-(--ep-accent)/10 border border-(--ep-accent)/30 rounded-lg px-3 py-1.5">
               <Check size={11} />
               {tr("Chargé depuis «")}{" "}{loadedTemplateName}{" "}{tr("», ajuste librement")}
             </p>
@@ -820,16 +820,16 @@ export function PlanBuilder({
                   key={t.id}
                   type="button"
                   onClick={() => loadTemplate(t)}
-                  className="text-left bg-[#150000] border border-[#890404]/25 hover:border-[#E01E1E]/45 rounded-xl px-4 py-3 transition-colors group"
+                  className="text-left bg-(--ep-s2) border border-(--ep-line)/25 hover:border-(--ep-accent)/45 rounded-xl px-4 py-3 transition-colors group"
                 >
-                  <p className="text-sm font-bold text-white leading-tight">{t.name}</p>
-                  {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
-                  <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+                  <p className="text-sm font-bold text-(--ep-strong) leading-tight">{t.name}</p>
+                  {t.objective && <p className="text-[11px] text-(--ep-ink)/40 mt-1">{t.objective}</p>}
+                  <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">
                     {MODE_LABELS[t.mode]}
                     {t.structure === "weekly" ? tr(" · hebdo") : ""} · {t.diet_plan_template_meals.length}{" "}{tr("aliment")}
                     {t.diet_plan_template_meals.length !== 1 ? "s" : ""}
                   </p>
-                  <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 group-hover:text-[#E01E1E] transition-colors">
+                  <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 group-hover:text-(--ep-accent) transition-colors">
                     <LayoutTemplate size={11} />
                     {tr("Charger et personnaliser")}
                   </span>
@@ -841,7 +841,7 @@ export function PlanBuilder({
           {templatesHref && (
             <Link
               href={templatesHref}
-              className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+              className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors"
             >
               <ExternalLink size={11} />
               {tr("Gérer la bibliothèque de modèles")}
@@ -850,14 +850,14 @@ export function PlanBuilder({
         </div>
       )}
 
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
         {tr("1. Objectif & structure")}
       </p>
 
       {/* Plan name + mode */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
             {tr("Nom du plan")}
           </label>
           <input
@@ -868,7 +868,7 @@ export function PlanBuilder({
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
             {tr("Mode")}
           </label>
           <div className="flex gap-2">
@@ -878,8 +878,8 @@ export function PlanBuilder({
                 onClick={() => setMode(key)}
                 className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg border text-[9px] font-bold uppercase tracking-widest transition-colors ${
                   mode === key
-                    ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-                    : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/30 hover:border-[#890404]/40"
+                    ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)"
+                    : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/30 hover:border-(--ep-line)/40"
                 }`}
               >
                 <Icon size={14} />
@@ -887,15 +887,15 @@ export function PlanBuilder({
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/30 mt-1.5">
+          <p className="text-[10px] text-(--ep-ink)/30 mt-1.5">
             {MODES.find((m) => m.key === mode)?.desc}
           </p>
         </div>
       </div>
 
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          {tr("Objectif du plan")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+          {tr("Objectif du plan")}{" "}<span className="text-(--ep-ink)/25 font-normal">{tr("(optionnel)")}</span>
         </label>
         <input
           value={objective}
@@ -906,8 +906,8 @@ export function PlanBuilder({
       </div>
 
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          {tr("Sorties, repas en famille, contraintes sociales connues")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+          {tr("Sorties, repas en famille, contraintes sociales connues")}{" "}<span className="text-(--ep-ink)/25 font-normal">{tr("(optionnel)")}</span>
         </label>
         <textarea
           value={socialNotes}
@@ -916,7 +916,7 @@ export function PlanBuilder({
           placeholder={tr("Ex. Repas de famille le dimanche midi, sort au restaurant le vendredi soir avec ses amis…")} aria-label={tr("Notes sur le contexte social")}
           className={`${inputCls} resize-none`}
         />
-        <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+        <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">
           {tr("Pour que la diète reste tenable dans sa vraie vie, pas seulement sur le papier, à prendre en compte dans la structure de la semaine ci-dessous.")}
         </p>
       </div>
@@ -924,8 +924,8 @@ export function PlanBuilder({
       {/* Structure: daily (simple) vs weekly (different days, optional) */}
       {mode !== "flexible" && (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            {tr("Structure")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+            {tr("Structure")}{" "}<span className="text-(--ep-ink)/25 font-normal">{tr("(optionnel)")}</span>
           </label>
           <div className="flex gap-2 mb-2">
             {[
@@ -937,15 +937,15 @@ export function PlanBuilder({
                 onClick={() => setStructure(key)}
                 className={`flex-1 py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   structure === key
-                    ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-                    : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/30 hover:border-[#890404]/40"
+                    ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)"
+                    : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/30 hover:border-(--ep-line)/40"
                 }`}
               >
                 {label}
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/30">
+          <p className="text-[10px] text-(--ep-ink)/30">
             {structure === "weekly"
               ? tr("Construis chaque jour séparément, utile pour des jours \"on\"/\"off\" ou un jour de recharge glucidique.")
               : tr("Un seul jour-type, répété tous les jours.")}
@@ -964,8 +964,8 @@ export function PlanBuilder({
                 onClick={() => setActiveDay(d.key)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   activeDay === d.key
-                    ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                    : "border-[#890404]/25 text-[#F5EDED]/40"
+                    ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                    : "border-(--ep-line)/25 text-(--ep-ink)/40"
                 }`}
               >
                 {d.label}
@@ -978,8 +978,8 @@ export function PlanBuilder({
 
       {mode !== "flexible" && structure === "weekly" && (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            {tr("Pourquoi")}{" "}{DAY_TABS.find((d) => d.key === activeDay)?.label}{" "}{tr("est structuré ainsi")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+            {tr("Pourquoi")}{" "}{DAY_TABS.find((d) => d.key === activeDay)?.label}{" "}{tr("est structuré ainsi")}{" "}<span className="text-(--ep-ink)/25 font-normal">{tr("(optionnel)")}</span>
           </label>
           <textarea
             value={dayNotes[activeDay] ?? ""}
@@ -993,8 +993,8 @@ export function PlanBuilder({
 
       {/* Mode flexible: no meals needed */}
       {mode === "flexible" && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 text-center">
-          <p className="text-xs text-[#F5EDED]/40">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-5 text-center">
+          <p className="text-xs text-(--ep-ink)/40">
             {tr("En mode Flexible, tu logues librement tes repas, aucun plan prédéfini nécessaire.")}
           </p>
         </div>
@@ -1002,33 +1002,33 @@ export function PlanBuilder({
 
       {/* Répartition macro : la cible d'abord, le détail des aliments ensuite */}
       {mode !== "flexible" && (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
             {tr("Répartition macro")}
             {structure === "weekly" ? ` · ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : ""}
             {!targets && (
-              <span className="ml-2 font-normal normal-case tracking-normal text-[#F5EDED]/25">
+              <span className="ml-2 font-normal normal-case tracking-normal text-(--ep-ink)/25">
                 {tr("aucune cible définie, remplis l'onglet Objectifs TDEE pour piloter au macro près")}
               </span>
             )}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <MacroCoverage label={tr("Calories")} current={planTotals.calories} target={targets?.calories ?? 0} unit=" kcal" color="#E01E1E" />
-            <MacroCoverage label={tr("Protéines")} current={planTotals.proteins} target={targets?.proteins ?? 0} unit="g" color="#60a5fa" />
-            <MacroCoverage label={tr("Glucides")} current={planTotals.carbs} target={targets?.carbs ?? 0} unit="g" color="#fbbf24" />
+            <MacroCoverage label={tr("Calories")} current={planTotals.calories} target={targets?.calories ?? 0} unit=" kcal" color="var(--ep-accent)" />
+            <MacroCoverage label={tr("Protéines")} current={planTotals.proteins} target={targets?.proteins ?? 0} unit="g" color="var(--ep-info)" />
+            <MacroCoverage label={tr("Glucides")} current={planTotals.carbs} target={targets?.carbs ?? 0} unit="g" color="var(--ep-warn)" />
             <MacroCoverage label={tr("Lipides")} current={planTotals.fats} target={targets?.fats ?? 0} unit="g" color="#fb7185" />
           </div>
 
           {targets && dayMeals.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-[#890404]/15">
+            <div className="mt-3 pt-3 border-t border-(--ep-line)/15">
               <button
                 type="button"
                 onClick={handleAutoAdjust}
-                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/50 hover:text-(--ep-ink)/80 transition-colors"
               >
                 <RefreshCw size={11} />{" "}{tr("Ajuster automatiquement les grammages sur la cible")}
               </button>
-              <p className="text-[9px] text-[#F5EDED]/25 mt-1">
+              <p className="text-[9px] text-(--ep-ink)/25 mt-1">
                 {tr("Garde les aliments choisis, réajuste seulement les quantités par macro dominante (protéine/glucide/lipide) pour coller à l'objectif.")}
               </p>
               {autoAdjustDone && (
@@ -1058,7 +1058,7 @@ export function PlanBuilder({
       {/* Meal slots for fixed modes */}
       {mode !== "flexible" && openPhase === 3 && (
         <>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Détail des repas")}
           </p>
           <div className="space-y-3">
@@ -1069,14 +1069,14 @@ export function PlanBuilder({
               // principale, les groupes >=2 s'affichent en "2e choix"/"3e choix".
               const variantGroups = [...new Set(slotMeals.map((m) => m.variantGroup ?? 1))].sort((a, b) => a - b);
               return (
-                <div key={slot.key} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+                <div key={slot.key} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/70">
+                      <p className="text-xs font-bold uppercase tracking-widest text-(--ep-ink)/70">
                         {slot.label}
                       </p>
                       {slotMeals.length > 0 && (
-                        <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+                        <p className="text-[10px] text-(--ep-ink)/35 mt-0.5">
                           {Math.round(st.calories)}{" "}{tr("kcal · P")}{" "}{Math.round(st.proteins)}g · G {Math.round(st.carbs)}g · L{" "}
                           {Math.round(st.fats)}g
                           {variantGroups.length > 1 && tr(" · option principale")}
@@ -1094,7 +1094,7 @@ export function PlanBuilder({
                             setQty("100");
                           }}
                           title={tr("Ajouter une option alternative pour ce créneau (ex : 2e choix)")}
-                          className="inline-flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/45 hover:text-[#F5EDED]/80 transition-colors"
+                          className="inline-flex items-center gap-1 text-[10px] font-bold text-(--ep-ink)/45 hover:text-(--ep-ink)/80 transition-colors"
                         >
                           <Shuffle size={11} />{" "}{tr("Variante")}
                         </button>
@@ -1107,20 +1107,20 @@ export function PlanBuilder({
                           setSearch("");
                           setQty("100");
                         }}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
                       >
                         <Plus size={11} />{" "}{tr("Ajouter")}
                       </button>
                     </div>
                   </div>
                   {slotMeals.length === 0 ? (
-                    <p className="text-[10px] text-[#F5EDED]/20 italic">{tr("Aucun aliment")}</p>
+                    <p className="text-[10px] text-(--ep-ink)/20 italic">{tr("Aucun aliment")}</p>
                   ) : (
                     <div className="space-y-3">
                       {variantGroups.map((vg) => (
                         <div key={vg}>
                           {variantGroups.length > 1 && (
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1">
                               {vg === 1 ? tr("Option principale") : `${vg}e choix`}
                             </p>
                           )}
@@ -1130,19 +1130,19 @@ export function PlanBuilder({
                               .map((m) => (
                                 <div
                                   key={m.localId}
-                                  className="flex items-center justify-between py-1 border-b border-[#890404]/10 last:border-0"
+                                  className="flex items-center justify-between py-1 border-b border-(--ep-line)/10 last:border-0"
                                 >
                                   <div className="min-w-0">
-                                    <p className="text-xs text-white">{m.foodName}</p>
-                                    <p className="text-[10px] text-[#F5EDED]/35">{m.quantityG}g</p>
-                                    {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic mt-0.5">{m.notes}</p>}
+                                    <p className="text-xs text-(--ep-strong)">{m.foodName}</p>
+                                    <p className="text-[10px] text-(--ep-ink)/35">{m.quantityG}g</p>
+                                    {m.notes && <p className="text-[10px] text-(--ep-ink)/30 italic mt-0.5">{m.notes}</p>}
                                   </div>
                                   <div className="flex items-center gap-1 flex-shrink-0">
                                     {canSwapFood(m.foodId) && (
                                       <button
                                         onClick={() => swapFood(m.localId)}
                                         title={tr("Remplacer par un autre aliment de la même catégorie (rotation)")} aria-label={tr("Remplacer par un autre aliment de la même catégorie (rotation)")}
-                                        className="text-[#F5EDED]/20 hover:text-green-400 transition-colors p-0.5"
+                                        className="text-(--ep-ink)/20 hover:text-green-400 transition-colors p-0.5"
                                       >
                                         <RefreshCw size={12} />
                                       </button>
@@ -1150,7 +1150,7 @@ export function PlanBuilder({
                                     <button
                                       onClick={() => setMeals((prev) => prev.filter((meal) => meal.localId !== m.localId))}
                                       aria-label={tr("Supprimer cet aliment")}
-                                      className="text-[#F5EDED]/20 hover:text-red-500 transition-colors p-0.5"
+                                      className="text-(--ep-ink)/20 hover:text-red-500 transition-colors p-0.5"
                                     >
                                       <Trash2 size={12} />
                                     </button>
@@ -1182,8 +1182,8 @@ export function PlanBuilder({
       {openPhase === 4 && (
       <>
       {mode !== "flexible" && dayMeals.length > 0 && (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
             {tr("Couverture des micronutriments")}{" "}{structure === "weekly" && currentDay ? `· ${DAY_TABS.find((d) => d.key === currentDay)?.label ?? ""}` : ""}
           </p>
           <MicroBarList logs={microLogs} foods={foods} />
@@ -1191,21 +1191,21 @@ export function PlanBuilder({
       )}
 
       {draftShoppingItems.length > 0 && (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
-          <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
             <ShoppingCart size={12} />
             {tr("Liste de courses de ce plan")}
           </p>
-          <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
+          <p className="text-[10.5px] text-(--ep-ink)/30 mb-3 leading-relaxed">
             {structure === "weekly"
               ? tr("Somme réelle des jours déjà remplis.")
               : tr("Le jour affiché, extrapolé sur 7 jours (structure journalière : mêmes repas chaque jour).")}
           </p>
           <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
             {draftShoppingItems.map((item) => (
-              <div key={item.name} className="flex items-center justify-between py-1 border-b border-[#890404]/10">
-                <span className="text-xs text-[#F5EDED]/70">{item.name}</span>
-                <span className="text-xs font-bold text-white flex-shrink-0">{item.grams >= 1000 ? `${(item.grams / 1000).toFixed(1)}kg` : `${item.grams}g`}</span>
+              <div key={item.name} className="flex items-center justify-between py-1 border-b border-(--ep-line)/10">
+                <span className="text-xs text-(--ep-ink)/70">{item.name}</span>
+                <span className="text-xs font-bold text-(--ep-strong) flex-shrink-0">{item.grams >= 1000 ? `${(item.grams / 1000).toFixed(1)}kg` : `${item.grams}g`}</span>
               </div>
             ))}
           </div>
@@ -1213,8 +1213,8 @@ export function PlanBuilder({
       )}
 
       {draftShoppingItems.length > 0 && (
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
             {tr("Organisation des préparations de repas")}
           </p>
           <ul className="space-y-1.5">
@@ -1225,8 +1225,8 @@ export function PlanBuilder({
               "Légumes et crudités se préparent la veille pour le lendemain, pas plusieurs jours à l'avance (perte de vitamines et de texture).",
               "Un jour de préparation type : féculent + protéine de la semaine cuits ensemble, légumes lavés/coupés pour 2-3 jours, sauces/assaisonnements préparés à part pour varier le goût sans recuisiner.",
             ].map((tip) => (
-              <li key={tip} className="text-[11px] text-[#F5EDED]/55 leading-relaxed flex gap-2">
-                <span className="text-[#E01E1E] flex-shrink-0">•</span>
+              <li key={tip} className="text-[11px] text-(--ep-ink)/55 leading-relaxed flex gap-2">
+                <span className="text-(--ep-accent) flex-shrink-0">•</span>
                 {tip}
               </li>
             ))}
@@ -1235,8 +1235,8 @@ export function PlanBuilder({
       )}
 
       {mode !== "flexible" && (
-        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
-          <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-3">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-3">
             <ClipboardCheck size={12} />
             {tr("Bilan avant sauvegarde")}
           </p>
@@ -1267,14 +1267,14 @@ export function PlanBuilder({
                   : []),
               ];
               return items.map((item, i) => (
-                <p key={i} className={`text-[11px] flex items-start gap-2 ${item.ok ? "text-[#F5EDED]/45" : "text-amber-300/85"}`}>
+                <p key={i} className={`text-[11px] flex items-start gap-2 ${item.ok ? "text-(--ep-ink)/45" : "text-amber-300/85"}`}>
                   <span className="flex-shrink-0 mt-0.5">{item.ok ? "✓" : "!"}</span>
                   {item.ok ? item.okText : item.warnText}
                 </p>
               ));
             })()}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
+          <p className="text-[10px] text-(--ep-ink)/25 mt-3 leading-relaxed">
             {tr("Rien ici n'empêche d'enregistrer, un rappel, pas un blocage.")}
           </p>
         </div>
@@ -1282,7 +1282,7 @@ export function PlanBuilder({
 
       {/* Capitaliser ce plan sur mesure en modèle réutilisable */}
       {saveAsTemplate && (
-        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4">
           {templateSaved ? (
             <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-green-400">
               <Check size={13} />
@@ -1291,7 +1291,7 @@ export function PlanBuilder({
           ) : templateFormOpen ? (
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                   {tr("Nom du modèle")}
                 </label>
                 <input aria-label={tr("Nom du modèle")}
@@ -1305,14 +1305,14 @@ export function PlanBuilder({
               <div className="flex gap-2">
                 <button
                   onClick={() => { setTemplateFormOpen(false); setTemplateError(null); }}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/50 hover:text-(--ep-ink)/80 transition-colors"
                 >
                   {tr("Annuler")}
                 </button>
                 <button
                   onClick={handleSaveAsTemplate}
                   disabled={templateBusy}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ep-accent)/15 border border-(--ep-accent)/40 rounded-lg text-(--ep-accent) hover:bg-(--ep-accent)/25 disabled:opacity-50 transition-colors"
                 >
                   {templateBusy ? tr("Enregistrement…") : tr("Enregistrer le modèle")}
                 </button>
@@ -1320,12 +1320,12 @@ export function PlanBuilder({
             </div>
           ) : (
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed max-w-md">
+              <p className="text-[11px] text-(--ep-ink)/35 leading-relaxed max-w-md">
                 {tr("Cette structure de repas te resservira ? Enregistre la comme modèle réutilisable, sans quitter cette page.")}
               </p>
               <button
                 onClick={() => { setTemplateName(planName); setTemplateFormOpen(true); }}
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors flex-shrink-0"
               >
                 <BookmarkPlus size={12} />
                 {tr("Enregistrer comme modèle")}
@@ -1344,7 +1344,7 @@ export function PlanBuilder({
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
+        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-xl disabled:opacity-50 transition-colors"
       >
         {saving ? tr("Activation…") : tr("Activer ce plan")}
       </button>
@@ -1352,20 +1352,20 @@ export function PlanBuilder({
       {/* Food search modal */}
       {addingToSlot && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setAddingToSlot(null)} />
-          <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[80vh] flex flex-col z-10">
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20 flex-shrink-0">
+          <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm" onClick={() => setAddingToSlot(null)} />
+          <div className="ep-modal-panel relative w-full sm:max-w-md bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl max-h-[80vh] flex flex-col z-10">
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-(--ep-line)/20 flex-shrink-0">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-white">
+                <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong)">
                   {selectedFood ? selectedFood.name : MEAL_SLOTS.find((s) => s.key === addingToSlot)?.label}
                 </p>
                 {addingVariantGroup && (
-                  <p className="text-[10px] text-[#F5EDED]/40 mt-0.5">
+                  <p className="text-[10px] text-(--ep-ink)/40 mt-0.5">
                     {addingVariantGroup}{tr("e choix, une option alternative pour ce créneau")}
                   </p>
                 )}
               </div>
-              <button onClick={() => setAddingToSlot(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
+              <button onClick={() => setAddingToSlot(null)} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong)">
                 <X size={16} />
               </button>
             </div>
@@ -1389,12 +1389,12 @@ export function PlanBuilder({
                     className={inputCls}
                   />
                   {watchContext.diet && (
-                    <label className="flex items-center gap-2 text-[10.5px] text-[#F5EDED]/45 cursor-pointer select-none">
+                    <label className="flex items-center gap-2 text-[10.5px] text-(--ep-ink)/45 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={hideIncompatible}
                         onChange={(e) => setHideIncompatible(e.target.checked)}
-                        className="accent-[#E01E1E]"
+                        className="accent-(--ep-accent)"
                       />
                       {tr("Masquer les aliments non compatibles régime")}{" "}{watchContext.dietLabel?.toLowerCase()}
                       {incompatibleCount > 0 && ` (${incompatibleCount})`}
@@ -1404,10 +1404,10 @@ export function PlanBuilder({
                 <div className="flex-1 overflow-y-auto px-2 pb-2">
                   {filtered.length === 0 && search.trim() && (
                     <div className="px-3 py-8 flex flex-col items-center gap-2 text-center">
-                      <Search size={18} className="text-[#F5EDED]/15" strokeWidth={1.5} />
-                      <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
+                      <Search size={18} className="text-(--ep-ink)/15" strokeWidth={1.5} />
+                      <p className="text-xs text-(--ep-ink)/35 leading-relaxed">
                         {tr("Aucun aliment ne correspond à")}
-                        <span className="text-white font-bold"> « {search.trim()} »</span>.
+                        <span className="text-(--ep-strong) font-bold"> « {search.trim()} »</span>.
                         <br />
                         {tr("Essaie un autre terme, ou ajoute le à la bibliothèque d'aliments.")}
                         {hideIncompatible && watchContext.diet && tr(" Le filtre régime peut aussi en cacher certains.")}
@@ -1416,8 +1416,8 @@ export function PlanBuilder({
                   )}
                   {filtered.length === 0 && !search.trim() && (
                     <div className="px-3 py-8 flex flex-col items-center gap-2 text-center">
-                      <Search size={18} className="text-[#F5EDED]/15" strokeWidth={1.5} />
-                      <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
+                      <Search size={18} className="text-(--ep-ink)/15" strokeWidth={1.5} />
+                      <p className="text-xs text-(--ep-ink)/35 leading-relaxed">
                         {tr("Aucun aliment compatible régime")}{" "}{watchContext.dietLabel?.toLowerCase()}{" "}{tr("trouvé.")}
                         <br />
                         {tr("Désactive le filtre ci-dessus pour voir aussi les aliments non vérifiés.")}
@@ -1430,13 +1430,13 @@ export function PlanBuilder({
                       <button
                         key={food.id}
                         onClick={() => { setSelectedFood(food); setQty("100"); setMealNotes(""); setEditingPrepNotes(false); setPrepNotesDraft(food.prep_notes ?? ""); }}
-                        className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
+                        className="w-full text-left px-3 py-2.5 hover:bg-(--ep-s1) rounded-lg transition-colors"
                       >
-                        <p className="text-sm text-white font-medium flex items-center gap-1.5">
+                        <p className="text-sm text-(--ep-strong) font-medium flex items-center gap-1.5">
                           {food.name}
                           {watchHits.length > 0 && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
                         </p>
-                        <p className="text-[10px] text-[#F5EDED]/35">
+                        <p className="text-[10px] text-(--ep-ink)/35">
                           {food.calories_per_100}{" "}{tr("kcal/100g · P")}{" "}{food.proteins_per_100}g
                           {watchHits.length > 0 && (
                             <span className="text-amber-400/80"> · {watchHits.join(", ")}</span>
@@ -1462,7 +1462,7 @@ export function PlanBuilder({
                   );
                 })()}
                 <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                     {tr("Quantité (g)")}
                   </label>
                   <input aria-label={tr("Quantité (g)")}
@@ -1477,8 +1477,8 @@ export function PlanBuilder({
 
                 {/* Pourquoi ce choix — décision propre à ce repas, ce client. */}
                 <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-                    {tr("Pourquoi ce choix pour ce repas")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(optionnel)")}</span>
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+                    {tr("Pourquoi ce choix pour ce repas")}{" "}<span className="text-(--ep-ink)/25 font-normal">{tr("(optionnel)")}</span>
                   </label>
                   <textarea
                     value={mealNotes}
@@ -1490,8 +1490,8 @@ export function PlanBuilder({
                 </div>
 
                 {/* Référence partagée sur l'aliment — cuisson, association, conservation. */}
-                <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-lg p-3">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
                     {tr("Préparation & association (fiche partagée de l'aliment)")}
                   </p>
                   {editingPrepNotes ? (
@@ -1501,7 +1501,7 @@ export function PlanBuilder({
                         onChange={(e) => setPrepNotesDraft(e.target.value)}
                         rows={2}
                         placeholder={tr("Ex. Se mange froid ou chaud, s'associe bien avec du citron et de l'aneth, se conserve 2 jours au frigo…")} aria-label={tr("Notes de préparation")}
-                        className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                        className="w-full bg-(--ep-bg) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors resize-none"
                       />
                       <div className="flex gap-2 mt-2">
                         <button
@@ -1516,14 +1516,14 @@ export function PlanBuilder({
                             }
                           }}
                           disabled={savingPrepNotes}
-                          className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] disabled:opacity-50"
+                          className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) disabled:opacity-50"
                         >
                           {savingPrepNotes ? tr("Enregistrement…") : tr("Enregistrer")}
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingPrepNotes(false)}
-                          className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                          className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
                         >
                           {tr("Annuler")}
                         </button>
@@ -1531,13 +1531,13 @@ export function PlanBuilder({
                     </>
                   ) : (
                     <>
-                      <p className="text-xs text-[#F5EDED]/60 italic mb-1.5">
+                      <p className="text-xs text-(--ep-ink)/60 italic mb-1.5">
                         {selectedFood.prep_notes || tr("Aucune note pour l'instant.")}
                       </p>
                       <button
                         type="button"
                         onClick={() => setEditingPrepNotes(true)}
-                        className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
+                        className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi)"
                       >
                         {selectedFood.prep_notes ? tr("Modifier") : tr("Ajouter une note")}
                       </button>
@@ -1546,26 +1546,26 @@ export function PlanBuilder({
                 </div>
 
                 {qty && parseFloat(qty) > 0 && (
-                  <div className="bg-[#1f0101] rounded-lg p-3 flex gap-4 text-xs">
+                  <div className="bg-(--ep-s1) rounded-lg p-3 flex gap-4 text-xs">
                     {(() => {
                       const n = calculateNutrients(selectedFood, parseFloat(qty));
                       return (
                         <>
                           <div>
-                            <p className="text-[#E01E1E] font-black text-base">{Math.round(n.calories)}</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("kcal")}</p>
+                            <p className="text-(--ep-accent) font-black text-base">{Math.round(n.calories)}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("kcal")}</p>
                           </div>
                           <div>
                             <p className="text-blue-300 font-bold">{Math.round(n.proteins)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Prot.")}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("Prot.")}</p>
                           </div>
                           <div>
                             <p className="text-amber-300 font-bold">{Math.round(n.carbs)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Gluc.")}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("Gluc.")}</p>
                           </div>
                           <div>
                             <p className="text-rose-300 font-bold">{Math.round(n.fats)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Lip.")}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("Lip.")}</p>
                           </div>
                         </>
                       );
@@ -1575,13 +1575,13 @@ export function PlanBuilder({
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedFood(null)}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/60"
                   >
                     {tr("Retour")}
                   </button>
                   <button
                     onClick={addMeal}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-(--ep-accent) text-(--ep-strong) rounded-lg"
                   >
                     {tr("Ajouter")}
                   </button>
@@ -1658,7 +1658,7 @@ function PlanDetailRow({
   return (
     <div
       className={`rounded-xl border overflow-hidden ${
-        plan.is_active ? "border-[#E01E1E]/40 bg-[#1f0101]" : "border-[#890404]/20 bg-[#150000]"
+        plan.is_active ? "border-(--ep-accent)/40 bg-(--ep-s1)" : "border-(--ep-line)/20 bg-(--ep-s2)"
       }`}
     >
       <button
@@ -1669,25 +1669,25 @@ function PlanDetailRow({
         <div className="flex items-center gap-2 min-w-0">
           {plan.is_active && <CheckCircle2 size={13} className="text-green-400 flex-shrink-0" />}
           <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate">{plan.name}</p>
+            <p className="text-sm font-bold text-(--ep-strong) truncate">{plan.name}</p>
             {plan.objective && (
-              <p className="text-[11px] text-[#F5EDED]/40 truncate">{plan.objective}</p>
+              <p className="text-[11px] text-(--ep-ink)/40 truncate">{plan.objective}</p>
             )}
-            <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
+            <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest">
               {plan.mode} {isWeekly && tr("· hebdo")} · {plan.diet_plan_meals.length}{" "}{tr("aliment")}{plan.diet_plan_meals.length !== 1 ? "s" : ""} ·{" "}
               {new Date(plan.created_at).toLocaleDateString("fr-FR")}
             </p>
           </div>
         </div>
         {expanded ? (
-          <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+          <ChevronUp size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
         ) : (
-          <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+          <ChevronDown size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
         )}
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-3">
           {isWeekly && (
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {DAY_TABS.map((d) => (
@@ -1696,8 +1696,8 @@ function PlanDetailRow({
                   onClick={() => setViewDay(d.key)}
                   className={`flex-shrink-0 px-2.5 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest transition-colors ${
                     viewDay === d.key
-                      ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                      : "border-[#890404]/25 text-[#F5EDED]/35"
+                      ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                      : "border-(--ep-line)/25 text-(--ep-ink)/35"
                   }`}
                 >
                   {d.label}
@@ -1706,9 +1706,9 @@ function PlanDetailRow({
             </div>
           )}
           {plan.diet_plan_meals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Plan flexible, aucun aliment prédéfini.")}</p>
+            <p className="text-[10px] text-(--ep-ink)/25 italic">{tr("Plan flexible, aucun aliment prédéfini.")}</p>
           ) : visibleMeals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Aucun aliment pour ce jour.")}</p>
+            <p className="text-[10px] text-(--ep-ink)/25 italic">{tr("Aucun aliment pour ce jour.")}</p>
           ) : (
             <>
               {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => {
@@ -1717,14 +1717,14 @@ function PlanDetailRow({
                 );
                 return (
                   <div key={slot.key}>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5">
                       {slot.label}
                     </p>
                     <div className="space-y-2">
                       {variantGroups.map((vg) => (
                         <div key={vg}>
                           {variantGroups.length > 1 && (
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1">
                               {vg === 1 ? tr("Option principale") : `${vg}e choix`}
                             </p>
                           )}
@@ -1734,10 +1734,10 @@ function PlanDetailRow({
                               .map((m) => (
                                 <div key={m.id} className="flex items-center justify-between py-1">
                                   <div className="min-w-0">
-                                    <p className="text-xs text-white">{m.foods?.name ?? tr("Aliment")}</p>
-                                    {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic">{m.notes}</p>}
+                                    <p className="text-xs text-(--ep-strong)">{m.foods?.name ?? tr("Aliment")}</p>
+                                    {m.notes && <p className="text-[10px] text-(--ep-ink)/30 italic">{m.notes}</p>}
                                   </div>
-                                  <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0">{m.quantity_g}g</p>
+                                  <p className="text-[10px] text-(--ep-ink)/35 flex-shrink-0">{m.quantity_g}g</p>
                                 </div>
                               ))}
                           </div>
@@ -1747,8 +1747,8 @@ function PlanDetailRow({
                   </div>
                 );
               })}
-              <div className="flex gap-4 pt-2 border-t border-[#890404]/15 text-xs">
-                <span className="text-[#E01E1E] font-black">{Math.round(totals.calories)}{" "}{tr("kcal")}</span>
+              <div className="flex gap-4 pt-2 border-t border-(--ep-line)/15 text-xs">
+                <span className="text-(--ep-accent) font-black">{Math.round(totals.calories)}{" "}{tr("kcal")}</span>
                 <span className="text-blue-300">P {Math.round(totals.proteins)}g</span>
                 <span className="text-amber-300">G {Math.round(totals.carbs)}g</span>
                 <span className="text-rose-300">L {Math.round(totals.fats)}g</span>
@@ -1761,7 +1761,7 @@ function PlanDetailRow({
               <button
                 disabled={busy}
                 onClick={async () => { setBusy(true); await onDeactivate(); setBusy(false); }}
-                className="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors disabled:opacity-50"
+                className="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/60 hover:text-(--ep-ink)/80 transition-colors disabled:opacity-50"
               >
                 {tr("Désactiver")}
               </button>
@@ -1769,7 +1769,7 @@ function PlanDetailRow({
               <button
                 disabled={busy}
                 onClick={async () => { setBusy(true); await onActivate(); setBusy(false); }}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors disabled:opacity-50"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ep-accent)/15 border border-(--ep-accent)/40 rounded-lg text-(--ep-accent) hover:bg-(--ep-accent)/25 transition-colors disabled:opacity-50"
               >
                 <PlayCircle size={12} />{" "}{tr("Activer")}
               </button>
@@ -1783,7 +1783,7 @@ function PlanDetailRow({
                 setBusy(false);
               }}
               aria-label={tr("Supprimer le plan")}
-              className="px-3 py-2 text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-50"
+              className="px-3 py-2 text-(--ep-ink)/30 hover:text-red-400 transition-colors disabled:opacity-50"
             >
               <Trash2 size={13} />
             </button>
@@ -1810,7 +1810,7 @@ export function PlansListView({
   const tr = useT();
   if (plans.length === 0) {
     return (
-      <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">
+      <p className="text-xs text-(--ep-ink)/25 italic text-center py-6">
         {tr("Aucun plan créé pour l'instant.")}
       </p>
     );

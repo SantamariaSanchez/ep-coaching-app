@@ -80,10 +80,10 @@ function EditableTitle({
           }
         }}
         style={{
-          background: "rgba(0,0,0,0.4)",
-          border: "1px solid rgba(224,30,30,0.35)",
+          background: "rgba(var(--ep-shade-rgb),0.4)",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.35)",
           borderRadius: 6,
-          color: "#F5EDED",
+          color: "var(--ep-ink)",
           padding: "3px 8px",
           fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
           outline: "none",
@@ -109,7 +109,7 @@ function EditableTitle({
       style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", ...textStyle }}
     >
       {value}
-      <Pencil size={11} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+      <Pencil size={11} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
     </span>
   );
 }
@@ -182,10 +182,10 @@ function AddItemButton({
           }
         }}
         style={{
-          background: "rgba(0,0,0,0.4)",
-          border: "1px solid rgba(224,30,30,0.35)",
+          background: "rgba(var(--ep-shade-rgb),0.4)",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.35)",
           borderRadius: dashed ? 6 : 8,
-          color: "#F5EDED",
+          color: "var(--ep-ink)",
           padding: dashed ? "5px 10px" : "7px 14px",
           fontSize: dashed ? 11 : 12,
           fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
@@ -411,15 +411,15 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
           role="alert"
           style={{
             display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 10,
-            background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)",
+            background: "rgba(var(--ep-bad-rgb),0.1)", border: "1px solid rgba(var(--ep-bad-rgb),0.3)",
           }}
         >
-          <AlertTriangle size={14} style={{ color: "#f87171", flexShrink: 0 }} />
-          <p style={{ margin: 0, fontSize: 12, color: "#f87171", flex: 1 }}>{actionError}</p>
+          <AlertTriangle size={14} style={{ color: "var(--ep-bad)", flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 12, color: "var(--ep-bad)", flex: 1 }}>{actionError}</p>
           <button
             type="button"
             onClick={() => setActionError(null)}
-            style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: 4 }}
+            style={{ background: "none", border: "none", color: "var(--ep-bad)", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: 4 }}
           >
             {t("OK")}
           </button>
@@ -427,16 +427,16 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
       )}
       {/* Formation meta */}
       <div className="ep-card" style={{ padding: "16px 18px" }}>
-        <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
+        <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.08)" }}>
           <p className="ep-label" style={{ marginBottom: 4 }}>{t("Titre de la formation")}</p>
           <EditableTitle
             value={formation.title}
             onSave={renameFormation}
-            textStyle={{ fontSize: 16, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em" }}
+            textStyle={{ fontSize: 16, fontWeight: 800, color: "var(--ep-ink)", letterSpacing: "-0.02em" }}
           />
         </div>
 
-        <div style={{ display: "flex", gap: 14, marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
+        <div style={{ display: "flex", gap: 14, marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.08)" }}>
           <div style={{ flexShrink: 0, width: 80 }}>
             <p className="ep-label" style={{ marginBottom: 4 }}>{t("Emoji")}</p>
             <EditableTitle
@@ -450,17 +450,17 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             <EditableTitle
               value={formation.subtitle ?? "Ajouter un sous-titre"}
               onSave={(v) => saveMetaField("subtitle", v)}
-              textStyle={{ fontSize: 13, fontWeight: 600, color: formation.subtitle ? "#F5EDED" : "rgba(245,237,237,0.3)" }}
+              textStyle={{ fontSize: 13, fontWeight: 600, color: formation.subtitle ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.3)" }}
             />
           </div>
         </div>
 
-        <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
+        <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.08)" }}>
           <p className="ep-label" style={{ marginBottom: 4 }}>{t("Description")}</p>
           <EditableTitle
             value={formation.description ?? "Ajouter une description"}
             onSave={(v) => saveMetaField("description", v)}
-            textStyle={{ fontSize: 12, fontWeight: 500, color: formation.description ? "rgba(245,237,237,0.7)" : "rgba(245,237,237,0.3)", lineHeight: 1.5 }}
+            textStyle={{ fontSize: 12, fontWeight: 500, color: formation.description ? "rgba(var(--ep-ink-rgb),0.7)" : "rgba(var(--ep-ink-rgb),0.3)", lineHeight: 1.5 }}
             inputStyle={{ width: "100%" }}
           />
         </div>
@@ -468,7 +468,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
           <div style={{ flex: "1 1 180px", minWidth: 0 }}>
             <p className="ep-label" style={{ marginBottom: 4 }}>{t("Statut publication")}</p>
-            <p style={{ fontSize: 13, fontWeight: 700, color: formation.is_published ? "#4ade80" : "rgba(245,237,237,0.4)", margin: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: formation.is_published ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>
               {formation.is_published ? t("✓ Publiée : visible par les membres") : t("Brouillon : les membres ne voient que le titre, en Bientôt disponible")}
             </p>
           </div>
@@ -487,11 +487,11 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
               aria-label={t("Supprimer la formation")}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
-                background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.2)",
+                background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
                 borderRadius: 8, padding: "8px 10px", cursor: "pointer",
               }}
             >
-              <Trash2 size={13} style={{ color: "#E01E1E" }} />
+              <Trash2 size={13} style={{ color: "var(--ep-accent)" }} />
             </button>
           </div>
         </div>
@@ -523,19 +523,19 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                borderBottom: openModules.has(mod.id) ? "1px solid rgba(224,30,30,0.08)" : "none",
+                borderBottom: openModules.has(mod.id) ? "1px solid rgba(var(--ep-accent-rgb),0.08)" : "none",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.55)", flexShrink: 0 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.55)", flexShrink: 0 }}>
                   S{mi + 1}
                 </span>
                 <EditableTitle
                   value={mod.title}
                   onSave={(title) => renameModule(mod.id, title)}
-                  textStyle={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em" }}
+                  textStyle={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)", letterSpacing: "-0.02em" }}
                 />
-                <span style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 600, flexShrink: 0 }}>
+                <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.25)", fontWeight: 600, flexShrink: 0 }}>
                   ({mod.sections.length}{" "}{t("module")}{mod.sections.length !== 1 ? "s" : ""} · {totalLessons}{" "}{t("vidéo")}{totalLessons !== 1 ? "s" : ""})
                 </span>
               </div>
@@ -546,7 +546,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                   title={t("Monter")} aria-label={t("Monter")}
                   style={{ display: "flex", background: "none", border: "none", cursor: mi === 0 ? "default" : "pointer", padding: 2, opacity: mi === 0 ? 0.2 : 1 }}
                 >
-                  <ArrowUp size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
+                  <ArrowUp size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleMoveModule(mod.id, "down"); }}
@@ -554,7 +554,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                   title={t("Descendre")} aria-label={t("Descendre")}
                   style={{ display: "flex", background: "none", border: "none", cursor: mi === formation.modules.length - 1 ? "default" : "pointer", padding: 2, opacity: mi === formation.modules.length - 1 ? 0.2 : 1 }}
                 >
-                  <ArrowDown size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
+                  <ArrowDown size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDuplicateModule(mod.id); }}
@@ -562,18 +562,18 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                   title={t("Dupliquer cette section (structure, sans les vidéos)")} aria-label={t("Dupliquer cette section (structure, sans les vidéos)")}
                   style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                 >
-                  <Copy size={13} style={{ color: "rgba(245,237,237,0.3)" }} />
+                  <Copy size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteModule(mod.id, mod.title); }}
                   title={t("Supprimer la section")} aria-label={t("Supprimer la section")}
                   style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                 >
-                  <Trash2 size={13} style={{ color: "rgba(224,30,30,0.4)" }} />
+                  <Trash2 size={13} style={{ color: "rgba(var(--ep-accent-rgb),0.4)" }} />
                 </button>
                 {openModules.has(mod.id)
-                  ? <ChevronUp size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
-                  : <ChevronDown size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
+                  ? <ChevronUp size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
+                  : <ChevronDown size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
                 }
               </div>
             </div>
@@ -582,7 +582,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             {openModules.has(mod.id) && (
               <div>
                 {mod.sections.map((sec, si) => (
-                  <div key={sec.id} style={{ borderBottom: "1px solid rgba(224,30,30,0.06)" }}>
+                  <div key={sec.id} style={{ borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.06)" }}>
                     {/* Module header */}
                     <div
                       onClick={() => toggleSection(sec.id)}
@@ -596,23 +596,23 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "10px 18px 10px 28px",
-                        background: "rgba(224,30,30,0.03)",
+                        background: "rgba(var(--ep-accent-rgb),0.03)",
                         border: "none",
-                        borderBottom: openSections.has(sec.id) ? "1px solid rgba(224,30,30,0.06)" : "none",
+                        borderBottom: openSections.has(sec.id) ? "1px solid rgba(var(--ep-accent-rgb),0.06)" : "none",
                         cursor: "pointer",
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <Layers size={11} style={{ color: "rgba(224,30,30,0.4)", flexShrink: 0 }} />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", flexShrink: 0 }}>
+                        <Layers size={11} style={{ color: "rgba(var(--ep-accent-rgb),0.4)", flexShrink: 0 }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", flexShrink: 0 }}>
                           M{si + 1}
                         </span>
                         <EditableTitle
                           value={sec.title}
                           onSave={(title) => renameSection(sec.id, title)}
-                          textStyle={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", color: "rgba(245,237,237,0.65)" }}
+                          textStyle={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", color: "rgba(var(--ep-ink-rgb),0.65)" }}
                         />
-                        <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600, flexShrink: 0 }}>
+                        <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.2)", fontWeight: 600, flexShrink: 0 }}>
                           ({sec.lessons.length})
                         </span>
                       </div>
@@ -626,7 +626,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                           aria-expanded={pasteOpen === sec.id}
                           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                         >
-                          <ClipboardPaste size={12} style={{ color: pasteOpen === sec.id ? "#E01E1E" : "rgba(245,237,237,0.3)" }} />
+                          <ClipboardPaste size={12} style={{ color: pasteOpen === sec.id ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.3)" }} />
                         </button>
                         {sec.lessons.some((l) => l.youtube_id) && (
                           <button
@@ -638,7 +638,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                             title={sec.lessons.every((l) => l.is_published) ? t("Masquer toutes les vidéos de ce module") : t("Publier toutes les vidéos de ce module (celles avec une URL renseignée)")} aria-label={sec.lessons.every((l) => l.is_published) ? t("Masquer toutes les vidéos de ce module") : t("Publier toutes les vidéos de ce module (celles avec une URL renseignée)")}
                             style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 2 }}
                           >
-                            <CheckSquare size={12} style={{ color: sec.lessons.every((l) => l.is_published) ? "#4ade80" : "rgba(245,237,237,0.3)" }} />
+                            <CheckSquare size={12} style={{ color: sec.lessons.every((l) => l.is_published) ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.3)" }} />
                           </button>
                         )}
                         <button
@@ -647,7 +647,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                           title={t("Monter")} aria-label={t("Monter")}
                           style={{ display: "flex", background: "none", border: "none", cursor: si === 0 ? "default" : "pointer", padding: 2, opacity: si === 0 ? 0.2 : 1 }}
                         >
-                          <ArrowUp size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
+                          <ArrowUp size={12} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMoveSection(mod.id, sec.id, "down"); }}
@@ -655,18 +655,18 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                           title={t("Descendre")} aria-label={t("Descendre")}
                           style={{ display: "flex", background: "none", border: "none", cursor: si === mod.sections.length - 1 ? "default" : "pointer", padding: 2, opacity: si === mod.sections.length - 1 ? 0.2 : 1 }}
                         >
-                          <ArrowDown size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
+                          <ArrowDown size={12} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteSection(sec.id, sec.title); }}
                           title={t("Supprimer le module")} aria-label={t("Supprimer le module")}
                           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                         >
-                          <Trash2 size={12} style={{ color: "rgba(224,30,30,0.35)" }} />
+                          <Trash2 size={12} style={{ color: "rgba(var(--ep-accent-rgb),0.35)" }} />
                         </button>
                         {openSections.has(sec.id)
-                          ? <ChevronUp size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
-                          : <ChevronDown size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
+                          ? <ChevronUp size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
+                          : <ChevronDown size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
                         }
                       </div>
                     </div>
@@ -799,10 +799,10 @@ function LessonEditor({
   return (
     <div style={{
       padding: "10px 18px 10px 36px",
-      borderBottom: "1px solid rgba(224,30,30,0.04)",
+      borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.04)",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 11, color: "rgba(245,237,237,0.18)", fontWeight: 700, width: 18, flexShrink: 0 }}>
+        <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.18)", fontWeight: 700, width: 18, flexShrink: 0 }}>
           {index}
         </span>
 
@@ -813,7 +813,7 @@ function LessonEditor({
             alt=""
             width={48}
             height={27}
-            style={{ borderRadius: 4, flexShrink: 0, objectFit: "cover", background: "rgba(0,0,0,0.4)" }}
+            style={{ borderRadius: 4, flexShrink: 0, objectFit: "cover", background: "rgba(var(--ep-shade-rgb),0.4)" }}
           />
         )}
 
@@ -822,7 +822,7 @@ function LessonEditor({
             <EditableTitle
               value={lesson.title}
               onSave={(title) => onRenameTitle(lesson.id, title)}
-              textStyle={{ fontSize: 12, fontWeight: 700, color: "#F5EDED", lineHeight: 1.2 }}
+              textStyle={{ fontSize: 12, fontWeight: 700, color: "var(--ep-ink)", lineHeight: 1.2 }}
             />
             <button
               onClick={() => setShowDetails((v) => !v)}
@@ -831,8 +831,8 @@ function LessonEditor({
               style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}
             >
               {showDetails
-                ? <ChevronUp size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
-                : <ChevronDown size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
+                ? <ChevronUp size={12} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
+                : <ChevronDown size={12} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
               }
             </button>
           </div>
@@ -843,7 +843,7 @@ function LessonEditor({
                 size={13}
                 style={{
                   position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
-                  color: url ? "#E01E1E" : "rgba(245,237,237,0.2)",
+                  color: url ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.2)",
                 }}
               />
               <input
@@ -852,10 +852,10 @@ function LessonEditor({
                 placeholder={t("URL ou ID YouTube")} aria-label={t("URL ou ID YouTube")}
                 style={{
                   width: "100%",
-                  background: "rgba(0,0,0,0.4)",
-                  border: `1px solid ${url ? "rgba(224,30,30,0.25)" : "rgba(255,255,255,0.07)"}`,
+                  background: "rgba(var(--ep-shade-rgb),0.4)",
+                  border: `1px solid ${url ? "rgba(var(--ep-accent-rgb),0.25)" : "rgba(var(--ep-hi-rgb),0.07)"}`,
                   borderRadius: 8,
-                  color: "#F5EDED",
+                  color: "var(--ep-ink)",
                   padding: "7px 10px 7px 30px",
                   fontSize: 12,
                   fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
@@ -868,8 +868,8 @@ function LessonEditor({
               onClick={() => setPublished(!published)}
               title={published ? t("Masquer") : t("Publier")} aria-label={published ? t("Masquer") : t("Publier")}
               style={{
-                background: published ? "rgba(74,222,128,0.1)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${published ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.08)"}`,
+                background: published ? "rgba(var(--ep-ok-rgb),0.1)" : "rgba(var(--ep-hi-rgb),0.04)",
+                border: `1px solid ${published ? "rgba(var(--ep-ok-rgb),0.25)" : "rgba(var(--ep-hi-rgb),0.08)"}`,
                 borderRadius: 8,
                 padding: "7px 9px",
                 cursor: "pointer",
@@ -878,8 +878,8 @@ function LessonEditor({
               }}
             >
               {published
-                ? <Eye size={13} style={{ color: "#4ade80" }} />
-                : <EyeOff size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
+                ? <Eye size={13} style={{ color: "var(--ep-ok)" }} />
+                : <EyeOff size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
               }
             </button>
 
@@ -888,8 +888,8 @@ function LessonEditor({
                 onClick={() => onSave(lesson.id, url, published)}
                 disabled={isSaving}
                 style={{
-                  background: isSaved ? "rgba(74,222,128,0.1)" : "rgba(224,30,30,0.12)",
-                  border: `1px solid ${isSaved ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.25)"}`,
+                  background: isSaved ? "rgba(var(--ep-ok-rgb),0.1)" : "rgba(var(--ep-accent-rgb),0.12)",
+                  border: `1px solid ${isSaved ? "rgba(var(--ep-ok-rgb),0.3)" : "rgba(var(--ep-accent-rgb),0.25)"}`,
                   borderRadius: 8,
                   padding: "7px 9px",
                   cursor: isSaving ? "wait" : "pointer",
@@ -898,8 +898,8 @@ function LessonEditor({
                 }}
               >
                 {isSaved
-                  ? <Check size={13} style={{ color: "#4ade80" }} />
-                  : <Save size={13} style={{ color: "#E01E1E" }} />
+                  ? <Check size={13} style={{ color: "var(--ep-ok)" }} />
+                  : <Save size={13} style={{ color: "var(--ep-accent)" }} />
                 }
               </button>
             )}
@@ -911,7 +911,7 @@ function LessonEditor({
               aria-label={t("Monter")}
               style={{ display: "flex", background: "none", border: "none", cursor: canMoveUp ? "pointer" : "default", padding: 2, opacity: canMoveUp ? 1 : 0.2 }}
             >
-              <ChevronUp size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
+              <ChevronUp size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
             </button>
             <button
               onClick={() => onMove("down")}
@@ -920,7 +920,7 @@ function LessonEditor({
               aria-label={t("Descendre")}
               style={{ display: "flex", background: "none", border: "none", cursor: canMoveDown ? "pointer" : "default", padding: 2, opacity: canMoveDown ? 1 : 0.2 }}
             >
-              <ChevronDown size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
+              <ChevronDown size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
             </button>
 
             <button
@@ -928,11 +928,11 @@ function LessonEditor({
               title={t("Supprimer la vidéo")}
               aria-label={t("Supprimer la vidéo")}
               style={{
-                background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8,
+                background: "none", border: "1px solid rgba(var(--ep-hi-rgb),0.08)", borderRadius: 8,
                 padding: "7px 9px", cursor: "pointer", display: "flex", alignItems: "center",
               }}
             >
-              <Trash2 size={13} style={{ color: "rgba(224,30,30,0.4)" }} />
+              <Trash2 size={13} style={{ color: "rgba(var(--ep-accent-rgb),0.4)" }} />
             </button>
           </div>
 
@@ -944,21 +944,21 @@ function LessonEditor({
                 placeholder={t("Description affichée au client sous la vidéo…")} aria-label={t("Description affichée au client sous la vidéo…")}
                 rows={2}
                 style={{
-                  width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.07)",
-                  borderRadius: 8, color: "#F5EDED", padding: "7px 10px", fontSize: 11.5,
+                  width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-hi-rgb),0.07)",
+                  borderRadius: 8, color: "var(--ep-ink)", padding: "7px 10px", fontSize: 11.5,
                   fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif", outline: "none", resize: "vertical",
                 }}
               />
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>{t("Durée (min)")}</label>
+                <label style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.35)", fontWeight: 600 }}>{t("Durée (min)")}</label>
                 <input aria-label={t("Durée (min)")}
                   type="number"
                   min={1}
                   value={durationMin}
                   onChange={(e) => setDurationMin(e.target.value)}
                   style={{
-                    width: 64, background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.07)",
-                    borderRadius: 8, color: "#F5EDED", padding: "6px 8px", fontSize: 11.5, outline: "none",
+                    width: 64, background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-hi-rgb),0.07)",
+                    borderRadius: 8, color: "var(--ep-ink)", padding: "6px 8px", fontSize: 11.5, outline: "none",
                   }}
                 />
                 {detailsChanged && (
@@ -966,9 +966,9 @@ function LessonEditor({
                     onClick={() => onSaveDetails(lesson.id, { description: description.trim(), duration_min: parseInt(durationMin, 10) || 10 })}
                     disabled={isSavingDetails}
                     style={{
-                      background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.25)", borderRadius: 8,
+                      background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)", borderRadius: 8,
                       padding: "6px 9px", cursor: isSavingDetails ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 4,
-                      fontSize: 10, fontWeight: 700, color: "#E01E1E",
+                      fontSize: 10, fontWeight: 700, color: "var(--ep-accent)",
                     }}
                   >
                     <Save size={12} /> {isSavingDetails ? "…" : t("Enregistrer")}

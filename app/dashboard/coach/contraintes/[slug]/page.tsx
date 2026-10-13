@@ -30,23 +30,23 @@ export default async function CoachContraintePage({
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
         href="/dashboard/coach/contraintes"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} />{" "}{t("Contraintes & populations")}
       </Link>
 
       <h1 className="text-2xl font-black uppercase tracking-tight mb-3">{constraint.title}</h1>
-      <p className="text-sm text-[#F5EDED]/50 leading-relaxed mb-8">{constraint.overview}</p>
+      <p className="text-sm text-(--ep-ink)/50 leading-relaxed mb-8">{constraint.overview}</p>
 
       <div className="ep-card" style={{ padding: "18px 20px", marginBottom: 20 }}>
-        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          <ListChecks size={13} className="text-[#E01E1E]" />
+        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
+          <ListChecks size={13} className="text-(--ep-accent)" />
           {t("Principes d'adaptation")}
         </p>
         <ul className="space-y-2.5">
           {constraint.adaptationPrinciples.map((p, i) => (
-            <li key={i} className="text-[12.5px] text-[#F5EDED]/60 leading-relaxed flex gap-2">
-              <span className="text-[#E01E1E] flex-shrink-0">•</span>
+            <li key={i} className="text-[12.5px] text-(--ep-ink)/60 leading-relaxed flex gap-2">
+              <span className="text-(--ep-accent) flex-shrink-0">•</span>
               {p}
             </li>
           ))}
@@ -69,13 +69,13 @@ export default async function CoachContraintePage({
       </div>
 
       <div>
-        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-2">
           <BookOpen size={12} />
           {t("Sources")}
         </p>
         <ul className="space-y-1">
           {constraint.sources.map((s, i) => (
-            <li key={i} className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed italic">{s}</li>
+            <li key={i} className="text-[10.5px] text-(--ep-ink)/30 leading-relaxed italic">{s}</li>
           ))}
         </ul>
       </div>

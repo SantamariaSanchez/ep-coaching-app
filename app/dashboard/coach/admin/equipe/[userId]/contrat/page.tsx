@@ -41,26 +41,26 @@ export default async function MemberContractPage({ params }: { params: Promise<{
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href="/dashboard/coach/admin/equipe/documents" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
+      <Link href="/dashboard/coach/admin/equipe/documents" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6">
         <ChevronLeft size={13} />{" "}{t("Documents de l'équipe")}
       </Link>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <FileSignature size={16} style={{ color: "#E01E1E" }} />
+        <FileSignature size={16} style={{ color: "var(--ep-accent)" }} />
         <p className="ep-label" style={{ margin: 0 }}>{t("Contrat de")}{" "}{m.full_name}</p>
       </div>
       <div className="ep-card" style={{ padding: "14px 16px", marginBottom: 14 }}>
         {m.contract_signed_at ? (
-          <p style={{ fontSize: 13, color: "#F5EDED", margin: 0, lineHeight: 1.7 }}>
+          <p style={{ fontSize: 13, color: "var(--ep-ink)", margin: 0, lineHeight: 1.7 }}>
             {t("Signé le")}{" "}<strong>{new Date(m.contract_signed_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", dateStyle: "long", timeStyle: "short" })}</strong>
             <br />
             {t("Version")}{" "}{m.contract_version}{" "}{t("· signature :")}{" "}{m.contract_signature}{" "}{t("· IP")}{" "}{m.contract_signed_ip ?? t("inconnue")}
           </p>
         ) : (
-          <p style={{ fontSize: 13, color: "#facc15", margin: 0 }}>{t("Pas encore signé.")}</p>
+          <p style={{ fontSize: 13, color: "var(--ep-yellow)", margin: 0 }}>{t("Pas encore signé.")}</p>
         )}
       </div>
       {template && (
-        <a href={template.viewUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800, color: "#ff6b6b", textDecoration: "none", marginBottom: 14 }}>
+        <a href={template.viewUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800, color: "var(--ep-accent-hi2)", textDecoration: "none", marginBottom: 14 }}>
           <ExternalLink size={13} />{" "}{t("Voir le modèle du poste (")}{roleTitle}{t(", version")}{" "}{m.contract_version ?? t("actuelle")})
         </a>
       )}
@@ -69,7 +69,7 @@ export default async function MemberContractPage({ params }: { params: Promise<{
       ) : (
         <>
           {m.contract_signed_at && (
-            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "0 0 10px" }}>{t("Signé dans l'appli (pas de PDF JotForm) : voici le texte accepté.")}</p>
+            <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "0 0 10px" }}>{t("Signé dans l'appli (pas de PDF JotForm) : voici le texte accepté.")}</p>
           )}
           <div className="ep-card" style={{ padding: "22px 20px" }}>{contract && <ContractView contract={contract} />}</div>
         </>

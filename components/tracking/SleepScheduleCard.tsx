@@ -18,8 +18,8 @@ type ScheduleAction = (
 ) => Promise<{ error?: string; success?: boolean }>;
 
 const inp =
-  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#F5EDED] focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-const lbl = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "w-full bg-[rgba(var(--ep-shade-rgb),0.4)] border border-[rgba(var(--ep-line-rgb),0.3)] rounded-lg px-3 py-2.5 text-sm text-(--ep-ink) focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
+const lbl = "block text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
@@ -71,8 +71,8 @@ export default function SleepScheduleCard({
   return (
     <div className="ep-card" style={{ padding: "18px 16px", marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <BedDouble size={14} style={{ color: "#E01E1E" }} strokeWidth={2} />
-        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)", margin: 0, flex: 1 }}>
+        <BedDouble size={14} style={{ color: "var(--ep-accent)" }} strokeWidth={2} />
+        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0, flex: 1 }}>
           {tr("Routine de sommeil")}
         </p>
         {streak > 0 && (
@@ -93,10 +93,10 @@ export default function SleepScheduleCard({
             <input name="target_wake_time" type="time" defaultValue={targetWakeTime?.slice(0, 5) ?? ""} className={inp} aria-label={tr("Heure de lever visée")} />
           </div>
         </div>
-        <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "0 0 10px", lineHeight: 1.5 }}>
+        <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 10px", lineHeight: 1.5 }}>
           {tr("Le bilan du soir devient obligatoire 15 min avant l'heure de coucher visée.")}
         </p>
-        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", margin: "0 0 8px" }}>{state.error}</p>}
+        {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", margin: "0 0 8px" }}>{state.error}</p>}
         <button
           type="submit"
           disabled={pending}
@@ -109,7 +109,7 @@ export default function SleepScheduleCard({
 
       {last7.length > 0 && (targetBedtime || targetWakeTime) && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(245,237,237,0.35)", margin: "0 0 8px" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(var(--ep-ink-rgb),0.35)", margin: "0 0 8px" }}>
             {tr("7 derniers jours")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -122,27 +122,27 @@ export default function SleepScheduleCard({
                   key={log.id}
                   style={{
                     display: "flex", alignItems: "center", gap: 10, padding: "7px 10px",
-                    borderRadius: 8, background: "rgba(0,0,0,0.25)",
-                    fontSize: 11.5, color: "rgba(245,237,237,0.55)",
+                    borderRadius: 8, background: "rgba(var(--ep-shade-rgb),0.25)",
+                    fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.55)",
                   }}
                 >
-                  <span style={{ width: 42, flexShrink: 0, color: "rgba(245,237,237,0.35)" }}>
+                  <span style={{ width: 42, flexShrink: 0, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
                     {new Intl.DateTimeFormat("fr-FR", { weekday: "short" }).format(new Date(log.log_date + "T12:00:00"))}
                   </span>
                   {hasData ? (
                     <>
-                      <span style={{ display: "flex", alignItems: "center", gap: 3, color: bedtimeOk ? "#4ade80" : "#FDC4C4" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3, color: bedtimeOk ? "var(--ep-ok)" : "var(--ep-pink)" }}>
                         <BedDouble size={11} /> {log.bedtime_actual?.slice(0, 5) ?? "N/A"}
                       </span>
-                      <span style={{ display: "flex", alignItems: "center", gap: 3, color: wakeOk ? "#4ade80" : "#FDC4C4" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3, color: wakeOk ? "var(--ep-ok)" : "var(--ep-pink)" }}>
                         <Sunrise size={11} /> {log.wake_time_actual?.slice(0, 5) ?? "N/A"}
                       </span>
                     </>
                   ) : (
-                    <span style={{ color: "rgba(245,237,237,0.25)" }}>{tr("Non renseigné")}</span>
+                    <span style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }}>{tr("Non renseigné")}</span>
                   )}
                   {log.sleep_hours != null && (
-                    <span style={{ marginLeft: "auto", color: "rgba(245,237,237,0.35)" }}>{log.sleep_hours}h</span>
+                    <span style={{ marginLeft: "auto", color: "rgba(var(--ep-ink-rgb),0.35)" }}>{log.sleep_hours}h</span>
                   )}
                 </div>
               );

@@ -20,7 +20,7 @@ function formatDate(iso: string): string {
 function TriState({ value, onChange, labelYes, labelNo }: { value: boolean | null; onChange: (v: boolean | null) => void; labelYes: string; labelNo: string }) {
   const next = value === null ? true : value === true ? false : null;
   const text = value === null ? "···" : value ? labelYes : labelNo;
-  const color = value === null ? "rgba(245,237,237,0.35)" : value ? "#4ade80" : "#f87171";
+  const color = value === null ? "rgba(var(--ep-ink-rgb),0.35)" : value ? "var(--ep-ok)" : "var(--ep-bad)";
   return (
     <button
       type="button"
@@ -29,8 +29,8 @@ function TriState({ value, onChange, labelYes, labelNo }: { value: boolean | nul
         fontSize: 11,
         fontWeight: 700,
         color,
-        background: "rgba(245,237,237,0.04)",
-        border: "1px solid rgba(245,237,237,0.1)",
+        background: "rgba(var(--ep-ink-rgb),0.04)",
+        border: "1px solid rgba(var(--ep-ink-rgb),0.1)",
         borderRadius: 6,
         padding: "4px 10px",
         cursor: "pointer",
@@ -54,10 +54,10 @@ function CallRow({ call }: { call: SalesCall }) {
   }
 
   return (
-    <div className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5 flex-wrap" style={{ opacity: isPending ? 0.6 : 1 }}>
+    <div className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3.5 flex-wrap" style={{ opacity: isPending ? 0.6 : 1 }}>
       <div className="flex-1 min-w-[140px]">
-        <p className="text-sm font-bold text-white truncate">{call.lead_name}</p>
-        <span className="text-[10px] text-[#F5EDED]/35">{formatDate(call.call_date)}</span>
+        <p className="text-sm font-bold text-(--ep-strong) truncate">{call.lead_name}</p>
+        <span className="text-[10px] text-(--ep-ink)/35">{formatDate(call.call_date)}</span>
       </div>
       <TriState value={call.show_up} onChange={(v) => patch({ show_up: v })} labelYes="Venu" labelNo="Absent" />
       <TriState value={call.closed} onChange={(v) => patch({ closed: v })} labelYes="Signé" labelNo="Perdu" />
@@ -74,7 +74,7 @@ function CallRow({ call }: { call: SalesCall }) {
       <button
         type="button"
         onClick={() => startTransition(async () => { await deleteSalesCall(call.id); })}
-        style={{ color: "rgba(245,237,237,0.25)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
+        style={{ color: "rgba(var(--ep-ink-rgb),0.25)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
         aria-label={t("Supprimer")}
       >
         <Trash2 size={14} />
@@ -128,7 +128,7 @@ export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
           <Plus size={14} />{" "}{t("Ajouter")}
         </button>
       </form>
-      {error && <p style={{ color: "#f87171", fontSize: 12, marginBottom: 12 }}>{t(error)}</p>}
+      {error && <p style={{ color: "var(--ep-bad)", fontSize: 12, marginBottom: 12 }}>{t(error)}</p>}
 
       <div className="space-y-2">
         {calls.map((c) => (

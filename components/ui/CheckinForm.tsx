@@ -7,10 +7,10 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import { CheckCircle2, Camera, Video, X, Loader2, Sparkles, AlertCircle } from "lucide-react";
 
 const inp =
-  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-4 py-3 text-sm text-[#F5EDED] placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors resize-none";
+  "w-full bg-[rgba(var(--ep-shade-rgb),0.4)] border border-[rgba(var(--ep-line-rgb),0.3)] rounded-lg px-4 py-3 text-sm text-(--ep-ink) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/60 transition-colors resize-none";
 
 const lbl =
-  "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "block text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 const MAX_PHOTOS = 4;
 // Seuils qui déclenchent la question "pourquoi" sur l'attitude — une note
@@ -35,7 +35,7 @@ function Q({
   return (
     <div>
       <label className={lbl}>
-        {question} {required && <span className="text-[#E01E1E]">*</span>}
+        {question} {required && <span className="text-(--ep-accent)">*</span>}
       </label>
       <textarea aria-label={question} name={name} rows={rows} placeholder={placeholder} className={inp} required={required} />
     </div>
@@ -46,8 +46,8 @@ function Section({ title }: { title: string }) {
   return (
     <p style={{
       fontSize: 9, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase",
-      color: "rgba(224,30,30,0.55)", margin: "0 0 14px",
-      borderBottom: "1px solid rgba(137,4,4,0.12)", paddingBottom: 6,
+      color: "rgba(var(--ep-accent-rgb),0.55)", margin: "0 0 14px",
+      borderBottom: "1px solid rgba(var(--ep-line-rgb),0.12)", paddingBottom: 6,
     }}>
       {title}
     </p>
@@ -150,13 +150,13 @@ export default function CheckinForm({
   if (state && "success" in state) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", textAlign: "center", gap: 16 }}>
-        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <CheckCircle2 size={24} style={{ color: "#4ade80" }} />
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(var(--ep-ok-rgb),0.12)", border: "1px solid rgba(var(--ep-ok-rgb),0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <CheckCircle2 size={24} style={{ color: "var(--ep-ok)" }} />
         </div>
-        <p style={{ fontSize: 16, fontWeight: 900, color: "#4ade80", margin: 0, letterSpacing: "-0.01em" }}>
+        <p style={{ fontSize: 16, fontWeight: 900, color: "var(--ep-ok)", margin: 0, letterSpacing: "-0.01em" }}>
           {t("Check-in envoyé")}
         </p>
-        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+        <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
           {t("Ton coach va recevoir ton bilan et te répondre rapidement.")}
         </p>
       </div>
@@ -179,14 +179,14 @@ export default function CheckinForm({
               min="30"
               max="300"
               placeholder="82.5" aria-label="82.5"
-              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
+              style={{ width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "var(--ep-ink)", outline: "none" }}
             />
           </div>
           <div>
             <label className={lbl}>
               {t("Poids moyen semaine (kg)")}
               {weightAvgFromLogs && (
-                <span style={{ color: "rgba(224,30,30,0.6)", marginLeft: 6 }}>≈ {weightAvgFromLogs}</span>
+                <span style={{ color: "rgba(var(--ep-accent-rgb),0.6)", marginLeft: 6 }}>≈ {weightAvgFromLogs}</span>
               )}
             </label>
             <input
@@ -197,7 +197,7 @@ export default function CheckinForm({
               max="300"
               defaultValue={weightAvgFromLogs ?? ""}
               placeholder="83.0" aria-label="83.0"
-              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
+              style={{ width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "var(--ep-ink)", outline: "none" }}
             />
           </div>
         </div>
@@ -212,38 +212,38 @@ export default function CheckinForm({
             semaine, ce qui manque quand on prend juste une photo au hasard. */}
         <div style={{
           display: "flex", alignItems: "flex-start", gap: 8,
-          background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.15)",
+          background: "rgba(var(--ep-accent-rgb),0.06)", border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
           borderRadius: 10, padding: "10px 12px", marginBottom: 14,
         }}>
-          <Sparkles size={13} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 1 }} />
-          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, margin: 0 }}>
-            {t("Astuce : l'appli")}{" "}<strong style={{ color: "#F5EDED" }}>{t("Lens Buddy")}</strong>{" "}{t("aide à reprendre exactement la même pose et le même angle chaque semaine, la meilleure façon d'avoir des photos de comparaison vraiment lisibles.")}
+          <Sparkles size={13} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 1 }} />
+          <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.5, margin: 0 }}>
+            {t("Astuce : l'appli")}{" "}<strong style={{ color: "var(--ep-ink)" }}>{t("Lens Buddy")}</strong>{" "}{t("aide à reprendre exactement la même pose et le même angle chaque semaine, la meilleure façon d'avoir des photos de comparaison vraiment lisibles.")}
           </p>
         </div>
 
         <label className={lbl}>{t("Photos (")}{photos.length}/{MAX_PHOTOS})</label>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {photos.map((p) => (
-            <div key={p.localId} style={{ position: "relative", width: 64, height: 64, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(137,4,4,0.3)" }}>
+            <div key={p.localId} style={{ position: "relative", width: 64, height: 64, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(var(--ep-line-rgb),0.3)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.previewUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               {p.uploading && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Loader2 size={16} className="animate-spin" style={{ color: "#fff" }} />
+                <div style={{ position: "absolute", inset: 0, background: "rgba(var(--ep-shade-rgb),0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Loader2 size={16} className="animate-spin" style={{ color: "var(--ep-strong)" }} />
                 </div>
               )}
               {p.error && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(224,30,30,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: 9, color: "#fff", fontWeight: 800 }}>{t("Échec")}</span>
+                <div style={{ position: "absolute", inset: 0, background: "rgba(var(--ep-accent-rgb),0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 9, color: "var(--ep-strong)", fontWeight: 800 }}>{t("Échec")}</span>
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => setPhotos((prev) => prev.filter((x) => x.localId !== p.localId))}
-                style={{ position: "absolute", top: 2, right: 2, width: 18, height: 18, borderRadius: "50%", background: "rgba(0,0,0,0.65)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                style={{ position: "absolute", top: 2, right: 2, width: 18, height: 18, borderRadius: "50%", background: "rgba(var(--ep-shade-rgb),0.65)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
                 aria-label={t("Retirer cette photo")}
               >
-                <X size={11} style={{ color: "#fff" }} />
+                <X size={11} style={{ color: "var(--ep-strong)" }} />
               </button>
               <input type="hidden" name="photo_paths" value={p.path ?? ""} />
             </div>
@@ -255,9 +255,9 @@ export default function CheckinForm({
               onClick={() => photoInputRef.current?.click()}
               style={{
                 width: 64, height: 64, borderRadius: 10, cursor: "pointer",
-                border: "1px dashed rgba(137,4,4,0.4)", background: "rgba(0,0,0,0.3)",
+                border: "1px dashed rgba(var(--ep-line-rgb),0.4)", background: "rgba(var(--ep-shade-rgb),0.3)",
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
-                color: "rgba(245,237,237,0.4)",
+                color: "rgba(var(--ep-ink-rgb),0.4)",
               }}
             >
               <Camera size={16} />
@@ -289,7 +289,7 @@ export default function CheckinForm({
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
               <label className={lbl} style={{ marginBottom: 0 }}>{t("1. Ton attitude sur la semaine")}</label>
               {attitudeRating !== "" && (
-                <span style={{ fontSize: 13, fontWeight: 900, color: "#E01E1E" }}>{attitudeRating}/10</span>
+                <span style={{ fontSize: 13, fontWeight: 900, color: "var(--ep-accent)" }}>{attitudeRating}/10</span>
               )}
             </div>
             <input
@@ -300,18 +300,18 @@ export default function CheckinForm({
               value={attitudeRating === "" ? 5 : attitudeRating}
               onChange={(e) => setAttitudeRating(Number(e.target.value))}
               aria-label={t("Ton attitude sur la semaine")}
-              className="w-full accent-[#E01E1E]"
+              className="w-full accent-(--ep-accent)"
             />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, color: "rgba(245,237,237,0.25)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, color: "rgba(var(--ep-ink-rgb),0.25)" }}>
               <span>{t("Très négative")}</span>
               <span>{t("Excellente")}</span>
             </div>
             {needsAttitudeExplanation && (
               <div style={{ marginTop: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                  <AlertCircle size={12} style={{ color: "#E01E1E" }} />
+                  <AlertCircle size={12} style={{ color: "var(--ep-accent)" }} />
                   <label className={lbl} style={{ marginBottom: 0 }}>
-                    {t("Explique-nous pourquoi")}{" "}<span className="text-[#E01E1E]">*</span>
+                    {t("Explique-nous pourquoi")}{" "}<span className="text-(--ep-accent)">*</span>
                   </label>
                 </div>
                 <textarea
@@ -389,9 +389,9 @@ export default function CheckinForm({
               <span style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 height: 40, borderRadius: 8,
-                border: feedbackFormat === value ? "1px solid #E01E1E" : "1px solid rgba(137,4,4,0.3)",
-                background: feedbackFormat === value ? "rgba(224,30,30,0.15)" : "transparent",
-                fontSize: 12, fontWeight: 700, color: feedbackFormat === value ? "#E01E1E" : "rgba(245,237,237,0.4)",
+                border: feedbackFormat === value ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-line-rgb),0.3)",
+                background: feedbackFormat === value ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+                fontSize: 12, fontWeight: 700, color: feedbackFormat === value ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.4)",
               }}>
                 {label}
               </span>
@@ -404,19 +404,19 @@ export default function CheckinForm({
       <div>
         <Section title={t("Vidéo d'exécution (correction technique)")} />
         {video ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 10, padding: "8px 12px" }}>
-            <Video size={14} style={{ color: video.error ? "#E01E1E" : "#4ade80", flexShrink: 0 }} />
-            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.6)", flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 10, padding: "8px 12px" }}>
+            <Video size={14} style={{ color: video.error ? "var(--ep-accent)" : "var(--ep-ok)", flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.6)", flex: 1 }}>
               {video.uploading ? t("Envoi en cours…") : video.error ? t("Échec de l'envoi") : t("Vidéo prête")}
             </span>
-            {video.uploading && <Loader2 size={13} className="animate-spin" style={{ color: "rgba(245,237,237,0.4)" }} />}
+            {video.uploading && <Loader2 size={13} className="animate-spin" style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />}
             <button
               type="button"
               onClick={() => setVideo(null)}
               style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
               aria-label={t("Retirer la vidéo")}
             >
-              <X size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
+              <X size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
             </button>
             <input type="hidden" name="video_path" value={video.path ?? ""} />
           </div>
@@ -426,8 +426,8 @@ export default function CheckinForm({
             onClick={() => videoInputRef.current?.click()}
             style={{
               width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              border: "1px dashed rgba(137,4,4,0.4)", background: "rgba(0,0,0,0.3)", borderRadius: 10,
-              padding: "10px 0", cursor: "pointer", color: "rgba(245,237,237,0.4)",
+              border: "1px dashed rgba(var(--ep-line-rgb),0.4)", background: "rgba(var(--ep-shade-rgb),0.3)", borderRadius: 10,
+              padding: "10px 0", cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.4)",
             }}
           >
             <Video size={14} />
@@ -446,13 +446,13 @@ export default function CheckinForm({
             e.target.value = "";
           }}
         />
-        <p style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", marginTop: 6 }}>
+        <p style={{ fontSize: 9, color: "rgba(var(--ep-ink-rgb),0.2)", marginTop: 6 }}>
           {t("Optionnel : pour un retour technique de ton coach sur un exercice précis.")}
         </p>
       </div>
 
       {state && "error" in state && (
-        <p style={{ fontSize: 12, color: "#FDC4C4", textAlign: "center", margin: 0 }}>{state.error}</p>
+        <p style={{ fontSize: 12, color: "var(--ep-pink)", textAlign: "center", margin: 0 }}>{state.error}</p>
       )}
 
       <button
@@ -460,8 +460,8 @@ export default function CheckinForm({
         disabled={isPending || mediaUploading}
         style={{
           width: "100%",
-          background: isPending || mediaUploading ? "rgba(224,30,30,0.5)" : "#E01E1E",
-          color: "#fff",
+          background: isPending || mediaUploading ? "rgba(var(--ep-accent-rgb),0.5)" : "var(--ep-accent)",
+          color: "var(--ep-strong)",
           border: "none",
           borderRadius: 12,
           padding: "14px 0",

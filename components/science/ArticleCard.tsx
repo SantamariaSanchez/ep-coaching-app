@@ -8,7 +8,7 @@ import { ARTICLE_TYPE_LABELS, SCIENCE_TOPICS, guessArticleType } from "@/utils/s
 import type { UpdateArticleInput } from "@/app/dashboard/client/science/actions";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 function formatDate(d: string | null): string {
   if (!d) return "";
@@ -48,7 +48,7 @@ function ArticleEditForm({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg p-3 space-y-2">
       <div className="grid grid-cols-2 gap-2">
         <select value={topic} onChange={(e) => setTopic(e.target.value)} aria-label={tr("Thématique")} className={inputCls}>
           {SCIENCE_TOPICS.map((t) => (
@@ -74,7 +74,7 @@ function ArticleEditForm({
         placeholder={tr("Résumé en langage simple, à quoi ça sert concrètement…")} aria-label={tr("Résumé en langage simple, à quoi ça sert concrètement…")}
         className={`${inputCls} resize-none`}
       />
-      <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
+      <label className="flex items-center gap-2 text-[11px] text-(--ep-ink)/50">
         <input type="checkbox" checked={asActualite} onChange={(e) => setAsActualite(e.target.checked)} />
         {tr("Afficher aussi dans Actualité")}
       </label>
@@ -89,11 +89,11 @@ function ArticleEditForm({
             if (result.error) setError(result.error);
           }}
           disabled={saving}
-          className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-lg transition-colors"
         >
           {saving ? tr("Enregistrement…") : tr("Enregistrer")}
         </button>
-        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -119,14 +119,14 @@ export default function ArticleCard({
   const [deleting, setDeleting] = useState(false);
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden">
       <button onClick={() => setExpanded((v) => !v)} className="w-full text-left px-4 py-3.5">
         <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
-          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/45">
+          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/45">
             {article.topic}
           </span>
           {article.article_type && (
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E01E1E]/10 border border-[#E01E1E]/30 text-[#E01E1E]">
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-accent)/10 border border-(--ep-accent)/30 text-(--ep-accent)">
               {ARTICLE_TYPE_LABELS[article.article_type]}
             </span>
           )}
@@ -141,21 +141,21 @@ export default function ArticleCard({
             </span>
           )}
         </div>
-        <p className="text-sm font-bold text-white leading-snug">{article.title_fr || article.title}</p>
+        <p className="text-sm font-bold text-(--ep-strong) leading-snug">{article.title_fr || article.title}</p>
         {article.title_fr && (
-          <p className="text-[10px] text-[#F5EDED]/25 italic mt-0.5 truncate">{article.title}</p>
+          <p className="text-[10px] text-(--ep-ink)/25 italic mt-0.5 truncate">{article.title}</p>
         )}
-        <p className="text-[10px] text-[#F5EDED]/35 mt-1">
+        <p className="text-[10px] text-(--ep-ink)/35 mt-1">
           {article.journal}
           {article.pub_date ? ` · ${formatDate(article.pub_date)}` : ""}
         </p>
         {article.summary_fr && (
-          <p className="text-xs text-[#F5EDED]/55 leading-relaxed mt-2 line-clamp-2">{article.summary_fr}</p>
+          <p className="text-xs text-(--ep-ink)/55 leading-relaxed mt-2 line-clamp-2">{article.summary_fr}</p>
         )}
       </button>
 
       {expanded && editing && onUpdate && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3">
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3">
           <ArticleEditForm
             article={article}
             onSave={async (input) => {
@@ -169,28 +169,28 @@ export default function ArticleCard({
       )}
 
       {expanded && !editing && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
-          {article.authors && <p className="text-[11px] text-[#F5EDED]/40 italic">{article.authors}</p>}
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-2">
+          {article.authors && <p className="text-[11px] text-(--ep-ink)/40 italic">{article.authors}</p>}
 
           {article.summary_fr && (
-            <div className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
+            <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-3">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1">
                 {tr("À retenir")}
               </p>
-              <p className="text-sm text-[#F5EDED]/70 leading-relaxed">{article.summary_fr}</p>
+              <p className="text-sm text-(--ep-ink)/70 leading-relaxed">{article.summary_fr}</p>
             </div>
           )}
 
           {article.abstract && (
-            <p className="text-xs text-[#F5EDED]/45 leading-relaxed">{article.abstract}</p>
+            <p className="text-xs text-(--ep-ink)/45 leading-relaxed">{article.abstract}</p>
           )}
 
-          <div className="flex items-center gap-3 pt-2 border-t border-[#890404]/10">
+          <div className="flex items-center gap-3 pt-2 border-t border-(--ep-line)/10">
             <a
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
             >
               <ExternalLink size={11} />{" "}{tr("Voir sur PubMed")}
             </a>
@@ -199,7 +199,7 @@ export default function ArticleCard({
                 href={`https://doi.org/${article.doi}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
+                className="text-[10px] font-semibold text-(--ep-ink)/30 hover:text-(--ep-ink)/55 transition-colors"
               >
                 {tr("DOI:")}{" "}{article.doi}
               </a>
@@ -207,7 +207,7 @@ export default function ArticleCard({
             {isCoach && onUpdate && (
               <button
                 onClick={() => setEditing(true)}
-                className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+                className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
               >
                 <Pencil size={11} />{" "}{tr("Modifier")}
               </button>
@@ -224,7 +224,7 @@ export default function ArticleCard({
                   setDeleting(false);
                 }}
                 disabled={deleting}
-                className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-40 ${onUpdate ? "" : "ml-auto"}`}
+                className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-red-400 transition-colors disabled:opacity-40 ${onUpdate ? "" : "ml-auto"}`}
               >
                 <Trash2 size={11} /> {confirmDelete ? tr("Confirmer") : tr("Supprimer")}
               </button>

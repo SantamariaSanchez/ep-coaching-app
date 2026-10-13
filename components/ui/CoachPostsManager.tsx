@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, X, Eye, CheckCircle2 } from "lucide-react";
 import type { CoachPost } from "@/utils/coach-posts";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 function formatDate(dateStr: string) {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(
@@ -44,7 +44,7 @@ function PostEditor({
   }
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-xl p-4 space-y-3">
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -63,14 +63,14 @@ function PostEditor({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-lg transition-colors"
         >
           {saving ? t("Publication…") : initial ? t("Mettre à jour") : t("Publier")}
         </button>
         <button
           onClick={onCancel}
           aria-label={t("Annuler")}
-          className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors"
+          className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 rounded-lg transition-colors"
         >
           <X size={14} />
         </button>
@@ -103,13 +103,13 @@ export default function CoachPostsManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
           {posts.length}{" "}{t("publication")}{posts.length !== 1 ? "s" : ""}
         </p>
         {!showNew && (
           <button
             onClick={() => { setShowNew(true); setEditingId(null); setJustPublished(null); }}
-            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
           >
             <Plus size={12} />{" "}{t("Nouveau post")}
           </button>
@@ -138,7 +138,7 @@ export default function CoachPostsManager({
       )}
 
       {posts.length === 0 && !showNew && (
-        <p className="text-xs text-[#F5EDED]/25 italic text-center py-8">
+        <p className="text-xs text-(--ep-ink)/25 italic text-center py-8">
           {t("Aucune publication pour l'instant. Partage une réflexion ou un conseil avec tes membres.")}
         </p>
       )}
@@ -157,14 +157,14 @@ export default function CoachPostsManager({
               onCancel={() => setEditingId(null)}
             />
           ) : (
-            <div key={post.id} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+            <div key={post.id} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
               <div className="flex items-start justify-between gap-3 mb-1.5">
-                <p className="text-sm font-bold text-white">{post.title}</p>
+                <p className="text-sm font-bold text-(--ep-strong)">{post.title}</p>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => { setEditingId(post.id); setShowNew(false); }}
                     aria-label={`Modifier le post ${post.title}`}
-                    className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
+                    className="text-(--ep-ink)/25 hover:text-(--ep-ink)/60 transition-colors"
                   >
                     <Pencil size={12} />
                   </button>
@@ -179,20 +179,20 @@ export default function CoachPostsManager({
                     <button
                       onClick={() => setConfirmDeleteId(post.id)}
                       aria-label={`Supprimer le post ${post.title}`}
-                      className="text-[#F5EDED]/25 hover:text-red-400 transition-colors"
+                      className="text-(--ep-ink)/25 hover:text-red-400 transition-colors"
                     >
                       <Trash2 size={12} />
                     </button>
                   )}
                 </div>
               </div>
-              <p className="flex items-center gap-2 text-[10px] text-[#F5EDED]/30 mb-2">
+              <p className="flex items-center gap-2 text-[10px] text-(--ep-ink)/30 mb-2">
                 {formatDate(post.created_at)}
-                <span className="inline-flex items-center gap-1 text-[#F5EDED]/25">
+                <span className="inline-flex items-center gap-1 text-(--ep-ink)/25">
                   <Eye size={10} />{" "}{t("Lu par")}{" "}{viewCounts[post.id] ?? 0}/{totalMembers}
                 </span>
               </p>
-              <p className="text-sm text-[#F5EDED]/60 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+              <p className="text-sm text-(--ep-ink)/60 leading-relaxed whitespace-pre-wrap">{post.content}</p>
             </div>
           )
         )}

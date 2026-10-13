@@ -40,22 +40,22 @@ export default function Sheet({
   if (typeof document === "undefined") return null;
   return createPortal(
     <div className="fixed inset-0 z-[2147483000] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label={title}>
-      <button type="button" aria-label={t("Fermer")} onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
+      <button type="button" aria-label={t("Fermer")} onClick={onClose} className="absolute inset-0 bg-(--ep-shade)/70 backdrop-blur-[2px]" />
       <div
-        className="relative w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-[#890404]/35 shadow-[0_-10px_60px_rgba(137,4,4,0.35)]"
-        style={{ background: "linear-gradient(180deg, #1a0202 0%, #0d0000 100%)" }}
+        className="relative w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-(--ep-line)/35 shadow-[0_-10px_60px_rgba(var(--ep-line-rgb),0.35)]"
+        style={{ background: "linear-gradient(180deg, var(--ep-s3) 0%, var(--ep-bg) 100%)" }}
       >
-        <div className="flex items-start gap-3 px-4 pt-4 pb-3 border-b border-[#890404]/20">
+        <div className="flex items-start gap-3 px-4 pt-4 pb-3 border-b border-(--ep-line)/20">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-black uppercase tracking-tight text-white truncate">{title}</p>
-            {subtitle && <p className="text-[11px] text-[#F5EDED]/45 mt-0.5 truncate">{subtitle}</p>}
+            <p className="text-sm font-black uppercase tracking-tight text-(--ep-strong) truncate">{title}</p>
+            {subtitle && <p className="text-[11px] text-(--ep-ink)/45 mt-0.5 truncate">{subtitle}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label={t("Fermer")} className="p-1.5 -m-1 rounded-lg text-[#F5EDED]/50 hover:text-white">
+          <button type="button" onClick={onClose} aria-label={t("Fermer")} className="p-1.5 -m-1 rounded-lg text-(--ep-ink)/50 hover:text-(--ep-strong)">
             <X size={18} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3">{children}</div>
-        {footer && <div className="px-4 py-3 border-t border-[#890404]/20 pb-[max(12px,env(safe-area-inset-bottom))]">{footer}</div>}
+        {footer && <div className="px-4 py-3 border-t border-(--ep-line)/20 pb-[max(12px,env(safe-area-inset-bottom))]">{footer}</div>}
       </div>
     </div>,
     document.body

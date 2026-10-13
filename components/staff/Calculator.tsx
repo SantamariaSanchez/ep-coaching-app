@@ -8,10 +8,10 @@ const eur = (v: number) => `${Math.round(v).toLocaleString("fr-FR")} €`;
 function Field({ label, value, onChange, suffix }: { label: string; value: string; onChange: (v: string) => void; suffix: string }) {
   return (
     <label style={{ display: "block" }}>
-      <span style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>{label}</span>
+      <span style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 5 }}>{label}</span>
       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <input type="number" min={0} inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} className="ep-input" aria-label={label} />
-        <span style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", minWidth: 16 }}>{suffix}</span>
+        <span style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", minWidth: 16 }}>{suffix}</span>
       </span>
     </label>
   );
@@ -20,8 +20,8 @@ function Field({ label, value, onChange, suffix }: { label: string; value: strin
 function Out({ label, value, tone }: { label: string; value: string; tone?: "good" | "bad" }) {
   return (
     <div className="ep-card" style={{ padding: "12px 14px" }}>
-      <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)", margin: "0 0 4px" }}>{label}</p>
-      <p style={{ fontSize: 19, fontWeight: 900, margin: 0, color: tone === "good" ? "#4ade80" : tone === "bad" ? "#f87171" : "#F5EDED" }}>{value}</p>
+      <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)", margin: "0 0 4px" }}>{label}</p>
+      <p style={{ fontSize: 19, fontWeight: 900, margin: 0, color: tone === "good" ? "var(--ep-ok)" : tone === "bad" ? "var(--ep-bad)" : "var(--ep-ink)" }}>{value}</p>
     </div>
   );
 }
@@ -64,8 +64,8 @@ export default function Calculator() {
         <div style={{ width: 200 }}>
           <Field label={t("Objectif de ventes")} value={goal} onChange={setGoal} suffix="" />
         </div>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", margin: 0, lineHeight: 1.6 }}>
-          {t("Budget nécessaire avec tes taux actuels :")}{" "}<strong style={{ color: "#F5EDED", fontSize: 16 }}>{eur(neededBudget)}</strong>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.7)", margin: 0, lineHeight: 1.6 }}>
+          {t("Budget nécessaire avec tes taux actuels :")}{" "}<strong style={{ color: "var(--ep-ink)", fontSize: 16 }}>{eur(neededBudget)}</strong>
         </p>
       </div>
     </div>

@@ -73,9 +73,9 @@ export default function ActiveSessionBanner() {
         gap: 10,
         padding: "10px 16px",
         borderRadius: 999,
-        background: "#E01E1E",
-        border: "1px solid rgba(255,255,255,0.15)",
-        boxShadow: "0 6px 24px rgba(224,30,30,0.45)",
+        background: "var(--ep-accent)",
+        border: "1px solid rgba(var(--ep-hi-rgb),0.15)",
+        boxShadow: "0 6px 24px rgba(var(--ep-accent-rgb),0.45)",
         color: "#fff",
         cursor: "pointer",
       }}
@@ -83,7 +83,7 @@ export default function ActiveSessionBanner() {
       <div
         style={{
           width: 22, height: 22, borderRadius: "50%",
-          background: "rgba(255,255,255,0.18)",
+          background: "rgba(var(--ep-hi-rgb),0.18)",
           display: "flex", alignItems: "center", justifyContent: "center",
           flexShrink: 0,
         }}

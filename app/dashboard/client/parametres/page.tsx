@@ -9,6 +9,7 @@ import NotificationPreferencesCard from "@/components/settings/NotificationPrefe
 import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
 import PreferencesCard from "@/components/settings/PreferencesCard";
 import AccessibilityCard from "@/components/settings/AccessibilityCard";
+import AmbianceCard from "@/components/settings/AmbianceCard";
 import MemberPrivacyCard from "@/components/settings/MemberPrivacyCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
@@ -62,10 +63,11 @@ export default async function ClientParametresPage() {
       sections={[
         {
           id: "affichage",
-          title: t("Langue et affichage"),
-          keywords: "langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation objectif niveau taille du texte animations accessibilité",
+          title: t("Ambiance, langue et affichage"),
+          keywords: "ambiance thème clair sombre rose douce couleur fond langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation objectif niveau taille du texte animations accessibilité",
           node: (
             <>
+              <AmbianceCard />
               <LanguageDisplayCard space="client" />
               <PreferencesCard initialPreferences={memberPreferences} />
               <AccessibilityCard />

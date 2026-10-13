@@ -10,16 +10,17 @@ import {
 } from "lucide-react";
 import type { ScheduleBlock } from "@/utils/agenda";
 import { AGENDA_PRESETS, AGENDA_ICON_MAP, type AgendaPreset } from "@/lib/agenda-presets";
+import { withAlpha } from "@/lib/theme-color";
 
 const inputClass =
-  "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";
-const labelClass = "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors";
+const labelClass = "block text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 const chipClass =
   "px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-colors";
-const chipActive = "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white";
-const chipInactive = "border-[#890404]/25 text-[#F5EDED]/40";
+const chipActive = "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)";
+const chipInactive = "border-(--ep-line)/25 text-(--ep-ink)/40";
 
-const COLOR_OPTIONS = ["#E01E1E", "#4ade80", "#60a5fa", "#fbbf24", "#a78bfa", "#f472b6"];
+const COLOR_OPTIONS = ["var(--ep-accent)", "var(--ep-ok)", "var(--ep-info)", "var(--ep-warn)", "var(--ep-violet)", "#f472b6"];
 const DAY_LABELS = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 const DAY_LABELS_SHORT = ["", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7];
@@ -265,8 +266,8 @@ function DaySwitcher({
             onClick={() => onSelect(d)}
             className="flex-1 flex flex-col items-center gap-1.5 py-2 rounded-lg border transition-colors"
             style={{
-              background: active ? "rgba(224,30,30,0.15)" : "transparent",
-              borderColor: active ? "rgba(224,30,30,0.5)" : isToday ? "rgba(224,30,30,0.3)" : "transparent",
+              background: active ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+              borderColor: active ? "rgba(var(--ep-accent-rgb),0.5)" : isToday ? "rgba(var(--ep-accent-rgb),0.3)" : "transparent",
             }}
           >
             <span
@@ -274,7 +275,7 @@ function DaySwitcher({
                 fontSize: 10,
                 fontWeight: 800,
                 letterSpacing: "0.04em",
-                color: active ? "#F5EDED" : isToday ? "#E01E1E" : "rgba(245,237,237,0.35)",
+                color: active ? "var(--ep-ink)" : isToday ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.35)",
               }}
             >
               {DAY_LABELS_SHORT[d]}
@@ -284,7 +285,7 @@ function DaySwitcher({
                 width: 4,
                 height: 4,
                 borderRadius: "50%",
-                background: count > 0 ? (active ? "#E01E1E" : "rgba(224,30,30,0.45)") : "transparent",
+                background: count > 0 ? (active ? "var(--ep-accent)" : "rgba(var(--ep-accent-rgb),0.45)") : "transparent",
               }}
             />
           </button>
@@ -687,8 +688,8 @@ export default function WeeklyAgenda({
 
     return (
       <div
-        className="relative border-l border-[#890404]/10"
-        style={{ height: totalHeight, background: isToday ? "rgba(224,30,30,0.025)" : "transparent" }}
+        className="relative border-l border-(--ep-line)/10"
+        style={{ height: totalHeight, background: isToday ? "rgba(var(--ep-accent-rgb),0.025)" : "transparent" }}
       >
         {segments.map((seg) => {
           const segTop = offsets[seg.hours[0]];
@@ -701,7 +702,7 @@ export default function WeeklyAgenda({
               <div
                 key={h}
                 onClick={() => openAddAt(day, h)}
-                className="absolute w-full border-t border-[#890404]/8 hover:bg-[#890404]/5 transition-colors"
+                className="absolute w-full border-t border-(--ep-line)/8 hover:bg-(--ep-line)/5 transition-colors"
                 style={{ top: offsets[h], height: offsets[h + 1] - offsets[h], cursor: editable ? "pointer" : "default" }}
               />
             ));
@@ -722,12 +723,12 @@ export default function WeeklyAgenda({
                 const idx = Math.min(seg.hours.length - 1, Math.floor((relY / segHeight) * seg.hours.length));
                 openAddAt(day, seg.hours[idx]);
               }}
-              className="absolute w-full flex items-center justify-center border-t border-b border-dashed border-[#890404]/10 hover:bg-[#890404]/5 transition-colors"
+              className="absolute w-full flex items-center justify-center border-t border-b border-dashed border-(--ep-line)/10 hover:bg-(--ep-line)/5 transition-colors"
               style={{ top: segTop, height: segHeight, cursor: editable ? "pointer" : "default" }}
               title={editable ? `Rien de prévu entre ${seg.hours[0]}h et ${seg.hours[seg.hours.length - 1] + 1}h, cliquer pour ajouter un bloc` : undefined}
             >
               {segHeight >= 20 && (
-                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(245,237,237,0.14)" }}>
+                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(var(--ep-ink-rgb),0.14)" }}>
                   {seg.hours.length > 1 ? `${seg.hours[0]}h à ${seg.hours[seg.hours.length - 1] + 1}h` : `${seg.hours[0]}h`}
                 </span>
               )}
@@ -761,19 +762,19 @@ export default function WeeklyAgenda({
               style={{
                 top,
                 height,
-                background: `${block.color}20`,
-                borderColor: `${block.color}55`,
+                background: `${withAlpha(block.color, "20")}`,
+                borderColor: `${withAlpha(block.color, "55")}`,
                 cursor: "pointer",
               }}
             >
-              <p className="flex items-center gap-1 text-[9px] font-bold text-white leading-tight truncate">
+              <p className="flex items-center gap-1 text-[9px] font-bold text-(--ep-strong) leading-tight truncate">
                 {showIcon && Icon && <Icon size={9} style={{ flexShrink: 0 }} strokeWidth={2.2} />}
                 <span className="truncate">{block.label}</span>
                 {block.tasks && block.tasks.length > 0 && (
                   <span style={{ width: 4, height: 4, borderRadius: "50%", background: block.color, flexShrink: 0 }} title={tr("Des tâches sont prévues")} />
                 )}
               </p>
-              <p className="text-[8px] text-[#F5EDED]/50 leading-tight">
+              <p className="text-[8px] text-(--ep-ink)/50 leading-tight">
                 {block.start_time.slice(0, 5)} à {block.end_time.slice(0, 5)}
               </p>
             </button>
@@ -784,8 +785,8 @@ export default function WeeklyAgenda({
             className="absolute left-0 right-0 pointer-events-none"
             style={{ top: offsetAtMinutes(nowMinutes!, offsets), zIndex: 5 }}
           >
-            <div style={{ height: 2, background: "#E01E1E", boxShadow: "0 0 6px rgba(224,30,30,0.7)" }} />
-            <div style={{ position: "absolute", left: -3, top: -3, width: 8, height: 8, borderRadius: "50%", background: "#E01E1E" }} />
+            <div style={{ height: 2, background: "var(--ep-accent)", boxShadow: "0 0 6px rgba(var(--ep-accent-rgb),0.7)" }} />
+            <div style={{ position: "absolute", left: -3, top: -3, width: 8, height: 8, borderRadius: "50%", background: "var(--ep-accent)" }} />
           </div>
         )}
       </div>
@@ -802,7 +803,7 @@ export default function WeeklyAgenda({
             return seg.hours.map((h) => (
               <p
                 key={h}
-                className="absolute right-1 text-[9px] text-[#F5EDED]/25 font-semibold"
+                className="absolute right-1 text-[9px] text-(--ep-ink)/25 font-semibold"
                 style={{ top: offsets[h] - 6 }}
               >
                 {h}h
@@ -816,7 +817,7 @@ export default function WeeklyAgenda({
           return (
             <p
               key={`gap-${seg.hours[0]}`}
-              className="absolute right-1 text-[8px] text-[#F5EDED]/15 font-semibold"
+              className="absolute right-1 text-[8px] text-(--ep-ink)/15 font-semibold"
               style={{ top: (segTop + segBottom) / 2 - 5 }}
             >
               {seg.hours[0]}h
@@ -868,7 +869,7 @@ export default function WeeklyAgenda({
                 const Icon = AGENDA_ICON_MAP[currentBlock.icon!];
                 return <Icon size={13} style={{ color: currentBlock.color, flexShrink: 0 }} strokeWidth={2.2} />;
               })()}
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", margin: 0 }}>
                 {tr("En ce moment jusqu'à")}{" "}{currentBlock.end_time.slice(0, 5)}
               </p>
             </div>
@@ -878,8 +879,8 @@ export default function WeeklyAgenda({
                 className="flex items-center gap-1.5 flex-shrink-0 px-2 py-1 rounded-lg text-[11px] font-bold tabular-nums transition-colors"
                 style={
                   timerBlockId === currentBlock.id && timerRunning
-                    ? { background: "rgba(224,30,30,0.15)", color: "#E01E1E" }
-                    : { background: "rgba(245,237,237,0.06)", color: "rgba(245,237,237,0.4)" }
+                    ? { background: "rgba(var(--ep-accent-rgb),0.15)", color: "var(--ep-accent)" }
+                    : { background: "rgba(var(--ep-ink-rgb),0.06)", color: "rgba(var(--ep-ink-rgb),0.4)" }
                 }
                 title={timerBlockId === currentBlock.id && timerRunning ? tr("Mettre en pause") : tr("Lancer le minuteur")}
               >
@@ -888,12 +889,12 @@ export default function WeeklyAgenda({
               </button>
             )}
           </div>
-          <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>{currentBlock.label}</p>
+          <p style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px" }}>{currentBlock.label}</p>
           {timerBlockId === currentBlock.id && (timerRunning || timerSeconds > 0) && (
             <button
               onClick={resetTimer}
               className="text-[9px] font-bold uppercase tracking-widest mb-2"
-              style={{ color: "rgba(245,237,237,0.3)" }}
+              style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }}
             >
               {tr("Réinitialiser le minuteur")}
             </button>
@@ -909,17 +910,17 @@ export default function WeeklyAgenda({
                       onClick={() => toggleTaskKey(key)}
                       disabled={!saveTaskCompletion || !today}
                       className="flex items-start gap-2 w-full text-left transition-opacity disabled:cursor-default"
-                      style={{ fontSize: 12, color: done ? "rgba(245,237,237,0.35)" : "rgba(245,237,237,0.75)", lineHeight: 1.4 }}
+                      style={{ fontSize: 12, color: done ? "rgba(var(--ep-ink-rgb),0.35)" : "rgba(var(--ep-ink-rgb),0.75)", lineHeight: 1.4 }}
                     >
                       <span
                         className="flex-shrink-0 rounded flex items-center justify-center transition-colors"
                         style={{
                           width: 15, height: 15, marginTop: 1,
-                          border: `1.5px solid ${done ? currentBlock.color : "rgba(245,237,237,0.25)"}`,
+                          border: `1.5px solid ${done ? currentBlock.color : "rgba(var(--ep-ink-rgb),0.25)"}`,
                           background: done ? currentBlock.color : "transparent",
                         }}
                       >
-                        {done && <Check size={10} strokeWidth={3} style={{ color: "#150000" }} />}
+                        {done && <Check size={10} strokeWidth={3} style={{ color: "var(--ep-s2)" }} />}
                       </span>
                       <span style={{ textDecoration: done ? "line-through" : "none" }}>{t}</span>
                     </button>
@@ -935,10 +936,10 @@ export default function WeeklyAgenda({
       {relevantBlocks.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch" }}>
           <div className="ep-card" style={{ padding: "8px 14px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)" }}>
               {tr("Planifié / sem.")}
             </span>
-            <span style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED" }}>{formatHours(totalMinutes)}</span>
+            <span style={{ fontSize: 15, fontWeight: 900, color: "var(--ep-ink)" }}>{formatHours(totalMinutes)}</span>
           </div>
           {topCategories.map(([key, mins]) => {
             const preset = AGENDA_PRESETS.find((p) => p.key === key);
@@ -947,8 +948,8 @@ export default function WeeklyAgenda({
               <div key={key} className="ep-card" style={{ padding: "8px 14px", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                 {Icon && <Icon size={12} style={{ color: preset!.color, flexShrink: 0 }} strokeWidth={2} />}
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.5)" }}>{preset?.label ?? tr("Autre")}</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>{formatHours(mins)}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)" }}>{preset?.label ?? tr("Autre")}</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-ink)" }}>{formatHours(mins)}</span>
                 </div>
               </div>
             );
@@ -968,7 +969,7 @@ export default function WeeklyAgenda({
                   key={p.key}
                   onClick={() => quickStart(p)}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors"
-                  style={{ background: "transparent", borderColor: "rgba(137,4,4,0.25)", color: "rgba(245,237,237,0.5)" }}
+                  style={{ background: "transparent", borderColor: "rgba(var(--ep-line-rgb),0.25)", color: "rgba(var(--ep-ink-rgb),0.5)" }}
                 >
                   <PIcon size={12} style={{ color: p.color }} strokeWidth={2} />
                   {p.label}
@@ -1009,7 +1010,7 @@ export default function WeeklyAgenda({
               return (
               <div key={day} style={{ flex: 1, minWidth: 100 }}>
                 <div className="flex items-center justify-center gap-1" style={{ height: 24 }}>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40">
                     {DAY_LABELS_SHORT[day]}
                   </p>
                   {reveilTime && (
@@ -1017,7 +1018,7 @@ export default function WeeklyAgenda({
                       type="button"
                       onClick={() => editable && openEdit(reveilBlockFor(day)!)}
                       title={editable ? `Réveil à ${reveilTime}, cliquer pour changer` : `Réveil à ${reveilTime}`}
-                      className="flex items-center gap-0.5 text-[8px] font-bold text-[#a78bfa]/70"
+                      className="flex items-center gap-0.5 text-[8px] font-bold text-(--ep-violet)/70"
                       style={{ cursor: editable ? "pointer" : "default" }}
                     >
                       <AlarmClock size={8} />
@@ -1026,10 +1027,10 @@ export default function WeeklyAgenda({
                   )}
                   {editable && (
                     <>
-                      <button onClick={() => openAddAt(day, 9)} className="text-[#F5EDED]/20 hover:text-[#E01E1E]" title={`Ajouter le ${DAY_LABELS[day]}`} aria-label={`Ajouter le ${DAY_LABELS[day]}`}>
+                      <button onClick={() => openAddAt(day, 9)} className="text-(--ep-ink)/20 hover:text-(--ep-accent)" title={`Ajouter le ${DAY_LABELS[day]}`} aria-label={`Ajouter le ${DAY_LABELS[day]}`}>
                         <Plus size={10} />
                       </button>
-                      <button onClick={() => openDayOptions(day)} className="text-[#F5EDED]/20 hover:text-[#E01E1E]" title={`Options du ${DAY_LABELS[day]}`} aria-label={`Options du ${DAY_LABELS[day]}`}>
+                      <button onClick={() => openDayOptions(day)} className="text-(--ep-ink)/20 hover:text-(--ep-accent)" title={`Options du ${DAY_LABELS[day]}`} aria-label={`Options du ${DAY_LABELS[day]}`}>
                         <MoreHorizontal size={10} />
                       </button>
                     </>
@@ -1045,18 +1046,18 @@ export default function WeeklyAgenda({
         <div className="space-y-2">
           <DaySwitcher selectedDay={selectedDay} onSelect={setSelectedDay} blocksByDay={blocksByDay} todayDow={todayDow} />
           <div className="flex items-center justify-between">
-            <button onClick={() => shiftDay(-1)} aria-label={tr("Jour précédent")} className="text-[#F5EDED]/25 hover:text-white p-1">
+            <button onClick={() => shiftDay(-1)} aria-label={tr("Jour précédent")} className="text-(--ep-ink)/25 hover:text-(--ep-strong) p-1">
               <ChevronLeft size={16} />
             </button>
-            <p className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
+            <p className="text-xs font-black uppercase tracking-widest text-(--ep-strong) flex items-center gap-2">
               {DAY_LABELS[selectedDay]}
-              {selectedDay === todayDow && <span style={{ color: "#E01E1E" }}>{" "}{tr("· Aujourd'hui")}</span>}
+              {selectedDay === todayDow && <span style={{ color: "var(--ep-accent)" }}>{" "}{tr("· Aujourd'hui")}</span>}
               {reveilBlockFor(selectedDay) && (
                 <button
                   type="button"
                   onClick={() => editable && openEdit(reveilBlockFor(selectedDay)!)}
                   title={editable ? tr("Heure de réveil, cliquer pour la changer (alarme réelle, pas un simple rappel)") : tr("Heure de réveil (alarme réelle, pas un simple rappel)")}
-                  className="flex items-center gap-1 text-[10px] font-bold normal-case tracking-normal text-[#a78bfa] bg-[#a78bfa]/10 border border-[#a78bfa]/25 rounded-full px-2 py-0.5"
+                  className="flex items-center gap-1 text-[10px] font-bold normal-case tracking-normal text-(--ep-violet) bg-(--ep-violet)/10 border border-(--ep-violet)/25 rounded-full px-2 py-0.5"
                   style={{ cursor: editable ? "pointer" : "default" }}
                 >
                   <AlarmClock size={10} />
@@ -1067,15 +1068,15 @@ export default function WeeklyAgenda({
             <div className="flex items-center gap-2">
               {editable && (
                 <>
-                  <button onClick={() => openAddAt(selectedDay, 9)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title={tr("Ajouter")} aria-label={tr("Ajouter")}>
+                  <button onClick={() => openAddAt(selectedDay, 9)} className="text-(--ep-ink)/25 hover:text-(--ep-accent) p-1" title={tr("Ajouter")} aria-label={tr("Ajouter")}>
                     <Plus size={15} />
                   </button>
-                  <button onClick={() => openDayOptions(selectedDay)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title={tr("Options du jour")} aria-label={tr("Options du jour")}>
+                  <button onClick={() => openDayOptions(selectedDay)} className="text-(--ep-ink)/25 hover:text-(--ep-accent) p-1" title={tr("Options du jour")} aria-label={tr("Options du jour")}>
                     <MoreHorizontal size={15} />
                   </button>
                 </>
               )}
-              <button onClick={() => shiftDay(1)} aria-label={tr("Jour suivant")} className="text-[#F5EDED]/25 hover:text-white p-1">
+              <button onClick={() => shiftDay(1)} aria-label={tr("Jour suivant")} className="text-(--ep-ink)/25 hover:text-(--ep-strong) p-1">
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -1108,41 +1109,41 @@ export default function WeeklyAgenda({
         }
         return (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3">
-            <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setActionBlock(null)} />
-            <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5" style={{ paddingBottom: "calc(20px + env(safe-area-inset-bottom, 0px))" }}>
+            <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/70 backdrop-blur-sm" onClick={() => setActionBlock(null)} />
+            <div className="ep-modal-panel relative w-full max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-2xl p-5" style={{ paddingBottom: "calc(20px + env(safe-area-inset-bottom, 0px))" }}>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   {Icon && <Icon size={16} style={{ color: b.color, flexShrink: 0 }} strokeWidth={2} />}
-                  <p className="text-sm font-black uppercase tracking-widest text-white truncate">{b.label}</p>
+                  <p className="text-sm font-black uppercase tracking-widest text-(--ep-strong) truncate">{b.label}</p>
                 </div>
-                <button onClick={() => setActionBlock(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+                <button onClick={() => setActionBlock(null)} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong) flex-shrink-0">
                   <X size={18} />
                 </button>
               </div>
-              <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "4px 0 14px" }}>
+              <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "4px 0 14px" }}>
                 {DAY_LABELS[b.day_of_week]} · {b.start_time.slice(0, 5)} à {b.end_time.slice(0, 5)}
                 {b.specific_date ? tr(" · aujourd'hui seulement") : ""}
               </p>
 
               {dest && (
-                <Link href={dest.href} onClick={() => setActionBlock(null)} className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#E01E1E] text-white text-xs font-black uppercase tracking-widest py-3 mb-3">
+                <Link href={dest.href} onClick={() => setActionBlock(null)} className="flex items-center justify-center gap-2 w-full rounded-xl bg-(--ep-accent) text-(--ep-strong) text-xs font-black uppercase tracking-widest py-3 mb-3">
                   {dest.label} <ChevronRight size={14} />
                 </Link>
               )}
 
               {shiftDayFromBlock && (
-                <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(245,237,237,0.06)", borderRadius: 12, padding: 12, marginBottom: 10 }}>
-                  <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>
+                <div style={{ background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-ink-rgb),0.06)", borderRadius: 12, padding: 12, marginBottom: 10 }}>
+                  <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 8px" }}>
                     {tr("Décaler ce bloc et toute la suite")}
                   </p>
                   {isToday && startNowDelta !== 0 && (
-                    <button type="button" disabled={shiftBusy} onClick={() => shift(startNowDelta)} className="w-full rounded-lg border border-[#E01E1E]/60 bg-[#E01E1E]/15 text-white text-xs font-bold py-2.5 mb-2">
+                    <button type="button" disabled={shiftBusy} onClick={() => shift(startNowDelta)} className="w-full rounded-lg border border-(--ep-accent)/60 bg-(--ep-accent)/15 text-(--ep-strong) text-xs font-bold py-2.5 mb-2">
                       {tr("Commencer maintenant (")}{startNowDelta > 0 ? "+" : ""}{startNowDelta}{" "}{tr("min pour la suite)")}
                     </button>
                   )}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
                     {[-15, 15, 30, 60].map((d) => (
-                      <button key={d} type="button" disabled={shiftBusy} onClick={() => shift(d)} className="rounded-lg border border-[#890404]/40 text-[#F5EDED] text-xs font-bold py-2.5">
+                      <button key={d} type="button" disabled={shiftBusy} onClick={() => shift(d)} className="rounded-lg border border-(--ep-line)/40 text-(--ep-ink) text-xs font-bold py-2.5">
                         {d > 0 ? "+" : "−"}{Math.abs(d)}{" "}{tr("min")}
                       </button>
                     ))}
@@ -1155,7 +1156,7 @@ export default function WeeklyAgenda({
                           type="button"
                           onClick={() => setShiftScope(sc)}
                           className="flex-1 rounded-lg text-[11px] font-bold py-2"
-                          style={{ border: `1px solid ${shiftScope === sc ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.3)"}`, background: shiftScope === sc ? "rgba(224,30,30,0.12)" : "transparent", color: shiftScope === sc ? "#fff" : "rgba(245,237,237,0.5)" }}
+                          style={{ border: `1px solid ${shiftScope === sc ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-line-rgb),0.3)"}`, background: shiftScope === sc ? "rgba(var(--ep-accent-rgb),0.12)" : "transparent", color: shiftScope === sc ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.5)" }}
                         >
                           {sc === "jour" ? tr("Aujourd'hui seulement") : tr("Toutes les semaines")}
                         </button>
@@ -1166,7 +1167,7 @@ export default function WeeklyAgenda({
                 </div>
               )}
 
-              <button type="button" onClick={() => { const blk = b; setActionBlock(null); openEdit(blk); }} className="w-full rounded-xl border border-[#890404]/45 text-[#F5EDED]/80 text-xs font-bold uppercase tracking-widest py-3">
+              <button type="button" onClick={() => { const blk = b; setActionBlock(null); openEdit(blk); }} className="w-full rounded-xl border border-(--ep-line)/45 text-(--ep-ink)/80 text-xs font-bold uppercase tracking-widest py-3">
                 {tr("Modifier le bloc")}
               </button>
             </div>
@@ -1177,38 +1178,38 @@ export default function WeeklyAgenda({
       {/* Détail en lecture seule (fiche client vue par le coach) */}
       {viewingBlock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setViewingBlock(null)} />
-          <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-3">
+          <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/70 backdrop-blur-sm" onClick={() => setViewingBlock(null)} />
+          <div className="ep-modal-panel relative w-full max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-2xl p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
                 {viewingBlock.icon && AGENDA_ICON_MAP[viewingBlock.icon] && (() => {
                   const Icon = AGENDA_ICON_MAP[viewingBlock.icon!];
                   return <Icon size={15} style={{ color: viewingBlock.color, flexShrink: 0 }} strokeWidth={2} />;
                 })()}
-                <p className="text-sm font-black uppercase tracking-widest text-white truncate">{viewingBlock.label}</p>
+                <p className="text-sm font-black uppercase tracking-widest text-(--ep-strong) truncate">{viewingBlock.label}</p>
               </div>
-              <button onClick={() => setViewingBlock(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+              <button onClick={() => setViewingBlock(null)} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong) flex-shrink-0">
                 <X size={18} />
               </button>
             </div>
-            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)" }}>
+            <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
               {DAY_LABELS[viewingBlock.day_of_week]} · {viewingBlock.start_time.slice(0, 5)} à {viewingBlock.end_time.slice(0, 5)}
             </p>
             {viewingBlock.tasks && viewingBlock.tasks.length > 0 && (
               <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 5 }}>
                 {viewingBlock.tasks.map((t, i) => (
-                  <li key={i} style={{ display: "flex", gap: 6, fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.4 }}>
+                  <li key={i} style={{ display: "flex", gap: 6, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.4 }}>
                     <span style={{ color: viewingBlock.color, flexShrink: 0 }}>•</span> {t}
                   </li>
                 ))}
               </ul>
             )}
             {viewingBlock.notes && (
-              <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(245,237,237,0.06)", borderRadius: 10, padding: 12 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 4px" }}>
+              <div style={{ background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-ink-rgb),0.06)", borderRadius: 10, padding: 12 }}>
+                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 4px" }}>
                   {tr("Notes")}
                 </p>
-                <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", whiteSpace: "pre-wrap", margin: 0 }}>{viewingBlock.notes}</p>
+                <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", whiteSpace: "pre-wrap", margin: 0 }}>{viewingBlock.notes}</p>
               </div>
             )}
           </div>
@@ -1221,11 +1222,11 @@ export default function WeeklyAgenda({
         const dayBlocks = relevantBlocks.filter((b) => b.day_of_week === day);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeDayOptions} />
-            <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
+            <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/70 backdrop-blur-sm" onClick={closeDayOptions} />
+            <div className="ep-modal-panel relative w-full max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-black uppercase tracking-widest text-white">{DAY_LABELS[day]}</p>
-                <button onClick={closeDayOptions} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
+                <p className="text-sm font-black uppercase tracking-widest text-(--ep-strong)">{DAY_LABELS[day]}</p>
+                <button onClick={closeDayOptions} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong)">
                   <X size={18} />
                 </button>
               </div>
@@ -1235,7 +1236,7 @@ export default function WeeklyAgenda({
                   {tr("Dupliquer")}{" "}{dayBlocks.length}{" "}{tr("bloc")}{dayBlocks.length > 1 ? "s" : ""}{" "}{tr("vers")}
                 </label>
                 {dayBlocks.length === 0 ? (
-                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)" }}>{tr("Ce jour est vide, rien à copier.")}</p>
+                  <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.3)" }}>{tr("Ce jour est vide, rien à copier.")}</p>
                 ) : (
                   <>
                     <div className="flex flex-wrap gap-1.5 mb-2">
@@ -1265,7 +1266,7 @@ export default function WeeklyAgenda({
               </div>
 
               {dayBlocks.length > 0 && (
-                <div style={{ borderTop: "1px solid rgba(245,237,237,0.06)", paddingTop: 14 }}>
+                <div style={{ borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)", paddingTop: 14 }}>
                   <button
                     onClick={clearConfirm ? handleClearDay : () => setClearConfirm(true)}
                     disabled={dayOptionsBusy}
@@ -1285,16 +1286,16 @@ export default function WeeklyAgenda({
       {/* Création / édition d'un bloc */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={close} />
+          <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/70 backdrop-blur-sm" onClick={close} />
           <div
-            className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-3 overflow-y-auto"
+            className="ep-modal-panel relative w-full max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-2xl p-5 space-y-3 overflow-y-auto"
             style={{ maxHeight: "88vh" }}
           >
             <div className="flex items-center justify-between">
-              <p className="text-sm font-black uppercase tracking-widest text-white">
+              <p className="text-sm font-black uppercase tracking-widest text-(--ep-strong)">
                 {editingBlockId ? tr("Modifier le bloc") : `Nouveau bloc : ${DAY_LABELS[form.day_of_week]}`}
               </p>
-              <button onClick={close} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
+              <button onClick={close} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong)">
                 <X size={18} />
               </button>
             </div>
@@ -1312,9 +1313,9 @@ export default function WeeklyAgenda({
                       onClick={() => setForm((f) => ({ ...f, label: p.label, icon: p.key, color: p.color }))}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-colors"
                       style={{
-                        background: active ? `${p.color}22` : "transparent",
-                        borderColor: active ? `${p.color}77` : "rgba(137,4,4,0.25)",
-                        color: active ? "#fff" : "rgba(245,237,237,0.45)",
+                        background: active ? `${withAlpha(p.color, "22")}` : "transparent",
+                        borderColor: active ? `${withAlpha(p.color, "77")}` : "rgba(var(--ep-line-rgb),0.25)",
+                        color: active ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.45)",
                       }}
                     >
                       <PIcon size={11} strokeWidth={2.2} />
@@ -1398,8 +1399,8 @@ export default function WeeklyAgenda({
 
             {overlapBlocks.length > 0 && (
               <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2">
-                <AlertTriangle size={13} style={{ color: "#fbbf24", flexShrink: 0, marginTop: 1 }} />
-                <p style={{ fontSize: 11, color: "#fbbf24", margin: 0, lineHeight: 1.4 }}>
+                <AlertTriangle size={13} style={{ color: "var(--ep-warn)", flexShrink: 0, marginTop: 1 }} />
+                <p style={{ fontSize: 11, color: "var(--ep-warn)", margin: 0, lineHeight: 1.4 }}>
                   {tr("Chevauche")}{" "}{overlapBlocks.map((b) => `${b.label} (${b.start_time.slice(0, 5)} à ${b.end_time.slice(0, 5)})`).join(", ")}.
                 </p>
               </div>
@@ -1433,15 +1434,15 @@ export default function WeeklyAgenda({
               <label className={labelClass}>
                 {tr("À faire dans ce bloc (optionnel)")}
               </label>
-              <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "0 0 8px", lineHeight: 1.4 }}>
+              <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 8px", lineHeight: 1.4 }}>
                 {tr("Une tâche, un objectif du jour, ou même un prompt à coller dans Claude, ça s'affiche dès que tu arrives dans ce bloc.")}
               </p>
               {form.tasks.length > 0 && (
                 <div className="space-y-1.5 mb-2">
                   {form.tasks.map((t, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-[#0D0000] border border-[#890404]/20 rounded-lg px-3 py-2">
-                      <span style={{ fontSize: 12, color: "#F5EDED", flex: 1, wordBreak: "break-word" }}>{t}</span>
-                      <button type="button" onClick={() => removeTaskFromForm(i)} aria-label={tr("Supprimer la tâche")} className="text-[#F5EDED]/25 hover:text-red-400 flex-shrink-0">
+                    <div key={i} className="flex items-center gap-2 bg-(--ep-bg) border border-(--ep-line)/20 rounded-lg px-3 py-2">
+                      <span style={{ fontSize: 12, color: "var(--ep-ink)", flex: 1, wordBreak: "break-word" }}>{t}</span>
+                      <button type="button" onClick={() => removeTaskFromForm(i)} aria-label={tr("Supprimer la tâche")} className="text-(--ep-ink)/25 hover:text-red-400 flex-shrink-0">
                         <X size={13} />
                       </button>
                     </div>
@@ -1472,17 +1473,17 @@ export default function WeeklyAgenda({
               onClick={() => setForm((f) => ({ ...f, notify: !f.notify }))}
               className="flex items-center justify-between w-full rounded-lg px-3 py-2.5 border transition-colors"
               style={{
-                borderColor: form.notify ? "rgba(74,222,128,0.4)" : "rgba(224,30,30,0.25)",
-                background: form.notify ? "rgba(74,222,128,0.08)" : "transparent",
+                borderColor: form.notify ? "rgba(var(--ep-ok-rgb),0.4)" : "rgba(var(--ep-accent-rgb),0.25)",
+                background: form.notify ? "rgba(var(--ep-ok-rgb),0.08)" : "transparent",
               }}
             >
-              <span className="flex items-center gap-2" style={{ fontSize: 11.5, fontWeight: 600, color: form.notify ? "#4ade80" : "rgba(245,237,237,0.55)" }}>
+              <span className="flex items-center gap-2" style={{ fontSize: 11.5, fontWeight: 600, color: form.notify ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.55)" }}>
                 <Bell size={13} />{" "}{tr("Me notifier au début de ce bloc")}
               </span>
               <span
                 style={{
                   width: 34, height: 19, borderRadius: 10, flexShrink: 0, position: "relative",
-                  background: form.notify ? "#4ade80" : "rgba(245,237,237,0.15)", transition: "background 0.15s",
+                  background: form.notify ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.15)", transition: "background 0.15s",
                 }}
               >
                 <span
@@ -1509,7 +1510,7 @@ export default function WeeklyAgenda({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest rounded-lg py-2.5 transition-colors"
+                className="flex-1 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest rounded-lg py-2.5 transition-colors"
               >
                 {saving ? tr("Enregistrement…") : tr("Enregistrer")}
               </button>

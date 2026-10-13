@@ -97,11 +97,11 @@ function GoalCard({
     <div className="ep-card" style={{ padding: "16px 18px", opacity: busy ? 0.5 : 1 }}>
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0">
-          <p className="text-sm font-black text-white truncate">{goal.title}</p>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mt-0.5">
+          <p className="text-sm font-black text-(--ep-strong) truncate">{goal.title}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mt-0.5">
             {METRIC_LABELS[goal.metric_type]}
             {goal.target_date && (
-              <span className={overdue ? "text-[#E01E1E]" : ""}>
+              <span className={overdue ? "text-(--ep-accent)" : ""}>
                 {" "}
                 · {overdue
                   ? `en retard de ${Math.abs(daysUntil(goal.target_date))}j`
@@ -114,41 +114,41 @@ function GoalCard({
         </div>
         {goal.status === "active" ? (
           <div className="flex gap-1 flex-shrink-0">
-            <button onClick={complete} title={t("Marquer terminé")} aria-label={t("Marquer terminé")} className="text-[#F5EDED]/25 hover:text-green-400 p-1">
+            <button onClick={complete} title={t("Marquer terminé")} aria-label={t("Marquer terminé")} className="text-(--ep-ink)/25 hover:text-green-400 p-1">
               <Check size={14} />
             </button>
-            <button onClick={abandon} title={t("Abandonner")} aria-label={t("Abandonner")} className="text-[#F5EDED]/25 hover:text-amber-400 p-1">
+            <button onClick={abandon} title={t("Abandonner")} aria-label={t("Abandonner")} className="text-(--ep-ink)/25 hover:text-amber-400 p-1">
               <X size={14} />
             </button>
           </div>
         ) : (
-          <button onClick={remove} title={t("Supprimer")} aria-label={t("Supprimer")} className="text-[#F5EDED]/20 hover:text-red-400 p-1 flex-shrink-0">
+          <button onClick={remove} title={t("Supprimer")} aria-label={t("Supprimer")} className="text-(--ep-ink)/20 hover:text-red-400 p-1 flex-shrink-0">
             <Trash2 size={13} />
           </button>
         )}
       </div>
 
-      <div className="h-2 bg-[#150000] rounded-full overflow-hidden mb-1.5">
+      <div className="h-2 bg-(--ep-s2) rounded-full overflow-hidden mb-1.5">
         <div
           className="h-full rounded-full transition-all"
           style={{
             width: `${pct}%`,
-            background: goal.status === "done" ? "#4ade80" : pct >= 100 ? "#4ade80" : "#E01E1E",
+            background: goal.status === "done" ? "var(--ep-ok)" : pct >= 100 ? "var(--ep-ok)" : "var(--ep-accent)",
           }}
         />
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-[#F5EDED]/45">
-          {formatValue(goal, value)} <span className="text-[#F5EDED]/25">/ {formatValue(goal, goal.target_value)}</span>
-          <span className="ml-1.5 font-bold text-[#F5EDED]/60">{pct}%</span>
+        <p className="text-[11px] text-(--ep-ink)/45">
+          {formatValue(goal, value)} <span className="text-(--ep-ink)/25">/ {formatValue(goal, goal.target_value)}</span>
+          <span className="ml-1.5 font-bold text-(--ep-ink)/60">{pct}%</span>
         </p>
         {editable && (
           <div className="flex items-center gap-1">
-            <button onClick={() => adjust(-1)} disabled={isPending} aria-label={t("Diminuer")} className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
+            <button onClick={() => adjust(-1)} disabled={isPending} aria-label={t("Diminuer")} className="w-6 h-6 rounded-full border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-strong) flex items-center justify-center">
               <Minus size={11} />
             </button>
-            <button onClick={() => adjust(1)} disabled={isPending} aria-label={t("Augmenter")} className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
+            <button onClick={() => adjust(1)} disabled={isPending} aria-label={t("Augmenter")} className="w-6 h-6 rounded-full border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-strong) flex items-center justify-center">
               <Plus size={11} />
             </button>
           </div>
@@ -187,13 +187,13 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="rounded-lg border border-[#890404]/25 bg-[#150000] p-3.5 space-y-2.5 mb-3">
+    <div className="rounded-lg border border-(--ep-line)/25 bg-(--ep-s2) p-3.5 space-y-2.5 mb-3">
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t("Ex. 10 clients actifs avant la fin de l'année")}
         aria-label={t("Titre de l'objectif")}
-        className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+        className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
       />
       <div className="flex gap-1.5">
         {(Object.keys(METRIC_LABELS) as GoalMetricType[]).map((m) => (
@@ -203,9 +203,9 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
             onClick={() => setMetricType(m)}
             className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border"
             style={{
-              background: metricType === m ? "rgba(224,30,30,0.15)" : "transparent",
-              borderColor: metricType === m ? "rgba(224,30,30,0.5)" : "rgba(137,4,4,0.25)",
-              color: metricType === m ? "#fff" : "rgba(245,237,237,0.45)",
+              background: metricType === m ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+              borderColor: metricType === m ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-line-rgb),0.25)",
+              color: metricType === m ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.45)",
             }}
           >
             {METRIC_LABELS[m]}
@@ -220,14 +220,14 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
           onChange={(e) => setTargetValue(e.target.value)}
           placeholder={metricType === "revenu_mois" ? t("Objectif en €") : t("Objectif chiffré")}
           aria-label={t("Valeur cible")}
-          className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+          className="bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
         />
         <input
           type="date"
           value={targetDate}
           onChange={(e) => setTargetDate(e.target.value)}
           aria-label={t("Date cible (optionnel)")}
-          className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#E01E1E]/60"
+          className="bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) outline-none focus:border-(--ep-accent)/60"
         />
       </div>
       {metricType === "custom" && (
@@ -236,18 +236,18 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
           onChange={(e) => setUnit(e.target.value)}
           placeholder={t("Unité (ex. abonnés, clients, avis)")}
           aria-label={t("Unité")}
-          className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+          className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
         />
       )}
       {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
       <div className="flex gap-2">
-        <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2">
+        <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong) px-2">
           {t("Annuler")}
         </button>
         <button
           onClick={handleSubmit}
           disabled={saving || !title.trim() || !targetValue}
-          className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2.5"
+          className="flex-1 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest rounded-lg py-2.5"
         >
           {saving ? t("Création…") : t("Créer l'objectif")}
         </button>
@@ -271,13 +271,13 @@ export default function BusinessGoals({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
           {active.length}{" "}{t("objectif")}{active.length !== 1 ? "s" : ""}{" "}{t("en cours")}
         </p>
         {!formOpen && (
           <button
             onClick={() => setFormOpen(true)}
-            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi)"
           >
             <Plus size={12} />{" "}{t("Nouvel objectif")}
           </button>
@@ -287,9 +287,9 @@ export default function BusinessGoals({
       {formOpen && <NewGoalForm onClose={() => setFormOpen(false)} />}
 
       {active.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
-          <Target size={22} className="text-[#F5EDED]/15 mx-auto mb-2.5" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{t("Aucun objectif en cours. Fixe-en un pour te donner un cap.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-12 text-center">
+          <Target size={22} className="text-(--ep-ink)/15 mx-auto mb-2.5" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{t("Aucun objectif en cours. Fixe-en un pour te donner un cap.")}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-2.5">
@@ -303,7 +303,7 @@ export default function BusinessGoals({
         <div className="mt-4">
           <button
             onClick={() => setShowArchived((s) => !s)}
-            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60"
           >
             <ChevronDown size={12} style={{ transform: showArchived ? "rotate(180deg)" : "none" }} />
             {archived.length}{" "}{t("terminé")}{archived.length !== 1 ? "s" : ""}{t("/abandonné")}{archived.length !== 1 ? "s" : ""}

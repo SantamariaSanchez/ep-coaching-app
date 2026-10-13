@@ -49,16 +49,16 @@ function fieldsFor(platform: string): Field[] {
 
 const input: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.35)",
-  border: "1px solid rgba(137,4,4,0.35)",
+  background: "rgba(var(--ep-shade-rgb),0.35)",
+  border: "1px solid rgba(var(--ep-line-rgb),0.35)",
   borderRadius: 10,
   padding: "9px 10px",
   fontSize: 14,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   outline: "none",
 };
 
-const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 4 };
+const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 4 };
 
 function chip(active: boolean): React.CSSProperties {
   return {
@@ -66,9 +66,9 @@ function chip(active: boolean): React.CSSProperties {
     borderRadius: 999,
     fontSize: 12,
     fontWeight: 800,
-    border: `1px solid ${active ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.35)"}`,
-    background: active ? "rgba(224,30,30,0.15)" : "transparent",
-    color: active ? "#ff6b6b" : "rgba(245,237,237,0.6)",
+    border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-line-rgb),0.35)"}`,
+    background: active ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+    color: active ? "var(--ep-accent-hi2)" : "rgba(var(--ep-ink-rgb),0.6)",
     cursor: "pointer",
     whiteSpace: "nowrap",
   };
@@ -164,7 +164,7 @@ export default function AccountEntryForm({
           <div key={f.key}>
             <label style={lbl}>
               {f.label}
-              {f.hint ? <span style={{ textTransform: "none", fontWeight: 600, color: "rgba(245,237,237,0.3)" }}> ({f.hint})</span> : null}
+              {f.hint ? <span style={{ textTransform: "none", fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.3)" }}> ({f.hint})</span> : null}
             </label>
             <input
               style={input}
@@ -178,24 +178,24 @@ export default function AccountEntryForm({
         ))}
       </div>
 
-      <button type="button" onClick={() => setShowWhere((v) => !v)} style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: "none", border: "none", padding: 0, color: "rgba(245,237,237,0.5)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+      <button type="button" onClick={() => setShowWhere((v) => !v)} style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: "none", border: "none", padding: 0, color: "rgba(var(--ep-ink-rgb),0.5)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
         <HelpCircle size={13} />{" "}{t("Où trouver ces chiffres ?")}
       </button>
-      {showWhere && <p style={{ fontSize: 12, color: "rgba(245,237,237,0.65)", margin: "6px 0 0", lineHeight: 1.6 }}>{WHERE[platform]}{" "}{t("Mets seulement ce que tu vois, laisse vide le reste.")}</p>}
+      {showWhere && <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.65)", margin: "6px 0 0", lineHeight: 1.6 }}>{WHERE[platform]}{" "}{t("Mets seulement ce que tu vois, laisse vide le reste.")}</p>}
 
-      {msg && <p style={{ fontSize: 12, color: msg.ok ? "#4ade80" : "#fca5a5", margin: "10px 0 0", display: "flex", alignItems: "center", gap: 5 }}>{msg.ok && <Check size={13} />} {msg.text}</p>}
+      {msg && <p style={{ fontSize: 12, color: msg.ok ? "var(--ep-ok)" : "#fca5a5", margin: "10px 0 0", display: "flex", alignItems: "center", gap: 5 }}>{msg.ok && <Check size={13} />} {msg.text}</p>}
 
       <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-        <button type="button" disabled={pending} onClick={save} style={{ flex: 1, minWidth: 160, padding: "12px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}>
+        <button type="button" disabled={pending} onClick={save} style={{ flex: 1, minWidth: 160, padding: "12px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}>
           {pending ? "..." : `Enregistrer ${LABELS[platform] ?? ""}`}
         </button>
-        <button type="button" onClick={() => setShowGoal((v) => !v)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.75)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+        <button type="button" onClick={() => setShowGoal((v) => !v)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(var(--ep-line-rgb),0.45)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.75)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
           <Target size={14} />{" "}{t("Objectif")}
         </button>
       </div>
 
       {showGoal && (
-        <div style={{ marginTop: 12, padding: "12px", borderRadius: 12, background: "rgba(0,0,0,0.25)", border: "1px solid rgba(137,4,4,0.25)" }}>
+        <div style={{ marginTop: 12, padding: "12px", borderRadius: 12, background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-line-rgb),0.25)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label style={lbl}>{t("Abonnés visés")}</label>
@@ -206,7 +206,7 @@ export default function AccountEntryForm({
               <input type="date" style={input} value={g.date} min={today} onChange={(e) => setGoal((all) => ({ ...all, [platform]: { ...g, date: e.target.value } }))} aria-label={t("Date visée")} />
             </div>
           </div>
-          <button type="button" disabled={pending} onClick={saveGoal} style={{ marginTop: 10, width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(224,30,30,0.6)", background: "rgba(224,30,30,0.12)", color: "#F5EDED", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+          <button type="button" disabled={pending} onClick={saveGoal} style={{ marginTop: 10, width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(var(--ep-accent-rgb),0.6)", background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-ink)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
             {t("Enregistrer l'objectif")}
           </button>
         </div>

@@ -36,13 +36,13 @@ export default async function AgentChatPage({
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
         href="/dashboard/coach/admin/organisation"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} />{" "}{t("Organisation")}
       </Link>
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Agent IA")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{agent.name}</h1>

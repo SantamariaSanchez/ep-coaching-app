@@ -18,14 +18,14 @@ export default async function NewRoadmapTemplatePage() {
     <div className="px-6 py-8 max-w-6xl mx-auto page-transition">
       <Link
         href="/dashboard/coach/programmation"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {t("Bibliothèque de modèles")}
       </Link>
 
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Nouveau modèle")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Modèle de road map")}</h1>

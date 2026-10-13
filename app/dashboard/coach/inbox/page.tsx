@@ -38,7 +38,7 @@ export default async function CoachInboxPage() {
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Gestion")}</p>
         <h1 className="ep-h1">{t("Boîte de réception")}</h1>
-        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 500 }}>
           {items.length === 0 ? t("Rien en attente") : `${items.length} point${items.length > 1 ? "s" : ""} à traiter`}
         </p>
       </div>
@@ -48,7 +48,7 @@ export default async function CoachInboxPage() {
           style={{
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             padding: "48px 24px",
-            background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
+            background: "linear-gradient(160deg, var(--ep-s5) 0%, var(--ep-bg) 100%)",
             border: "1px solid var(--ep-border)",
             borderRadius: "var(--radius-lg)",
             textAlign: "center",
@@ -56,15 +56,15 @@ export default async function CoachInboxPage() {
         >
           <div style={{
             width: 56, height: 56, borderRadius: 14,
-            background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)",
+            background: "rgba(var(--ep-ok-rgb),0.1)", border: "1px solid rgba(var(--ep-ok-rgb),0.25)",
             display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
           }}>
-            <InboxIcon size={24} style={{ color: "#4ade80" }} strokeWidth={1.5} />
+            <InboxIcon size={24} style={{ color: "var(--ep-ok)" }} strokeWidth={1.5} />
           </div>
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#F5EDED", margin: "0 0 6px" }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--ep-ink)", margin: "0 0 6px" }}>
             {t("Tu es à jour")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
             {t("Aucun bilan, correction ou photo en attente de réponse.")}
           </p>
         </div>
@@ -79,30 +79,30 @@ export default async function CoachInboxPage() {
                 style={{
                   display: "flex", alignItems: "center", gap: 12,
                   padding: "14px 16px", borderRadius: 12,
-                  background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-                  border: "1px solid rgba(224,30,30,0.09)",
+                  background: "linear-gradient(160deg, var(--ep-s5) 0%, var(--ep-bg) 100%)",
+                  border: "1px solid rgba(var(--ep-accent-rgb),0.09)",
                   textDecoration: "none",
                   transition: "border-color 0.15s ease",
                 }}
               >
                 <div style={{
                   width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                  background: "rgba(224,30,30,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(var(--ep-accent-rgb),0.1)", display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <Icon size={15} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                  <Icon size={15} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13.5, fontWeight: 700, color: "#F5EDED", margin: "0 0 2px" }}>
+                  <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ep-ink)", margin: "0 0 2px" }}>
                     {item.clientName}
                   </p>
-                  <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+                  <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>
                     {item.detail}
                   </p>
                 </div>
-                <span style={{ fontSize: 10.5, color: "rgba(245,237,237,0.28)", fontWeight: 600, flexShrink: 0 }}>
+                <span style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.28)", fontWeight: 600, flexShrink: 0 }}>
                   {relativeTime(item.createdAt)}
                 </span>
-                <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+                <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
               </Link>
             );
           })}

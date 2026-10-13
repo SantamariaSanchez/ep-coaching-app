@@ -4,6 +4,7 @@ import {
   LayoutTemplate, CalendarDays, ArrowRight, Mail, Backpack, ExternalLink, Footprints,
 } from "lucide-react";
 import type { SessionAccessory } from "@/lib/session-accessories";
+import { withAlpha } from "@/lib/theme-color";
 // Réexporté pour compatibilité : app/dashboard/coach/page.tsx importe
 // encore timeAwareGreeting depuis ce fichier. La logique vit désormais
 // dans lib/dates.ts (repasse masterclass 2026-09-10, brainstorm "onglet
@@ -86,26 +87,26 @@ function MiniCard({
         gap: 6,
         padding: "14px 16px",
         borderRadius: "var(--radius-lg)",
-        background: "linear-gradient(160deg, #150000 0%, #0d0000 100%)",
-        border: `1px solid ${accent}22`,
+        background: "linear-gradient(160deg, var(--ep-s2) 0%, var(--ep-bg) 100%)",
+        border: `1px solid ${withAlpha(accent, "22")}`,
         textDecoration: "none",
         minWidth: 0,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 6, color: accent }}>
         <Icon size={13} strokeWidth={2} />
-        <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
+        <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
           {label}
         </span>
       </div>
-      <p style={{ margin: 0, fontSize: 17, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+      <p style={{ margin: 0, fontSize: 17, fontWeight: 900, color: "var(--ep-ink)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
         {value}
       </p>
-      <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)", lineHeight: 1.3 }}>
+      <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)", lineHeight: 1.3 }}>
         {sub}
       </p>
       {microSub && (
-        <p style={{ margin: 0, fontSize: 9, color: "rgba(245,237,237,0.22)", lineHeight: 1.2 }}>
+        <p style={{ margin: 0, fontSize: 9, color: "rgba(var(--ep-ink-rgb),0.22)", lineHeight: 1.2 }}>
           {microSub}
         </p>
       )}
@@ -178,9 +179,9 @@ export default function MyDayCard({
           style={{
             fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase",
             padding: "3px 9px", borderRadius: 999,
-            color: todaySeanceLabel ? "#E01E1E" : "#4ade80",
-            background: todaySeanceLabel ? "rgba(224,30,30,0.1)" : "rgba(74,222,128,0.1)",
-            border: `1px solid ${todaySeanceLabel ? "rgba(224,30,30,0.25)" : "rgba(74,222,128,0.25)"}`,
+            color: todaySeanceLabel ? "var(--ep-accent)" : "var(--ep-ok)",
+            background: todaySeanceLabel ? "rgba(var(--ep-accent-rgb),0.1)" : "rgba(var(--ep-ok-rgb),0.1)",
+            border: `1px solid ${todaySeanceLabel ? "rgba(var(--ep-accent-rgb),0.25)" : "rgba(var(--ep-ok-rgb),0.25)"}`,
           }}
         >
           {todaySeanceLabel ? `Jour ON · ${todaySeanceLabel}` : "Jour OFF"}
@@ -193,23 +194,23 @@ export default function MyDayCard({
           display: "flex", alignItems: "flex-start", gap: 10,
           padding: "12px 16px", marginBottom: 14,
           borderRadius: "var(--radius-lg)",
-          background: "rgba(224,30,30,0.05)",
-          border: "1px solid rgba(224,30,30,0.14)",
+          background: "rgba(var(--ep-accent-rgb),0.05)",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
         }}
       >
-        <Sparkles size={14} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 1 }} strokeWidth={1.8} />
-        <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.6)", lineHeight: 1.5 }}>
+        <Sparkles size={14} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 1 }} strokeWidth={1.8} />
+        <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.5 }}>
           {tip}
         </p>
       </div>
 
       {/* Mini-cartes — idées #3 à #6, chacune avec sa propre teinte. */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
-        <MiniCard icon={Apple} accent="#4ade80" label="Nutrition" value={nutritionValue} sub={nutritionSub} href="/dashboard/coach/moi/nutrition" delay={0} />
-        <MiniCard icon={Moon} accent="#60a5fa" label="Sommeil" value={sleepValue} sub={sleepSub} href="/dashboard/coach/moi/tracking" delay={50} />
-        <MiniCard icon={CalendarClock} accent="#fb923c" label={agendaLabel} value={agendaValue} sub={agendaSub} microSub={agendaMicroSub} href="/dashboard/coach/moi/agenda" delay={100} />
+        <MiniCard icon={Apple} accent="var(--ep-ok)" label="Nutrition" value={nutritionValue} sub={nutritionSub} href="/dashboard/coach/moi/nutrition" delay={0} />
+        <MiniCard icon={Moon} accent="var(--ep-info)" label="Sommeil" value={sleepValue} sub={sleepSub} href="/dashboard/coach/moi/tracking" delay={50} />
+        <MiniCard icon={CalendarClock} accent="var(--ep-orange)" label={agendaLabel} value={agendaValue} sub={agendaSub} microSub={agendaMicroSub} href="/dashboard/coach/moi/agenda" delay={100} />
         <MiniCard icon={Video} accent="#c084fc" label="Prochain live" value={liveValue} sub={liveSub} href="/dashboard/coach/live" delay={150} />
-        <MiniCard icon={Footprints} accent="#4ade80" label="Pas" value={stepsValue} sub={stepsSub} href="/dashboard/coach/moi/steps" delay={200} />
+        <MiniCard icon={Footprints} accent="var(--ep-ok)" label="Pas" value={stepsValue} sub={stepsSub} href="/dashboard/coach/moi/steps" delay={200} />
       </div>
 
       {/* "À prévoir" pour la séance du jour — même logique que
@@ -222,10 +223,10 @@ export default function MyDayCard({
         <div
           style={{
             marginBottom: 14, padding: "12px 16px", borderRadius: "var(--radius-lg)",
-            background: "rgba(0,0,0,0.3)", border: "1px solid rgba(137,4,4,0.2)",
+            background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-line-rgb),0.2)",
           }}
         >
-          <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)", margin: "0 0 8px" }}>
+          <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)", margin: "0 0 8px" }}>
             <Backpack size={12} /> À prévoir pour {todaySeanceLabel}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -238,13 +239,13 @@ export default function MyDayCard({
                   href={a.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
+                  style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "var(--ep-ink)", textDecoration: "none" }}
                 >
                   {a.accessory}
-                  <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
+                  <ExternalLink size={9} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
                 </a>
               ) : (
-                <span key={a.accessory} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#F5EDED" }}>
+                <span key={a.accessory} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "var(--ep-ink)" }}>
                   {a.accessory}
                 </span>
               )
@@ -257,19 +258,19 @@ export default function MyDayCard({
       {unreadPreview.length > 0 && (
         <div style={{ marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", display: "flex", alignItems: "center", gap: 6 }}>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", display: "flex", alignItems: "center", gap: 6 }}>
               <Mail size={11} /> Messages non lus
               {/* Audit friction coach (2026-09-16) : au-delà des 3 aperçus
                   affichés, rien n'indiquait qu'il y en avait davantage — le
                   coach pouvait croire l'aperçu complet et laisser des
                   messages non lus de côté. */}
               {unreadTotal > unreadPreview.length && (
-                <span style={{ color: "rgba(245,237,237,0.3)", fontWeight: 700, textTransform: "none", letterSpacing: 0 }}>
+                <span style={{ color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 700, textTransform: "none", letterSpacing: 0 }}>
                   ({unreadTotal})
                 </span>
               )}
             </p>
-            <Link href="/dashboard/coach/messages" style={{ fontSize: 10, fontWeight: 700, color: "#E01E1E", textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
+            <Link href="/dashboard/coach/messages" style={{ fontSize: 10, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
               Tout voir <ArrowRight size={10} />
             </Link>
           </div>
@@ -287,15 +288,15 @@ export default function MyDayCard({
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
                   padding: "9px 12px", borderRadius: 10,
-                  background: "#150000", border: "1px solid rgba(137,4,4,0.25)",
+                  background: "var(--ep-s2)", border: "1px solid rgba(var(--ep-line-rgb),0.25)",
                   textDecoration: "none",
                 }}
               >
-                <MessageCircle size={13} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
-                <p style={{ margin: 0, fontSize: 11.5, color: "#F5EDED", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <MessageCircle size={13} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+                <p style={{ margin: 0, fontSize: 11.5, color: "var(--ep-ink)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   <strong style={{ fontWeight: 800 }}>{m.senderName}</strong>
                   {" · "}
-                  <span style={{ color: "rgba(245,237,237,0.5)" }}>{m.content}</span>
+                  <span style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }}>{m.content}</span>
                 </p>
               </Link>
             ))}
@@ -318,8 +319,8 @@ export default function MyDayCard({
             style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               padding: "8px 13px", borderRadius: 999,
-              background: "rgba(245,237,237,0.04)", border: "1px solid rgba(137,4,4,0.25)",
-              color: "rgba(245,237,237,0.6)", fontSize: 11, fontWeight: 700,
+              background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-line-rgb),0.25)",
+              color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: 11, fontWeight: 700,
               textDecoration: "none", whiteSpace: "nowrap",
             }}
           >

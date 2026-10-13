@@ -44,11 +44,11 @@ export default async function CoachFormationsPage() {
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{isFounder ? t("Académie EP") : t("Business")}</p>
         <h1 className="ep-h1">{isFounder ? t("Formations") : t("Mes formations")}</h1>
-        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.4)" }}>
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
           {formations.length}{" "}{t("formation")}{formations.length !== 1 ? "s" : ""}
         </p>
         {!isFounder && (
-          <p style={{ marginTop: 8, fontSize: 12.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.6 }}>
+          <p style={{ marginTop: 8, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.6 }}>
             {t("Tes propres formations : vidéos YouTube (même non répertoriées), rangées en sections et modules. Inclus-les à ton coaching ou vends-les avec ton lien de paiement. L'Académie EP reste disponible dans ton espace Moi.")}
           </p>
         )}
@@ -60,14 +60,14 @@ export default async function CoachFormationsPage() {
           style={{
             padding: "14px 18px",
             marginBottom: 16,
-            background: "linear-gradient(135deg, rgba(224,30,30,0.1) 0%, rgba(137,4,4,0.04) 100%)",
-            border: "1px solid rgba(224,30,30,0.25)",
+            background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.1) 0%, rgba(var(--ep-line-rgb),0.04) 100%)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
           }}
         >
-          <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px" }}>
+          <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 3px" }}>
             {totalReadyNotPublished}{" "}{t("vidéo")}{totalReadyNotPublished !== 1 ? "s" : ""}{" "}{t("prête")}{totalReadyNotPublished !== 1 ? "s" : ""}{" "}{t("mais pas encore publiée")}{totalReadyNotPublished !== 1 ? "s" : ""}
           </p>
-          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0, lineHeight: 1.5 }}>
             {totalPublished === 0
               ? t("Aucune vidéo n'est visible côté membre pour l'instant, même si l'URL YouTube est déjà renseignée. Publie-les (dans chaque leçon, ou d'un coup par module) pour que ce contenu serve enfin.")
               : t("Une URL YouTube renseignée sur une leçon ne suffit pas à la rendre visible, pense à la publier.")}
@@ -94,8 +94,8 @@ export default async function CoachFormationsPage() {
           >
             <div style={{
               width: 48, height: 48, borderRadius: 13,
-              background: "rgba(224,30,30,0.10)",
-              border: "1px solid rgba(224,30,30,0.18)",
+              background: "rgba(var(--ep-accent-rgb),0.10)",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.18)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 22, flexShrink: 0,
             }}>
@@ -104,34 +104,34 @@ export default async function CoachFormationsPage() {
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 2 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0, overflowWrap: "anywhere" }}>
+                <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--ep-ink)", margin: 0, overflowWrap: "anywhere" }}>
                   {formation.title}
                 </h3>
                 {formation.is_published
-                  ? <Eye size={12} style={{ color: "#4ade80" }} aria-label={t("Publiée")} />
-                  : <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
-                      <EyeOff size={12} style={{ color: "rgba(245,237,237,0.25)" }} />{" "}{t("Brouillon")}
+                  ? <Eye size={12} style={{ color: "var(--ep-ok)" }} aria-label={t("Publiée")} />
+                  : <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)" }}>
+                      <EyeOff size={12} style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }} />{" "}{t("Brouillon")}
                     </span>
                 }
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
-                <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
+                <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 600 }}>
                   {moduleCount}{" "}{t("section")}{moduleCount !== 1 ? "s" : ""}
                 </span>
-                <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 600 }}>
                   <PlayCircle size={9} />
                   {published}/{total}{" "}{t("vidéos publiées")}
                 </span>
               </div>
             </div>
 
-            <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+            <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
           </Link>
         ))}
 
         {formations.length === 0 && (
           <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.35)", margin: 0 }}>
               {t("Aucune formation pour l'instant. Clique sur \"Nouvelle formation\" pour en créer une.")}
             </p>
           </div>

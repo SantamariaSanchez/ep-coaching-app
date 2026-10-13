@@ -160,7 +160,7 @@ export default function CoachVideoRecorder({
     return (
       <button
         onClick={() => setOpen(true)}
-        className={triggerClassName ?? "inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 hover:border-[#890404]/50 transition-colors"}
+        className={triggerClassName ?? "inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 hover:border-(--ep-line)/50 transition-colors"}
       >
         <Video size={13} />
         {triggerLabel}
@@ -170,11 +170,11 @@ export default function CoachVideoRecorder({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={sending ? undefined : close} />
-      <div className="ep-modal-panel relative w-full max-w-lg bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
+      <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm" onClick={sending ? undefined : close} />
+      <div className="ep-modal-panel relative w-full max-w-lg bg-(--ep-s2) border border-(--ep-line)/40 rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-black uppercase tracking-widest text-white">{tr("Retour vidéo")}</p>
-          <button onClick={close} disabled={sending} aria-label={tr("Fermer")} className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
+          <p className="text-sm font-black uppercase tracking-widest text-(--ep-strong)">{tr("Retour vidéo")}</p>
+          <button onClick={close} disabled={sending} aria-label={tr("Fermer")} className="p-1 text-(--ep-ink)/40 hover:text-(--ep-strong) transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -183,21 +183,21 @@ export default function CoachVideoRecorder({
           <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => pickSource("webcam")}
-              className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
+              className="flex flex-col items-center gap-2 py-6 rounded-xl border border-(--ep-line)/30 hover:border-(--ep-accent)/50 hover:bg-(--ep-accent)/5 text-(--ep-ink)/60 transition-colors"
             >
               <Video size={22} />
               <span className="text-xs font-bold uppercase tracking-wider">{tr("Webcam")}</span>
             </button>
             <button
               onClick={() => pickSource("screen")}
-              className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
+              className="flex flex-col items-center gap-2 py-6 rounded-xl border border-(--ep-line)/30 hover:border-(--ep-accent)/50 hover:bg-(--ep-accent)/5 text-(--ep-ink)/60 transition-colors"
             >
               <Monitor size={22} />
               <span className="text-xs font-bold uppercase tracking-wider">{tr("Partage d'écran")}</span>
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
+              className="flex flex-col items-center gap-2 py-6 rounded-xl border border-(--ep-line)/30 hover:border-(--ep-accent)/50 hover:bg-(--ep-accent)/5 text-(--ep-ink)/60 transition-colors"
             >
               <Upload size={22} />
               <span className="text-xs font-bold uppercase tracking-wider">{tr("Importer")}</span>
@@ -236,8 +236,8 @@ export default function CoachVideoRecorder({
               onClick={phase === "recording" ? stopRecording : startRecording}
               className={`w-full py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-colors ${
                 phase === "recording"
-                  ? "bg-[#1f0101] border border-red-500/40 text-red-400"
-                  : "bg-[#E01E1E] hover:bg-[#B00202] text-white"
+                  ? "bg-(--ep-s1) border border-red-500/40 text-red-400"
+                  : "bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong)"
               }`}
             >
               {phase === "recording" ? (
@@ -256,14 +256,14 @@ export default function CoachVideoRecorder({
               <button
                 onClick={reset}
                 disabled={sending}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 py-3 rounded-xl border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 text-xs font-bold uppercase tracking-widest transition-colors"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-3 rounded-xl border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 text-xs font-bold uppercase tracking-widest transition-colors"
               >
                 <RotateCcw size={13} />{" "}{tr("Recommencer")}
               </button>
               <button
                 onClick={handleSend}
                 disabled={sending}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 py-3 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-3 rounded-xl bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest transition-colors"
               >
                 {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
                 {sending ? tr("Envoi…") : tr("Envoyer")}

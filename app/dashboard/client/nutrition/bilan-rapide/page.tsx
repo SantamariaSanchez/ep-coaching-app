@@ -33,7 +33,7 @@ export default async function BilanRapidePage() {
       {/* Back link */}
       <Link
         href={backHref}
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} />
         {t("Retour nutrition")}
@@ -41,13 +41,13 @@ export default async function BilanRapidePage() {
 
       {/* Header */}
       <div className="mb-6">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Nutrition")}
         </p>
         <h1 className="text-2xl font-black uppercase tracking-tight mb-2">
           {t("⚡ Bilan rapide")}
         </h1>
-        <p className="text-sm text-[#F5EDED]/45 leading-relaxed">
+        <p className="text-sm text-(--ep-ink)/45 leading-relaxed">
           {t("Repas par repas, aliment par aliment. ~2 min, log automatique à la fin.")}
         </p>
 

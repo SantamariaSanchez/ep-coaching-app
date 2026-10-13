@@ -23,7 +23,7 @@ export default async function EquipeLayout({ children }: { children: React.React
   if (ctx === "not-staff") redirect("/dashboard/client");
   if (ctx === "inactive") {
     // La page /equipe/inactif gère elle-même son affichage.
-    return <div style={{ minHeight: "100vh", background: "#0D0000" }}>{children}</div>;
+    return <div style={{ minHeight: "100vh", background: "var(--ep-bg)" }}>{children}</div>;
   }
 
   const unlocked = ctx.emailVerified && ctx.contractSigned;

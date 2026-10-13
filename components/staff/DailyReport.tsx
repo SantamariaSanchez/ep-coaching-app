@@ -84,12 +84,12 @@ export default function DailyReport({
                 aria-pressed={date === d}
                 style={{
                   flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, padding: "6px 11px", borderRadius: 999, cursor: "pointer",
-                  color: date === d ? "#F5EDED" : "rgba(245,237,237,0.5)",
-                  background: date === d ? "rgba(224,30,30,0.16)" : "rgba(245,237,237,0.03)",
-                  border: `1px solid ${date === d ? "rgba(224,30,30,0.4)" : "rgba(245,237,237,0.08)"}`,
+                  color: date === d ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.5)",
+                  background: date === d ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-ink-rgb),0.03)",
+                  border: `1px solid ${date === d ? "rgba(var(--ep-accent-rgb),0.4)" : "rgba(var(--ep-ink-rgb),0.08)"}`,
                 }}
               >
-                {done && <Check size={11} style={{ color: "#4ade80" }} />}
+                {done && <Check size={11} style={{ color: "var(--ep-ok)" }} />}
                 {label}
               </button>
             );
@@ -99,7 +99,7 @@ export default function DailyReport({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 12 }}>
           {metrics.map((m) => (
             <div key={m.key}>
-              <label htmlFor={`rep-${m.key}`} style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
+              <label htmlFor={`rep-${m.key}`} style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 5 }}>
                 {m.label}
               </label>
               <input
@@ -118,13 +118,13 @@ export default function DailyReport({
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
           <div>
-            <label htmlFor="rep-win" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
+            <label htmlFor="rep-win" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 5 }}>
               {t("Victoire du jour")}
             </label>
             <textarea id="rep-win" rows={2} value={win} onChange={(e) => setWin(e.target.value)} className="ep-input" placeholder={t("Ce qui a bien marché")} style={{ resize: "vertical" }} />
           </div>
           <div>
-            <label htmlFor="rep-blocker" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
+            <label htmlFor="rep-blocker" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 5 }}>
               {t("Blocage ou besoin")}
             </label>
             <textarea id="rep-blocker" rows={2} value={blocker} onChange={(e) => setBlocker(e.target.value)} className="ep-input" placeholder={t("Ce qui t'a freiné, ce dont tu as besoin")} style={{ resize: "vertical" }} />
@@ -135,7 +135,7 @@ export default function DailyReport({
             <Save size={14} />
             {pending ? t("Enregistrement...") : existing ? t("Mettre à jour le rapport") : t("Envoyer le rapport")}
           </button>
-          {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "#4ade80" : "#FDC4C4" }}>{message.text}</p>}
+          {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "var(--ep-ok)" : "var(--ep-pink)" }}>{message.text}</p>}
         </div>
       </div>
 
@@ -143,29 +143,29 @@ export default function DailyReport({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10, marginBottom: 18 }}>
         {totals.map(({ metric, total }) => (
           <div key={metric.key} className="ep-card" style={{ padding: "12px 14px" }}>
-            <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)", margin: "0 0 4px" }}>{metric.label}</p>
-            <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{fmt(metric, total)}</p>
+            <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)", margin: "0 0 4px" }}>{metric.label}</p>
+            <p style={{ fontSize: 18, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{fmt(metric, total)}</p>
           </div>
         ))}
       </div>
 
       <p className="ep-label" style={{ marginBottom: 8 }}>{t("Historique")}</p>
       {reports.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)" }}>{t("Aucun rapport envoyé pour l'instant.")}</p>
+        <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{t("Aucun rapport envoyé pour l'instant.")}</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {reports.slice(0, 30).map((r) => {
             const rm = (r.data?.metrics as Record<string, number> | undefined) ?? {};
             return (
               <div key={r.id} className="ep-card" style={{ padding: "11px 14px" }}>
-                <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px", textTransform: "capitalize" }}>
+                <p style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px", textTransform: "capitalize" }}>
                   {new Date(`${r.occurred_on}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
                 </p>
-                <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.55)", margin: 0, lineHeight: 1.55 }}>
+                <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.55)", margin: 0, lineHeight: 1.55 }}>
                   {metrics.filter((m) => rm[m.key] !== undefined).map((m) => `${m.label} : ${fmt(m, rm[m.key])}`).join(" · ") || t("Aucun chiffre")}
                 </p>
-                {typeof r.data?.win === "string" && <p style={{ fontSize: 11.5, color: "#4ade80", margin: "4px 0 0" }}>{t("Victoire :")}{" "}{r.data.win as string}</p>}
-                {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "#facc15", margin: "2px 0 0" }}>{t("Blocage :")}{" "}{r.data.blocker as string}</p>}
+                {typeof r.data?.win === "string" && <p style={{ fontSize: 11.5, color: "var(--ep-ok)", margin: "4px 0 0" }}>{t("Victoire :")}{" "}{r.data.win as string}</p>}
+                {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "var(--ep-yellow)", margin: "2px 0 0" }}>{t("Blocage :")}{" "}{r.data.blocker as string}</p>}
               </div>
             );
           })}

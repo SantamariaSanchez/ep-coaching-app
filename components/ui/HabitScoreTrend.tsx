@@ -6,11 +6,11 @@ import type { DailyHabitPoint } from "@/lib/habit-score";
 // pas de "use client" : tout est déjà calculé côté serveur.
 
 function barColor(score: number): string {
-  if (score >= 90) return "#4ade80";
-  if (score >= 70) return "#E01E1E";
-  if (score >= 40) return "#fbbf24";
-  if (score > 0) return "rgba(245,237,237,0.25)";
-  return "rgba(245,237,237,0.1)";
+  if (score >= 90) return "var(--ep-ok)";
+  if (score >= 70) return "var(--ep-accent)";
+  if (score >= 40) return "var(--ep-warn)";
+  if (score > 0) return "rgba(var(--ep-ink-rgb),0.25)";
+  return "rgba(var(--ep-ink-rgb),0.1)";
 }
 
 const DOW_LABELS = ["D", "L", "M", "M", "J", "V", "S"];
@@ -33,14 +33,14 @@ export default function HabitScoreTrend({
   return (
     <div className="ep-card" style={{ padding: "14px 18px" }}>
       <div className="flex items-center justify-between mb-3">
-        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: 0 }}>
+        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", margin: 0 }}>
           7 derniers jours
         </p>
         {streak > 0 && (
           <span
             style={{
-              fontSize: 10, fontWeight: 800, color: "#fbbf24",
-              background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)",
+              fontSize: 10, fontWeight: 800, color: "var(--ep-warn)",
+              background: "rgba(var(--ep-warn-rgb),0.1)", border: "1px solid rgba(var(--ep-warn-rgb),0.25)",
               borderRadius: 999, padding: "2px 8px",
             }}
           >
@@ -63,7 +63,7 @@ export default function HabitScoreTrend({
                     minHeight: 4,
                     borderRadius: 4,
                     background: barColor(p.score),
-                    border: isToday ? "1px solid rgba(245,237,237,0.5)" : "none",
+                    border: isToday ? "1px solid rgba(var(--ep-ink-rgb),0.5)" : "none",
                     transition: "height 0.4s ease",
                   }}
                 />
@@ -71,7 +71,7 @@ export default function HabitScoreTrend({
               <span
                 style={{
                   fontSize: 9, fontWeight: isToday ? 800 : 600,
-                  color: isToday ? "#F5EDED" : "rgba(245,237,237,0.3)",
+                  color: isToday ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.3)",
                 }}
               >
                 {dowLabel(p.date)}

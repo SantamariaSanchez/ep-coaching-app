@@ -54,7 +54,7 @@ function AuthorAvatarLink({
         />
       ) : (
         <div
-          className="rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center font-black text-white"
+          className="rounded-full bg-gradient-to-br from-(--ep-accent) to-(--ep-line) flex items-center justify-center font-black text-(--ep-strong)"
           style={{ width: size, height: size, fontSize: size * 0.32 }}
         >
           {initials(authorName)}
@@ -152,17 +152,17 @@ function Composer({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-6">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 mb-6">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
         rows={3}
-        className="w-full bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none resize-none"
+        className="w-full bg-transparent text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none resize-none"
       />
       {image && (
-        <p className="text-[10px] text-[#F5EDED]/40 mb-2 truncate">📎 {image.name}</p>
+        <p className="text-[10px] text-(--ep-ink)/40 mb-2 truncate">📎 {image.name}</p>
       )}
       {type === "victory" && (
         <label className="flex items-center gap-2 mb-2 cursor-pointer">
@@ -170,23 +170,23 @@ function Composer({
             type="checkbox"
             checked={makePublic}
             onChange={(e) => setMakePublic(e.target.checked)}
-            className="accent-[#E01E1E]"
+            className="accent-(--ep-accent)"
           />
-          <span className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed">
+          <span className="text-[10.5px] text-(--ep-ink)/35 leading-relaxed">
             {t("Autoriser à afficher sur le mur public du site (prénom uniquement, sans nom de famille)")}
           </span>
         </label>
       )}
       {type === "question" && !isCoach && (
-        <p className="text-[10px] text-[#F5EDED]/30 mb-2 leading-relaxed">
+        <p className="text-[10px] text-(--ep-ink)/30 mb-2 leading-relaxed">
           {t("Visible par le coach et toute la communauté, quelqu'un d'autre a probablement la même question. Pour quelque chose de plus personnel,")}{" "}
-          <Link href={`${basePath}/messages`} className="text-[#F5EDED]/50 hover:text-[#F5EDED]/80 underline underline-offset-2">
+          <Link href={`${basePath}/messages`} className="text-(--ep-ink)/50 hover:text-(--ep-ink)/80 underline underline-offset-2">
             {t("écris plutôt en privé")}
           </Link>
           .
         </p>
       )}
-      <div className="flex items-center justify-between pt-2 border-t border-[#890404]/15">
+      <div className="flex items-center justify-between pt-2 border-t border-(--ep-line)/15">
         {type === "victory" ? (
           <>
             <input
@@ -199,21 +199,21 @@ function Composer({
             />
             <button
               onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors"
             >
               <ImageIcon size={14} strokeWidth={1.8} />
               {t("Photo")}
             </button>
           </>
         ) : (
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25">
             +{pointsEarned}{" "}{t("points à la publication")}
           </span>
         )}
         <button
           onClick={handleSubmit}
           disabled={!content.trim() || posting}
-          className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
         >
           {posting ? (
             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -224,7 +224,7 @@ function Composer({
         </button>
       </div>
       {type === "victory" && (
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mt-2">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mt-2">
           +{pointsEarned}{" "}{t("points à la publication")}
         </p>
       )}
@@ -303,7 +303,7 @@ function CommentsThread({
   return (
     <>
       {loading && (
-        <p className="text-[10px] text-[#F5EDED]/30 mt-3">{t("Chargement des réponses...")}</p>
+        <p className="text-[10px] text-(--ep-ink)/30 mt-3">{t("Chargement des réponses...")}</p>
       )}
       {comments?.map((c) => (
         <div key={c.id} className="flex items-start gap-2 mt-3">
@@ -316,42 +316,42 @@ function CommentsThread({
               size={24}
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-[#890404]/20 flex items-center justify-center text-[8px] font-black text-[#F5EDED]/60 flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-(--ep-line)/20 flex items-center justify-center text-[8px] font-black text-(--ep-ink)/60 flex-shrink-0">
               {initials(c.author_name)}
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-[#F5EDED]/60">
+            <p className="text-[10px] font-bold text-(--ep-ink)/60">
               {c.author_id ? (
-                <Link href={`${basePath}/profile/${c.author_id}`} className="hover:text-[#F5EDED]/90">
+                <Link href={`${basePath}/profile/${c.author_id}`} className="hover:text-(--ep-ink)/90">
                   {c.author_name}
                 </Link>
               ) : (
                 c.author_name
               )}{" "}
-              <span className="text-[8px] font-bold uppercase tracking-wide text-[#F5EDED]/25">
+              <span className="text-[8px] font-bold uppercase tracking-wide text-(--ep-ink)/25">
                 · {badgeLabel(c.author_role, c.author_subscription_status)}
               </span>{" "}
               {c.author_points != null && <RankBadge points={c.author_points} />}
-              <span className="text-[#F5EDED]/25 font-normal"> · {timeAgo(c.created_at)}</span>
+              <span className="text-(--ep-ink)/25 font-normal"> · {timeAgo(c.created_at)}</span>
             </p>
-            <p className="text-xs text-[#F5EDED]/70">{c.content}</p>
+            <p className="text-xs text-(--ep-ink)/70">{c.content}</p>
           </div>
         </div>
       ))}
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#890404]/10">
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-(--ep-line)/10">
         <input
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder={t("Répondre...")} aria-label={t("Répondre...")}
-          className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+          className="flex-1 bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
         />
         <button
           onClick={handleSend}
           disabled={!content.trim() || sending}
           aria-label={t("Envoyer")}
-          className="text-[#E01E1E] disabled:opacity-30 transition-opacity"
+          className="text-(--ep-accent) disabled:opacity-30 transition-opacity"
         >
           <Send size={15} strokeWidth={2} />
         </button>
@@ -470,7 +470,7 @@ function PostCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 mb-3">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4 mb-3">
       <div className="flex items-start gap-3">
         <AuthorAvatarLink
           basePath={basePath}
@@ -481,23 +481,23 @@ function PostCard({
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Link href={`${basePath}/profile/${post.author_id}`} className="text-xs font-bold text-white truncate hover:underline">
+            <Link href={`${basePath}/profile/${post.author_id}`} className="text-xs font-bold text-(--ep-strong) truncate hover:underline">
               {post.author_name}
             </Link>
-            <span className="text-[9px] font-bold uppercase tracking-wide text-[#F5EDED]/30 flex-shrink-0">
+            <span className="text-[9px] font-bold uppercase tracking-wide text-(--ep-ink)/30 flex-shrink-0">
               {badgeLabel(post.author_role, post.author_subscription_status)}
             </span>
             {post.author_points != null && <RankBadge points={post.author_points} />}
-            <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">
+            <span className="text-[10px] text-(--ep-ink)/30 flex-shrink-0">
               · {timeAgo(post.created_at)}
             </span>
           </div>
-          <p className="text-sm text-[#F5EDED]/75 mt-1 whitespace-pre-wrap leading-relaxed">
+          <p className="text-sm text-(--ep-ink)/75 mt-1 whitespace-pre-wrap leading-relaxed">
             {post.content}
           </p>
 
           {post.image_url && (
-            <div className="relative w-full mt-3 rounded-lg overflow-hidden border border-[#890404]/15" style={{ aspectRatio: "4/3" }}>
+            <div className="relative w-full mt-3 rounded-lg overflow-hidden border border-(--ep-line)/15" style={{ aspectRatio: "4/3" }}>
               <Image src={post.image_url} alt={`Photo partagée par ${post.author_name}`} fill className="object-cover" unoptimized />
             </div>
           )}
@@ -517,7 +517,7 @@ function PostCard({
                 <button
                   onClick={toggleAnswered}
                   disabled={updatingStatus}
-                  className="ml-2 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+                  className="ml-2 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors"
                 >
                   {t("Marquer")}{" "}{post.status === "answered" ? t("non répondu") : t("répondu")}
                 </button>
@@ -526,7 +526,7 @@ function PostCard({
                 <button
                   onClick={saveAsIdea}
                   disabled={savingIdea || ideaSaved}
-                  className="ml-2 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors disabled:opacity-60"
+                  className="ml-2 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors disabled:opacity-60"
                 >
                   <Sparkles size={10} />
                   {ideaSaved ? t("Envoyé au studio") : t("→ Idée de contenu")}
@@ -541,14 +541,14 @@ function PostCard({
               disabled={reacting}
               aria-pressed={post.reacted_by_me}
               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-60"
-              style={{ color: post.reacted_by_me ? "#E01E1E" : "rgba(245,237,237,0.35)" }}
+              style={{ color: post.reacted_by_me ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.35)" }}
             >
-              <ThumbsUp size={12} strokeWidth={1.8} fill={post.reacted_by_me ? "#E01E1E" : "none"} />
+              <ThumbsUp size={12} strokeWidth={1.8} fill={post.reacted_by_me ? "var(--ep-accent)" : "none"} />
               {post.reaction_count > 0 ? post.reaction_count : t("Bravo")}
             </button>
             <button
               onClick={onToggleExpand}
-              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/55 transition-colors"
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/55 transition-colors"
             >
               <MessageCircle size={12} strokeWidth={1.8} />
               {post.comment_count > 0 ? `${post.comment_count} réponse${post.comment_count > 1 ? "s" : ""}` : t("Répondre")}
@@ -557,7 +557,7 @@ function PostCard({
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/20 hover:text-red-400 transition-colors disabled:opacity-30"
+                className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/20 hover:text-red-400 transition-colors disabled:opacity-30"
               >
                 <Trash2 size={11} strokeWidth={1.8} />
                 {t("Supprimer")}
@@ -704,12 +704,12 @@ export default function CommunityFeed({
       />
 
       {posts.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 px-6 text-center">
-          <Icon size={28} className="text-[#E01E1E]/70 mx-auto mb-4" strokeWidth={1.5} />
-          <p className="text-base font-black uppercase tracking-tight text-white mb-2">
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-10 px-6 text-center">
+          <Icon size={28} className="text-(--ep-accent)/70 mx-auto mb-4" strokeWidth={1.5} />
+          <p className="text-base font-black uppercase tracking-tight text-(--ep-strong) mb-2">
             {type === "victory" ? t("Sois le premier à partager") : t("Sois le premier à demander")}
           </p>
-          <p className="text-sm text-[#F5EDED]/45 max-w-sm mx-auto leading-relaxed">
+          <p className="text-sm text-(--ep-ink)/45 max-w-sm mx-auto leading-relaxed">
             {type === "victory"
               ? t("Une séance réussie, un kilo de perdu, un nouveau record : ta victoire motive toute la communauté et reste visible sur ton profil.")
               : t("Aucune question n'est trop basique : celle que tu n'oses pas poser, quelqu'un d'autre se la pose aussi. Ton coach et toute la communauté peuvent y répondre ici.")}
@@ -742,11 +742,11 @@ export default function CommunityFeed({
           <div ref={sentinelRef} className="h-1" />
           {loadingMore && (
             <div className="flex justify-center py-4">
-              <div className="w-5 h-5 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-(--ep-accent) border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           {!nextCursor && posts.length > 0 && (
-            <p className="text-center text-[10px] text-[#F5EDED]/20 py-4 uppercase tracking-widest font-bold">
+            <p className="text-center text-[10px] text-(--ep-ink)/20 py-4 uppercase tracking-widest font-bold">
               {t("Fin du fil")}
             </p>
           )}

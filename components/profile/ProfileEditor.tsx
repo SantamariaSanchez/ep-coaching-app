@@ -74,8 +74,8 @@ export default function ProfileEditor({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
         {t("Modifier mon profil")}
       </p>
 
@@ -83,7 +83,7 @@ export default function ProfileEditor({
       <button
         onClick={() => fileRef.current?.click()}
         disabled={uploading}
-        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-[#F5EDED]/75 mb-4 disabled:opacity-40"
+        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-ink)/75 mb-4 disabled:opacity-40"
       >
         <Camera size={13} strokeWidth={1.8} />
         {uploading ? t("Envoi...") : t("Changer ma photo")}
@@ -91,17 +91,17 @@ export default function ProfileEditor({
 
       <div className="space-y-3">
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 block mb-1.5">
             {t("Prénom et nom")}
           </label>
           <input aria-label={t("Prénom et nom")}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none transition-colors"
+            className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/50 rounded-lg px-3.5 py-2.5 text-sm text-(--ep-strong) focus:outline-none transition-colors"
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 block mb-1.5">
             {t("Bio")}
           </label>
           <textarea
@@ -110,12 +110,12 @@ export default function ProfileEditor({
             placeholder={t("Parle un peu de toi, tes objectifs, ton parcours...")} aria-label={t("Parle un peu de toi, tes objectifs, ton parcours...")}
             rows={3}
             maxLength={280}
-            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors resize-none"
+            className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/50 rounded-lg px-3.5 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 focus:outline-none transition-colors resize-none"
           />
-          <p className="text-[10px] text-[#F5EDED]/20 mt-1 text-right">{bioVal.length}/280</p>
+          <p className="text-[10px] text-(--ep-ink)/20 mt-1 text-right">{bioVal.length}/280</p>
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 block mb-1.5">
             {t("Téléphone")}
           </label>
           <input
@@ -123,32 +123,32 @@ export default function ProfileEditor({
             value={phoneVal}
             onChange={(e) => setPhoneVal(e.target.value)}
             placeholder="06 12 34 56 78" aria-label="06 12 34 56 78"
-            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
+            className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/50 rounded-lg px-3.5 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 focus:outline-none transition-colors"
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 block mb-1.5">
             {t("Instagram")}
           </label>
           <input
             value={instagramVal}
             onChange={(e) => setInstagramVal(e.target.value)}
             placeholder={t("tonpseudo")} aria-label={t("tonpseudo")}
-            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
+            className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/50 rounded-lg px-3.5 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 focus:outline-none transition-colors"
           />
         </div>
         {/* Colonne déjà en base, jamais reliée à aucune UI jusqu'ici (retour
             direct 2026-09-09, "ajoute des choses auxquelles on n'a pas
             encore pensé") — site perso, chaîne YouTube, page de vente... */}
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5 flex items-center gap-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 block mb-1.5 flex items-center gap-1.5">
             <Globe size={11} />{" "}{t("Site web")}
           </label>
           <input
             value={websiteVal}
             onChange={(e) => setWebsiteVal(e.target.value)}
             placeholder={t("moncoaching.fr")} aria-label={t("moncoaching.fr")}
-            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
+            className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/50 rounded-lg px-3.5 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -156,7 +156,7 @@ export default function ProfileEditor({
       <button
         onClick={handleSave}
         disabled={isPending}
-        className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors mt-4"
+        className="bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors mt-4"
       >
         {isPending ? t("Enregistrement…") : t("Enregistrer")}
       </button>

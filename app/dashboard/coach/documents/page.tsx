@@ -24,11 +24,11 @@ export default async function CoachDocumentsPage() {
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Mon activité")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Documents & notes")}</h1>
-        <p className="mt-2 text-sm text-[#F5EDED]/45">
+        <p className="mt-2 text-sm text-(--ep-ink)/45">
           {t("Des modèles à adapter, tes fichiers perso, et un bloc-notes rapide, tout au même endroit.")}
         </p>
       </div>

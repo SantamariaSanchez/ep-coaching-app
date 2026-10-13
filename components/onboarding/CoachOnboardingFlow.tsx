@@ -84,7 +84,7 @@ export default function CoachOnboardingFlow({
             key={s}
             style={{
               flex: 1, height: 3, borderRadius: 999,
-              background: i <= stepIndex ? "#E01E1E" : "rgba(245,237,237,0.1)",
+              background: i <= stepIndex ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.1)",
               transition: "background 0.2s ease",
             }}
           />
@@ -96,17 +96,17 @@ export default function CoachOnboardingFlow({
           <div
             style={{
               width: 64, height: 64, borderRadius: 20, margin: "0 auto 20px",
-              background: "linear-gradient(135deg, rgba(224,30,30,0.22), rgba(137,4,4,0.12))",
-              border: "1px solid rgba(224,30,30,0.35)",
+              background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.22), rgba(var(--ep-line-rgb),0.12))",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.35)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
-            <Rocket size={28} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+            <Rocket size={28} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
           </div>
           <h1 className="ep-h1" style={{ marginBottom: 10 }}>
             {t("Bienvenue")}{fullName ? `, ${fullName.split(" ")[0]}` : ""}
           </h1>
-          <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, maxWidth: 440, margin: "0 auto" }}>
+          <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6, maxWidth: 440, margin: "0 auto" }}>
             {t("Ton abonnement plateforme est actif. Avant ton premier client, 3 minutes pour que ta fiche soit prête : ton profil, tes spécialités, ta capacité, et ton lien d'inscription personnel. Tout reste modifiable ensuite depuis Paramètres.")}
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function CoachOnboardingFlow({
             title={t("Ton activité")}
             subtitle={t("Sert à personnaliser automatiquement les prompts de contenu dans Studio créatif à TA situation, pas rester générique.")}
           />
-          <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.6, margin: "0 0 14px" }}>
+          <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.6, margin: "0 0 14px" }}>
             {t("Remplis au moins « Proposition de valeur » et « Segments de clientèle » si tu es pressé, les autres blocs t'attendent dans Développer mon business quand tu auras 5 minutes de plus. Rien n'est obligatoire, chaque bloc s'enregistre tout seul.")}
           </p>
           <BusinessCanvasEditor canvas={canvas} />
@@ -162,7 +162,7 @@ export default function CoachOnboardingFlow({
             onClick={back}
             style={{
               display: "flex", alignItems: "center", gap: 4,
-              fontSize: 11.5, fontWeight: 700, color: "rgba(245,237,237,0.4)",
+              fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)",
               background: "none", border: "none", cursor: "pointer",
             }}
           >
@@ -190,10 +190,10 @@ function StepHeader({ icon: Icon, title, subtitle }: { icon: React.ElementType; 
   return (
     <div style={{ marginBottom: 4 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+        <Icon size={16} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
         <h2 className="ep-h2" style={{ margin: 0 }}>{title}</h2>
       </div>
-      <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "4px 0 0 26px" }}>{subtitle}</p>
+      <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "4px 0 0 26px" }}>{subtitle}</p>
     </div>
   );
 }

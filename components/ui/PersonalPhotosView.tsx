@@ -134,7 +134,7 @@ export default function PersonalPhotosView({
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       {/* Header */}
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Suivi")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Photos")}</h1>
@@ -145,19 +145,19 @@ export default function PersonalPhotosView({
           ici — le compte à rebours et le guide de posing correspondants
           n'apparaissaient donc jamais sur le suivi photo perso. */}
       {competitionCategory && (
-        <div className="bg-gradient-to-br from-[#E01E1E]/10 to-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4 mb-6">
+        <div className="bg-gradient-to-br from-(--ep-accent)/10 to-(--ep-s1) border border-(--ep-accent)/25 rounded-xl p-4 mb-6">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2.5">
-              <Trophy size={16} className="text-[#E01E1E] flex-shrink-0" />
+              <Trophy size={16} className="text-(--ep-accent) flex-shrink-0" />
               <div>
-                <p className="text-sm font-black text-white">{competitionCategory}</p>
-                <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
+                <p className="text-sm font-black text-(--ep-strong)">{competitionCategory}</p>
+                <p className="text-[10.5px] text-(--ep-ink)/40 mt-0.5">
                   {competitionDate ? formatDate(competitionDate) : t("Date à définir")}
                 </p>
               </div>
             </div>
             {daysLeft != null && (
-              <span className="text-xs font-black uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-full px-3 py-1.5 flex-shrink-0">
+              <span className="text-xs font-black uppercase tracking-widest text-(--ep-accent) bg-(--ep-accent)/10 border border-(--ep-accent)/30 rounded-full px-3 py-1.5 flex-shrink-0">
                 {formatCountdown(daysLeft)}
               </span>
             )}
@@ -168,7 +168,7 @@ export default function PersonalPhotosView({
               <button
                 type="button"
                 onClick={() => setShowPosing((v) => !v)}
-                className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-white transition-colors mt-3.5 pt-3.5 border-t border-[#890404]/15 w-full"
+                className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-strong) transition-colors mt-3.5 pt-3.5 border-t border-(--ep-line)/15 w-full"
               >
                 {showPosing ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                 {t("Guide de posing")}{" "}{competitionCategory}
@@ -176,39 +176,39 @@ export default function PersonalPhotosView({
               {showPosing && (
                 <div className="mt-3 space-y-3">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
                       {t("Poses obligatoires")}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {posingData.mandatory_poses.map((pose) => (
-                        <span key={pose} className="text-[10.5px] font-semibold text-[#F5EDED]/65 bg-black/25 border border-[#890404]/20 rounded-full px-2.5 py-1">
+                        <span key={pose} className="text-[10.5px] font-semibold text-(--ep-ink)/65 bg-(--ep-shade)/25 border border-(--ep-line)/20 rounded-full px-2.5 py-1">
                           {pose}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
                       {t("Routine posing ·")}{" "}{posingData.posing_routine.duration}
                     </p>
-                    <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{posingData.posing_routine.instructions}</p>
+                    <p className="text-xs text-(--ep-ink)/55 leading-relaxed">{posingData.posing_routine.instructions}</p>
                   </div>
                   {posingData.tips.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
                         {t("Astuces")}
                       </p>
                       <ul className="space-y-1">
                         {posingData.tips.map((tip, i) => (
-                          <li key={i} className="text-xs text-[#F5EDED]/55 leading-relaxed flex gap-1.5">
-                            <span className="text-[#E01E1E] flex-shrink-0">·</span> {tip}
+                          <li key={i} className="text-xs text-(--ep-ink)/55 leading-relaxed flex gap-1.5">
+                            <span className="text-(--ep-accent) flex-shrink-0">·</span> {tip}
                           </li>
                         ))}
                       </ul>
                     </div>
                   )}
                   {posingData.notes && (
-                    <p className="text-[10.5px] text-[#F5EDED]/35 italic leading-relaxed">{posingData.notes}</p>
+                    <p className="text-[10.5px] text-(--ep-ink)/35 italic leading-relaxed">{posingData.notes}</p>
                   )}
                 </div>
               )}
@@ -217,15 +217,15 @@ export default function PersonalPhotosView({
         </div>
       )}
 
-      <div className="flex items-start gap-2.5 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3 mb-6">
-        <Lock size={14} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
+      <div className="flex items-start gap-2.5 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3 mb-6">
+        <Lock size={14} className="text-(--ep-ink)/30 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-(--ep-ink)/40 leading-relaxed">
           {t("Ces photos restent privées. Elles ne servent qu'à toi, pour suivre ta progression physique dans le temps.")}
         </p>
       </div>
 
       {/* Upload */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 mb-8 space-y-3">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5 mb-8 space-y-3">
         <p className="text-sm font-black uppercase tracking-tight">
           {t("Ajouter une photo")}
         </p>
@@ -234,13 +234,13 @@ export default function PersonalPhotosView({
           onChange={(e) => setNotes(e.target.value)}
           placeholder={t("Note (facultatif) : poids du jour, ressenti...")} aria-label={t("Note (facultatif) : poids du jour, ressenti...")}
           rows={2}
-          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
+          className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50 resize-none"
         />
         {error && <p className="text-xs text-red-400">{t(error)}</p>}
         <button
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-xl transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-xl transition-colors"
         >
           {uploading ? (
             <>
@@ -275,7 +275,7 @@ export default function PersonalPhotosView({
       {/* Comparaison avant/après */}
       {showCompare && oldestWithUrl && newestWithUrl && (
         <section className="mb-8">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
             {t("Progression")}
           </p>
           <h2 className="text-xl font-black uppercase tracking-tight mb-3">
@@ -293,14 +293,14 @@ export default function PersonalPhotosView({
       {/* Gallery */}
       {photos.length > 0 ? (
         <section>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
             {t("Historique")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {photos.map((photo) => (
               <div
                 key={photo.id}
-                className="relative bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden group"
+                className="relative bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden group"
               >
                 {photo.url && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -311,17 +311,17 @@ export default function PersonalPhotosView({
                   />
                 )}
                 <div className="p-2">
-                  <p className="text-[9px] font-bold text-[#F5EDED]/50">
+                  <p className="text-[9px] font-bold text-(--ep-ink)/50">
                     {formatDate(photo.taken_at)}
                   </p>
                   {photo.notes && (
-                    <p className="text-[9px] text-[#F5EDED]/30 truncate mt-0.5">{photo.notes}</p>
+                    <p className="text-[9px] text-(--ep-ink)/30 truncate mt-0.5">{photo.notes}</p>
                   )}
                 </div>
                 <button
                   onClick={() => handleDelete(photo)}
                   disabled={deletingId === photo.id}
-                  className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-black/60 text-white/70 hover:text-red-400 transition-colors"
+                  className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-(--ep-shade)/60 text-(--ep-strong)/70 hover:text-red-400 transition-colors"
                   title={t("Supprimer")} aria-label={t("Supprimer")}
                 >
                   <Trash2 size={12} />
@@ -331,7 +331,7 @@ export default function PersonalPhotosView({
           </div>
         </section>
       ) : (
-        <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">
+        <p className="text-xs text-(--ep-ink)/25 italic text-center py-10">
           {t("Aucune photo pour le moment. Ajoute la première ci-dessus.")}
         </p>
       )}

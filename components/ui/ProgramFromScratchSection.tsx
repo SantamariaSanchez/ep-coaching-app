@@ -22,7 +22,7 @@ export default function ProgramFromScratchSection({
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/60 rounded-xl px-4 py-3.5 text-sm text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
       >
         <Wrench size={14} strokeWidth={1.8} />
         {t("Créer mon programme sur mesure")}

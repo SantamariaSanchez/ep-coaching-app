@@ -140,16 +140,16 @@ export default function DailyGateOverlay({
         <div
           style={{
             width: 38, height: 38, borderRadius: 12, flexShrink: 0,
-            background: "linear-gradient(135deg, rgba(224,30,30,0.22), rgba(137,4,4,0.12))",
-            border: "1px solid rgba(224,30,30,0.35)",
+            background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.22), rgba(var(--ep-line-rgb),0.12))",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.35)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <Icon size={17} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{meta.title}</p>
-          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "3px 0 10px", lineHeight: 1.4 }}>
+          <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-ink)", margin: 0 }}>{meta.title}</p>
+          <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "3px 0 10px", lineHeight: 1.4 }}>
             {subtitle}
           </p>
           <a
@@ -170,8 +170,8 @@ export default function DailyGateOverlay({
             flexShrink: 0,
             width: 26, height: 26, borderRadius: "50%",
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: "rgba(245,237,237,0.06)", border: "1px solid rgba(245,237,237,0.12)",
-            color: "rgba(245,237,237,0.4)", cursor: "pointer",
+            background: "rgba(var(--ep-ink-rgb),0.06)", border: "1px solid rgba(var(--ep-ink-rgb),0.12)",
+            color: "rgba(var(--ep-ink-rgb),0.4)", cursor: "pointer",
           }}
         >
           <X size={13} />

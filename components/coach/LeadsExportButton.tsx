@@ -36,7 +36,7 @@ export default function LeadsExportButton({ leads, originLabelById = {} }: { lea
     <button
       onClick={handleExport}
       disabled={leads.length === 0}
-      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-30 transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
+      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-accent) disabled:opacity-30 transition-colors border border-(--ep-line)/25 rounded-lg px-3 py-2"
     >
       <Download size={12} />{" "}{t("Exporter en CSV")}
     </button>

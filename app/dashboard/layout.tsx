@@ -11,6 +11,7 @@ import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import TimezoneSync from "@/components/ui/TimezoneSync";
 import AlarmPlayer from "@/components/ui/AlarmPlayer";
 import PushAutoSubscribe from "@/components/native/PushAutoSubscribe";
+import AmbianceAnnounce from "@/components/settings/AmbianceAnnounce";
 import FreeTierGate from "@/components/ui/FreeTierGate";
 import FreeTierBanner from "@/components/ui/FreeTierBanner";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
@@ -160,7 +161,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <I18nProvider locale={locale}>
-    <div style={{ minHeight: "100vh", background: "#0D0000" }}>
+    <div style={{ minHeight: "100vh", background: "var(--ep-bg)" }}>
       <ServiceWorkerRegister />
       <TimezoneSync />
       {user && <LocaleSync locale={locale} />}
@@ -171,6 +172,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           premier usage, réglages dans Réglages > Applications > EP Coaching),
           plus aucun écran d'autorisations dans l'appli. */}
       <PushAutoSubscribe />
+      <AmbianceAnnounce />
       <NavigationProgress />
       {/* Verrou dur : rien d'autre ne doit rester utilisable en dessous tant
           que le compte gratuit est verrouillé (voir lib/free-tier.ts). */}

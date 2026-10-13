@@ -34,7 +34,7 @@ export default async function CoachProfilePage() {
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Mon espace")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon profil")}</h1>
@@ -51,7 +51,7 @@ export default async function CoachProfilePage() {
       />
 
       <div className="mt-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Ma fiche")}
         </p>
         <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Mes infos personnelles")}</h2>
@@ -63,13 +63,13 @@ export default async function CoachProfilePage() {
         style={{
           display: "flex", alignItems: "center", gap: 10, marginTop: 24,
           padding: "14px 16px", borderRadius: 12,
-          background: "rgba(245,237,237,0.03)", border: "1px solid rgba(245,237,237,0.08)",
-          textDecoration: "none", color: "#F5EDED", fontSize: 13, fontWeight: 700,
+          background: "rgba(var(--ep-ink-rgb),0.03)", border: "1px solid rgba(var(--ep-ink-rgb),0.08)",
+          textDecoration: "none", color: "var(--ep-ink)", fontSize: 13, fontWeight: 700,
         }}
       >
-        <Settings size={16} style={{ color: "#E01E1E" }} />
+        <Settings size={16} style={{ color: "var(--ep-accent)" }} />
         <span style={{ flex: 1 }}>{t("Paramètres")}</span>
-        <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)" }} />
+        <ChevronRight size={15} style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }} />
       </Link>
     </div>
   );

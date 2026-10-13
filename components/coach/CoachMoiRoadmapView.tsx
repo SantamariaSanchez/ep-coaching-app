@@ -42,13 +42,13 @@ export default function CoachMoiRoadmapView({
       <div style={{ marginBottom: 20 }}>
         <span style={{
           fontSize: 10, fontWeight: 700, letterSpacing: "0.2em",
-          textTransform: "uppercase", color: "rgba(224,30,30,0.6)",
+          textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)",
           display: "flex", alignItems: "center", gap: 6, marginBottom: 4,
         }}>
           <Map size={12} />{" "}{t("Mon Suivi")}
         </span>
         <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 6px" }}>{t("Ma Road Map")}</h1>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: "0 0 6px" }}>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 6px" }}>
           {t("Construis et visualise tes propres objectifs et phases de progression.")}
         </p>
         {roadmap && <RoadmapStatusLine roadmap={roadmap} phases={phases} today={today} />}

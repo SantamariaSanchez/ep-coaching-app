@@ -25,16 +25,16 @@ export default function ConnectionsCard({
   if (!ouraConfigured) return null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">{t("Connexions")}</p>
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">{t("Connexions")}</p>
 
       <Link
         href={ouraHref}
         className="flex items-center justify-between w-full py-1"
       >
         <div className="flex items-center gap-2.5">
-          <Watch size={14} className="text-[#F5EDED]/40" />
-          <span className="text-sm text-white font-medium">{t("Bague Oura")}</span>
+          <Watch size={14} className="text-(--ep-ink)/40" />
+          <span className="text-sm text-(--ep-strong) font-medium">{t("Bague Oura")}</span>
         </div>
         <div className="flex items-center gap-2">
           {ouraConnected ? (
@@ -42,9 +42,9 @@ export default function ConnectionsCard({
               <CheckCircle2 size={12} />{" "}{t("Connectée")}
             </span>
           ) : (
-            <span className="text-[11px] font-bold text-[#F5EDED]/30">{t("Non connectée")}</span>
+            <span className="text-[11px] font-bold text-(--ep-ink)/30">{t("Non connectée")}</span>
           )}
-          <ChevronRight size={13} className="text-[#F5EDED]/20" />
+          <ChevronRight size={13} className="text-(--ep-ink)/20" />
         </div>
       </Link>
     </div>

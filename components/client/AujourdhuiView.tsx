@@ -19,6 +19,7 @@ import type { ScheduleBlock } from "@/utils/agenda";
 import type { MindsetHabitLog } from "@/utils/mindset";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { ClientSupplement } from "@/utils/supplements";
+import { withAlpha } from "@/lib/theme-color";
 
 // Item 34 : réutilise le même mécanisme que les habitudes mindset
 // (mindset_habit_logs, habit_key en texte libre) plutôt qu'une nouvelle
@@ -34,9 +35,9 @@ const ICONS: Record<string, React.ElementType> = {
 };
 
 const SEVERITY_COLOR: Record<string, string> = {
-  info: "#60a5fa",
-  warning: "#fbbf24",
-  critical: "#E01E1E",
+  info: "var(--ep-info)",
+  warning: "var(--ep-warn)",
+  critical: "var(--ep-accent)",
 };
 
 function SectionLabel({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
@@ -227,9 +228,9 @@ export default function AujourdhuiView({
             <span style={{
               fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em",
               padding: "2px 7px", borderRadius: 999,
-              color: weekNum % 4 === 0 ? "#E01E1E" : "rgba(245,237,237,0.35)",
-              background: weekNum % 4 === 0 ? "rgba(224,30,30,0.12)" : "rgba(245,237,237,0.06)",
-              border: `1px solid ${weekNum % 4 === 0 ? "rgba(224,30,30,0.3)" : "rgba(245,237,237,0.1)"}`,
+              color: weekNum % 4 === 0 ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.35)",
+              background: weekNum % 4 === 0 ? "rgba(var(--ep-accent-rgb),0.12)" : "rgba(var(--ep-ink-rgb),0.06)",
+              border: `1px solid ${weekNum % 4 === 0 ? "rgba(var(--ep-accent-rgb),0.3)" : "rgba(var(--ep-ink-rgb),0.1)"}`,
             }}>
               {tr("Semaine")}{" "}{weekNum}
             </span>
@@ -239,8 +240,8 @@ export default function AujourdhuiView({
             plutôt que "Salut" figé toute la journée. */}
         <h1 className="ep-h1">{timeAwareGreeting(hour)}, {firstName}</h1>
         <div className="ep-card" style={{ padding: "14px 16px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start" }}>
-          <Quote size={14} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 2 }} />
-          <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.6, fontStyle: "italic" }}>
+          <Quote size={14} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 2 }} />
+          <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.6, fontStyle: "italic" }}>
             {dailyQuote}
           </p>
         </div>
@@ -256,7 +257,7 @@ export default function AujourdhuiView({
         <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
           <SectionLabel icon={TrendingUp}>{tr("Ta semaine")}</SectionLabel>
           <div className="ep-card" style={{ padding: "14px 16px" }}>
-            <p style={{ margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.6, fontWeight: 600 }}>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--ep-ink)", lineHeight: 1.6, fontWeight: 600 }}>
               {formatWeeklyRecapLine(weeklyRecap)}
             </p>
           </div>
@@ -269,14 +270,14 @@ export default function AujourdhuiView({
         <div className="ep-card" style={{ padding: "14px 16px" }}>
           {weightSaved ? (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Check size={15} style={{ color: "#4ade80" }} strokeWidth={3} />
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#4ade80" }}>
+              <Check size={15} style={{ color: "var(--ep-ok)" }} strokeWidth={3} />
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ok)" }}>
                 {weightValue}{" "}{tr("kg enregistrés")}
               </p>
               <button
                 type="button"
                 onClick={() => setWeightSaved(false)}
-                style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.35)", background: "none", border: "none", cursor: "pointer" }}
+                style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.35)", background: "none", border: "none", cursor: "pointer" }}
               >
                 {tr("Modifier")}
               </button>
@@ -316,7 +317,7 @@ export default function AujourdhuiView({
               </button>
             </form>
           )}
-          {weightError && <p style={{ color: "#FDC4C4", fontSize: 11, margin: "8px 0 0" }}>{weightError}</p>}
+          {weightError && <p style={{ color: "var(--ep-pink)", fontSize: 11, margin: "8px 0 0" }}>{weightError}</p>}
         </div>
       </section>
 
@@ -335,23 +336,23 @@ export default function AujourdhuiView({
             <Link
               href="/dashboard/client/nutrition"
               aria-label={`Nutrition : ${nutritionValue}, ${nutritionSub}`}
-              style={{ padding: "14px 16px", borderRight: "1px solid rgba(224,30,30,0.08)", textDecoration: "none" }}
+              style={{ padding: "14px 16px", borderRight: "1px solid rgba(var(--ep-accent-rgb),0.08)", textDecoration: "none" }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#E01E1E", marginBottom: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ep-accent)", marginBottom: 6 }}>
                 <Utensils size={12} strokeWidth={2} />
-                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
+                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                   {tr("Nutrition")}
                 </span>
                 {/* Repasse détail (audit onglet Aujourd'hui, 2026-09-16) :
                     seule carte-lien de l'écran sans chevron, alors que
                     l'agenda vide et le sommeil (deux sections plus bas)
                     en affichent un pour signaler "ceci mène ailleurs". */}
-                <ChevronRight size={12} style={{ marginLeft: "auto", color: "rgba(245,237,237,0.2)" }} />
+                <ChevronRight size={12} style={{ marginLeft: "auto", color: "rgba(var(--ep-ink-rgb),0.2)" }} />
               </div>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em" }}>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", letterSpacing: "-0.02em" }}>
                 {nutritionValue}
               </p>
-              <p style={{ margin: "3px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>
+              <p style={{ margin: "3px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
                 {nutritionSub}
               </p>
             </Link>
@@ -360,17 +361,17 @@ export default function AujourdhuiView({
               aria-label={`Pas : ${stepsValue}, ${stepsSub}`}
               style={{ padding: "14px 16px", textDecoration: "none" }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#4ade80", marginBottom: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ep-ok)", marginBottom: 6 }}>
                 <Footprints size={12} strokeWidth={2} />
-                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
+                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                   {tr("Pas")}
                 </span>
-                <ChevronRight size={12} style={{ marginLeft: "auto", color: "rgba(245,237,237,0.2)" }} />
+                <ChevronRight size={12} style={{ marginLeft: "auto", color: "rgba(var(--ep-ink-rgb),0.2)" }} />
               </div>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em" }}>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", letterSpacing: "-0.02em" }}>
                 {stepsValue}
               </p>
-              <p style={{ margin: "3px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>
+              <p style={{ margin: "3px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
                 {stepsSub}
               </p>
             </Link>
@@ -388,8 +389,8 @@ export default function AujourdhuiView({
         <SectionLabel icon={Calendar}>{tr("Ton programme du jour")}</SectionLabel>
         {todayBlocks.length === 0 ? (
           <Link href="/dashboard/client/agenda" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none" }}>
-            <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)" }}>{tr("Rien de prévu aujourd'hui dans ton agenda.")}</span>
-            <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+            <span style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{tr("Rien de prévu aujourd'hui dans ton agenda.")}</span>
+            <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
           </Link>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -397,22 +398,22 @@ export default function AujourdhuiView({
               const BlockIcon = b.icon ? AGENDA_ICON_MAP[b.icon] : null;
               return (
               <div key={b.id} className="ep-card" style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 3, height: 28, borderRadius: 2, background: b.color || "#E01E1E", flexShrink: 0 }} />
+                <div style={{ width: 3, height: 28, borderRadius: 2, background: b.color || "var(--ep-accent)", flexShrink: 0 }} />
                 {BlockIcon && (
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: `${b.color}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: `${withAlpha(b.color, "18")}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <BlockIcon size={13} style={{ color: b.color }} strokeWidth={2} />
                   </div>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>{b.label}</p>
-                  <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.35)" }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ink)" }}>{b.label}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
                     {b.start_time.slice(0, 5)} à {b.end_time.slice(0, 5)}
                   </p>
                   {b.tasks && b.tasks.length > 0 && (
                     <ul style={{ margin: "4px 0 0", padding: 0, listStyle: "none" }}>
                       {b.tasks.map((t, i) => (
-                        <li key={i} style={{ display: "flex", gap: 5, fontSize: 11, color: "rgba(245,237,237,0.5)", lineHeight: 1.4 }}>
-                          <span style={{ color: b.color || "#E01E1E", flexShrink: 0 }}>•</span> {t}
+                        <li key={i} style={{ display: "flex", gap: 5, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.4 }}>
+                          <span style={{ color: b.color || "var(--ep-accent)", flexShrink: 0 }}>•</span> {t}
                         </li>
                       ))}
                     </ul>
@@ -430,51 +431,51 @@ export default function AujourdhuiView({
         <SectionLabel icon={BedDouble}>{tr("Sommeil & récupération")}</SectionLabel>
         {!isSubscribedClient ? (
           <Link href="/dashboard/client/abonnement" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
-            <Lock size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
-            <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", flex: 1 }}>
+            <Lock size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", flex: 1 }}>
               {tr("Le suivi sommeil/récupération (connexion Oura) est réservé aux clients coachés.")}
             </span>
-            <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+            <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
           </Link>
         ) : biometric ? (
           <div className="ep-card" style={{ padding: "16px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>{tr("Sommeil")}</p>
-                <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+                <p style={{ fontSize: 18, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>
                   {biometric.sleep_hours != null ? `${biometric.sleep_hours}h` : "···"}
                 </p>
               </div>
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>{tr("Récup.")}</p>
-                <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+                <p style={{ fontSize: 18, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>
                   {biometric.readiness_score != null ? biometric.readiness_score : "···"}
                 </p>
               </div>
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>{tr("HRV")}</p>
-                <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+                <p style={{ fontSize: 18, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>
                   {biometric.hrv_ms != null ? `${biometric.hrv_ms}ms` : "···"}
                 </p>
               </div>
             </div>
             {insight && (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(224,30,30,0.1)", display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(var(--ep-accent-rgb),0.1)", display: "flex", gap: 10, alignItems: "flex-start" }}>
                 <AlertTriangle size={14} style={{ color: SEVERITY_COLOR[insight.severity], flexShrink: 0, marginTop: 1 }} />
                 <div>
-                  <p style={{ margin: 0, fontSize: 12, color: "#F5EDED", fontWeight: 700 }}>{insight.message}</p>
-                  <p style={{ margin: "3px 0 0", fontSize: 11.5, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>{insight.suggestion}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: "var(--ep-ink)", fontWeight: 700 }}>{insight.message}</p>
+                  <p style={{ margin: "3px 0 0", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5 }}>{insight.suggestion}</p>
                 </div>
               </div>
             )}
           </div>
         ) : (
           <Link href="/dashboard/client/tracking" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
-            <HeartPulse size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
-            <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", flex: 1 }}>
+            <HeartPulse size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", flex: 1 }}>
               {tr("Connecte ta bague Oura pour voir ton sommeil et ta récupération ici.")}
             </span>
-            <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+            <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
           </Link>
         )}
       </section>
@@ -483,7 +484,7 @@ export default function AujourdhuiView({
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <SectionLabel icon={Check}>{tr("Habitudes du jour")}</SectionLabel>
-          <span style={{ fontSize: 11, fontWeight: 700, color: doneCount === HABITS.length ? "#4ade80" : "rgba(245,237,237,0.3)" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: doneCount === HABITS.length ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.3)" }}>
             {doneCount}/{HABITS.length}
           </span>
         </div>
@@ -494,7 +495,7 @@ export default function AujourdhuiView({
             jusqu'ici. Discrète, sous le compteur du jour plutôt qu'un
             nouvel encart séparé — un complément, pas une nouvelle section. */}
         {weeklyConsistency != null && (
-          <p style={{ margin: "-4px 0 10px", fontSize: 10.5, color: "rgba(245,237,237,0.3)" }}>
+          <p style={{ margin: "-4px 0 10px", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
             {tr("Cette semaine :")}{" "}{weeklyConsistency}{tr("% de jours actifs")}
           </p>
         )}
@@ -511,26 +512,26 @@ export default function AujourdhuiView({
                 style={{
                   width: "100%", display: "flex", alignItems: "center", gap: 10,
                   padding: "10px 0", background: "none", border: "none", cursor: "pointer",
-                  borderTop: i > 0 ? "1px solid rgba(224,30,30,0.08)" : "none", textAlign: "left",
+                  borderTop: i > 0 ? "1px solid rgba(var(--ep-accent-rgb),0.08)" : "none", textAlign: "left",
                 }}
               >
                 <div style={{
                   width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                  border: `1px solid ${checked ? "#4ade80" : "rgba(224,30,30,0.25)"}`,
-                  background: checked ? "rgba(74,222,128,0.15)" : "transparent",
+                  border: `1px solid ${checked ? "var(--ep-ok)" : "rgba(var(--ep-accent-rgb),0.25)"}`,
+                  background: checked ? "rgba(var(--ep-ok-rgb),0.15)" : "transparent",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  {checked && <Check size={13} style={{ color: "#4ade80" }} strokeWidth={3} />}
+                  {checked && <Check size={13} style={{ color: "var(--ep-ok)" }} strokeWidth={3} />}
                 </div>
-                <Icon size={14} style={{ color: checked ? "rgba(245,237,237,0.3)" : "#E01E1E", flexShrink: 0 }} />
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: checked ? "rgba(245,237,237,0.4)" : "#F5EDED", textDecoration: checked ? "line-through" : "none" }}>
+                <Icon size={14} style={{ color: checked ? "rgba(var(--ep-ink-rgb),0.3)" : "var(--ep-accent)", flexShrink: 0 }} />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: checked ? "rgba(var(--ep-ink-rgb),0.4)" : "var(--ep-ink)", textDecoration: checked ? "line-through" : "none" }}>
                   {h.label}
                 </span>
               </button>
             );
           })}
         </div>
-        {habitError && <p style={{ color: "#FDC4C4", fontSize: 11, margin: "8px 0 0" }}>{habitError}</p>}
+        {habitError && <p style={{ color: "var(--ep-pink)", fontSize: 11, margin: "8px 0 0" }}>{habitError}</p>}
       </section>
 
       {/* Compléments du jour (item 34) — uniquement s'il y a une liste
@@ -551,23 +552,23 @@ export default function AujourdhuiView({
                   style={{
                     width: "100%", display: "flex", alignItems: "center", gap: 10,
                     padding: "10px 0", background: "none", border: "none", cursor: "pointer",
-                    borderTop: i > 0 ? "1px solid rgba(224,30,30,0.08)" : "none", textAlign: "left",
+                    borderTop: i > 0 ? "1px solid rgba(var(--ep-accent-rgb),0.08)" : "none", textAlign: "left",
                   }}
                 >
                   <div style={{
                     width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                    border: `1px solid ${checked ? "#4ade80" : "rgba(224,30,30,0.25)"}`,
-                    background: checked ? "rgba(74,222,128,0.15)" : "transparent",
+                    border: `1px solid ${checked ? "var(--ep-ok)" : "rgba(var(--ep-accent-rgb),0.25)"}`,
+                    background: checked ? "rgba(var(--ep-ok-rgb),0.15)" : "transparent",
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
-                    {checked && <Check size={13} style={{ color: "#4ade80" }} strokeWidth={3} />}
+                    {checked && <Check size={13} style={{ color: "var(--ep-ok)" }} strokeWidth={3} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 600, color: checked ? "rgba(245,237,237,0.4)" : "#F5EDED", textDecoration: checked ? "line-through" : "none" }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 600, color: checked ? "rgba(var(--ep-ink-rgb),0.4)" : "var(--ep-ink)", textDecoration: checked ? "line-through" : "none" }}>
                       {s.name}
                     </span>
                     {(s.dosage || s.timing) && (
-                      <span style={{ display: "block", fontSize: 10.5, color: "rgba(245,237,237,0.3)" }}>
+                      <span style={{ display: "block", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
                         {[s.dosage, s.timing].filter(Boolean).join(" · ")}
                       </span>
                     )}
@@ -584,10 +585,10 @@ export default function AujourdhuiView({
         <SectionLabel icon={PenLine}>{promptOfDay.label}</SectionLabel>
         <div className="ep-card" style={{ padding: "16px" }}>
           {journalSaved ? (
-            <p style={{ margin: 0, fontSize: 13, color: "#4ade80", fontWeight: 600 }}>{tr("✓ Enregistré dans ton journal.")}</p>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--ep-ok)", fontWeight: 600 }}>{tr("✓ Enregistré dans ton journal.")}</p>
           ) : (
             <>
-              <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
+              <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>
                 {promptOfDay.prompt}
               </p>
               <textarea
@@ -607,9 +608,9 @@ export default function AujourdhuiView({
                       onClick={() => setJournalMood(m)}
                       style={{
                         width: 28, height: 28, borderRadius: "50%", cursor: "pointer",
-                        border: `1px solid ${journalMood === m ? "#E01E1E" : "rgba(224,30,30,0.15)"}`,
-                        background: journalMood === m ? "rgba(224,30,30,0.15)" : "transparent",
-                        color: journalMood === m ? "#E01E1E" : "rgba(245,237,237,0.3)",
+                        border: `1px solid ${journalMood === m ? "var(--ep-accent)" : "rgba(var(--ep-accent-rgb),0.15)"}`,
+                        background: journalMood === m ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+                        color: journalMood === m ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.3)",
                         fontSize: 11, fontWeight: 700,
                       }}
                     >

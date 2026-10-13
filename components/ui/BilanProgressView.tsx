@@ -8,6 +8,7 @@ import { Download, Flame, Scale, Footprints, Moon, Zap, Beef, Wheat, Droplets, A
 import type { DailyLog } from "@/utils/daily-logs";
 import { groupLogsByWeek } from "@/lib/daily-logs-helpers";
 import { todayInParis } from "@/lib/dates";
+import { withAlpha } from "@/lib/theme-color";
 
 // Fusion de l'ancien "Bilan" (formulaire + liste brute par semaine) et de
 // l'ancienne "Progression" (moyennes globales + export CSV) : les deux
@@ -16,10 +17,10 @@ import { todayInParis } from "@/lib/dates";
 // d'ensemble chiffrée, tendances en graphique, détail semaine par semaine.
 
 const TOOLTIP_STYLE = {
-  contentStyle: { backgroundColor: "#1f0101", border: "1px solid rgba(137,4,4,0.4)", borderRadius: 8, color: "#F5EDED", fontSize: 11 },
-  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: 10 },
+  contentStyle: { backgroundColor: "var(--ep-s1)", border: "1px solid rgba(var(--ep-line-rgb),0.4)", borderRadius: 8, color: "var(--ep-ink)", fontSize: 11 },
+  labelStyle: { color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: 10 },
 };
-const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 9 };
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -70,15 +71,15 @@ function StatTile({ label, value, sub, gold = false }: { label: string; value: s
       className="ep-card"
       style={{
         padding: "12px 14px",
-        borderColor: gold ? "rgba(217,169,78,0.4)" : undefined,
-        boxShadow: gold ? "0 0 0 1px rgba(217,169,78,0.15), 0 6px 18px rgba(217,169,78,0.1)" : undefined,
+        borderColor: gold ? "rgba(var(--ep-gold-rgb),0.4)" : undefined,
+        boxShadow: gold ? "0 0 0 1px rgba(var(--ep-gold-rgb),0.15), 0 6px 18px rgba(var(--ep-gold-rgb),0.1)" : undefined,
       }}
     >
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 4px" }}>
+      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 4px" }}>
         {label}
       </p>
-      <p style={{ fontSize: 18, fontWeight: 900, color: gold ? "var(--ep-gold)" : "#F5EDED", margin: 0, letterSpacing: "-0.02em" }}>{value}</p>
-      {sub && <p style={{ fontSize: 10, color: gold ? "rgba(217,169,78,0.6)" : "rgba(245,237,237,0.3)", margin: "2px 0 0" }}>{sub}</p>}
+      <p style={{ fontSize: 18, fontWeight: 900, color: gold ? "var(--ep-gold)" : "var(--ep-ink)", margin: 0, letterSpacing: "-0.02em" }}>{value}</p>
+      {sub && <p style={{ fontSize: 10, color: gold ? "rgba(var(--ep-gold-rgb),0.6)" : "rgba(var(--ep-ink-rgb),0.3)", margin: "2px 0 0" }}>{sub}</p>}
     </div>
   );
 }
@@ -94,14 +95,14 @@ function TrendChart({ title, data, unit, color }: {
   const chartData = withRollingAverage(data);
   return (
     <div className="ep-card" style={{ padding: 16 }}>
-      <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 10px" }}>
+      <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", margin: "0 0 10px" }}>
         {title}
       </p>
       {hasData ? (
         <div style={{ height: 150 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.1)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--ep-line-rgb),0.1)" vertical={false} />
               <XAxis dataKey="date" tickFormatter={fmtDay} tick={TICK_STYLE} axisLine={false} tickLine={false} />
               <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} width={32} domain={["auto", "auto"]} />
               <Tooltip
@@ -114,21 +115,21 @@ function TrendChart({ title, data, unit, color }: {
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-[#F5EDED]/25 italic py-8 text-center">{t("Pas encore de données.")}</p>
+        <p className="text-xs text-(--ep-ink)/25 italic py-8 text-center">{t("Pas encore de données.")}</p>
       )}
     </div>
   );
 }
 
 function StressChip({ val }: { val: "low" | "medium" | "high" | null }) {
-  if (!val) return <span style={{ color: "rgba(245,237,237,0.2)" }}>-</span>;
-  const colors: Record<string, string> = { low: "#4ade80", medium: "#facc15", high: "#f87171" };
+  if (!val) return <span style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }}>-</span>;
+  const colors: Record<string, string> = { low: "var(--ep-ok)", medium: "var(--ep-yellow)", high: "var(--ep-bad)" };
   const labels: Record<string, string> = { low: "Bas", medium: "Moyen", high: "Haut" };
   return (
     <span style={{
       display: "inline-block", fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
       padding: "2px 8px", borderRadius: 99,
-      background: colors[val] + "20", color: colors[val], border: `1px solid ${colors[val]}40`,
+      background: withAlpha(colors[val], "20"), color: colors[val], border: `1px solid ${withAlpha(colors[val], "40")}`,
     }}>
       {labels[val]}
     </span>
@@ -144,12 +145,12 @@ function StressChip({ val }: { val: "low" | "medium" | "high" | null }) {
 // d'une autre au premier coup d'œil.
 const METRIC_STYLE = {
   poids:     { color: "var(--ep-red)",   Icon: Scale },
-  pas:       { color: "#4ade80",         Icon: Footprints },
+  pas:       { color: "var(--ep-ok)",         Icon: Footprints },
   sommeil:   { color: "#818cf8",         Icon: Moon },
-  kcal:      { color: "#fbbf24",         Icon: Zap },
+  kcal:      { color: "var(--ep-warn)",         Icon: Zap },
   proteines: { color: "var(--ep-pink)",  Icon: Beef },
   glucides:  { color: "var(--ep-gold)",  Icon: Wheat },
-  lipides:   { color: "#fb923c",         Icon: Droplets },
+  lipides:   { color: "var(--ep-orange)",         Icon: Droplets },
 } as const;
 
 function KV({ metric, label, value }: { metric: keyof typeof METRIC_STYLE; label: string; value: string | null }) {
@@ -158,15 +159,15 @@ function KV({ metric, label, value }: { metric: keyof typeof METRIC_STYLE; label
     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
       <div style={{
         width: 22, height: 22, borderRadius: 7, flexShrink: 0,
-        background: `${color}1a`, display: "flex", alignItems: "center", justifyContent: "center",
+        background: `${withAlpha(color, "1a")}`, display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         <Icon size={11} style={{ color }} strokeWidth={2.2} />
       </div>
       <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: 0, lineHeight: 1.3 }}>
+        <p style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0, lineHeight: 1.3 }}>
           {label}
         </p>
-        <p style={{ fontSize: 13, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.2)", margin: 0, lineHeight: 1.3 }}>
+        <p style={{ fontSize: 13, fontWeight: 800, color: value !== null ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.2)", margin: 0, lineHeight: 1.3 }}>
           {value ?? "-"}
         </p>
       </div>
@@ -177,15 +178,15 @@ function KV({ metric, label, value }: { metric: keyof typeof METRIC_STYLE; label
 function AvgRow({ metric, label, value, unit = "" }: { metric: keyof typeof METRIC_STYLE; label: string; value: number | null; unit?: string }) {
   const { color, Icon } = METRIC_STYLE[metric];
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(137,4,4,0.08)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(var(--ep-line-rgb),0.08)" }}>
       <div style={{
         width: 24, height: 24, borderRadius: 7, flexShrink: 0,
-        background: `${color}1a`, display: "flex", alignItems: "center", justifyContent: "center",
+        background: `${withAlpha(color, "1a")}`, display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         <Icon size={12} style={{ color }} strokeWidth={2.2} />
       </div>
-      <span style={{ flex: 1, fontSize: 11.5, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 900, color: value !== null ? color : "rgba(245,237,237,0.15)", letterSpacing: "-0.01em" }}>
+      <span style={{ flex: 1, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: 14, fontWeight: 900, color: value !== null ? color : "rgba(var(--ep-ink-rgb),0.15)", letterSpacing: "-0.01em" }}>
         {value !== null ? `${value}${unit}` : "-"}
       </span>
     </div>
@@ -198,11 +199,11 @@ function DayCard({ log }: { log: DailyLog }) {
     <div className="ep-card" style={{ padding: "12px 14px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)" }}>
             {fmtShort(log.log_date)}
           </span>
           {log.training_name && (
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: "#F5EDED" }}>{log.training_name}</span>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ep-ink)" }}>{log.training_name}</span>
           )}
         </div>
         {log.stress && <StressChip val={log.stress} />}
@@ -234,7 +235,7 @@ export default function BilanProgressView({
   if (logs.length === 0) {
     return (
       <div className="ep-card" style={{ textAlign: "center", padding: "40px 20px" }}>
-        <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13, margin: 0 }}>
+        <p style={{ color: "rgba(var(--ep-ink-rgb),0.3)", fontSize: 13, margin: 0 }}>
           {t("Remplis ton bilan du jour ci-dessus pour voir ta progression apparaître ici.")}
         </p>
       </div>
@@ -276,12 +277,12 @@ export default function BilanProgressView({
         <div
           style={{
             display: "flex", alignItems: "flex-start", gap: 10,
-            background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)",
+            background: "rgba(var(--ep-warn-rgb),0.08)", border: "1px solid rgba(var(--ep-warn-rgb),0.25)",
             borderRadius: 12, padding: "14px 16px",
           }}
         >
-          <AlertTriangle size={15} style={{ color: "#fbbf24", flexShrink: 0, marginTop: 1 }} />
-          <p style={{ fontSize: 12.5, color: "#F5EDED", margin: 0, lineHeight: 1.5 }}>
+          <AlertTriangle size={15} style={{ color: "var(--ep-warn)", flexShrink: 0, marginTop: 1 }} />
+          <p style={{ fontSize: 12.5, color: "var(--ep-ink)", margin: 0, lineHeight: 1.5 }}>
             <strong>{t("Dette de sommeil")}</strong> : {shortNights}{" "}{t("nuit")}{shortNights > 1 ? "s" : ""}{" "}{t("à moins de 6h sur tes")}{" "}{last4Sleep.length}{" "}{t("derniers bilans. Réduis le volume d'entraînement de 10-20% cette semaine et priorise le sommeil avant tout, la récupération ne suivra pas sinon.")}
           </p>
         </div>
@@ -290,7 +291,7 @@ export default function BilanProgressView({
       {/* Vue d'ensemble */}
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
-          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", margin: 0 }}>
+          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.5)", margin: 0 }}>
             {t("Vue d'ensemble ·")}{" "}{logs.length}{" "}{t("jour")}{logs.length > 1 ? "s" : ""}
           </p>
           {exportHref && (
@@ -299,8 +300,8 @@ export default function BilanProgressView({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
                 fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
-                color: "#F5EDED", textDecoration: "none",
-                background: "rgba(137,4,4,0.2)", border: "1px solid rgba(137,4,4,0.3)",
+                color: "var(--ep-ink)", textDecoration: "none",
+                background: "rgba(var(--ep-line-rgb),0.2)", border: "1px solid rgba(var(--ep-line-rgb),0.3)",
                 borderRadius: 8, padding: "7px 12px",
               }}
             >
@@ -321,18 +322,18 @@ export default function BilanProgressView({
       </div>
 
       {/* Poids : la tendance qui compte le plus */}
-      <TrendChart title={t("Évolution du poids")} data={weightData} unit="kg" color="#E01E1E" />
+      <TrendChart title={t("Évolution du poids")} data={weightData} unit="kg" color="var(--ep-accent)" />
 
       {/* Autres métriques */}
       <div className="grid md:grid-cols-3 gap-4">
         <TrendChart title={t("Sommeil")} data={sleepData} unit="h" color="#818cf8" />
-        <TrendChart title={t("Pas")} data={stepsData} unit="" color="#4ade80" />
-        <TrendChart title={t("Calories")} data={caloriesData} unit="kcal" color="#fbbf24" />
+        <TrendChart title={t("Pas")} data={stepsData} unit="" color="var(--ep-ok)" />
+        <TrendChart title={t("Calories")} data={caloriesData} unit="kcal" color="var(--ep-warn)" />
       </div>
 
       {/* Détail semaine par semaine */}
       <div>
-        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", marginBottom: 12 }}>
+        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.5)", marginBottom: 12 }}>
           {t("Détail par semaine")}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -340,12 +341,12 @@ export default function BilanProgressView({
             <div key={weekStart}>
               <div style={{
                 display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
-                borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 8,
+                borderBottom: "1px solid rgba(var(--ep-line-rgb),0.15)", paddingBottom: 8,
               }}>
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.5)" }}>
                   {t("Semaine du")}{" "}{fmtShort(weekStart)}
                 </span>
-                <span style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
+                <span style={{ fontSize: 9, color: "rgba(var(--ep-ink-rgb),0.2)", fontWeight: 600 }}>
                   {wLogs.length}{" "}{t("jour")}{wLogs.length > 1 ? "s" : ""}
                   {streak > 0 && weekStart === weeks[0]?.weekStart && (
                     <Flame size={10} style={{ display: "inline", marginLeft: 4, verticalAlign: -1, color: "var(--ep-gold)" }} />
@@ -354,14 +355,14 @@ export default function BilanProgressView({
               </div>
 
               <div className="ep-card" style={{ padding: "12px 14px 4px", marginBottom: 10 }}>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 4px" }}>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.4)", margin: "0 0 4px" }}>
                   {t("Moyennes · corps & activité")}
                 </p>
                 <AvgRow metric="poids" label={t("Poids")} value={averages.weight} unit=" kg" />
                 <AvgRow metric="pas" label={t("Pas")} value={averages.steps} />
                 <AvgRow metric="sommeil" label={t("Sommeil")} value={averages.sleep_hours} unit="h" />
                 <AvgRow metric="sommeil" label={t("Qualité sommeil")} value={averages.sleep_rating} unit="%" />
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "14px 0 4px" }}>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.4)", margin: "14px 0 4px" }}>
                   {t("Moyennes · nutrition")}
                 </p>
                 <AvgRow metric="kcal" label={t("Kcal")} value={averages.calories_kcal} unit=" kcal" />

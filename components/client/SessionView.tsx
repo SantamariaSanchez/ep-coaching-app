@@ -67,6 +67,7 @@ import {
   formatKg,
   type RepRange,
 } from "@/lib/set-targets";
+import { withAlpha } from "@/lib/theme-color";
 
 // Texte pré-rempli du post Victoire depuis un PR détecté en fin de séance
 // (voir le bouton "Partager en Victoire") — le client reste libre de le
@@ -196,16 +197,16 @@ interface RestTimer {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "#1f0101",
-    border: "1px solid rgba(137,4,4,0.4)",
+    backgroundColor: "var(--ep-s1)",
+    border: "1px solid rgba(var(--ep-line-rgb),0.4)",
     borderRadius: "8px",
-    color: "#F5EDED",
+    color: "var(--ep-ink)",
     fontSize: "11px",
   },
-  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
+  labelStyle: { color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: "10px" },
 };
 
-const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 9 };
 
 const STANDARDIZATION_LABELS: Record<string, string> = {
   "1": "Exécution approximative",
@@ -615,22 +616,22 @@ function VolumeGauge({
     sets < lm.mev
       ? "#ef4444"
       : sets <= lm.mav
-      ? "#4ade80"
+      ? "var(--ep-ok)"
       : sets <= lm.mrv
-      ? "#fbbf24"
+      ? "var(--ep-warn)"
       : "#ef4444";
 
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex justify-between">
-        <span className="text-[8px] text-[#F5EDED]/35 uppercase tracking-wider truncate max-w-[60px]">
+        <span className="text-[8px] text-(--ep-ink)/35 uppercase tracking-wider truncate max-w-[60px]">
           {muscleGroup}
         </span>
         <span className="text-[8px] font-black" style={{ color }}>
           {sets}/{lm.mev}
         </span>
       </div>
-      <div className="h-1 bg-[#890404]/20 rounded-full overflow-hidden w-full">
+      <div className="h-1 bg-(--ep-line)/20 rounded-full overflow-hidden w-full">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }}
@@ -717,31 +718,31 @@ function WarmupStep({
       {/* Timer */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Échauffement :")}{" "}{dayLabel}
           </p>
           <div className="flex items-center gap-2">
-            <Timer size={14} className="text-[#E01E1E]" />
-            <span className="text-2xl font-black text-white tabular-nums">
+            <Timer size={14} className="text-(--ep-accent)" />
+            <span className="text-2xl font-black text-(--ep-strong) tabular-nums">
               {formatTime(elapsed)}
             </span>
           </div>
         </div>
 
         {/* Progress bar 0 → 15 min */}
-        <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden">
+        <div className="h-2 bg-(--ep-line)/15 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all"
             style={{
               width: `${Math.min((elapsed / 900) * 100, 100)}%`,
-              backgroundColor: isOptimal ? "#4ade80" : isLate ? "#fbbf24" : "#E01E1E",
+              backgroundColor: isOptimal ? "var(--ep-ok)" : isLate ? "var(--ep-warn)" : "var(--ep-accent)",
             }}
           />
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-[8px] text-[#F5EDED]/25">{tr("0 min")}</span>
+          <span className="text-[8px] text-(--ep-ink)/25">{tr("0 min")}</span>
           <span className="text-[8px] text-green-400">{tr("5 min ✓")}</span>
-          <span className="text-[8px] text-[#F5EDED]/25">{tr("15 min")}</span>
+          <span className="text-[8px] text-(--ep-ink)/25">{tr("15 min")}</span>
         </div>
       </div>
 
@@ -776,7 +777,7 @@ function WarmupStep({
         {suggested.articulations.map((a) => (
           <span
             key={a}
-            className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#890404]/15 text-[#F5EDED]/50 border border-[#890404]/20"
+            className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-(--ep-line)/15 text-(--ep-ink)/50 border border-(--ep-line)/20"
           >
             {a}
           </span>
@@ -784,7 +785,7 @@ function WarmupStep({
       </div>
 
       {/* Tip */}
-      <p className="text-xs text-[#F5EDED]/50 italic mb-5 leading-relaxed">
+      <p className="text-xs text-(--ep-ink)/50 italic mb-5 leading-relaxed">
         💡 {suggested.tips}
       </p>
 
@@ -794,18 +795,18 @@ function WarmupStep({
           poids de travail connu pour chaque mouvement. */}
       {movementPreps.length > 0 && (
         <div className="mb-5">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-2">
             {tr("Montée sur tes mouvements du jour")}
           </p>
           <div className="space-y-2">
             {movementPreps.map((mp) => (
-              <div key={mp.exerciseName} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3">
-                <p className="text-xs font-bold text-white mb-1.5">{mp.exerciseName}</p>
+              <div key={mp.exerciseName} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3">
+                <p className="text-xs font-bold text-(--ep-strong) mb-1.5">{mp.exerciseName}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {mp.ramps.map((r, i) => (
                     <span
                       key={i}
-                      className="text-[10px] font-semibold text-[#F5EDED]/55 bg-[#150000] border border-[#890404]/15 rounded-full px-2.5 py-1"
+                      className="text-[10px] font-semibold text-(--ep-ink)/55 bg-(--ep-s2) border border-(--ep-line)/15 rounded-full px-2.5 py-1"
                     >
                       {r.weightKg != null ? `${r.weightKg}kg × ${r.reps}` : r.reps}
                     </span>
@@ -819,25 +820,25 @@ function WarmupStep({
 
       {/* Exercises list — suggestions éditables : retire ce que tu ne veux
           pas, ajoute les tiens. */}
-      <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+      <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-2">
         {tr("Suggestions, modifie librement")}
       </p>
       <div className="space-y-2 mb-3">
         {exercises.map((ex, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3"
+            className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3"
           >
             <div className="flex-1">
-              <p className="text-sm font-semibold text-white">{ex.name}</p>
-              {ex.sets && <p className="text-[10px] text-[#F5EDED]/40">{ex.sets}</p>}
+              <p className="text-sm font-semibold text-(--ep-strong)">{ex.name}</p>
+              {ex.sets && <p className="text-[10px] text-(--ep-ink)/40">{ex.sets}</p>}
             </div>
             <span
               className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
               style={{
                 color: EQUIPMENT_COLORS[ex.equipment],
-                borderColor: `${EQUIPMENT_COLORS[ex.equipment]}30`,
-                backgroundColor: `${EQUIPMENT_COLORS[ex.equipment]}10`,
+                borderColor: `${withAlpha(EQUIPMENT_COLORS[ex.equipment], "30")}`,
+                backgroundColor: `${withAlpha(EQUIPMENT_COLORS[ex.equipment], "10")}`,
               }}
             >
               {ex.equipment}
@@ -845,14 +846,14 @@ function WarmupStep({
             <button
               onClick={() => removeExercise(i)}
               aria-label={tr("Retirer")}
-              className="text-[#F5EDED]/25 hover:text-red-400 transition-colors flex-shrink-0"
+              className="text-(--ep-ink)/25 hover:text-red-400 transition-colors flex-shrink-0"
             >
               <X size={14} />
             </button>
           </div>
         ))}
         {exercises.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-3">
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-3">
             {tr("Aucun exercice. Ajoute le tien ci-dessous.")}
           </p>
         )}
@@ -865,13 +866,13 @@ function WarmupStep({
           onChange={(e) => setCustomName(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomExercise(); } }}
           placeholder={tr("Ajouter ton propre exercice…")} aria-label={tr("Ajouter ton propre exercice…")}
-          className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+          className="flex-1 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
         />
         <button
           onClick={addCustomExercise}
           disabled={!customName.trim()}
           aria-label={tr("Ajouter l'exercice")}
-          className="px-4 rounded-lg bg-[#890404]/30 hover:bg-[#890404]/50 disabled:opacity-30 text-[#F5EDED]/70 transition-colors"
+          className="px-4 rounded-lg bg-(--ep-line)/30 hover:bg-(--ep-line)/50 disabled:opacity-30 text-(--ep-ink)/70 transition-colors"
         >
           <Plus size={16} />
         </button>
@@ -883,8 +884,8 @@ function WarmupStep({
         disabled={!canValidate}
         className={`w-full py-4 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${
           canValidate
-            ? "bg-[#E01E1E] hover:bg-[#B00202] text-white"
-            : "bg-[#890404]/20 text-[#F5EDED]/20 cursor-not-allowed"
+            ? "bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong)"
+            : "bg-(--ep-line)/20 text-(--ep-ink)/20 cursor-not-allowed"
         }`}
       >
         {canValidate ? tr("Valider l'échauffement → Commencer") : `Encore ${formatTime(300 - elapsed)}`}
@@ -892,7 +893,7 @@ function WarmupStep({
 
       <button
         onClick={onCancel}
-        className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/25 hover:text-red-400 transition-colors"
+        className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/25 hover:text-red-400 transition-colors"
       >
         {tr("Annuler la séance")}
       </button>
@@ -943,18 +944,18 @@ function RestTimerBadge({ timer }: { timer: RestTimer }) {
     <div
       className="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-colors"
       style={{
-        background: ready ? "rgba(74,222,128,0.12)" : "rgba(250,204,21,0.12)",
-        border: `1px solid ${ready ? "rgba(74,222,128,0.3)" : "rgba(250,204,21,0.3)"}`,
+        background: ready ? "rgba(var(--ep-ok-rgb),0.12)" : "rgba(var(--ep-yellow-rgb),0.12)",
+        border: `1px solid ${ready ? "rgba(var(--ep-ok-rgb),0.3)" : "rgba(var(--ep-yellow-rgb),0.3)"}`,
       }}
       title={`Repos suggéré : ${timer.suggestedLabel}`}
     >
       <span
         className="text-[11px] font-black tabular-nums"
-        style={{ color: ready ? "#4ade80" : "#facc15" }}
+        style={{ color: ready ? "var(--ep-ok)" : "var(--ep-yellow)" }}
       >
         {formatTime(elapsed)}
       </span>
-      <span className="text-[8px] font-bold uppercase tracking-wider text-[#F5EDED]/35 whitespace-nowrap">
+      <span className="text-[8px] font-bold uppercase tracking-wider text-(--ep-ink)/35 whitespace-nowrap">
         {tr("repos")}{" "}{timer.suggestedLabel}
       </span>
     </div>
@@ -1104,12 +1105,12 @@ function SetRow({
     <div
       className={`relative rounded-xl border p-3 transition-all ${
         set.validated
-          ? "bg-[#0a1a0a] border-green-500/20"
-          : "bg-[#1f0101] border-[#890404]/20"
+          ? "bg-(--ep-okbg) border-green-500/20"
+          : "bg-(--ep-s1) border-(--ep-line)/20"
       }`}
     >
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/30 w-12">
+        <span className="text-[9px] font-black uppercase tracking-widest text-(--ep-ink)/30 w-12">
           {tr("Set")}{" "}{position}
         </span>
         {set.validated && (
@@ -1123,7 +1124,7 @@ function SetRow({
         {set.validated ? (
           <button
             onClick={onUnvalidate}
-            className="ml-auto flex items-center gap-1 p-1 rounded-md text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
+            className="ml-auto flex items-center gap-1 p-1 rounded-md text-(--ep-ink)/25 hover:text-(--ep-accent) transition-colors"
             title={tr("Modifier ce set")}
             aria-label={tr("Modifier ce set")}
           >
@@ -1132,7 +1133,7 @@ function SetRow({
         ) : (
           <button
             onClick={onRemove}
-            className="ml-auto p-1 rounded-md text-[#F5EDED]/25 hover:text-red-400 transition-colors"
+            className="ml-auto p-1 rounded-md text-(--ep-ink)/25 hover:text-red-400 transition-colors"
             title={tr("Retirer ce set")}
             aria-label={tr("Retirer ce set")}
           >
@@ -1143,25 +1144,25 @@ function SetRow({
 
       {set.validated ? (
         <div className="space-y-2">
-          <div className="flex gap-4 text-sm font-black text-white">
+          <div className="flex gap-4 text-sm font-black text-(--ep-strong)">
             <span>
               {set.weightKg || "···"}
-              <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
+              <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">
                 {tr("kg")}
               </span>
             </span>
             <span>
               {set.repsActual || "···"}
-              <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
+              <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">
                 {exercise.reps_unit === "sec" ? tr("s") : exercise.reps_unit === "m" ? tr("m") : tr("reps")}
               </span>
             </span>
             <span>
               {tr("RIR")}{" "}
-              <span className="text-[#E01E1E]">{set.rirActual || "···"}</span>
+              <span className="text-(--ep-accent)">{set.rirActual || "···"}</span>
             </span>
             {set.standardizationScore && (
-              <span className="text-[10px] text-[#F5EDED]/40">
+              <span className="text-[10px] text-(--ep-ink)/40">
                 ★{set.standardizationScore}
               </span>
             )}
@@ -1194,11 +1195,11 @@ function SetRow({
             // Filmer un set exige la ligne en base (le chemin de la video y
             // est rattache) — proposer le bouton alors qu'elle n'existe pas
             // ne menait qu'a un clic sans effet.
-            <span className="text-[10px] text-[#F5EDED]/25">
+            <span className="text-[10px] text-(--ep-ink)/25">
               {tr("Vidéo possible une fois le set enregistré")}
             </span>
           ) : (
-            <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
+            <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 border border-dashed border-(--ep-line)/25 hover:border-(--ep-line)/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
               {uploadingVideo ? (
                 <>
                   <Loader2 size={11} className="animate-spin" />{" "}{tr("Envoi…")}
@@ -1230,21 +1231,21 @@ function SetRow({
               fourchette du programme). "Remplir" pré-remplit poids et reps
               en un tap, rien n'est jamais imposé. */}
           {(hasLastRef || suggestion) && (
-            <div className="rounded-lg bg-[#150000] border border-[#890404]/20 px-2.5 py-1.5 space-y-1">
+            <div className="rounded-lg bg-(--ep-s2) border border-(--ep-line)/20 px-2.5 py-1.5 space-y-1">
               {hasLastRef && lastRef && (
-                <p className="text-[10px] text-[#F5EDED]/50 leading-tight break-words">
-                  <span className="text-[#F5EDED]/30">{tr("Dernière fois :")}{" "}</span>
+                <p className="text-[10px] text-(--ep-ink)/50 leading-tight break-words">
+                  <span className="text-(--ep-ink)/30">{tr("Dernière fois :")}{" "}</span>
                   {formatPrevSet(lastRef)}
                 </p>
               )}
               {suggestion && (
                 <div className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold text-white leading-tight">
-                      <span className="text-[#E01E1E]">{tr("Objectif :")}{" "}</span>
+                    <p className="text-[11px] font-bold text-(--ep-strong) leading-tight">
+                      <span className="text-(--ep-accent)">{tr("Objectif :")}{" "}</span>
                       {formatKg(suggestion.weightKg)}{" "}{tr("kg ×")}{" "}{suggestion.reps}
                     </p>
-                    <p className="text-[9.5px] text-[#F5EDED]/35 leading-tight mt-0.5 break-words">
+                    <p className="text-[9.5px] text-(--ep-ink)/35 leading-tight mt-0.5 break-words">
                       {suggestion.reason}
                     </p>
                   </div>
@@ -1256,7 +1257,7 @@ function SetRow({
                         repsActual: String(suggestion.reps),
                       })
                     }
-                    className="flex-shrink-0 min-h-[36px] px-3 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/30 hover:bg-[#E01E1E]/25 transition-colors"
+                    className="flex-shrink-0 min-h-[36px] px-3 rounded-lg text-[10px] font-black uppercase tracking-widest bg-(--ep-accent)/15 text-(--ep-accent) border border-(--ep-accent)/30 hover:bg-(--ep-accent)/25 transition-colors"
                     aria-label={`Remplir ${formatKg(suggestion.weightKg)} kg et ${suggestion.reps} reps`}
                   >
                     {tr("Remplir")}
@@ -1269,7 +1270,7 @@ function SetRow({
           {/* Weight + Reps row */}
           <div className="flex gap-2">
             <div className="flex-1 min-w-0">
-              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
+              <label className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
                 {tr("Poids (kg)")}
               </label>
               <input aria-label={tr("Poids (kg)")}
@@ -1278,16 +1279,16 @@ function SetRow({
                 placeholder={weightPlaceholder}
                 value={set.weightKg}
                 onChange={(e) => onChange({ weightKg: e.target.value })}
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+                className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-sm font-bold text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
               />
               {!suggestion && suggestionDiffersFromLast && !set.weightKg && (
-                <p className="text-[8.5px] text-[#F5EDED]/30 mt-1 leading-tight">
+                <p className="text-[8.5px] text-(--ep-ink)/30 mt-1 leading-tight">
                   💡 {suggestedWeight}{tr("kg suggéré (RIR")}{" "}{prevWeight!.rir}{" "}{tr("la dernière fois pour une cible")}{" "}{exercise.rir})
                 </p>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
+              <label className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
                 {exercise.reps_unit === "sec" ? tr("Secondes") : exercise.reps_unit === "m" ? tr("Mètres") : tr("Reps")}
               </label>
               {/* Placeholder = la fourchette de CETTE série ("6-8"), plus
@@ -1299,7 +1300,7 @@ function SetRow({
                 placeholder={repsPlaceholder}
                 value={set.repsActual}
                 onChange={(e) => onChange({ repsActual: e.target.value })}
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+                className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-sm font-bold text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
               />
             </div>
           </div>
@@ -1309,7 +1310,7 @@ function SetRow({
             <button
               type="button"
               onClick={() => onChange({ weightKg: copyableWeight })}
-              className="inline-flex items-center min-h-[36px] px-3 rounded-lg text-[10px] font-bold text-[#F5EDED]/55 hover:text-[#F5EDED]/80 border border-[#890404]/25 hover:border-[#890404]/50 transition-colors"
+              className="inline-flex items-center min-h-[36px] px-3 rounded-lg text-[10px] font-bold text-(--ep-ink)/55 hover:text-(--ep-ink)/80 border border-(--ep-line)/25 hover:border-(--ep-line)/50 transition-colors"
             >
               {tr("= Série précédente (")}{copyableWeight.replace(".", ",")}{" "}{tr("kg)")}
             </button>
@@ -1322,10 +1323,10 @@ function SetRow({
               SetState, persistSet ne change pas. */}
           <div>
             <div className="flex items-baseline justify-between gap-2 mb-1">
-              <span className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
+              <span className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
                 {tr("RIR réel")}
               </span>
-              <span className="text-[8.5px] text-[#F5EDED]/25">{tr("0 = échec · 5 = facile")}</span>
+              <span className="text-[8.5px] text-(--ep-ink)/25">{tr("0 = échec · 5 = facile")}</span>
             </div>
             <div className="flex gap-1" role="group" aria-label={tr("RIR réel")}>
               {RIR_CHOICES.map((v) => {
@@ -1339,8 +1340,8 @@ function SetRow({
                     onClick={() => onChange({ rirActual: selected ? "" : String(v) })}
                     className={`flex-1 min-w-[36px] h-9 rounded-lg border text-sm font-black tabular-nums transition-colors ${
                       selected
-                        ? "bg-[#E01E1E] border-[#E01E1E] text-white"
-                        : "bg-[#150000] border-[#890404]/30 text-[#F5EDED]/55 hover:border-[#E01E1E]/50"
+                        ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
+                        : "bg-(--ep-s2) border-(--ep-line)/30 text-(--ep-ink)/55 hover:border-(--ep-accent)/50"
                     }`}
                   >
                     {v}
@@ -1351,10 +1352,10 @@ function SetRow({
           </div>
           <div>
             <div className="flex items-baseline justify-between gap-2 mb-1">
-              <span className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
+              <span className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
                 {tr("Exécution")}
               </span>
-              <span className="text-[8.5px] text-[#F5EDED]/35 truncate">
+              <span className="text-[8.5px] text-(--ep-ink)/35 truncate">
                 {set.standardizationScore
                   ? STANDARDIZATION_LABELS[set.standardizationScore]
                   : tr("1 = approximative · 5 = parfaite")}
@@ -1374,7 +1375,7 @@ function SetRow({
                     className={`flex-1 min-w-[36px] h-9 rounded-lg border text-sm font-black tabular-nums transition-colors ${
                       selected
                         ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
-                        : "bg-[#150000] border-[#890404]/30 text-[#F5EDED]/55 hover:border-amber-500/40"
+                        : "bg-(--ep-s2) border-(--ep-line)/30 text-(--ep-ink)/55 hover:border-amber-500/40"
                     }`}
                   >
                     {v}
@@ -1395,7 +1396,7 @@ function SetRow({
                 <Video size={11} />{" "}{tr("Vidéo envoyée à ton coach")}
               </span>
             ) : (
-              <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
+              <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 border border-dashed border-(--ep-line)/25 hover:border-(--ep-line)/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
                 {uploadingVideo ? (
                   <>
                     <Loader2 size={11} className="animate-spin" />{" "}{tr("Envoi…")}
@@ -1427,7 +1428,7 @@ function SetRow({
           <button
             onClick={onValidate}
             disabled={set.saving}
-            className="w-full py-2.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60 text-(--ep-strong) text-xs font-black uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             {set.saving ? (
               <>
@@ -1528,7 +1529,7 @@ function ExerciseCard({
   const [programNotesOpen, setProgramNotesOpen] = useState(false);
 
   return (
-    <div className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s3) border border-(--ep-line)/25 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3.5 flex items-start justify-between gap-2">
         <button
@@ -1537,22 +1538,22 @@ function ExerciseCard({
           aria-expanded={!exState.collapsed}
           className="min-w-0 flex-1 text-left"
         >
-          <p className="text-sm font-black text-white flex items-center gap-1.5">
+          <p className="text-sm font-black text-(--ep-strong) flex items-center gap-1.5">
             {supersetTag && (
-              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#E01E1E]/20 text-[#ff6b6b]">{supersetTag}</span>
+              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-(--ep-accent)/20 text-(--ep-accent-hi2)">{supersetTag}</span>
             )}
             {exState.exercise.name}
             {hasPR && <span title={tr("Record personnel sur cet exercice")}>🏆</span>}
           </p>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             {exState.exercise.muscle_group && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/40 border border-[#890404]/20">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-line)/15 text-(--ep-ink)/40 border border-(--ep-line)/20">
                 {exState.exercise.muscle_group}
               </span>
             )}
             {tensionLabel && (
               <span
-                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E01E1E]/10 text-[#E01E1E]/80 border border-[#E01E1E]/20"
+                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-accent)/10 text-(--ep-accent)/80 border border-(--ep-accent)/20"
                 title={tr("Zone de tension visée sur cet exercice")}
               >
                 {tr("Focus :")}{" "}{tensionLabel}
@@ -1567,7 +1568,7 @@ function ExerciseCard({
               </span>
             )}
             {!isCustomExercise && exState.exercise.sets && (
-              <span className="text-[9px] text-[#F5EDED]/30">
+              <span className="text-[9px] text-(--ep-ink)/30">
                 {/* Fourchettes différentes selon la série : une par série
                     ("12-15 · 10-12 · 10-12 reps") au lieu de "3 séries ×
                     1x12-15, 2x10-12 reps". Fourchette unique : "3 séries ×
@@ -1591,7 +1592,7 @@ function ExerciseCard({
             )}
             <span
               className={`text-[9px] font-bold ${
-                validatedCount === totalSets && totalSets > 0 ? "text-green-400" : "text-[#F5EDED]/30"
+                validatedCount === totalSets && totalSets > 0 ? "text-green-400" : "text-(--ep-ink)/30"
               }`}
             >
               {validatedCount}/{totalSets}{" "}{tr("validées")}
@@ -1602,7 +1603,7 @@ function ExerciseCard({
           <button
             type="button"
             onClick={() => onUpdate({ collapsed: !exState.collapsed })}
-            className="p-1.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
+            className="p-1.5 text-(--ep-ink)/30 hover:text-(--ep-ink)/70 transition-colors flex-shrink-0"
             title={exState.collapsed ? tr("Déplier") : tr("Replier")}
             aria-label={exState.collapsed ? tr("Déplier l'exercice") : tr("Replier l'exercice")}
           >
@@ -1612,11 +1613,11 @@ function ExerciseCard({
             />
           </button>
           {(onMoveUp || onMoveDown) && (
-            <div className="flex flex-col border border-[#890404]/20 rounded-lg overflow-hidden mr-0.5">
+            <div className="flex flex-col border border-(--ep-line)/20 rounded-lg overflow-hidden mr-0.5">
               <button
                 onClick={onMoveUp}
                 disabled={!onMoveUp}
-                className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors"
+                className="p-0.5 text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 disabled:hover:text-(--ep-ink)/30 transition-colors"
                 title={tr("Monter l'exercice")}
                 aria-label={tr("Monter l'exercice")}
               >
@@ -1625,7 +1626,7 @@ function ExerciseCard({
               <button
                 onClick={onMoveDown}
                 disabled={!onMoveDown}
-                className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors border-t border-[#890404]/20"
+                className="p-0.5 text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 disabled:hover:text-(--ep-ink)/30 transition-colors border-t border-(--ep-line)/20"
                 title={tr("Descendre l'exercice")}
                 aria-label={tr("Descendre l'exercice")}
               >
@@ -1637,8 +1638,8 @@ function ExerciseCard({
             onClick={() => onUpdate({ showTips: !exState.showTips })}
             className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
               exState.showTips
-                ? "bg-[#E01E1E]/15 text-[#E01E1E] border-[#E01E1E]/25"
-                : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
+                ? "bg-(--ep-accent)/15 text-(--ep-accent) border-(--ep-accent)/25"
+                : "text-(--ep-ink)/30 border-(--ep-line)/20 hover:border-(--ep-line)/40"
             }`}
             title={tr("Tips d'exécution")} aria-label={tr("Tips d'exécution")}
           >
@@ -1649,7 +1650,7 @@ function ExerciseCard({
             className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
               exState.showHistory
                 ? "bg-blue-500/15 text-blue-400 border-blue-500/25"
-                : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
+                : "text-(--ep-ink)/30 border-(--ep-line)/20 hover:border-(--ep-line)/40"
             }`}
             title={tr("Historique")} aria-label={tr("Historique")}
           >
@@ -1662,7 +1663,7 @@ function ExerciseCard({
                 ? "bg-amber-500/15 text-amber-400 border-amber-500/25"
                 : exState.clientNotes
                 ? "text-amber-400/70 border-amber-500/20"
-                : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
+                : "text-(--ep-ink)/30 border-(--ep-line)/20 hover:border-(--ep-line)/40"
             }`}
             title={tr("Notes")} aria-label={tr("Notes")}
           >
@@ -1674,7 +1675,7 @@ function ExerciseCard({
                 onRemoveExercise();
               }
             }}
-            className="p-1.5 rounded-lg text-[9px] font-bold border text-[#F5EDED]/30 border-[#890404]/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
+            className="p-1.5 rounded-lg text-[9px] font-bold border text-(--ep-ink)/30 border-(--ep-line)/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
             title={tr("Retirer cet exercice")} aria-label={tr("Retirer cet exercice")}
           >
             <X size={12} />
@@ -1686,14 +1687,14 @@ function ExerciseCard({
       <>
       {/* Superset : savoir tout de suite quoi enchaîner, sans chercher. */}
       {(chainNextName || (supersetTag && !chainNextName)) && (
-        <p className="border-t border-[#890404]/20 px-4 py-2 text-[11px] text-[#ff8a8a] leading-snug">
+        <p className="border-t border-(--ep-line)/20 px-4 py-2 text-[11px] text-[#ff8a8a] leading-snug">
           {chainNextName
             ? `${tr("Superset : enchaîne directement avec")} ${chainNextName}`
             : tr("Fin du superset : prends ton repos, puis reviens au début du bloc.")}
         </p>
       )}
       {techniqueTip && (
-        <p className="border-t border-[#890404]/20 px-4 py-2 text-[11px] text-amber-200/80 leading-snug">
+        <p className="border-t border-(--ep-line)/20 px-4 py-2 text-[11px] text-amber-200/80 leading-snug">
           <b className="text-amber-300">{technique} :</b> {tr(techniqueTip)}
         </p>
       )}
@@ -1703,13 +1704,13 @@ function ExerciseCard({
           type="button"
           onClick={() => setProgramNotesOpen((v) => !v)}
           aria-expanded={programNotesOpen}
-          className="w-full text-left border-t border-[#890404]/20 px-4 py-2.5 flex items-start gap-2 hover:bg-[#890404]/5 transition-colors"
+          className="w-full text-left border-t border-(--ep-line)/20 px-4 py-2.5 flex items-start gap-2 hover:bg-(--ep-line)/5 transition-colors"
         >
-          <ClipboardList size={12} className="text-[#E01E1E]/70 mt-0.5 flex-shrink-0" />
+          <ClipboardList size={12} className="text-(--ep-accent)/70 mt-0.5 flex-shrink-0" />
           <span className="min-w-0 flex-1">
             <span className="ep-label block mb-0.5">{tr("Consigne du programme")}</span>
             <span
-              className={`block text-[11px] text-[#F5EDED]/65 leading-snug whitespace-pre-wrap break-words ${
+              className={`block text-[11px] text-(--ep-ink)/65 leading-snug whitespace-pre-wrap break-words ${
                 programNotesOpen ? "" : "line-clamp-2"
               }`}
             >
@@ -1721,8 +1722,8 @@ function ExerciseCard({
 
       {/* Notes panel */}
       {exState.showNotes && (
-        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+        <div className="border-t border-(--ep-line)/20 bg-(--ep-s1) px-4 py-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
             {tr("Ta note sur cet exercice")}
           </p>
           <textarea
@@ -1730,30 +1731,30 @@ function ExerciseCard({
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder={tr("Ex. variante testée, gêne à l'épaule, ressenti...")} aria-label={tr("Notes sur l'exercice")}
             rows={2}
-            className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
+            className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50 resize-none"
           />
         </div>
       )}
 
       {/* Tips panel */}
       {exState.showTips && (
-        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3 space-y-3">
+        <div className="border-t border-(--ep-line)/20 bg-(--ep-s1) px-4 py-3 space-y-3">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
               {libraryInstructions ? tr("Conseils d'exécution") : tr("Cues d'exécution")}
             </p>
             {libraryInstructions ? (
-              <p className="text-xs text-[#F5EDED]/65 leading-relaxed whitespace-pre-wrap">
+              <p className="text-xs text-(--ep-ink)/65 leading-relaxed whitespace-pre-wrap">
                 {libraryInstructions}
               </p>
             ) : (
               <ul className="space-y-1.5">
                 {tips!.map((tip, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-[#E01E1E] font-black text-xs mt-0 leading-[1.4]">
+                    <span className="text-(--ep-accent) font-black text-xs mt-0 leading-[1.4]">
                       {i + 1}.
                     </span>
-                    <span className="text-xs text-[#F5EDED]/65 leading-relaxed">
+                    <span className="text-xs text-(--ep-ink)/65 leading-relaxed">
                       {tip}
                     </span>
                   </li>
@@ -1766,7 +1767,7 @@ function ExerciseCard({
               href={safeExternalUrl(libraryTip.video_url) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
             >
               <Video size={11} />
               {tr("Voir la vidéo d'exemple")}
@@ -1782,32 +1783,32 @@ function ExerciseCard({
           représentait qu'un set choisi arbitrairement (le plus récent
           enregistré, pas forcément le premier de la série). */}
       {exState.showHistory && prevSets.length > 0 && (
-        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+        <div className="border-t border-(--ep-line)/20 bg-(--ep-s1) px-4 py-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
             {tr("Dernière séance (")}{prevSets.length}{" "}{tr("set")}{prevSets.length > 1 ? "s" : ""})
           </p>
           <div className="flex flex-col gap-1.5">
             {prevSets.map((s, i) => (
               <div key={i} className="flex items-center gap-3 text-sm">
-                <span className="text-[10px] font-bold text-[#F5EDED]/30 w-10 flex-shrink-0">
+                <span className="text-[10px] font-bold text-(--ep-ink)/30 w-10 flex-shrink-0">
                   {tr("Set")}{" "}{i + 1}
                 </span>
-                <span className="flex gap-3 font-black text-white">
+                <span className="flex gap-3 font-black text-(--ep-strong)">
                   {s.weight != null && (
                     <span>
                       {s.weight}
-                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">{tr("kg")}</span>
+                      <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">{tr("kg")}</span>
                     </span>
                   )}
                   {s.reps != null && (
                     <span>
                       {s.reps}
-                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">{tr("reps")}</span>
+                      <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">{tr("reps")}</span>
                     </span>
                   )}
                   {s.rir != null && (
                     <span>
-                      {tr("RIR")}{" "}<span className="text-[#E01E1E]">{s.rir}</span>
+                      {tr("RIR")}{" "}<span className="text-(--ep-accent)">{s.rir}</span>
                     </span>
                   )}
                 </span>
@@ -1880,7 +1881,7 @@ function ExerciseCard({
             ];
             onUpdate({ sets: newSets });
           }}
-          className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/20 hover:border-[#890404]/40 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 border border-dashed border-(--ep-line)/20 hover:border-(--ep-line)/40 rounded-lg transition-colors"
         >
           <Plus size={11} />
           {tr("Ajouter un set")}
@@ -1907,10 +1908,10 @@ function SliderInput({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
           {label}
         </label>
-        <span className="text-sm font-black text-[#E01E1E]">{value}/5</span>
+        <span className="text-sm font-black text-(--ep-accent)">{value}/5</span>
       </div>
       <input
         type="range"
@@ -1919,9 +1920,9 @@ function SliderInput({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         aria-label={label}
-        className="w-full accent-[#E01E1E]"
+        className="w-full accent-(--ep-accent)"
       />
-      <div className="flex justify-between text-[8px] text-[#F5EDED]/25">
+      <div className="flex justify-between text-[8px] text-(--ep-ink)/25">
         <span>{tr("Faible")}</span>
         <span>{tr("Excellent")}</span>
       </div>
@@ -2794,7 +2795,7 @@ export default function SessionView({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-(--ep-accent) border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -2804,8 +2805,8 @@ export default function SessionView({
       <div className="px-6 py-8 text-center">
         {loadFailed ? (
           <>
-            <p className="text-[#F5EDED]/60 text-sm mb-1">{tr("Impossible de charger la séance.")}</p>
-            <p className="text-[#F5EDED]/35 text-xs mb-4">
+            <p className="text-(--ep-ink)/60 text-sm mb-1">{tr("Impossible de charger la séance.")}</p>
+            <p className="text-(--ep-ink)/35 text-xs mb-4">
               {tr("Vérifie ta connexion : tes séries déjà validées sont enregistrées.")}
             </p>
             <button
@@ -2818,7 +2819,7 @@ export default function SessionView({
             </button>
           </>
         ) : (
-          <p className="text-[#F5EDED]/40">{tr("Séance introuvable")}</p>
+          <p className="text-(--ep-ink)/40">{tr("Séance introuvable")}</p>
         )}
       </div>
     );
@@ -2905,11 +2906,11 @@ export default function SessionView({
       <div className="px-6 py-8 max-w-2xl mx-auto pb-24 page-transition">
         {/* Header */}
         <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
             {tr("Récap de séance")}
           </p>
           <h1 className="text-2xl font-black uppercase">{session.day_label}</h1>
-          <p className="text-xs text-[#F5EDED]/35 mt-1">
+          <p className="text-xs text-(--ep-ink)/35 mt-1">
             {/* Séance passée : SA date et SA durée enregistrée. Avant, le
                 récap d'une séance terminée affichait la date du jour et
                 "00:00" (le chrono de séance ne tourne que pendant
@@ -2930,17 +2931,17 @@ export default function SessionView({
         {/* Stats summary */}
         <div className="grid grid-cols-3 gap-2 mb-6">
           {[
-            { label: tr("Sets"), value: String(totalSetsCompleted), icon: Dumbbell, color: "#E01E1E" },
-            { label: tr("RIR moy."), value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "···", icon: Activity, color: "#4ade80" },
-            { label: tr("Score tech."), value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "···", icon: Star, color: "#fbbf24" },
+            { label: tr("Sets"), value: String(totalSetsCompleted), icon: Dumbbell, color: "var(--ep-accent)" },
+            { label: tr("RIR moy."), value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "···", icon: Activity, color: "var(--ep-ok)" },
+            { label: tr("Score tech."), value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "···", icon: Star, color: "var(--ep-warn)" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
-              className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-3 flex flex-col items-center gap-1.5"
+              className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-3 flex flex-col items-center gap-1.5"
             >
               <Icon size={16} style={{ color }} strokeWidth={1.8} />
-              <p className="text-xl font-black text-white">{value}</p>
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+              <p className="text-xl font-black text-(--ep-strong)">{value}</p>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
                 {label}
               </p>
             </div>
@@ -2980,8 +2981,8 @@ export default function SessionView({
         )}
 
         {/* Feeling sliders */}
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-5 space-y-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-5 space-y-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Ressenti global")}
           </p>
           {!session.is_completed && (
@@ -2990,7 +2991,7 @@ export default function SessionView({
               <SliderInput label={tr("Pump")} value={pump} onChange={setPump} />
               <SliderInput label={tr("Feeling global")} value={feeling} onChange={setFeeling} />
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 block mb-1.5">
                   {tr("Notes libres")}
                 </label>
                 <textarea
@@ -2998,7 +2999,7 @@ export default function SessionView({
                   onChange={(e) => setSessionNotes(e.target.value)}
                   placeholder={tr("Observations, fatigue particulière, douleurs...")} aria-label={tr("Observations, fatigue particulière, douleurs...")}
                   rows={3}
-                  className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
+                  className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50 resize-none"
                 />
               </div>
             </>
@@ -3006,16 +3007,16 @@ export default function SessionView({
           {session.is_completed && (
             <div className="flex gap-4">
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.energy_level ?? "···"}</p>
-                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">{tr("Énergie")}</p>
+                <p className="text-2xl font-black text-(--ep-strong)">{session.energy_level ?? "···"}</p>
+                <p className="text-[9px] text-(--ep-ink)/30 uppercase tracking-wider">{tr("Énergie")}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.pump ?? "···"}</p>
-                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">{tr("Pump")}</p>
+                <p className="text-2xl font-black text-(--ep-strong)">{session.pump ?? "···"}</p>
+                <p className="text-[9px] text-(--ep-ink)/30 uppercase tracking-wider">{tr("Pump")}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.general_feeling ?? "···"}</p>
-                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">{tr("Feeling")}</p>
+                <p className="text-2xl font-black text-(--ep-strong)">{session.general_feeling ?? "···"}</p>
+                <p className="text-[9px] text-(--ep-ink)/30 uppercase tracking-wider">{tr("Feeling")}</p>
               </div>
             </div>
           )}
@@ -3023,10 +3024,10 @@ export default function SessionView({
               nulle part dans le récap. */}
           {session.is_completed && session.notes && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
                 {tr("Notes libres")}
               </p>
-              <p className="text-sm text-[#F5EDED]/70 leading-relaxed whitespace-pre-wrap break-words">
+              <p className="text-sm text-(--ep-ink)/70 leading-relaxed whitespace-pre-wrap break-words">
                 {session.notes}
               </p>
             </div>
@@ -3039,8 +3040,8 @@ export default function SessionView({
             base ; séance en cours : les séries validées à l'écran, pour
             relire avant de sauvegarder. */}
         {recapBreakdownSets.length > 0 && (
-          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
               {tr("Détail des séries")}
             </p>
             <SessionSetsBreakdown
@@ -3052,14 +3053,14 @@ export default function SessionView({
 
         {/* Charts */}
         {volumeData.length > 0 && (
-          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
               {tr("Volume par muscle (sets)")}
             </p>
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={volumeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.15)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--ep-line-rgb),0.15)" />
                   <XAxis dataKey="name" tick={TICK_STYLE} axisLine={false} tickLine={false} />
                   <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} />
                   <Tooltip {...TOOLTIP_STYLE} formatter={(v, name) => [`${v}`, name === "sets" ? "Sets" : "MEV"]} />
@@ -3070,11 +3071,11 @@ export default function SessionView({
                       ] ?? { mev: 8, mav: 16, mrv: 22 };
                       const sets = entry.sets;
                       const color =
-                        sets < lm.mev ? "#ef4444" : sets <= lm.mav ? "#4ade80" : "#fbbf24";
+                        sets < lm.mev ? "#ef4444" : sets <= lm.mav ? "var(--ep-ok)" : "var(--ep-warn)";
                       return <Cell key={i} fill={color} />;
                     })}
                   </Bar>
-                  <Bar dataKey="mev" fill="rgba(137,4,4,0.2)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="mev" fill="rgba(var(--ep-line-rgb),0.2)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -3082,8 +3083,8 @@ export default function SessionView({
         )}
 
         {rirData.length > 0 && (
-          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
               {tr("RIR moyen par exercice")}
             </p>
             <div className="h-32">
@@ -3092,12 +3093,12 @@ export default function SessionView({
                   <XAxis type="number" domain={[0, 5]} tick={TICK_STYLE} axisLine={false} tickLine={false} />
                   <YAxis dataKey="name" type="category" tick={TICK_STYLE} axisLine={false} tickLine={false} width={55} />
                   <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [`RIR ${v}`, ""]} />
-                  <Bar dataKey="rir" fill="#4ade80" radius={[0, 3, 3, 0]}>
+                  <Bar dataKey="rir" fill="var(--ep-ok)" radius={[0, 3, 3, 0]}>
                     {rirData.map((entry, i) => (
                       <Cell
                         key={i}
                         fill={
-                          entry.rir <= 1 ? "#ef4444" : entry.rir <= 3 ? "#4ade80" : "#60a5fa"
+                          entry.rir <= 1 ? "#ef4444" : entry.rir <= 3 ? "var(--ep-ok)" : "var(--ep-info)"
                         }
                       />
                     ))}
@@ -3109,8 +3110,8 @@ export default function SessionView({
         )}
 
         {scoreData.length > 0 && (
-          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-6">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
               {tr("Score standardisation par exercice")}
             </p>
             <div className="h-32">
@@ -3124,7 +3125,7 @@ export default function SessionView({
                       <Cell
                         key={i}
                         fill={
-                          entry.score < 3 ? "#ef4444" : entry.score < 4 ? "#fbbf24" : "#4ade80"
+                          entry.score < 3 ? "#ef4444" : entry.score < 4 ? "var(--ep-warn)" : "var(--ep-ok)"
                         }
                       />
                     ))}
@@ -3147,7 +3148,7 @@ export default function SessionView({
             <button
               onClick={handleCompleteSession}
               disabled={saving || canceling}
-              className="w-full py-4 bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-black uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-4 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-sm font-black uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {saving ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -3161,7 +3162,7 @@ export default function SessionView({
             <button
               onClick={handleCancelSession}
               disabled={saving || canceling}
-              className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/25 hover:text-red-400 transition-colors disabled:opacity-50"
+              className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/25 hover:text-red-400 transition-colors disabled:opacity-50"
             >
               {canceling ? tr("Annulation…") : tr("Annuler la séance (rien ne sera enregistré)")}
             </button>
@@ -3181,7 +3182,7 @@ export default function SessionView({
             <button
               onClick={handleReopenSession}
               disabled={reopening}
-              className="w-full py-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-amber-400 border border-[#890404]/25 hover:border-amber-500/40 rounded-xl transition-colors disabled:opacity-50"
+              className="w-full py-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-amber-400 border border-(--ep-line)/25 hover:border-amber-500/40 rounded-xl transition-colors disabled:opacity-50"
             >
               {reopening ? (
                 <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -3210,16 +3211,16 @@ export default function SessionView({
   return (
     <div className="pb-32">
       {/* Fixed header */}
-      <div className="sticky top-0 z-30 bg-[#150000] border-b border-[#890404]/30 px-4 py-3">
+      <div className="sticky top-0 z-30 bg-(--ep-s2) border-b border-(--ep-line)/30 px-4 py-3">
         <div className="max-w-2xl mx-auto">
           {/* Top row: session timer + day label */}
           <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
                 {session.day_label}
               </p>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <Clock size={12} style={{ color: restTimer ? "#facc15" : "#E01E1E" }} />
+                <Clock size={12} style={{ color: restTimer ? "var(--ep-yellow)" : "var(--ep-accent)" }} />
                 {/* Retour direct 2026-09-17 : "change subtilement la couleur
                     du temps total dès que le set est fini et dès qu'on
                     reprend, comme ça pas besoin de valider le repos, 0 clic
@@ -3228,7 +3229,7 @@ export default function SessionView({
                     juste à côté donne le détail pour qui veut le temps exact. */}
                 <span
                   className="text-lg font-black tabular-nums transition-colors"
-                  style={{ color: restTimer ? "#facc15" : "#fff" }}
+                  style={{ color: restTimer ? "var(--ep-yellow)" : "var(--ep-strong)" }}
                 >
                   {formatTime(sessionElapsed)}
                 </span>
@@ -3236,13 +3237,13 @@ export default function SessionView({
               </div>
             </div>
             <div className="text-right">
-              <p className="text-[9px] text-[#F5EDED]/35 uppercase tracking-wider">
+              <p className="text-[9px] text-(--ep-ink)/35 uppercase tracking-wider">
                 {totalSetsAll}{" "}{tr("sets validés")}
               </p>
               {avgRIR != null && (
-                <p className="text-[9px] text-[#F5EDED]/35">
+                <p className="text-[9px] text-(--ep-ink)/35">
                   {tr("RIR moy.")}{" "}
-                  <span className="font-black text-white">
+                  <span className="font-black text-(--ep-strong)">
                     {Math.round(avgRIR * 10) / 10}
                   </span>
                 </p>
@@ -3250,7 +3251,7 @@ export default function SessionView({
               <button
                 onClick={handleCancelSession}
                 disabled={canceling}
-                className="text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/25 hover:text-red-400 transition-colors mt-1 disabled:opacity-50"
+                className="text-[9px] font-bold uppercase tracking-wider text-(--ep-ink)/25 hover:text-red-400 transition-colors mt-1 disabled:opacity-50"
               >
                 {canceling ? tr("Annulation…") : tr("Annuler")}
               </button>
@@ -3273,8 +3274,8 @@ export default function SessionView({
           justifie, plutôt qu'une carte vide. */}
       {sessionAccessories.length > 0 && (
         <div className="px-4 pt-5 max-w-2xl mx-auto">
-          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3">
-            <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3">
+            <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
               <Backpack size={11} />{" "}{tr("À prévoir pour cette séance")}
             </p>
             {/* La raison est affichée, pas cachée dans un title : sur mobile le
@@ -3287,13 +3288,13 @@ export default function SessionView({
                 // de lien cliquable ni de ligne "Pour ...".
                 const content = (
                   <>
-                    <span className="flex items-center gap-1 text-[12.5px] font-bold text-white group-hover:text-[#E01E1E] transition-colors">
+                    <span className="flex items-center gap-1 text-[12.5px] font-bold text-(--ep-strong) group-hover:text-(--ep-accent) transition-colors">
                       {a.accessory}
-                      {a.url && <ExternalLink size={10} className="text-[#F5EDED]/30" />}
+                      {a.url && <ExternalLink size={10} className="text-(--ep-ink)/30" />}
                     </span>
-                    <span className="block text-[11px] text-[#F5EDED]/45 leading-snug">{a.reason}</span>
+                    <span className="block text-[11px] text-(--ep-ink)/45 leading-snug">{a.reason}</span>
                     {a.forExercises.length > 0 && (
-                      <span className="block text-[10px] text-[#F5EDED]/25 mt-0.5">
+                      <span className="block text-[10px] text-(--ep-ink)/25 mt-0.5">
                         {tr("Pour")}{" "}{a.forExercises.slice(0, 3).join(", ")}
                       </span>
                     )}
@@ -3319,8 +3320,8 @@ export default function SessionView({
       {/* Exercise cards */}
       <div className="px-4 pt-5 max-w-2xl mx-auto space-y-4">
         {exercises.length === 0 && (
-          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
-            <p className="text-sm text-[#F5EDED]/40">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-5 py-8 text-center">
+            <p className="text-sm text-(--ep-ink)/40">
               {tr("Séance libre, ajoute tes exercices ci-dessous")}
             </p>
           </div>

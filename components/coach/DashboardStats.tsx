@@ -51,7 +51,7 @@ function StatTile({
   const isAlert = urgent && value > 0;
   const TrendIcon = trend?.direction === "up" ? ArrowUp : trend?.direction === "down" ? ArrowDown : Minus;
   const trendColor =
-    trend?.direction === "up" ? "#4ade80" : trend?.direction === "down" ? "#fb923c" : "rgba(245,237,237,0.3)";
+    trend?.direction === "up" ? "var(--ep-ok)" : trend?.direction === "down" ? "var(--ep-orange)" : "rgba(var(--ep-ink-rgb),0.3)";
   const content = (
     <>
       {/* Top accent */}
@@ -60,15 +60,15 @@ function StatTile({
         top: 0, left: 0, right: 0,
         height: 1,
         background: isAlert
-          ? "linear-gradient(90deg, transparent, #E01E1E, transparent)"
-          : "linear-gradient(90deg, transparent, rgba(224,30,30,0.2), transparent)",
+          ? "linear-gradient(90deg, transparent, var(--ep-accent), transparent)"
+          : "linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb),0.2), transparent)",
       }} />
 
       {/* Icon */}
       <div style={{
         position: "absolute",
         top: 14, right: 14,
-        color: isAlert ? "rgba(224,30,30,0.7)" : "rgba(224,30,30,0.3)",
+        color: isAlert ? "rgba(var(--ep-accent-rgb),0.7)" : "rgba(var(--ep-accent-rgb),0.3)",
       }}>
         <Icon size={16} strokeWidth={1.8} />
       </div>
@@ -80,7 +80,7 @@ function StatTile({
           fontSize: 40,
           fontWeight: 900,
           letterSpacing: "-0.05em",
-          color: isAlert ? "#E01E1E" : "#F5EDED",
+          color: isAlert ? "var(--ep-accent)" : "var(--ep-ink)",
           margin: 0,
           lineHeight: 1,
           marginBottom: 6,
@@ -103,7 +103,7 @@ function StatTile({
 
       <p style={{
         fontSize: 11,
-        color: "rgba(245,237,237,0.35)",
+        color: "rgba(var(--ep-ink-rgb),0.35)",
         margin: 0,
         fontWeight: 500,
       }}>
@@ -111,11 +111,11 @@ function StatTile({
       </p>
 
       {progress != null && (
-        <div style={{ height: 3, background: "rgba(224,30,30,0.1)", borderRadius: 2, overflow: "hidden", marginTop: 8 }}>
+        <div style={{ height: 3, background: "rgba(var(--ep-accent-rgb),0.1)", borderRadius: 2, overflow: "hidden", marginTop: 8 }}>
           <div style={{
             height: "100%",
             width: `${Math.min(100, Math.max(0, progress))}%`,
-            background: progress >= 100 ? "#4ade80" : "linear-gradient(90deg, #E01E1E, #B00202)",
+            background: progress >= 100 ? "var(--ep-ok)" : "linear-gradient(90deg, var(--ep-accent), var(--ep-accent-2))",
             borderRadius: 2,
           }} />
         </div>
@@ -125,14 +125,14 @@ function StatTile({
   const style: React.CSSProperties = {
     animationDelay: `${delay}ms`,
     background: isAlert
-      ? "linear-gradient(160deg, #1c0101 0%, #0e0000 100%)"
-      : "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-    border: `1px solid ${isAlert ? "rgba(224,30,30,0.28)" : "rgba(224,30,30,0.09)"}`,
+      ? "linear-gradient(160deg, var(--ep-s3) 0%, var(--ep-s5) 100%)"
+      : "linear-gradient(160deg, var(--ep-s5) 0%, var(--ep-bg) 100%)",
+    border: `1px solid ${isAlert ? "rgba(var(--ep-accent-rgb),0.28)" : "rgba(var(--ep-accent-rgb),0.09)"}`,
     borderRadius: "var(--radius-lg)",
     padding: "20px 18px 16px",
     position: "relative",
     overflow: "hidden",
-    boxShadow: isAlert ? "0 0 24px rgba(224,30,30,0.08)" : "none",
+    boxShadow: isAlert ? "0 0 24px rgba(var(--ep-accent-rgb),0.08)" : "none",
     display: "block",
     textDecoration: "none",
     cursor: href ? "pointer" : "default",
@@ -175,7 +175,7 @@ export default function DashboardStats() {
   if (statsError) {
     return (
       <div className="ep-card" style={{ padding: "16px 20px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
-        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+        <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>
           {t("Impossible de charger tes statistiques pour l'instant. Recharge la page.")}
         </p>
       </div>
@@ -251,17 +251,17 @@ export default function DashboardStats() {
                   alignItems: "center",
                   gap: 14,
                   padding: "14px 18px",
-                  background: "linear-gradient(160deg, #160101 0%, #0e0000 100%)",
-                  border: "1px solid rgba(251,191,36,0.14)",
+                  background: "linear-gradient(160deg, var(--ep-s3) 0%, var(--ep-s5) 100%)",
+                  border: "1px solid rgba(var(--ep-warn-rgb),0.14)",
                   borderRadius: "var(--radius-lg)",
                   textDecoration: "none",
                   transition: "border-color 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(251,191,36,0.3)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(var(--ep-warn-rgb),0.3)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(251,191,36,0.14)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(var(--ep-warn-rgb),0.14)";
                 }}
               >
                 {/* Avatar */}
@@ -269,23 +269,23 @@ export default function DashboardStats() {
                   width: 38,
                   height: 38,
                   borderRadius: 12,
-                  background: "linear-gradient(135deg, #890404, #270101)",
+                  background: "linear-gradient(135deg, var(--ep-line), var(--ep-s4))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontWeight: 800,
                   fontSize: 13,
-                  color: "#F5EDED",
+                  color: "var(--ep-ink)",
                   flexShrink: 0,
                 }}>
                   {(c.profiles?.full_name ?? "?").split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ink)" }}>
                     {c.profiles?.full_name ?? t("Client")}
                   </p>
-                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.35)" }}>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
                     {t("Sem.")}{" "}{c.week_number} &nbsp;·&nbsp;{" "}
                     {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(c.created_at))}
                   </p>
@@ -293,7 +293,7 @@ export default function DashboardStats() {
 
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <span className="ep-badge-amber">{t("Répondre")}</span>
-                  <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+                  <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
                 </div>
               </Link>
             ))}

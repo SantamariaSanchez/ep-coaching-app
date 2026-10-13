@@ -65,15 +65,15 @@ export interface EditablePost {
 
 const input: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.35)",
-  border: "1px solid rgba(137,4,4,0.35)",
+  background: "rgba(var(--ep-shade-rgb),0.35)",
+  border: "1px solid rgba(var(--ep-line-rgb),0.35)",
   borderRadius: 10,
   padding: "9px 10px",
   fontSize: 14,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   outline: "none",
 };
-const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 4 };
+const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 4 };
 
 function toParisLocal(iso: string | null, fallback: string): string {
   if (!iso) return fallback;
@@ -153,16 +153,16 @@ export default function PostEntryForm({
   if (!open) {
     return post ? (
       <span style={{ display: "inline-flex", gap: 10 }}>
-        <button type="button" onClick={() => setOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "none", border: "none", padding: 0, color: "#ff6b6b", fontSize: 11.5, fontWeight: 800, cursor: "pointer" }}>
+        <button type="button" onClick={() => setOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "none", border: "none", padding: 0, color: "var(--ep-accent-hi2)", fontSize: 11.5, fontWeight: 800, cursor: "pointer" }}>
           <Pencil size={11} />{" "}{tr("Mettre à jour")}
         </button>
-        <button type="button" onClick={remove} disabled={pending} aria-label={tr("Supprimer")} style={{ display: "inline-flex", alignItems: "center", background: "none", border: "none", padding: 0, color: "rgba(245,237,237,0.4)", cursor: "pointer" }}>
+        <button type="button" onClick={remove} disabled={pending} aria-label={tr("Supprimer")} style={{ display: "inline-flex", alignItems: "center", background: "none", border: "none", padding: 0, color: "rgba(var(--ep-ink-rgb),0.4)", cursor: "pointer" }}>
           <Trash2 size={12} />
         </button>
         {error && <span style={{ fontSize: 10.5, color: "#fca5a5" }}>{tr(error)}</span>}
       </span>
     ) : (
-      <button type="button" onClick={() => setOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px dashed rgba(224,30,30,0.55)", background: "rgba(224,30,30,0.06)", color: "#F5EDED", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer" }}>
+      <button type="button" onClick={() => setOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px dashed rgba(var(--ep-accent-rgb),0.55)", background: "rgba(var(--ep-accent-rgb),0.06)", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer" }}>
         <Plus size={15} />{" "}{tr("Ajouter une publication")}
       </button>
     );
@@ -172,7 +172,7 @@ export default function PostEntryForm({
     <div className="ep-card" style={{ padding: "14px 14px", marginTop: post ? 10 : 0, width: "100%" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <p className="ep-label" style={{ margin: 0 }}>{post ? tr("Mettre à jour la publication") : tr("Nouvelle publication")}</p>
-        <button type="button" onClick={() => setOpen(false)} aria-label={tr("Fermer")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.5)", cursor: "pointer" }}>
+        <button type="button" onClick={() => setOpen(false)} aria-label={tr("Fermer")} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer" }}>
           <X size={16} />
         </button>
       </div>
@@ -227,7 +227,7 @@ export default function PostEntryForm({
           <div key={m.key}>
             <label style={lbl}>
               {m.label}
-              {m.hint ? <span style={{ textTransform: "none", fontWeight: 600, color: "rgba(245,237,237,0.3)" }}> ({m.hint})</span> : null}
+              {m.hint ? <span style={{ textTransform: "none", fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.3)" }}> ({m.hint})</span> : null}
             </label>
             <input style={input} inputMode="decimal" value={v[m.key] ?? ""} onChange={(e) => set(m.key, e.target.value)} placeholder="-" aria-label={m.label} />
           </div>
@@ -235,7 +235,7 @@ export default function PostEntryForm({
       </div>
 
       {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "10px 0 0" }}>{tr(error)}</p>}
-      <button type="button" disabled={pending} onClick={save} style={{ marginTop: 14, width: "100%", padding: "12px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}>
+      <button type="button" disabled={pending} onClick={save} style={{ marginTop: 14, width: "100%", padding: "12px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}>
         {pending ? "..." : post ? tr("Enregistrer les chiffres") : tr("Ajouter")}
       </button>
     </div>

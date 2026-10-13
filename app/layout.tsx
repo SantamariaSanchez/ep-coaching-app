@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
 import AccessibilityMotionConfig from "@/components/ui/AccessibilityMotionConfig";
 import { ACCESSIBILITY_INIT_SCRIPT } from "@/lib/accessibility";
+import { AMBIANCE_INIT_SCRIPT } from "@/lib/theme-color";
 import ConfirmDialogProvider from "@/components/ui/ConfirmDialogProvider";
 import "./globals.css";
 
@@ -58,7 +59,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#E01E1E",
+  themeColor: "#0D0000",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -83,6 +84,7 @@ export default function RootLayout({
     <html lang="fr" className={`${montserrat.variable} ${playfair.variable} h-full`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: ACCESSIBILITY_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: AMBIANCE_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full">
         {/* "Mouvement réduit" (app/globals.css) couvre déjà les animations

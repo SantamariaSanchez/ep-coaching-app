@@ -6,14 +6,14 @@ import { getMySalesCalls } from "@/lib/sales-calls";
 import SalesCallTabs from "@/components/coach/SalesCallTabs";
 import { ChevronLeft } from "lucide-react";
 
-function StatCard({ label, value, sub, color = "#F5EDED" }: { label: string; value: string; sub?: string; color?: string }) {
+function StatCard({ label, value, sub, color = "var(--ep-ink)" }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0, minWidth: 120 }}>
-      <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
+      <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)" }}>
         {label}
       </span>
       <span style={{ fontSize: 17, fontWeight: 900, color, margin: 0 }}>{value}</span>
-      {sub && <span style={{ fontSize: 9.5, color: "rgba(245,237,237,0.35)" }}>{sub}</span>}
+      {sub && <span style={{ fontSize: 9.5, color: "rgba(var(--ep-ink-rgb),0.35)" }}>{sub}</span>}
     </div>
   );
 }
@@ -46,27 +46,27 @@ export default async function SalesCallsPage() {
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
         href="/dashboard/coach"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {t("Retour")}
       </Link>
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Vente")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Appels de vente")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Un appel = une ligne. Coche show up et closing une fois l'appel passé, note le CA si signé.")}
         </p>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-8" style={{ WebkitOverflowScrolling: "touch" }}>
         <StatCard label={t("Appels bookés")} value={String(calls.length)} />
-        <StatCard label={t("Show up")} value={showUpRate !== null ? `${showUpRate}%` : "···"} sub={`${shownUp.length}/${known.length}`} color="#60a5fa" />
-        <StatCard label={t("Closing")} value={closingRate !== null ? `${closingRate}%` : "···"} sub={`${closed.length}/${shownUp.length}`} color="#4ade80" />
-        <StatCard label={t("CA total")} value={`${revenue.toLocaleString("fr-FR")}€`} color="#E01E1E" />
+        <StatCard label={t("Show up")} value={showUpRate !== null ? `${showUpRate}%` : "···"} sub={`${shownUp.length}/${known.length}`} color="var(--ep-info)" />
+        <StatCard label={t("Closing")} value={closingRate !== null ? `${closingRate}%` : "···"} sub={`${closed.length}/${shownUp.length}`} color="var(--ep-ok)" />
+        <StatCard label={t("CA total")} value={`${revenue.toLocaleString("fr-FR")}€`} color="var(--ep-accent)" />
         <StatCard label={t("CA / appel")} value={revenuePerCall !== null ? `${revenuePerCall}€` : "···"} />
       </div>
 

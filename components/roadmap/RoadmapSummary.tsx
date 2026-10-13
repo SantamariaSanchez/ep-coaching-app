@@ -60,7 +60,7 @@ export function RoadmapStatusLine({
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-      <span style={{ fontSize: 12, color: "rgba(245,237,237,0.45)" }}>{text}</span>
+      <span style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{text}</span>
       {cols && activePhase && (
         <span
           style={{
@@ -125,8 +125,8 @@ export function ObjectiveCard({
   return (
     <div
       style={{
-        background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
-        border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.2)" : "rgba(224,30,30,0.12)"}`,
+        background: "linear-gradient(135deg, var(--ep-s3) 0%, var(--ep-bg) 100%)",
+        border: `1px solid ${obj.is_achieved ? "rgba(var(--ep-ok-rgb),0.2)" : "rgba(var(--ep-accent-rgb),0.12)"}`,
         borderRadius: 12,
         padding: 16,
         opacity: obj.is_achieved ? 0.7 : 1,
@@ -150,7 +150,7 @@ export function ObjectiveCard({
             {termLabel}
           </span>
           <p style={{
-            fontSize: 15, fontWeight: 700, color: obj.is_achieved ? "#4ade80" : "#F5EDED",
+            fontSize: 15, fontWeight: 700, color: obj.is_achieved ? "var(--ep-ok)" : "var(--ep-ink)",
             margin: "4px 0 0", letterSpacing: "-0.01em", overflowWrap: "anywhere",
           }}>
             {obj.is_achieved ? "✓ " : ""}{obj.label || "Objectif"}
@@ -160,7 +160,7 @@ export function ObjectiveCard({
           <div style={{ textAlign: "right", flexShrink: 0 }}>
             <p style={{ fontSize: 18, fontWeight: 800, color, margin: 0, letterSpacing: "-0.03em" }}>
               {nf(target)}
-              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(245,237,237,0.4)" }}>
+              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                 {" "}{obj.target_unit ?? ""}
               </span>
             </p>
@@ -176,7 +176,7 @@ export function ObjectiveCard({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(progressPct)}
-            style={{ height: 4, background: "rgba(0,0,0,0.4)", borderRadius: 2, overflow: "hidden" }}
+            style={{ height: 4, background: "rgba(var(--ep-shade-rgb),0.4)", borderRadius: 2, overflow: "hidden" }}
           >
             <div style={{
               height: "100%",
@@ -187,19 +187,19 @@ export function ObjectiveCard({
             }} />
           </div>
           {progressLabel && (
-            <p style={{ fontSize: 9.5, color: "rgba(245,237,237,0.35)", margin: "4px 0 0" }}>{progressLabel}</p>
+            <p style={{ fontSize: 9.5, color: "rgba(var(--ep-ink-rgb),0.35)", margin: "4px 0 0" }}>{progressLabel}</p>
           )}
         </div>
       )}
 
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {obj.is_achieved && obj.achieved_at && (
-          <span style={{ fontSize: 10, color: "rgba(74,222,128,0.7)" }}>
+          <span style={{ fontSize: 10, color: "rgba(var(--ep-ok-rgb),0.7)" }}>
             ✓ Atteint le {fmt(obj.achieved_at)}
           </span>
         )}
         {!obj.is_achieved && (
-          <span style={{ fontSize: 10, color: "rgba(245,237,237,0.35)" }}>
+          <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
             {daysLeft > 0
               ? `Dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""}`
               : daysLeft === 0
@@ -207,7 +207,7 @@ export function ObjectiveCard({
               : `Dépassé de ${Math.abs(daysLeft)} jour${Math.abs(daysLeft) > 1 ? "s" : ""}`}
           </span>
         )}
-        <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", marginLeft: "auto" }}>
+        <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.2)", marginLeft: "auto" }}>
           {fmt(obj.target_date, true)}
         </span>
       </div>
@@ -239,7 +239,7 @@ export function RoadmapObjectivesSummary({
 
   return (
     <section style={{ marginBottom: 28 }}>
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 10 }}>
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", marginBottom: 10 }}>
         <Target size={11} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
         {title}
       </p>

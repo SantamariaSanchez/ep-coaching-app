@@ -105,7 +105,7 @@ export default async function BioPage() {
           style={{
             textAlign: "center",
             fontSize: 13,
-            color: "rgba(245,237,237,0.45)",
+            color: "rgba(var(--ep-ink-rgb),0.45)",
             fontWeight: 600,
             margin: "0 0 32px",
           }}
@@ -141,19 +141,19 @@ export default async function BioPage() {
                   alignItems: "center",
                   justifyContent: "center",
                   background: primary
-                    ? "rgba(255,255,255,0.16)"
-                    : "linear-gradient(135deg, rgba(224,30,30,0.18) 0%, rgba(137,4,4,0.10) 100%)",
-                  border: primary ? "none" : "1px solid rgba(224,30,30,0.22)",
+                    ? "rgba(var(--ep-hi-rgb),0.16)"
+                    : "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.18) 0%, rgba(var(--ep-line-rgb),0.10) 100%)",
+                  border: primary ? "none" : "1px solid rgba(var(--ep-accent-rgb),0.22)",
                 }}
               >
-                <Icon size={18} strokeWidth={1.9} style={{ color: primary ? "#fff" : "#E01E1E" }} />
+                <Icon size={18} strokeWidth={1.9} style={{ color: primary ? "var(--ep-strong)" : "var(--ep-accent)" }} />
               </div>
               <div style={{ textAlign: "left" }}>
                 <p
                   style={{
                     fontSize: 13.5,
                     fontWeight: 800,
-                    color: primary ? "#fff" : "#F5EDED",
+                    color: primary ? "var(--ep-strong)" : "var(--ep-ink)",
                     margin: 0,
                     letterSpacing: "-0.01em",
                     textTransform: "none",
@@ -164,7 +164,7 @@ export default async function BioPage() {
                 <p
                   style={{
                     fontSize: 11,
-                    color: primary ? "rgba(255,255,255,0.75)" : "rgba(245,237,237,0.35)",
+                    color: primary ? "rgba(var(--ep-hi-rgb),0.75)" : "rgba(var(--ep-ink-rgb),0.35)",
                     margin: "2px 0 0",
                     fontWeight: 500,
                     letterSpacing: "normal",
@@ -199,8 +199,8 @@ export default async function BioPage() {
               width: 40,
               height: 40,
               borderRadius: "50%",
-              border: "1px solid rgba(224,30,30,0.25)",
-              color: "rgba(245,237,237,0.5)",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
+              color: "rgba(var(--ep-ink-rgb),0.5)",
             }}
           >
             <MessageCircle size={17} />

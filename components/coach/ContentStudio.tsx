@@ -5,6 +5,7 @@ import { useMemo, useState, useTransition, useEffect } from "react";
 import { Plus, Camera, Video, Briefcase, Sparkles, Trash2, MessageCircleQuestion, Music2, Users, AtSign } from "lucide-react";
 import { createContentIdea, updateContentIdea, deleteContentIdea } from "@/app/dashboard/coach/studio/actions";
 import type { ContentIdea, ContentPlatform, ContentStatus } from "@/lib/content-ideas";
+import { withAlpha } from "@/lib/theme-color";
 
 // Pas de logos de marque (Instagram/YouTube/LinkedIn) : lucide-react ne les
 // exporte plus (retirés pour raisons de droits), même convention déjà en
@@ -15,15 +16,15 @@ const PLATFORM_META: Record<ContentPlatform, { label: string; icon: React.Elemen
   youtube: { label: "YouTube", icon: Video, color: "#FF0000" },
   facebook: { label: "Facebook", icon: Users, color: "#1877F2" },
   linkedin: { label: "LinkedIn", icon: Briefcase, color: "#0A66C2" },
-  threads: { label: "Threads", icon: AtSign, color: "#F5EDED" },
-  general: { label: "Général", icon: Sparkles, color: "#E01E1E" },
+  threads: { label: "Threads", icon: AtSign, color: "var(--ep-ink)" },
+  general: { label: "Général", icon: Sparkles, color: "var(--ep-accent)" },
 };
 
 const STATUS_META: Record<ContentStatus, { label: string; color: string }> = {
-  idee: { label: "Idée", color: "rgba(245,237,237,0.4)" },
-  brouillon: { label: "Brouillon", color: "#fbbf24" },
-  pret: { label: "Prêt", color: "#60a5fa" },
-  publie: { label: "Publié", color: "#4ade80" },
+  idee: { label: "Idée", color: "rgba(var(--ep-ink-rgb),0.4)" },
+  brouillon: { label: "Brouillon", color: "var(--ep-warn)" },
+  pret: { label: "Prêt", color: "var(--ep-info)" },
+  publie: { label: "Publié", color: "var(--ep-ok)" },
 };
 
 // Axe 2 (VISION.md) : espace de travail pour que le coach pose et fasse
@@ -183,7 +184,7 @@ export default function ContentStudio({
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            background: "#E01E1E",
+            background: "var(--ep-accent)",
             color: "#fff",
             padding: "8px 14px",
             borderRadius: 999,
@@ -227,7 +228,7 @@ export default function ContentStudio({
             disabled={isPending}
             style={{
               marginTop: 10,
-              background: "#E01E1E",
+              background: "var(--ep-accent)",
               color: "#fff",
               padding: "9px 18px",
               borderRadius: "var(--radius-lg)",
@@ -244,9 +245,9 @@ export default function ContentStudio({
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <Sparkles size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{tr("Aucune idée pour l'instant. Note tout ce qui te passe par la tête.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <Sparkles size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{tr("Aucune idée pour l'instant. Note tout ce qui te passe par la tête.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -262,7 +263,7 @@ export default function ContentStudio({
                   padding: 16,
                   scrollMarginTop: 80,
                   ...(idea.id === focusIdeaId
-                    ? { borderColor: "rgba(224,30,30,0.7)", boxShadow: "0 0 0 1px rgba(224,30,30,0.45), 0 0 28px rgba(224,30,30,0.22)" }
+                    ? { borderColor: "rgba(var(--ep-accent-rgb),0.7)", boxShadow: "0 0 0 1px rgba(var(--ep-accent-rgb),0.45), 0 0 28px rgba(var(--ep-accent-rgb),0.22)" }
                     : null),
                 }}
               >
@@ -270,20 +271,20 @@ export default function ContentStudio({
                   <div
                     style={{
                       width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                      background: `${meta.color}22`, display: "flex", alignItems: "center", justifyContent: "center",
+                      background: `${withAlpha(meta.color, "22")}`, display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >
                     <Icon size={14} style={{ color: meta.color }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{idea.title}</p>
+                    <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)" }}>{idea.title}</p>
                     {idea.notes && (
-                      <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                      <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
                         {idea.notes}
                       </p>
                     )}
                     {idea.source === "question" && (
-                      <p style={{ margin: "6px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.3)", display: "flex", alignItems: "center", gap: 4 }}>
+                      <p style={{ margin: "6px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", display: "flex", alignItems: "center", gap: 4 }}>
                         <MessageCircleQuestion size={11} />{" "}{tr("Depuis une question de membre")}
                       </p>
                     )}
@@ -302,9 +303,9 @@ export default function ContentStudio({
                               padding: "4px 10px",
                               borderRadius: 999,
                               cursor: "pointer",
-                              border: active ? `1px solid ${sMeta.color}` : "1px solid rgba(245,237,237,0.12)",
-                              background: active ? `${sMeta.color}22` : "transparent",
-                              color: active ? sMeta.color : "rgba(245,237,237,0.4)",
+                              border: active ? `1px solid ${sMeta.color}` : "1px solid rgba(var(--ep-ink-rgb),0.12)",
+                              background: active ? `${withAlpha(sMeta.color, "22")}` : "transparent",
+                              color: active ? sMeta.color : "rgba(var(--ep-ink-rgb),0.4)",
                             }}
                           >
                             {sMeta.label}
@@ -317,7 +318,7 @@ export default function ContentStudio({
                     type="button"
                     onClick={() => remove(idea.id)}
                     aria-label={tr("Supprimer")}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0, padding: 4 }}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -336,10 +337,10 @@ const CONTENT_STATUS_ORDER: ContentStatus[] = ["idee", "brouillon", "pret", "pub
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.2)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
   borderRadius: "var(--radius-lg)",
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "12px 16px",
   fontSize: 13,
   outline: "none",
@@ -352,8 +353,8 @@ function chipStyle(active: boolean): React.CSSProperties {
     padding: "7px 12px",
     borderRadius: 999,
     cursor: "pointer",
-    border: active ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-    background: active ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-    color: active ? "#F5EDED" : "rgba(245,237,237,0.55)",
+    border: active ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+    background: active ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+    color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
   };
 }

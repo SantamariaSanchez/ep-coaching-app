@@ -96,17 +96,17 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
 
   return (
     <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
+      <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6">
         <ChevronLeft size={13} />{" "}{tr("Pilotage de l'équipe")}
       </Link>
       <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: card?.pole.color }}>{card?.pole.name}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight">{member.full_name}</h1>
-      <p className="text-sm text-[#F5EDED]/55 mt-1 mb-2">
+      <p className="text-sm text-(--ep-ink)/55 mt-1 mb-2">
         {card?.role.title} · {member.email}
       </p>
-      <p className="text-xs mb-6" style={{ color: member.status === "actif" ? "#4ade80" : "#f87171" }}>
+      <p className="text-xs mb-6" style={{ color: member.status === "actif" ? "var(--ep-ok)" : "var(--ep-bad)" }}>
         {tr("Accès")}{" "}{member.status} · {isContractSigned(member) ? `contrat signé le ${new Date(member.contract_signed_at!).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}` : tr("contrat pas encore signé")}{" "}{tr("· formation")}{" "}{doneSet.size}/{lessons.length} ·{" "}
-        <Link href="/dashboard/coach/admin/organisation" className="text-[#E01E1E] font-bold">{tr("gérer l'accès")}</Link>
+        <Link href="/dashboard/coach/admin/organisation" className="text-(--ep-accent) font-bold">{tr("gérer l'accès")}</Link>
       </p>
 
       <div style={{ marginBottom: 14 }}>
@@ -119,20 +119,20 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
             <AssignTaskForm memberId={userId} memberName={member.full_name.split(" ")[0]} />
           </div>
           {tasks.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{tr("Aucune tâche.")}</p>
+            <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{tr("Aucune tâche.")}</p>
           ) : (
             tasks.map((t) => {
               const st = taskStage(t.status);
               const late = t.status !== "fait" && t.occurred_on && t.occurred_on < new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
               return (
-                <div key={t.id} style={{ display: "flex", gap: 10, alignItems: "baseline", padding: "7px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
+                <div key={t.id} style={{ display: "flex", gap: 10, alignItems: "baseline", padding: "7px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>
                   <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: st?.color, minWidth: 64 }}>{st?.label}</span>
-                  <span style={{ flex: 1, fontSize: 12.5, color: t.status === "fait" ? "rgba(245,237,237,0.4)" : "#F5EDED", textDecoration: t.status === "fait" ? "line-through" : undefined }}>
+                  <span style={{ flex: 1, fontSize: 12.5, color: t.status === "fait" ? "rgba(var(--ep-ink-rgb),0.4)" : "var(--ep-ink)", textDecoration: t.status === "fait" ? "line-through" : undefined }}>
                     {t.title}
-                    {typeof t.data?._assigned_by_name === "string" && <span style={{ fontSize: 10.5, color: "#facc15" }}>{" "}{tr("· de toi")}</span>}
+                    {typeof t.data?._assigned_by_name === "string" && <span style={{ fontSize: 10.5, color: "var(--ep-yellow)" }}>{" "}{tr("· de toi")}</span>}
                   </span>
                   {t.occurred_on && (
-                    <span style={{ fontSize: 11, color: late ? "#f87171" : "rgba(245,237,237,0.45)" }}>
+                    <span style={{ fontSize: 11, color: late ? "var(--ep-bad)" : "rgba(var(--ep-ink-rgb),0.45)" }}>
                       {new Date(`${t.occurred_on}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                     </span>
                   )}
@@ -150,10 +150,10 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12, marginBottom: 12 }}>
         <Section icon={AlertCircle} title={tr("Ce qui l'attend maintenant")}>
           {urgent.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "#4ade80", margin: 0 }}>{tr("Rien d'urgent en attente.")}</p>
+            <p style={{ fontSize: 12.5, color: "var(--ep-ok)", margin: 0 }}>{tr("Rien d'urgent en attente.")}</p>
           ) : (
             urgent.map((a) => (
-              <p key={a.id} style={{ fontSize: 12.5, color: a.priority === 1 ? "#fca5a5" : "rgba(245,237,237,0.75)", margin: "0 0 6px", lineHeight: 1.5 }}>{a.title}</p>
+              <p key={a.id} style={{ fontSize: 12.5, color: a.priority === 1 ? "#fca5a5" : "rgba(var(--ep-ink-rgb),0.75)", margin: "0 0 6px", lineHeight: 1.5 }}>{a.title}</p>
             ))
           )}
         </Section>
@@ -163,29 +163,29 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
             if (!list.length) return null;
             const n = list.filter((l) => doneSet.has(l.key)).length;
             return (
-              <div key={p.key} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, padding: "5px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
-                <span style={{ color: "#F5EDED" }}>{p.label}</span>
-                <span style={{ color: n === list.length ? "#4ade80" : "rgba(245,237,237,0.55)", fontWeight: 700 }}>{n}/{list.length}</span>
+              <div key={p.key} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, padding: "5px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>
+                <span style={{ color: "var(--ep-ink)" }}>{p.label}</span>
+                <span style={{ color: n === list.length ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.55)", fontWeight: 700 }}>{n}/{list.length}</span>
               </div>
             );
           })}
         </Section>
         <Section icon={FileBarChart} title={tr("Derniers rapports")}>
           {reports.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{tr("Aucun rapport envoyé.")}</p>
+            <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{tr("Aucun rapport envoyé.")}</p>
           ) : (
             reports.map((r) => {
               const metrics = (r.data?.metrics as Record<string, number> | undefined) ?? {};
               const labels = Object.fromEntries((cfg?.reportMetrics ?? []).map((m) => [m.key, m.label]));
               return (
-                <div key={r.id} style={{ padding: "6px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
-                  <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: 0, textTransform: "capitalize" }}>
+                <div key={r.id} style={{ padding: "6px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-ink)", margin: 0, textTransform: "capitalize" }}>
                     {new Date(`${r.occurred_on}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}
                   </p>
-                  <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.55)", margin: 0 }}>
+                  <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.55)", margin: 0 }}>
                     {Object.entries(metrics).map(([k, v]) => `${labels[k] ?? k} : ${v}`).join(" · ") || tr("Aucun chiffre")}
                   </p>
-                  {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "#facc15", margin: 0 }}>{tr("Blocage :")}{" "}{r.data.blocker as string}</p>}
+                  {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "var(--ep-yellow)", margin: 0 }}>{tr("Blocage :")}{" "}{r.data.blocker as string}</p>}
                 </div>
               );
             })
@@ -197,9 +197,9 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
         <div style={{ marginBottom: 12 }}>
           <Section icon={Table} title={tr("Ses tableaux")}>
             {boards.map((k) => (
-              <div key={k} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
-                <span style={{ fontSize: 12.5, color: "#F5EDED" }}>
-                  {KINDS[k].plural} <span style={{ color: "rgba(245,237,237,0.45)" }}>· {records.filter((r) => r.kind === k).length}</span>
+              <div key={k} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>
+                <span style={{ fontSize: 12.5, color: "var(--ep-ink)" }}>
+                  {KINDS[k].plural} <span style={{ color: "rgba(var(--ep-ink-rgb),0.45)" }}>· {records.filter((r) => r.kind === k).length}</span>
                 </span>
                 <CsvExport kind={k} memberId={userId} label={tr("CSV")} />
               </div>
@@ -211,7 +211,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
       <Section icon={FolderOpen} title={tr("Documents")}>
         <DocumentsPanel documents={documents} meId={user.id} founder targets={docTargets} defaultTarget={`user:${userId}`} />
       </Section>
-      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)", marginTop: 10 }}>{tr("Poste :")}{" "}{card?.role.mission}</p>
+      <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.3)", marginTop: 10 }}>{tr("Poste :")}{" "}{card?.role.mission}</p>
     </div>
   );
 }

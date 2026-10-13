@@ -92,8 +92,8 @@ function Pills<T extends string>({
           onClick={() => onChange(opt)}
           className={`px-2.5 py-1 rounded-md text-[10px] font-bold border transition-colors disabled:opacity-50 disabled:cursor-default ${
             value === opt
-              ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-              : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+              ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+              : "border-(--ep-line)/25 text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
           }`}
         >
           {labels ? labels[opt] : opt}
@@ -129,8 +129,8 @@ function MultiPills({
             onClick={() => onToggle(opt)}
             className={`px-2.5 py-1 rounded-md text-[10px] font-bold border transition-colors disabled:opacity-50 disabled:cursor-default ${
               active
-                ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+                : "border-(--ep-line)/25 text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             {opt}
@@ -218,33 +218,33 @@ export default function ExerciseDetailPanel({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
-      <div className="ep-modal-panel relative w-full sm:max-w-lg bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[88vh] overflow-y-auto">
-        <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-[#150000] border-b border-[#890404]/20 z-10">
+      <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm" onClick={onClose} />
+      <div className="ep-modal-panel relative w-full sm:max-w-lg bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl max-h-[88vh] overflow-y-auto">
+        <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-(--ep-s2) border-b border-(--ep-line)/20 z-10">
           <div className="min-w-0">
-            <p className="text-sm font-black text-white truncate">{ex.name}</p>
+            <p className="text-sm font-black text-(--ep-strong) truncate">{ex.name}</p>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#1f0101] border border-[#890404]/25 text-[#F5EDED]/45">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s1) border border-(--ep-line)/25 text-(--ep-ink)/45">
                 {ex.muscle_group}{ex.muscle_subgroup ? ` · ${ex.muscle_subgroup}` : ""}
               </span>
               {ex.category && (
-                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#1f0101] border border-[#890404]/25 text-[#F5EDED]/45">
+                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s1) border border-(--ep-line)/25 text-(--ep-ink)/45">
                   {CATEGORY_LABELS[ex.category]}
                 </span>
               )}
               {ex.difficulty && (
-                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#1f0101] border border-[#890404]/25 text-[#F5EDED]/45">
+                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s1) border border-(--ep-line)/25 text-(--ep-ink)/45">
                   {DIFFICULTY_LABELS[ex.difficulty]}
                 </span>
               )}
               {ex.equipment && (
-                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#1f0101] border border-[#890404]/25 text-[#F5EDED]/45">
+                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s1) border border-(--ep-line)/25 text-(--ep-ink)/45">
                   {ex.equipment}{ex.brand ? ` (${ex.brand})` : ""}
                 </span>
               )}
             </div>
           </div>
-          <button onClick={onClose} aria-label={t("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+          <button onClick={onClose} aria-label={t("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong) flex-shrink-0">
             <X size={18} />
           </button>
         </div>
@@ -255,7 +255,7 @@ export default function ExerciseDetailPanel({
               href={ex.video_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-[11px] font-bold text-[#E01E1E] hover:text-[#ff4444]"
+              className="flex items-center gap-2 text-[11px] font-bold text-(--ep-accent) hover:text-(--ep-accent-hi)"
             >
               <Video size={13} />{" "}{t("Voir la vidéo")}{" "}<ExternalLink size={11} />
             </a>
@@ -263,28 +263,28 @@ export default function ExerciseDetailPanel({
 
           {ex.instructions && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Exécution")}</p>
-              <p className="text-xs text-[#F5EDED]/70 leading-relaxed whitespace-pre-wrap">{ex.instructions}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Exécution")}</p>
+              <p className="text-xs text-(--ep-ink)/70 leading-relaxed whitespace-pre-wrap">{ex.instructions}</p>
             </div>
           )}
 
           {/* ── Décisions pour cette séance (propres à ce client) ──────────── */}
           {assignment && onAssignmentChange && (
-            <div className="bg-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4 -mx-1">
-              <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#E01E1E] mb-1">
+            <div className="bg-(--ep-s1) border border-(--ep-accent)/25 rounded-xl p-4 -mx-1">
+              <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-(--ep-accent) mb-1">
                 <ClipboardCheck size={12} />
                 {t("Décisions pour cette séance")}
               </p>
-              <p className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed mb-4">
+              <p className="text-[10.5px] text-(--ep-ink)/35 leading-relaxed mb-4">
                 {t("Rien ici n'est déduit automatiquement, c'est ce que toi tu choisis pour ce client précis, à cette place précise du programme. La classification ci-dessous est une référence générale sur l'exercice ; ça, c'est la mise en œuvre réelle.")}
               </p>
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
                     {t("Tension recherchée pour ce client")}
                     {defaultTensionFromClassification && (
-                      <span className="text-[#F5EDED]/25 normal-case font-normal">
+                      <span className="text-(--ep-ink)/25 normal-case font-normal">
                         {" "}{t("· par défaut sur cet exercice :")}{" "}{defaultTensionFromClassification}
                       </span>
                     )}
@@ -298,7 +298,7 @@ export default function ExerciseDetailPanel({
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
                     {t("Amplitude visée")}
                   </p>
                   <textarea
@@ -306,12 +306,12 @@ export default function ExerciseDetailPanel({
                     onChange={(e) => onAssignmentChange("rom_notes", e.target.value)}
                     rows={2}
                     placeholder={t("Ex. Presse à cuisses de sa salle limitée en amplitude basse, ajouter une planche pour compenser.")} aria-label={t("Notes sur l'amplitude de mouvement")}
-                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                    className="w-full bg-(--ep-bg) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors resize-none"
                   />
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
                     {t("Résistance & accessoires")}
                   </p>
                   <textarea
@@ -319,12 +319,12 @@ export default function ExerciseDetailPanel({
                     onChange={(e) => onAssignmentChange("resistance_notes", e.target.value)}
                     rows={2}
                     placeholder={t("Ex. Élastique léger en haut du mouvement pour garder la tension en position raccourcie.")} aria-label={t("Notes sur la résistance")}
-                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                    className="w-full bg-(--ep-bg) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors resize-none"
                   />
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
                     {t("Disponibilité vérifiée")}
                   </p>
                   <textarea
@@ -332,15 +332,15 @@ export default function ExerciseDetailPanel({
                     onChange={(e) => onAssignmentChange("availability_notes", e.target.value)}
                     rows={2}
                     placeholder={t("Ex. S'entraîne à 18h, salle bondée sur ce poste, prévoir un remplaçant si occupé.")} aria-label={t("Notes sur la disponibilité du matériel")}
-                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                    className="w-full bg-(--ep-bg) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors resize-none"
                   />
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
                     {t("Seuil d'inconfort")}
                   </p>
-                  <p className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed mb-1.5">
+                  <p className="text-[10.5px] text-(--ep-ink)/30 leading-relaxed mb-1.5">
                     {t("À partir de combien de séries, à quelle intensité, ce mouvement devient inconfortable pour ce client (essoufflement, articulation) au point d'ajuster ?")}
                   </p>
                   <textarea
@@ -348,7 +348,7 @@ export default function ExerciseDetailPanel({
                     onChange={(e) => onAssignmentChange("discomfort_notes", e.target.value)}
                     rows={2}
                     placeholder={t("Ex. Passe en amplitude partielle dès la 3e série à RIR 1.")} aria-label={t("Notes sur la gêne ou l'inconfort")}
-                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                    className="w-full bg-(--ep-bg) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors resize-none"
                   />
                 </div>
               </div>
@@ -361,14 +361,14 @@ export default function ExerciseDetailPanel({
               modifiable". Choix explicite par exercice (classification
               générale, partagée entre coachs) plutôt qu'une devinette par
               mots-clés sur le nom — voir lib/session-accessories.ts. */}
-          <div className="border-t border-[#890404]/15 pt-4">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5 flex items-center gap-1.5">
+          <div className="border-t border-(--ep-line)/15 pt-4">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5 flex items-center gap-1.5">
               <Backpack size={11} />{" "}{t("Bagage d'accessoires")}{" "}
               {(ex.accessories ?? []).length === 0 && (
                 <span className="text-amber-400/80 normal-case font-semibold">{t("· non renseigné, rien n'est affiché en séance tant que c'est vide")}</span>
               )}
             </p>
-            <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
+            <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed mb-2">
               {t("Ce que tu choisis ici s'affiche pour tous les clients qui font cet exercice, dans « à prévoir » (programme, logbook, séance en cours). Plusieurs accessoires possibles à la fois.")}
             </p>
             {(() => {
@@ -383,11 +383,11 @@ export default function ExerciseDetailPanel({
                   type="button"
                   disabled={!onUpdate || pending === "accessories"}
                   onClick={() => setField("accessories", [...(ex.accessories ?? []), guess.accessory])}
-                  className="w-full text-left mb-2 px-3 py-2 rounded-lg bg-[#150000] border border-dashed border-[#890404]/30 hover:border-[#E01E1E]/50 transition-colors disabled:opacity-50"
+                  className="w-full text-left mb-2 px-3 py-2 rounded-lg bg-(--ep-s2) border border-dashed border-(--ep-line)/30 hover:border-(--ep-accent)/50 transition-colors disabled:opacity-50"
                 >
-                  <span className="text-[10.5px] text-[#F5EDED]/45">
-                    {t("Suggestion d'après le nom :")}{" "}<strong className="text-[#F5EDED]/70">{guess.accessory}</strong>
-                    {" "}<span className="text-[#E01E1E] font-bold">{t("+ Ajouter")}</span>
+                  <span className="text-[10.5px] text-(--ep-ink)/45">
+                    {t("Suggestion d'après le nom :")}{" "}<strong className="text-(--ep-ink)/70">{guess.accessory}</strong>
+                    {" "}<span className="text-(--ep-accent) font-bold">{t("+ Ajouter")}</span>
                   </span>
                 </button>
               );
@@ -407,15 +407,15 @@ export default function ExerciseDetailPanel({
           </div>
 
           {/* Position / courbe de résistance — seul repère avec citations directes */}
-          <div className="border-t border-[#890404]/15 pt-4">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+          <div className="border-t border-(--ep-line)/15 pt-4">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
               {t("Position dans l'amplitude (classification générale)")}{" "}{!ex.position && <span className="text-amber-400/80 normal-case font-semibold">{t("· non renseigné")}</span>}
             </p>
-            <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">{POSITION_HELP}</p>
+            <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed mb-2">{POSITION_HELP}</p>
             <Pills options={POSITION_OPTIONS} value={ex.position as typeof POSITION_OPTIONS[number] | null} onChange={(v) => setField("position", v)} disabled={!onUpdate || pending === "position"} />
             <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
               {POSITION_SOURCES.map((s) => (
-                <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer" className="text-[9px] text-[#F5EDED]/25 hover:text-[#F5EDED]/50 underline">
+                <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer" className="text-[9px] text-(--ep-ink)/25 hover:text-(--ep-ink)/50 underline">
                   {s.label}
                 </a>
               ))}
@@ -424,19 +424,19 @@ export default function ExerciseDetailPanel({
 
           {/* Autres attributs qualitatifs */}
           {(Object.keys(QUAL_INFO) as QualKey[]).map((key) => (
-            <div key={key} className="border-t border-[#890404]/15 pt-4">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+            <div key={key} className="border-t border-(--ep-line)/15 pt-4">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
                 {QUAL_INFO[key].label} {!ex[key] && <span className="text-amber-400/80 normal-case font-semibold">{t("· non renseigné")}</span>}
               </p>
-              <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">{QUAL_INFO[key].help}</p>
+              <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed mb-2">{QUAL_INFO[key].help}</p>
               <Pills options={QUALITATIVE_SCALE} value={ex[key] as typeof QUALITATIVE_SCALE[number] | null} onChange={(v) => setField(key, v)} disabled={!onUpdate || pending === key} />
             </div>
           ))}
 
           {/* Unilatéral / Microchargeable */}
-          <div className="border-t border-[#890404]/15 pt-4 grid grid-cols-2 gap-4">
+          <div className="border-t border-(--ep-line)/15 pt-4 grid grid-cols-2 gap-4">
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Uni / Bilatéral")}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Uni / Bilatéral")}</p>
               <Pills
                 options={["Unilatéral", "Bilatéral"] as const}
                 value={ex.is_unilateral == null ? null : ex.is_unilateral ? "Unilatéral" : "Bilatéral"}
@@ -445,25 +445,25 @@ export default function ExerciseDetailPanel({
               />
             </div>
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Microchargeable")}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Microchargeable")}</p>
               <Pills
                 options={["Oui", "Non"] as const}
                 value={ex.microloadable == null ? null : ex.microloadable ? "Oui" : "Non"}
                 onChange={(v) => setField("microloadable", v === "Oui")}
                 disabled={!onUpdate || pending === "microloadable"}
               />
-              <p className="text-[9.5px] text-[#F5EDED]/30 leading-relaxed mt-1.5">
+              <p className="text-[9.5px] text-(--ep-ink)/30 leading-relaxed mt-1.5">
                 {t("Décisif sur les mouvements où le client plafonne vite (souvent isolation, petits groupes) : sans incrément fin, la seule option est de sauter un palier de charge trop gros.")}
               </p>
             </div>
           </div>
 
           {/* Adaptations / accessoires (fiche générale de l'exercice) */}
-          <div className="border-t border-[#890404]/15 pt-4">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+          <div className="border-t border-(--ep-line)/15 pt-4">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
               {t("Adaptations & accessoires (fiche générale de l'exercice)")}
             </p>
-            <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
+            <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed mb-2">
               {t("Astuces d'installation valables pour tous les clients sur cet exercice, pas propre à celui-ci (ça, c'est la section décisions plus haut) : élastique pour garder la tension en position raccourcie, sangles si la prise devient limitante, ajustement si une machine manque d'amplitude...")}
             </p>
             {onUpdate ? (
@@ -473,20 +473,20 @@ export default function ExerciseDetailPanel({
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   placeholder={t("Ex. Ajouter un élastique en haut du mouvement pour garder la tension en position raccourcie.")} aria-label={t("Notes")}
-                  className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                  className="w-full bg-(--ep-bg) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors resize-none"
                 />
                 {notes !== (ex.setup_notes ?? "") && (
                   <button
                     onClick={saveNotes}
                     disabled={savingNotes}
-                    className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] disabled:opacity-50"
+                    className="mt-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) disabled:opacity-50"
                   >
                     {savingNotes ? t("Enregistrement…") : t("Enregistrer la note")}
                   </button>
                 )}
               </>
             ) : (
-              <p className="text-xs text-[#F5EDED]/60 italic">{ex.setup_notes || t("Aucune note pour l'instant.")}</p>
+              <p className="text-xs text-(--ep-ink)/60 italic">{ex.setup_notes || t("Aucune note pour l'instant.")}</p>
             )}
           </div>
 
@@ -494,7 +494,7 @@ export default function ExerciseDetailPanel({
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
+              className="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg transition-colors"
             >
               {t("Terminé pour cet exercice")}
             </button>

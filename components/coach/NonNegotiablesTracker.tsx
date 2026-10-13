@@ -18,17 +18,17 @@ import type {
 // sombre déjà utilisée partout ailleurs dans l'appli (AdsTracker,
 // ClientNutritionView) : jamais aplatie ("garder l'identité rouge brume").
 
-const RED = "#E01E1E";
-const BORDER = "rgba(137,4,4,0.25)";
-const DIM = "rgba(245,237,237,0.4)";
+const RED = "var(--ep-accent)";
+const BORDER = "rgba(var(--ep-line-rgb),0.25)";
+const DIM = "rgba(var(--ep-ink-rgb),0.4)";
 
 function inputStyle(): React.CSSProperties {
   return {
-    background: "rgba(137,4,4,0.08)",
+    background: "rgba(var(--ep-line-rgb),0.08)",
     border: `1px solid ${BORDER}`,
     borderRadius: 10,
     padding: "8px 10px",
-    color: "#fff",
+    color: "var(--ep-strong)",
     fontSize: 13,
     width: "100%",
   };
@@ -50,7 +50,7 @@ function DayDot({ day }: { day: NonNegotiablesDay }) {
       <div
         className="w-7 h-7 rounded-full flex items-center justify-center"
         style={{
-          background: respected ? "rgba(224,30,30,0.2)" : "transparent",
+          background: respected ? "rgba(var(--ep-accent-rgb),0.2)" : "transparent",
           border: `1.5px solid ${respected ? RED : BORDER}`,
         }}
       >
@@ -68,11 +68,11 @@ function DayDot({ day }: { day: NonNegotiablesDay }) {
 function StatTile({ label, value, target }: { label: string; value: string | number; target?: number }) {
   const t = useT();
   return (
-    <div className="rounded-xl px-3 py-2.5" style={{ background: "rgba(137,4,4,0.06)", border: `1px solid ${BORDER}` }}>
+    <div className="rounded-xl px-3 py-2.5" style={{ background: "rgba(var(--ep-line-rgb),0.06)", border: `1px solid ${BORDER}` }}>
       <p style={{ margin: 0, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: DIM }}>
         {label}
       </p>
-      <p style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 800, color: "#fff" }}>
+      <p style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 800, color: "var(--ep-strong)" }}>
         {value}
         {target !== undefined && <span style={{ fontSize: 11, fontWeight: 600, color: DIM }}> / {target}{" "}{t("visé")}</span>}
       </p>
@@ -163,9 +163,9 @@ export default function NonNegotiablesTracker({
         onClick={() => save({ [key]: !active } as Partial<NonNegotiablesDay>)}
         className="px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wide border flex items-center gap-1.5"
         style={{
-          background: active ? "rgba(224,30,30,0.18)" : "transparent",
+          background: active ? "rgba(var(--ep-accent-rgb),0.18)" : "transparent",
           borderColor: active ? RED : BORDER,
-          color: active ? "#fff" : DIM,
+          color: active ? "var(--ep-strong)" : DIM,
         }}
       >
         {active && <Check size={12} />}
@@ -188,7 +188,7 @@ export default function NonNegotiablesTracker({
       {/* Non-négociables du jour */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-black uppercase tracking-widest text-white">{t("Non-négociables du jour")}</h2>
+          <h2 className="text-sm font-black uppercase tracking-widest text-(--ep-strong)">{t("Non-négociables du jour")}</h2>
           {streak > 0 && (
             <span className="flex items-center gap-1 text-xs font-bold" style={{ color: RED }}>
               <Flame size={14} /> {streak}{" "}{t("j de suite")}
@@ -225,9 +225,9 @@ export default function NonNegotiablesTracker({
           </div>
         </div>
 
-        {error && <p className="text-xs mt-3" style={{ color: "#f87171" }}>{t(error)}</p>}
+        {error && <p className="text-xs mt-3" style={{ color: "var(--ep-bad)" }}>{t(error)}</p>}
         {saved && !error && !isPending && (
-          <p className="text-xs mt-3 flex items-center gap-1" style={{ color: "#4ade80" }}>
+          <p className="text-xs mt-3 flex items-center gap-1" style={{ color: "var(--ep-ok)" }}>
             <Check size={12} />{" "}{t("Enregistré")}
           </p>
         )}
@@ -235,7 +235,7 @@ export default function NonNegotiablesTracker({
 
       {/* Objectifs du mois */}
       <section>
-        <h2 className="text-sm font-black uppercase tracking-widest text-white mb-3">
+        <h2 className="text-sm font-black uppercase tracking-widest text-(--ep-strong) mb-3">
           {t("Mes 5 objectifs du mois")}
         </h2>
         <div className="flex flex-col gap-2">
@@ -279,7 +279,7 @@ export default function NonNegotiablesTracker({
           )}
         </div>
         {objectivesSaved && (
-          <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "#4ade80" }}>
+          <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "var(--ep-ok)" }}>
             <Check size={12} />{" "}{t("Enregistré")}
           </p>
         )}
@@ -287,7 +287,7 @@ export default function NonNegotiablesTracker({
 
       {/* Pilotage hebdo — les 5 catégories du Mastermind, agrégées depuis l'appli */}
       <section>
-        <h2 className="text-sm font-black uppercase tracking-widest text-white mb-1">
+        <h2 className="text-sm font-black uppercase tracking-widest text-(--ep-strong) mb-1">
           {t("Cette semaine")}
         </h2>
         <p className="text-xs mb-3" style={{ color: DIM }}>

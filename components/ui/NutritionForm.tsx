@@ -41,10 +41,10 @@ const PHASE_ADJUSTMENTS: Record<string, { label: string; value: number }[]> = {
 };
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 const labelCls =
-  "text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block";
+  "text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block";
 
 // Repliable (2026-08-19, retour direct : "regarde sur toute l'appli si tu
 // trouve des endroit où c'est mieux de mettre un bouton... pour pas que ya
@@ -69,7 +69,7 @@ function CollapsibleSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
       <button
         type="button"
         onClick={onToggle}
@@ -78,11 +78,11 @@ function CollapsibleSection({
       >
         <p className={labelCls + " mb-0 flex-shrink-0"}>{title}</p>
         {!open && summary && (
-          <span className="text-[11px] text-[#F5EDED]/35 truncate">{summary}</span>
+          <span className="text-[11px] text-(--ep-ink)/35 truncate">{summary}</span>
         )}
         <ChevronDown
           size={14}
-          className="flex-shrink-0 ml-auto text-[#F5EDED]/30 transition-transform"
+          className="flex-shrink-0 ml-auto text-(--ep-ink)/30 transition-transform"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
       </button>
@@ -333,7 +333,7 @@ export default function NutritionForm({
     <div className="space-y-5">
       {/* Current targets banner */}
       {existingProfile && (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
           <p className={labelCls}>{tr("Objectifs actuels")}</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
@@ -343,23 +343,23 @@ export default function NutritionForm({
               { label: tr("Lipides"), value: existingProfile.fats_target, unit: "g" },
             ].map(({ label, value, unit }) => (
               <div key={label}>
-                <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+                <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest font-semibold">
                   {label}
                 </p>
-                <p className="text-2xl font-black text-white">
+                <p className="text-2xl font-black text-(--ep-strong)">
                   {value ?? "-"}
-                  <span className="text-xs font-normal text-[#F5EDED]/40 ml-1">{unit}</span>
+                  <span className="text-xs font-normal text-(--ep-ink)/40 ml-1">{unit}</span>
                 </p>
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/25 mt-3">
+          <p className="text-[10px] text-(--ep-ink)/25 mt-3">
             {tr("Phase :")}{" "}
-            <span className="text-[#E01E1E] font-semibold capitalize">
+            <span className="text-(--ep-accent) font-semibold capitalize">
               {existingProfile.phase ?? "-"}
             </span>{" "}
             {tr("· TDEE :")}{" "}
-            <span className="text-white font-semibold">
+            <span className="text-(--ep-strong) font-semibold">
               {existingProfile.tdee ?? "-"}{" "}{tr("kcal")}
             </span>
           </p>
@@ -378,7 +378,7 @@ export default function NutritionForm({
               <p className="text-xs font-bold text-amber-400 mb-1">
                 {tr("Écart entre TDEE formule et TDEE réel observé")}
               </p>
-              <p className="text-[11px] text-[#F5EDED]/55 leading-relaxed">
+              <p className="text-[11px] text-(--ep-ink)/55 leading-relaxed">
                 {tr("Sur les")}{" "}{observed.days}{" "}{tr("derniers jours,")}{" "}{observed.weightChangeKg >= 0 ? "+" : ""}
                 {observed.weightChangeKg}{tr("kg pour ~")}{observed.avgCalories}{" "}{tr("kcal/jour loggés → TDEE réel estimé à ~")}{observed.tdee}{" "}{tr("kcal, contre")}{" "}{calc?.tdee}{" "}{tr("kcal côté formule (")}{tdeeGap > 0 ? "+" : ""}{tdeeGap}{" "}{tr("kcal).")}
               </p>
@@ -410,8 +410,8 @@ export default function NutritionForm({
                 onClick={() => set("gender", g)}
                 className={`flex-1 py-2 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors ${
                   form.gender === g
-                    ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                    : "border-[#890404]/30 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                    ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                    : "border-(--ep-line)/30 text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
                 }`}
               >
                 {g}
@@ -434,7 +434,7 @@ export default function NutritionForm({
               <button
                 type="button"
                 onClick={() => set("weight", String(clientWeight))}
-                className="text-[9px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/60 mt-1"
+                className="text-[9px] font-semibold text-(--ep-ink)/30 hover:text-(--ep-ink)/60 mt-1"
               >
                 {tr("Dernier pesé :")}{" "}{clientWeight}{tr("kg, utiliser")}
               </button>
@@ -543,7 +543,7 @@ export default function NutritionForm({
                 </option>
               ))}
             </select>
-            <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+            <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">
               {tr("Indépendant de tes pas quotidiens, déjà comptés ci-contre.")}
             </p>
           </div>
@@ -551,7 +551,7 @@ export default function NutritionForm({
       </CollapsibleSection>
 
       {/* Section: Objectif */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
         <p className={labelCls + " mb-4"}>{tr("Objectif")}</p>
         <div className="grid grid-cols-3 gap-2 mb-4">
           {(["deficit", "maintenance", "surplus"] as const).map((p) => (
@@ -560,8 +560,8 @@ export default function NutritionForm({
               onClick={() => set("phase", p)}
               className={`py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors ${
                 form.phase === p
-                  ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                  : "border-[#890404]/30 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                  ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                  : "border-(--ep-line)/30 text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
               }`}
             >
               {p === "deficit" ? tr("Déficit") : p === "maintenance" ? tr("Maintenance") : tr("Surplus")}
@@ -588,9 +588,9 @@ export default function NutritionForm({
       {/* Section: Carb cycling — objectif de base ci-dessus = jour
           d'entraînement par défaut. Écarts optionnels pour repos/high day,
           absorbés en glucides (protéines/lipides stables). */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
         <p className={labelCls + " mb-1"}>{tr("Jours de repos / high day (optionnel)")}</p>
-        <p className="text-[10px] text-[#F5EDED]/30 mb-4">
+        <p className="text-[10px] text-(--ep-ink)/30 mb-4">
           {tr("L'objectif ci-dessus est celui des jours d'entraînement. Défini un écart pour les jours de repos ou les journées « high ». L'écart est absorbé en glucides, protéines et lipides restent stables.")}
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -619,14 +619,14 @@ export default function NutritionForm({
 
       {/* Results */}
       {calc ? (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <FlameKindling size={14} className="text-[#E01E1E]" />
+            <FlameKindling size={14} className="text-(--ep-accent)" />
             <p className={labelCls + " mb-0"}>{tr("Résultats calculés")}</p>
           </div>
 
           {/* TDEE breakdown */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 pb-5 border-b border-[#890404]/20">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 pb-5 border-b border-(--ep-line)/20">
             {[
               { label: tr("BMR"), value: calc.bmr },
               { label: tr("EAT"), value: calc.eat },
@@ -635,33 +635,33 @@ export default function NutritionForm({
             ].map(({ label, value }) => (
               <div
                 key={label}
-                className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5"
+                className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2.5"
               >
-                <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+                <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest font-semibold">
                   {label}
                 </p>
-                <p className="text-xl font-black text-white">
+                <p className="text-xl font-black text-(--ep-strong)">
                   {value}
-                  <span className="text-[10px] text-[#F5EDED]/40 ml-1">{tr("kcal")}</span>
+                  <span className="text-[10px] text-(--ep-ink)/40 ml-1">{tr("kcal")}</span>
                 </p>
               </div>
             ))}
           </div>
 
           {/* TDEE — repère de maintenance, jamais modifié directement */}
-          <div className="bg-[#890404]/15 border border-[#890404]/30 rounded-lg px-3 py-2.5 mb-4">
-            <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+          <div className="bg-(--ep-line)/15 border border-(--ep-line)/30 rounded-lg px-3 py-2.5 mb-4">
+            <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest font-semibold">
               {tr("TDEE total (repère de maintenance)")}
             </p>
-            <p className="text-3xl font-black text-[#E01E1E]">
+            <p className="text-3xl font-black text-(--ep-accent)">
               {calc.tdee}
-              <span className="text-sm text-[#F5EDED]/40 ml-1 font-normal">{tr("kcal/j")}</span>
+              <span className="text-sm text-(--ep-ink)/40 ml-1 font-normal">{tr("kcal/j")}</span>
             </p>
           </div>
         </div>
       ) : (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl p-8 text-center">
-          <p className="text-xs text-[#F5EDED]/30 font-semibold uppercase tracking-widest">
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl p-8 text-center">
+          <p className="text-xs text-(--ep-ink)/30 font-semibold uppercase tracking-widest">
             {tr("Remplis poids, taille et âge pour voir le calcul")}
           </p>
         </div>
@@ -670,33 +670,33 @@ export default function NutritionForm({
       {/* Objectifs à enregistrer — décorrélés du TDEE, éditables librement.
           Pré-remplis depuis le calcul tant que le coach n'a rien tapé, mais
           modifiables à tout moment sans que le calcul ne les écrase. */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
         <div className="flex items-center justify-between mb-1">
           <p className={labelCls + " mb-0"}>{tr("Objectifs à enregistrer")}</p>
           {calc && targetsTouched && (
             <button
               type="button"
               onClick={resetTargetsToCalc}
-              className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+              className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
             >
               {tr("Recalculer depuis le TDEE")}
             </button>
           )}
         </div>
-        <p className="text-[10px] text-[#F5EDED]/30 mb-4">
+        <p className="text-[10px] text-(--ep-ink)/30 mb-4">
           {tr("Modifiable librement, indépendamment du calcul TDEE ci-dessus (qui reste un repère de maintenance). Pré-rempli par le calcul tant que rien n'est tapé ici.")}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {(
             [
-              { key: "calories" as const, label: tr("Objectif calorique"), unit: "kcal", color: "text-white" },
+              { key: "calories" as const, label: tr("Objectif calorique"), unit: "kcal", color: "text-(--ep-strong)" },
               { key: "proteins" as const, label: tr("Protéines"), unit: "g", color: "text-blue-300" },
               { key: "carbs" as const, label: tr("Glucides"), unit: "g", color: "text-amber-300" },
               { key: "fats" as const, label: tr("Lipides"), unit: "g", color: "text-rose-300" },
             ]
           ).map(({ key, label, unit, color }) => (
-            <div key={key} className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5">
-              <label className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold block mb-1">
+            <div key={key} className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2.5">
+              <label className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest font-semibold block mb-1">
                 {label}
               </label>
               <div className="flex items-baseline gap-1">
@@ -707,7 +707,7 @@ export default function NutritionForm({
                   aria-label={label}
                   className={`w-full bg-transparent text-2xl font-black ${color} focus:outline-none`}
                 />
-                <span className="text-[10px] text-[#F5EDED]/40 font-normal">{unit}</span>
+                <span className="text-[10px] text-(--ep-ink)/40 font-normal">{unit}</span>
               </div>
             </div>
           ))}
@@ -725,10 +725,10 @@ export default function NutritionForm({
         <button
           onClick={handleSave}
           disabled={!calc || saving || saved}
-          className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
+          className={`inline-flex items-center gap-2 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
             saved
               ? "bg-green-800/60 border border-green-600/30"
-              : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50"
+              : "bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50"
           }`}
         >
           {saved ? (

@@ -9,7 +9,7 @@ import type { CreateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 import { parisWallClockToIso } from "@/lib/live-time";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 const TYPE_ORDER: LiveType[] = [
   "1to1", "audit", "checkin_hebdo", "acces_direct", "atelier", "webinaire", "qna",
@@ -122,7 +122,7 @@ export default function LiveScheduler({
   if (step === 0 || !type) {
     return (
       <div className="mb-6">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
           {tr("Programmer un live · étape 1 sur 3 : quel format ?")}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
@@ -145,19 +145,19 @@ export default function LiveScheduler({
               >
                 <div style={{
                   width: 32, height: 32, borderRadius: 9,
-                  background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+                  background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <Icon size={15} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                  <Icon size={15} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "var(--ep-ink)" }}>
                     {LIVE_TYPE_LABELS[t]}
                   </p>
-                  <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.4 }}>
+                  <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.4 }}>
                     {info.tagline}
                   </p>
-                  <p style={{ margin: "6px 0 0", fontSize: 9.5, fontWeight: 700, color: "rgba(224,30,30,0.55)", lineHeight: 1.4, textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                  <p style={{ margin: "6px 0 0", fontSize: 9.5, fontWeight: 700, color: "rgba(var(--ep-accent-rgb),0.55)", lineHeight: 1.4, textTransform: "uppercase", letterSpacing: "0.03em" }}>
                     {info.cadence}
                   </p>
                 </div>
@@ -173,13 +173,13 @@ export default function LiveScheduler({
   const info = LIVE_TYPE_INFO[type];
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-6">
       {/* Barre d'étape : retour toujours visible en haut */}
       <div className="flex items-center gap-3 mb-4">
         <button
           onClick={goBack}
           aria-label={tr("Revenir à l'étape précédente")}
-          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#F5EDED]/45 hover:text-[#F5EDED] transition-colors shrink-0"
+          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-(--ep-ink)/45 hover:text-(--ep-ink) transition-colors shrink-0"
         >
           <ArrowLeft size={14} />{" "}{tr("Retour")}
         </button>
@@ -192,7 +192,7 @@ export default function LiveScheduler({
                   fontWeight: 800,
                   textTransform: "uppercase",
                   letterSpacing: "0.06em",
-                  color: i === step ? "#E01E1E" : i < step ? "rgba(245,237,237,0.5)" : "rgba(245,237,237,0.22)",
+                  color: i === step ? "var(--ep-accent)" : i < step ? "rgba(var(--ep-ink-rgb),0.5)" : "rgba(var(--ep-ink-rgb),0.22)",
                 }}
               >
                 {label}
@@ -200,7 +200,7 @@ export default function LiveScheduler({
               {i < STEPS.length - 1 && (
                 <span style={{
                   width: 14, height: 1,
-                  background: i < step ? "rgba(224,30,30,0.5)" : "rgba(245,237,237,0.12)",
+                  background: i < step ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-ink-rgb),0.12)",
                   display: "inline-block",
                 }} />
               )}
@@ -210,32 +210,32 @@ export default function LiveScheduler({
         <button
           onClick={resetAll}
           aria-label={tr("Annuler la création du live")}
-          className="text-[#F5EDED]/30 hover:text-white transition-colors shrink-0"
+          className="text-(--ep-ink)/30 hover:text-(--ep-strong) transition-colors shrink-0"
         >
           <X size={14} />
         </button>
       </div>
 
       {/* Type choisi, figé — on le change en revenant à l'étape 1 */}
-      <div className="flex items-center gap-3 mb-4 bg-[#150000] border border-[#890404]/25 rounded-lg px-3 py-2.5">
+      <div className="flex items-center gap-3 mb-4 bg-(--ep-s2) border border-(--ep-line)/25 rounded-lg px-3 py-2.5">
         <div style={{
           width: 30, height: 30, borderRadius: 9, flexShrink: 0,
-          background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+          background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <TypeIcon size={14} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <TypeIcon size={14} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
         </div>
         <div className="min-w-0 flex-1">
-          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "#F5EDED" }}>
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "var(--ep-ink)" }}>
             {LIVE_TYPE_LABELS[type]}
           </p>
-          <p style={{ margin: "1px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>
+          <p style={{ margin: "1px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
             {info.tagline}
           </p>
         </div>
         <button
           onClick={() => setStep(0)}
-          className="text-[10px] font-bold uppercase tracking-wider text-[#E01E1E] hover:text-white transition-colors shrink-0"
+          className="text-[10px] font-bold uppercase tracking-wider text-(--ep-accent) hover:text-(--ep-strong) transition-colors shrink-0"
         >
           {tr("Changer")}
         </button>
@@ -244,7 +244,7 @@ export default function LiveScheduler({
       {/* ── Étape 2 : sujet et participants ─────────────────────────────────── */}
       {step === 1 && (
         <div className="space-y-3">
-          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6 }}>
             {info.coachDescription}
           </p>
 
@@ -252,7 +252,7 @@ export default function LiveScheduler({
             <div>
               <p className="ep-label" style={{ marginBottom: 6 }}>{tr("Client concerné")}</p>
               {clients.length === 0 ? (
-                <p style={{ fontSize: 12, color: "rgba(245,237,237,0.35)", margin: 0 }}>
+                <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.35)", margin: 0 }}>
                   {tr("Aucun client actif pour l'instant.")}
                 </p>
               ) : (
@@ -301,7 +301,7 @@ export default function LiveScheduler({
 
           <button
             onClick={goNextFromSujet}
-            className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             {tr("Continuer")}{" "}<ArrowRight size={13} />
           </button>
@@ -311,16 +311,16 @@ export default function LiveScheduler({
       {/* ── Étape 3 : créneau ───────────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-3">
-          <div className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5">
+          <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2.5">
             <p className="ep-label" style={{ marginBottom: 3 }}>{tr("Récapitulatif")}</p>
-            <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED" }}>{title}</p>
+            <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--ep-ink)" }}>{title}</p>
             {isOneToOneType(type) && (
-              <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.42)" }}>
+              <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.42)" }}>
                 {tr("Avec")}{" "}{clients.find((c) => c.id === clientId)?.full_name ?? tr("un client")}
               </p>
             )}
             {type === "atelier" && guestName.trim() && (
-              <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.42)" }}>
+              <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.42)" }}>
                 {tr("Intervenant :")}{" "}{guestName.trim()}
               </p>
             )}
@@ -346,11 +346,11 @@ export default function LiveScheduler({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
             >
               {submitting ? <Loader2 size={13} className="animate-spin" /> : <><Check size={13} />{" "}{tr("Programmer")}</>}
             </button>
-            <button onClick={resetAll} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+            <button onClick={resetAll} className="text-xs text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors">
               {tr("Annuler")}
             </button>
           </div>

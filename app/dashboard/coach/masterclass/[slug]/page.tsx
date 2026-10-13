@@ -32,7 +32,7 @@ export default async function MasterclassGuidePage({
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
         href="/dashboard/coach/masterclass"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {t("Masterclass")}

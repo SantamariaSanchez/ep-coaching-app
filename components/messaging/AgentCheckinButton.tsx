@@ -34,8 +34,8 @@ export default function AgentCheckinButton({ clientId }: { clientId: string }) {
       className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-colors flex-shrink-0 ml-auto disabled:opacity-50"
       style={
         state === "sent"
-          ? { background: "rgba(74,222,128,0.12)", borderColor: "rgba(74,222,128,0.35)", color: "#4ade80" }
-          : { background: "rgba(96,165,250,0.1)", borderColor: "rgba(96,165,250,0.3)", color: "#60a5fa" }
+          ? { background: "rgba(var(--ep-ok-rgb),0.12)", borderColor: "rgba(var(--ep-ok-rgb),0.35)", color: "var(--ep-ok)" }
+          : { background: "rgba(var(--ep-info-rgb),0.1)", borderColor: "rgba(var(--ep-info-rgb),0.3)", color: "var(--ep-info)" }
       }
     >
       {state === "sent" ? <Check size={12} /> : <Bot size={12} />}

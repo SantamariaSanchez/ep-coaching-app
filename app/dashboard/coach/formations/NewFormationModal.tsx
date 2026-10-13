@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { X, AlertCircle } from "lucide-react";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 // Remplace les prompt()/alert() natifs du navigateur (2026-09-08) : deux
 // popups système gris cassaient l'identité visuelle de l'appli pour une
@@ -50,18 +50,18 @@ export default function NewFormationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
-      <div className="ep-modal-panel relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl z-10">
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20">
-          <p className="text-sm font-bold text-white">{t("Nouvelle formation")}</p>
-          <button onClick={onClose} aria-label={t("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
+      <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm" onClick={onClose} />
+      <div className="ep-modal-panel relative w-full sm:max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl z-10">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-(--ep-line)/20">
+          <p className="text-sm font-bold text-(--ep-strong)">{t("Nouvelle formation")}</p>
+          <button onClick={onClose} aria-label={t("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong)">
             <X size={16} />
           </button>
         </div>
 
         <div className="px-5 pt-4 pb-2 flex gap-3">
           <div className="w-16 flex-shrink-0">
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {t("Emoji")}
             </label>
             <input
@@ -73,7 +73,7 @@ export default function NewFormationModal({
             />
           </div>
           <div className="flex-1 min-w-0">
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {t("Titre")}
             </label>
             <input
@@ -98,14 +98,14 @@ export default function NewFormationModal({
         <div className="px-5 py-4 flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-[#F5EDED]/40 hover:text-white transition-colors"
+            className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong) transition-colors"
           >
             {t("Annuler")}
           </button>
           <button
             onClick={handleCreate}
             disabled={creating || !title.trim()}
-            className="flex-1 py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
+            className="flex-1 py-3 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-xl disabled:opacity-50 transition-colors"
           >
             {creating ? t("Création…") : t("Créer")}
           </button>

@@ -31,10 +31,10 @@ function CopyButton({ text }: { text: string }) {
       aria-label={t("Copier")}
       style={{
         display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-        background: copied ? "rgba(74,222,128,0.15)" : "rgba(0,0,0,0.3)",
-        border: `1px solid ${copied ? "rgba(74,222,128,0.4)" : "rgba(245,237,237,0.15)"}`,
+        background: copied ? "rgba(var(--ep-ok-rgb),0.15)" : "rgba(var(--ep-shade-rgb),0.3)",
+        border: `1px solid ${copied ? "rgba(var(--ep-ok-rgb),0.4)" : "rgba(var(--ep-ink-rgb),0.15)"}`,
         borderRadius: 8, padding: "6px 10px", fontSize: 10.5, fontWeight: 700,
-        color: copied ? "#4ade80" : "rgba(245,237,237,0.5)", cursor: "pointer",
+        color: copied ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer",
       }}
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
@@ -66,15 +66,15 @@ export default function SalesCallScripts() {
   return (
     <div>
       <div style={{ position: "relative", marginBottom: 14 }}>
-        <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+        <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("Chercher une question (ex. prix, réfléchir, conjoint...)")}
           aria-label={t("Chercher une question de closing")}
           style={{
-            width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.2)",
-            borderRadius: "var(--radius-lg)", color: "#F5EDED", padding: "12px 16px 12px 32px",
+            width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
+            borderRadius: "var(--radius-lg)", color: "var(--ep-ink)", padding: "12px 16px 12px 32px",
             fontSize: 13, outline: "none",
           }}
         />
@@ -86,9 +86,9 @@ export default function SalesCallScripts() {
           onClick={() => setActiveCategory("all")}
           style={{
             fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer",
-            border: activeCategory === "all" ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-            background: activeCategory === "all" ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-            color: activeCategory === "all" ? "#F5EDED" : "rgba(245,237,237,0.55)",
+            border: activeCategory === "all" ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+            background: activeCategory === "all" ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+            color: activeCategory === "all" ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
           }}
         >
           {t("Tout")}
@@ -100,9 +100,9 @@ export default function SalesCallScripts() {
             onClick={() => setActiveCategory(cat.id)}
             style={{
               fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer",
-              border: activeCategory === cat.id ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-              background: activeCategory === cat.id ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-              color: activeCategory === cat.id ? "#F5EDED" : "rgba(245,237,237,0.55)",
+              border: activeCategory === cat.id ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+              background: activeCategory === cat.id ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+              color: activeCategory === cat.id ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
             }}
           >
             {cat.label}
@@ -111,23 +111,23 @@ export default function SalesCallScripts() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <p className="text-sm text-[#F5EDED]/35">{t("Aucune question ne correspond à \"")}{query}&quot;.</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <p className="text-sm text-(--ep-ink)/35">{t("Aucune question ne correspond à \"")}{query}&quot;.</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
           {filtered.map((cat) => (
             <div key={cat.id}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>{cat.label}</p>
-              <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", margin: "0 0 12px", lineHeight: 1.5 }}>{cat.intro}</p>
+              <p style={{ fontSize: 13, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px" }}>{cat.label}</p>
+              <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "0 0 12px", lineHeight: 1.5 }}>{cat.intro}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {cat.questions.map((q, i) => (
                   <div key={i} className="ep-card" style={{ padding: "12px 14px" }}>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                      <p style={{ margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.55, flex: 1 }}>{q.text}</p>
+                      <p style={{ margin: 0, fontSize: 13, color: "var(--ep-ink)", lineHeight: 1.55, flex: 1 }}>{q.text}</p>
                       <CopyButton text={q.text} />
                     </div>
-                    <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.5, fontStyle: "italic" }}>
+                    <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.5, fontStyle: "italic" }}>
                       {q.note}
                     </p>
                   </div>

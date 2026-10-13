@@ -27,38 +27,38 @@ export default function MasterclassList({
           <Link
             key={guide.slug}
             href={`/dashboard/coach/masterclass/${guide.slug}`}
-            className="block bg-[#1a0000] border border-[#890404]/25 rounded-xl px-4 py-4 hover:border-[#E01E1E]/40 transition-colors"
+            className="block bg-(--ep-s3) border border-(--ep-line)/25 rounded-xl px-4 py-4 hover:border-(--ep-accent)/40 transition-colors"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[9.5px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/25 rounded-full px-2 py-0.5">
+                  <span className="text-[9.5px] font-bold uppercase tracking-widest text-(--ep-accent) bg-(--ep-accent)/10 border border-(--ep-accent)/25 rounded-full px-2 py-0.5">
                     {MASTERCLASS_CATEGORY_LABELS[guide.category]}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10.5px] text-[#F5EDED]/40">
+                  <span className="inline-flex items-center gap-1 text-[10.5px] text-(--ep-ink)/40">
                     <Clock size={11} />
                     {guide.estimatedMinutes} min
                   </span>
                 </div>
-                <p className="text-[15px] font-black text-white leading-snug">{guide.title}</p>
-                <p className="text-[12px] text-[#F5EDED]/45 mt-1.5 leading-relaxed">{guide.summary}</p>
+                <p className="text-[15px] font-black text-(--ep-strong) leading-snug">{guide.title}</p>
+                <p className="text-[12px] text-(--ep-ink)/45 mt-1.5 leading-relaxed">{guide.summary}</p>
               </div>
-              <ChevronRight size={16} className="text-[#F5EDED]/25 flex-shrink-0 mt-1" />
+              <ChevronRight size={16} className="text-(--ep-ink)/25 flex-shrink-0 mt-1" />
             </div>
 
             <div className="mt-3.5">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
                   {done}/{total} étapes
                 </p>
-                <p className="text-[10px] font-bold text-[#F5EDED]/40">{percent}%</p>
+                <p className="text-[10px] font-bold text-(--ep-ink)/40">{percent}%</p>
               </div>
-              <div className="h-1.5 bg-[#0f0000] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-(--ep-s5) rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full"
                   style={{
                     width: `${percent}%`,
-                    background: percent === 100 ? "#4ade80" : "#E01E1E",
+                    background: percent === 100 ? "var(--ep-ok)" : "var(--ep-accent)",
                     transition: "width 0.25s ease",
                   }}
                 />

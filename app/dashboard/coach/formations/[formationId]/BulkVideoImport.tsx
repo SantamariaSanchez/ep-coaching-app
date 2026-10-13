@@ -33,11 +33,11 @@ interface PreviewRow {
 }
 
 const STATUS_STYLE: Record<RowStatus, { label: string; color: string; bg: string }> = {
-  ok: { label: "OK", color: "#4ade80", bg: "rgba(74,222,128,0.1)" },
-  privee: { label: "Privée", color: "#fb923c", bg: "rgba(251,146,60,0.12)" },
-  introuvable: { label: "Introuvable", color: "#f87171", bg: "rgba(248,113,113,0.1)" },
-  invalide: { label: "URL non reconnue", color: "#f87171", bg: "rgba(248,113,113,0.1)" },
-  inconnue: { label: "Non vérifiée", color: "rgba(245,237,237,0.5)", bg: "rgba(245,237,237,0.06)" },
+  ok: { label: "OK", color: "var(--ep-ok)", bg: "rgba(var(--ep-ok-rgb),0.1)" },
+  privee: { label: "Privée", color: "var(--ep-orange)", bg: "rgba(var(--ep-orange-rgb),0.12)" },
+  introuvable: { label: "Introuvable", color: "var(--ep-bad)", bg: "rgba(var(--ep-bad-rgb),0.1)" },
+  invalide: { label: "URL non reconnue", color: "var(--ep-bad)", bg: "rgba(var(--ep-bad-rgb),0.1)" },
+  inconnue: { label: "Non vérifiée", color: "rgba(var(--ep-ink-rgb),0.5)", bg: "rgba(var(--ep-ink-rgb),0.06)" },
 };
 
 function formatSeconds(sec: number): string {
@@ -197,7 +197,7 @@ export function BulkVideoImport({
   const checkbox = (checked: boolean, onChange: (v: boolean) => void, label: string, disabled = false) => (
     <label
       style={{
-        display: "flex", alignItems: "flex-start", gap: 8, fontSize: 11.5, color: "rgba(245,237,237,0.65)",
+        display: "flex", alignItems: "flex-start", gap: 8, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.65)",
         cursor: disabled ? "default" : "pointer", lineHeight: 1.4, opacity: disabled ? 0.5 : 1,
       }}
     >
@@ -206,7 +206,7 @@ export function BulkVideoImport({
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
-        style={{ accentColor: "#E01E1E", marginTop: 2, flexShrink: 0 }}
+        style={{ accentColor: "var(--ep-accent)", marginTop: 2, flexShrink: 0 }}
       />
       <span>{label}</span>
     </label>
@@ -219,8 +219,8 @@ export function BulkVideoImport({
         margin: "0 12px 12px 28px",
         padding: "14px 14px 16px",
         borderRadius: 12,
-        background: "linear-gradient(135deg, rgba(224,30,30,0.07) 0%, rgba(137,4,4,0.03) 100%)",
-        border: "1px solid rgba(224,30,30,0.22)",
+        background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.07) 0%, rgba(var(--ep-line-rgb),0.03) 100%)",
+        border: "1px solid rgba(var(--ep-accent-rgb),0.22)",
         display: "flex",
         flexDirection: "column",
         gap: 12,
@@ -228,8 +228,8 @@ export function BulkVideoImport({
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-        <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6, color: "rgba(245,237,237,0.5)" }}>
-          <ClipboardPaste size={12} style={{ color: "#E01E1E" }} />{" "}{t("Coller les vidéos de ce module")}
+        <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
+          <ClipboardPaste size={12} style={{ color: "var(--ep-accent)" }} />{" "}{t("Coller les vidéos de ce module")}
         </p>
         <button
           type="button"
@@ -237,7 +237,7 @@ export function BulkVideoImport({
           aria-label={t("Fermer")}
           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 4 }}
         >
-          <X size={14} style={{ color: "rgba(245,237,237,0.4)" }} />
+          <X size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
         </button>
       </div>
 
@@ -257,7 +257,7 @@ export function BulkVideoImport({
             setReplaceExisting,
             "Remplacer aussi les vidéos déjà renseignées (sinon, seules les leçons sans vidéo sont remplies, dans l'ordre)"
           )}
-          <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+          <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
             {targets.length === 0
               ? t("Aucune leçon sans vidéo dans ce module.")
               : `${plural(targets.length, "leçon")} à remplir dans ce module.`}
@@ -283,18 +283,18 @@ export function BulkVideoImport({
                   style={{
                     padding: "8px 10px",
                     borderRadius: 8,
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid rgba(224,30,30,0.08)",
+                    background: "rgba(var(--ep-shade-rgb),0.3)",
+                    border: "1px solid rgba(var(--ep-accent-rgb),0.08)",
                     minWidth: 0,
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(245,237,237,0.3)", flexShrink: 0 }}>{i + 1}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#F5EDED", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }}>{i + 1}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ep-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                       {row.lesson.title}
                     </span>
                     {row.lesson.youtube_id && (
-                      <span style={{ fontSize: 9.5, fontWeight: 700, color: "#fb923c", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      <span style={{ fontSize: 9.5, fontWeight: 700, color: "var(--ep-orange)", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                         {t("Remplace")}
                       </span>
                     )}
@@ -308,11 +308,11 @@ export function BulkVideoImport({
                     >
                       {st.label}
                     </span>
-                    <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                       {row.title ?? row.raw}
                     </span>
                     {row.id && row.status !== "introuvable" && (
-                      <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 600, color: "rgba(245,237,237,0.45)", flexShrink: 0 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.45)", flexShrink: 0 }}>
                         <Clock size={10} />
                         {row.durationSec === undefined
                           ? <Loader2 size={10} className="animate-spin" aria-label={t("Détection de la durée")} />
@@ -326,22 +326,22 @@ export function BulkVideoImport({
           </div>
 
           {extraLines > 0 && (
-            <p style={{ margin: 0, fontSize: 11, color: "#fb923c", lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: 11, color: "var(--ep-orange)", lineHeight: 1.5 }}>
               {plural(extraLines, "URL")}{" "}{t("en trop ignorée")}{extraLines > 1 ? "s" : ""}{" "}{t(": ce module n'a que")}{" "}{plural(targets.length, "leçon")}{" "}{t("à remplir. Ajoute des leçons ou coche Remplacer.")}
             </p>
           )}
           {privateCount > 0 && (
-            <p style={{ margin: 0, fontSize: 11, color: "#fb923c", lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: 11, color: "var(--ep-orange)", lineHeight: 1.5 }}>
               {privateCount > 1 ? `${privateCount} vidéos sont privées` : t("1 vidéo est privée")}{" "}{t("ou non intégrable : enregistrée")}{privateCount > 1 ? "s" : ""}{" "}{t("mais jamais publiée")}{privateCount > 1 ? "s" : ""}{t(". Passe-la en Non répertoriée sur YouTube pour qu'un membre puisse la lire.")}
             </p>
           )}
           {unusableCount > 0 && (
-            <p style={{ margin: 0, fontSize: 11, color: "#f87171", lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: 11, color: "var(--ep-bad)", lineHeight: 1.5 }}>
               {unusableCount > 1 ? `${unusableCount} lignes ne seront pas enregistrées` : t("1 ligne ne sera pas enregistrée")}{" "}{t("(URL non reconnue ou vidéo introuvable) : la leçon correspondante reste vide.")}
             </p>
           )}
           {detecting && (
-            <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.5 }}>
               {t("Détection des durées en cours. Tu peux enregistrer maintenant : une durée non détectée garde sa valeur actuelle.")}
             </p>
           )}
@@ -372,7 +372,7 @@ export function BulkVideoImport({
       )}
 
       {error && (
-        <p role="alert" style={{ margin: 0, fontSize: 11.5, color: "#f87171", lineHeight: 1.5 }}>
+        <p role="alert" style={{ margin: 0, fontSize: 11.5, color: "var(--ep-bad)", lineHeight: 1.5 }}>
           {t(error)}
         </p>
       )}
@@ -455,7 +455,7 @@ export function RecalcDurationsButton({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(224,30,30,0.08)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(var(--ep-accent-rgb),0.08)" }}>
       {candidates.length > 0 && (
         <button
           type="button"
@@ -470,7 +470,7 @@ export function RecalcDurationsButton({
         </button>
       )}
       {message && (
-        <p role={message.tone === "error" ? "alert" : "status"} style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: message.tone === "error" ? "#f87171" : "#4ade80" }}>
+        <p role={message.tone === "error" ? "alert" : "status"} style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: message.tone === "error" ? "var(--ep-bad)" : "var(--ep-ok)" }}>
           {message.text}
         </p>
       )}

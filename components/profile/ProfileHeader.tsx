@@ -6,12 +6,12 @@ import PointsProgressCard from "@/components/ui/PointsProgressCard";
 function BadgePill({ badge }: { badge: ReturnType<typeof roleBadge> }) {
   const styles =
     badge === "Fondateur"
-      ? { bg: "rgba(224,30,30,0.18)", border: "rgba(224,30,30,0.45)", color: "#E01E1E", Icon: Crown }
+      ? { bg: "rgba(var(--ep-accent-rgb),0.18)", border: "rgba(var(--ep-accent-rgb),0.45)", color: "var(--ep-accent)", Icon: Crown }
       : badge === "Coach"
-      ? { bg: "rgba(224,30,30,0.14)", border: "rgba(224,30,30,0.35)", color: "#E01E1E", Icon: ShieldCheck }
+      ? { bg: "rgba(var(--ep-accent-rgb),0.14)", border: "rgba(var(--ep-accent-rgb),0.35)", color: "var(--ep-accent)", Icon: ShieldCheck }
       : badge === "Premium"
-      ? { bg: "rgba(250,204,21,0.1)", border: "rgba(250,204,21,0.3)", color: "#FACC15", Icon: Crown }
-      : { bg: "rgba(245,237,237,0.06)", border: "rgba(245,237,237,0.15)", color: "rgba(245,237,237,0.55)", Icon: Heart };
+      ? { bg: "rgba(var(--ep-yellow-rgb),0.1)", border: "rgba(var(--ep-yellow-rgb),0.3)", color: "var(--ep-yellow)", Icon: Crown }
+      : { bg: "rgba(var(--ep-ink-rgb),0.06)", border: "rgba(var(--ep-ink-rgb),0.15)", color: "rgba(var(--ep-ink-rgb),0.55)", Icon: Heart };
   const { bg, border, color, Icon } = styles;
   return (
     <span
@@ -52,7 +52,7 @@ export default function ProfileHeader({
     : null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-2xl p-6 mb-6">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-2xl p-6 mb-6">
       <div className="flex items-start gap-4 flex-wrap">
         {avatarSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -62,24 +62,24 @@ export default function ProfileHeader({
             className="w-20 h-20 rounded-full object-cover flex-shrink-0"
           />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center text-2xl font-black text-white flex-shrink-0">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-(--ep-accent) to-(--ep-line) flex items-center justify-center text-2xl font-black text-(--ep-strong) flex-shrink-0">
             {initials}
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-black text-white truncate">{profile.full_name ?? "Membre"}</h1>
+          <h1 className="text-2xl font-black text-(--ep-strong) truncate">{profile.full_name ?? "Membre"}</h1>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <BadgePill badge={badge} />
             {joined && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/35">
+              <span className="inline-flex items-center gap-1 text-[10px] text-(--ep-ink)/35">
                 <Calendar size={11} strokeWidth={1.8} /> Membre depuis {joined}
               </span>
             )}
           </div>
           {profile.bio && (
-            <p className="text-sm text-[#F5EDED]/65 mt-3 leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+            <p className="text-sm text-(--ep-ink)/65 mt-3 leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
           )}
-          <p className="text-[11px] text-[#F5EDED]/30 mt-3">
+          <p className="text-[11px] text-(--ep-ink)/30 mt-3">
             {postCount} publication{postCount !== 1 ? "s" : ""} dans la communauté
           </p>
         </div>

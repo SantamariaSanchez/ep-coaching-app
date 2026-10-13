@@ -8,7 +8,7 @@ import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 import { parisDateKey, parisHhmm, parisWallClockToIso } from "@/lib/live-time";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 export default function LiveEditForm({
   event,
@@ -61,10 +61,10 @@ export default function LiveEditForm({
   }
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4 space-y-3 mt-3">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-4 space-y-3 mt-3">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">{t("Modifier ce live")}</p>
-        <button onClick={onClose} aria-label={t("Fermer")} className="text-[#F5EDED]/30 hover:text-white transition-colors">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">{t("Modifier ce live")}</p>
+        <button onClick={onClose} aria-label={t("Fermer")} className="text-(--ep-ink)/30 hover:text-(--ep-strong) transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -105,11 +105,11 @@ export default function LiveEditForm({
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           {submitting ? <Loader2 size={13} className="animate-spin" /> : t("Enregistrer")}
         </button>
-        <button onClick={onClose} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+        <button onClick={onClose} className="text-xs text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors">
           {t("Annuler")}
         </button>
       </div>

@@ -64,20 +64,20 @@ export default function TwoFactorChallenge({ redirectTo }: { redirectTo: string 
         autoComplete="one-time-code"
         autoFocus
         placeholder="123456" aria-label="123456"
-        className="w-full bg-black/40 border border-[#890404]/35 rounded-lg px-4 py-3.5 text-center text-xl tracking-[0.4em] text-[#F5EDED] outline-none focus:border-[#E01E1E]/60"
+        className="w-full bg-(--ep-shade)/40 border border-(--ep-line)/35 rounded-lg px-4 py-3.5 text-center text-xl tracking-[0.4em] text-(--ep-ink) outline-none focus:border-(--ep-accent)/60"
       />
 
       {error && (
-        <div className="flex items-center gap-2.5 px-4 py-3 bg-[#E01E1E]/8 border border-[#E01E1E]/25 rounded-lg">
-          <span className="text-[#E01E1E] flex-shrink-0">⚠</span>
-          <p className="text-[13px] text-[#FDC4C4] m-0 font-medium">{t(error)}</p>
+        <div className="flex items-center gap-2.5 px-4 py-3 bg-(--ep-accent)/8 border border-(--ep-accent)/25 rounded-lg">
+          <span className="text-(--ep-accent) flex-shrink-0">⚠</span>
+          <p className="text-[13px] text-(--ep-pink) m-0 font-medium">{t(error)}</p>
         </div>
       )}
 
       <button
         type="submit"
         disabled={busy || code.length < 6}
-        className="flex items-center justify-center gap-2 w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 rounded-lg py-3.5 text-white font-bold text-xs uppercase tracking-widest transition-colors"
+        className="flex items-center justify-center gap-2 w-full bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 rounded-lg py-3.5 text-(--ep-strong) font-bold text-xs uppercase tracking-widest transition-colors"
       >
         {busy ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
         {busy ? t("Vérification…") : t("Valider")}
@@ -86,7 +86,7 @@ export default function TwoFactorChallenge({ redirectTo }: { redirectTo: string 
       <button
         type="button"
         onClick={cancel}
-        className="text-[11px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+        className="text-[11px] font-semibold text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
       >
         {t("Utiliser un autre compte")}
       </button>

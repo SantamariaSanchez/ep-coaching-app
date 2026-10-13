@@ -23,6 +23,7 @@ import {
   type RoadmapWeek,
 } from "@/lib/roadmap-weeks";
 import { todayInParis } from "@/lib/dates";
+import { withAlpha } from "@/lib/theme-color";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -104,10 +105,10 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
               justifyContent: "center",
               fontSize: 10,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--ep-strong)",
               overflow: "hidden",
               whiteSpace: "nowrap",
-              borderRight: "1px solid rgba(0,0,0,0.2)",
+              borderRight: "1px solid rgba(var(--ep-shade-rgb),0.2)",
             }}
           >
             {width > 8 ? `${colors.icon} ${phase.label}` : ""}
@@ -206,7 +207,7 @@ function WeekDetailModal({
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
-        background: "rgba(0,0,0,0.7)",
+        background: "rgba(var(--ep-shade-rgb),0.7)",
       }}
       onClick={onClose}
     >
@@ -217,8 +218,8 @@ function WeekDetailModal({
         style={{
           width: "100%",
           maxWidth: 520,
-          background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
-          border: "1px solid rgba(224,30,30,0.2)",
+          background: "linear-gradient(135deg, var(--ep-s3) 0%, var(--ep-bg) 100%)",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
           borderRadius: "16px 16px 0 0",
           padding: "24px 20px 32px",
           maxHeight: "85vh",
@@ -229,10 +230,10 @@ function WeekDetailModal({
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
           <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", margin: 0 }}>
               {t("Semaine")}{" "}{week.index}{" "}{t("de la road map")}
             </p>
-            <h3 id={titleId} style={{ fontSize: 16, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", margin: "2px 0 0" }}>
+            <h3 id={titleId} style={{ fontSize: 16, fontWeight: 800, color: "var(--ep-ink)", letterSpacing: "-0.02em", margin: "2px 0 0" }}>
               {fmt(week.weekStart)}{" "}{t("au")}{" "}{fmt(week.weekEnd)}
             </h3>
           </div>
@@ -241,7 +242,7 @@ function WeekDetailModal({
             type="button"
             onClick={onClose}
             aria-label={t("Fermer")}
-            style={{ background: "none", border: "none", color: "rgba(245,237,237,0.5)", cursor: "pointer", padding: 4, flexShrink: 0 }}
+            style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer", padding: 4, flexShrink: 0 }}
           >
             <X size={18} />
           </button>
@@ -273,13 +274,13 @@ function WeekDetailModal({
 
         {/* Performance */}
         <div style={{
-          background: "rgba(0,0,0,0.3)",
+          background: "rgba(var(--ep-shade-rgb),0.3)",
           borderRadius: 10,
           padding: "12px 16px",
           marginBottom: 16,
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: tiles.length ? 10 : 0 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)" }}>
               {stat?.isCurrent ? t("Semaine en cours") : t("Performance")}
             </span>
             <span style={{
@@ -288,7 +289,7 @@ function WeekDetailModal({
               padding: "2px 10px",
               fontSize: 10,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--ep-strong)",
             }}>
               {perfData.label}
             </span>
@@ -298,10 +299,10 @@ function WeekDetailModal({
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
               {tiles.map((item) => (
                 <div key={item.label} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: item.ok ? "#4ade80" : "#fbbf24", marginBottom: 2 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: item.ok ? "var(--ep-ok)" : "var(--ep-warn)", marginBottom: 2 }}>
                     {item.display}
                   </div>
-                  <div style={{ fontSize: 9, color: "rgba(245,237,237,0.35)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  <div style={{ fontSize: 9, color: "rgba(var(--ep-ink-rgb),0.35)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     {item.label}
                   </div>
                 </div>
@@ -310,12 +311,12 @@ function WeekDetailModal({
           )}
 
           {stat && (stat.avgWeight != null || stat.avgSleep != null || stat.avgKcal != null) && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 12, fontSize: 12, color: "rgba(245,237,237,0.7)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 12, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.7)" }}>
               {stat.avgWeight != null && (
                 <span>
                   {t("Poids moyen")}{" "}{nf(stat.avgWeight)}{" "}{t("kg")}
                   {weightDelta != null && (
-                    <span style={{ color: "rgba(245,237,237,0.4)" }}>
+                    <span style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                       {" "}({weightDelta >= 0 ? "+" : "-"}{nf(Math.abs(weightDelta))}{" "}{t("kg vs semaine d'avant)")}
                     </span>
                   )}
@@ -326,17 +327,17 @@ function WeekDetailModal({
             </div>
           )}
           {stat?.checkinExists && (
-            <p style={{ fontSize: 11, color: "#4ade80", margin: "8px 0 0" }}>{t("✓ Check-in hebdo envoyé")}</p>
+            <p style={{ fontSize: 11, color: "var(--ep-ok)", margin: "8px 0 0" }}>{t("✓ Check-in hebdo envoyé")}</p>
           )}
           {isFuture && (
-            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "8px 0 0" }}>{t("Semaine à venir : pas encore de données.")}</p>
+            <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "8px 0 0" }}>{t("Semaine à venir : pas encore de données.")}</p>
           )}
         </div>
 
         {/* Objectives this week */}
         {weekObjectives.length > 0 && (
           <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 8 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", marginBottom: 8 }}>
               {t("Objectifs de la semaine")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -345,7 +346,7 @@ function WeekDetailModal({
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  background: "rgba(0,0,0,0.3)",
+                  background: "rgba(var(--ep-shade-rgb),0.3)",
                   borderRadius: 8,
                   padding: "10px 12px",
                   opacity: obj.is_achieved ? 0.6 : 1,
@@ -356,11 +357,11 @@ function WeekDetailModal({
                     flexShrink: 0,
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0, overflowWrap: "anywhere" }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0, overflowWrap: "anywhere" }}>
                       {obj.is_achieved ? "✓ " : ""}{obj.label}
                     </p>
                     {obj.target_value != null && (
-                      <p style={{ fontSize: 10, color: "rgba(245,237,237,0.4)", margin: "2px 0 0" }}>
+                      <p style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "2px 0 0" }}>
                         {t("Objectif :")}{" "}{obj.target_value} {obj.target_unit ?? ""}
                       </p>
                     )}
@@ -373,7 +374,7 @@ function WeekDetailModal({
 
         {/* 7-day breakdown */}
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 8 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", marginBottom: 8 }}>
             {t("Jour par jour")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -394,19 +395,19 @@ function WeekDetailModal({
                   rowGap: 2,
                   padding: "7px 10px",
                   borderRadius: 6,
-                  background: day === today ? "rgba(224,30,30,0.08)" : "rgba(0,0,0,0.2)",
+                  background: day === today ? "rgba(var(--ep-accent-rgb),0.08)" : "rgba(var(--ep-shade-rgb),0.2)",
                 }}>
-                  <span style={{ fontSize: 11, color: "rgba(245,237,237,0.6)", width: 64, flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.6)", width: 64, flexShrink: 0 }}>
                     {DAY_NAMES[i]}
                   </span>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.35)", width: 44, flexShrink: 0 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.35)", width: 44, flexShrink: 0 }}>
                     {fmt(day, { day: "numeric", month: "short" })}
                   </span>
-                  <span style={{ fontSize: 11, color: parts.length ? "rgba(245,237,237,0.75)" : "rgba(245,237,237,0.25)", flex: "1 1 140px", minWidth: 0 }}>
+                  <span style={{ fontSize: 11, color: parts.length ? "rgba(var(--ep-ink-rgb),0.75)" : "rgba(var(--ep-ink-rgb),0.25)", flex: "1 1 140px", minWidth: 0 }}>
                     {future ? t("à venir") : parts.length ? parts.join(" · ") : t("pas de donnée")}
                   </span>
                   {d?.sessionDone && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", flexShrink: 0 }}>{t("● Séance")}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--ep-ok)", flexShrink: 0 }}>{t("● Séance")}</span>
                   )}
                 </div>
               );
@@ -520,7 +521,7 @@ export default function RoadmapCalendar({
 
   if (!hasWeeks) {
     return (
-      <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+      <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
         {t("Calendrier indisponible : vérifie les dates de début et de fin (période de 10 ans maximum).")}
       </p>
     );
@@ -549,7 +550,7 @@ export default function RoadmapCalendar({
               fontWeight: 700,
               letterSpacing: "0.05em",
               textTransform: "uppercase",
-              boxShadow: isActive ? `0 0 8px ${c.solid}40` : "none",
+              boxShadow: isActive ? `0 0 8px ${withAlpha(c.solid, "40")}` : "none",
             }}>
               {c.icon} {c.label}
               {isActive && " ◀"}
@@ -559,27 +560,27 @@ export default function RoadmapCalendar({
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 12px", alignItems: "center", marginBottom: 6 }}>
         {(["excellent", "good", "average", "poor", "empty", "future"] as PerformanceKey[]).map((k) => (
-          <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, color: "rgba(245,237,237,0.45)" }}>
+          <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
             <span aria-hidden="true" style={{
               width: 10,
               height: 10,
               borderRadius: 2,
               background: WEEK_PERFORMANCE_COLORS[k].bg,
-              border: "1px solid rgba(245,237,237,0.1)",
+              border: "1px solid rgba(var(--ep-ink-rgb),0.1)",
               flexShrink: 0,
             }} />
             {WEEK_PERFORMANCE_COLORS[k].label}
           </span>
         ))}
       </div>
-      <p style={{ fontSize: 10, lineHeight: 1.5, color: "rgba(245,237,237,0.3)", margin: "0 0 16px" }}>
+      <p style={{ fontSize: 10, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 16px" }}>
         {WEEK_SCORE_LEGEND}{" "}{t("Touche un numéro de semaine pour le détail jour par jour.")}
       </p>
 
       {statsError && (
-        <div role="alert" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)", borderRadius: 8, padding: "10px 12px", marginBottom: 16 }}>
-          <AlertCircle size={14} style={{ color: "#E01E1E", flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: "#FDC4C4", flex: "1 1 180px" }}>{statsError}{" "}{t("Les couleurs des semaines ne sont pas à jour.")}</span>
+        <div role="alert" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)", borderRadius: 8, padding: "10px 12px", marginBottom: 16 }}>
+          <AlertCircle size={14} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+          <span style={{ fontSize: 12, color: "var(--ep-pink)", flex: "1 1 180px" }}>{statsError}{" "}{t("Les couleurs des semaines ne sont pas à jour.")}</span>
           <button type="button" onClick={() => setReloadKey((k) => k + 1)} className="ep-btn-secondary" style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 5 }}>
             <RotateCw size={12} />{" "}{t("Réessayer")}
           </button>
@@ -633,7 +634,7 @@ export default function RoadmapCalendar({
               fontWeight: 700,
               letterSpacing: "0.2em",
               textTransform: "uppercase",
-              color: "rgba(224,30,30,0.6)",
+              color: "rgba(var(--ep-accent-rgb),0.6)",
               marginBottom: 6,
             }}>
               {MONTHS_FR[month]} {year}
@@ -649,7 +650,7 @@ export default function RoadmapCalendar({
                   fontWeight: 700,
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  color: "rgba(245,237,237,0.25)",
+                  color: "rgba(var(--ep-ink-rgb),0.25)",
                   padding: "2px 0",
                 }}>
                   {d}
@@ -694,10 +695,10 @@ export default function RoadmapCalendar({
                         font: "inherit",
                         borderRadius: 6,
                         cursor: "pointer",
-                        background: showPending ? "rgba(245,237,237,0.04)" : WEEK_PERFORMANCE_COLORS[perfKey].bg,
+                        background: showPending ? "rgba(var(--ep-ink-rgb),0.04)" : WEEK_PERFORMANCE_COLORS[perfKey].bg,
                         border: isCurrentWeek
-                          ? "2px solid rgba(224,30,30,0.7)"
-                          : "1px solid rgba(245,237,237,0.06)",
+                          ? "2px solid rgba(var(--ep-accent-rgb),0.7)"
+                          : "1px solid rgba(var(--ep-ink-rgb),0.06)",
                         position: "relative",
                         overflow: "hidden",
                         transition: "transform 0.1s",
@@ -718,7 +719,7 @@ export default function RoadmapCalendar({
                       <span aria-hidden="true" style={{
                         fontSize: 9,
                         fontWeight: 800,
-                        color: isCurrentWeek ? "#E01E1E" : "rgba(245,237,237,0.6)",
+                        color: isCurrentWeek ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.6)",
                         letterSpacing: "0.05em",
                         position: "relative",
                       }}>
@@ -746,18 +747,18 @@ export default function RoadmapCalendar({
                             height: 44,
                             borderRadius: 4,
                             background: dayColor
-                              ? `${dayColor}18`
+                              ? `${withAlpha(dayColor, "18")}`
                               : isFuture
-                              ? "rgba(245,237,237,0.02)"
-                              : "rgba(245,237,237,0.04)",
+                              ? "rgba(var(--ep-ink-rgb),0.02)"
+                              : "rgba(var(--ep-ink-rgb),0.04)",
                             border: isToday
-                              ? "1px solid rgba(224,30,30,0.5)"
-                              : "1px solid rgba(245,237,237,0.04)",
+                              ? "1px solid rgba(var(--ep-accent-rgb),0.5)"
+                              : "1px solid rgba(var(--ep-ink-rgb),0.04)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             fontSize: 9,
-                            color: isToday ? "#E01E1E" : "rgba(245,237,237,0.2)",
+                            color: isToday ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.2)",
                             fontWeight: isToday ? 800 : 400,
                           }}
                         >

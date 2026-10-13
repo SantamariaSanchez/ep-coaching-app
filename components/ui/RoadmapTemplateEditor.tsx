@@ -10,6 +10,7 @@ import type {
   RoadmapTemplateWithDetails,
   RoadmapTemplateInput,
 } from "@/utils/roadmap-templates";
+import { withAlpha } from "@/lib/theme-color";
 
 // ── Local form types (mêmes conventions que ProgramTemplateEditor : champs
 // numériques en string pour des inputs contrôlés, parsés à la sauvegarde) ──
@@ -279,13 +280,13 @@ export default function RoadmapTemplateEditor({
   return (
     <div className="space-y-6">
       {/* Structure — phase de réflexion avant de lister le moindre jalon */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
           {tr("1. Structure du modèle")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="sm:col-span-2">
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Nom du modèle")}
             </label>
             <input
@@ -296,7 +297,7 @@ export default function RoadmapTemplateEditor({
             />
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Durée totale (semaines)")}
             </label>
             <input
@@ -311,7 +312,7 @@ export default function RoadmapTemplateEditor({
           </div>
         </div>
         <div className="mb-4">
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
             {tr("Objectif du modèle")}
           </label>
           <input
@@ -322,8 +323,8 @@ export default function RoadmapTemplateEditor({
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            {tr("Notes de conception")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(privé, jamais montré au client)")}</span>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+            {tr("Notes de conception")}{" "}<span className="text-(--ep-ink)/25 font-normal">{tr("(privé, jamais montré au client)")}</span>
           </label>
           <textarea
             value={state.notes}
@@ -337,7 +338,7 @@ export default function RoadmapTemplateEditor({
         {state.phases.length === 0 && (
           <button
             onClick={applyScaffold}
-            className="mt-4 inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="mt-4 inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Wand2 size={13} />
             {tr("Générer une phase de départ sur toute la durée")}
@@ -348,21 +349,21 @@ export default function RoadmapTemplateEditor({
       {/* Phases */}
       <div>
         <div className="flex items-center justify-between mb-3 px-1">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 flex items-center gap-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 flex items-center gap-1.5">
             <CalendarRange size={12} />
-            {tr("2. Phases")}{" "}<span className="text-[#F5EDED]/25">({state.phases.length})</span>
+            {tr("2. Phases")}{" "}<span className="text-(--ep-ink)/25">({state.phases.length})</span>
           </p>
           <button
             onClick={addPhase}
-            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
           >
             <Plus size={12} />{" "}{tr("Ajouter une phase")}
           </button>
         </div>
 
         {state.phases.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-2 text-center px-6">
-            <p className="text-xs text-[#F5EDED]/35">
+          <div className="flex flex-col items-center justify-center py-10 bg-(--ep-s1) border border-dashed border-(--ep-line)/30 rounded-xl gap-2 text-center px-6">
+            <p className="text-xs text-(--ep-ink)/35">
               {tr("Aucune phase pour l'instant. Génère un point de départ ci-dessus ou ajoute une phase vide.")}
             </p>
           </div>
@@ -372,7 +373,7 @@ export default function RoadmapTemplateEditor({
               const colors = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
               const open = openPhaseId === phase.localId;
               return (
-                <div key={phase.localId} className="bg-[#1f0101] border rounded-xl p-4" style={{ borderColor: colors.border }}>
+                <div key={phase.localId} className="bg-(--ep-s1) border rounded-xl p-4" style={{ borderColor: colors.border }}>
                   <div className={`flex items-center gap-2 ${open ? "mb-3" : ""}`}>
                     <button
                       type="button"
@@ -385,15 +386,15 @@ export default function RoadmapTemplateEditor({
                         {tr("Phase")}{" "}{i + 1}
                       </span>
                       {!open && (
-                        <span className="text-[11px] text-[#F5EDED]/35 truncate">
+                        <span className="text-[11px] text-(--ep-ink)/35 truncate">
                           {phase.label || colors.label} · S{phase.start_week_offset}-S{phase.end_week_offset}
                         </span>
                       )}
-                      <ChevronDown size={13} className="flex-shrink-0 ml-auto text-[#F5EDED]/30 transition-transform" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+                      <ChevronDown size={13} className="flex-shrink-0 ml-auto text-(--ep-ink)/30 transition-transform" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
                     </button>
                     <button
                       onClick={() => removePhase(phase.localId)}
-                      className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
+                      className="text-(--ep-ink)/25 hover:text-red-500 transition-colors flex-shrink-0"
                       title={tr("Supprimer la phase")} aria-label={tr("Supprimer la phase")}
                     >
                       <Trash2 size={13} />
@@ -404,7 +405,7 @@ export default function RoadmapTemplateEditor({
                     <>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                         <div className="col-span-2 sm:col-span-1">
-                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                             {tr("Type")}
                           </label>
                           <select aria-label={tr("Type")}
@@ -425,7 +426,7 @@ export default function RoadmapTemplateEditor({
                           </select>
                         </div>
                         <div className="col-span-2 sm:col-span-1">
-                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                             {tr("Label")}
                           </label>
                           <input aria-label={tr("Label")}
@@ -436,7 +437,7 @@ export default function RoadmapTemplateEditor({
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                             {tr("Semaine de début")}
                           </label>
                           <input aria-label={tr("Semaine de début")}
@@ -448,7 +449,7 @@ export default function RoadmapTemplateEditor({
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                             {tr("Semaine de fin")}
                           </label>
                           <input aria-label={tr("Semaine de fin")}
@@ -480,21 +481,21 @@ export default function RoadmapTemplateEditor({
       {/* Milestones (jalons / objectifs) */}
       <div>
         <div className="flex items-center justify-between mb-3 px-1">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 flex items-center gap-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 flex items-center gap-1.5">
             <Target size={12} />
-            {tr("3. Jalons")}{" "}<span className="text-[#F5EDED]/25">({state.milestones.length})</span>
+            {tr("3. Jalons")}{" "}<span className="text-(--ep-ink)/25">({state.milestones.length})</span>
           </p>
           <button
             onClick={addMilestone}
-            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
           >
             <Plus size={12} />{" "}{tr("Ajouter un jalon")}
           </button>
         </div>
 
         {state.milestones.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-2 text-center px-6">
-            <p className="text-xs text-[#F5EDED]/35">{tr("Aucun jalon pour l'instant.")}</p>
+          <div className="flex flex-col items-center justify-center py-10 bg-(--ep-s1) border border-dashed border-(--ep-line)/30 rounded-xl gap-2 text-center px-6">
+            <p className="text-xs text-(--ep-ink)/35">{tr("Aucun jalon pour l'instant.")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -502,7 +503,7 @@ export default function RoadmapTemplateEditor({
               const typeConfig = MILESTONE_TYPES.find((t) => t.value === m.type);
               const open = openMilestoneId === m.localId;
               return (
-                <div key={m.localId} className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+                <div key={m.localId} className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
                   <div className={`flex items-center gap-2 ${open ? "mb-3" : ""}`}>
                     <button
                       type="button"
@@ -510,18 +511,18 @@ export default function RoadmapTemplateEditor({
                       aria-expanded={open}
                       className="flex items-center gap-2 flex-1 min-w-0 text-left"
                     >
-                      <Target size={12} className="flex-shrink-0" style={{ color: OBJECTIVE_TERM_COLORS[m.term] ?? "rgba(245,237,237,0.4)" }} />
-                      <span className="text-[12px] font-bold text-white truncate">
+                      <Target size={12} className="flex-shrink-0" style={{ color: OBJECTIVE_TERM_COLORS[m.term] ?? "rgba(var(--ep-ink-rgb),0.4)" }} />
+                      <span className="text-[12px] font-bold text-(--ep-strong) truncate">
                         {m.label || typeConfig?.label || tr("Jalon")}
                       </span>
                       {!open && (
-                        <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">S{m.week_offset}</span>
+                        <span className="text-[10px] text-(--ep-ink)/30 flex-shrink-0">S{m.week_offset}</span>
                       )}
-                      <ChevronDown size={13} className="flex-shrink-0 ml-auto text-[#F5EDED]/30 transition-transform" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+                      <ChevronDown size={13} className="flex-shrink-0 ml-auto text-(--ep-ink)/30 transition-transform" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
                     </button>
                     <button
                       onClick={() => removeMilestone(m.localId)}
-                      className="px-1 text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
+                      className="px-1 text-(--ep-ink)/25 hover:text-red-500 transition-colors flex-shrink-0"
                       title={tr("Supprimer le jalon")} aria-label={tr("Supprimer le jalon")}
                     >
                       <Trash2 size={13} />
@@ -537,9 +538,9 @@ export default function RoadmapTemplateEditor({
                         onClick={() => updateMilestone(m.localId, { term: t.value })}
                         className="flex-1 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest border transition-colors"
                         style={{
-                          borderColor: m.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(137,4,4,0.2)",
-                          background: m.term === t.value ? `${OBJECTIVE_TERM_COLORS[t.value]}18` : "transparent",
-                          color: m.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(245,237,237,0.35)",
+                          borderColor: m.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(var(--ep-line-rgb),0.2)",
+                          background: m.term === t.value ? `${withAlpha(OBJECTIVE_TERM_COLORS[t.value], "18")}` : "transparent",
+                          color: m.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(var(--ep-ink-rgb),0.35)",
                         }}
                       >
                         {t.label}
@@ -549,7 +550,7 @@ export default function RoadmapTemplateEditor({
 
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                         {tr("Type")}
                       </label>
                       <select aria-label={tr("Type")}
@@ -566,7 +567,7 @@ export default function RoadmapTemplateEditor({
                       </select>
                     </div>
                     <div>
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                         {tr("Semaine cible")}
                       </label>
                       <input aria-label={tr("Semaine cible")}
@@ -578,7 +579,7 @@ export default function RoadmapTemplateEditor({
                       />
                     </div>
                     <div>
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                         {tr("Label")}
                       </label>
                       <input aria-label={tr("Label")}
@@ -590,7 +591,7 @@ export default function RoadmapTemplateEditor({
                     </div>
                     {typeConfig?.unit && (
                       <div>
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                           {tr("Valeur cible (")}{typeConfig.unit})
                         </label>
                         <div className="flex gap-1.5">
@@ -635,18 +636,18 @@ export default function RoadmapTemplateEditor({
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#890404]/15">
+      <div className="flex items-center justify-end gap-3 pt-2 border-t border-(--ep-line)/15">
         <button
           onClick={() => router.back()}
-          className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2.5 transition-colors"
+          className="text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 px-4 py-2.5 transition-colors"
         >
           {tr("Annuler")}
         </button>
         <button
           onClick={handleSave}
           disabled={saving || saved}
-          className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
-            saved ? "bg-green-800/60 border border-green-600/30" : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
+          className={`inline-flex items-center gap-2 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
+            saved ? "bg-green-800/60 border border-green-600/30" : "bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60"
           }`}
         >
           {saved ? (

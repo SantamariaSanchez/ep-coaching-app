@@ -36,17 +36,17 @@ export default function TwoFactorCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mt-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mt-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
         {t("Double authentification")}
       </p>
 
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">
+          <p className="text-sm font-semibold text-(--ep-strong)">
             {enabled ? t("Activée") : t("Non activée")}
           </p>
-          <p className="text-[11px] text-[#F5EDED]/40 mt-1 leading-relaxed">
+          <p className="text-[11px] text-(--ep-ink)/40 mt-1 leading-relaxed">
             {enabled
               ? t("Un code à 6 chiffres est demandé à chaque connexion, en plus du mot de passe.")
               : mandatory
@@ -60,7 +60,7 @@ export default function TwoFactorCard({
             {t("Active")}
           </span>
         ) : (
-          <ShieldCheck size={16} className="text-[#E01E1E]/60 flex-shrink-0 mt-0.5" />
+          <ShieldCheck size={16} className="text-(--ep-accent)/60 flex-shrink-0 mt-0.5" />
         )}
       </div>
 
@@ -73,7 +73,7 @@ export default function TwoFactorCard({
           ) : (
             <button
               onClick={() => setOpen(true)}
-              className="flex items-center justify-center gap-2 w-full bg-[#E01E1E]/10 border border-[#E01E1E]/25 hover:bg-[#E01E1E]/20 rounded-lg py-3 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
+              className="flex items-center justify-center gap-2 w-full bg-(--ep-accent)/10 border border-(--ep-accent)/25 hover:bg-(--ep-accent)/20 rounded-lg py-3 text-(--ep-accent) font-bold text-xs uppercase tracking-widest transition-colors"
             >
               <ShieldCheck size={13} />{" "}{t("Activer")}
             </button>
@@ -85,7 +85,7 @@ export default function TwoFactorCard({
         <button
           onClick={disable}
           disabled={busy}
-          className="flex items-center justify-center gap-2 w-full mt-4 py-2.5 text-[#F5EDED]/25 hover:text-red-400 font-bold text-[11px] uppercase tracking-widest transition-colors"
+          className="flex items-center justify-center gap-2 w-full mt-4 py-2.5 text-(--ep-ink)/25 hover:text-red-400 font-bold text-[11px] uppercase tracking-widest transition-colors"
         >
           <ShieldOff size={12} /> {busy ? t("Désactivation…") : t("Désactiver")}
         </button>

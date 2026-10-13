@@ -141,23 +141,23 @@ function VoicePlayer({
       <button
         onClick={handleToggle}
         aria-label={playing ? tr("Mettre en pause") : tr("Lire")}
-        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0 transition-colors"
+        className="w-8 h-8 rounded-full bg-(--ep-hi)/10 hover:bg-(--ep-hi)/20 flex items-center justify-center flex-shrink-0 transition-colors"
       >
         {playing ? (
-          <Pause size={13} className="text-white" />
+          <Pause size={13} className="text-(--ep-strong)" />
         ) : (
-          <Play size={13} className="text-white ml-0.5" />
+          <Play size={13} className="text-(--ep-strong) ml-0.5" />
         )}
       </button>
       <div className="flex-1 space-y-1">
-        <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+        <div className="h-1 bg-(--ep-hi)/20 rounded-full overflow-hidden">
           <div
-            className="h-full bg-white/70 rounded-full transition-all"
+            className="h-full bg-(--ep-hi)/70 rounded-full transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[9px] text-white/60">
+          <span className="text-[9px] text-(--ep-strong)/60">
             {playing ? `${elapsed}s` : duration > 0 ? `${duration}s` : tr("vocal")}
           </span>
           {hoursLeft !== null && hoursLeft < 24 && (
@@ -245,14 +245,14 @@ function VoiceRecorderButton({
       className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all select-none ${
         recording
           ? "bg-red-500 scale-110 shadow-lg shadow-red-500/30"
-          : "bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60"
+          : "bg-(--ep-line)/30 hover:bg-(--ep-line)/50 text-(--ep-ink)/60"
       }`}
       title={recording ? tr("Relâcher pour envoyer") : tr("Maintenir pour enregistrer")} aria-label={recording ? tr("Relâcher pour envoyer") : tr("Maintenir pour enregistrer")}
     >
       {recording ? (
         <div className="flex items-center gap-1">
-          <MicOff size={14} className="text-white" />
-          <span className="text-[9px] font-black text-white">{elapsed}s</span>
+          <MicOff size={14} className="text-(--ep-strong)" />
+          <span className="text-[9px] font-black text-(--ep-strong)">{elapsed}s</span>
         </div>
       ) : (
         <Mic size={16} />
@@ -289,7 +289,7 @@ function MessageBubble({
         {fromFounder && (
           <span
             className="inline-flex items-center rounded-full font-bold uppercase tracking-wide mb-1 text-[8px] px-1.5 py-0.5"
-            style={{ background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.35)", color: "#E01E1E" }}
+            style={{ background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px solid rgba(var(--ep-accent-rgb),0.35)", color: "var(--ep-accent)" }}
           >
             {tr("Santamaria · Fondateur")}
           </span>
@@ -297,8 +297,8 @@ function MessageBubble({
       <div
         className={`rounded-2xl px-3.5 py-2.5 ${
           isOwn
-            ? "bg-[#E01E1E] rounded-br-sm"
-            : "bg-[#3a0a0a] border border-[#890404]/30 rounded-bl-sm"
+            ? "bg-(--ep-accent) rounded-br-sm"
+            : "bg-(--ep-s4) border border-(--ep-line)/30 rounded-bl-sm"
         }`}
       >
         {msg.type === "voice" && msg.voice_url && !isExpired ? (
@@ -321,14 +321,14 @@ function MessageBubble({
         ) : (
           <p
             className={`text-sm leading-relaxed break-words whitespace-pre-wrap ${
-              isExpired ? "text-white/30 italic" : "text-white"
+              isExpired ? "text-(--ep-strong)/30 italic" : "text-(--ep-strong)"
             }`}
             style={{ overflowWrap: "anywhere" }}
           >
             {msg.content ?? ""}
           </p>
         )}
-        <p className="text-[8px] mt-1 text-white/40 text-right">{time}</p>
+        <p className="text-[8px] mt-1 text-(--ep-strong)/40 text-right">{time}</p>
       </div>
       </div>
     </div>
@@ -771,26 +771,26 @@ export default function ConversationView({
       {/* Barre de recherche — repliée par défaut pour ne rien changer à
           l'usage courant, juste un bouton discret pour l'ouvrir. */}
       {messages.length > 0 && (
-        <div className="flex-shrink-0 border-b border-[#890404]/15">
+        <div className="flex-shrink-0 border-b border-(--ep-line)/15">
           {searchOpen ? (
             <div className="flex items-center gap-2 px-3 py-2">
-              <Search size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+              <Search size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
               <input
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={tr("Chercher dans la conversation…")} aria-label={tr("Chercher dans la conversation…")}
-                className="flex-1 bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 outline-none"
+                className="flex-1 bg-transparent text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 outline-none"
               />
               {searchTerm && (
-                <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">
+                <span className="text-[10px] text-(--ep-ink)/30 flex-shrink-0">
                   {visibleMessages.length}{" "}{tr("résultat")}{visibleMessages.length !== 1 ? "s" : ""}
                 </span>
               )}
               <button
                 onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
                 aria-label={tr("Fermer la recherche")}
-                className="text-[#F5EDED]/40 hover:text-white flex-shrink-0"
+                className="text-(--ep-ink)/40 hover:text-(--ep-strong) flex-shrink-0"
               >
                 <X size={14} />
               </button>
@@ -798,7 +798,7 @@ export default function ConversationView({
           ) : (
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-(--ep-ink)/30 hover:text-(--ep-ink)/55 transition-colors"
             >
               <Search size={11} />{" "}{tr("Chercher dans la conversation")}
             </button>
@@ -813,18 +813,18 @@ export default function ConversationView({
             <div
               role="status"
               aria-label={tr("Chargement des messages")}
-              className="w-5 h-5 border-2 border-[#890404]/40 border-t-[#E01E1E] rounded-full animate-spin"
+              className="w-5 h-5 border-2 border-(--ep-line)/40 border-t-(--ep-accent) rounded-full animate-spin"
             />
           </div>
         )}
         {loaded && loadError && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center" role="alert">
-            <p className="text-sm text-[#F5EDED]/60">
+            <p className="text-sm text-(--ep-ink)/60">
               {tr("Impossible de charger la conversation.")}
             </p>
             <button
               onClick={() => { setLoaded(false); setLoadError(false); setReloadKey((k) => k + 1); }}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-[#890404]/40 text-[#F5EDED]/70 hover:text-white hover:border-[#E01E1E]/60 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-(--ep-line)/40 text-(--ep-ink)/70 hover:text-(--ep-strong) hover:border-(--ep-accent)/60 transition-colors"
             >
               <RotateCw size={12} />{" "}{tr("Réessayer")}
             </button>
@@ -836,12 +836,12 @@ export default function ConversationView({
             n'avoir aucun historique. */}
         {loaded && loadError && messages.length > 0 && (
           <div className="flex items-center justify-center gap-2 pb-2" role="alert">
-            <p className="text-[10px] text-[#F5EDED]/45">
+            <p className="text-[10px] text-(--ep-ink)/45">
               {tr("L'historique n'a pas pu être chargé.")}
             </p>
             <button
               onClick={() => { setLoadError(false); setReloadKey((k) => k + 1); }}
-              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#F5EDED]/60 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-(--ep-ink)/60 hover:text-(--ep-strong) transition-colors"
             >
               <RotateCw size={10} />{" "}{tr("Réessayer")}
             </button>
@@ -849,7 +849,7 @@ export default function ConversationView({
         )}
         {loaded && !loadError && messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-[#F5EDED]/25 text-center">
+            <p className="text-sm text-(--ep-ink)/25 text-center">
               {tr("Aucun message pour l'instant.")}
               <br />
               {tr("Démarre la conversation 👋")}
@@ -864,7 +864,7 @@ export default function ConversationView({
             <button
               onClick={loadOlder}
               disabled={loadingOlder}
-              className="text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full border border-[#890404]/30 text-[#F5EDED]/45 hover:text-[#F5EDED]/75 hover:border-[#890404]/60 disabled:opacity-50 transition-colors"
+              className="text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full border border-(--ep-line)/30 text-(--ep-ink)/45 hover:text-(--ep-ink)/75 hover:border-(--ep-line)/60 disabled:opacity-50 transition-colors"
             >
               {loadingOlder ? tr("Chargement…") : tr("Voir les messages plus anciens")}
             </button>
@@ -876,7 +876,7 @@ export default function ConversationView({
           </div>
         )}
         {messages.length > 0 && visibleMessages.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 text-center py-8">
+          <p className="text-xs text-(--ep-ink)/25 text-center py-8">
             {tr("Aucun message ne correspond à ta recherche.")}
           </p>
         )}
@@ -891,7 +891,7 @@ export default function ConversationView({
             <Fragment key={msg.id}>
               {showDay && (
                 <div className="flex justify-center py-2">
-                  <span className="text-[10px] font-semibold text-[#F5EDED]/40 bg-[#1f0101] border border-[#890404]/25 rounded-full px-2.5 py-0.5">
+                  <span className="text-[10px] font-semibold text-(--ep-ink)/40 bg-(--ep-s1) border border-(--ep-line)/25 rounded-full px-2.5 py-0.5">
                     {formatDayLabel(msg.created_at)}
                   </span>
                 </div>
@@ -918,23 +918,23 @@ export default function ConversationView({
 
       {/* Input zone */}
       {!canSend ? (
-        <div className="border-t border-[#890404]/20 bg-[#150000] px-4 py-4 text-center">
-          <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed">
+        <div className="border-t border-(--ep-line)/20 bg-(--ep-s2) px-4 py-4 text-center">
+          <p className="text-[11px] text-(--ep-ink)/35 leading-relaxed">
             {tr("Ton coach n'a pas encore ouvert cette conversation.")}
             <br />
             {tr("Tu pourras lui répondre dès qu'il t'aura écrit.")}
           </p>
         </div>
       ) : (
-      <div className="border-t border-[#890404]/20 bg-[#150000] px-3 pt-1.5 pb-3 flex flex-col gap-1">
-      <p className="text-[9px] text-[#F5EDED]/25 pl-1">{tr("Maintiens l'icône micro pour enregistrer un message vocal.")}</p>
+      <div className="border-t border-(--ep-line)/20 bg-(--ep-s2) px-3 pt-1.5 pb-3 flex flex-col gap-1">
+      <p className="text-[9px] text-(--ep-ink)/25 pl-1">{tr("Maintiens l'icône micro pour enregistrer un message vocal.")}</p>
       <div className="flex items-center gap-2">
         <VoiceRecorderButton onSend={sendVoice} />
 
         <button
           onClick={() => imageInputRef.current?.click()}
           disabled={sending}
-          className="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
+          className="w-10 h-10 rounded-xl bg-(--ep-line)/30 hover:bg-(--ep-line)/50 text-(--ep-ink)/60 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
           title={tr("Envoyer une photo")} aria-label={tr("Envoyer une photo")}
         >
           <ImageIcon size={16} />
@@ -956,7 +956,7 @@ export default function ConversationView({
           <CoachVideoRecorder
             onSend={sendVideoMessage}
             triggerLabel=""
-            triggerClassName="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-colors"
+            triggerClassName="w-10 h-10 rounded-xl bg-(--ep-line)/30 hover:bg-(--ep-line)/50 text-(--ep-ink)/60 flex items-center justify-center flex-shrink-0 transition-colors"
           />
         )}
 
@@ -972,19 +972,19 @@ export default function ConversationView({
           }}
           placeholder={`Message à ${peerName.split(" ")[0]}…`}
           aria-label={`Message à ${peerName.split(" ")[0]}`}
-          className="flex-1 min-w-0 bg-[#1f0101] border border-[#890404]/30 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/60"
+          className="flex-1 min-w-0 bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl px-3.5 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-line)/60"
         />
 
         <button
           onClick={sendText}
           disabled={!text.trim() || sending}
           aria-label={tr("Envoyer")}
-          className="w-10 h-10 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:bg-[#890404]/30 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
+          className="w-10 h-10 rounded-xl bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:bg-(--ep-line)/30 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
         >
           {sending ? (
-            <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-(--ep-hi)/50 border-t-white rounded-full animate-spin" />
           ) : (
-            <Send size={15} className="text-white" />
+            <Send size={15} className="text-(--ep-strong)" />
           )}
         </button>
       </div>

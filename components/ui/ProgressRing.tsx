@@ -2,6 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
+import { withAlpha } from "@/lib/theme-color";
 
 interface ProgressRingProps {
   value: number;
@@ -24,7 +25,7 @@ export default function ProgressRing({
   max = 100,
   size = 110,
   strokeWidth = 8,
-  color = "#E01E1E",
+  color = "var(--ep-accent)",
   trackColor,
   label,
   unit,
@@ -52,7 +53,7 @@ export default function ProgressRing({
   const cx = size / 2;
   const cy = size / 2;
 
-  const track = trackColor ?? "rgba(224,30,30,0.06)";
+  const track = trackColor ?? "rgba(var(--ep-accent-rgb),0.06)";
   const displayValue = asPercent ? Math.round(rawPct * 100) : value;
   const displayUnit = asPercent ? "%" : unit;
 
@@ -89,7 +90,7 @@ export default function ProgressRing({
             transform={`rotate(-90 ${cx} ${cy})`}
             style={{
               transition: `stroke-dashoffset 1s cubic-bezier(0.34,1.56,0.64,1) ${delay}ms`,
-              filter: `drop-shadow(0 0 6px ${color}60)`,
+              filter: `drop-shadow(0 0 6px ${withAlpha(color, "60")})`,
             }}
           />
         </svg>
@@ -110,7 +111,7 @@ export default function ProgressRing({
             style={{
               fontSize: valueFontSize,
               fontWeight: 900,
-              color: "#F5EDED",
+              color: "var(--ep-ink)",
               letterSpacing: "-0.04em",
               lineHeight: 1,
             }}
@@ -121,7 +122,7 @@ export default function ProgressRing({
             <span
               style={{
                 fontSize: unitFontSize,
-                color: "rgba(245,237,237,0.35)",
+                color: "rgba(var(--ep-ink-rgb),0.35)",
                 textTransform: "uppercase",
                 letterSpacing: "0.06em",
                 marginTop: 2,
@@ -141,7 +142,7 @@ export default function ProgressRing({
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "rgba(245,237,237,0.35)",
+            color: "rgba(var(--ep-ink-rgb),0.35)",
             margin: 0,
             textAlign: "center",
           }}
@@ -154,7 +155,7 @@ export default function ProgressRing({
           style={{
             fontSize: 9,
             fontWeight: 500,
-            color: "rgba(245,237,237,0.2)",
+            color: "rgba(var(--ep-ink-rgb),0.2)",
             margin: 0,
             textAlign: "center",
           }}

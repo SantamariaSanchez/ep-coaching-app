@@ -212,20 +212,20 @@ function Sounds() {
               type="button"
               onClick={() => toggle(key)}
               className="ep-press text-left rounded-xl p-3 transition-colors"
-              style={{ background: on ? "linear-gradient(150deg, rgba(129,140,248,0.22), rgba(30,20,60,0.35))" : "rgba(245,237,237,0.04)", border: `1px solid ${on ? "rgba(129,140,248,0.55)" : "rgba(245,237,237,0.08)"}` }}
+              style={{ background: on ? "linear-gradient(150deg, rgba(129,140,248,0.22), rgba(30,20,60,0.35))" : "rgba(var(--ep-ink-rgb),0.04)", border: `1px solid ${on ? "rgba(129,140,248,0.55)" : "rgba(var(--ep-ink-rgb),0.08)"}` }}
             >
               <span className="flex items-center justify-between">
-                <Icon size={17} style={{ color: on ? "#a5b4fc" : "rgba(245,237,237,0.6)" }} />
-                {on ? <Pause size={14} className="text-[#a5b4fc]" /> : <Play size={14} className="text-[#F5EDED]/35" />}
+                <Icon size={17} style={{ color: on ? "#a5b4fc" : "rgba(var(--ep-ink-rgb),0.6)" }} />
+                {on ? <Pause size={14} className="text-[#a5b4fc]" /> : <Play size={14} className="text-(--ep-ink)/35" />}
               </span>
-              <span className="block mt-2 text-[13px] font-bold text-white">{t(label)}</span>
-              <span className="block text-[11px] text-[#F5EDED]/45 leading-snug">{t(sub)}</span>
+              <span className="block mt-2 text-[13px] font-bold text-(--ep-strong)">{t(label)}</span>
+              <span className="block text-[11px] text-(--ep-ink)/45 leading-snug">{t(sub)}</span>
             </button>
           );
         })}
       </div>
       <div className="flex items-center gap-3 mt-3">
-        <Volume2 size={14} className="text-[#F5EDED]/45 shrink-0" />
+        <Volume2 size={14} className="text-(--ep-ink)/45 shrink-0" />
         <input
           type="range"
           min={0.05}
@@ -238,19 +238,19 @@ function Sounds() {
         />
       </div>
       <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-        <Timer size={13} className="text-[#F5EDED]/45" />
+        <Timer size={13} className="text-(--ep-ink)/45" />
         {[15, 30, 60, null].map((m) => (
           <button
             key={String(m)}
             type="button"
             onClick={() => chooseTimer(m)}
             className="px-2.5 py-1 rounded-full text-[11px] font-bold border"
-            style={{ borderColor: minutes === m ? "rgba(129,140,248,0.6)" : "rgba(245,237,237,0.12)", color: minutes === m ? "#c7d2fe" : "rgba(245,237,237,0.5)", background: minutes === m ? "rgba(129,140,248,0.12)" : "transparent" }}
+            style={{ borderColor: minutes === m ? "rgba(129,140,248,0.6)" : "rgba(var(--ep-ink-rgb),0.12)", color: minutes === m ? "#c7d2fe" : "rgba(var(--ep-ink-rgb),0.5)", background: minutes === m ? "rgba(129,140,248,0.12)" : "transparent" }}
           >
             {m ? `${m} min` : t("Toute la nuit")}
           </button>
         ))}
-        {playing && endsAt && <span className="ml-auto text-[11px] text-[#F5EDED]/45 tabular-nums">{t("Arrêt dans {t}", { t: left })}</span>}
+        {playing && endsAt && <span className="ml-auto text-[11px] text-(--ep-ink)/45 tabular-nums">{t("Arrêt dans {t}", { t: left })}</span>}
       </div>
     </div>
   );
@@ -322,13 +322,13 @@ function Breathing() {
             type="button"
             onClick={() => { setPattern(p); setRunning(false); setStep(0); }}
             className="px-3 py-1.5 rounded-full text-[11.5px] font-bold border"
-            style={{ borderColor: pattern.key === p.key ? "rgba(94,234,212,0.6)" : "rgba(245,237,237,0.12)", color: pattern.key === p.key ? "#99f6e4" : "rgba(245,237,237,0.55)", background: pattern.key === p.key ? "rgba(94,234,212,0.1)" : "transparent" }}
+            style={{ borderColor: pattern.key === p.key ? "rgba(94,234,212,0.6)" : "rgba(var(--ep-ink-rgb),0.12)", color: pattern.key === p.key ? "#99f6e4" : "rgba(var(--ep-ink-rgb),0.55)", background: pattern.key === p.key ? "rgba(94,234,212,0.1)" : "transparent" }}
           >
             {t(p.label)}
           </button>
         ))}
       </div>
-      <p className="text-[12px] text-[#F5EDED]/55 mb-4">{t(pattern.sub)}</p>
+      <p className="text-[12px] text-(--ep-ink)/55 mb-4">{t(pattern.sub)}</p>
       <div className="flex flex-col items-center py-2">
         <div style={{ width: 180, height: 180, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
           <div
@@ -341,16 +341,16 @@ function Breathing() {
             }}
           />
           <div style={{ position: "relative", textAlign: "center" }}>
-            <p className="text-[15px] font-bold text-white">{running ? t(phase.label) : t("Prêt ?")}</p>
-            {running && <p className="text-3xl font-black text-white tabular-nums">{count}</p>}
+            <p className="text-[15px] font-bold text-(--ep-strong)">{running ? t(phase.label) : t("Prêt ?")}</p>
+            {running && <p className="text-3xl font-black text-(--ep-strong) tabular-nums">{count}</p>}
           </div>
         </div>
-        {running && <p className="text-[11px] text-[#F5EDED]/40 mt-2">{t("Cycle {c} sur {n}", { c: Math.min(cycle, pattern.cycles), n: pattern.cycles })}</p>}
+        {running && <p className="text-[11px] text-(--ep-ink)/40 mt-2">{t("Cycle {c} sur {n}", { c: Math.min(cycle, pattern.cycles), n: pattern.cycles })}</p>}
         <button
           type="button"
           onClick={() => { setStep(0); setCount(pattern.phases[0].sec); setRunning((r) => !r); }}
           className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest"
-          style={{ background: running ? "rgba(245,237,237,0.08)" : "linear-gradient(135deg, #14b8a6, #0f766e)", color: "#fff" }}
+          style={{ background: running ? "rgba(var(--ep-ink-rgb),0.08)" : "linear-gradient(135deg, #14b8a6, #0f766e)", color: "var(--ep-strong)" }}
         >
           {running ? <><Pause size={13} /> {t("Arrêter")}</> : <><Play size={13} /> {t("Commencer")}</>}
         </button>
@@ -432,33 +432,33 @@ function Meditation() {
             type="button"
             onClick={() => { setMed(m); setRunning(false); setIdx(0); window.speechSynthesis?.cancel(); }}
             className="px-3 py-1.5 rounded-full text-[11.5px] font-bold border"
-            style={{ borderColor: med.key === m.key ? "rgba(196,181,253,0.6)" : "rgba(245,237,237,0.12)", color: med.key === m.key ? "#ddd6fe" : "rgba(245,237,237,0.55)", background: med.key === m.key ? "rgba(167,139,250,0.12)" : "transparent" }}
+            style={{ borderColor: med.key === m.key ? "rgba(196,181,253,0.6)" : "rgba(var(--ep-ink-rgb),0.12)", color: med.key === m.key ? "#ddd6fe" : "rgba(var(--ep-ink-rgb),0.55)", background: med.key === m.key ? "rgba(var(--ep-violet-rgb),0.12)" : "transparent" }}
           >
             {t(m.label)}
           </button>
         ))}
       </div>
-      <div className="rounded-xl p-4 min-h-[110px] flex items-center" style={{ background: "linear-gradient(160deg, rgba(76,29,149,0.28), rgba(15,10,40,0.4))", border: "1px solid rgba(167,139,250,0.25)" }}>
-        <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, lineHeight: 1.45, color: "rgba(245,237,237,0.9)", margin: 0 }}>
+      <div className="rounded-xl p-4 min-h-[110px] flex items-center" style={{ background: "linear-gradient(160deg, rgba(76,29,149,0.28), rgba(15,10,40,0.4))", border: "1px solid rgba(var(--ep-violet-rgb),0.25)" }}>
+        <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 17, lineHeight: 1.45, color: "rgba(var(--ep-ink-rgb),0.9)", margin: 0 }}>
           {running ? t(med.steps[idx].text) : t("Mets-toi au lit, lance la séance, et laisse-toi guider. Tu peux éteindre l'écran.")}
         </p>
       </div>
       {running && (
-        <div className="h-1 rounded-full bg-white/10 mt-3 overflow-hidden">
-          <div className="h-full bg-[#a78bfa] rounded-full transition-all" style={{ width: `${(idx / med.steps.length) * 100}%` }} />
+        <div className="h-1 rounded-full bg-(--ep-hi)/10 mt-3 overflow-hidden">
+          <div className="h-full bg-(--ep-violet) rounded-full transition-all" style={{ width: `${(idx / med.steps.length) * 100}%` }} />
         </div>
       )}
       <div className="flex items-center gap-3 mt-3">
         <button
           type="button"
           onClick={() => { setIdx(0); setRunning((r) => !r); if (running) window.speechSynthesis?.cancel(); }}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest text-white"
-          style={{ background: running ? "rgba(245,237,237,0.08)" : "linear-gradient(135deg, #8b5cf6, #5b21b6)" }}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest text-(--ep-strong)"
+          style={{ background: running ? "rgba(var(--ep-ink-rgb),0.08)" : "linear-gradient(135deg, #8b5cf6, #5b21b6)" }}
         >
           {running ? <><Pause size={13} /> {t("Arrêter")}</> : <><Play size={13} /> {t("Commencer")}</>}
         </button>
-        <label className="flex items-center gap-2 text-[11.5px] text-[#F5EDED]/55">
-          <input type="checkbox" checked={voice} onChange={(e) => setVoice(e.target.checked)} className="accent-[#a78bfa]" />
+        <label className="flex items-center gap-2 text-[11.5px] text-(--ep-ink)/55">
+          <input type="checkbox" checked={voice} onChange={(e) => setVoice(e.target.checked)} className="accent-(--ep-violet)" />
           {t("Voix qui guide")}
         </label>
       </div>
@@ -470,17 +470,17 @@ export default function SleepToolkit() {
   const t = useT();
   const [tab, setTab] = useState<"sons" | "respiration" | "meditation">("sons");
   return (
-    <section className="rounded-2xl p-4" style={{ background: "linear-gradient(165deg, #0d0a1f 0%, #110000 70%)", border: "1px solid rgba(129,140,248,0.2)" }}>
+    <section className="rounded-2xl p-4" style={{ background: "linear-gradient(165deg, #0d0a1f 0%, var(--ep-s5) 70%)", border: "1px solid rgba(129,140,248,0.2)" }}>
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#a5b4fc]/80 mb-1">{t("Ce soir")}</p>
-      <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, fontSize: 18, color: "#F5EDED", margin: "0 0 12px" }}>{t("Pour t'endormir plus vite.")}</p>
-      <div className="grid grid-cols-3 gap-1 p-1 rounded-xl mb-4" style={{ background: "rgba(245,237,237,0.05)" }}>
+      <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, fontSize: 18, color: "var(--ep-ink)", margin: "0 0 12px" }}>{t("Pour t'endormir plus vite.")}</p>
+      <div className="grid grid-cols-3 gap-1 p-1 rounded-xl mb-4" style={{ background: "rgba(var(--ep-ink-rgb),0.05)" }}>
         {([["sons", "Sons"], ["respiration", "Respiration"], ["meditation", "Méditation"]] as const).map(([k, label]) => (
           <button
             key={k}
             type="button"
             onClick={() => setTab(k)}
             className="py-2 rounded-lg text-[12px] font-bold transition-colors"
-            style={{ background: tab === k ? "rgba(245,237,237,0.1)" : "transparent", color: tab === k ? "#fff" : "rgba(245,237,237,0.5)" }}
+            style={{ background: tab === k ? "rgba(var(--ep-ink-rgb),0.1)" : "transparent", color: tab === k ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.5)" }}
           >
             {t(label)}
           </button>

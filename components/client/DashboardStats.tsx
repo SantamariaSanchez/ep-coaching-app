@@ -8,6 +8,7 @@ import {
   ClipboardList, CheckCircle2, ChevronRight, Apple, Dumbbell,
   ClipboardCheck, Scale,
 } from "lucide-react";
+import { withAlpha } from "@/lib/theme-color";
 
 interface Stats {
   consumedCals: number;
@@ -33,8 +34,8 @@ function SleepDisplay({ value }: { value: string }) {
       max={9}
       size={96}
       strokeWidth={7}
-      color="#a78bfa"
-      trackColor="rgba(167,139,250,0.07)"
+      color="var(--ep-violet)"
+      trackColor="rgba(var(--ep-violet-rgb),0.07)"
       label={tr("Sommeil")}
       unit="h"
       delay={200}
@@ -62,8 +63,8 @@ function DailyTaskRow({ task }: { task: DailyTask }) {
         gap: 12,
         padding: "11px 14px",
         borderRadius: 12,
-        background: task.done ? "rgba(74,222,128,0.05)" : "rgba(31,1,1,0.7)",
-        border: task.done ? "1px solid rgba(74,222,128,0.18)" : "1px solid rgba(137,4,4,0.22)",
+        background: task.done ? "rgba(var(--ep-ok-rgb),0.05)" : "rgba(var(--ep-s1-rgb),0.7)",
+        border: task.done ? "1px solid rgba(var(--ep-ok-rgb),0.18)" : "1px solid rgba(var(--ep-line-rgb),0.22)",
         textDecoration: "none",
         transition: "background 0.15s ease, border-color 0.15s ease",
       }}
@@ -72,14 +73,14 @@ function DailyTaskRow({ task }: { task: DailyTask }) {
         width: 32,
         height: 32,
         borderRadius: 9,
-        background: task.done ? "rgba(74,222,128,0.12)" : `${task.color}15`,
+        background: task.done ? "rgba(var(--ep-ok-rgb),0.12)" : `${withAlpha(task.color, "15")}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0,
       }}>
         {task.done
-          ? <CheckCircle2 size={16} style={{ color: "#4ade80" }} strokeWidth={2} />
+          ? <CheckCircle2 size={16} style={{ color: "var(--ep-ok)" }} strokeWidth={2} />
           : <Icon size={15} style={{ color: task.color }} strokeWidth={1.8} />
         }
       </div>
@@ -88,19 +89,19 @@ function DailyTaskRow({ task }: { task: DailyTask }) {
           margin: 0,
           fontSize: 12,
           fontWeight: 700,
-          color: task.done ? "rgba(245,237,237,0.5)" : "#F5EDED",
+          color: task.done ? "rgba(var(--ep-ink-rgb),0.5)" : "var(--ep-ink)",
           textDecoration: task.done ? "line-through" : "none",
         }}>
           {task.label}
         </p>
         {!task.done && (
-          <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.35)" }}>
+          <p style={{ margin: 0, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
             {task.sublabel}
           </p>
         )}
       </div>
       {!task.done && (
-        <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+        <ChevronRight size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
       )}
     </Link>
   );
@@ -139,9 +140,9 @@ export default function ClientDashboardStats({
     ? Math.round((stats.consumedCals / stats.targetCals) * 100)
     : 0;
   const adherenceColor =
-    stats.adherence >= 80 ? "#4ade80"
-    : stats.adherence >= 50 ? "#fbbf24"
-    : "#E01E1E";
+    stats.adherence >= 80 ? "var(--ep-ok)"
+    : stats.adherence >= 50 ? "var(--ep-warn)"
+    : "var(--ep-accent)";
 
   const dailyTasks: DailyTask[] = [
     {
@@ -150,7 +151,7 @@ export default function ClientDashboardStats({
       sublabel: tr("Le premier réflexe, avant même de manger"),
       href: "/dashboard/client/bilan",
       icon: Scale,
-      color: "#4ade80",
+      color: "var(--ep-ok)",
     },
     {
       done: stats.consumedCals > 0,
@@ -162,7 +163,7 @@ export default function ClientDashboardStats({
         : tr("Renseigne tes repas pour suivre tes kcal"),
       href: "/dashboard/client/nutrition",
       icon: Apple,
-      color: "#E01E1E",
+      color: "var(--ep-accent)",
     },
     {
       done: stats.hasSessionToday,
@@ -170,7 +171,7 @@ export default function ClientDashboardStats({
       sublabel: tr("Lance ton logbook et suis ta progression"),
       href: "/dashboard/client/logbook",
       icon: Dumbbell,
-      color: "#60a5fa",
+      color: "var(--ep-info)",
     },
     {
       done: stats.hasBilanToday,
@@ -178,7 +179,7 @@ export default function ClientDashboardStats({
       sublabel: tr("Poids, sommeil, ressenti, 30 secondes"),
       href: "/dashboard/client/bilan",
       icon: ClipboardCheck,
-      color: "#fbbf24",
+      color: "var(--ep-warn)",
     },
   ];
 
@@ -205,7 +206,7 @@ export default function ClientDashboardStats({
           <span style={{
             fontSize: 10,
             fontWeight: 700,
-            color: doneCount === tasks.length ? "#4ade80" : "rgba(245,237,237,0.3)",
+            color: doneCount === tasks.length ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.3)",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
           }}>
@@ -239,7 +240,7 @@ export default function ClientDashboardStats({
               gap: 4,
               fontSize: 10,
               fontWeight: 700,
-              color: "#4ade80",
+              color: "var(--ep-ok)",
               letterSpacing: "0.06em",
               textTransform: "uppercase",
             }}>
@@ -261,8 +262,8 @@ export default function ClientDashboardStats({
             max={100}
             size={110}
             strokeWidth={9}
-            color="#E01E1E"
-            trackColor="rgba(224,30,30,0.07)"
+            color="var(--ep-accent)"
+            trackColor="rgba(var(--ep-accent-rgb),0.07)"
             label={tr("Nutrition")}
             unit="%"
             sublabel={stats.targetCals > 0 ? `${stats.consumedCals} / ${stats.targetCals} kcal` : `${stats.consumedCals} kcal, objectif à calculer`}
@@ -274,7 +275,7 @@ export default function ClientDashboardStats({
             size={96}
             strokeWidth={7}
             color={adherenceColor}
-            trackColor={`${adherenceColor}10`}
+            trackColor={`${withAlpha(adherenceColor, "10")}`}
             label={tr("Adhésion 7j")}
             unit="%"
             sublabel={`${stats.daysWithLogs}/7 jours`}
@@ -294,8 +295,8 @@ export default function ClientDashboardStats({
             alignItems: "center",
             gap: 14,
             padding: "16px 20px",
-            background: "linear-gradient(135deg, rgba(224,30,30,0.12) 0%, rgba(137,4,4,0.08) 100%)",
-            border: "1px solid rgba(224,30,30,0.22)",
+            background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.12) 0%, rgba(var(--ep-line-rgb),0.08) 100%)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.22)",
             borderRadius: "var(--radius-lg)",
             textDecoration: "none",
             marginBottom: 16,
@@ -306,23 +307,23 @@ export default function ClientDashboardStats({
             width: 40,
             height: 40,
             borderRadius: 12,
-            background: "rgba(224,30,30,0.15)",
+            background: "rgba(var(--ep-accent-rgb),0.15)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
           }}>
-            <ClipboardList size={18} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+            <ClipboardList size={18} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ink)" }}>
               {tr("Check-in semaine")}{" "}{stats.weekNumber}
             </p>
-            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
               {tr("Partage ton ressenti avec ton coach")}
             </p>
           </div>
-          <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} />
+          <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0 }} />
         </Link>
       )}
     </>

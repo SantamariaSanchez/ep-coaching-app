@@ -42,7 +42,7 @@ export default function EmbeddedVideo({
       href={safeExternalUrl(video.src) ?? "#"}
       target="_blank"
       rel="noopener noreferrer"
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#E01E1E", fontWeight: 700, fontSize: 12, marginTop: 10, textDecoration: "none" }}
+      style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--ep-accent)", fontWeight: 700, fontSize: 12, marginTop: 10, textDecoration: "none" }}
     >
       Voir la vidéo <ExternalLink size={12} />
     </a>

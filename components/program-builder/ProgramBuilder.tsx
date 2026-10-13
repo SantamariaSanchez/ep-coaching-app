@@ -455,7 +455,7 @@ export default function ProgramBuilder({
                 setDirty(true);
                 setDraftOffer(null);
               }}
-              className="font-bold uppercase tracking-widest text-[10.5px] text-white bg-sky-600/60 hover:bg-sky-600 rounded-md px-2.5 py-1"
+              className="font-bold uppercase tracking-widest text-[10.5px] text-(--ep-strong) bg-sky-600/60 hover:bg-sky-600 rounded-md px-2.5 py-1"
             >
               {tr("Reprendre")}
             </button>
@@ -467,7 +467,7 @@ export default function ProgramBuilder({
                 } catch {}
                 setDraftOffer(null);
               }}
-              className="text-[10.5px] font-bold uppercase tracking-widest text-sky-200/70 hover:text-white"
+              className="text-[10.5px] font-bold uppercase tracking-widest text-sky-200/70 hover:text-(--ep-strong)"
             >
               {tr("Ignorer")}
             </button>
@@ -475,13 +475,13 @@ export default function ProgramBuilder({
         )}
 
         {/* Barre de structure : nom, séances/semaine, split, modèle */}
-        <div className="rounded-xl border border-[#890404]/35 bg-[#1a0101] p-3 sm:p-4 mb-3 space-y-3">
+        <div className="rounded-xl border border-(--ep-line)/35 bg-(--ep-s3) p-3 sm:p-4 mb-3 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             {panel && (
               <button
                 type="button"
                 onClick={() => setMobilePanel(true)}
-                className="lg:hidden inline-flex items-center gap-1.5 rounded-lg border border-[#E01E1E]/40 bg-[#E01E1E]/10 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-widest text-[#ff6b6b]"
+                className="lg:hidden inline-flex items-center gap-1.5 rounded-lg border border-(--ep-accent)/40 bg-(--ep-accent)/10 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-accent-hi2)"
               >
                 <ClipboardList size={13} /> {tr("Fiche")} {firstName}
               </button>
@@ -491,31 +491,31 @@ export default function ProgramBuilder({
               onChange={(e) => update((s) => ({ ...s, name: e.target.value }))}
               placeholder={tr("Nom du programme (ex. Prise de masse, bloc 1)")}
               aria-label={tr("Nom du programme")}
-              className="flex-1 min-w-[200px] bg-transparent text-lg font-black text-white placeholder:text-[#F5EDED]/25 placeholder:font-semibold focus:outline-none border-b border-transparent focus:border-[#E01E1E]/50"
+              className="flex-1 min-w-[200px] bg-transparent text-lg font-black text-(--ep-strong) placeholder:text-(--ep-ink)/25 placeholder:font-semibold focus:outline-none border-b border-transparent focus:border-(--ep-accent)/50"
             />
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setTemplateMenu((v) => !v)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#890404]/40 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/60 hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-(--ep-line)/40 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/60 hover:text-(--ep-strong)"
               >
                 <LayoutTemplate size={13} /> {tr("Partir de…")} <ChevronDown size={12} />
               </button>
               {templateMenu && (
-                <div className="absolute right-0 top-full mt-1 z-30 w-72 max-h-80 overflow-y-auto rounded-lg border border-[#890404]/50 bg-[#1a0000] shadow-2xl py-1">
+                <div className="absolute right-0 top-full mt-1 z-30 w-72 max-h-80 overflow-y-auto rounded-lg border border-(--ep-line)/50 bg-(--ep-s3) shadow-2xl py-1">
                   {program && program.days.length > 0 && (
-                    <button type="button" onClick={loadCurrentProgram} className="w-full text-left px-3 py-2 text-[12.5px] hover:bg-[#890404]/30">
-                      <span className="font-semibold text-white">{tr("Son programme actuel")}</span>
-                      <span className="block text-[10.5px] text-[#F5EDED]/40">{program.name}</span>
+                    <button type="button" onClick={loadCurrentProgram} className="w-full text-left px-3 py-2 text-[12.5px] hover:bg-(--ep-line)/30">
+                      <span className="font-semibold text-(--ep-strong)">{tr("Son programme actuel")}</span>
+                      <span className="block text-[10.5px] text-(--ep-ink)/40">{program.name}</span>
                     </button>
                   )}
                   {templates.length === 0 && (
-                    <p className="px-3 py-2 text-[11.5px] text-[#F5EDED]/40">{tr("Aucun modèle. Enregistre ce programme comme modèle en bas pour le réutiliser.")}</p>
+                    <p className="px-3 py-2 text-[11.5px] text-(--ep-ink)/40">{tr("Aucun modèle. Enregistre ce programme comme modèle en bas pour le réutiliser.")}</p>
                   )}
                   {templates.map((t) => (
-                    <button key={t.id} type="button" onClick={() => loadTemplate(t)} className="w-full text-left px-3 py-2 text-[12.5px] hover:bg-[#890404]/30">
-                      <span className="font-semibold text-white">{t.name}</span>
-                      <span className="block text-[10.5px] text-[#F5EDED]/40">
+                    <button key={t.id} type="button" onClick={() => loadTemplate(t)} className="w-full text-left px-3 py-2 text-[12.5px] hover:bg-(--ep-line)/30">
+                      <span className="font-semibold text-(--ep-strong)">{t.name}</span>
+                      <span className="block text-[10.5px] text-(--ep-ink)/40">
                         {t.days.length} {tr("séances")} · {t.days.reduce((a, d) => a + d.exercises.length, 0)} {tr("exercices")}
                       </span>
                     </button>
@@ -527,8 +527,8 @@ export default function ProgramBuilder({
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">{tr("Séances / sem.")}</span>
-              <div className="flex rounded-lg overflow-hidden border border-[#890404]/40" role="group" aria-label={tr("Nombre de séances par semaine")}>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40">{tr("Séances / sem.")}</span>
+              <div className="flex rounded-lg overflow-hidden border border-(--ep-line)/40" role="group" aria-label={tr("Nombre de séances par semaine")}>
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                   <button
                     key={n}
@@ -537,7 +537,7 @@ export default function ProgramBuilder({
                     aria-pressed={sessionCount === n}
                     title={suggestedCount === n ? tr("Ce que le client souhaite") : undefined}
                     className={`relative w-8 h-8 text-[13px] font-bold transition-colors ${
-                      sessionCount === n ? "bg-[#E01E1E] text-white" : "bg-black/25 text-[#F5EDED]/50 hover:text-white hover:bg-[#890404]/30"
+                      sessionCount === n ? "bg-(--ep-accent) text-(--ep-strong)" : "bg-(--ep-shade)/25 text-(--ep-ink)/50 hover:text-(--ep-strong) hover:bg-(--ep-line)/30"
                     }`}
                   >
                     {n}
@@ -554,15 +554,15 @@ export default function ProgramBuilder({
                   onClick={() => setSplit(sp.key)}
                   aria-pressed={state.type === sp.key}
                   className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-semibold border transition-colors ${
-                    state.type === sp.key ? "border-[#E01E1E] bg-[#E01E1E]/15 text-white" : "border-[#890404]/35 text-[#F5EDED]/55 hover:text-white"
+                    state.type === sp.key ? "border-(--ep-accent) bg-(--ep-accent)/15 text-(--ep-strong)" : "border-(--ep-line)/35 text-(--ep-ink)/55 hover:text-(--ep-strong)"
                   }`}
                 >
                   {tr(sp.label)}
                 </button>
               ))}
             </div>
-            <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
-              <span className="font-bold uppercase tracking-widest text-[10px] text-[#F5EDED]/40">{tr("Bloc")}</span>
+            <label className="flex items-center gap-2 text-[11px] text-(--ep-ink)/50">
+              <span className="font-bold uppercase tracking-widest text-[10px] text-(--ep-ink)/40">{tr("Bloc")}</span>
               <select
                 value={state.mesocycle_weeks}
                 onChange={(e) =>
@@ -573,7 +573,7 @@ export default function ProgramBuilder({
                   }))
                 }
                 aria-label={tr("Durée du bloc")}
-                className="bg-black/30 border border-[#890404]/35 rounded-md px-1.5 py-1 text-[12px] text-white focus:outline-none"
+                className="bg-(--ep-shade)/30 border border-(--ep-line)/35 rounded-md px-1.5 py-1 text-[12px] text-(--ep-strong) focus:outline-none"
               >
                 <option value="">{tr("sans")}</option>
                 {[4, 5, 6, 8, 10, 12].map((w) => (
@@ -583,7 +583,7 @@ export default function ProgramBuilder({
                 ))}
               </select>
               {meso && !meso.isOverdue && (
-                <span className="text-[10.5px] text-[#F5EDED]/35">
+                <span className="text-[10.5px] text-(--ep-ink)/35">
                   {tr("sem.")} {meso.currentWeek}/{meso.totalWeeks}
                 </span>
               )}
@@ -595,7 +595,7 @@ export default function ProgramBuilder({
             onChange={(e) => update((s) => ({ ...s, objective: e.target.value }))}
             placeholder={tr("Objectif de ce bloc, en une phrase (le client le voit en haut de son programme)")}
             aria-label={tr("Objectif du bloc")}
-            className="w-full bg-black/20 border border-[#890404]/25 focus:border-[#E01E1E]/50 rounded-lg px-3 py-2 text-[12.5px] text-white placeholder:text-[#F5EDED]/25 outline-none"
+            className="w-full bg-(--ep-shade)/20 border border-(--ep-line)/25 focus:border-(--ep-accent)/50 rounded-lg px-3 py-2 text-[12.5px] text-(--ep-strong) placeholder:text-(--ep-ink)/25 outline-none"
           />
         </div>
 
@@ -606,35 +606,35 @@ export default function ProgramBuilder({
               <a
                 key={d.id}
                 href={`#seance-${d.id}`}
-                className="px-2 py-1 rounded-md bg-black/25 border border-[#890404]/25 text-[11px] text-[#F5EDED]/60 hover:text-white"
+                className="px-2 py-1 rounded-md bg-(--ep-shade)/25 border border-(--ep-line)/25 text-[11px] text-(--ep-ink)/60 hover:text-(--ep-strong)"
               >
-                <b className="text-[#E01E1E]">{i + 1}</b> {d.label || tr("Séance")}
+                <b className="text-(--ep-accent)">{i + 1}</b> {d.label || tr("Séance")}
               </a>
             ))}
             <button
               type="button"
               onClick={() => setShowVolume((v) => !v)}
               aria-expanded={showVolume}
-              className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-[#F5EDED]/55 hover:text-white"
+              className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-(--ep-ink)/55 hover:text-(--ep-strong)"
             >
               {tr("Volume / semaine")} <ChevronDown size={12} style={{ transform: showVolume ? "rotate(180deg)" : undefined }} />
             </button>
           </div>
         )}
         {showVolume && state.days.length > 0 && (
-          <div className="mb-3 rounded-lg border border-[#890404]/25 bg-[#140000] p-3">
+          <div className="mb-3 rounded-lg border border-(--ep-line)/25 bg-(--ep-s5) p-3">
             {volumeGroups.length === 0 ? (
-              <p className="text-[11.5px] text-[#F5EDED]/40">{tr("Choisis des exercices de la bibliothèque (ou renseigne le muscle dans les détails) pour voir le volume.")}</p>
+              <p className="text-[11.5px] text-(--ep-ink)/40">{tr("Choisis des exercices de la bibliothèque (ou renseigne le muscle dans les détails) pour voir le volume.")}</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 {volumeGroups.map((g) => {
                   const now = liveVolume[g] ?? 0;
                   const before = previousVolume[g];
                   return (
-                    <span key={g} className="px-2 py-1 rounded-md bg-black/30 text-[11.5px]" title={tr("Repères : rouge = trop peu ou trop, vert = zone efficace, orange = élevé")}>
-                      <span className="text-[#F5EDED]/60">{g}</span> <b style={{ color: volumeColor(g, now) }}>{now}</b>
+                    <span key={g} className="px-2 py-1 rounded-md bg-(--ep-shade)/30 text-[11.5px]" title={tr("Repères : rouge = trop peu ou trop, vert = zone efficace, orange = élevé")}>
+                      <span className="text-(--ep-ink)/60">{g}</span> <b style={{ color: volumeColor(g, now) }}>{now}</b>
                       {before != null && before !== now && program && (
-                        <span className="text-[10px] text-[#F5EDED]/35"> ({tr("avant")} {before})</span>
+                        <span className="text-[10px] text-(--ep-ink)/35"> ({tr("avant")} {before})</span>
                       )}
                     </span>
                   );
@@ -646,29 +646,29 @@ export default function ProgramBuilder({
 
         {/* Séances */}
         {state.days.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#890404]/40 bg-[#140000] px-4 py-10 text-center">
-            <p className="text-sm font-bold text-white mb-1">{tr("Combien de séances par semaine ?")}</p>
-            <p className="text-[12px] text-[#F5EDED]/45 mb-4">
+          <div className="rounded-xl border border-dashed border-(--ep-line)/40 bg-(--ep-s5) px-4 py-10 text-center">
+            <p className="text-sm font-bold text-(--ep-strong) mb-1">{tr("Combien de séances par semaine ?")}</p>
+            <p className="text-[12px] text-(--ep-ink)/45 mb-4">
               {suggestedCount
                 ? tr("{name} a demandé {n} séances. Touche un chiffre : les séances se créent avec 8 lignes chacune.", { name: firstName, n: suggestedCount })
                 : tr("Touche un chiffre : les séances se créent avec 8 lignes chacune.")}
             </p>
-            <div className="inline-flex rounded-lg overflow-hidden border border-[#890404]/40">
+            <div className="inline-flex rounded-lg overflow-hidden border border-(--ep-line)/40">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setSessionCount(n)}
-                  className={`w-11 h-11 text-base font-black ${suggestedCount === n ? "bg-[#E01E1E] text-white" : "bg-black/30 text-[#F5EDED]/60 hover:bg-[#890404]/30 hover:text-white"}`}
+                  className={`w-11 h-11 text-base font-black ${suggestedCount === n ? "bg-(--ep-accent) text-(--ep-strong)" : "bg-(--ep-shade)/30 text-(--ep-ink)/60 hover:bg-(--ep-line)/30 hover:text-(--ep-strong)"}`}
                 >
                   {n}
                 </button>
               ))}
             </div>
             {templates.length > 0 && (
-              <p className="mt-4 text-[11.5px] text-[#F5EDED]/40">
+              <p className="mt-4 text-[11.5px] text-(--ep-ink)/40">
                 {tr("ou")}{" "}
-                <button type="button" onClick={() => setTemplateMenu(true)} className="underline hover:text-white">
+                <button type="button" onClick={() => setTemplateMenu(true)} className="underline hover:text-(--ep-strong)">
                   {tr("pars d'un de tes modèles")}
                 </button>
               </p>
@@ -698,7 +698,7 @@ export default function ProgramBuilder({
               <button
                 type="button"
                 onClick={addDay}
-                className="w-full rounded-xl border border-dashed border-[#890404]/35 py-3 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white hover:border-[#E01E1E]/50 inline-flex items-center justify-center gap-1.5"
+                className="w-full rounded-xl border border-dashed border-(--ep-line)/35 py-3 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong) hover:border-(--ep-accent)/50 inline-flex items-center justify-center gap-1.5"
               >
                 <Plus size={13} /> {tr("Ajouter une séance")}
               </button>
@@ -711,7 +711,7 @@ export default function ProgramBuilder({
         {saveAsTemplate && totalExercises > 0 && (
           <div className="mt-4">
             {templateForm ? (
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[#890404]/30 bg-[#140000] p-2.5">
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--ep-line)/30 bg-(--ep-s5) p-2.5">
                 {templateForm.done ? (
                   <p className="inline-flex items-center gap-1.5 text-[12px] font-bold text-green-400">
                     <Check size={13} /> {tr("Modèle enregistré")}
@@ -725,12 +725,12 @@ export default function ProgramBuilder({
                       onKeyDown={(e) => e.key === "Enter" && saveTemplate()}
                       placeholder={tr("Nom du modèle")}
                       aria-label={tr("Nom du modèle")}
-                      className="flex-1 min-w-[180px] bg-black/30 border border-[#890404]/30 rounded-md px-2.5 py-1.5 text-[12.5px] text-white outline-none focus:border-[#E01E1E]/50"
+                      className="flex-1 min-w-[180px] bg-(--ep-shade)/30 border border-(--ep-line)/30 rounded-md px-2.5 py-1.5 text-[12.5px] text-(--ep-strong) outline-none focus:border-(--ep-accent)/50"
                     />
-                    <button type="button" onClick={saveTemplate} disabled={templateForm.busy} className="rounded-md bg-[#E01E1E]/20 border border-[#E01E1E]/40 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50">
+                    <button type="button" onClick={saveTemplate} disabled={templateForm.busy} className="rounded-md bg-(--ep-accent)/20 border border-(--ep-accent)/40 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-strong) disabled:opacity-50">
                       {templateForm.busy ? "…" : tr("Enregistrer")}
                     </button>
-                    <button type="button" onClick={() => setTemplateForm(null)} aria-label={tr("Annuler")} className="p-1.5 text-[#F5EDED]/40 hover:text-white">
+                    <button type="button" onClick={() => setTemplateForm(null)} aria-label={tr("Annuler")} className="p-1.5 text-(--ep-ink)/40 hover:text-(--ep-strong)">
                       <X size={14} />
                     </button>
                     {templateForm.error && <p className="w-full text-[11.5px] text-red-400">{templateForm.error}</p>}
@@ -741,7 +741,7 @@ export default function ProgramBuilder({
               <button
                 type="button"
                 onClick={() => setTemplateForm({ name: state.name, busy: false, done: false, error: null })}
-                className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white"
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong)"
               >
                 <BookmarkPlus size={13} /> {tr("Enregistrer comme modèle réutilisable")}
               </button>
@@ -752,7 +752,7 @@ export default function ProgramBuilder({
         {/* Barre d'actions collante */}
         <div className="sticky z-30 mt-5 bottom-[calc(80px+env(safe-area-inset-bottom))] md:bottom-3">
           {delivered ? (
-            <div className="rounded-xl border border-green-500/40 bg-[#071a0b]/95 backdrop-blur px-4 py-3 flex flex-wrap items-center gap-3 shadow-2xl">
+            <div className="rounded-xl border border-green-500/40 bg-(--ep-okbg)/95 backdrop-blur px-4 py-3 flex flex-wrap items-center gap-3 shadow-2xl">
               <span className="inline-flex items-center gap-2 text-[13px] font-bold text-green-300 flex-1 min-w-[200px]">
                 <Check size={16} />
                 {mode === "client"
@@ -761,27 +761,27 @@ export default function ProgramBuilder({
                     : tr("Programme enregistré, sans notification.")
                   : tr("Programme enregistré.")}
               </span>
-              <button type="button" onClick={() => setDelivered(false)} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/60 hover:text-white">
+              <button type="button" onClick={() => setDelivered(false)} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/60 hover:text-(--ep-strong)">
                 <PencilLine size={13} /> {tr("Modifier encore")}
               </button>
-              <Link href={programHref} className="inline-flex items-center gap-1.5 rounded-lg bg-green-600/70 hover:bg-green-600 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-white">
+              <Link href={programHref} className="inline-flex items-center gap-1.5 rounded-lg bg-green-600/70 hover:bg-green-600 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-(--ep-strong)">
                 <Eye size={13} /> {tr("Voir le programme")}
               </Link>
             </div>
           ) : (
-            <div className="rounded-xl border border-[#890404]/45 bg-[#140000]/95 backdrop-blur px-3 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 shadow-2xl">
-              <Link href={backHref} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-white">
+            <div className="rounded-xl border border-(--ep-line)/45 bg-(--ep-s5)/95 backdrop-blur px-3 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 shadow-2xl">
+              <Link href={backHref} className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-strong)">
                 <ArrowLeft size={13} /> {tr("Retour")}
               </Link>
-              <span className="text-[11px] text-[#F5EDED]/35 flex-1 min-w-[120px]">
+              <span className="text-[11px] text-(--ep-ink)/35 flex-1 min-w-[120px]">
                 {totalExercises} {tr("exercices")}
                 {draftSavedAt && dirty && (
                   <> · {tr("brouillon gardé")} {draftSavedAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</>
                 )}
               </span>
               {mode === "client" && (
-                <label className="inline-flex items-center gap-1.5 text-[11.5px] text-[#F5EDED]/65 cursor-pointer select-none">
-                  <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="accent-[#E01E1E] w-4 h-4" />
+                <label className="inline-flex items-center gap-1.5 text-[11.5px] text-(--ep-ink)/65 cursor-pointer select-none">
+                  <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="accent-(--ep-accent) w-4 h-4" />
                   {tr("Prévenir")} {firstName}
                 </label>
               )}
@@ -790,7 +790,7 @@ export default function ProgramBuilder({
                 onClick={deliver}
                 disabled={saving}
                 title="Ctrl+S"
-                className="inline-flex items-center gap-2 rounded-lg bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60 px-4 py-2.5 text-[12px] font-black uppercase tracking-widest text-white"
+                className="inline-flex items-center gap-2 rounded-lg bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60 px-4 py-2.5 text-[12px] font-black uppercase tracking-widest text-(--ep-strong)"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                 {mode === "self" ? tr("Enregistrer") : program ? tr("Mettre à jour") : tr("Livrer à {name}", { name: firstName })}
@@ -808,9 +808,9 @@ export default function ProgramBuilder({
       {/* Fiche client en plein écran sur téléphone */}
       {panel && mobilePanel && (
         <div className="lg:hidden fixed inset-0 z-[70] flex">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setMobilePanel(false)} />
-          <div className="relative ml-auto h-full w-[min(92vw,380px)] bg-[#0f0000] border-l border-[#890404]/40 overflow-y-auto p-3 pt-[calc(env(safe-area-inset-top)+12px)]">
-            <button type="button" onClick={() => setMobilePanel(false)} aria-label={tr("Fermer")} className="absolute top-[calc(env(safe-area-inset-top)+8px)] right-3 p-1.5 text-[#F5EDED]/50 hover:text-white">
+          <div className="absolute inset-0 bg-(--ep-shade)/70" onClick={() => setMobilePanel(false)} />
+          <div className="relative ml-auto h-full w-[min(92vw,380px)] bg-(--ep-s5) border-l border-(--ep-line)/40 overflow-y-auto p-3 pt-[calc(env(safe-area-inset-top)+12px)]">
+            <button type="button" onClick={() => setMobilePanel(false)} aria-label={tr("Fermer")} className="absolute top-[calc(env(safe-area-inset-top)+8px)] right-3 p-1.5 text-(--ep-ink)/50 hover:text-(--ep-strong)">
               <X size={18} />
             </button>
             {panel}
@@ -839,19 +839,19 @@ function RowDetailsDialog({ row, onChange, onClose }: { row: SheetRow; onChange:
     return () => document.removeEventListener("keydown", k);
   }, [onClose]);
   const subgroups = row.muscle_group ? MUSCLE_SUBGROUPS[row.muscle_group as MuscleGroup] ?? [] : [];
-  const field = "w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-md px-2.5 py-1.5 text-[12.5px] text-white outline-none";
+  const field = "w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/50 rounded-md px-2.5 py-1.5 text-[12.5px] text-(--ep-strong) outline-none";
   return (
     <div className="fixed inset-0 z-[75] flex items-end sm:items-center justify-center">
-      <div className="ep-modal-overlay absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="ep-modal-panel relative w-full sm:max-w-md max-h-[88vh] overflow-y-auto bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-4">
+      <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/70" onClick={onClose} />
+      <div className="ep-modal-panel relative w-full sm:max-w-md max-h-[88vh] overflow-y-auto bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl p-4">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <p className="text-[14px] font-black text-white">{row.name || tr("Exercice")}</p>
-          <button type="button" onClick={onClose} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
+          <p className="text-[14px] font-black text-(--ep-strong)">{row.name || tr("Exercice")}</p>
+          <button type="button" onClick={onClose} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong)">
             <X size={18} />
           </button>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Muscle")}
             <select value={row.muscle_group} onChange={(e) => onChange({ muscle_group: e.target.value, muscle_subgroup: "" })} className={`${field} mt-1`}>
               <option value="">—</option>
@@ -860,7 +860,7 @@ function RowDetailsDialog({ row, onChange, onClose }: { row: SheetRow; onChange:
               ))}
             </select>
           </label>
-          <label className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Partie")}
             <select value={row.muscle_subgroup} onChange={(e) => onChange({ muscle_subgroup: e.target.value })} disabled={subgroups.length === 0} className={`${field} mt-1 disabled:opacity-40`}>
               <option value="">—</option>
@@ -876,20 +876,20 @@ function RowDetailsDialog({ row, onChange, onClose }: { row: SheetRow; onChange:
               key={String(v)}
               type="button"
               onClick={() => onChange({ is_direct: v })}
-              className={`flex-1 rounded-md border px-2 py-1.5 text-[11.5px] font-semibold ${row.is_direct === v ? "border-[#E01E1E] bg-[#E01E1E]/15 text-white" : "border-[#890404]/30 text-[#F5EDED]/50"}`}
+              className={`flex-1 rounded-md border px-2 py-1.5 text-[11.5px] font-semibold ${row.is_direct === v ? "border-(--ep-accent) bg-(--ep-accent)/15 text-(--ep-strong)" : "border-(--ep-line)/30 text-(--ep-ink)/50"}`}
             >
               {v ? tr("Compte dans le volume") : tr("Travail indirect")}
             </button>
           ))}
         </div>
-        <p className="mt-4 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">{tr("Zone de tension visée")}</p>
+        <p className="mt-4 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">{tr("Zone de tension visée")}</p>
         <div className="flex flex-wrap gap-1.5">
           {TENSION_FOCUS_OPTIONS.map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => onChange({ tension_focus: row.tension_focus === t ? "" : t })}
-              className={`rounded-md border px-2 py-1 text-[11.5px] ${row.tension_focus === t ? "border-[#E01E1E] bg-[#E01E1E]/15 text-white" : "border-[#890404]/30 text-[#F5EDED]/55"}`}
+              className={`rounded-md border px-2 py-1 text-[11.5px] ${row.tension_focus === t ? "border-(--ep-accent) bg-(--ep-accent)/15 text-(--ep-strong)" : "border-(--ep-line)/30 text-(--ep-ink)/55"}`}
             >
               {TENSION_FOCUS_LABELS[t]}
             </button>
@@ -904,13 +904,13 @@ function RowDetailsDialog({ row, onChange, onClose }: { row: SheetRow; onChange:
               ["discomfort_notes", tr("Si gêne ou douleur")],
             ] as const
           ).map(([k, label]) => (
-            <label key={k} className="block text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+            <label key={k} className="block text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
               {label}
               <input value={row[k]} onChange={(e) => onChange({ [k]: e.target.value } as Partial<SheetRow>)} className={`${field} mt-1 normal-case tracking-normal font-normal`} />
             </label>
           ))}
         </div>
-        <button type="button" onClick={onClose} className="mt-4 w-full rounded-lg bg-[#E01E1E] hover:bg-[#B00202] py-2.5 text-[12px] font-black uppercase tracking-widest text-white">
+        <button type="button" onClick={onClose} className="mt-4 w-full rounded-lg bg-(--ep-accent) hover:bg-(--ep-accent-2) py-2.5 text-[12px] font-black uppercase tracking-widest text-(--ep-strong)">
           {tr("OK")}
         </button>
       </div>

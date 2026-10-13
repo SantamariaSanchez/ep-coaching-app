@@ -83,8 +83,8 @@ export default function BusinessHub({
             onClick={() => setActiveTab(key)}
             className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
               activeTab === key
-                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
-                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/45 hover:border-[#890404]/40 hover:text-[#F5EDED]/70"
+                ? "bg-(--ep-accent)/12 border-(--ep-accent)/40 text-(--ep-accent)"
+                : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/45 hover:border-(--ep-line)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Icon size={17} strokeWidth={activeTab === key ? 2.2 : 1.7} />
@@ -123,14 +123,14 @@ export default function BusinessHub({
       </div>
 
       <div hidden={activeTab !== "roadmap"}>
-        <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
+        <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed mb-4 max-w-xl">
           {t("Un horizon différent appelle une question différente : dans 1 an c'est l'exécution, dans 20 c'est ce qui reste si tu t'arrêtes. Écris, coche des jalons, révise régulièrement.")}
         </p>
         <RoadmapPlanner initialVisions={initialVisions} initialMilestones={initialMilestones} />
       </div>
 
       <div hidden={activeTab !== "canvas"}>
-        <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
+        <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed mb-4 max-w-xl">
           {t("Les 9 blocs classiques du Business Model Canvas, adaptés à un business de coach individuel. Chaque bloc s'enregistre tout seul quand tu cliques ailleurs.")}
         </p>
         <BusinessCanvasEditor canvas={canvas} />
@@ -138,12 +138,12 @@ export default function BusinessHub({
 
       <div hidden={activeTab !== "funnel"}>
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed max-w-xl">
+          <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed max-w-xl">
             {t("Une idée qui te plaît ? Ajoute-la directement à ton Studio créatif pour la transformer en script.")}
           </p>
           <Link
             href="/dashboard/coach/studio"
-            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) flex-shrink-0"
           >
             <Sparkles size={12} />{" "}{t("Ouvrir le Studio")}{" "}<ArrowRight size={11} />
           </Link>
@@ -151,8 +151,8 @@ export default function BusinessHub({
         <div className="space-y-3">
           {FUNNEL_STAGES.map((stage) => (
             <div key={stage.key} className="ep-card" style={{ padding: "18px 20px" }}>
-              <p className="text-sm font-black text-white mb-1">{stage.label}</p>
-              <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed mb-3">{stage.goal}</p>
+              <p className="text-sm font-black text-(--ep-strong) mb-1">{stage.label}</p>
+              <p className="text-[11.5px] text-(--ep-ink)/45 leading-relaxed mb-3">{stage.goal}</p>
               <div className="grid sm:grid-cols-3 gap-2">
                 {stage.formats.map((f, i) => (
                   <FunnelIdeaCard key={i} stage={stage.key} platform={f.platform} format={f.format} idea={f.idea} />
@@ -170,12 +170,12 @@ export default function BusinessHub({
       <div hidden={activeTab !== "checklist"}>
         <div>
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed max-w-xl">
+            <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed max-w-xl">
               {t("Construis ta base : positionnement, personal branding, contenu, preuve sociale, conversion.")}
             </p>
             <Link
               href="/dashboard/coach/moi/formations"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) flex-shrink-0"
             >
               <GraduationCap size={12} />{" "}{t("ENTREPRENARIAL SECRET")}{" "}<ArrowRight size={11} />
             </Link>

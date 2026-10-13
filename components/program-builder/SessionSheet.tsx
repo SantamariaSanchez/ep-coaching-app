@@ -40,7 +40,7 @@ import {
 
 const WEEKDAY_SHORT = ["", "L", "M", "M", "J", "V", "S", "D"];
 const WEEKDAY_LONG = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-const SUPERSET_COLORS = ["#E01E1E", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#14b8a6"];
+const SUPERSET_COLORS = ["var(--ep-accent)", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#14b8a6"];
 
 // Colonnes navigables au clavier, dans l'ordre de Tab.
 const COLS = ["name", "sets", "reps", "rir", "rest", "tempo", "technique", "notes"] as const;
@@ -226,20 +226,20 @@ export default function SessionSheet({
   const menuRowIdx = menuFor ? day.rows.findIndex((r) => r.id === menuFor.rowId) : -1;
   const menuRow = menuRowIdx >= 0 ? day.rows[menuRowIdx] : null;
 
-  const cellBase = "border-r border-[#890404]/15 last:border-r-0 p-0 align-middle";
+  const cellBase = "border-r border-(--ep-line)/15 last:border-r-0 p-0 align-middle";
   const inputBase =
-    "w-full bg-transparent px-2 py-2 text-[13px] text-white text-center placeholder:text-[#F5EDED]/18 focus:outline-none focus:bg-[#E01E1E]/[0.07]";
+    "w-full bg-transparent px-2 py-2 text-[13px] text-(--ep-strong) text-center placeholder:text-(--ep-ink)/18 focus:outline-none focus:bg-(--ep-accent)/[0.07]";
 
   return (
     <section
       id={`seance-${day.id}`}
-      className="bg-[#140000] border border-[#890404]/35 rounded-xl overflow-hidden scroll-mt-24"
+      className="bg-(--ep-s5) border border-(--ep-line)/35 rounded-xl overflow-hidden scroll-mt-24"
       aria-label={day.label}
     >
       {/* En-tête de séance */}
-      <div className="px-3 sm:px-4 pt-3 pb-2.5 border-b border-[#890404]/25 bg-[#1a0101]">
+      <div className="px-3 sm:px-4 pt-3 pb-2.5 border-b border-(--ep-line)/25 bg-(--ep-s3)">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <span className="w-7 h-7 rounded-lg bg-[#E01E1E] text-white text-[11px] font-black flex items-center justify-center flex-shrink-0">
+          <span className="w-7 h-7 rounded-lg bg-(--ep-accent) text-(--ep-strong) text-[11px] font-black flex items-center justify-center flex-shrink-0">
             {index + 1}
           </span>
           <input
@@ -247,7 +247,7 @@ export default function SessionSheet({
             onChange={(e) => onChange({ ...day, label: e.target.value })}
             aria-label={tr("Nom de la séance")}
             placeholder={tr("Nom de la séance")}
-            className="min-w-0 flex-1 sm:flex-none sm:w-52 bg-transparent text-[15px] font-black uppercase tracking-wide text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#E01E1E]/50"
+            className="min-w-0 flex-1 sm:flex-none sm:w-52 bg-transparent text-[15px] font-black uppercase tracking-wide text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none border-b border-transparent focus:border-(--ep-accent)/50"
           />
           <div className="flex items-center gap-1" role="group" aria-label={tr("Jour de la semaine")}>
             {[1, 2, 3, 4, 5, 6, 7].map((wd) => {
@@ -261,7 +261,7 @@ export default function SessionSheet({
                   aria-pressed={on}
                   aria-label={WEEKDAY_LONG[wd]}
                   className={`relative w-7 h-7 rounded-md text-[11px] font-bold transition-colors ${
-                    on ? "bg-[#E01E1E] text-white" : "bg-black/30 text-[#F5EDED]/45 hover:text-white hover:bg-[#890404]/30"
+                    on ? "bg-(--ep-accent) text-(--ep-strong)" : "bg-(--ep-shade)/30 text-(--ep-ink)/45 hover:text-(--ep-strong) hover:bg-(--ep-line)/30"
                   }`}
                 >
                   {WEEKDAY_SHORT[wd]}
@@ -272,7 +272,7 @@ export default function SessionSheet({
               );
             })}
           </div>
-          <span className={`text-[11px] ${tooLong ? "text-amber-300" : "text-[#F5EDED]/40"}`}>
+          <span className={`text-[11px] ${tooLong ? "text-amber-300" : "text-(--ep-ink)/40"}`}>
             {filled.length} {tr("exos")} · {sets} {tr("séries")} · ~{minutes} min
             {tooLong && sessionMinutesTarget ? ` (${tr("il a")} ${sessionMinutesTarget} min)` : ""}
           </span>
@@ -288,7 +288,7 @@ export default function SessionSheet({
           onChange={(e) => onChange({ ...day, notes: e.target.value })}
           placeholder={tr("Consigne de séance : échauffement, cardio de fin, rappel... (le client la voit)")}
           aria-label={tr("Consigne de séance")}
-          className="mt-2 w-full bg-transparent text-[12px] text-[#F5EDED]/70 placeholder:text-[#F5EDED]/22 focus:outline-none border-b border-transparent focus:border-[#890404]/40 pb-0.5"
+          className="mt-2 w-full bg-transparent text-[12px] text-(--ep-ink)/70 placeholder:text-(--ep-ink)/22 focus:outline-none border-b border-transparent focus:border-(--ep-line)/40 pb-0.5"
         />
       </div>
 
@@ -308,9 +308,9 @@ export default function SessionSheet({
             <col style={{ width: 64 }} />
           </colgroup>
           <thead>
-            <tr className="text-[9.5px] font-bold uppercase tracking-widest text-[#F5EDED]/35 bg-black/25">
-              <th className="py-1.5 sticky left-0 bg-[#100000] z-[1]">#</th>
-              <th className="py-1.5 text-left px-2 sticky left-10 bg-[#100000] z-[1]">{tr("Exercice")}</th>
+            <tr className="text-[9.5px] font-bold uppercase tracking-widest text-(--ep-ink)/35 bg-(--ep-shade)/25">
+              <th className="py-1.5 sticky left-0 bg-(--ep-bg) z-[1]">#</th>
+              <th className="py-1.5 text-left px-2 sticky left-10 bg-(--ep-bg) z-[1]">{tr("Exercice")}</th>
               <th className="py-1.5" title={tr("Nombre de séries")}>{tr("Séries")}</th>
               <th className="py-1.5" title={tr("Reps, ou secondes / mètres : tape « 30s » ou « 20m »")}>{tr("Reps / temps")}</th>
               <th className="py-1.5" title={tr("Reps en réserve")}>{tr("RIR")}</th>
@@ -333,17 +333,17 @@ export default function SessionSheet({
               return (
                 <tr
                   key={row.id}
-                  className={`group border-t border-[#890404]/15 ${filledRow ? "" : "opacity-80"} hover:bg-white/[0.015]`}
+                  className={`group border-t border-(--ep-line)/15 ${filledRow ? "" : "opacity-80"} hover:bg-(--ep-hi)/[0.015]`}
                 >
                   <td
-                    className={`${cellBase} text-center sticky left-0 bg-[#140000] z-[1]`}
+                    className={`${cellBase} text-center sticky left-0 bg-(--ep-s5) z-[1]`}
                     style={color ? { boxShadow: `inset 3px 0 0 ${color}` } : undefined}
                   >
-                    <span className="text-[11px] font-bold" style={{ color: color ?? "rgba(245,237,237,0.3)" }}>
+                    <span className="text-[11px] font-bold" style={{ color: color ?? "rgba(var(--ep-ink-rgb),0.3)" }}>
                       {ss ?? rowIdx + 1}
                     </span>
                   </td>
-                  <td className={`${cellBase} sticky left-10 bg-[#140000] z-[1]`}>
+                  <td className={`${cellBase} sticky left-10 bg-(--ep-s5) z-[1]`}>
                     <div className="flex items-center">
                       <ExerciseCell
                         value={row.name}
@@ -423,7 +423,7 @@ export default function SessionSheet({
                       placeholder={restIsInternal ? "→" : filledRow ? "1:30" : ""}
                       title={restIsInternal ? tr("Superset : enchaîne avec l'exercice suivant, le repos se met sur le dernier du bloc") : undefined}
                       aria-label={tr("Repos")}
-                      className={`${inputBase} ${restIsInternal && !row.rest ? "text-[#F5EDED]/40" : ""}`}
+                      className={`${inputBase} ${restIsInternal && !row.rest ? "text-(--ep-ink)/40" : ""}`}
                     />
                   </td>
                   <td className={cellBase}>
@@ -444,11 +444,11 @@ export default function SessionSheet({
                       onChange={(e) => updateRow(row.id, { technique: e.target.value })}
                       onKeyDown={(e) => navKey(e, rowIdx, 6)}
                       aria-label={tr("Technique")}
-                      className={`w-full bg-transparent px-1.5 py-2 text-[12px] focus:outline-none focus:bg-[#E01E1E]/[0.07] ${row.technique ? "text-amber-300 font-semibold" : "text-[#F5EDED]/30"}`}
+                      className={`w-full bg-transparent px-1.5 py-2 text-[12px] focus:outline-none focus:bg-(--ep-accent)/[0.07] ${row.technique ? "text-amber-300 font-semibold" : "text-(--ep-ink)/30"}`}
                     >
-                      <option value="" className="bg-[#1a0000] text-white">—</option>
+                      <option value="" className="bg-(--ep-s3) text-(--ep-strong)">—</option>
                       {TECHNIQUES.map((t) => (
-                        <option key={t.key} value={t.key} className="bg-[#1a0000] text-white">{t.label}</option>
+                        <option key={t.key} value={t.key} className="bg-(--ep-s3) text-(--ep-strong)">{t.label}</option>
                       ))}
                     </select>
                   </td>
@@ -460,7 +460,7 @@ export default function SessionSheet({
                       onKeyDown={(e) => navKey(e, rowIdx, 7)}
                       title={row.notes || undefined}
                       aria-label={tr("Notes pour le client")}
-                      className={`${inputBase} text-left text-[12px] text-[#F5EDED]/75`}
+                      className={`${inputBase} text-left text-[12px] text-(--ep-ink)/75`}
                     />
                   </td>
                   <td className="p-0 align-middle">
@@ -473,7 +473,7 @@ export default function SessionSheet({
                           aria-label={linkedWithNext ? tr("Délier du suivant") : tr("Superset avec le suivant")}
                           aria-pressed={linkedWithNext}
                           className={`p-1.5 rounded-md transition-colors ${
-                            linkedWithNext ? "text-white" : "text-[#F5EDED]/25 hover:text-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+                            linkedWithNext ? "text-(--ep-strong)" : "text-(--ep-ink)/25 hover:text-(--ep-strong) sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
                           }`}
                           style={linkedWithNext ? { background: color } : undefined}
                         >
@@ -485,7 +485,7 @@ export default function SessionSheet({
                         onClick={(e) => setMenuFor({ rowId: row.id, rect: (e.currentTarget as HTMLElement).getBoundingClientRect() })}
                         title={tr("Plus d'options")}
                         aria-label={tr("Plus d'options")}
-                        className="p-1.5 rounded-md text-[#F5EDED]/30 hover:text-white hover:bg-[#890404]/30"
+                        className="p-1.5 rounded-md text-(--ep-ink)/30 hover:text-(--ep-strong) hover:bg-(--ep-line)/30"
                       >
                         <MoreHorizontal size={14} />
                       </button>
@@ -498,18 +498,18 @@ export default function SessionSheet({
         </table>
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-2 border-t border-[#890404]/20 bg-black/15">
+      <div className="flex items-center gap-3 px-3 py-2 border-t border-(--ep-line)/20 bg-(--ep-shade)/15">
         <button
           type="button"
           onClick={() => {
             pendingFocus.current = { row: day.rows.length, col: 0 };
             insertRow(day.rows.length);
           }}
-          className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-white"
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-strong)"
         >
           <Plus size={12} /> {tr("Ligne")}
         </button>
-        <p className="hidden md:block ml-auto text-[10.5px] text-[#F5EDED]/25">
+        <p className="hidden md:block ml-auto text-[10.5px] text-(--ep-ink)/25">
           {tr("Entrée : ligne suivante · Ctrl+D : recopier la case du dessus · colle directement depuis Google Sheets")}
         </p>
       </div>
@@ -545,7 +545,7 @@ function IconBtn({ children, label, onClick, disabled, danger }: { children: Rea
       disabled={disabled}
       title={label}
       aria-label={label}
-      className={`p-1.5 rounded-md text-[#F5EDED]/35 disabled:opacity-20 transition-colors ${danger ? "hover:text-red-400" : "hover:text-white"} hover:bg-[#890404]/25`}
+      className={`p-1.5 rounded-md text-(--ep-ink)/35 disabled:opacity-20 transition-colors ${danger ? "hover:text-red-400" : "hover:text-(--ep-strong)"} hover:bg-(--ep-line)/25`}
     >
       {children}
     </button>
@@ -565,7 +565,7 @@ function UnitToggle({ unit, onChange }: { unit: RepsUnit; onChange: (u: RepsUnit
       title={`${current.label} · ${tr("clic pour passer en")} ${next.label.toLowerCase()}`}
       aria-label={`${tr("Unité")} : ${current.label}`}
       className={`flex-shrink-0 mr-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wide ${
-        unit === "reps" ? "text-[#F5EDED]/30 hover:text-white" : "bg-sky-500/15 text-sky-300"
+        unit === "reps" ? "text-(--ep-ink)/30 hover:text-(--ep-strong)" : "bg-sky-500/15 text-sky-300"
       }`}
     >
       {current.short}
@@ -604,7 +604,7 @@ function RowMenu({
   const top = rect.bottom + height > window.innerHeight ? Math.max(8, rect.top - height - 4) : rect.bottom + 4;
   const left = Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8));
   return createPortal(
-    <div ref={ref} role="menu" className="fixed z-[85] bg-[#1a0000] border border-[#890404]/50 rounded-lg shadow-2xl py-1" style={{ top, left, width }}>
+    <div ref={ref} role="menu" className="fixed z-[85] bg-(--ep-s3) border border-(--ep-line)/50 rounded-lg shadow-2xl py-1" style={{ top, left, width }}>
       {items.map((it) => (
         <button
           key={it.label}
@@ -615,7 +615,7 @@ function RowMenu({
             it.onClick();
             onClose();
           }}
-          className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] text-left disabled:opacity-30 hover:bg-[#890404]/30 ${it.danger ? "text-red-400" : "text-[#F5EDED]/85"}`}
+          className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] text-left disabled:opacity-30 hover:bg-(--ep-line)/30 ${it.danger ? "text-red-400" : "text-(--ep-ink)/85"}`}
         >
           {it.icon}
           {it.label}

@@ -13,10 +13,10 @@ import type { LogBiometricsInput } from "@/app/dashboard/client/tracking/actions
 import { todayInParis } from "@/lib/dates";
 
 const TOOLTIP_STYLE = {
-  contentStyle: { backgroundColor: "#1f0101", border: "1px solid rgba(137,4,4,0.4)", borderRadius: 8, color: "#F5EDED", fontSize: 11 },
-  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: 10 },
+  contentStyle: { backgroundColor: "var(--ep-s1)", border: "1px solid rgba(var(--ep-line-rgb),0.4)", borderRadius: 8, color: "var(--ep-ink)", fontSize: 11 },
+  labelStyle: { color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: 10 },
 };
-const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 9 };
 
 const SEVERITY_STYLES = {
   info: { icon: Info, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/25" },
@@ -92,13 +92,13 @@ function NumberField({ label, value, onChange, step = 1, placeholder }: {
   }
   return (
     <div>
-      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{label}</label>
+      <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1.5">{label}</label>
       <div className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => bump(-step)}
           aria-label={`Diminuer ${label.toLowerCase()}`}
-          className="w-8 h-8 flex-shrink-0 rounded-lg border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors text-sm font-bold"
+          className="w-8 h-8 flex-shrink-0 rounded-lg border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-strong) hover:border-(--ep-accent)/50 transition-colors text-sm font-bold"
         >
           −
         </button>
@@ -109,13 +109,13 @@ function NumberField({ label, value, onChange, step = 1, placeholder }: {
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           aria-label={label}
-          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-2 text-sm text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+          className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-2 py-2 text-sm text-(--ep-strong) text-center placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
         />
         <button
           type="button"
           onClick={() => bump(step)}
           aria-label={`Augmenter ${label.toLowerCase()}`}
-          className="w-8 h-8 flex-shrink-0 rounded-lg border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors text-sm font-bold"
+          className="w-8 h-8 flex-shrink-0 rounded-lg border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-strong) hover:border-(--ep-accent)/50 transition-colors text-sm font-bold"
         >
           +
         </button>
@@ -127,14 +127,14 @@ function NumberField({ label, value, onChange, step = 1, placeholder }: {
 function StatTile({ label, value, delta, deltaUnit = "" }: { label: string; value: string; delta?: number | null; deltaUnit?: string }) {
   const showDelta = delta != null && Math.abs(delta) >= 0.1;
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 4px" }}>
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-3.5">
+      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", margin: "0 0 4px" }}>
         {label}
       </p>
       <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{value}</span>
+        <span style={{ fontSize: 17, fontWeight: 900, color: "var(--ep-ink)" }}>{value}</span>
         {showDelta && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(245,237,237,0.4)" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
             {delta! > 0 ? "↑" : "↓"} {Math.abs(delta!).toFixed(1)}{deltaUnit}
           </span>
         )}
@@ -159,16 +159,16 @@ function MetricChart({ title, icon: Icon, data, unit, color, referenceBand, base
   const hasData = data.some((d) => d.value != null);
   const chartData = withRollingAverage(data);
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-3">
         <Icon size={14} style={{ color }} />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">{title}</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">{title}</p>
       </div>
       {hasData ? (
         <div style={{ height: 140 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.1)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--ep-line-rgb),0.1)" vertical={false} />
               <XAxis dataKey="date" tickFormatter={formatDay} tick={TICK_STYLE} axisLine={false} tickLine={false} />
               <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} width={28} domain={["auto", "auto"]} />
               <Tooltip
@@ -179,7 +179,7 @@ function MetricChart({ title, icon: Icon, data, unit, color, referenceBand, base
                 <ReferenceArea y1={referenceBand[0]} y2={referenceBand[1]} fill={color} fillOpacity={0.07} strokeOpacity={0} />
               )}
               {baseline != null && (
-                <ReferenceLine y={baseline} stroke="rgba(245,237,237,0.3)" strokeDasharray="3 3" strokeWidth={1} />
+                <ReferenceLine y={baseline} stroke="rgba(var(--ep-ink-rgb),0.3)" strokeDasharray="3 3" strokeWidth={1} />
               )}
               <Line type="monotone" dataKey="value" stroke="none" dot={{ r: 2.5, fill: color, fillOpacity: 0.6 }} isAnimationActive={false} />
               <Line type="monotone" dataKey="avg" stroke={color} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
@@ -187,7 +187,7 @@ function MetricChart({ title, icon: Icon, data, unit, color, referenceBand, base
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-[#F5EDED]/25 italic py-8 text-center">{t("Pas encore de données.")}</p>
+        <p className="text-xs text-(--ep-ink)/25 italic py-8 text-center">{t("Pas encore de données.")}</p>
       )}
     </div>
   );
@@ -355,16 +355,16 @@ export default function TrackingClient({
         </div>
       )}
       {ouraConnected ? (
-        <div className="bg-[#150000] border border-green-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
+        <div className="bg-(--ep-s2) border border-green-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
           <Watch size={15} className="text-green-400 flex-shrink-0" />
-          <p className="text-[11px] text-[#F5EDED]/60 leading-relaxed flex-1">
+          <p className="text-[11px] text-(--ep-ink)/60 leading-relaxed flex-1">
             {t("Bague Oura connectée : sommeil, récupération, HRV et FC repos se remplissent automatiquement chaque matin.")}
           </p>
           {!readOnly && disconnectOura && (
             <button
               onClick={handleDisconnect}
               disabled={disconnecting}
-              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors flex-shrink-0"
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-red-400 transition-colors flex-shrink-0"
             >
               <Unlink size={11} />
               {disconnecting ? "…" : t("Déconnecter")}
@@ -374,29 +374,29 @@ export default function TrackingClient({
       ) : readOnly ? (
         // Vue coach : jamais de lien de connexion (agirait sur le compte du
         // coach, pas celui du client) — juste l'information.
-        <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
-          <Watch size={15} className="text-[#F5EDED]/25 flex-shrink-0" />
-          <p className="text-[11px] text-[#F5EDED]/40 leading-relaxed">
+        <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
+          <Watch size={15} className="text-(--ep-ink)/25 flex-shrink-0" />
+          <p className="text-[11px] text-(--ep-ink)/40 leading-relaxed">
             {t("Pas de bague Oura connectée pour ce client, les données ci-dessous sont saisies à la main.")}
           </p>
         </div>
       ) : canConnectOura && ouraConfigured ? (
         <a
           href="/api/oura/connect"
-          className="flex items-center gap-2.5 bg-[#150000] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-xl px-4 py-3 transition-colors"
+          className="flex items-center gap-2.5 bg-(--ep-s2) border border-(--ep-line)/20 hover:border-(--ep-accent)/40 rounded-xl px-4 py-3 transition-colors"
         >
-          <Watch size={15} className="text-[#E01E1E] flex-shrink-0" />
-          <span className="text-[11px] text-[#F5EDED]/45 leading-relaxed flex-1">
-            {t("Connecte ta bague")}{" "}<strong className="text-[#F5EDED]">{t("Oura Ring")}</strong>{" "}{t(": ouvre l'app Oura, connecte-toi, et valide l'accès. C'est tout, aucune donnée à recopier.")}
+          <Watch size={15} className="text-(--ep-accent) flex-shrink-0" />
+          <span className="text-[11px] text-(--ep-ink)/45 leading-relaxed flex-1">
+            {t("Connecte ta bague")}{" "}<strong className="text-(--ep-ink)">{t("Oura Ring")}</strong>{" "}{t(": ouvre l'app Oura, connecte-toi, et valide l'accès. C'est tout, aucune donnée à recopier.")}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) flex-shrink-0">
             {t("Connecter →")}
           </span>
         </a>
       ) : canConnectOura && !ouraConfigured ? null /* connexion Oura pas encore activée : rien d'affiché plutôt qu'un « bientôt » */ : (
-        <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
-          <Lock size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
-          <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
+        <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
+          <Lock size={15} className="text-(--ep-ink)/30 flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-(--ep-ink)/45 leading-relaxed">
             {t("La bague Oura Ring est offerte aux membres en coaching. Passe en coaching payant pour la recevoir et connecter automatiquement tes données ici. En attendant, log tes données à la main ci-dessous.")}
           </p>
         </div>
@@ -404,8 +404,8 @@ export default function TrackingClient({
 
       {!compact && <>
       {!readOnly && logBiometrics && (
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
             {t("Données du jour")}
           </p>
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -417,7 +417,7 @@ export default function TrackingClient({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             {saving ? t("Analyse…") : saved ? <><CheckCircle2 size={13} />{" "}{t("Enregistré")}</> : t("Enregistrer & analyser")}
           </button>
@@ -446,13 +446,13 @@ export default function TrackingClient({
             label={t("Dette sommeil (7j)")}
             value={sleepDebt7 != null ? `${sleepDebt7 > 0 ? "+" : ""}${sleepDebt7}h` : "N/A"}
           />
-          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
-            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 4px" }}>
+          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-3.5">
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", margin: "0 0 4px" }}>
               {t("Nuits ≥ 7h")}
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
-              <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{sleepStreak}</span>
-              {sleepStreak > 0 && <Flame size={13} className="text-[#E01E1E]" />}
+              <span style={{ fontSize: 17, fontWeight: 900, color: "var(--ep-ink)" }}>{sleepStreak}</span>
+              {sleepStreak > 0 && <Flame size={13} className="text-(--ep-accent)" />}
             </div>
           </div>
         </div>
@@ -460,7 +460,7 @@ export default function TrackingClient({
 
       {visibleInsights.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
             {t("Suggestions d'ajustement")}
           </p>
           <div className="space-y-2">
@@ -472,15 +472,15 @@ export default function TrackingClient({
                   <div className="flex items-start gap-2.5">
                     <Icon size={15} className={`${s.color} flex-shrink-0 mt-0.5`} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-white">{insight.message}</p>
-                      <p className="text-xs text-[#F5EDED]/60 mt-1">{insight.suggestion}</p>
-                      <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">{formatDay(insight.log_date)}</p>
+                      <p className="text-xs font-bold text-(--ep-strong)">{insight.message}</p>
+                      <p className="text-xs text-(--ep-ink)/60 mt-1">{insight.suggestion}</p>
+                      <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">{formatDay(insight.log_date)}</p>
                     </div>
                     {!readOnly && acknowledgeBiometricInsight && (
                       <button
                         onClick={() => handleAcknowledge(insight.id)}
                         title={t("Marquer comme vu")} aria-label={t("Marquer comme vu")}
-                        className="flex-shrink-0 text-[#F5EDED]/25 hover:text-white transition-colors"
+                        className="flex-shrink-0 text-(--ep-ink)/25 hover:text-(--ep-strong) transition-colors"
                       >
                         <Check size={14} />
                       </button>
@@ -493,17 +493,17 @@ export default function TrackingClient({
         </div>
       )}
 
-      <p className="text-[10px] text-[#F5EDED]/25" style={{ marginBottom: -8 }}>
+      <p className="text-[10px] text-(--ep-ink)/25" style={{ marginBottom: -8 }}>
         {t("Ligne pointillée = ta moyenne sur toute la période chargée, pour repérer un écart au premier coup d'œil.")}
       </p>
 
       <div className="grid md:grid-cols-2 gap-4">
         <MetricChart title={t("Sommeil")} icon={Moon} data={sleepData} unit="h" color="#818cf8" referenceBand={[7, 9]} />
-        <MetricChart title={t("Récupération")} icon={Gauge} data={readinessData} unit="" color="#4ade80" baseline={readinessBaseline} />
-        <MetricChart title={t("HRV")} icon={Activity} data={hrvData} unit="ms" color="#E01E1E" baseline={hrvBaseline} />
-        <MetricChart title={t("FC au repos")} icon={HeartPulse} data={rhrData} unit="bpm" color="#fbbf24" baseline={rhrBaseline} />
+        <MetricChart title={t("Récupération")} icon={Gauge} data={readinessData} unit="" color="var(--ep-ok)" baseline={readinessBaseline} />
+        <MetricChart title={t("HRV")} icon={Activity} data={hrvData} unit="ms" color="var(--ep-accent)" baseline={hrvBaseline} />
+        <MetricChart title={t("FC au repos")} icon={HeartPulse} data={rhrData} unit="bpm" color="var(--ep-warn)" baseline={rhrBaseline} />
         {hasTemperatureData && (
-          <MetricChart title={t("Écart de température")} icon={Thermometer} data={tempData} unit="°C" color="#fb923c" />
+          <MetricChart title={t("Écart de température")} icon={Thermometer} data={tempData} unit="°C" color="var(--ep-orange)" />
         )}
       </div>
       </>}

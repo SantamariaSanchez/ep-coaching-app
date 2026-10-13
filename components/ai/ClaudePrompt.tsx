@@ -27,19 +27,19 @@ export default function ClaudePrompt({ title, hint, prompt, compact }: { title: 
   return (
     <div className="ep-card" style={{ padding: compact ? "12px 14px" : "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
       <div>
-        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
-        {hint && <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.45 }}>{hint}</p>}
+        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)" }}>{title}</p>
+        {hint && <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.45 }}>{hint}</p>}
       </div>
       {!compact && (
-        <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.7)", lineHeight: 1.55, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(245,237,237,0.06)", borderRadius: 10, padding: "8px 10px", maxHeight: 110, overflow: "hidden", whiteSpace: "pre-wrap" }}>
+        <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.55, background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-ink-rgb),0.06)", borderRadius: 10, padding: "8px 10px", maxHeight: 110, overflow: "hidden", whiteSpace: "pre-wrap" }}>
           {prompt.length > 320 ? `${prompt.slice(0, 320)}...` : prompt}
         </p>
       )}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button type="button" onClick={copy} className="ep-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.12)", background: "rgba(245,237,237,0.05)", color: "#F5EDED", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+        <button type="button" onClick={copy} className="ep-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.12)", background: "rgba(var(--ep-ink-rgb),0.05)", color: "var(--ep-ink)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
           {copied ? <Check size={13} /> : <Copy size={13} />} {copied ? t("Copié") : t("Copier")}
         </button>
-        <a href={href} target="_blank" rel="noopener noreferrer" onClick={copy} className="ep-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, textDecoration: "none" }}>
+        <a href={href} target="_blank" rel="noopener noreferrer" onClick={copy} className="ep-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, background: "var(--ep-accent)", color: "#fff", fontSize: 12, fontWeight: 900, textDecoration: "none" }}>
           <ExternalLink size={13} /> {t("Ouvrir dans Claude")}
         </a>
       </div>

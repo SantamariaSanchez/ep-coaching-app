@@ -22,11 +22,11 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
 };
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
-  nouveau: "#F5EDED",
-  contacte: "#facc15",
-  interesse: "#60a5fa",
-  converti: "#4ade80",
-  perdu: "rgba(245,237,237,0.4)",
+  nouveau: "var(--ep-ink)",
+  contacte: "var(--ep-yellow)",
+  interesse: "var(--ep-info)",
+  converti: "var(--ep-ok)",
+  perdu: "rgba(var(--ep-ink-rgb),0.4)",
 };
 
 const STATUS_ORDER: LeadStatus[] = ["nouveau", "contacte", "interesse", "converti", "perdu"];
@@ -87,15 +87,15 @@ function LeadRow({
 
   if (gone) return null;
   return (
-    <div className="rounded-xl bg-[#1f0101] border border-[#890404]/20 px-4 py-3.5">
+    <div className="rounded-xl bg-(--ep-s1) border border-(--ep-line)/20 px-4 py-3.5">
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-bold text-white truncate">{magnetTitle}</p>
+            <p className="text-sm font-bold text-(--ep-strong) truncate">{magnetTitle}</p>
             {originLabel && (
               <span
                 title={lead.origin_referrer ? `Arrivé depuis ${lead.origin_referrer}` : undefined}
-                className="inline-flex items-center text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E01E1E]/10 text-[#F5EDED]/70 border border-[#890404]/35 max-w-[220px] truncate"
+                className="inline-flex items-center text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-accent)/10 text-(--ep-ink)/70 border border-(--ep-line)/35 max-w-[220px] truncate"
               >
                 {originLabel}
               </span>
@@ -111,12 +111,12 @@ function LeadRow({
           </div>
           <div className="flex items-center gap-3 mt-0.5 flex-wrap">
             {lead.email && (
-              <span className="flex items-center gap-1 text-[11px] text-[#F5EDED]/50">
+              <span className="flex items-center gap-1 text-[11px] text-(--ep-ink)/50">
                 <Mail size={10} /> {lead.email}
               </span>
             )}
             {lead.phone && (
-              <span className="flex items-center gap-1 text-[11px] text-[#F5EDED]/50">
+              <span className="flex items-center gap-1 text-[11px] text-(--ep-ink)/50">
                 <Phone size={10} /> {lead.phone}
               </span>
             )}
@@ -127,7 +127,7 @@ function LeadRow({
           type="button"
           onClick={handleDelete}
           aria-label={t("Supprimer ce lead")}
-          className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg text-[#F5EDED]/35 hover:text-red-400"
+          className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg text-(--ep-ink)/35 hover:text-red-400"
         >
           <Trash2 size={14} />
         </button>
@@ -137,8 +137,8 @@ function LeadRow({
           aria-label={`Statut de ${lead.email ?? lead.phone ?? "ce lead"}`}
           className="flex-shrink-0"
           style={{
-            background: "#150000",
-            border: "1px solid rgba(137,4,4,0.3)",
+            background: "var(--ep-s2)",
+            border: "1px solid rgba(var(--ep-line-rgb),0.3)",
             borderRadius: 8,
             fontSize: 10.5,
             fontWeight: 700,
@@ -148,13 +148,13 @@ function LeadRow({
           }}
         >
           {STATUS_ORDER.map((s) => (
-            <option key={s} value={s} style={{ color: "#F5EDED", background: "#150000" }}>
+            <option key={s} value={s} style={{ color: "var(--ep-ink)", background: "var(--ep-s2)" }}>
               {STATUS_LABELS[s]}
             </option>
           ))}
         </select>
 
-        <span className="text-[10px] text-[#F5EDED]/25 flex-shrink-0 hidden sm:block">
+        <span className="text-[10px] text-(--ep-ink)/25 flex-shrink-0 hidden sm:block">
           {formatDate(lead.created_at)}
         </span>
       </div>
@@ -167,7 +167,7 @@ function LeadRow({
             placeholder={t("Note de suivi (ex. appelé le 12/09, pas de réponse, relancer semaine prochaine)")}
             rows={2}
             aria-label={t("Note de suivi")}
-            className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
+            className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60 resize-none"
           />
           <div className="flex gap-2">
             <button
@@ -176,7 +176,7 @@ function LeadRow({
                 setNote(lead.coach_note ?? "");
                 setNoteOpen(false);
               }}
-              className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2"
+              className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong) px-2"
             >
               {t("Annuler")}
             </button>
@@ -184,7 +184,7 @@ function LeadRow({
               type="button"
               onClick={handleSaveNote}
               disabled={savingNote}
-              className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5"
+              className="bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5"
             >
               {savingNote ? t("Enregistrement…") : t("Enregistrer")}
             </button>
@@ -194,10 +194,10 @@ function LeadRow({
         <button
           type="button"
           onClick={() => setNoteOpen(true)}
-          className="flex items-center gap-1.5 mt-2 text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+          className="flex items-center gap-1.5 mt-2 text-[10.5px] text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors"
         >
           <StickyNote size={11} />
-          {lead.coach_note ? <span className="text-[#F5EDED]/55 italic truncate">{lead.coach_note}</span> : t("Ajouter une note")}
+          {lead.coach_note ? <span className="text-(--ep-ink)/55 italic truncate">{lead.coach_note}</span> : t("Ajouter une note")}
         </button>
       )}
     </div>
@@ -245,9 +245,9 @@ export default function LeadsPipeline({
           onClick={() => setStatusFilter("all")}
           className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-colors"
           style={{
-            background: statusFilter === "all" ? "rgba(224,30,30,0.14)" : "transparent",
-            borderColor: statusFilter === "all" ? "rgba(224,30,30,0.35)" : "rgba(137,4,4,0.25)",
-            color: statusFilter === "all" ? "#E01E1E" : "rgba(245,237,237,0.45)",
+            background: statusFilter === "all" ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent",
+            borderColor: statusFilter === "all" ? "rgba(var(--ep-accent-rgb),0.35)" : "rgba(var(--ep-line-rgb),0.25)",
+            color: statusFilter === "all" ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
           }}
         >
           {t("Tous")}{" "}{leads.length > 0 && <span className="opacity-65">{leads.length}</span>}
@@ -258,9 +258,9 @@ export default function LeadsPipeline({
             onClick={() => setStatusFilter(s)}
             className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-colors"
             style={{
-              background: statusFilter === s ? "rgba(224,30,30,0.14)" : "transparent",
-              borderColor: statusFilter === s ? "rgba(224,30,30,0.35)" : "rgba(137,4,4,0.25)",
-              color: statusFilter === s ? "#E01E1E" : "rgba(245,237,237,0.45)",
+              background: statusFilter === s ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent",
+              borderColor: statusFilter === s ? "rgba(var(--ep-accent-rgb),0.35)" : "rgba(var(--ep-line-rgb),0.25)",
+              color: statusFilter === s ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
             }}
           >
             {STATUS_LABELS[s]} {countByStatus[s] > 0 && <span className="opacity-65">{countByStatus[s]}</span>}
@@ -269,19 +269,19 @@ export default function LeadsPipeline({
       </div>
 
       <div className="relative mb-4" style={{ maxWidth: 340 }}>
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("Chercher un email, un numéro, un lead magnet")}
           aria-label={t("Chercher un lead")}
-          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+          className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg pl-9 pr-8 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
             aria-label={t("Effacer la recherche")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#F5EDED]/35 hover:text-white"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-(--ep-ink)/35 hover:text-(--ep-strong)"
           >
             <X size={13} />
           </button>
@@ -289,9 +289,9 @@ export default function LeadsPipeline({
       </div>
 
       {visible.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <Mail size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <Mail size={26} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">
             {leads.length === 0 ? t("Aucun lead capté pour l'instant.") : t("Aucun lead ne correspond.")}
           </p>
         </div>

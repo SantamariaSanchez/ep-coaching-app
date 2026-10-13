@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import { Gift, ArrowRight, Bell, Check } from "lucide-react";
+import { withAlpha } from "@/lib/theme-color";
 
 interface ClientCardProps {
   name: string;
@@ -68,9 +69,9 @@ export function ClientCard({
     .slice(0, 2);
 
   const phaseColor =
-    phase === "deficit"  ? "#E01E1E"
-    : phase === "surplus"  ? "#4ade80"
-    : "#fb923c";
+    phase === "deficit"  ? "var(--ep-accent)"
+    : phase === "surplus"  ? "var(--ep-ok)"
+    : "var(--ep-orange)";
   const phaseLabel =
     phase === "deficit"  ? "Déficit"
     : phase === "surplus"  ? "Surplus"
@@ -95,15 +96,15 @@ export function ClientCard({
     : daysSinceActivity == null ? "Inactif"
     : daysSinceActivity >= 5 ? `${daysSinceActivity}j sans activité`
     : null;
-  const silentColor = daysSinceActivity != null && daysSinceActivity < 10 ? "#fb923c" : "#E01E1E";
+  const silentColor = daysSinceActivity != null && daysSinceActivity < 10 ? "var(--ep-orange)" : "var(--ep-accent)";
 
   // Item 36 : mêmes seuils de couleur que le reste de la carte (vert =
   // rien à signaler, orange = à surveiller, rouge = à traiter).
   const consistencyColor =
-    weeklyConsistency == null ? "rgba(245,237,237,0.28)"
-    : weeklyConsistency >= 70 ? "#4ade80"
-    : weeklyConsistency >= 40 ? "#fb923c"
-    : "#E01E1E";
+    weeklyConsistency == null ? "rgba(var(--ep-ink-rgb),0.28)"
+    : weeklyConsistency >= 70 ? "var(--ep-ok)"
+    : weeklyConsistency >= 40 ? "var(--ep-orange)"
+    : "var(--ep-accent)";
 
   return (
     <div
@@ -111,8 +112,8 @@ export function ClientCard({
       className="animate-fade-up"
       style={{
         animationDelay: `${delay}ms`,
-        background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-        border: "1px solid rgba(224,30,30,0.09)",
+        background: "linear-gradient(160deg, var(--ep-s5) 0%, var(--ep-bg) 100%)",
+        border: "1px solid rgba(var(--ep-accent-rgb),0.09)",
         borderRadius: "var(--radius-lg)",
         padding: 20,
         cursor: onClick ? "pointer" : "default",
@@ -123,14 +124,14 @@ export function ClientCard({
       onMouseEnter={(e) => {
         if (!onClick) return;
         const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "rgba(224,30,30,0.28)";
+        el.style.borderColor = "rgba(var(--ep-accent-rgb),0.28)";
         el.style.transform = "translateY(-2px)";
-        el.style.boxShadow = "0 12px 40px rgba(0,0,0,0.5)";
+        el.style.boxShadow = "0 12px 40px rgba(var(--ep-shade-rgb),0.5)";
       }}
       onMouseLeave={(e) => {
         if (!onClick) return;
         const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "rgba(224,30,30,0.09)";
+        el.style.borderColor = "rgba(var(--ep-accent-rgb),0.09)";
         el.style.transform = "translateY(0)";
         el.style.boxShadow = "none";
       }}
@@ -140,7 +141,7 @@ export function ClientCard({
         position: "absolute",
         top: 0, left: 0, right: 0,
         height: 1,
-        background: "linear-gradient(90deg, transparent, rgba(224,30,30,0.25), transparent)",
+        background: "linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb),0.25), transparent)",
       }} />
 
       {/* Oura Ring eligibility badge */}
@@ -150,8 +151,8 @@ export function ClientCard({
           style={{
             position: "absolute",
             top: 14, left: 14,
-            background: "rgba(250,204,21,0.12)",
-            border: "1px solid rgba(250,204,21,0.35)",
+            background: "rgba(var(--ep-yellow-rgb),0.12)",
+            border: "1px solid rgba(var(--ep-yellow-rgb),0.35)",
             borderRadius: "50%",
             width: 26, height: 26,
             display: "flex",
@@ -159,7 +160,7 @@ export function ClientCard({
             justifyContent: "center",
           }}
         >
-          <Gift size={12} style={{ color: "#FACC15" }} strokeWidth={2} />
+          <Gift size={12} style={{ color: "var(--ep-yellow)" }} strokeWidth={2} />
         </div>
       )}
 
@@ -170,7 +171,7 @@ export function ClientCard({
           style={{
             position: "absolute",
             top: 14, right: 14,
-            background: "#E01E1E",
+            background: "var(--ep-accent)",
             color: "#fff",
             borderRadius: "50%",
             width: 20, height: 20,
@@ -191,7 +192,7 @@ export function ClientCard({
           width: 46,
           height: 46,
           borderRadius: 14,
-          background: "linear-gradient(135deg, #E01E1E, #890404)",
+          background: "linear-gradient(135deg, var(--ep-accent), var(--ep-line))",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -199,9 +200,9 @@ export function ClientCard({
           fontStyle: "italic",
           fontWeight: 800,
           fontSize: 16,
-          color: "#F5EDED",
+          color: "var(--ep-ink)",
           flexShrink: 0,
-          boxShadow: "0 4px 12px rgba(224,30,30,0.2)",
+          boxShadow: "0 4px 12px rgba(var(--ep-accent-rgb),0.2)",
         }}>
           {initials}
         </div>
@@ -209,7 +210,7 @@ export function ClientCard({
           <div style={{
             fontWeight: 700,
             fontSize: 15,
-            color: "#F5EDED",
+            color: "var(--ep-ink)",
             letterSpacing: "-0.02em",
             lineHeight: 1.2,
           }}>
@@ -222,8 +223,8 @@ export function ClientCard({
               <span style={{
                 display: "inline-flex",
                 alignItems: "center",
-                background: `${phaseColor}14`,
-                border: `1px solid ${phaseColor}28`,
+                background: `${withAlpha(phaseColor, "14")}`,
+                border: `1px solid ${withAlpha(phaseColor, "28")}`,
                 borderRadius: 20,
                 padding: "2px 10px",
                 fontSize: 10,
@@ -239,14 +240,14 @@ export function ClientCard({
               <span style={{
                 display: "inline-flex",
                 alignItems: "center",
-                background: "rgba(224,30,30,0.1)",
-                border: "1px solid rgba(224,30,30,0.24)",
+                background: "rgba(var(--ep-accent-rgb),0.1)",
+                border: "1px solid rgba(var(--ep-accent-rgb),0.24)",
                 borderRadius: 20,
                 padding: "2px 10px",
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.07em",
-                color: "rgba(245,237,237,0.72)",
+                color: "rgba(var(--ep-ink-rgb),0.72)",
                 textTransform: "uppercase",
               }}>
                 {coachingPhase}
@@ -256,14 +257,14 @@ export function ClientCard({
               <span style={{
                 display: "inline-flex",
                 alignItems: "center",
-                background: "rgba(245,237,237,0.05)",
-                border: "1px solid rgba(245,237,237,0.18)",
+                background: "rgba(var(--ep-ink-rgb),0.05)",
+                border: "1px solid rgba(var(--ep-ink-rgb),0.18)",
                 borderRadius: 20,
                 padding: "2px 10px",
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.07em",
-                color: "rgba(245,237,237,0.45)",
+                color: "rgba(var(--ep-ink-rgb),0.45)",
                 textTransform: "uppercase",
               }}>
                 {statusLabel}
@@ -276,8 +277,8 @@ export function ClientCard({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4,
-                  background: `${silentColor}14`,
-                  border: `1px solid ${silentColor}28`,
+                  background: `${withAlpha(silentColor, "14")}`,
+                  border: `1px solid ${withAlpha(silentColor, "28")}`,
                   borderRadius: 20,
                   padding: "2px 10px",
                   fontSize: 10,
@@ -297,14 +298,14 @@ export function ClientCard({
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  background: "rgba(96,165,250,0.1)",
-                  border: "1px solid rgba(96,165,250,0.24)",
+                  background: "rgba(var(--ep-info-rgb),0.1)",
+                  border: "1px solid rgba(var(--ep-info-rgb),0.24)",
                   borderRadius: 20,
                   padding: "2px 10px",
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.07em",
-                  color: "#60A5FA",
+                  color: "var(--ep-info)",
                   textTransform: "uppercase",
                 }}
               >
@@ -318,14 +319,14 @@ export function ClientCard({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4,
-                  background: "rgba(250,204,21,0.1)",
-                  border: "1px solid rgba(250,204,21,0.28)",
+                  background: "rgba(var(--ep-yellow-rgb),0.1)",
+                  border: "1px solid rgba(var(--ep-yellow-rgb),0.28)",
                   borderRadius: 20,
                   padding: "2px 10px",
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.07em",
-                  color: "#FACC15",
+                  color: "var(--ep-yellow)",
                   textTransform: "uppercase",
                 }}
               >
@@ -353,7 +354,7 @@ export function ClientCard({
             : []),
         ].map((stat) => (
           <div key={stat.label} style={{
-            background: "rgba(0,0,0,0.3)",
+            background: "rgba(var(--ep-shade-rgb),0.3)",
             borderRadius: 10,
             padding: "8px 10px",
             textAlign: "center",
@@ -361,7 +362,7 @@ export function ClientCard({
             <div style={{
               fontSize: 14,
               fontWeight: 800,
-              color: (stat as { color?: string }).color ?? "#F5EDED",
+              color: (stat as { color?: string }).color ?? "var(--ep-ink)",
               letterSpacing: "-0.02em",
               lineHeight: 1,
             }}>
@@ -372,7 +373,7 @@ export function ClientCard({
               fontWeight: 600,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "rgba(245,237,237,0.28)",
+              color: "rgba(var(--ep-ink-rgb),0.28)",
               marginTop: 4,
             }}>
               {stat.label}
@@ -398,9 +399,9 @@ export function ClientCard({
               flex: 1,
               padding: "10px 12px",
               borderRadius: 10,
-              background: "rgba(224,30,30,0.1)",
-              border: "1px solid rgba(224,30,30,0.22)",
-              color: "#F5EDED",
+              background: "rgba(var(--ep-accent-rgb),0.1)",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.22)",
+              color: "var(--ep-ink)",
               fontSize: 11.5,
               fontWeight: 800,
               letterSpacing: "0.08em",
@@ -410,13 +411,13 @@ export function ClientCard({
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLAnchorElement;
-              el.style.background = "rgba(224,30,30,0.2)";
-              el.style.borderColor = "rgba(224,30,30,0.45)";
+              el.style.background = "rgba(var(--ep-accent-rgb),0.2)";
+              el.style.borderColor = "rgba(var(--ep-accent-rgb),0.45)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLAnchorElement;
-              el.style.background = "rgba(224,30,30,0.1)";
-              el.style.borderColor = "rgba(224,30,30,0.22)";
+              el.style.background = "rgba(var(--ep-accent-rgb),0.1)";
+              el.style.borderColor = "rgba(var(--ep-accent-rgb),0.22)";
             }}
           >
             {t("Voir la fiche")}
@@ -439,9 +440,9 @@ export function ClientCard({
                 gap: 6,
                 padding: "10px 12px",
                 borderRadius: 10,
-                background: relaunchState === "sent" ? "rgba(74,222,128,0.1)" : "rgba(96,165,250,0.1)",
-                border: `1px solid ${relaunchState === "sent" ? "rgba(74,222,128,0.3)" : "rgba(96,165,250,0.28)"}`,
-                color: relaunchState === "sent" ? "#4ade80" : "#60A5FA",
+                background: relaunchState === "sent" ? "rgba(var(--ep-ok-rgb),0.1)" : "rgba(var(--ep-info-rgb),0.1)",
+                border: `1px solid ${relaunchState === "sent" ? "rgba(var(--ep-ok-rgb),0.3)" : "rgba(var(--ep-info-rgb),0.28)"}`,
+                color: relaunchState === "sent" ? "var(--ep-ok)" : "var(--ep-info)",
                 fontSize: 11.5,
                 fontWeight: 800,
                 letterSpacing: "0.06em",

@@ -121,7 +121,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
     <div>
       <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
         <div style={{ position: "relative", flex: 1 }}>
-          <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+          <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -161,9 +161,9 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <StickyNote size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <StickyNote size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">
             {query ? tr("Aucune note ne correspond.") : tr("Aucune note pour l'instant.")}
           </p>
         </div>
@@ -173,7 +173,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
             <div key={note.id} className="ep-card" style={{ padding: 16 }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{note.title}</p>
+                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)" }}>{note.title}</p>
                   {editingId === note.id ? (
                     <div style={{ marginTop: 8 }}>
                       <textarea
@@ -199,9 +199,9 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                         setEditingId(note.id);
                         setEditBody(note.body ?? "");
                       }}
-                      style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap", cursor: "text" }}
+                      style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap", cursor: "text" }}
                     >
-                      {note.body || <span style={{ color: "rgba(245,237,237,0.25)" }}>{tr("Vide, clique pour écrire.")}</span>}
+                      {note.body || <span style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }}>{tr("Vide, clique pour écrire.")}</span>}
                     </p>
                   )}
                 </div>
@@ -209,7 +209,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                   type="button"
                   onClick={() => togglePin(note)}
                   aria-label={note.pinned ? tr("Désépingler") : tr("Épingler")}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: note.pinned ? "#fbbf24" : "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: note.pinned ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0, padding: 4 }}
                 >
                   {note.pinned ? <Pin size={14} fill="currentColor" /> : <PinOff size={14} />}
                 </button>
@@ -217,7 +217,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                   type="button"
                   onClick={() => remove(note.id)}
                   aria-label={tr("Supprimer")}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0, padding: 4 }}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -232,10 +232,10 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.2)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
   borderRadius: "var(--radius-lg)",
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "12px 16px",
   fontSize: 13,
   outline: "none",
@@ -245,7 +245,7 @@ const addButtonStyle: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: 6,
-  background: "#E01E1E",
+  background: "var(--ep-accent)",
   color: "#fff",
   padding: "8px 14px",
   borderRadius: 999,
@@ -259,7 +259,7 @@ const addButtonStyle: React.CSSProperties = {
 function submitButtonStyle(pending: boolean): React.CSSProperties {
   return {
     marginTop: 10,
-    background: "#E01E1E",
+    background: "var(--ep-accent)",
     color: "#fff",
     padding: "9px 18px",
     borderRadius: "var(--radius-lg)",
@@ -274,11 +274,11 @@ function submitButtonStyle(pending: boolean): React.CSSProperties {
 const cancelButtonStyle: React.CSSProperties = {
   marginTop: 10,
   background: "transparent",
-  color: "rgba(245,237,237,0.5)",
+  color: "rgba(var(--ep-ink-rgb),0.5)",
   padding: "9px 18px",
   borderRadius: "var(--radius-lg)",
   fontWeight: 700,
   fontSize: 12.5,
-  border: "1px solid rgba(245,237,237,0.15)",
+  border: "1px solid rgba(var(--ep-ink-rgb),0.15)",
   cursor: "pointer",
 };

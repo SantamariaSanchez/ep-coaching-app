@@ -33,14 +33,14 @@ interface AdherencePoint {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "#1f0101",
-    border: "1px solid rgba(137, 4, 4, 0.35)",
+    backgroundColor: "var(--ep-s1)",
+    border: "1px solid rgba(var(--ep-line-rgb),0.35)",
     borderRadius: "10px",
     fontSize: "12px",
-    color: "#F5EDED",
+    color: "var(--ep-ink)",
   },
-  labelStyle: { color: "rgba(245,237,237,0.5)", fontWeight: 600 },
-  cursor: { stroke: "rgba(137,4,4,0.3)", strokeWidth: 1 },
+  labelStyle: { color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 600 },
+  cursor: { stroke: "rgba(var(--ep-line-rgb),0.3)", strokeWidth: 1 },
 };
 
 // ── Weight chart ──────────────────────────────────────────────────────────────
@@ -49,8 +49,8 @@ function WeightChart({ data }: { data: WeightPoint[] }) {
   const t = useT();
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40 bg-[#1f0101] border border-[#890404]/20 rounded-xl">
-        <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
+      <div className="flex items-center justify-center h-40 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl">
+        <p className="text-xs text-(--ep-ink)/30 uppercase tracking-widest font-semibold">
           {t("Pas encore de données")}
         </p>
       </div>
@@ -64,16 +64,16 @@ function WeightChart({ data }: { data: WeightPoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
       <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.12)" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--ep-line-rgb),0.12)" />
         <XAxis
           dataKey="label"
-          tick={{ fill: "rgba(245,237,237,0.35)", fontSize: 10 }}
+          tick={{ fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 10 }}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
           domain={[minW, maxW]}
-          tick={{ fill: "rgba(245,237,237,0.35)", fontSize: 10 }}
+          tick={{ fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 10 }}
           tickLine={false}
           axisLine={false}
           unit=" kg"
@@ -85,10 +85,10 @@ function WeightChart({ data }: { data: WeightPoint[] }) {
         <Line
           type="monotone"
           dataKey="weight"
-          stroke="#E01E1E"
+          stroke="var(--ep-accent)"
           strokeWidth={2}
-          dot={{ r: 3, fill: "#E01E1E", strokeWidth: 0 }}
-          activeDot={{ r: 5, fill: "#E01E1E" }}
+          dot={{ r: 3, fill: "var(--ep-accent)", strokeWidth: 0 }}
+          activeDot={{ r: 5, fill: "var(--ep-accent)" }}
         />
       </LineChart>
     </ResponsiveContainer>
@@ -101,8 +101,8 @@ function AdherenceChart({ data }: { data: AdherencePoint[] }) {
   const t = useT();
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40 bg-[#1f0101] border border-[#890404]/20 rounded-xl">
-        <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
+      <div className="flex items-center justify-center h-40 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl">
+        <p className="text-xs text-(--ep-ink)/30 uppercase tracking-widest font-semibold">
           {t("Pas encore de données")}
         </p>
       </div>
@@ -112,16 +112,16 @@ function AdherenceChart({ data }: { data: AdherencePoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.12)" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--ep-line-rgb),0.12)" vertical={false} />
         <XAxis
           dataKey="week"
-          tick={{ fill: "rgba(245,237,237,0.35)", fontSize: 10 }}
+          tick={{ fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 10 }}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
           domain={[0, 100]}
-          tick={{ fill: "rgba(245,237,237,0.35)", fontSize: 10 }}
+          tick={{ fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 10 }}
           tickLine={false}
           axisLine={false}
           unit="%"
@@ -136,9 +136,9 @@ function AdherenceChart({ data }: { data: AdherencePoint[] }) {
               key={i}
               fill={
                 entry.adherence >= 80
-                  ? "#4ade80"
+                  ? "var(--ep-ok)"
                   : entry.adherence >= 60
-                  ? "#fbbf24"
+                  ? "var(--ep-warn)"
                   : "#ef4444"
               }
               fillOpacity={0.8}
@@ -185,8 +185,8 @@ export default function ClientProgressCharts({
   if (!mounted) {
     return (
       <div className="space-y-6">
-        <div className="h-[200px] border border-[#890404]/20 rounded-xl ep-skeleton" />
-        <div className="h-[200px] border border-[#890404]/20 rounded-xl ep-skeleton" />
+        <div className="h-[200px] border border-(--ep-line)/20 rounded-xl ep-skeleton" />
+        <div className="h-[200px] border border-(--ep-line)/20 rounded-xl ep-skeleton" />
       </div>
     );
   }
@@ -195,20 +195,20 @@ export default function ClientProgressCharts({
     <div className="space-y-8">
       {/* Weight chart */}
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
           {t("Évolution du poids")}
         </p>
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
           <WeightChart data={weightData} />
         </div>
       </div>
 
       {/* Adherence chart */}
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
           {t("Adhésion nutrition par semaine")}
         </p>
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
           <AdherenceChart data={adherenceData} />
         </div>
       </div>

@@ -46,24 +46,24 @@ export default function HighlightsStrip({ records }: { records: PersonalRecord[]
 
   return (
     <div className="mb-8">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-2.5 flex items-center gap-1.5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-2.5 flex items-center gap-1.5">
         <Trophy size={11} className="text-amber-400" /> Records récents
       </p>
       <div className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         {recent.map((r) => (
           <div
             key={r.id}
-            className="flex-shrink-0 bg-[#1f0101] border border-amber-500/15 rounded-xl px-4 py-3"
+            className="flex-shrink-0 bg-(--ep-s1) border border-amber-500/15 rounded-xl px-4 py-3"
             style={{ minWidth: 128 }}
           >
-            <p className="text-lg font-black text-white leading-none">
+            <p className="text-lg font-black text-(--ep-strong) leading-none">
               {r.weight_kg}
-              <span className="text-[11px] font-bold text-[#F5EDED]/40 ml-0.5">kg</span>
+              <span className="text-[11px] font-bold text-(--ep-ink)/40 ml-0.5">kg</span>
             </p>
-            <p className="text-[10.5px] text-[#F5EDED]/55 font-semibold mt-1.5 leading-tight line-clamp-2">
+            <p className="text-[10.5px] text-(--ep-ink)/55 font-semibold mt-1.5 leading-tight line-clamp-2">
               {r.exercise_name}
             </p>
-            <p className="text-[9px] text-[#F5EDED]/25 mt-1 uppercase tracking-wide">{fmtDate(r.achieved_at)}</p>
+            <p className="text-[9px] text-(--ep-ink)/25 mt-1 uppercase tracking-wide">{fmtDate(r.achieved_at)}</p>
           </div>
         ))}
       </div>

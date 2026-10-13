@@ -15,7 +15,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.2em",
   textTransform: "uppercase",
-  color: "rgba(224,30,30,0.75)",
+  color: "rgba(var(--ep-accent-rgb),0.75)",
   marginBottom: 8,
 };
 
@@ -25,12 +25,12 @@ function ErrorBox({ message }: { message: string }) {
       role="alert"
       style={{
         padding: "12px 16px",
-        background: "rgba(224,30,30,0.08)",
-        border: "1px solid rgba(224,30,30,0.25)",
+        background: "rgba(var(--ep-accent-rgb),0.08)",
+        border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
         borderRadius: 10,
       }}
     >
-      <p style={{ fontSize: 13, color: "#FDC4C4", margin: 0, fontWeight: 500 }}>{message}</p>
+      <p style={{ fontSize: 13, color: "var(--ep-pink)", margin: 0, fontWeight: 500 }}>{message}</p>
     </div>
   );
 }
@@ -53,9 +53,9 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
   }
 
   return (
-    <div style={{ padding: "14px 16px", borderRadius: 8, background: "rgba(245,237,237,0.03)", border: "1px solid rgba(245,237,237,0.08)" }}>
+    <div style={{ padding: "14px 16px", borderRadius: 8, background: "rgba(var(--ep-ink-rgb),0.03)", border: "1px solid rgba(var(--ep-ink-rgb),0.08)" }}>
       {sent ? (
-        <p style={{ fontSize: 13, color: "#F5EDED", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "var(--ep-ink)", margin: 0 }}>
           {t("Si un compte existe avec cet email, un lien de réinitialisation vient d'être envoyé.")}
         </p>
       ) : (
@@ -65,7 +65,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
             <button type="button" onClick={send} disabled={sending} className="ep-btn-primary" style={{ flex: 1, height: 40, fontSize: 12 }}>
               {sending ? t("Envoi...") : t("Envoyer le lien")}
             </button>
-            <button type="button" onClick={onDone} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            <button type="button" onClick={onDone} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
               {t("Annuler")}
             </button>
           </div>
@@ -90,7 +90,7 @@ function LoginForm({ roleKey }: { roleKey: string }) {
       <div>
         <label style={labelStyle} htmlFor="staff-login-password">{t("Mot de passe")}</label>
         <PasswordInput id="staff-login-password" name="password" required autoComplete="current-password" placeholder="••••••••" className="ep-input" />
-        <button type="button" onClick={() => setForgotOpen((v) => !v)} style={{ display: "block", marginTop: 8, background: "none", border: "none", color: "rgba(245,237,237,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0 }}>
+        <button type="button" onClick={() => setForgotOpen((v) => !v)} style={{ display: "block", marginTop: 8, background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0 }}>
           {t("Mot de passe oublié ?")}
         </button>
       </div>
@@ -123,7 +123,7 @@ function SignupForm({ roleKey }: { roleKey: string }) {
 
   return (
     <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0, lineHeight: 1.6 }}>
         {t("Tu viens d'être recruté ? Crée ton accès avec l'email de ta candidature. Tu signeras ton contrat juste après, et tu le recevras par email.")}
       </p>
       <div>
@@ -139,12 +139,12 @@ function SignupForm({ roleKey }: { roleKey: string }) {
         <PasswordInput id="staff-password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" placeholder={t("8 caractères minimum")} className="ep-input" />
       </div>
       <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
-        <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "#E01E1E" }} />
-        <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.5 }}>
+        <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "var(--ep-accent)" }} />
+        <span style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.5 }}>
           {t("J'accepte les")}{" "}
-          <Link href="/legal/equipe" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>{t("Conditions de collaboration")}</Link>{" "}
+          <Link href="/legal/equipe" target="_blank" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("Conditions de collaboration")}</Link>{" "}
           {t("de l'équipe et la")}{" "}
-          <Link href="/legal/confidentialite" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>{t("politique de confidentialité")}</Link>.
+          <Link href="/legal/confidentialite" target="_blank" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("politique de confidentialité")}</Link>.
         </span>
       </label>
       {error && <ErrorBox message={error} />}
@@ -188,15 +188,15 @@ export default function StaffAuthCard({
                 {t("Équipe ·")}{" "}{poleName}
               </span>
             </div>
-            <h1 style={{ fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif", fontWeight: 900, fontSize: 24, letterSpacing: "-0.04em", color: "#F5EDED", margin: "0 0 10px", lineHeight: 1.15 }}>
+            <h1 style={{ fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif", fontWeight: 900, fontSize: 24, letterSpacing: "-0.04em", color: "var(--ep-ink)", margin: "0 0 10px", lineHeight: 1.15 }}>
               {t("Espace")}{" "}{roleTitle}
             </h1>
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.6 }}>{mission}</p>
+            <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0, lineHeight: 1.6 }}>{mission}</p>
           </div>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", marginBottom: 22 }}>
             {modules.map((m) => (
-              <span key={m} style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(245,237,237,0.5)", border: "1px solid rgba(137,4,4,0.35)", borderRadius: 999, padding: "3px 9px" }}>
+              <span key={m} style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(var(--ep-ink-rgb),0.5)", border: "1px solid rgba(var(--ep-line-rgb),0.35)", borderRadius: 999, padding: "3px 9px" }}>
                 {m}
               </span>
             ))}
@@ -216,9 +216,9 @@ export default function StaffAuthCard({
                 style={{
                   flex: 1, height: 40, borderRadius: 8, cursor: "pointer",
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  border: `1px solid ${tab === key ? "rgba(224,30,30,0.5)" : "rgba(245,237,237,0.12)"}`,
-                  background: tab === key ? "rgba(224,30,30,0.14)" : "transparent",
-                  color: tab === key ? "#F5EDED" : "rgba(245,237,237,0.4)",
+                  border: `1px solid ${tab === key ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-ink-rgb),0.12)"}`,
+                  background: tab === key ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent",
+                  color: tab === key ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.4)",
                   fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
                 }}
               >
@@ -230,18 +230,18 @@ export default function StaffAuthCard({
 
           {tab === "connexion" ? <LoginForm roleKey={roleKey} /> : <SignupForm roleKey={roleKey} />}
 
-          <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(245,237,237,0.07)", display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center" }}>
+          <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(var(--ep-ink-rgb),0.07)", display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center" }}>
             {[
               { href: "/legal/equipe", label: t("Conditions de collaboration") },
               { href: "/legal/confidentialite", label: t("Confidentialité") },
               { href: "/legal/cgu", label: t("CGU de l'appli") },
             ].map((l) => (
-              <Link key={l.href} href={l.href} target="_blank" style={{ fontSize: 10.5, fontWeight: 600, color: "rgba(245,237,237,0.35)", textDecoration: "none" }}>
+              <Link key={l.href} href={l.href} target="_blank" style={{ fontSize: 10.5, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.35)", textDecoration: "none" }}>
                 {l.label}
               </Link>
             ))}
           </div>
-          <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.25)", textAlign: "center", margin: "12px 0 0", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.25)", textAlign: "center", margin: "12px 0 0", lineHeight: 1.5 }}>
             {t("Accès réservé aux personnes recrutées pour ce poste.")}
           </p>
         </div>

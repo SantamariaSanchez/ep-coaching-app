@@ -112,21 +112,21 @@ export default async function CoachLivePage({
     computeLiveOverview(events);
   const liveDelta = heldThisCalWeek - heldLastCalWeek;
   const LiveTrendIcon = liveDelta > 0 ? ArrowUp : liveDelta < 0 ? ArrowDown : Minus;
-  const liveTrendColor = liveDelta > 0 ? "#4ade80" : liveDelta < 0 ? "#fb923c" : "rgba(245,237,237,0.35)";
+  const liveTrendColor = liveDelta > 0 ? "var(--ep-ok)" : liveDelta < 0 ? "var(--ep-orange)" : "rgba(var(--ep-ink-rgb),0.35)";
 
   return (
     <div className="px-6 py-8 ep-page-wide pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {tr("Live")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Coaching live")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {tr("1:1, audits, suivi hebdo, accès direct, ateliers... tout ton accompagnement en direct, réuni ici.")}
         </p>
         <Link
           href="/dashboard/coach/live/disponibilites"
-          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#E01E1E] mt-2"
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-(--ep-accent) mt-2"
         >
           <CalendarClock size={13} />
           {tr("Gérer mes disponibilités 1:1 (réservation libre-service)")}
@@ -140,34 +140,34 @@ export default async function CoachLivePage({
           </p>
           {next ? (
             <>
-              <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: 0, overflowWrap: "anywhere" }}>{next.title}</p>
-              <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: "2px 0 0" }}>
+              <p style={{ fontSize: 15, fontWeight: 900, color: "var(--ep-ink)", margin: 0, overflowWrap: "anywhere" }}>{next.title}</p>
+              <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "2px 0 0" }}>
                 {nextLabel} · {LIVE_TYPE_LABELS[next.type]}
               </p>
               {nextJoinable && (
                 <Link
                   href={`/dashboard/coach/live/${next.id}`}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-white bg-[#E01E1E] hover:bg-[#B00202] rounded-lg px-3 py-1.5 mt-2 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-strong) bg-(--ep-accent) hover:bg-(--ep-accent-2) rounded-lg px-3 py-1.5 mt-2 transition-colors"
                 >
                   {tr("Ouvrir la salle")}
                 </Link>
               )}
             </>
           ) : (
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>{tr("Rien de programmé. Planifie ton prochain live ci-dessous.")}</p>
+            <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.35)", margin: 0 }}>{tr("Rien de programmé. Planifie ton prochain live ci-dessous.")}</p>
           )}
         </div>
         <div>
           <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
             <Users2 size={11} />{" "}{tr("Cette semaine")}
           </p>
-          <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{thisWeekCount}</p>
+          <p style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{thisWeekCount}</p>
         </div>
         <div>
           <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
             <Calendar size={11} />{" "}{tr("Tenus cette semaine")}
           </p>
-          <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+          <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 20, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>
             {heldThisCalWeek}
             <span style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 11, fontWeight: 800, color: liveTrendColor }}>
               <LiveTrendIcon size={11} strokeWidth={2.5} />
@@ -180,7 +180,7 @@ export default async function CoachLivePage({
             <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
               {tr("Points flash")}
             </p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: "#E01E1E", margin: 0 }}>{flashRequests.length}</p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-accent)", margin: 0 }}>{flashRequests.length}</p>
           </div>
         )}
         {/* Nouveau : resolved_at existait déjà sur chaque demande de point
@@ -192,7 +192,7 @@ export default async function CoachLivePage({
             <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
               <Zap size={11} />{" "}{tr("Réponse moyenne (30j)")}
             </p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+            <p style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>
               {formatMinutes(flashResponseStats.avgMinutes)}
             </p>
           </div>

@@ -73,8 +73,8 @@ export default function DocumentsPanel({
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tr("Titre (ex : Attestation SIRET)")} aria-label={tr("Titre")} className="ep-input" required />
         <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder={tr("Lien (ou un fichier ci-contre)")} aria-label={tr("Lien")} className="ep-input" type="url" />
         <label className="ep-input" style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-          <Upload size={14} style={{ color: "#E01E1E", flexShrink: 0 }} />
-          <span style={{ fontSize: 12.5, color: fileName ? "#F5EDED" : "rgba(245,237,237,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName ?? tr("Fichier (10 Mo max)")}</span>
+          <Upload size={14} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+          <span style={{ fontSize: 12.5, color: fileName ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName ?? tr("Fichier (10 Mo max)")}</span>
           <input ref={fileRef} type="file" className="sr-only" onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)} accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv,.docx,.xlsx,.pptx" />
         </label>
         {founder && (
@@ -89,33 +89,33 @@ export default function DocumentsPanel({
           <button type="submit" disabled={pending || !title.trim()} className="ep-btn-primary" style={{ height: 40, padding: "0 18px", fontSize: 12 }}>
             {pending ? tr("Envoi...") : founder ? tr("Partager") : tr("Ajouter")}
           </button>
-          {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "#4ade80" : "#FDC4C4" }}>{message.text}</p>}
+          {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "var(--ep-ok)" : "var(--ep-pink)" }}>{message.text}</p>}
         </div>
       </form>
 
       {documents.length === 0 ? (
         <div className="ep-card" style={{ padding: "18px 16px" }}>
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>{tr("Aucun document pour l'instant.")}</p>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>{tr("Aucun document pour l'instant.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {documents.map((d) => (
             <div key={d.id} className="ep-card" style={{ padding: "11px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-              {d.storage_path ? <FileText size={17} style={{ color: "#E01E1E", flexShrink: 0 }} /> : <Link2 size={17} style={{ color: "#E01E1E", flexShrink: 0 }} />}
+              {d.storage_path ? <FileText size={17} style={{ color: "var(--ep-accent)", flexShrink: 0 }} /> : <Link2 size={17} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13.5, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{d.title}</p>
-                <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+                <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{d.title}</p>
+                <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
                   {d.scope} · {new Date(d.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                   {d.note ? ` · ${d.note}` : ""}
                 </p>
               </div>
               {d.href && (
-                <a href={d.href} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${d.title}`} style={{ color: "#F5EDED", padding: 6 }}>
+                <a href={d.href} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${d.title}`} style={{ color: "var(--ep-ink)", padding: 6 }}>
                   <ExternalLink size={15} />
                 </a>
               )}
               {(founder || d.uploaded_by === meId) && (
-                <button type="button" onClick={() => remove(d.id, d.title)} aria-label={`Supprimer ${d.title}`} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.35)", cursor: "pointer", padding: 6 }}>
+                <button type="button" onClick={() => remove(d.id, d.title)} aria-label={`Supprimer ${d.title}`} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.35)", cursor: "pointer", padding: 6 }}>
                   <Trash2 size={15} />
                 </button>
               )}

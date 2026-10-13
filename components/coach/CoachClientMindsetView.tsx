@@ -16,10 +16,10 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40">{label}</span>
-        <span className="text-xs font-bold text-white">{value}%</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40">{label}</span>
+        <span className="text-xs font-bold text-(--ep-strong)">{value}%</span>
       </div>
-      <div className="h-2 bg-[#150000] rounded-full overflow-hidden">
+      <div className="h-2 bg-(--ep-s2) rounded-full overflow-hidden">
         <div className="h-full rounded-full" style={{ width: `${value}%`, background: color }} />
       </div>
     </div>
@@ -57,9 +57,9 @@ export default function CoachClientMindsetView({
     return (
       <Card>
         <div className="flex flex-col items-center text-center py-8 px-2">
-          <Brain size={28} className="text-[#E01E1E]/40 mb-3" strokeWidth={1.5} />
-          <p className="text-sm font-bold text-white mb-1">Quiz mindset pas encore fait</p>
-          <p className="text-xs text-[#F5EDED]/40 max-w-xs">
+          <Brain size={28} className="text-(--ep-accent)/40 mb-3" strokeWidth={1.5} />
+          <p className="text-sm font-bold text-(--ep-strong) mb-1">Quiz mindset pas encore fait</p>
+          <p className="text-xs text-(--ep-ink)/40 max-w-xs">
             Ce client n&apos;a pas encore complété son quiz mindset (Profil, dans son espace).
           </p>
         </div>
@@ -78,31 +78,31 @@ export default function CoachClientMindsetView({
   return (
     <div className="space-y-4">
       <Card title="Profil mindset">
-        <p className="text-lg font-black text-white mb-1">{profileDef?.label}</p>
+        <p className="text-lg font-black text-(--ep-strong) mb-1">{profileDef?.label}</p>
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/50">
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/50">
             {envDef?.label}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/50">
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/50">
             Obstacle principal · {obstacleDef?.label}
           </span>
         </div>
         <div className="space-y-3">
-          <ScoreBar label="Motivation" value={profile.motivation_score ?? 0} color="#E01E1E" />
-          <ScoreBar label="Gestion du stress" value={profile.stress_score ?? 0} color="#60a5fa" />
-          <ScoreBar label="Sérénité image corporelle" value={profile.body_image_score ?? 0} color="#fbbf24" />
-          <ScoreBar label="Discipline" value={profile.discipline_score ?? 0} color="#4ade80" />
+          <ScoreBar label="Motivation" value={profile.motivation_score ?? 0} color="var(--ep-accent)" />
+          <ScoreBar label="Gestion du stress" value={profile.stress_score ?? 0} color="var(--ep-info)" />
+          <ScoreBar label="Sérénité image corporelle" value={profile.body_image_score ?? 0} color="var(--ep-warn)" />
+          <ScoreBar label="Discipline" value={profile.discipline_score ?? 0} color="var(--ep-ok)" />
         </div>
       </Card>
 
       <Card title="Habitudes en cours">
         {activeHabits.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/35">Aucune série en cours sur les 30 derniers jours.</p>
+          <p className="text-xs text-(--ep-ink)/35">Aucune série en cours sur les 30 derniers jours.</p>
         ) : (
           <div className="space-y-2">
             {activeHabits.map(({ h, streak }) => (
               <div key={h.key} className="flex items-center justify-between">
-                <span className="text-sm text-white/85">{h.label}</span>
+                <span className="text-sm text-(--ep-strong)/85">{h.label}</span>
                 <span className="flex items-center gap-1 text-xs font-bold text-amber-400">
                   <Flame size={12} /> {streak}j
                 </span>
@@ -112,7 +112,7 @@ export default function CoachClientMindsetView({
         )}
       </Card>
 
-      <p className="text-[10px] text-[#F5EDED]/25 leading-relaxed">
+      <p className="text-[10px] text-(--ep-ink)/25 leading-relaxed">
         Le journal reste privé, seul le client peut le consulter.
       </p>
     </div>

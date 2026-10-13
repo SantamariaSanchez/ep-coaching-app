@@ -13,9 +13,9 @@ export type BilanAction = (
 ) => Promise<{ error?: string; success?: boolean }>;
 
 const inp =
-  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#F5EDED] placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-const lbl = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
-const hint = "text-[10.5px] text-[#F5EDED]/30 mt-1.5 leading-snug";
+  "w-full bg-[rgba(var(--ep-shade-rgb),0.4)] border border-[rgba(var(--ep-line-rgb),0.3)] rounded-lg px-3 py-2.5 text-sm text-(--ep-ink) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
+const lbl = "block text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
+const hint = "text-[10.5px] text-(--ep-ink)/30 mt-1.5 leading-snug";
 
 function TriScale({ name, defaultValue }: { name: string; defaultValue?: string | null }) {
   const opts = [
@@ -31,13 +31,13 @@ function TriScale({ name, defaultValue }: { name: string; defaultValue?: string 
           <span style={{
             display: "flex", alignItems: "center", justifyContent: "center",
             height: 38, borderRadius: 8,
-            border: "1px solid rgba(137,4,4,0.3)",
+            border: "1px solid rgba(var(--ep-line-rgb),0.3)",
             fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
-            color: "rgba(245,237,237,0.4)",
+            color: "rgba(var(--ep-ink-rgb),0.4)",
             cursor: "pointer",
             transition: "background 0.15s, border-color 0.15s, color 0.15s",
           }}
-          className="peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white"
+          className="peer-checked:bg-(--ep-accent) peer-checked:border-(--ep-accent) peer-checked:text-(--ep-strong)"
           >
             {fr}
           </span>
@@ -56,15 +56,15 @@ function FiveScale({ name, defaultValue, low, high }: { name: string; defaultVal
           <label key={v} style={{ flex: 1, cursor: "pointer" }}>
             <input type="radio" name={name} value={v} defaultChecked={defaultValue === v} className="sr-only peer" />
             <span
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 38, borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)", fontSize: 13, fontWeight: 800, color: "rgba(245,237,237,0.45)", cursor: "pointer", transition: "background 0.15s, border-color 0.15s, color 0.15s" }}
-              className="peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 38, borderRadius: 8, border: "1px solid rgba(var(--ep-line-rgb),0.3)", fontSize: 13, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.45)", cursor: "pointer", transition: "background 0.15s, border-color 0.15s, color 0.15s" }}
+              className="peer-checked:bg-(--ep-accent) peer-checked:border-(--ep-accent) peer-checked:text-(--ep-strong)"
             >
               {v}
             </span>
           </label>
         ))}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "rgba(245,237,237,0.3)", marginTop: 4 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", marginTop: 4 }}>
         <span>{low}</span>
         <span>{high}</span>
       </div>
@@ -142,12 +142,12 @@ function CardShell({
   return (
     <div className="ep-card" style={{ padding: "18px 16px", position: "relative" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <Icon size={14} style={{ color: "#E01E1E" }} strokeWidth={2} />
-        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)", margin: 0, flex: 1 }}>
+        <Icon size={14} style={{ color: "var(--ep-accent)" }} strokeWidth={2} />
+        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0, flex: 1 }}>
           {title}
         </p>
         {saved && (
-          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#4ade80" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "var(--ep-ok)" }}>
             <Check size={12} />{" "}{t("Enregistré")}
           </span>
         )}
@@ -164,8 +164,8 @@ function SaveButton({ pending, label = "Enregistrer" }: { pending: boolean; labe
       disabled={pending}
       style={{
         marginTop: 14,
-        background: pending ? "rgba(224,30,30,0.5)" : "#E01E1E",
-        color: "#fff",
+        background: pending ? "rgba(var(--ep-accent-rgb),0.5)" : "var(--ep-accent)",
+        color: "var(--ep-strong)",
         border: "none",
         borderRadius: 10,
         padding: "10px 18px",
@@ -210,7 +210,7 @@ export function WeightCard({ today, existing, action, onSaved }: { today: string
             <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07:00" aria-label="07:00" className={inp} />
           </div>
         </div>
-        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} label={existing?.weight_morning != null ? t("Mettre à jour") : t("Enregistrer le poids")} />
       </CardShell>
     </form>
@@ -246,9 +246,9 @@ export function TrainingCard({ today, existing, action, onSaved, logbookHref = "
             onClick={() => setIsRestDay(false)}
             style={{
               flex: 1, height: 38, borderRadius: 8, fontSize: 11.5, fontWeight: 700,
-              border: `1px solid ${!isRestDay ? "#E01E1E" : "rgba(137,4,4,0.3)"}`,
-              background: !isRestDay ? "#E01E1E" : "transparent",
-              color: !isRestDay ? "#fff" : "rgba(245,237,237,0.5)", cursor: "pointer",
+              border: `1px solid ${!isRestDay ? "var(--ep-accent)" : "rgba(var(--ep-line-rgb),0.3)"}`,
+              background: !isRestDay ? "var(--ep-accent)" : "transparent",
+              color: !isRestDay ? "#fff" : "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer",
             }}
           >
             {t("Jour d'entraînement")}
@@ -258,9 +258,9 @@ export function TrainingCard({ today, existing, action, onSaved, logbookHref = "
             onClick={() => setIsRestDay(true)}
             style={{
               flex: 1, height: 38, borderRadius: 8, fontSize: 11.5, fontWeight: 700,
-              border: `1px solid ${isRestDay ? "#E01E1E" : "rgba(137,4,4,0.3)"}`,
-              background: isRestDay ? "#E01E1E" : "transparent",
-              color: isRestDay ? "#fff" : "rgba(245,237,237,0.5)", cursor: "pointer",
+              border: `1px solid ${isRestDay ? "var(--ep-accent)" : "rgba(var(--ep-line-rgb),0.3)"}`,
+              background: isRestDay ? "var(--ep-accent)" : "transparent",
+              color: isRestDay ? "#fff" : "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer",
             }}
           >
             {t("Jour de repos")}
@@ -270,7 +270,7 @@ export function TrainingCard({ today, existing, action, onSaved, logbookHref = "
         {isRestDay ? (
           <>
             <input type="hidden" name="training_name" value="Repos" />
-            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Profite du repos. 💪")}</p>
+            <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{t("Profite du repos. 💪")}</p>
           </>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -286,11 +286,11 @@ export function TrainingCard({ today, existing, action, onSaved, logbookHref = "
             </div>
             <p className={hint}>
               {t("La note de la séance se donne à la fin de l'entraînement, directement depuis le")}{" "}
-              <Link href={logbookHref} style={{ color: "#E01E1E", fontWeight: 700 }}>{t("logbook")}</Link>{t(". Pas besoin de la redonner ici.")}
+              <Link href={logbookHref} style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("logbook")}</Link>{t(". Pas besoin de la redonner ici.")}
             </p>
           </div>
         )}
-        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
       </CardShell>
     </form>
@@ -338,10 +338,10 @@ export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dash
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
             {t("Facultatif, sert juste à suivre ta régularité dans l'onglet")}{" "}
-            <Link href={sleepHref} style={{ color: "#E01E1E", fontWeight: 700 }}>{t("Sommeil")}</Link>.
+            <Link href={sleepHref} style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("Sommeil")}</Link>.
           </p>
         </div>
-        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
       </CardShell>
     </form>
@@ -405,7 +405,7 @@ export function LifestyleCard({
           </div>
           )}
         </div>
-        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
       </CardShell>
     </form>
@@ -475,7 +475,7 @@ export function FormeCard({
             </div>
           )}
         </div>
-        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
       </CardShell>
     </form>
@@ -509,9 +509,9 @@ export function NutritionCard({
       onClick={() => setFollowed(value)}
       style={{
         flex: 1, height: 40, borderRadius: 10, fontSize: 12, fontWeight: 800,
-        border: `1px solid ${followed === value ? "#E01E1E" : "rgba(137,4,4,0.3)"}`,
-        background: followed === value ? "#E01E1E" : "transparent",
-        color: followed === value ? "#fff" : "rgba(245,237,237,0.6)", cursor: "pointer",
+        border: `1px solid ${followed === value ? "var(--ep-accent)" : "rgba(var(--ep-line-rgb),0.3)"}`,
+        background: followed === value ? "var(--ep-accent)" : "transparent",
+        color: followed === value ? "#fff" : "rgba(var(--ep-ink-rgb),0.6)", cursor: "pointer",
       }}
     >
       {label}
@@ -532,7 +532,7 @@ export function NutritionCard({
                 {choice("non", "Non, j'ai fait autrement")}
               </div>
               {followed === "oui" && (
-                <p className={hint} style={{ color: "rgba(74,222,128,0.75)" }}>
+                <p className={hint} style={{ color: "rgba(var(--ep-ok-rgb),0.75)" }}>
                   {nutritionTotals
                     ? t("Les repas de ton plan pas encore logués ce jour-là seront ajoutés à l'enregistrement.")
                     : `Ton plan "${plan.name}" sera logué pour ce jour-là à l'enregistrement.`}
@@ -541,7 +541,7 @@ export function NutritionCard({
               {followed === "non" && (
                 <p className={hint}>
                   {t("Mets ce que tu as vraiment mangé dans ton")}{" "}
-                  <Link href={href} style={{ color: "#E01E1E", fontWeight: 700 }}>{t("tracker")}</Link>
+                  <Link href={href} style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("tracker")}</Link>
                   {plan.mode === "flexible" ? t(", en changeant les aliments du plan : les repas suivants se recalculent tout seuls.") : t(" : remplace ou ajuste un aliment, le reste suit.")}
                 </p>
               )}
@@ -549,31 +549,31 @@ export function NutritionCard({
           )}
 
           {!showNutrition ? null : nutritionTotals ? (
-            <div style={{ borderRadius: 10, border: "1px solid rgba(74,222,128,0.25)", background: "rgba(74,222,128,0.06)", padding: "10px 12px" }}>
-              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(74,222,128,0.8)", margin: "0 0 6px" }}>
+            <div style={{ borderRadius: 10, border: "1px solid rgba(var(--ep-ok-rgb),0.25)", background: "rgba(var(--ep-ok-rgb),0.06)", padding: "10px 12px" }}>
+              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ok-rgb),0.8)", margin: "0 0 6px" }}>
                 {t("Depuis ton tracker")}
               </p>
-              <p style={{ fontSize: 14, color: "#F5EDED", margin: 0 }}>
+              <p style={{ fontSize: 14, color: "var(--ep-ink)", margin: 0 }}>
                 <b>{Math.round(nutritionTotals.calories)}{" "}{t("kcal")}</b>
-                <span style={{ color: "rgba(245,237,237,0.55)", fontSize: 12 }}>
+                <span style={{ color: "rgba(var(--ep-ink-rgb),0.55)", fontSize: 12 }}>
                   {" "}· P {Math.round(nutritionTotals.proteins)} g · G {Math.round(nutritionTotals.carbs)} g · L {Math.round(nutritionTotals.fats)} g
                 </span>
               </p>
               <p className={hint} style={{ marginTop: 4 }}>
-                {t("Mis à jour tout seul. Une erreur ?")}{" "}<Link href={href} style={{ color: "#E01E1E", fontWeight: 700 }}>{t("Corrige dans le tracker")}</Link>.
+                {t("Mis à jour tout seul. Une erreur ?")}{" "}<Link href={href} style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("Corrige dans le tracker")}</Link>.
               </p>
             </div>
           ) : (
             !plan && (
               <p className={hint} style={{ margin: 0 }}>
-                {t("Logue tes repas dans ton")}{" "}<Link href={href} style={{ color: "#E01E1E", fontWeight: 700 }}>{t("tracker")}</Link>{t(", les calories et macros arrivent ici toutes seules.")}
+                {t("Logue tes repas dans ton")}{" "}<Link href={href} style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("tracker")}</Link>{t(", les calories et macros arrivent ici toutes seules.")}
               </p>
             )
           )}
 
           {showNutrition && !nutritionTotals && (
             <details>
-              <summary style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", cursor: "pointer" }}>{t("Saisir les chiffres à la main")}</summary>
+              <summary style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", cursor: "pointer" }}>{t("Saisir les chiffres à la main")}</summary>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
                 <div>
                   <label className={lbl}>{t("Protéines (g)")}</label>
@@ -602,7 +602,7 @@ export function NutritionCard({
             </div>
           )}
         </div>
-        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
       </CardShell>
     </form>
@@ -616,8 +616,8 @@ export function NutritionCard({
 // seul bouton Modifier, le formulaire complet ne revient que sur demande
 // (ou tant qu'il manque des champs obligatoires, voir lib/daily-gate.ts).
 
-const summaryStat = { fontSize: 11, color: "rgba(245,237,237,0.35)" };
-const summaryValue = { fontSize: 15, fontWeight: 800, color: "#F5EDED" };
+const summaryStat = { fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)" };
+const summaryValue = { fontSize: 15, fontWeight: 800, color: "var(--ep-ink)" };
 
 function EditButton({ onClick }: { onClick: () => void }) {
   const t = useT();
@@ -627,9 +627,9 @@ function EditButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       style={{
         display: "flex", alignItems: "center", gap: 5,
-        background: "transparent", border: "1px solid rgba(245,237,237,0.15)",
+        background: "transparent", border: "1px solid rgba(var(--ep-ink-rgb),0.15)",
         borderRadius: 999, padding: "5px 12px", fontSize: 10.5, fontWeight: 700,
-        color: "rgba(245,237,237,0.5)", cursor: "pointer",
+        color: "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer",
       }}
     >
       <Pencil size={11} />{" "}{t("Modifier")}
@@ -644,11 +644,11 @@ function MorningSummary({ existing, onEdit }: { existing: DailyLog; onEdit: () =
       <div
         style={{
           width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-          background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.3)",
+          background: "rgba(var(--ep-ok-rgb),0.12)", border: "1px solid rgba(var(--ep-ok-rgb),0.3)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <Sun size={16} style={{ color: "#4ade80" }} strokeWidth={2} />
+        <Sun size={16} style={{ color: "var(--ep-ok)" }} strokeWidth={2} />
       </div>
       <div style={{ flex: 1, display: "flex", gap: 20 }}>
         {existing.weight_morning != null && (
@@ -677,11 +677,11 @@ function EveningSummary({ existing, onEdit }: { existing: DailyLog; onEdit: () =
         <div
           style={{
             width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-            background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.3)",
+            background: "rgba(var(--ep-ok-rgb),0.12)", border: "1px solid rgba(var(--ep-ok-rgb),0.3)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <MoonStar size={16} style={{ color: "#4ade80" }} strokeWidth={2} />
+          <MoonStar size={16} style={{ color: "var(--ep-ok)" }} strokeWidth={2} />
         </div>
         <div style={{ flex: 1, display: "flex", gap: 20, flexWrap: "wrap" }}>
           {existing.steps != null && (
@@ -700,7 +700,7 @@ function EveningSummary({ existing, onEdit }: { existing: DailyLog; onEdit: () =
         <EditButton onClick={onEdit} />
       </div>
       {existing.training_name && (
-        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+        <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
           {existing.training_name === "Repos" ? t("Jour de repos") : `Séance : ${existing.training_name}`}
         </p>
       )}

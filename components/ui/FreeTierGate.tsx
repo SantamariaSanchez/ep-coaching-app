@@ -42,19 +42,19 @@ export default function FreeTierGate() {
   return (
     <div
       className="fixed inset-0 z-[999] flex items-center justify-center px-5"
-      style={{ background: "rgba(9,0,0,0.97)", backdropFilter: "blur(6px)" }}
+      style={{ background: "rgba(var(--ep-bg-rgb),0.97)", backdropFilter: "blur(6px)" }}
     >
       <div className="w-full max-w-sm text-center">
         <div
           className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-          style={{ background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.3)" }}
+          style={{ background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.3)" }}
         >
-          <Lock size={22} className="text-[#E01E1E]" />
+          <Lock size={22} className="text-(--ep-accent)" />
         </div>
-        <h1 className="text-xl font-black text-white uppercase tracking-tight mb-2">
+        <h1 className="text-xl font-black text-(--ep-strong) uppercase tracking-tight mb-2">
           {t("Ton accès gratuit est terminé")}
         </h1>
-        <p className="text-[13px] text-[#F5EDED]/55 leading-relaxed mb-6">
+        <p className="text-[13px] text-(--ep-ink)/55 leading-relaxed mb-6">
           {t("60 jours pour découvrir l'appli, c'est fait. Tes données sont gardées telles quelles, rien n'est perdu : prends un coach et tu retrouves tout instantanément.")}
         </p>
 
@@ -70,14 +70,14 @@ export default function FreeTierGate() {
           <button
             type="button"
             onClick={logout}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors"
           >
             <LogOut size={12} />{" "}{t("Me déconnecter")}
           </button>
-          <span className="text-[#F5EDED]/15">·</span>
+          <span className="text-(--ep-ink)/15">·</span>
           <Link
             href="/dashboard/client/parametres"
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors"
           >
             <Trash2 size={12} />{" "}{t("Supprimer mon compte")}
           </Link>

@@ -40,7 +40,7 @@ export default function PasswordInput({
           background: "none",
           border: "none",
           padding: 6,
-          color: "rgba(245,237,237,0.35)",
+          color: "rgba(var(--ep-ink-rgb),0.35)",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",

@@ -35,7 +35,7 @@ const MEAL_SLOTS = [
 ];
 
 function getDayColor(cals: number, target: number) {
-  if (cals === 0) return "bg-[#F5EDED]/5 border-[#F5EDED]/10";
+  if (cals === 0) return "bg-(--ep-ink)/5 border-(--ep-ink)/10";
   const pct = target > 0 ? cals / target : 0;
   if (pct >= 0.85) return "bg-green-600/60 border-green-500/30";
   if (pct >= 0.6) return "bg-amber-500/60 border-amber-400/30";
@@ -81,24 +81,24 @@ function TodayLogsView({
   return (
     <div className="space-y-5">
       {/* Macro summary */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: tr("Calories"), v: totals.calories, t: targets.calories, unit: "kcal", color: "#E01E1E" },
-            { label: tr("Protéines"), v: totals.proteins, t: targets.proteins, unit: "g", color: "#60a5fa" },
-            { label: tr("Glucides"), v: totals.carbs, t: targets.carbs, unit: "g", color: "#fbbf24" },
+            { label: tr("Calories"), v: totals.calories, t: targets.calories, unit: "kcal", color: "var(--ep-accent)" },
+            { label: tr("Protéines"), v: totals.proteins, t: targets.proteins, unit: "g", color: "var(--ep-info)" },
+            { label: tr("Glucides"), v: totals.carbs, t: targets.carbs, unit: "g", color: "var(--ep-warn)" },
             { label: tr("Lipides"), v: totals.fats, t: targets.fats, unit: "g", color: "#fb7185" },
           ].map(({ label, v, t, unit, color }) => (
             <div key={label} className="text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
                 {label}
               </p>
               <p className="text-lg font-black" style={{ color }}>
                 {Math.round(v)}
-                <span className="text-xs font-normal text-[#F5EDED]/30 ml-0.5">{unit}</span>
+                <span className="text-xs font-normal text-(--ep-ink)/30 ml-0.5">{unit}</span>
               </p>
               {t > 0 && (
-                <p className="text-[9px] text-[#F5EDED]/25">
+                <p className="text-[9px] text-(--ep-ink)/25">
                   / {t}{unit}
                 </p>
               )}
@@ -109,7 +109,7 @@ function TodayLogsView({
 
       {/* Slots */}
       {logs.length === 0 ? (
-        <p className="text-sm text-[#F5EDED]/25 italic text-center py-6">
+        <p className="text-sm text-(--ep-ink)/25 italic text-center py-6">
           {tr("Aucun aliment logué aujourd'hui.")}
         </p>
       ) : (
@@ -117,19 +117,19 @@ function TodayLogsView({
           const slotLogs = bySlot[slot.key] ?? [];
           if (slotLogs.length === 0) return null;
           return (
-            <div key={slot.key} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">
+            <div key={slot.key} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-2">
                 {slot.label}
               </p>
               <div className="space-y-1">
                 {slotLogs.map((l) => (
-                  <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0">
+                  <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-(--ep-line)/10 last:border-0">
                     <div>
-                      <p className="text-xs text-white font-medium">{l.foods?.name ?? tr("Aliment supprimé")}</p>
-                      <p className="text-[10px] text-[#F5EDED]/35">{l.quantity_g}g</p>
+                      <p className="text-xs text-(--ep-strong) font-medium">{l.foods?.name ?? tr("Aliment supprimé")}</p>
+                      <p className="text-[10px] text-(--ep-ink)/35">{l.quantity_g}g</p>
                     </div>
-                    <div className="text-right text-[10px] text-[#F5EDED]/40">
-                      <p className="text-[#E01E1E]/70 font-bold">{Math.round(l.calories ?? 0)}{" "}{tr("kcal")}</p>
+                    <div className="text-right text-[10px] text-(--ep-ink)/40">
+                      <p className="text-(--ep-accent)/70 font-bold">{Math.round(l.calories ?? 0)}{" "}{tr("kcal")}</p>
                       <p>P {Math.round(l.proteins ?? 0)}g · G {Math.round(l.carbs ?? 0)}g · L {Math.round(l.fats ?? 0)}g</p>
                     </div>
                   </div>
@@ -143,7 +143,7 @@ function TodayLogsView({
       {/* Micros */}
       {logs.length > 0 && (
         <div className="mt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
             {tr("Micronutriments du jour")}
           </p>
           <MicroBarList logs={logs} foods={foods} />
@@ -193,7 +193,7 @@ function HistoryView({
 
   return (
     <div className="space-y-5">
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
         <div className="grid grid-cols-7 gap-1.5">
           {last30Days.map((date) => {
             const cals = calsByDate[date] ?? 0;
@@ -203,9 +203,9 @@ function HistoryView({
                 key={date}
                 onClick={() => setSelectedDate(isSelected ? null : date)}
                 title={`${date} : ${Math.round(cals)} kcal`} aria-label={`${date} : ${Math.round(cals)} kcal`}
-                className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(cals, targets.calories)} ${isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""}`}
+                className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(cals, targets.calories)} ${isSelected ? "ring-2 ring-(--ep-hi)/50 ring-offset-1 ring-offset-(--ep-s1)" : ""}`}
               >
-                <span className="text-white/70">{new Date(date + "T12:00:00").getDate()}</span>
+                <span className="text-(--ep-strong)/70">{new Date(date + "T12:00:00").getDate()}</span>
               </button>
             );
           })}
@@ -213,32 +213,32 @@ function HistoryView({
       </div>
 
       {selectedDate && (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-white">
+            <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong)">
               {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(selectedDate + "T12:00:00"))}
             </p>
-            <button onClick={() => setSelectedDate(null)} aria-label={tr("Fermer le détail du jour")} className="text-[#F5EDED]/40 hover:text-white">
+            <button onClick={() => setSelectedDate(null)} aria-label={tr("Fermer le détail du jour")} className="text-(--ep-ink)/40 hover:text-(--ep-strong)">
               <X size={14} />
             </button>
           </div>
           {dayLogs.length === 0 ? (
-            <p className="text-xs text-[#F5EDED]/30 italic">{tr("Aucun aliment logué.")}</p>
+            <p className="text-xs text-(--ep-ink)/30 italic">{tr("Aucun aliment logué.")}</p>
           ) : (
             <>
               <div className="space-y-1 mb-4">
                 {dayLogs.map((l) => (
-                  <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0">
+                  <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-(--ep-line)/10 last:border-0">
                     <div>
-                      <p className="text-xs text-white">{l.foods?.name ?? tr("Aliment supprimé")}</p>
-                      <p className="text-[10px] text-[#F5EDED]/35">{l.quantity_g}g · {l.meal_slot}</p>
+                      <p className="text-xs text-(--ep-strong)">{l.foods?.name ?? tr("Aliment supprimé")}</p>
+                      <p className="text-[10px] text-(--ep-ink)/35">{l.quantity_g}g · {l.meal_slot}</p>
                     </div>
-                    <p className="text-xs text-[#E01E1E]/70 font-bold">{Math.round(l.calories ?? 0)}{" "}{tr("kcal")}</p>
+                    <p className="text-xs text-(--ep-accent)/70 font-bold">{Math.round(l.calories ?? 0)}{" "}{tr("kcal")}</p>
                   </div>
                 ))}
               </div>
-              <div className="pt-2 border-t border-[#890404]/15">
-                <p className="text-xs font-bold text-[#F5EDED]/50">
+              <div className="pt-2 border-t border-(--ep-line)/15">
+                <p className="text-xs font-bold text-(--ep-ink)/50">
                   {tr("Total :")}{" "}{Math.round(calsByDate[selectedDate] ?? 0)}{" "}{tr("kcal")}
                 </p>
               </div>
@@ -362,15 +362,15 @@ export default function CoachClientNutritionTabs({
   return (
     <div>
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20 overflow-x-auto">
         {tabs.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               tab === key
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-(--ep-accent) border-b-2 border-(--ep-accent)"
+                : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             {label}
@@ -380,12 +380,12 @@ export default function CoachClientNutritionTabs({
 
       {/* Active plan badge */}
       {activePlan && tab !== "plan" && (
-        <div className="flex items-center justify-between flex-wrap gap-2 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-2.5 mb-4">
+        <div className="flex items-center justify-between flex-wrap gap-2 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-2.5 mb-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={13} className="text-green-400" />
-            <p className="text-xs font-bold text-white">
+            <p className="text-xs font-bold text-(--ep-strong)">
               {tr("Plan actif :")}{" "}
-              <span className="text-[#E01E1E]">{activePlan.name}</span>
+              <span className="text-(--ep-accent)">{activePlan.name}</span>
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -402,8 +402,8 @@ export default function CoachClientNutritionTabs({
                     }}
                     className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border transition-colors disabled:cursor-default ${
                       activePlan.mode === m
-                        ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                        : "border-[#890404]/25 text-[#F5EDED]/35 hover:text-[#F5EDED]/70"
+                        ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                        : "border-(--ep-line)/25 text-(--ep-ink)/35 hover:text-(--ep-ink)/70"
                     }`}
                   >
                     {MODE_LABELS[m]}
@@ -411,13 +411,13 @@ export default function CoachClientNutritionTabs({
                 ))}
               </div>
             ) : (
-              <span className="text-[10px] text-[#F5EDED]/30 uppercase font-normal">
+              <span className="text-[10px] text-(--ep-ink)/30 uppercase font-normal">
                 {MODE_LABELS[activePlan.mode]}
               </span>
             )}
             <button
               onClick={() => deactivateDietPlan(clientId, activePlan.id)}
-              className="text-[10px] text-[#F5EDED]/30 hover:text-red-400 transition-colors"
+              className="text-[10px] text-(--ep-ink)/30 hover:text-red-400 transition-colors"
             >
               {tr("Désactiver")}
             </button>
@@ -443,20 +443,20 @@ export default function CoachClientNutritionTabs({
           {/* Objectifs TDEE : repliés une fois qu'un plan existe déjà (voir
               showObjectifs plus haut) — se règlent une fois, se consultent
               rarement, pas besoin d'un onglet à part pour ça. */}
-          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden">
             <button
               onClick={() => setShowObjectifs((v) => !v)}
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/50">
                 {tr("Objectifs TDEE")}
                 {nutritionProfile?.calories_target ? (
-                  <span className="ml-2 text-[#E01E1E] normal-case font-normal">
+                  <span className="ml-2 text-(--ep-accent) normal-case font-normal">
                     {nutritionProfile.calories_target}{" "}{tr("kcal/jour")}
                   </span>
                 ) : null}
               </span>
-              <span className="text-[#F5EDED]/35 text-xs">{showObjectifs ? tr("Réduire") : tr("Modifier")}</span>
+              <span className="text-(--ep-ink)/35 text-xs">{showObjectifs ? tr("Réduire") : tr("Modifier")}</span>
             </button>
             {showObjectifs && (
               <div className="px-4 pb-4">
@@ -473,12 +473,12 @@ export default function CoachClientNutritionTabs({
 
           <ClientReferenceCard intake={intake} />
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
               {allPlans.length}{" "}{tr("plan")}{allPlans.length !== 1 ? "s" : ""}
             </p>
             <button
               onClick={() => setShowBuilder((v) => !v)}
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
             >
               <Plus size={12} />
               {showBuilder ? tr("Fermer") : tr("Nouveau plan")}
@@ -486,7 +486,7 @@ export default function CoachClientNutritionTabs({
           </div>
 
           {showBuilder && (
-            <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4">
+            <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-4">
               <PlanBuilder
                 foods={foods}
                 intake={intake}

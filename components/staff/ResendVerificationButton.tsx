@@ -26,7 +26,7 @@ export default function ResendVerificationButton() {
         {pending ? t("Envoi...") : t("Renvoyer l'email")}
       </button>
       {message && (
-        <p role="status" style={{ fontSize: 12, marginTop: 10, color: message.ok ? "#4ade80" : "#FDC4C4" }}>
+        <p role="status" style={{ fontSize: 12, marginTop: 10, color: message.ok ? "var(--ep-ok)" : "var(--ep-pink)" }}>
           {message.text}
         </p>
       )}

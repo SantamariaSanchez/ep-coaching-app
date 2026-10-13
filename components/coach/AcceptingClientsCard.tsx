@@ -59,22 +59,22 @@ export default function AcceptingClientsCard({
 
   return (
     <div className="mt-8">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {t("Capacité")}
       </p>
       <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Nouveaux clients")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {accepting ? (
-            <UserPlus size={18} style={{ color: "#4ade80", flexShrink: 0 }} />
+            <UserPlus size={18} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
           ) : (
-            <UserX size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
+            <UserX size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ink)" }}>
               {accepting ? t("Tu acceptes de nouveaux clients") : t("Complet, liste d'attente active")}
             </p>
-            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
               {accepting
                 ? t("Désactive si tu es à capacité, les membres verront rejoindre une liste d'attente.")
                 : t("Les membres non-clients voient un bouton pour rejoindre ta liste d'attente.")}
@@ -88,19 +88,19 @@ export default function AcceptingClientsCard({
             aria-checked={accepting}
             style={{
               flexShrink: 0, width: 40, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
-              background: accepting ? "#4ade80" : "rgba(245,237,237,0.15)", position: "relative", transition: "background 0.15s ease",
+              background: accepting ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.15)", position: "relative", transition: "background 0.15s ease",
             }}
           >
             <span style={{
               position: "absolute", top: 3, left: accepting ? 19 : 3, width: 18, height: 18, borderRadius: "50%",
-              background: "#0d0000", transition: "left 0.15s ease",
+              background: "var(--ep-bg)", transition: "left 0.15s ease",
             }} />
           </button>
         </div>
 
         {waitlist.length > 0 && (
-          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(224,30,30,0.12)" }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", marginBottom: 10 }}>
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(var(--ep-accent-rgb),0.12)" }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", marginBottom: 10 }}>
               {waitlist.length}{" "}{t("en attente")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -111,19 +111,19 @@ export default function AcceptingClientsCard({
                     key={entry.id}
                     style={{
                       display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10,
-                      background: "rgba(0,0,0,0.25)", border: "1px solid rgba(224,30,30,0.1)",
+                      background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-accent-rgb),0.1)",
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED" }}>
+                      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--ep-ink)" }}>
                         {entry.member_name ?? t("Sans nom")}
                       </p>
                       {entry.note && (
-                        <p style={{ margin: "1px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{entry.note}</p>
+                        <p style={{ margin: "1px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{entry.note}</p>
                       )}
                     </div>
                     {contacted ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#4ade80", flexShrink: 0 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "var(--ep-ok)", flexShrink: 0 }}>
                         <Check size={12} />{" "}{t("Contacté")}
                       </span>
                     ) : (
@@ -132,8 +132,8 @@ export default function AcceptingClientsCard({
                         onClick={() => markContacted(entry.id)}
                         style={{
                           flexShrink: 0, display: "flex", alignItems: "center", gap: 4,
-                          fontSize: 10, fontWeight: 700, color: "rgba(245,237,237,0.5)",
-                          background: "none", border: "1px solid rgba(245,237,237,0.2)", borderRadius: 8,
+                          fontSize: 10, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)",
+                          background: "none", border: "1px solid rgba(var(--ep-ink-rgb),0.2)", borderRadius: 8,
                           padding: "5px 9px", cursor: "pointer",
                         }}
                       >

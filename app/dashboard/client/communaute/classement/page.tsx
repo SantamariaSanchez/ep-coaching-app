@@ -22,28 +22,28 @@ function LeaderboardRow({ entry, isMe }: { entry: LeaderboardEntry; isMe: boolea
   return (
     <div
       className={`flex items-center gap-3 rounded-xl px-4 py-3 border ${
-        isMe ? "bg-[#E01E1E]/10 border-[#E01E1E]/40" : "bg-[#1f0101] border-[#890404]/20"
+        isMe ? "bg-(--ep-accent)/10 border-(--ep-accent)/40" : "bg-(--ep-s1) border-(--ep-line)/20"
       }`}
     >
-      <span className="w-7 text-center text-sm font-black text-[#F5EDED]/45 flex-shrink-0">
+      <span className="w-7 text-center text-sm font-black text-(--ep-ink)/45 flex-shrink-0">
         {MEDALS[entry.position] ?? entry.position}
       </span>
       {entry.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={entry.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
       ) : (
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-(--ep-accent) to-(--ep-line) flex items-center justify-center text-[10px] font-black text-(--ep-strong) flex-shrink-0">
           {initials(entry.full_name)}
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-white truncate">
+        <p className="text-sm font-bold text-(--ep-strong) truncate">
           {entry.full_name ?? "Membre"}
-          {isMe && <span className="text-[#F5EDED]/35 font-medium"> (toi)</span>}
+          {isMe && <span className="text-(--ep-ink)/35 font-medium"> (toi)</span>}
         </p>
         <RankBadge points={entry.points} />
       </div>
-      <span className="text-xs font-black text-[#F5EDED]/70 flex-shrink-0">{entry.points} pts</span>
+      <span className="text-xs font-black text-(--ep-ink)/70 flex-shrink-0">{entry.points} pts</span>
     </div>
   );
 }
@@ -65,26 +65,26 @@ export default async function ClassementPage() {
       <BackButton fallbackHref="/dashboard/client/communaute/victoires" />
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Communauté")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <Trophy size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
+          <Trophy size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Classement")}
         </h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Séances, repas notés, bilans, partages : chaque action réelle rapporte des points. Membres gratuits et clients accompagnés, tous coachs confondus, sur un seul classement. Tu peux t'en retirer depuis tes paramètres.")}
         </p>
       </div>
 
       {meHidden && (
-        <div className="mb-4 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3 flex items-start gap-3">
-          <EyeOff size={16} className="text-[#F5EDED]/45 flex-shrink-0 mt-0.5" strokeWidth={1.8} />
-          <p className="text-xs text-[#F5EDED]/55 leading-relaxed">
+        <div className="mb-4 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3 flex items-start gap-3">
+          <EyeOff size={16} className="text-(--ep-ink)/45 flex-shrink-0 mt-0.5" strokeWidth={1.8} />
+          <p className="text-xs text-(--ep-ink)/55 leading-relaxed">
             {t("Tu es masqué du classement : les autres membres ne te voient pas, ta position ici n'est visible que par toi.")}{" "}
             <Link
               href="/dashboard/client/parametres"
-              className="font-bold text-[#E01E1E] hover:text-[#F5EDED] transition-colors"
+              className="font-bold text-(--ep-accent) hover:text-(--ep-ink) transition-colors"
             >
               {t("Modifier")}
             </Link>
@@ -99,16 +99,16 @@ export default async function ClassementPage() {
       )}
 
       {!me && (
-        <div className="mb-6 bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 flex items-start gap-3">
-          <Rocket size={18} className="text-[#E01E1E] flex-shrink-0 mt-0.5" strokeWidth={1.8} />
+        <div className="mb-6 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 flex items-start gap-3">
+          <Rocket size={18} className="text-(--ep-accent) flex-shrink-0 mt-0.5" strokeWidth={1.8} />
           <div>
-            <p className="text-sm font-bold text-white">{t("Tu n'es pas encore classé")}</p>
-            <p className="text-xs text-[#F5EDED]/45 mt-1 leading-relaxed">
+            <p className="text-sm font-bold text-(--ep-strong)">{t("Tu n'es pas encore classé")}</p>
+            <p className="text-xs text-(--ep-ink)/45 mt-1 leading-relaxed">
               {t("Logue une séance, note un repas ou fais ton bilan du jour : le premier point t'inscrit au classement.")}
             </p>
             <Link
               href="/dashboard/client"
-              className="inline-block mt-3 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#F5EDED] transition-colors"
+              className="inline-block mt-3 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-ink) transition-colors"
             >
               {t("Voir mes actions à faire →")}
             </Link>
@@ -117,7 +117,7 @@ export default async function ClassementPage() {
       )}
 
       {top.length === 0 ? (
-        <p className="text-sm text-[#F5EDED]/35 text-center py-10">
+        <p className="text-sm text-(--ep-ink)/35 text-center py-10">
           {t("Personne n'a encore de points. Sois le ou la première.")}
         </p>
       ) : (

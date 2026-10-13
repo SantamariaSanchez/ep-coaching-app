@@ -23,11 +23,11 @@ export default function CoachOnlyGate({
         aria-hidden
         style={{ filter: "blur(14px)", opacity: 0.35, padding: "32px 20px", userSelect: "none", pointerEvents: "none" }}
       >
-        <div style={{ height: 22, width: "60%", background: "rgba(245,237,237,0.15)", borderRadius: 6, marginBottom: 20 }} />
+        <div style={{ height: 22, width: "60%", background: "rgba(var(--ep-ink-rgb),0.15)", borderRadius: 6, marginBottom: 20 }} />
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            style={{ height: 64, background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.15)", borderRadius: 14, marginBottom: 12 }}
+            style={{ height: 64, background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px solid rgba(var(--ep-accent-rgb),0.15)", borderRadius: 14, marginBottom: 12 }}
           />
         ))}
       </div>
@@ -37,24 +37,24 @@ export default function CoachOnlyGate({
         <div
           style={{
             maxWidth: 340, width: "100%", textAlign: "center",
-            background: "rgba(31,1,1,0.95)", border: "1px solid rgba(224,30,30,0.3)",
+            background: "rgba(var(--ep-s1-rgb),0.95)", border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
             borderRadius: 20, padding: "32px 24px",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+            boxShadow: "0 20px 60px rgba(var(--ep-shade-rgb),0.5)",
           }}
         >
           <div
             style={{
               width: 52, height: 52, borderRadius: 16, margin: "0 auto 16px",
-              background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.3)",
+              background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
-            <Icon size={24} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+            <Icon size={24} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
           </div>
-          <h2 style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: "0 0 8px" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--ep-ink)", margin: "0 0 8px" }}>
             {title}
           </h2>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: "0 0 22px" }}>
+          <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.6, margin: "0 0 22px" }}>
             Cette section est réservée aux membres coaching. Tu veux en discuter avec le fondateur ?
           </p>
           <a
@@ -75,13 +75,13 @@ export default function CoachOnlyGate({
               moins engageant qu'un appel tout de suite. */}
           <Link
             href="/dashboard/client/abonnement"
-            style={{ display: "block", marginTop: 12, fontSize: 12, color: "rgba(245,237,237,0.45)", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 2 }}
+            style={{ display: "block", marginTop: 12, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 2 }}
           >
             Voir ce que ça change concrètement
           </Link>
           <Link
             href="/dashboard/client"
-            style={{ display: "block", marginTop: 14, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 600, textDecoration: "none" }}
+            style={{ display: "block", marginTop: 14, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 600, textDecoration: "none" }}
           >
             Retour à l&apos;accueil
           </Link>

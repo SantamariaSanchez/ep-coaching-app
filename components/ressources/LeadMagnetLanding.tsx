@@ -117,18 +117,18 @@ function AppCta({ isLoggedIn, isCoach }: { isLoggedIn: boolean; isCoach: boolean
         marginTop: 32,
         padding: "24px 20px",
         borderRadius: 16,
-        background: "linear-gradient(135deg, rgba(224,30,30,0.12), rgba(224,30,30,0.03))",
-        border: "1px solid rgba(224,30,30,0.25)",
+        background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.12), rgba(var(--ep-accent-rgb),0.03))",
+        border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
         textAlign: "center",
       }}
     >
-      <Sparkles size={20} style={{ color: "#E01E1E", marginBottom: 10 }} />
+      <Sparkles size={20} style={{ color: "var(--ep-accent)", marginBottom: 10 }} />
       {isLoggedIn ? (
         <>
-          <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>
+          <p style={{ fontSize: 15, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px" }}>
             {t("Retrouve tout ça directement dans l'appli")}
           </p>
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
             {t("Suivi nutrition, programme, road map de progression : tout est déjà là pour toi.")}
           </p>
           <Link
@@ -141,10 +141,10 @@ function AppCta({ isLoggedIn, isCoach }: { isLoggedIn: boolean; isCoach: boolean
         </>
       ) : (
         <>
-          <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>
+          <p style={{ fontSize: 15, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px" }}>
             {t("Prêt(e) à passer à la vitesse supérieure ?")}
           </p>
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
             {t("L'appli EP Coaching va plus loin : suivi nutrition, programme adapté, road map de progression et vrai accompagnement, gratuit pour commencer.")}
           </p>
           <Link
@@ -167,7 +167,7 @@ function RelatedMagnets({ items }: { items: LeadMagnetSummary[] }) {
   if (items.length === 0) return null;
   return (
     <div style={{ marginTop: 20 }}>
-      <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 10 }}>
+      <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", marginBottom: 10 }}>
         {t("Continue ta lecture")}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -186,16 +186,16 @@ function RelatedMagnets({ items }: { items: LeadMagnetSummary[] }) {
               <div
                 style={{
                   width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                  background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.22)",
+                  background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px solid rgba(var(--ep-accent-rgb),0.22)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}
               >
-                <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                <Icon size={16} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED", lineHeight: 1.3 }}>{m.title}</p>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", lineHeight: 1.3 }}>{m.title}</p>
               </div>
-              <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} />
+              <ChevronRight size={15} style={{ color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0 }} />
             </Link>
           );
         })}
@@ -245,7 +245,7 @@ function CaptureForm({
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ position: "relative" }}>
-        <Mail size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+        <Mail size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
         <input
           type="email"
           value={email}
@@ -256,7 +256,7 @@ function CaptureForm({
         />
       </div>
       <div style={{ position: "relative" }}>
-        <Phone size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+        <Phone size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
         <input
           type="tel"
           value={phone}
@@ -266,7 +266,7 @@ function CaptureForm({
           style={{ paddingLeft: 38 }}
         />
       </div>
-      {error && <p style={{ fontSize: 11.5, color: "#FDC4C4", margin: 0 }}>{t(error)}</p>}
+      {error && <p style={{ fontSize: 11.5, color: "var(--ep-pink)", margin: 0 }}>{t(error)}</p>}
       <button
         type="submit"
         disabled={submitting}
@@ -275,7 +275,7 @@ function CaptureForm({
       >
         {submitting ? "..." : ctaLabel}
       </button>
-      <p style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", textAlign: "center", margin: 0 }}>
+      <p style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.25)", textAlign: "center", margin: 0 }}>
         {t("Aucun spam. Juste ce contenu, et rien d'autre sans ton accord.")}
       </p>
     </form>
@@ -291,17 +291,17 @@ function Header({ magnet, Icon, showKeyword }: { magnet: LeadMagnet; Icon: Lucid
         <div
           style={{
             width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-            background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.25)",
+            background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <Icon size={22} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <Icon size={22} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
         </div>
         <div>
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)" }}>
+          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.65)" }}>
             {magnet.category}
           </span>
-          <p style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "2px 0 0" }}>
+          <p style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)", margin: "2px 0 0" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <Clock size={10} /> {magnet.readTime}
             </span>
@@ -313,10 +313,10 @@ function Header({ magnet, Icon, showKeyword }: { magnet: LeadMagnet; Icon: Lucid
           </p>
         </div>
       </div>
-      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", lineHeight: 1.2, letterSpacing: "-0.01em", margin: "0 0 10px" }}>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ep-ink)", lineHeight: 1.2, letterSpacing: "-0.01em", margin: "0 0 10px" }}>
         {magnet.title}
       </h1>
-      <p style={{ fontSize: 14, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: 0 }}>{magnet.hook}</p>
+      <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.6, margin: 0 }}>{magnet.hook}</p>
     </div>
   );
 }
@@ -326,12 +326,12 @@ function Header({ magnet, Icon, showKeyword }: { magnet: LeadMagnet; Icon: Lucid
 function GuideContent({ magnet }: { magnet: GuideMagnet }) {
   return (
     <div>
-      <p style={{ fontSize: 14, color: "rgba(245,237,237,0.7)", lineHeight: 1.7, marginBottom: 24 }}>{magnet.intro}</p>
+      <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.7, marginBottom: 24 }}>{magnet.intro}</p>
       {magnet.sections.map((s, i) => (
         <div key={i} style={{ marginBottom: 22 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: "#F5EDED", marginBottom: 8 }}>{s.heading}</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 800, color: "var(--ep-ink)", marginBottom: 8 }}>{s.heading}</h2>
           {s.paragraphs.map((p, j) => (
-            <p key={j} style={{ fontSize: 13.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.75, marginBottom: 10 }}>
+            <p key={j} style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.75, marginBottom: 10 }}>
               {p}
             </p>
           ))}
@@ -339,12 +339,12 @@ function GuideContent({ magnet }: { magnet: GuideMagnet }) {
             <div
               style={{
                 display: "flex", gap: 10, alignItems: "flex-start",
-                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.3)",
+                background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
                 borderRadius: 10, padding: "12px 14px", margin: "12px 0",
               }}
             >
-              <Zap size={15} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 1 }} />
-              <p style={{ fontSize: 13.5, color: "#F5EDED", fontWeight: 700, lineHeight: 1.6, margin: 0 }}>{s.callout}</p>
+              <Zap size={15} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: 13.5, color: "var(--ep-ink)", fontWeight: 700, lineHeight: 1.6, margin: 0 }}>{s.callout}</p>
             </div>
           )}
           {s.actionSteps && s.actionSteps.length > 0 && (
@@ -354,13 +354,13 @@ function GuideContent({ magnet }: { magnet: GuideMagnet }) {
                   <span
                     style={{
                       flexShrink: 0, width: 22, height: 22, borderRadius: "50%",
-                      background: "#E01E1E", color: "#fff", fontSize: 11, fontWeight: 800,
+                      background: "var(--ep-accent)", color: "#fff", fontSize: 11, fontWeight: 800,
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >
                     {k + 1}
                   </span>
-                  <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.8)", lineHeight: 1.65, margin: 0, paddingTop: 1 }}>
+                  <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.8)", lineHeight: 1.65, margin: 0, paddingTop: 1 }}>
                     {step}
                   </p>
                 </div>
@@ -369,8 +369,8 @@ function GuideContent({ magnet }: { magnet: GuideMagnet }) {
           )}
         </div>
       ))}
-      <div style={{ borderTop: "1px solid rgba(224,30,30,0.15)", paddingTop: 18, marginTop: 8 }}>
-        <p style={{ fontSize: 13.5, color: "#F5EDED", fontWeight: 700, lineHeight: 1.7, fontStyle: "italic" }}>
+      <div style={{ borderTop: "1px solid rgba(var(--ep-accent-rgb),0.15)", paddingTop: 18, marginTop: 8 }}>
+        <p style={{ fontSize: 13.5, color: "var(--ep-ink)", fontWeight: 700, lineHeight: 1.7, fontStyle: "italic" }}>
           {magnet.conclusion}
         </p>
       </div>
@@ -397,21 +397,21 @@ function ChecklistContent({ magnet }: { magnet: ChecklistMagnet }) {
 
   return (
     <div>
-      <p style={{ fontSize: 14, color: "rgba(245,237,237,0.7)", lineHeight: 1.7, marginBottom: 18 }}>{magnet.intro}</p>
+      <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.7, marginBottom: 18 }}>{magnet.intro}</p>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)" }}>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)" }}>
           {checked.size} / {total}{" "}{t("cochés")}
         </span>
-        <div style={{ width: 100, height: 5, borderRadius: 3, background: "rgba(224,30,30,0.12)", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${(checked.size / total) * 100}%`, background: "#E01E1E", transition: "width 0.3s" }} />
+        <div style={{ width: 100, height: 5, borderRadius: 3, background: "rgba(var(--ep-accent-rgb),0.12)", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${(checked.size / total) * 100}%`, background: "var(--ep-accent)", transition: "width 0.3s" }} />
         </div>
       </div>
 
       {magnet.groups.map((group, gi) => (
         <div key={gi} style={{ marginBottom: 18 }}>
           {group.heading && (
-            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 8 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", marginBottom: 8 }}>
               {group.heading}
             </p>
           )}
@@ -427,21 +427,21 @@ function ChecklistContent({ magnet }: { magnet: ChecklistMagnet }) {
                   style={{
                     display: "flex", alignItems: "flex-start", gap: 10, textAlign: "left",
                     padding: "10px 12px", borderRadius: 10, cursor: "pointer",
-                    background: isChecked ? "rgba(74,222,128,0.06)" : "#1a0000",
-                    border: `1px solid ${isChecked ? "rgba(74,222,128,0.25)" : "rgba(137,4,4,0.2)"}`,
+                    background: isChecked ? "rgba(var(--ep-ok-rgb),0.06)" : "var(--ep-s3)",
+                    border: `1px solid ${isChecked ? "rgba(var(--ep-ok-rgb),0.25)" : "rgba(var(--ep-line-rgb),0.2)"}`,
                   }}
                 >
                   <span
                     style={{
                       width: 18, height: 18, borderRadius: 5, flexShrink: 0, marginTop: 1,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      background: isChecked ? "#4ade80" : "transparent",
-                      border: `1px solid ${isChecked ? "#4ade80" : "rgba(245,237,237,0.25)"}`,
+                      background: isChecked ? "var(--ep-ok)" : "transparent",
+                      border: `1px solid ${isChecked ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.25)"}`,
                     }}
                   >
-                    {isChecked && <Check size={12} style={{ color: "#0D0000" }} strokeWidth={3} />}
+                    {isChecked && <Check size={12} style={{ color: "var(--ep-bg)" }} strokeWidth={3} />}
                   </span>
-                  <span style={{ fontSize: 13, color: isChecked ? "rgba(245,237,237,0.5)" : "#F5EDED", lineHeight: 1.5, textDecoration: isChecked ? "line-through" : "none" }}>
+                  <span style={{ fontSize: 13, color: isChecked ? "rgba(var(--ep-ink-rgb),0.5)" : "var(--ep-ink)", lineHeight: 1.5, textDecoration: isChecked ? "line-through" : "none" }}>
                     {item}
                   </span>
                 </button>
@@ -451,8 +451,8 @@ function ChecklistContent({ magnet }: { magnet: ChecklistMagnet }) {
         </div>
       ))}
 
-      <div style={{ borderTop: "1px solid rgba(224,30,30,0.15)", paddingTop: 18, marginTop: 8 }}>
-        <p style={{ fontSize: 13.5, color: "#F5EDED", fontWeight: 700, lineHeight: 1.7, fontStyle: "italic" }}>
+      <div style={{ borderTop: "1px solid rgba(var(--ep-accent-rgb),0.15)", paddingTop: 18, marginTop: 8 }}>
+        <p style={{ fontSize: 13.5, color: "var(--ep-ink)", fontWeight: 700, lineHeight: 1.7, fontStyle: "italic" }}>
           {magnet.conclusion}
         </p>
       </div>
@@ -540,14 +540,14 @@ function QuizFlow({
     return (
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)" }}>
             {t("Question")}{" "}{step + 1} / {magnet.questions.length}
           </span>
         </div>
-        <div style={{ height: 5, borderRadius: 3, background: "rgba(224,30,30,0.12)", overflow: "hidden", marginBottom: 20 }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: "#E01E1E", transition: "width 0.3s" }} />
+        <div style={{ height: 5, borderRadius: 3, background: "rgba(var(--ep-accent-rgb),0.12)", overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: "var(--ep-accent)", transition: "width 0.3s" }} />
         </div>
-        <p style={{ fontSize: 16, fontWeight: 800, color: "#F5EDED", marginBottom: 16, lineHeight: 1.4 }}>{q.question}</p>
+        <p style={{ fontSize: 16, fontWeight: 800, color: "var(--ep-ink)", marginBottom: 16, lineHeight: 1.4 }}>{q.question}</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {q.options.map((opt, i) => (
             <button
@@ -556,11 +556,11 @@ function QuizFlow({
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
                 textAlign: "left", padding: "14px 16px", borderRadius: 12, cursor: "pointer",
-                background: "#1a0000", border: "1px solid rgba(137,4,4,0.25)", color: "#F5EDED", fontSize: 13.5,
+                background: "var(--ep-s3)", border: "1px solid rgba(var(--ep-line-rgb),0.25)", color: "var(--ep-ink)", fontSize: 13.5,
               }}
             >
               {opt.label}
-              <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+              <ChevronRight size={15} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
             </button>
           ))}
         </div>
@@ -573,7 +573,7 @@ function QuizFlow({
   if (!unlocked) {
     if (autoUnlocking) {
       return (
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", textAlign: "center", padding: "24px 0" }}>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.4)", textAlign: "center", padding: "24px 0" }}>
           {t("Déblocage en cours...")}
         </p>
       );
@@ -583,12 +583,12 @@ function QuizFlow({
         <div
           style={{
             textAlign: "center", padding: "28px 20px", borderRadius: 16, marginBottom: 20,
-            background: "rgba(224,30,30,0.08)", border: "1px dashed rgba(224,30,30,0.3)",
+            background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px dashed rgba(var(--ep-accent-rgb),0.3)",
           }}
         >
-          <Sparkles size={22} style={{ color: "#E01E1E", marginBottom: 10 }} />
-          <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>{t("Ton résultat est prêt.")}</p>
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+          <Sparkles size={22} style={{ color: "var(--ep-accent)", marginBottom: 10 }} />
+          <p style={{ fontSize: 15, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px" }}>{t("Ton résultat est prêt.")}</p>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
             {t("Laisse ton email ou ton numéro pour le débloquer.")}
           </p>
         </div>
@@ -602,15 +602,15 @@ function QuizFlow({
       <div
         style={{
           padding: "24px 20px", borderRadius: 16, marginBottom: 8,
-          background: "linear-gradient(135deg, rgba(224,30,30,0.1), rgba(224,30,30,0.02))",
-          border: "1px solid rgba(224,30,30,0.25)",
+          background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.1), rgba(var(--ep-accent-rgb),0.02))",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
         }}
       >
-        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)" }}>
+        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.65)" }}>
           {t("Ton résultat")}
         </span>
-        <p style={{ fontSize: 19, fontWeight: 900, color: "#F5EDED", margin: "6px 0 10px" }}>{result.title}</p>
-        <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.65)", lineHeight: 1.7, margin: 0 }}>{result.description}</p>
+        <p style={{ fontSize: 19, fontWeight: 900, color: "var(--ep-ink)", margin: "6px 0 10px" }}>{result.title}</p>
+        <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: 1.7, margin: 0 }}>{result.description}</p>
       </div>
       <AppCta isLoggedIn={skipCapture} isCoach={isCoach} />
       <RelatedMagnets items={relatedMagnets} />
@@ -731,7 +731,7 @@ export default function LeadMagnetLanding({
         // formulaire pour un aller-retour qui va se résoudre en un instant,
         // juste un état d'attente bref plutôt qu'un flash visuel du
         // formulaire suivi immédiatement de son remplacement.
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", textAlign: "center", padding: "24px 0" }}>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.4)", textAlign: "center", padding: "24px 0" }}>
           {t("Déblocage en cours...")}
         </p>
       ) : (
@@ -739,22 +739,22 @@ export default function LeadMagnetLanding({
           <div
             style={{
               padding: "20px", borderRadius: 16, marginBottom: 20,
-              background: "#1a0000", border: "1px solid rgba(137,4,4,0.25)",
+              background: "var(--ep-s3)", border: "1px solid rgba(var(--ep-line-rgb),0.25)",
             }}
           >
-            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 10 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", marginBottom: 10 }}>
               {t("Ce que tu vas trouver dedans")}
             </p>
             {magnet.format === "guide" ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {magnet.sections.map((s, i) => (
-                  <p key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(245,237,237,0.55)", margin: 0 }}>
-                    <Check size={13} style={{ color: "#E01E1E", flexShrink: 0 }} /> {s.heading}
+                  <p key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", margin: 0 }}>
+                    <Check size={13} style={{ color: "var(--ep-accent)", flexShrink: 0 }} /> {s.heading}
                   </p>
                 ))}
               </div>
             ) : (
-              <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.6, margin: 0 }}>
                 {magnet.groups.reduce((n, g) => n + g.items.length, 0)}{" "}{t("points concrets à checker, prêts à l'emploi.")}
               </p>
             )}

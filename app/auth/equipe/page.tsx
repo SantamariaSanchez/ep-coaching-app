@@ -23,13 +23,13 @@ export default function StaffAuthIndexPage() {
         </div>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-            <Briefcase size={12} style={{ color: "rgba(224,30,30,0.7)" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)" }}>Espace équipe</span>
+            <Briefcase size={12} style={{ color: "rgba(var(--ep-accent-rgb),0.7)" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.7)" }}>Espace équipe</span>
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: "#F5EDED", margin: "0 0 8px", letterSpacing: "-0.03em" }}>Choisis ton poste</h1>
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0, lineHeight: 1.6 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 8px", letterSpacing: "-0.03em" }}>Choisis ton poste</h1>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0, lineHeight: 1.6 }}>
             Réservé aux personnes recrutées. Tu es membre ou client ?{" "}
-            <Link href="/auth/client" style={{ color: "#E01E1E", fontWeight: 700 }}>Connecte-toi ici</Link>.
+            <Link href="/auth/client" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>Connecte-toi ici</Link>.
           </p>
         </div>
         {poles.map((pole) => (
@@ -39,10 +39,10 @@ export default function StaffAuthIndexPage() {
               <Link
                 key={r.key}
                 href={staffLoginPath(r.key)}
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 6px", borderTop: "1px solid rgba(245,237,237,0.05)", textDecoration: "none", color: "#F5EDED", fontSize: 13, fontWeight: 700 }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 6px", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)", textDecoration: "none", color: "var(--ep-ink)", fontSize: 13, fontWeight: 700 }}
               >
                 {r.title}
-                <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
+                <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
               </Link>
             ))}
           </div>

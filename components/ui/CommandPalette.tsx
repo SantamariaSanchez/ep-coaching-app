@@ -264,7 +264,7 @@ export default function CommandPalette({
       onClick={() => setOpen(false)}
       style={{
         position: "fixed", inset: 0, zIndex: 300,
-        background: "rgba(13,0,0,0.7)", backdropFilter: "blur(2px)",
+        background: "rgba(var(--ep-bg-rgb),0.7)", backdropFilter: "blur(2px)",
         display: "flex", alignItems: "flex-start", justifyContent: "center",
         paddingTop: "12vh",
       }}
@@ -272,13 +272,13 @@ export default function CommandPalette({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(560px, 92vw)", background: "#1f0101",
-          border: "1px solid rgba(137,4,4,0.35)", borderRadius: 14,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.5)", overflow: "hidden",
+          width: "min(560px, 92vw)", background: "var(--ep-s1)",
+          border: "1px solid rgba(var(--ep-line-rgb),0.35)", borderRadius: 14,
+          boxShadow: "0 20px 60px rgba(var(--ep-shade-rgb),0.5)", overflow: "hidden",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: "1px solid rgba(137,4,4,0.2)" }}>
-          <Search size={16} style={{ color: "rgba(245,237,237,0.35)", flexShrink: 0 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: "1px solid rgba(var(--ep-line-rgb),0.2)" }}>
+          <Search size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.35)", flexShrink: 0 }} />
           <input
             ref={inputRef}
             value={query}
@@ -286,12 +286,12 @@ export default function CommandPalette({
             onKeyDown={onKeyDownInput}
             placeholder={isCoach ? tr("Un client, une page, « poids », « leads »...") : tr("Une page, un aliment, « poids », « calories »...")}
             aria-label={tr("Rechercher")}
-            style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }}
+            style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ep-ink)", fontSize: 14 }}
           />
           <button
             onClick={() => setOpen(false)}
             aria-label={tr("Fermer")}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.3)", padding: 2, display: "flex" }}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.3)", padding: 2, display: "flex" }}
           >
             <X size={16} />
           </button>
@@ -302,15 +302,15 @@ export default function CommandPalette({
             <button
               key={`qa-${a.key}`}
               onClick={() => go(a.href)}
-              style={{ display: "block", width: "100%", textAlign: "left", padding: "12px 14px", marginBottom: 6, borderRadius: 10, border: "1px solid rgba(224,30,30,0.35)", background: "linear-gradient(135deg, rgba(224,30,30,0.14), rgba(137,4,4,0.06))", cursor: "pointer", color: "#F5EDED" }}
+              style={{ display: "block", width: "100%", textAlign: "left", padding: "12px 14px", marginBottom: 6, borderRadius: 10, border: "1px solid rgba(var(--ep-accent-rgb),0.35)", background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.14), rgba(var(--ep-line-rgb),0.06))", cursor: "pointer", color: "var(--ep-ink)" }}
             >
-              <span style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)" }}>{a.title}</span>
+              <span style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.5)" }}>{a.title}</span>
               <span style={{ display: "block", fontSize: 17, fontWeight: 900, marginTop: 2 }}>{a.value}</span>
-              {a.detail && <span style={{ display: "block", fontSize: 12, color: "rgba(245,237,237,0.6)", marginTop: 2 }}>{a.detail}</span>}
+              {a.detail && <span style={{ display: "block", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)", marginTop: 2 }}>{a.detail}</span>}
             </button>
           ))}
           {results.length === 0 && shownAnswers.length === 0 && (
-            <p style={{ padding: "20px 14px", fontSize: 12.5, color: "rgba(245,237,237,0.35)", textAlign: "center", margin: 0 }}>
+            <p style={{ padding: "20px 14px", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.35)", textAlign: "center", margin: 0 }}>
               {loadingClients ? tr("Chargement des clients...") : tr("Aucun résultat")}
             </p>
           )}
@@ -322,20 +322,20 @@ export default function CommandPalette({
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%",
                 textAlign: "left", padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer",
-                background: i === activeIndex ? "rgba(224,30,30,0.14)" : "transparent",
-                color: i === activeIndex ? "#F5EDED" : "rgba(245,237,237,0.75)",
+                background: i === activeIndex ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent",
+                color: i === activeIndex ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.75)",
                 fontSize: 13.5, fontWeight: 600,
               }}
             >
               <span>{r.label}</span>
-              <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", textTransform: "uppercase", letterSpacing: "0.04em", flexShrink: 0, marginLeft: 10 }}>
+              <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", textTransform: "uppercase", letterSpacing: "0.04em", flexShrink: 0, marginLeft: 10 }}>
                 {r.sub}
               </span>
             </button>
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 14, padding: "8px 14px", borderTop: "1px solid rgba(137,4,4,0.2)", fontSize: 10.5, color: "rgba(245,237,237,0.25)" }}>
+        <div style={{ display: "flex", gap: 14, padding: "8px 14px", borderTop: "1px solid rgba(var(--ep-line-rgb),0.2)", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.25)" }}>
           <span>{tr("↑↓ naviguer")}</span>
           <span>{tr("↵ ouvrir")}</span>
           <span>{tr("esc fermer")}</span>

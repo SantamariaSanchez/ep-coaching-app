@@ -33,13 +33,13 @@ export default async function StaffContractPage({ searchParams }: { searchParams
   return (
     <div style={{ maxWidth: 760, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-        <FileSignature size={18} style={{ color: "#E01E1E" }} />
+        <FileSignature size={18} style={{ color: "var(--ep-accent)" }} />
         <p className="ep-label" style={{ margin: 0 }}>{isResign ? t("Contrat mis à jour") : t("Étape 2 sur 2")}</p>
       </div>
-      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "-0.02em" }}>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "-0.02em" }}>
         {t("Ton contrat de collaboration")}
       </h1>
-      <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.65, margin: "0 0 20px" }}>
+      <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.65, margin: "0 0 20px" }}>
         {isResign
           ? t("Le contrat a évolué depuis ta dernière signature. Relis-le et signe la nouvelle version pour retrouver ton espace.")
           : t("Lis-le tranquillement. Dès que tu signes, ton espace s'ouvre et tu reçois par email une copie du contrat, ta fiche de poste et ton parcours d'intégration.")}

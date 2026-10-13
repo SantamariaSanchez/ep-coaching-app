@@ -7,12 +7,12 @@ import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
 import { ALLERGEN_LABELS, DIET_LABELS, type Allergen, type Diet } from "@/lib/recipes-data";
 
 const inputClass =
-  "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";
-const labelClass = "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors";
+const labelClass = "block text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 function Section({ title }: { title: string }) {
   return (
-    <p className="text-[10px] font-black uppercase tracking-widest text-[#E01E1E] mt-8 mb-4 first:mt-0 border-b border-[#890404]/15 pb-2">
+    <p className="text-[10px] font-black uppercase tracking-widest text-(--ep-accent) mt-8 mb-4 first:mt-0 border-b border-(--ep-line)/15 pb-2">
       {title}
     </p>
   );
@@ -176,7 +176,7 @@ export default function ClientIntakeForm({
 
   return (
     <div className="space-y-1">
-      <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-2">
+      <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-2">
         {t("Toutes les infos du questionnaire d'onboarding, à remplir une fois pour toutes. Elles servent ensuite de référence partout dans l'appli (créateur de recette, programme, nutrition...) sans avoir à reposer les mêmes questions à chaque fois.")}
       </p>
 
@@ -227,14 +227,14 @@ export default function ClientIntakeForm({
       <Section title={t("Santé et récupération")} />
 
       {updateClientStepGoal && (
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 mb-4">
           <div className="flex items-center gap-2 mb-2">
-            <Target size={13} className="text-[#E01E1E]" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white">
+            <Target size={13} className="text-(--ep-accent)" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-strong)">
               {t("Objectif de pas imposé au client")}
             </p>
           </div>
-          <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
+          <p className="text-[11px] text-(--ep-ink)/40 mb-3 leading-relaxed">
             {t("Ce chiffre est celui affiché dans l'app du client, dans \"Steps\". Le client ne peut plus le modifier lui-même. C'est toi, le coach, qui le règles ici.")}
           </p>
           <div className="flex items-center gap-2">
@@ -246,12 +246,12 @@ export default function ClientIntakeForm({
               aria-label={t("Objectif de pas quotidien")}
               className={`${inputClass} w-32`}
             />
-            <span className="text-[10px] text-[#F5EDED]/30">{t("pas / jour")}</span>
+            <span className="text-[10px] text-(--ep-ink)/30">{t("pas / jour")}</span>
             <button
               type="button"
               onClick={handleSaveGoal}
               disabled={goalSaving}
-              className="ml-auto bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
+              className="ml-auto bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
             >
               {goalSaving ? "…" : goalSaved ? t("✓ Enregistré") : t("Enregistrer")}
             </button>
@@ -349,8 +349,8 @@ export default function ClientIntakeForm({
               onClick={() => set("diet_type", form.diet_type === d ? null : d)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                 form.diet_type === d
-                  ? "bg-[#E01E1E] border-[#E01E1E] text-white"
-                  : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50"
+                  ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
+                  : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/50 hover:border-(--ep-line)/50"
               }`}
             >
               {DIET_LABELS[d]}
@@ -368,8 +368,8 @@ export default function ClientIntakeForm({
               onClick={() => toggleAllergen(a)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                 form.allergens.includes(a)
-                  ? "bg-[#E01E1E] border-[#E01E1E] text-white"
-                  : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50"
+                  ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
+                  : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/50 hover:border-(--ep-line)/50"
               }`}
             >
               {ALLERGEN_LABELS[a]}
@@ -459,7 +459,7 @@ export default function ClientIntakeForm({
         <textarea rows={3} value={txt("additional_notes")} onChange={(e) => set("additional_notes", e.target.value || null)} className={`${inputClass} resize-none`} />
       </Field>
 
-      <div className="sticky bottom-0 mt-8 pt-4 pb-1 bg-gradient-to-t from-[#0a0000] via-[#0a0000]/95 to-transparent">
+      <div className="sticky bottom-0 mt-8 pt-4 pb-1 bg-gradient-to-t from-(--ep-bg) via-(--ep-bg)/95 to-transparent">
         {error && (
           <div className="bg-red-950/80 border border-red-500/40 rounded-xl px-4 py-3 mb-3">
             <p className="text-xs text-red-300 font-semibold leading-relaxed">⚠ {t(error)}</p>
@@ -468,7 +468,7 @@ export default function ClientIntakeForm({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest py-3.5 rounded-xl transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest py-3.5 rounded-xl transition-colors"
         >
           {saving ? t("Enregistrement…") : saved ? <><Check size={14} />{" "}{t("Enregistré")}</> : <><Save size={14} /> {isSelf ? t("Enregistrer ma fiche") : t("Enregistrer la fiche client")}</>}
         </button>

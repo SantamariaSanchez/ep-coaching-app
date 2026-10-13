@@ -41,13 +41,13 @@ export default async function ClientMessagesPage() {
   if (!coachId) {
     return (
       <div className="px-6 py-16 text-center max-w-sm mx-auto page-transition">
-        <div className="w-14 h-14 rounded-2xl bg-[#890404]/10 flex items-center justify-center mx-auto mb-4">
-          <Users size={22} className="text-[#F5EDED]/25" strokeWidth={1.5} />
+        <div className="w-14 h-14 rounded-2xl bg-(--ep-line)/10 flex items-center justify-center mx-auto mb-4">
+          <Users size={22} className="text-(--ep-ink)/25" strokeWidth={1.5} />
         </div>
-        <p className="text-[#F5EDED]/60 text-sm font-semibold mb-1">
+        <p className="text-(--ep-ink)/60 text-sm font-semibold mb-1">
           {t("Tu n'as pas encore de coach.")}
         </p>
-        <p className="text-[#F5EDED]/35 text-xs mb-5">
+        <p className="text-(--ep-ink)/35 text-xs mb-5">
           {t("Choisis un coach pour pouvoir lui écrire directement.")}
         </p>
         <Link
@@ -94,12 +94,12 @@ export default async function ClientMessagesPage() {
       <PushPermission userId={user.id} />
 
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[#890404]/20 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-[#E01E1E]/20 border border-[#E01E1E]/30 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-black text-[#E01E1E]">{coachInitials}</span>
+      <div className="px-5 py-4 border-b border-(--ep-line)/20 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-(--ep-accent)/20 border border-(--ep-accent)/30 flex items-center justify-center flex-shrink-0">
+          <span className="text-xs font-black text-(--ep-accent)">{coachInitials}</span>
         </div>
         <div>
-          <p className="text-sm font-black text-white flex items-center gap-1.5">
+          <p className="text-sm font-black text-(--ep-strong) flex items-center gap-1.5">
             {coachName}
             <RoleBadge label={coachBadge} />
             {coachIsAI && (
@@ -109,7 +109,7 @@ export default async function ClientMessagesPage() {
             )}
           </p>
           {coachIsAI && (
-            <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+            <p className="text-[10px] text-(--ep-ink)/35 mt-0.5">
               {t("Réponses automatiques par IA, disponible 24/7.")}
             </p>
           )}

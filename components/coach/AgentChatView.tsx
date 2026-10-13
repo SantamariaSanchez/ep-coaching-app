@@ -13,11 +13,12 @@ import {
   deleteAgentTask,
   type AgentTaskStatus,
 } from "@/app/dashboard/coach/admin/organisation/agents/actions";
+import { withAlpha } from "@/lib/theme-color";
 
 const TASK_STATUS_META: Record<AgentTaskStatus, { label: string; color: string; icon: React.ElementType }> = {
-  a_faire: { label: "À faire", color: "rgba(245,237,237,0.4)", icon: Circle },
-  en_cours: { label: "En cours", color: "#fbbf24", icon: CircleDot },
-  fait: { label: "Fait", color: "#4ade80", icon: Check },
+  a_faire: { label: "À faire", color: "rgba(var(--ep-ink-rgb),0.4)", icon: Circle },
+  en_cours: { label: "En cours", color: "var(--ep-warn)", icon: CircleDot },
+  fait: { label: "Fait", color: "var(--ep-ok)", icon: Check },
 };
 const TASK_STATUS_ORDER: AgentTaskStatus[] = ["a_faire", "en_cours", "fait"];
 
@@ -32,17 +33,17 @@ function TaskRow({
 }) {
   const tr = useT();
   return (
-    <div className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-3">
       <div className="flex items-start justify-between gap-2 mb-1.5">
-        <p className={`text-[12.5px] font-bold ${task.status === "fait" ? "text-[#F5EDED]/35 line-through" : "text-white"}`}>
+        <p className={`text-[12.5px] font-bold ${task.status === "fait" ? "text-(--ep-ink)/35 line-through" : "text-(--ep-strong)"}`}>
           {task.title}
         </p>
-        <button onClick={onDelete} aria-label={tr("Supprimer la tâche")} className="flex-shrink-0 text-[#F5EDED]/25 hover:text-red-400 transition-colors">
+        <button onClick={onDelete} aria-label={tr("Supprimer la tâche")} className="flex-shrink-0 text-(--ep-ink)/25 hover:text-red-400 transition-colors">
           <X size={13} />
         </button>
       </div>
       {task.description && (
-        <p className="text-[11px] text-[#F5EDED]/40 leading-relaxed mb-2">{task.description}</p>
+        <p className="text-[11px] text-(--ep-ink)/40 leading-relaxed mb-2">{task.description}</p>
       )}
       <div className="flex gap-1">
         {TASK_STATUS_ORDER.map((s) => {
@@ -55,8 +56,8 @@ function TaskRow({
               className="flex-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-1 rounded-md border transition-colors"
               style={
                 active
-                  ? { background: `${m.color}1f`, borderColor: `${m.color}70`, color: m.color }
-                  : { background: "transparent", borderColor: "rgba(137,4,4,0.2)", color: "rgba(245,237,237,0.3)" }
+                  ? { background: `${withAlpha(m.color, "1f")}`, borderColor: `${withAlpha(m.color, "70")}`, color: m.color }
+                  : { background: "transparent", borderColor: "rgba(var(--ep-line-rgb),0.2)", color: "rgba(var(--ep-ink-rgb),0.3)" }
               }
             >
               {m.label}
@@ -167,12 +168,12 @@ export default function AgentChatView({
   return (
     <div>
       {/* ── Fiche agent ── */}
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]/70 mb-1">{agent.roleTitle}</p>
-        <p className="text-[13px] text-[#F5EDED]/60 leading-relaxed mb-3">{agent.mission}</p>
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 mb-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent)/70 mb-1">{agent.roleTitle}</p>
+        <p className="text-[13px] text-(--ep-ink)/60 leading-relaxed mb-3">{agent.mission}</p>
         <div className="flex flex-wrap gap-1.5">
           {agent.skills.slice(0, 3).map((s) => (
-            <span key={s} className="text-[9.5px] text-[#F5EDED]/40 border border-[#890404]/25 rounded-full px-2 py-0.5">
+            <span key={s} className="text-[9.5px] text-(--ep-ink)/40 border border-(--ep-line)/25 rounded-full px-2 py-0.5">
               {s.length > 42 ? s.slice(0, 42) + "…" : s}
             </span>
           ))}
@@ -182,32 +183,32 @@ export default function AgentChatView({
       {/* ── Tâches ── */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {tr("Tâches assignées")}{" "}{tasks.length > 0 && `(${tasks.length})`}
           </p>
           <button
             onClick={() => setShowTaskForm((v) => !v)}
             aria-expanded={showTaskForm}
-            className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#E01E1E]"
+            className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-(--ep-accent)"
           >
             <Plus size={12} />{" "}{tr("Assigner")}
           </button>
         </div>
 
         {showTaskForm && (
-          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-lg p-3 mb-2.5 space-y-2">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-lg p-3 mb-2.5 space-y-2">
             <input
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
               placeholder={tr("Titre de la tâche")} aria-label={tr("Titre de la tâche")}
-              className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
+              className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-[13px] text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60"
             />
             <textarea
               value={taskDesc}
               onChange={(e) => setTaskDesc(e.target.value)}
               placeholder={tr("Détails (optionnel)")} aria-label={tr("Détails (optionnel)")}
               rows={2}
-              className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-[12px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
+              className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-[12px] text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 resize-none"
             />
             <button
               onClick={handleCreateTask}
@@ -237,20 +238,20 @@ export default function AgentChatView({
       {/* ── Discussion ── */}
       <div>
         <div className="flex items-center justify-between mb-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">{tr("Discussion")}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">{tr("Discussion")}</p>
           {messages.length > 0 && (
             <button
               onClick={handleClear}
-              className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/30 hover:text-red-400 transition-colors"
+              className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-(--ep-ink)/30 hover:text-red-400 transition-colors"
             >
               <Trash2 size={11} />{" "}{tr("Effacer")}
             </button>
           )}
         </div>
 
-        <div className="bg-[#150000] border border-[#890404]/20 rounded-xl p-3 mb-3 flex flex-col gap-2.5 max-h-[50vh] overflow-y-auto">
+        <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl p-3 mb-3 flex flex-col gap-2.5 max-h-[50vh] overflow-y-auto">
           {messages.length === 0 ? (
-            <p className="text-[12px] text-[#F5EDED]/30 italic py-4 text-center">
+            <p className="text-[12px] text-(--ep-ink)/30 italic py-4 text-center">
               {tr("Écris à")}{" "}{agent.name}{" "}{tr("pour commencer, par exemple : « ")}{agent.exampleTasks[0]}&nbsp;&raquo;
             </p>
           ) : (
@@ -258,7 +259,7 @@ export default function AgentChatView({
               <div
                 key={m.id}
                 className={`max-w-[85%] rounded-xl px-3 py-2 text-[12.5px] leading-relaxed whitespace-pre-wrap ${
-                  m.role === "user" ? "self-end bg-[#E01E1E]/15 text-white" : "self-start bg-[#1f0101] text-[#F5EDED]/75"
+                  m.role === "user" ? "self-end bg-(--ep-accent)/15 text-(--ep-strong)" : "self-start bg-(--ep-s1) text-(--ep-ink)/75"
                 }`}
               >
                 {m.content}
@@ -266,7 +267,7 @@ export default function AgentChatView({
             ))
           )}
           {isPending && (
-            <div className="self-start bg-[#1f0101] text-[#F5EDED]/40 rounded-xl px-3 py-2 text-[12px]">
+            <div className="self-start bg-(--ep-s1) text-(--ep-ink)/40 rounded-xl px-3 py-2 text-[12px]">
               {agent.name}{" "}{tr("réfléchit…")}
             </div>
           )}
@@ -288,7 +289,7 @@ export default function AgentChatView({
             placeholder={`Écris à ${agent.name}…`}
             aria-label={`Message à ${agent.name}`}
             rows={2}
-            className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
+            className="flex-1 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 resize-none"
           />
           <button
             onClick={handleSend}

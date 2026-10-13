@@ -29,7 +29,7 @@ export default async function NoteTemplatesPage({
       <div className="flex items-center gap-4 mb-8">
         <Link
           href={`/dashboard/coach/clients/${id}/notes`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
         >
           <ChevronLeft size={14} />
           {t("Notes")}
@@ -37,13 +37,13 @@ export default async function NoteTemplatesPage({
       </div>
 
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Modèles de messages")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}
         </h1>
-        <p className="mt-1 text-xs text-[#F5EDED]/30">
+        <p className="mt-1 text-xs text-(--ep-ink)/30">
           {t("Clique sur un modèle pour le déplier, copie le message puis colle-le dans sa conversation.")}
         </p>
       </div>

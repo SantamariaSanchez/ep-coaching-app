@@ -46,7 +46,7 @@ export default function TargetsCard({
           <Target size={12} />{" "}{tr("Mes objectifs de")}{" "}{monthLabel}
         </p>
         {!editing && (
-          <button type="button" onClick={() => setEditing(true)} aria-label={tr("Modifier mes objectifs")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 4 }}>
+          <button type="button" onClick={() => setEditing(true)} aria-label={tr("Modifier mes objectifs")} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.45)", cursor: "pointer", padding: 4 }}>
             <Pencil size={13} />
           </button>
         )}
@@ -54,12 +54,12 @@ export default function TargetsCard({
 
       {editing ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0, lineHeight: 1.5 }}>
             {tr("Fixe-toi un chiffre réaliste mais ambitieux pour le mois. Il s'affiche en barre de progression, calculée sur ce que tu notes.")}
           </p>
           {defs.map((d) => (
             <label key={d.key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ flex: 1, fontSize: 12.5, color: "#F5EDED", fontWeight: 600 }}>{d.label}{d.unit === "eur" ? " (€)" : ""}</span>
+              <span style={{ flex: 1, fontSize: 12.5, color: "var(--ep-ink)", fontWeight: 600 }}>{d.label}{d.unit === "eur" ? " (€)" : ""}</span>
               <input
                 type="number"
                 min={0}
@@ -72,7 +72,7 @@ export default function TargetsCard({
               />
             </label>
           ))}
-          {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: 0 }}>{tr(error)}</p>}
+          {error && <p role="alert" style={{ fontSize: 12, color: "var(--ep-pink)", margin: 0 }}>{tr(error)}</p>}
           <button type="button" onClick={save} disabled={pending} className="ep-btn-primary" style={{ height: 40, fontSize: 12 }}>
             <Save size={13} /> {pending ? tr("Enregistrement...") : tr("Enregistrer mes objectifs")}
           </button>
@@ -86,15 +86,15 @@ export default function TargetsCard({
             return (
               <div key={d.key}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 5 }}>
-                  <span style={{ fontSize: 12.5, color: "#F5EDED", fontWeight: 700 }}>{d.label}</span>
-                  <span style={{ fontSize: 12, color: pct >= 100 ? "#4ade80" : "rgba(245,237,237,0.6)", fontWeight: 700 }}>
+                  <span style={{ fontSize: 12.5, color: "var(--ep-ink)", fontWeight: 700 }}>{d.label}</span>
+                  <span style={{ fontSize: 12, color: pct >= 100 ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.6)", fontWeight: 700 }}>
                     {fmt(d, actual)}{goal ? ` / ${fmt(d, goal)}` : ""}
                   </span>
                 </div>
-                <div style={{ height: 6, borderRadius: 3, background: "rgba(224,30,30,0.1)", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${goal ? pct : 0}%`, borderRadius: 3, background: pct >= 100 ? "linear-gradient(90deg,#4ade80,#22c55e)" : "linear-gradient(90deg,#890404,#E01E1E)" }} />
+                <div style={{ height: 6, borderRadius: 3, background: "rgba(var(--ep-accent-rgb),0.1)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${goal ? pct : 0}%`, borderRadius: 3, background: pct >= 100 ? "linear-gradient(90deg,var(--ep-ok),#22c55e)" : "linear-gradient(90deg,var(--ep-line),var(--ep-accent))" }} />
                 </div>
-                {!goal && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "4px 0 0" }}>{tr("Pas d'objectif fixé.")}</p>}
+                {!goal && <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)", margin: "4px 0 0" }}>{tr("Pas d'objectif fixé.")}</p>}
               </div>
             );
           })}

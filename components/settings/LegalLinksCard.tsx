@@ -14,8 +14,8 @@ const LINKS = [
 export default function LegalLinksCard() {
   const t = useT();
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
         {t("Assistance & légal")}
       </p>
       <div className="space-y-0.5">
@@ -23,13 +23,13 @@ export default function LegalLinksCard() {
           <Link
             key={href}
             href={href}
-            className="flex items-center justify-between py-2.5 border-b border-[#890404]/10 last:border-0 group"
+            className="flex items-center justify-between py-2.5 border-b border-(--ep-line)/10 last:border-0 group"
           >
-            <span className="flex items-center gap-2.5 text-sm text-white font-medium">
-              <Icon size={14} className="text-[#F5EDED]/40" />
+            <span className="flex items-center gap-2.5 text-sm text-(--ep-strong) font-medium">
+              <Icon size={14} className="text-(--ep-ink)/40" />
               {t(label)}
             </span>
-            <ChevronRight size={13} className="text-[#F5EDED]/20 group-hover:text-[#F5EDED]/50 transition-colors" />
+            <ChevronRight size={13} className="text-(--ep-ink)/20 group-hover:text-(--ep-ink)/50 transition-colors" />
           </Link>
         ))}
       </div>

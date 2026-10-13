@@ -51,7 +51,7 @@ function StartDayButton({
         onClick={() => start({ dayLabel, programId, muscleGroups })}
         disabled={loading}
         aria-label={`Démarrer la séance ${dayLabel}`}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest py-2.5 transition-colors shadow-[0_0_18px_rgba(224,30,30,0.25)]"
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[11px] font-bold uppercase tracking-widest py-2.5 transition-colors shadow-[0_0_18px_rgba(var(--ep-accent-rgb),0.25)]"
       >
         {loading ? (
           <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -103,26 +103,26 @@ export default function ProgramDaysGrid({
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%",
                 marginBottom: isOpen ? 14 : 0, paddingBottom: isOpen ? 10 : 0,
-                borderBottom: isOpen ? "1px solid rgba(224,30,30,0.1)" : "none",
+                borderBottom: isOpen ? "1px solid rgba(var(--ep-accent-rgb),0.1)" : "none",
                 background: "none", border: "none", cursor: "pointer", textAlign: "left",
               }}
             >
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#E01E1E" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ep-accent)" }}>
                 {day.day_label}
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
+                <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 600 }}>
                   {day.exercises.length}{" "}{t("exercice")}{day.exercises.length > 1 ? "s" : ""}
                 </span>
-                {isOpen ? <ChevronUp size={14} color="rgba(245,237,237,0.3)" /> : <ChevronDown size={14} color="rgba(245,237,237,0.3)" />}
+                {isOpen ? <ChevronUp size={14} color="rgba(var(--ep-ink-rgb),0.3)" /> : <ChevronDown size={14} color="rgba(var(--ep-ink-rgb),0.3)" />}
               </span>
             </button>
 
             {isOpen && (
               <>
                 {accessories.length > 0 && (
-                  <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(137,4,4,0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-                    <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 6px" }}>
+                  <div style={{ background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-line-rgb),0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+                    <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", margin: "0 0 6px" }}>
                       <Backpack size={11} />{" "}{t("À prévoir")}
                     </p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -135,15 +135,15 @@ export default function ProgramDaysGrid({
                             href={a.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
+                            style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "var(--ep-ink)", textDecoration: "none" }}
                           >
                             {a.accessory}
-                            <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
+                            <ExternalLink size={9} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
                           </a>
                         ) : (
                           <span
                             key={a.accessory}
-                            style={{ fontSize: 11.5, fontWeight: 700, color: "#F5EDED" }}
+                            style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ep-ink)" }}
                           >
                             {a.accessory}
                           </span>
@@ -154,7 +154,7 @@ export default function ProgramDaysGrid({
                 )}
 
                 {day.exercises.length === 0 ? (
-                  <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>{t("Aucun exercice")}</p>
+                  <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.22)", fontStyle: "italic" }}>{t("Aucun exercice")}</p>
                 ) : (
                   <ProgramExerciseList exercises={day.exercises} dayNotes={day.notes} />
                 )}

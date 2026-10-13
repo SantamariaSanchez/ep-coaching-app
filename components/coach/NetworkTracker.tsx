@@ -33,10 +33,10 @@ const STATUS_LABELS: Record<ContactStatus, string> = {
 };
 
 const STATUS_COLORS: Record<ContactStatus, string> = {
-  a_contacter: "#F5EDED",
-  en_discussion: "#facc15",
-  actif: "#4ade80",
-  inactif: "rgba(245,237,237,0.35)",
+  a_contacter: "var(--ep-ink)",
+  en_discussion: "var(--ep-yellow)",
+  actif: "var(--ep-ok)",
+  inactif: "rgba(var(--ep-ink-rgb),0.35)",
 };
 
 const STATUS_ORDER: ContactStatus[] = ["a_contacter", "en_discussion", "actif", "inactif"];
@@ -63,16 +63,16 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
   }
 
   return (
-    <div className="rounded-xl bg-[#1f0101] border border-[#890404]/20 px-4 py-3.5">
+    <div className="rounded-xl bg-(--ep-s1) border border-(--ep-line)/20 px-4 py-3.5">
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-bold text-white truncate">{contact.name}</p>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0">
+            <p className="text-sm font-bold text-(--ep-strong) truncate">{contact.name}</p>
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/40 flex-shrink-0">
               {CATEGORY_LABELS[contact.category]}
             </span>
           </div>
-          {contact.contact_info && <p className="text-[11px] text-[#F5EDED]/45 mt-0.5 truncate">{contact.contact_info}</p>}
+          {contact.contact_info && <p className="text-[11px] text-(--ep-ink)/45 mt-0.5 truncate">{contact.contact_info}</p>}
         </div>
         <select
           value={status}
@@ -80,8 +80,8 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
           aria-label={`Statut de ${contact.name}`}
           className="flex-shrink-0"
           style={{
-            background: "#150000",
-            border: "1px solid rgba(137,4,4,0.3)",
+            background: "var(--ep-s2)",
+            border: "1px solid rgba(var(--ep-line-rgb),0.3)",
             borderRadius: 8,
             fontSize: 10.5,
             fontWeight: 700,
@@ -91,7 +91,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
           }}
         >
           {STATUS_ORDER.map((s) => (
-            <option key={s} value={s} style={{ color: "#F5EDED", background: "#150000" }}>
+            <option key={s} value={s} style={{ color: "var(--ep-ink)", background: "var(--ep-s2)" }}>
               {STATUS_LABELS[s]}
             </option>
           ))}
@@ -100,7 +100,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
           type="button"
           onClick={() => deleteNetworkContact(contact.id)}
           aria-label={t("Supprimer ce contact")}
-          className="text-[#F5EDED]/15 hover:text-red-400 flex-shrink-0"
+          className="text-(--ep-ink)/15 hover:text-red-400 flex-shrink-0"
         >
           <Trash2 size={13} />
         </button>
@@ -114,7 +114,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
             placeholder={t("Note (ex. contacté le 12/09 pour un partenariat croisé, en attente de réponse)")}
             rows={2}
             aria-label={t("Note")}
-            className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
+            className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60 resize-none"
           />
           <div className="flex gap-2">
             <button
@@ -123,7 +123,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
                 setNote(contact.note ?? "");
                 setNoteOpen(false);
               }}
-              className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2"
+              className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong) px-2"
             >
               {t("Annuler")}
             </button>
@@ -131,7 +131,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
               type="button"
               onClick={handleSaveNote}
               disabled={savingNote}
-              className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5"
+              className="bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5"
             >
               {savingNote ? t("Enregistrement…") : t("Enregistrer")}
             </button>
@@ -141,10 +141,10 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
         <button
           type="button"
           onClick={() => setNoteOpen(true)}
-          className="flex items-center gap-1.5 mt-2 text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+          className="flex items-center gap-1.5 mt-2 text-[10.5px] text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors"
         >
           <StickyNote size={11} />
-          {contact.note ? <span className="text-[#F5EDED]/55 italic truncate">{contact.note}</span> : t("Ajouter une note")}
+          {contact.note ? <span className="text-(--ep-ink)/55 italic truncate">{contact.note}</span> : t("Ajouter une note")}
         </button>
       )}
     </div>
@@ -172,13 +172,13 @@ function NewContactForm({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="rounded-lg border border-[#890404]/25 bg-[#150000] p-3.5 space-y-2.5 mb-3">
+    <div className="rounded-lg border border-(--ep-line)/25 bg-(--ep-s2) p-3.5 space-y-2.5 mb-3">
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder={t("Nom")}
         aria-label={t("Nom du contact")}
-        className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+        className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
       />
       <div className="flex flex-wrap gap-1.5">
         {(Object.keys(CATEGORY_LABELS) as ContactCategory[]).map((c) => (
@@ -188,9 +188,9 @@ function NewContactForm({ onClose }: { onClose: () => void }) {
             onClick={() => setCategory(c)}
             className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border"
             style={{
-              background: category === c ? "rgba(224,30,30,0.15)" : "transparent",
-              borderColor: category === c ? "rgba(224,30,30,0.5)" : "rgba(137,4,4,0.25)",
-              color: category === c ? "#fff" : "rgba(245,237,237,0.45)",
+              background: category === c ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+              borderColor: category === c ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-line-rgb),0.25)",
+              color: category === c ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.45)",
             }}
           >
             {CATEGORY_LABELS[c]}
@@ -202,17 +202,17 @@ function NewContactForm({ onClose }: { onClose: () => void }) {
         onChange={(e) => setContactInfo(e.target.value)}
         placeholder={t("Email, tél ou Instagram (optionnel)")}
         aria-label={t("Coordonnées")}
-        className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+        className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
       />
       {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
       <div className="flex gap-2">
-        <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2">
+        <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong) px-2">
           {t("Annuler")}
         </button>
         <button
           onClick={handleSubmit}
           disabled={saving || !name.trim()}
-          className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2.5"
+          className="flex-1 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest rounded-lg py-2.5"
         >
           {saving ? t("Ajout…") : t("Ajouter")}
         </button>
@@ -242,9 +242,9 @@ export default function NetworkTracker({ contacts }: { contacts: NetworkContact[
             onClick={() => setStatusFilter("all")}
             className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border"
             style={{
-              background: statusFilter === "all" ? "rgba(224,30,30,0.14)" : "transparent",
-              borderColor: statusFilter === "all" ? "rgba(224,30,30,0.35)" : "rgba(137,4,4,0.25)",
-              color: statusFilter === "all" ? "#E01E1E" : "rgba(245,237,237,0.45)",
+              background: statusFilter === "all" ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent",
+              borderColor: statusFilter === "all" ? "rgba(var(--ep-accent-rgb),0.35)" : "rgba(var(--ep-line-rgb),0.25)",
+              color: statusFilter === "all" ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
             }}
           >
             {t("Tous")}{" "}{contacts.length > 0 && <span className="opacity-65">{contacts.length}</span>}
@@ -255,9 +255,9 @@ export default function NetworkTracker({ contacts }: { contacts: NetworkContact[
               onClick={() => setStatusFilter(s)}
               className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border"
               style={{
-                background: statusFilter === s ? "rgba(224,30,30,0.14)" : "transparent",
-                borderColor: statusFilter === s ? "rgba(224,30,30,0.35)" : "rgba(137,4,4,0.25)",
-                color: statusFilter === s ? "#E01E1E" : "rgba(245,237,237,0.45)",
+                background: statusFilter === s ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent",
+                borderColor: statusFilter === s ? "rgba(var(--ep-accent-rgb),0.35)" : "rgba(var(--ep-line-rgb),0.25)",
+                color: statusFilter === s ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
               }}
             >
               {STATUS_LABELS[s]} {countByStatus[s] > 0 && <span className="opacity-65">{countByStatus[s]}</span>}
@@ -267,7 +267,7 @@ export default function NetworkTracker({ contacts }: { contacts: NetworkContact[
         {!formOpen && (
           <button
             onClick={() => setFormOpen(true)}
-            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) flex-shrink-0"
           >
             <Plus size={12} />{" "}{t("Contact")}
           </button>
@@ -277,9 +277,9 @@ export default function NetworkTracker({ contacts }: { contacts: NetworkContact[
       {formOpen && <NewContactForm onClose={() => setFormOpen(false)} />}
 
       {visible.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
-          <Users size={22} className="text-[#F5EDED]/15 mx-auto mb-2.5" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-12 text-center">
+          <Users size={22} className="text-(--ep-ink)/15 mx-auto mb-2.5" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">
             {contacts.length === 0
               ? t("Aucun contact pour l'instant. Ajoute un partenaire, un affilié ou un influenceur à suivre.")
               : t("Aucun contact ne correspond à ce filtre.")}

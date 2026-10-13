@@ -86,7 +86,7 @@ export function SessionSetsBreakdown({
   const t = useT();
   const groups = groupByExercise(sets);
   if (groups.length === 0) {
-    return <p className="text-xs text-[#F5EDED]/35 italic">{t("Aucune série enregistrée pour cette séance.")}</p>;
+    return <p className="text-xs text-(--ep-ink)/35 italic">{t("Aucune série enregistrée pour cette séance.")}</p>;
   }
 
   return (
@@ -109,7 +109,7 @@ export function SessionSetsBreakdown({
         const notes = [...new Set(exSets.map((s) => s.notes?.trim()).filter((n): n is string => !!n))];
         return (
           <div key={name}>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5 break-words">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5 break-words">
               {name}
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -126,7 +126,7 @@ export function SessionSetsBreakdown({
                     className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${
                       isPR
                         ? "bg-amber-500/15 text-amber-300 border-amber-500/25"
-                        : "bg-[#890404]/10 text-[#F5EDED]/60 border-[#890404]/20"
+                        : "bg-(--ep-line)/10 text-(--ep-ink)/60 border-(--ep-line)/20"
                     }`}
                   >
                     {s.weight_kg != null ? `${s.weight_kg}kg` : "···"}
@@ -141,7 +141,7 @@ export function SessionSetsBreakdown({
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="ml-1.5 text-[#E01E1E]"
+                          className="ml-1.5 text-(--ep-accent)"
                           title={t("Voir la vidéo du set")}
                         >
                           🎥
@@ -165,7 +165,7 @@ export function SessionSetsBreakdown({
                       className={`text-[10.5px] leading-relaxed px-2 py-1 rounded-lg ${
                         pain
                           ? "bg-red-500/10 text-red-300 border border-red-500/25"
-                          : "text-[#F5EDED]/40 italic"
+                          : "text-(--ep-ink)/40 italic"
                       }`}
                     >
                       {pain && <AlertCircle size={10} className="inline mr-1 -mt-0.5" />}
@@ -183,13 +183,13 @@ export function SessionSetsBreakdown({
 }
 
 function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[#F5EDED]/25">···</span>;
+  if (value == null) return <span className="text-(--ep-ink)/25">···</span>;
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
         <div
           key={i}
-          className={`w-2 h-2 rounded-full ${i < value ? "bg-[#E01E1E]" : "bg-[#F5EDED]/15"}`}
+          className={`w-2 h-2 rounded-full ${i < value ? "bg-(--ep-accent)" : "bg-(--ep-ink)/15"}`}
         />
       ))}
     </div>
@@ -211,15 +211,15 @@ export default function SessionHistoryCard({
   const prCount = countSessionPRs(session.sets);
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[#890404]/5 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-(--ep-line)/5 transition-colors"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-black text-white truncate">
+            <p className="text-sm font-black text-(--ep-strong) truncate">
               {session.day_label}
             </p>
             {prCount > 0 && (
@@ -228,7 +228,7 @@ export default function SessionHistoryCard({
               </span>
             )}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+          <p className="text-[10px] text-(--ep-ink)/35 mt-0.5">
             {new Intl.DateTimeFormat("fr-FR", {
               weekday: "short",
               day: "numeric",
@@ -246,26 +246,26 @@ export default function SessionHistoryCard({
                   <div
                     key={i}
                     className={`w-1.5 h-1.5 rounded-full ${
-                      i < (session.general_feeling ?? 0) ? "bg-[#E01E1E]" : "bg-[#F5EDED]/15"
+                      i < (session.general_feeling ?? 0) ? "bg-(--ep-accent)" : "bg-(--ep-ink)/15"
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
+              <span className="text-[8px] text-(--ep-ink)/25 uppercase tracking-wider">
                 {t("feeling")}
               </span>
             </div>
           )}
           {expanded ? (
-            <ChevronUp size={14} className="text-[#F5EDED]/30" />
+            <ChevronUp size={14} className="text-(--ep-ink)/30" />
           ) : (
-            <ChevronDown size={14} className="text-[#F5EDED]/30" />
+            <ChevronDown size={14} className="text-(--ep-ink)/30" />
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t border-[#890404]/15 px-4 py-3 space-y-3">
+        <div className="border-t border-(--ep-line)/15 px-4 py-3 space-y-3">
           {/* Feeling row */}
           {/* != null plutôt qu'un test de vérité : une note à 0 aurait
               affiché un "0" isolé à la place de la ligne. */}
@@ -273,19 +273,19 @@ export default function SessionHistoryCard({
             <div className="flex gap-4">
               {session.general_feeling != null && (
                 <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">{t("Feeling")}</p>
+                  <p className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider mb-0.5">{t("Feeling")}</p>
                   <FeelingDots value={session.general_feeling} />
                 </div>
               )}
               {session.energy_level != null && (
                 <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">{t("Énergie")}</p>
+                  <p className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider mb-0.5">{t("Énergie")}</p>
                   <FeelingDots value={session.energy_level} />
                 </div>
               )}
               {session.pump != null && (
                 <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">{t("Pump")}</p>
+                  <p className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider mb-0.5">{t("Pump")}</p>
                   <FeelingDots value={session.pump} />
                 </div>
               )}
@@ -293,7 +293,7 @@ export default function SessionHistoryCard({
           )}
 
           {session.notes && (
-            <p className="text-xs text-[#F5EDED]/50 italic leading-relaxed whitespace-pre-wrap break-words">
+            <p className="text-xs text-(--ep-ink)/50 italic leading-relaxed whitespace-pre-wrap break-words">
               {session.notes}
             </p>
           )}
@@ -303,7 +303,7 @@ export default function SessionHistoryCard({
           {recapHref && (
             <Link
               href={recapHref}
-              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
             >
               {t("Ouvrir le récap")}
               <ChevronRight size={12} />

@@ -94,57 +94,57 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
   }
 
   return (
-    <div className="mt-8 pt-6 border-t border-[#890404]/15">
+    <div className="mt-8 pt-6 border-t border-(--ep-line)/15">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Sparkles size={15} className="text-[#E01E1E]" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <Sparkles size={15} className="text-(--ep-accent)" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {t("Mes lead magnets")}
           </p>
         </div>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff3b3b] transition-colors"
+          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-[#ff3b3b] transition-colors"
         >
           <Plus size={13} strokeWidth={2.5} /> {open ? t("Annuler") : t("Ajouter le mien")}
         </button>
       </div>
-      <p className="text-[11px] text-[#F5EDED]/35 mb-4">
+      <p className="text-[11px] text-(--ep-ink)/35 mb-4">
         {t("En plus du catalogue EP Coaching ci-dessus (déjà accessible à tous les coachs), tu peux ajouter tes propres guides ou checklists. Ils apparaissent au même endroit, pour toi et tes clients.")}
       </p>
 
       {open && (
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-5 space-y-3">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 mb-5 space-y-3">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("Titre (ex. Ma routine d'échauffement épaules)")}
             aria-label={t("Titre")}
-            className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+            className="w-full bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
           />
           <input
             value={hook}
             onChange={(e) => setHook(e.target.value)}
             placeholder={t("Accroche (une phrase, affichée avant le contenu)")}
             aria-label={t("Accroche")}
-            className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+            className="w-full bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
           />
           <div className="flex items-center gap-2">
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               aria-label={t("Catégorie")}
-              className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/40"
+              className="flex-1 bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-sm text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/40"
             >
               {RESOURCE_CATEGORIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
-            <div className="flex bg-[#150000] border border-[#890404]/20 rounded-lg p-0.5">
+            <div className="flex bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-0.5">
               <button
                 onClick={() => setFormat("guide")}
                 className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md transition-colors ${
-                  format === "guide" ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/45"
+                  format === "guide" ? "bg-(--ep-accent) text-(--ep-strong)" : "text-(--ep-ink)/45"
                 }`}
               >
                 <BookOpen size={12} />{" "}{t("Guide")}
@@ -152,7 +152,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               <button
                 onClick={() => setFormat("checklist")}
                 className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-md transition-colors ${
-                  format === "checklist" ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/45"
+                  format === "checklist" ? "bg-(--ep-accent) text-(--ep-strong)" : "text-(--ep-ink)/45"
                 }`}
               >
                 <ListChecks size={12} />{" "}{t("Checklist")}
@@ -166,9 +166,9 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               placeholder={format === "guide" ? t("Le contenu, en paragraphes...") : t("Un élément par ligne...")}
               aria-label={t("Contenu")}
               rows={6}
-              className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 resize-y"
+              className="w-full bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40 resize-y"
             />
-            <p className="text-[10px] text-[#F5EDED]/30 mt-1">{bodyHint}</p>
+            <p className="text-[10px] text-(--ep-ink)/30 mt-1">{bodyHint}</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -176,21 +176,21 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               onChange={(e) => setSourceLabel(e.target.value)}
               placeholder={t("Source (optionnel)")}
               aria-label={t("Source")}
-              className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+              className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
             />
             <input
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
               placeholder={t("Lien de la source (optionnel)")}
               aria-label={t("Lien de la source")}
-              className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+              className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
             />
           </div>
           <div className="flex items-center justify-end pt-1">
             <button
               onClick={handleCreate}
               disabled={!title.trim() || !hook.trim() || !body.trim() || saving}
-              className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
               {saving ? (
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -205,23 +205,23 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
       )}
 
       {ownMagnets.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 text-center">
-          <Sparkles size={22} className="text-[#F5EDED]/15 mx-auto mb-2" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{t("Aucun lead magnet perso pour l'instant.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-8 text-center">
+          <Sparkles size={22} className="text-(--ep-ink)/15 mx-auto mb-2" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{t("Aucun lead magnet perso pour l'instant.")}</p>
         </div>
       ) : (
         <div className="space-y-2">
           {ownMagnets.map((m) => (
             <div
               key={m.id}
-              className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5"
+              className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3.5"
             >
-              <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles size={15} className="text-[#890404]" strokeWidth={1.8} />
+              <div className="w-9 h-9 rounded-lg bg-(--ep-line)/10 flex items-center justify-center flex-shrink-0">
+                <Sparkles size={15} className="text-(--ep-line)" strokeWidth={1.8} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate">{m.title}</p>
-                <p className="text-[10px] text-[#F5EDED]/35 flex items-center gap-2">
+                <p className="text-sm font-bold text-(--ep-strong) truncate">{m.title}</p>
+                <p className="text-[10px] text-(--ep-ink)/35 flex items-center gap-2">
                   <span className="flex items-center gap-1"><Hash size={9} />{m.keyword}</span>
                   <span>{m.category}</span>
                   {!m.published && <span className="text-amber-400">{t("Masqué")}</span>}
@@ -230,7 +230,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               <button
                 onClick={() => handleToggle(m.id, !m.published)}
                 disabled={busyId === m.id}
-                className="text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors p-1.5 disabled:opacity-40"
+                className="text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors p-1.5 disabled:opacity-40"
                 title={m.published ? t("Masquer") : t("Republier")}
               >
                 {m.published ? <Eye size={15} strokeWidth={1.8} /> : <EyeOff size={15} strokeWidth={1.8} />}
@@ -238,7 +238,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               <button
                 onClick={() => handleDelete(m.id)}
                 disabled={busyId === m.id}
-                className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-1.5 disabled:opacity-40"
+                className="text-(--ep-ink)/25 hover:text-red-500 transition-colors p-1.5 disabled:opacity-40"
                 title={t("Supprimer")}
                 aria-label={t("Supprimer")}
               >

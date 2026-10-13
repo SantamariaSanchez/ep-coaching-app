@@ -20,7 +20,7 @@ function CopyButton({ text }: { text: string }) {
           window.prompt("Copie le texte :", text);
         }
       }}
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid rgba(224,30,30,0.35)", borderRadius: 8, color: copied ? "#4ade80" : "#F5EDED", fontSize: 11, fontWeight: 700, padding: "6px 10px", cursor: "pointer", flexShrink: 0 }}
+      style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid rgba(var(--ep-accent-rgb),0.35)", borderRadius: 8, color: copied ? "var(--ep-ok)" : "var(--ep-ink)", fontSize: 11, fontWeight: 700, padding: "6px 10px", cursor: "pointer", flexShrink: 0 }}
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? tr("Copié") : tr("Copier")}
@@ -42,14 +42,14 @@ export default function TemplatesLibrary({ templates }: { templates: StaffTempla
           <div key={t.title} className="ep-card" style={{ padding: "13px 15px", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 2px" }}>{t.title}</p>
-                <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+                <p style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 2px" }}>{t.title}</p>
+                <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
                   {CHANNEL_LABELS[t.channel]} · {t.when}
                 </p>
               </div>
               <CopyButton text={t.body} />
             </div>
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap", padding: "10px 12px", borderRadius: 10, background: "rgba(0,0,0,0.25)", border: "1px solid rgba(245,237,237,0.05)" }}>{t.body}</p>
+            <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.72)", lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap", padding: "10px 12px", borderRadius: 10, background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>{t.body}</p>
           </div>
         ))}
       </div>

@@ -6,17 +6,17 @@ import { Plus, Trash2, Droplet } from "lucide-react";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
 
 const inputClass =
-  "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";
-const labelClass = "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors";
+const labelClass = "block text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 const FLOW_LABELS: Record<string, string> = { leger: "Léger", moyen: "Moyen", abondant: "Abondant" };
 const SYMPTOM_OPTIONS = ["Douleurs", "Fatigue", "Ballonnements", "Sautes d'humeur", "Fringales", "Migraines"];
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-3 py-2.5 text-center">
-      <p className="text-[8px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{label}</p>
-      <p className="text-sm font-black text-white mt-0.5">{value}</p>
+    <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl px-3 py-2.5 text-center">
+      <p className="text-[8px] font-bold uppercase tracking-widest text-(--ep-ink)/30">{label}</p>
+      <p className="text-sm font-black text-(--ep-strong) mt-0.5">{value}</p>
     </div>
   );
 }
@@ -110,7 +110,7 @@ export default function ClientPeriodTracking({
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
+      <p className="text-xs text-(--ep-ink)/40 leading-relaxed">
         {t("Suivi du cycle. Utile pour comprendre les fluctuations d'énergie, de poids d'eau et de performance au fil du mois. Log le début de chaque cycle, la durée moyenne se calcule automatiquement.")}
       </p>
 
@@ -130,12 +130,12 @@ export default function ClientPeriodTracking({
       {!showForm ? (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/55 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
         >
           <Plus size={13} />{" "}{t("Logger un cycle")}
         </button>
       ) : (
-        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4 space-y-3">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>{t("Date de début")}</label>
@@ -154,7 +154,7 @@ export default function ClientPeriodTracking({
                   key={key}
                   onClick={() => setFlow(flow === key ? "" : key)}
                   className={`flex-1 text-xs font-bold uppercase tracking-widest px-2 py-2 rounded-lg border transition-colors ${
-                    flow === key ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white" : "border-[#890404]/25 text-[#F5EDED]/40"
+                    flow === key ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
                   }`}
                 >
                   {l}
@@ -170,7 +170,7 @@ export default function ClientPeriodTracking({
                   key={s}
                   onClick={() => toggleSymptom(s)}
                   className={`px-2.5 py-1.5 rounded-full text-[10px] font-bold border transition-colors ${
-                    symptoms.has(s) ? "bg-[#E01E1E] border-[#E01E1E] text-white" : "border-[#890404]/25 text-[#F5EDED]/45"
+                    symptoms.has(s) ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)" : "border-(--ep-line)/25 text-(--ep-ink)/45"
                   }`}
                 >
                   {s}
@@ -184,13 +184,13 @@ export default function ClientPeriodTracking({
           </div>
           {error && <p className="text-xs text-red-400">{t(error)}</p>}
           <div className="flex gap-2">
-            <button onClick={() => setShowForm(false)} className="flex-1 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 border border-[#890404]/25 rounded-lg py-2.5">
+            <button onClick={() => setShowForm(false)} className="flex-1 text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 border border-(--ep-line)/25 rounded-lg py-2.5">
               {t("Annuler")}
             </button>
             <button
               onClick={handleAdd}
               disabled={saving}
-              className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest rounded-lg py-2.5 transition-colors"
+              className="flex-1 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest rounded-lg py-2.5 transition-colors"
             >
               {saving ? t("Enregistrement…") : t("Enregistrer")}
             </button>
@@ -200,31 +200,31 @@ export default function ClientPeriodTracking({
 
       <div className="space-y-2">
         {logs.map((log) => (
-          <div key={log.id} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3 flex items-start justify-between gap-3">
+          <div key={log.id} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-3 flex items-start justify-between gap-3">
             <div className="flex items-start gap-2.5">
-              <Droplet size={13} className="text-[#E01E1E] mt-0.5 flex-shrink-0" />
+              <Droplet size={13} className="text-(--ep-accent) mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-xs font-bold text-white">
+                <p className="text-xs font-bold text-(--ep-strong)">
                   {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(log.start_date))}
                   {log.end_date && ` → ${new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(log.end_date))}`}
                 </p>
                 {(log.flow || log.symptoms.length > 0) && (
-                  <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+                  <p className="text-[10px] text-(--ep-ink)/35 mt-0.5">
                     {log.flow ? FLOW_LABELS[log.flow] : ""}
                     {log.flow && log.symptoms.length > 0 ? " · " : ""}
                     {log.symptoms.join(", ")}
                   </p>
                 )}
-                {log.notes && <p className="text-[10px] text-[#F5EDED]/30 mt-0.5">{log.notes}</p>}
+                {log.notes && <p className="text-[10px] text-(--ep-ink)/30 mt-0.5">{log.notes}</p>}
               </div>
             </div>
-            <button onClick={() => handleDelete(log.id)} aria-label={t("Supprimer ce cycle")} className="text-[#F5EDED]/20 hover:text-red-400 flex-shrink-0">
+            <button onClick={() => handleDelete(log.id)} aria-label={t("Supprimer ce cycle")} className="text-(--ep-ink)/20 hover:text-red-400 flex-shrink-0">
               <Trash2 size={13} />
             </button>
           </div>
         ))}
         {logs.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 text-center py-6">{t("Aucun cycle loggé pour l'instant.")}</p>
+          <p className="text-xs text-(--ep-ink)/25 text-center py-6">{t("Aucun cycle loggé pour l'instant.")}</p>
         )}
       </div>
     </div>

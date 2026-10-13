@@ -3,28 +3,27 @@
 /* ── EP Coaching — design tokens ─────────────────────────────────────────── */
 
 :root {
-  --ep-red:        #E01E1E;
-  --ep-dark-red:   #890404;
-  --ep-med-red:    #B00202;
-  --ep-black:      #270101;
-  --ep-deep:       #0D0000;
-  --ep-light:      #F5EDED;
-  --ep-pink:       #FDC4C4;
+  /* Noms historiques : suivent maintenant l'ambiance (voir plus bas). */
+  --ep-red:        var(--ep-accent);
+  --ep-dark-red:   var(--ep-line);
+  --ep-med-red:    var(--ep-accent-2);
+  --ep-black:      var(--ep-s4);
+  --ep-deep:       var(--ep-bg);
+  --ep-light:      var(--ep-ink);
   /* Accent premium (retour direct 2026-09-02 : "joue sur les couleurs, du
      rouge et noir mais ajoute a des endroits du or, du blanc, du rose") —
      réservé aux moments qui méritent d'être remarqués (série en cours,
      record personnel, palier franchi), jamais la couleur dominante d'un
      écran : l'identité reste rouge/noir, l'or est la touche qui récompense. */
-  --ep-gold:       #D9A94E;
-  --ep-gold-soft:  rgba(217, 169, 78, 0.15);
+  --ep-gold-soft:  rgba(var(--ep-gold-rgb), 0.15);
 
-  --ep-glass:      rgba(16, 1, 1, 0.60);
-  --ep-glass-med:  rgba(24, 2, 2, 0.72);
-  --ep-glass-dark: rgba(8,  0, 0, 0.88);
+  --ep-glass:      rgba(var(--ep-bg-rgb), 0.60);
+  --ep-glass-med:  rgba(var(--ep-s1-rgb), 0.72);
+  --ep-glass-dark: rgba(var(--ep-page-rgb), 0.88);
 
-  --ep-border:         rgba(224, 30, 30, 0.12);
-  --ep-border-accent:  rgba(224, 30, 30, 0.35);
-  --ep-muted:          rgba(245, 237, 237, 0.35);
+  --ep-border:         rgba(var(--ep-accent-rgb), 0.12);
+  --ep-border-accent:  rgba(var(--ep-accent-rgb), 0.35);
+  --ep-muted:          rgba(var(--ep-ink-rgb), 0.35);
 
   --radius-sm:   10px;
   --radius-md:   16px;
@@ -51,23 +50,231 @@
   --ep-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+
+/* ── Ambiances (2026-10-13) ──────────────────────────────────────────────
+   Retours de membres : « trop sombre », « pas adapté pour une fille ».
+   Toutes les couleurs de l'appli passent par ces variables : « sombre »
+   (l'identité d'origine, par défaut), « claire » et « douce » (rose poudré).
+   Choix dans Paramètres > Apparence et à l'onboarding, posé sur <html
+   data-theme> avant l'affichage (script de app/layout.tsx). Chaque couleur a
+   sa version -rgb pour les opacités : rgba(var(--ep-accent-rgb), 0.3). */
+:root {
+  --ep-ink: #F5EDED;
+  --ep-ink-rgb: 245, 237, 237;
+  --ep-strong: #FFFFFF;
+  --ep-strong-rgb: 255, 255, 255;
+  --ep-accent: #E01E1E;
+  --ep-accent-rgb: 224, 30, 30;
+  --ep-accent-2: #B00202;
+  --ep-accent-2-rgb: 176, 2, 2;
+  --ep-accent-hi: #FF4444;
+  --ep-accent-hi-rgb: 255, 68, 68;
+  --ep-accent-hi2: #FF6B6B;
+  --ep-accent-hi2-rgb: 255, 107, 107;
+  --ep-pink: #FDC4C4;
+  --ep-pink-rgb: 253, 196, 196;
+  --ep-line: #890404;
+  --ep-line-rgb: 137, 4, 4;
+  --ep-page: #080000;
+  --ep-page-rgb: 8, 0, 0;
+  --ep-bg: #0D0000;
+  --ep-bg-rgb: 13, 0, 0;
+  --ep-s1: #1F0101;
+  --ep-s1-rgb: 31, 1, 1;
+  --ep-s2: #150000;
+  --ep-s2-rgb: 21, 0, 0;
+  --ep-s3: #1A0000;
+  --ep-s3-rgb: 26, 0, 0;
+  --ep-s4: #270101;
+  --ep-s4-rgb: 39, 1, 1;
+  --ep-s5: #140000;
+  --ep-s5-rgb: 20, 0, 0;
+  --ep-shade: #000000;
+  --ep-shade-rgb: 0, 0, 0;
+  --ep-hi: #FFFFFF;
+  --ep-hi-rgb: 255, 255, 255;
+  --ep-ok: #4ADE80;
+  --ep-ok-rgb: 74, 222, 128;
+  --ep-okbg: #0A1F0A;
+  --ep-okbg-rgb: 10, 31, 10;
+  --ep-warn: #FBBF24;
+  --ep-warn-rgb: 251, 191, 36;
+  --ep-yellow: #FACC15;
+  --ep-yellow-rgb: 250, 204, 21;
+  --ep-bad: #F87171;
+  --ep-bad-rgb: 248, 113, 113;
+  --ep-info: #60A5FA;
+  --ep-info-rgb: 96, 165, 250;
+  --ep-orange: #FB923C;
+  --ep-orange-rgb: 251, 146, 60;
+  --ep-violet: #A78BFA;
+  --ep-violet-rgb: 167, 139, 250;
+  --ep-gold: #D9A94E;
+  --ep-gold-rgb: 217, 169, 78;
+  color-scheme: dark;
+}
+html[data-theme="claire"] {
+  --ep-ink: #2A1B1F;
+  --ep-ink-rgb: 42, 27, 31;
+  --ep-strong: #170D10;
+  --ep-strong-rgb: 23, 13, 16;
+  --ep-accent: #D7262E;
+  --ep-accent-rgb: 215, 38, 46;
+  --ep-accent-2: #B01C23;
+  --ep-accent-2-rgb: 176, 28, 35;
+  --ep-accent-hi: #C8202A;
+  --ep-accent-hi-rgb: 200, 32, 42;
+  --ep-accent-hi2: #CF3640;
+  --ep-accent-hi2-rgb: 207, 54, 64;
+  --ep-pink: #A9455A;
+  --ep-pink-rgb: 169, 69, 90;
+  --ep-line: #C48088;
+  --ep-line-rgb: 196, 128, 136;
+  --ep-page: #F7F3F2;
+  --ep-page-rgb: 247, 243, 242;
+  --ep-bg: #F7F3F2;
+  --ep-bg-rgb: 247, 243, 242;
+  --ep-s1: #FFFFFF;
+  --ep-s1-rgb: 255, 255, 255;
+  --ep-s2: #F4EEED;
+  --ep-s2-rgb: 244, 238, 237;
+  --ep-s3: #FCFAF9;
+  --ep-s3-rgb: 252, 250, 249;
+  --ep-s4: #EFE6E5;
+  --ep-s4-rgb: 239, 230, 229;
+  --ep-s5: #FAF6F5;
+  --ep-s5-rgb: 250, 246, 245;
+  --ep-shade: #BBA6AA;
+  --ep-shade-rgb: 187, 166, 170;
+  --ep-hi: #2A1B1F;
+  --ep-hi-rgb: 42, 27, 31;
+  --ep-ok: #15803D;
+  --ep-ok-rgb: 21, 128, 61;
+  --ep-okbg: #E8F6EC;
+  --ep-okbg-rgb: 232, 246, 236;
+  --ep-warn: #B45309;
+  --ep-warn-rgb: 180, 83, 9;
+  --ep-yellow: #A16207;
+  --ep-yellow-rgb: 161, 98, 7;
+  --ep-bad: #DC2626;
+  --ep-bad-rgb: 220, 38, 38;
+  --ep-info: #1D4ED8;
+  --ep-info-rgb: 29, 78, 216;
+  --ep-orange: #C2410C;
+  --ep-orange-rgb: 194, 65, 12;
+  --ep-violet: #6D28D9;
+  --ep-violet-rgb: 109, 40, 217;
+  --ep-gold: #A47722;
+  --ep-gold-rgb: 164, 119, 34;
+  color-scheme: light;
+}
+html[data-theme="douce"] {
+  --ep-ink: #3B2530;
+  --ep-ink-rgb: 59, 37, 48;
+  --ep-strong: #29141E;
+  --ep-strong-rgb: 41, 20, 30;
+  --ep-accent: #D64F7F;
+  --ep-accent-rgb: 214, 79, 127;
+  --ep-accent-2: #B83A67;
+  --ep-accent-2-rgb: 184, 58, 103;
+  --ep-accent-hi: #C43D6E;
+  --ep-accent-hi-rgb: 196, 61, 110;
+  --ep-accent-hi2: #CC4F7B;
+  --ep-accent-hi2-rgb: 204, 79, 123;
+  --ep-pink: #A8466D;
+  --ep-pink-rgb: 168, 70, 109;
+  --ep-line: #D893AB;
+  --ep-line-rgb: 216, 147, 171;
+  --ep-page: #FDF5F6;
+  --ep-page-rgb: 253, 245, 246;
+  --ep-bg: #FDF5F6;
+  --ep-bg-rgb: 253, 245, 246;
+  --ep-s1: #FFFFFF;
+  --ep-s1-rgb: 255, 255, 255;
+  --ep-s2: #FCEEF2;
+  --ep-s2-rgb: 252, 238, 242;
+  --ep-s3: #FFFAFB;
+  --ep-s3-rgb: 255, 250, 251;
+  --ep-s4: #F8E5EB;
+  --ep-s4-rgb: 248, 229, 235;
+  --ep-s5: #FEF7F9;
+  --ep-s5-rgb: 254, 247, 249;
+  --ep-shade: #CDA9B7;
+  --ep-shade-rgb: 205, 169, 183;
+  --ep-hi: #3B2530;
+  --ep-hi-rgb: 59, 37, 48;
+  --ep-ok: #15803D;
+  --ep-ok-rgb: 21, 128, 61;
+  --ep-okbg: #E8F6EC;
+  --ep-okbg-rgb: 232, 246, 236;
+  --ep-warn: #B45309;
+  --ep-warn-rgb: 180, 83, 9;
+  --ep-yellow: #A16207;
+  --ep-yellow-rgb: 161, 98, 7;
+  --ep-bad: #DC2626;
+  --ep-bad-rgb: 220, 38, 38;
+  --ep-info: #1D4ED8;
+  --ep-info-rgb: 29, 78, 216;
+  --ep-orange: #C2410C;
+  --ep-orange-rgb: 194, 65, 12;
+  --ep-violet: #7E22CE;
+  --ep-violet-rgb: 126, 34, 206;
+  --ep-gold: #A47722;
+  --ep-gold-rgb: 164, 119, 34;
+  color-scheme: light;
+}
+
+/* Texte « blanc » posé sur un fond accent ou un bouton plein : reste blanc
+   dans toutes les ambiances (sinon texte foncé sur bouton rouge/rose). */
+:is([class~="bg-(--ep-accent)"], [class~="bg-(--ep-accent-2)"], [class~="bg-(--ep-accent)/90"], [class~="bg-(--ep-accent)/80"],
+  [class~="bg-red-500"], [class~="bg-red-600"], [class~="bg-green-500"], [class~="bg-green-600"], [class~="bg-green-700"],
+  [class~="bg-green-600/70"], [class~="bg-emerald-600"], [class~="bg-sky-600"], [class~="bg-sky-600/60"], [class~="bg-blue-600"],
+  [class~="bg-amber-500"], .ep-btn-primary, [style*="background: var(--ep-accent)"], [style*="background-color: var(--ep-accent)"],
+  [style*="background: linear-gradient(135deg, var(--ep-accent)"]) {
+  --ep-strong: #FFFFFF;
+  --ep-strong-rgb: 255, 255, 255;
+}
+
+/* Couleurs d'état Tailwind (vert, ambre...) pensées pour fond noir :
+   assombries pour rester lisibles sur fond clair. */
+html:is([data-theme="claire"], [data-theme="douce"]) {
+  & .text-green-200, & .text-green-300, & .text-green-400, & .text-emerald-300, & .text-emerald-400 { color: #15803D; }
+  & .text-amber-100, & .text-amber-200, & .text-amber-300, & .text-amber-400, & .text-yellow-300, & .text-yellow-400 { color: #B45309; }
+  & .text-red-200, & .text-red-300, & .text-red-400 { color: #DC2626; }
+  & .text-sky-100, & .text-sky-200, & .text-sky-300, & .text-blue-300, & .text-blue-400 { color: #1D4ED8; }
+  & .text-purple-300, & .text-purple-400, & .text-violet-300, & .text-violet-400 { color: #7E22CE; }
+  & .text-orange-300, & .text-orange-400 { color: #C2410C; }
+  & .text-teal-300, & .text-teal-400 { color: #0F766E; }
+  & [class~="bg-red-950/40"] { background-color: #FEF2F2; }
+  & [class~="bg-green-800/60"] { background-color: #DCFCE7; }
+
+  & body::before {
+    background:
+      radial-gradient(ellipse 80% 55% at 50% -10%, rgba(var(--ep-accent-rgb), 0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 105% 85%, rgba(var(--ep-pink-rgb), 0.10) 0%, transparent 55%),
+      var(--ep-page);
+  }
+  & body::after { opacity: 0.015; }
+  & img, & video { color-scheme: normal; }
+}
+
 /* ── Tailwind v4 tokens ──────────────────────────────────────────────────── */
 
 @theme {
-  --color-ep-red:      #E01E1E;
-  --color-ep-dark-red: #890404;
-  --color-ep-med-red:  #B00202;
-  --color-ep-black:    #270101;
-  --color-ep-deep:     #0D0000;
-  --color-ep-light:    #F5EDED;
-  --color-ep-pink:     #FDC4C4;
+  --color-ep-red:      var(--ep-accent);
+  --color-ep-dark-red: var(--ep-line);
+  --color-ep-med-red:  var(--ep-accent-2);
+  --color-ep-black:    var(--ep-s4);
+  --color-ep-deep:     var(--ep-bg);
+  --color-ep-light:    var(--ep-ink);
+  --color-ep-pink:     var(--ep-pink);
   --color-ep-gold:     #D9A94E;
-  --color-primary:     #E01E1E;
-  --color-dark:        #270101;
-  --color-dark-red:    #890404;
-  --color-med-red:     #B00202;
-  --color-light-pink:  #F5EDED;
-  --color-soft-pink:   #FDC4C4;
+  --color-primary:     var(--ep-accent);
+  --color-dark:        var(--ep-s4);
+  --color-dark-red:    var(--ep-line);
+  --color-med-red:     var(--ep-accent-2);
+  --color-light-pink:  var(--ep-ink);
+  --color-soft-pink:   var(--ep-pink);
 
   --font-sans:       var(--font-montserrat, 'Montserrat'), sans-serif;
   --font-display:    var(--font-playfair, 'Playfair Display'), serif;
@@ -121,8 +328,8 @@
 }
 
 @keyframes pulseGlow {
-  0%,100% { box-shadow: 0 0 0 0 rgba(224,30,30,0); }
-  50%      { box-shadow: 0 0 28px 8px rgba(224,30,30,0.25); }
+  0%,100% { box-shadow: 0 0 0 0 rgba(var(--ep-accent-rgb), 0); }
+  50%      { box-shadow: 0 0 28px 8px rgba(var(--ep-accent-rgb), 0.25); }
 }
 
 @keyframes badgePop {
@@ -137,8 +344,8 @@
 
 /* Logo glow breathe */
 @keyframes logoBreathe {
-  0%,100% { text-shadow: 2px 2px 0 #E01E1E, 4px 4px 0 #890404, 0 0 40px rgba(224,30,30,0.2), 0 0 80px rgba(137,4,4,0.1); }
-  50%      { text-shadow: 2px 2px 0 #E01E1E, 4px 4px 0 #890404, 0 0 60px rgba(224,30,30,0.5), 0 0 120px rgba(137,4,4,0.25); }
+  0%,100% { text-shadow: 2px 2px 0 var(--ep-accent), 4px 4px 0 var(--ep-line), 0 0 40px rgba(var(--ep-accent-rgb), 0.2), 0 0 80px rgba(var(--ep-line-rgb), 0.1); }
+  50%      { text-shadow: 2px 2px 0 var(--ep-accent), 4px 4px 0 var(--ep-line), 0 0 60px rgba(var(--ep-accent-rgb), 0.5), 0 0 120px rgba(var(--ep-line-rgb), 0.25); }
 }
 
 /* ── Animations ───────────────────────────────────────────────────────────── */
@@ -193,7 +400,7 @@
   }
 
   body {
-    background: #080000;
+    background: var(--ep-page);
     color: var(--ep-light);
     font-family: var(--font-montserrat, 'Montserrat'), sans-serif;
     min-height: 100vh;
@@ -211,16 +418,16 @@
     z-index: 0;
     background:
       /* Main top-center signature glow */
-      radial-gradient(ellipse 80% 60% at 50% -8%,   rgba(200, 5, 5, 0.32)  0%,  transparent 60%),
+      radial-gradient(ellipse 80% 60% at 50% -8%,   rgba(var(--ep-accent-rgb), 0.32)  0%,  transparent 60%),
       /* Top-left side orb */
-      radial-gradient(ellipse 55% 45% at -5% 20%,   rgba(176, 2, 2, 0.25)  0%,  transparent 55%),
+      radial-gradient(ellipse 55% 45% at -5% 20%,   rgba(var(--ep-accent-2-rgb), 0.25)  0%,  transparent 55%),
       /* Bottom-right corner orb */
-      radial-gradient(ellipse 50% 40% at 108% 88%,  rgba(200, 5, 5, 0.20)  0%,  transparent 52%),
+      radial-gradient(ellipse 50% 40% at 108% 88%,  rgba(var(--ep-accent-rgb), 0.20)  0%,  transparent 52%),
       /* Mid-screen warm depth */
-      radial-gradient(ellipse 70% 35% at 50% 55%,   rgba(50, 2, 2, 0.40)   0%,  transparent 68%),
+      radial-gradient(ellipse 70% 35% at 50% 55%,   rgba(var(--ep-s4-rgb), 0.40)   0%,  transparent 68%),
       /* Bottom-left subtle */
-      radial-gradient(ellipse 40% 30% at 10% 92%,   rgba(137, 4, 4, 0.12)  0%,  transparent 50%),
-      #080000;
+      radial-gradient(ellipse 40% 30% at 10% 92%,   rgba(var(--ep-line-rgb), 0.12)  0%,  transparent 50%),
+      var(--ep-page);
   }
 
   /* ── Grain film ── */
@@ -239,8 +446,8 @@
 
   ::-webkit-scrollbar        { width: 3px; height: 3px; }
   ::-webkit-scrollbar-track  { background: transparent; }
-  ::-webkit-scrollbar-thumb  { background: rgba(137,4,4,0.55); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(224,30,30,0.75); }
+  ::-webkit-scrollbar-thumb  { background: rgba(var(--ep-line-rgb), 0.55); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(var(--ep-accent-rgb), 0.75); }
 
   /* Aucun style de focus clavier nulle part dans l'appli avant ça — un
      utilisateur au clavier (Tab) n'avait que l'anneau bleu par défaut du
@@ -250,7 +457,7 @@
      tapé. .ep-input garde son propre traitement (outline: none + anneau
      dédié), plus spécifique donc prioritaire, aucun conflit. */
   :focus-visible {
-    outline: 2px solid rgba(224, 30, 30, 0.7);
+    outline: 2px solid rgba(var(--ep-accent-rgb), 0.7);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -266,22 +473,22 @@
     background: var(--ep-glass);
     backdrop-filter: var(--blur-card);
     -webkit-backdrop-filter: var(--blur-card);
-    border: 1px solid rgba(224, 30, 30, 0.13);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.13);
     border-radius: var(--radius-lg);
     position: relative;
     overflow: hidden;
     transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.05),
-      inset 0 0 0 1px rgba(224,30,30,0.06),
-      0 4px 32px rgba(0,0,0,0.45);
+      inset 0 1px 0 rgba(var(--ep-hi-rgb), 0.05),
+      inset 0 0 0 1px rgba(var(--ep-accent-rgb), 0.06),
+      0 4px 32px rgba(var(--ep-shade-rgb), 0.45);
   }
   .ep-card::before {
     content: '';
     position: absolute;
     top: 0; left: 10%; right: 10%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.45), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb), 0.45), transparent);
     pointer-events: none;
   }
   @media (hover: hover) and (pointer: fine) {
@@ -289,12 +496,12 @@
        principal de cette appli en PWA installée — et la carte reste
        "soulevée" jusqu'au tap suivant plutôt que de retomber aussitôt. */
     .ep-card:hover {
-      border-color: rgba(224,30,30,0.28);
+      border-color: rgba(var(--ep-accent-rgb), 0.28);
       transform: translateY(-2px);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.07),
-        0 16px 48px rgba(0,0,0,0.55),
-        0 0 40px rgba(137,4,4,0.06);
+        inset 0 1px 0 rgba(var(--ep-hi-rgb), 0.07),
+        0 16px 48px rgba(var(--ep-shade-rgb), 0.55),
+        0 0 40px rgba(var(--ep-line-rgb), 0.06);
     }
   }
   /* Beaucoup de .ep-card sont en réalité des <Link> (lignes de liste,
@@ -305,47 +512,47 @@
   }
 
   .ep-card-highlighted {
-    background: rgba(28, 2, 2, 0.72);
+    background: rgba(var(--ep-s1-rgb), 0.72);
     backdrop-filter: var(--blur-card);
     -webkit-backdrop-filter: var(--blur-card);
-    border: 1px solid rgba(224,30,30,0.32);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.32);
     border-radius: var(--radius-lg);
     position: relative;
     overflow: hidden;
     box-shadow:
-      0 0 60px rgba(224,30,30,0.08),
-      inset 0 1px 0 rgba(224,30,30,0.2),
-      0 6px 32px rgba(0,0,0,0.5);
+      0 0 60px rgba(var(--ep-accent-rgb), 0.08),
+      inset 0 1px 0 rgba(var(--ep-accent-rgb), 0.2),
+      0 6px 32px rgba(var(--ep-shade-rgb), 0.5);
   }
   .ep-card-highlighted::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.9), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb), 0.9), transparent);
     pointer-events: none;
   }
 
   .ep-card-hero {
-    background: rgba(18, 1, 1, 0.65);
+    background: rgba(var(--ep-s3-rgb), 0.65);
     backdrop-filter: blur(32px);
     -webkit-backdrop-filter: blur(32px);
-    border: 1px solid rgba(224,30,30,0.18);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.18);
     border-radius: var(--radius-xl);
     position: relative;
     overflow: hidden;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.05),
-      inset 0 -1px 0 rgba(224,30,30,0.05),
-      0 12px 48px rgba(0,0,0,0.55),
-      0 0 80px rgba(137,4,4,0.05);
+      inset 0 1px 0 rgba(var(--ep-hi-rgb), 0.05),
+      inset 0 -1px 0 rgba(var(--ep-accent-rgb), 0.05),
+      0 12px 48px rgba(var(--ep-shade-rgb), 0.55),
+      0 0 80px rgba(var(--ep-line-rgb), 0.05);
   }
   .ep-card-hero::before {
     content: '';
     position: absolute;
     top: 0; left: 15%; right: 15%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb), 0.6), transparent);
     pointer-events: none;
   }
   .ep-card-hero::after {
@@ -353,17 +560,17 @@
     position: absolute;
     top: -120px; right: -100px;
     width: 320px; height: 320px;
-    background: radial-gradient(circle, rgba(137,4,4,0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(var(--ep-line-rgb), 0.15) 0%, transparent 70%);
     pointer-events: none;
   }
 
   .ep-card-flat {
-    background: rgba(14, 1, 1, 0.90);
-    border: 1px solid rgba(224,30,30,0.10);
+    background: rgba(var(--ep-bg-rgb), 0.90);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.10);
     border-radius: var(--radius-lg);
     position: relative;
     overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    box-shadow: inset 0 1px 0 rgba(var(--ep-hi-rgb), 0.03);
   }
 
   /* Message row (CSS-only hover, no JS event handlers) */
@@ -377,8 +584,8 @@
   }
   @media (hover: hover) and (pointer: fine) {
     .ep-msg-row:hover {
-      border-color: rgba(224,30,30,0.32) !important;
-      background: rgba(28, 2, 2, 0.75) !important;
+      border-color: rgba(var(--ep-accent-rgb), 0.32) !important;
+      background: rgba(var(--ep-s1-rgb), 0.75) !important;
     }
   }
   .ep-msg-row:active {
@@ -388,10 +595,10 @@
   /* ────────────────────────────── INPUTS ─────────────────────────────────── */
 
   .ep-input {
-    background: rgba(0,0,0,0.50);
+    background: rgba(var(--ep-shade-rgb), 0.50);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(224,30,30,0.14);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.14);
     border-radius: var(--radius-sm);
     color: var(--ep-light);
     padding: 14px 16px;
@@ -404,16 +611,16 @@
   .ep-input:focus {
     outline: none;
     border-color: var(--ep-red);
-    box-shadow: 0 0 0 3px rgba(224,30,30,0.12), 0 4px 20px rgba(0,0,0,0.35);
-    background: rgba(5,0,0,0.65);
+    box-shadow: 0 0 0 3px rgba(var(--ep-accent-rgb), 0.12), 0 4px 20px rgba(var(--ep-shade-rgb), 0.35);
+    background: rgba(var(--ep-page-rgb), 0.65);
   }
-  .ep-input::placeholder { color: rgba(245,237,237,0.16); }
+  .ep-input::placeholder { color: rgba(var(--ep-ink-rgb), 0.16); }
 
   /* ────────────────────────────── BUTTONS ─────────────────────────────────── */
 
   .ep-btn-primary {
-    background: linear-gradient(135deg, #E01E1E 0%, #7a0303 100%);
-    color: #F5EDED;
+    background: linear-gradient(135deg, var(--ep-accent) 0%, var(--ep-accent-2) 100%);
+    color: #FFF8F8;
     border: none;
     border-radius: var(--radius-sm);
     padding: 13px 24px;
@@ -433,9 +640,9 @@
     justify-content: center;
     gap: 8px;
     box-shadow:
-      0 4px 24px rgba(224,30,30,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.12),
-      inset 0 -1px 0 rgba(0,0,0,0.2);
+      0 4px 24px rgba(var(--ep-accent-rgb), 0.35),
+      inset 0 1px 0 rgba(var(--ep-hi-rgb), 0.12),
+      inset 0 -1px 0 rgba(var(--ep-shade-rgb), 0.2);
     position: relative;
     overflow: hidden;
   }
@@ -444,14 +651,14 @@
     position: absolute;
     top: 0; left: -100%;
     width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
     transition: left 0.45s ease;
   }
   @media (hover: hover) and (pointer: fine) {
     .ep-btn-primary:hover::before { left: 100%; }
     .ep-btn-primary:hover {
       filter: brightness(1.15);
-      box-shadow: 0 8px 32px rgba(224,30,30,0.50), inset 0 1px 0 rgba(255,255,255,0.14);
+      box-shadow: 0 8px 32px rgba(var(--ep-accent-rgb), 0.50), inset 0 1px 0 rgba(var(--ep-hi-rgb), 0.14);
       transform: translateY(-2px);
     }
   }
@@ -462,11 +669,11 @@
   .ep-btn-primary:disabled{ opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none; }
 
   .ep-btn-secondary {
-    background: rgba(224,30,30,0.07);
+    background: rgba(var(--ep-accent-rgb), 0.07);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    color: rgba(245,237,237,0.70);
-    border: 1px solid rgba(224,30,30,0.20);
+    color: rgba(var(--ep-ink-rgb), 0.70);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.20);
     border-radius: var(--radius-sm);
     padding: 12px 24px;
     font-family: var(--font-montserrat, 'Montserrat'), sans-serif;
@@ -483,21 +690,21 @@
   }
   @media (hover: hover) and (pointer: fine) {
     .ep-btn-secondary:hover {
-      border-color: rgba(224,30,30,0.50);
-      color: #F5EDED;
-      background: rgba(224,30,30,0.13);
-      box-shadow: 0 0 24px rgba(224,30,30,0.12);
+      border-color: rgba(var(--ep-accent-rgb), 0.50);
+      color: var(--ep-ink);
+      background: rgba(var(--ep-accent-rgb), 0.13);
+      box-shadow: 0 0 24px rgba(var(--ep-accent-rgb), 0.12);
     }
   }
   .ep-btn-secondary:active { transform: scale(0.97); }
 
   .ep-btn-icon {
-    background: rgba(255,255,255,0.04);
+    background: rgba(var(--ep-hi-rgb), 0.04);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(224,30,30,0.12);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.12);
     border-radius: var(--radius-sm);
-    color: rgba(245,237,237,0.45);
+    color: rgba(var(--ep-ink-rgb), 0.45);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -506,8 +713,8 @@
   }
   @media (hover: hover) and (pointer: fine) {
     .ep-btn-icon:hover {
-      background: rgba(224,30,30,0.12);
-      border-color: rgba(224,30,30,0.30);
+      background: rgba(var(--ep-accent-rgb), 0.12);
+      border-color: rgba(var(--ep-accent-rgb), 0.30);
       color: var(--ep-light);
     }
   }
@@ -519,9 +726,9 @@
   /* ────────────────────────────── BADGES ─────────────────────────────────── */
 
   .ep-badge-red {
-    background: rgba(224,30,30,0.13);
-    color: #F5EDED;
-    border: 1px solid rgba(224,30,30,0.30);
+    background: rgba(var(--ep-accent-rgb), 0.13);
+    color: var(--ep-ink);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.30);
     border-radius: 20px;
     padding: 3px 11px;
     font-size: 10px;
@@ -531,12 +738,12 @@
     display: inline-block;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    box-shadow: inset 0 1px 0 rgba(224,30,30,0.2);
+    box-shadow: inset 0 1px 0 rgba(var(--ep-accent-rgb), 0.2);
   }
   .ep-badge-green {
-    background: rgba(74,222,128,0.10);
-    color: #4ade80;
-    border: 1px solid rgba(74,222,128,0.22);
+    background: rgba(var(--ep-ok-rgb), 0.10);
+    color: var(--ep-ok);
+    border: 1px solid rgba(var(--ep-ok-rgb), 0.22);
     border-radius: 20px;
     padding: 3px 11px;
     font-size: 10px;
@@ -558,9 +765,9 @@
     display: inline-block;
   }
   .ep-badge-amber {
-    background: rgba(251,191,36,0.10);
-    color: #fbbf24;
-    border: 1px solid rgba(251,191,36,0.22);
+    background: rgba(var(--ep-warn-rgb), 0.10);
+    color: var(--ep-warn);
+    border: 1px solid rgba(var(--ep-warn-rgb), 0.22);
     border-radius: 20px;
     padding: 3px 11px;
     font-size: 10px;
@@ -570,9 +777,9 @@
     display: inline-block;
   }
   .ep-badge-subtle {
-    background: rgba(245,237,237,0.05);
-    color: rgba(245,237,237,0.45);
-    border: 1px solid rgba(245,237,237,0.10);
+    background: rgba(var(--ep-ink-rgb), 0.05);
+    color: rgba(var(--ep-ink-rgb), 0.45);
+    border: 1px solid rgba(var(--ep-ink-rgb), 0.10);
     border-radius: 20px;
     padding: 3px 11px;
     font-size: 10px;
@@ -589,7 +796,7 @@
     font-weight: 700;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: rgba(224,30,30,0.65);
+    color: rgba(var(--ep-accent-rgb), 0.65);
     margin-bottom: 12px;
     display: block;
   }
@@ -598,30 +805,30 @@
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgba(245,237,237,0.28);
+    color: rgba(var(--ep-ink-rgb), 0.28);
   }
   .ep-metric-value {
     font-size: 42px;
     font-weight: 900;
     letter-spacing: -0.05em;
-    color: #F5EDED;
+    color: var(--ep-ink);
     line-height: 1;
   }
   .ep-metric-value-sm {
     font-size: 30px;
     font-weight: 900;
     letter-spacing: -0.04em;
-    color: #F5EDED;
+    color: var(--ep-ink);
     line-height: 1;
   }
   .ep-gradient-text {
-    background: linear-gradient(135deg, #F5EDED 0%, rgba(245,237,237,0.6) 100%);
+    background: linear-gradient(135deg, var(--ep-ink) 0%, rgba(var(--ep-ink-rgb), 0.6) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .ep-gradient-red {
-    background: linear-gradient(135deg, #F5EDED 30%, #FDC4C4 100%);
+    background: linear-gradient(135deg, var(--ep-ink) 30%, var(--ep-pink) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -631,19 +838,19 @@
 
   .ep-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.5), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb), 0.5), transparent);
     margin: 20px 0;
   }
   .ep-divider-subtle {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.15), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb), 0.15), transparent);
     margin: 16px 0;
   }
 
   /* ────────────────────────────── SKELETON ─────────────────────────────── */
 
   .ep-skeleton {
-    background: rgba(20,1,1,0.75);
+    background: rgba(var(--ep-s1-rgb), 0.75);
     border-radius: var(--radius-sm);
     position: relative;
     overflow: hidden;
@@ -652,7 +859,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(224,30,30,0.07) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(var(--ep-accent-rgb), 0.07) 50%, transparent 100%);
     background-size: 200% 100%;
     animation: shimmer 2s ease infinite;
   }
@@ -711,13 +918,13 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     z-index: 40;
-    background: rgba(5, 0, 0, 0.97);
+    background: rgba(var(--ep-page-rgb), 0.97);
     backdrop-filter: var(--blur-nav);
     -webkit-backdrop-filter: var(--blur-nav);
-    border-top: 1px solid rgba(224,30,30,0.18);
+    border-top: 1px solid rgba(var(--ep-accent-rgb), 0.18);
     box-shadow:
-      inset 0 1px 0 rgba(224,30,30,0.10),
-      0 -12px 40px rgba(0,0,0,0.70);
+      inset 0 1px 0 rgba(var(--ep-accent-rgb), 0.10),
+      0 -12px 40px rgba(var(--ep-shade-rgb), 0.70);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -775,7 +982,7 @@
     content: '';
     position: absolute;
     inset: -40px;
-    background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(224,30,30,0.22) 0%, transparent 70%);
+    background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(var(--ep-accent-rgb), 0.22) 0%, transparent 70%);
     pointer-events: none;
     z-index: -1;
   }
@@ -783,16 +990,16 @@
   /* ────────────────────────────── AUTH CARD ─────────────────────────────── */
 
   .ep-auth-card {
-    background: rgba(12, 1, 1, 0.75);
+    background: rgba(var(--ep-s3-rgb), 0.75);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(224,30,30,0.16);
+    border: 1px solid rgba(var(--ep-accent-rgb), 0.16);
     border-radius: var(--radius-xl);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.04),
-      inset 0 0 0 1px rgba(224,30,30,0.05),
-      0 32px 80px rgba(0,0,0,0.70),
-      0 0 120px rgba(137,4,4,0.08);
+      inset 0 1px 0 rgba(var(--ep-hi-rgb), 0.04),
+      inset 0 0 0 1px rgba(var(--ep-accent-rgb), 0.05),
+      0 32px 80px rgba(var(--ep-shade-rgb), 0.70),
+      0 0 120px rgba(var(--ep-line-rgb), 0.08);
     position: relative;
     overflow: hidden;
   }
@@ -801,7 +1008,7 @@
     position: absolute;
     top: 0; left: 20%; right: 20%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.7), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--ep-accent-rgb), 0.7), transparent);
     pointer-events: none;
   }
   .ep-auth-card::after {
@@ -810,7 +1017,7 @@
     top: -80px; left: 50%;
     transform: translateX(-50%);
     width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(176,2,2,0.14) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(var(--ep-accent-2-rgb), 0.14) 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -823,7 +1030,7 @@
     font-weight: 900;
     letter-spacing: -0.04em;
     line-height: 1.05;
-    color: #F5EDED;
+    color: var(--ep-ink);
     margin: 0;
   }
   .ep-h2 {
@@ -831,7 +1038,7 @@
     font-weight: 900;
     letter-spacing: -0.03em;
     line-height: 1.15;
-    color: #F5EDED;
+    color: var(--ep-ink);
     margin: 0;
   }
   .ep-h3 {
@@ -839,21 +1046,21 @@
     font-weight: 800;
     letter-spacing: -0.01em;
     line-height: 1.3;
-    color: #F5EDED;
+    color: var(--ep-ink);
     margin: 0;
   }
   .ep-body {
     font-size: 13.5px;
     font-weight: 500;
     line-height: 1.6;
-    color: rgba(245,237,237,0.55);
+    color: rgba(var(--ep-ink-rgb), 0.55);
     margin: 0;
   }
   .ep-caption {
     font-size: 11px;
     font-weight: 600;
     line-height: 1.5;
-    color: rgba(245,237,237,0.35);
+    color: rgba(var(--ep-ink-rgb), 0.35);
     margin: 0;
   }
 }
@@ -1030,7 +1237,7 @@ html.ep-native .ep-selectable {
   font-weight: 700;
   font-size: 16px;
   line-height: 1.35;
-  color: rgba(245, 237, 237, 0.6);
+  color: rgba(var(--ep-ink-rgb), 0.6);
   margin: 6px 0 0;
   letter-spacing: 0;
   text-transform: none;

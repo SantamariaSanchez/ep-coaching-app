@@ -73,17 +73,17 @@ export default async function CoachsDirectoryPage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/ressources"
-          className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors mb-4"
+          className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors mb-4"
         >
           <ArrowLeft size={11} /> Ressources
         </Link>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           EP Coaching
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {isDirectory ? "Trouve ton coach" : "Ton coach"}
         </h1>
-        <p className="mt-2 text-sm text-[#F5EDED]/45">
+        <p className="mt-2 text-sm text-(--ep-ink)/45">
           {isDirectory
             ? "Chaque coach a ses propres points forts. Filtre par ce qui compte pour toi (objectif, contrainte particulière) pour trouver le bon interlocuteur."
             : "Voilà qui t'accompagne, et sur quoi. Pas de plan recopié sur quelqu'un d'autre : ton suivi se construit sur ta situation, et tu comprends chaque choix qu'on fait."}
@@ -91,8 +91,8 @@ export default async function CoachsDirectoryPage() {
       </div>
 
       {coaches.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <p className="text-sm text-[#F5EDED]/35">Aucun coach disponible pour l&apos;instant.</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <p className="text-sm text-(--ep-ink)/35">Aucun coach disponible pour l&apos;instant.</p>
         </div>
       ) : (
         <CoachDirectoryExplorer coaches={coaches} />

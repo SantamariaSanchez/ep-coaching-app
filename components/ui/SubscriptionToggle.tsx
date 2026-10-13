@@ -111,18 +111,18 @@ export default function SubscriptionToggle({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5">
       <div className="flex items-center gap-3">
         {isActive ? (
           <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
         ) : (
-          <Crown size={18} className="text-[#E01E1E] flex-shrink-0" />
+          <Crown size={18} className="text-(--ep-accent) flex-shrink-0" />
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white">
+          <p className="text-sm font-bold text-(--ep-strong)">
             {isActive ? t("Client coaché (payant)") : t("Membre gratuit")}
           </p>
-          <p className="text-[11px] text-[#F5EDED]/40">
+          <p className="text-[11px] text-(--ep-ink)/40">
             {isActive
               ? `${planLabel(displayPlan)}${displayBillingDate ? ` · échéance le ${new Date(displayBillingDate).toLocaleDateString("fr-FR")}` : ""}`
               : t("Autonome, accès aux outils gratuits uniquement.")}
@@ -131,7 +131,7 @@ export default function SubscriptionToggle({
         </div>
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="flex-shrink-0 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+          className="flex-shrink-0 text-(--ep-ink)/30 hover:text-(--ep-ink)/60"
           aria-label={t("Détails")}
           aria-expanded={expanded}
         >
@@ -140,16 +140,16 @@ export default function SubscriptionToggle({
       </div>
 
       {expanded && (
-        <div className="mt-3.5 pt-3.5 border-t border-[#890404]/15 space-y-3">
+        <div className="mt-3.5 pt-3.5 border-t border-(--ep-line)/15 space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+              <label className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                 {t("Plan")}
               </label>
               <select aria-label={t("Plan")}
                 value={plan}
                 onChange={(e) => setPlan(e.target.value)}
-                className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#E01E1E]/50"
+                className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/50"
               >
                 <option value="">{t("Non renseigné")}</option>
                 {SUBSCRIPTION_PLANS.map((p) => (
@@ -160,27 +160,27 @@ export default function SubscriptionToggle({
               </select>
             </div>
             <div>
-              <label className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+              <label className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
                 {t("Prochaine échéance")}
               </label>
               <input aria-label={t("Prochaine échéance")}
                 type="date"
                 value={nextBillingDate}
                 onChange={(e) => setNextBillingDate(e.target.value)}
-                className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#E01E1E]/50"
+                className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/50"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+            <label className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
               {t("Note (visible dans l'historique)")}
             </label>
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t("Ex: paiement reçu par virement le...")} aria-label={t("Ex: paiement reçu par virement le...")}
-              className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+              className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
             />
           </div>
 
@@ -189,8 +189,8 @@ export default function SubscriptionToggle({
             disabled={isPending}
             className={`w-full text-[11px] font-bold uppercase tracking-widest px-3.5 py-2.5 rounded-lg transition-colors disabled:opacity-50 ${
               isActive
-                ? "border border-[#890404]/40 text-[#F5EDED]/60 hover:text-white"
-                : "bg-[#E01E1E] hover:bg-[#B00202] text-white"
+                ? "border border-(--ep-line)/40 text-(--ep-ink)/60 hover:text-(--ep-strong)"
+                : "bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong)"
             }`}
           >
             {isPending ? "..." : isActive ? t("Repasser gratuit") : t("Activer le coaching")}
@@ -206,7 +206,7 @@ export default function SubscriptionToggle({
                   key={days}
                   onClick={() => startTrial(days)}
                   disabled={trialPending || isPending}
-                  className="flex-1 border border-[#890404]/40 text-[#F5EDED]/60 hover:text-white text-[10.5px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex-1 border border-(--ep-line)/40 text-(--ep-ink)/60 hover:text-(--ep-strong) text-[10.5px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {trialPending ? "..." : `Essai ${days}j`}
                 </button>
@@ -219,14 +219,14 @@ export default function SubscriptionToggle({
 
           {history && history.length > 0 && (
             <div>
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1 mb-2">
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/30 flex items-center gap-1 mb-2">
                 <History size={10} />
                 {t("Historique")}
               </p>
               <div className="space-y-1.5">
                 {history.map((h) => (
-                  <div key={h.id} className="text-[10.5px] text-[#F5EDED]/45 flex items-start gap-2">
-                    <span className="text-[#F5EDED]/25 flex-shrink-0">
+                  <div key={h.id} className="text-[10.5px] text-(--ep-ink)/45 flex items-start gap-2">
+                    <span className="text-(--ep-ink)/25 flex-shrink-0">
                       {new Date(h.created_at).toLocaleDateString("fr-FR")}
                     </span>
                     <span>

@@ -37,17 +37,17 @@ export default function CoachSpecializationsCard({
 
   return (
     <div className="mt-8">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {t("Annuaire public")}
       </p>
       <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Spécialisations")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
-          <Tags size={18} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 1 }} />
-          <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>
+          <Tags size={18} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 1 }} />
+          <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5 }}>
             {t("Choisis ce qui te correspond. Un membre pourra te trouver dans l'annuaire public selon ces critères (objectif, blessure, TCA...). Aucune sélection = affiché comme généraliste par défaut.")}
             {saved && (
-              <span style={{ color: "#4ade80", fontWeight: 700, marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 3 }}>
+              <span style={{ color: "var(--ep-ok)", fontWeight: 700, marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 3 }}>
                 <Check size={11} />{" "}{t("Enregistré")}
               </span>
             )}
@@ -68,9 +68,9 @@ export default function CoachSpecializationsCard({
                   padding: "7px 12px",
                   borderRadius: 999,
                   cursor: "pointer",
-                  border: active ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-                  background: active ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-                  color: active ? "#F5EDED" : "rgba(245,237,237,0.55)",
+                  border: active ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+                  background: active ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+                  color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
                   transition: "background 0.15s ease, border-color 0.15s ease",
                 }}
               >

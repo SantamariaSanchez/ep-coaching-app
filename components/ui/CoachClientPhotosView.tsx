@@ -12,9 +12,9 @@ import { safeExternalUrl } from "@/lib/sanitize";
 import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 const labelCls =
-  "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "block text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 type ActionState = { error?: string; success?: boolean } | null;
 
@@ -86,7 +86,7 @@ function CompetitionSettings({
           ].map((opt) => (
             <label
               key={opt.value}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[#890404]/25 cursor-pointer text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 has-[:checked]:bg-[#E01E1E]/15 has-[:checked]:border-[#E01E1E]/50 has-[:checked]:text-[#E01E1E] transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-(--ep-line)/25 cursor-pointer text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 has-[:checked]:bg-(--ep-accent)/15 has-[:checked]:border-(--ep-accent)/50 has-[:checked]:text-(--ep-accent) transition-colors"
             >
               <input
                 type="radio"
@@ -103,12 +103,12 @@ function CompetitionSettings({
 
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] text-[#F5EDED]/35">
+          <p className="text-[10px] text-(--ep-ink)/35">
             {t("Fréquence actuelle :")}{" "}
             <span
               className={
                 client.photo_frequency === "daily"
-                  ? "text-[#E01E1E] font-bold"
+                  ? "text-(--ep-accent) font-bold"
                   : "text-green-400 font-bold"
               }
             >
@@ -117,14 +117,14 @@ function CompetitionSettings({
                 : t("📅 Hebdomadaire")}
             </span>
           </p>
-          <p className="text-[9px] text-[#F5EDED]/20 mt-0.5">
+          <p className="text-[9px] text-(--ep-ink)/20 mt-0.5">
             {t("Passe automatiquement en quotidien à J-30 avant la compétition.")}
           </p>
         </div>
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-50 transition-colors"
+          className="px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg disabled:opacity-50 transition-colors"
         >
           {isPending ? t("Sauvegarde…") : t("Sauvegarder")}
         </button>
@@ -155,14 +155,14 @@ function PhotoFeedbackForm({
 
   if (state?.success) {
     return (
-      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
+      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-(--ep-line)/15">
         {t("✓ Retour envoyé, le client a été notifié.")}
       </p>
     );
   }
 
   return (
-    <form action={formAction} className="pt-3 border-t border-[#890404]/15 space-y-3">
+    <form action={formAction} className="pt-3 border-t border-(--ep-line)/15 space-y-3">
       <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70">
         {t("Envoyer un retour")}
       </p>
@@ -177,7 +177,7 @@ function PhotoFeedbackForm({
       <button
         type="submit"
         disabled={isPending}
-        className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+        className="bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
       >
         {isPending ? t("Envoi…") : t("Envoyer le retour")}
       </button>
@@ -203,16 +203,16 @@ function PhotoCard({
   const typeLabel = TYPE_LABELS[photo.type] ?? photo.type;
 
   return (
-    <div className={`rounded-xl p-4 space-y-3 border ${pending ? "bg-[#1f0101] border-amber-500/20" : "bg-[#1a0000] border-[#890404]/20"}`}>
+    <div className={`rounded-xl p-4 space-y-3 border ${pending ? "bg-(--ep-s1) border-amber-500/20" : "bg-(--ep-s3) border-(--ep-line)/20"}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-white">{typeLabel}</p>
-          <p className="text-[10px] text-[#F5EDED]/30">
+          <p className="text-sm font-bold text-(--ep-strong)">{typeLabel}</p>
+          <p className="text-[10px] text-(--ep-ink)/30">
             {formatDate(photo.submitted_at)}
             {photo.week_number != null && ` · Semaine ${photo.week_number}`}
           </p>
           {photo.category && (
-            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#890404]/20 text-[#F5EDED]/40 border border-[#890404]/15 mt-1">
+            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-(--ep-line)/20 text-(--ep-ink)/40 border border-(--ep-line)/15 mt-1">
               {photo.category}
             </span>
           )}
@@ -230,7 +230,7 @@ function PhotoCard({
           {photo.photo_urls.map((url, i) => (
             <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`Photo ${i + 1}`} className="w-14 h-14 object-cover rounded-lg border border-[#890404]/30" />
+              <img src={url} alt={`Photo ${i + 1}`} className="w-14 h-14 object-cover rounded-lg border border-(--ep-line)/30" />
             </a>
           ))}
           {photo.video_url && (
@@ -238,7 +238,7 @@ function PhotoCard({
               href={safeExternalUrl(photo.video_url) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
             >
               <ExternalLink size={11} />
               {t("Voir la vidéo")}
@@ -253,7 +253,7 @@ function PhotoCard({
           href={safeExternalUrl(photo.drive_link) ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
         >
           <ExternalLink size={11} />
           {t("Ouvrir dans Drive")}
@@ -261,18 +261,18 @@ function PhotoCard({
       )}
 
       {photo.notes && (
-        <p className="text-xs text-[#F5EDED]/50 leading-relaxed border-t border-[#890404]/10 pt-2">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">{t("Notes :")}{" "}</span>
+        <p className="text-xs text-(--ep-ink)/50 leading-relaxed border-t border-(--ep-line)/10 pt-2">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25">{t("Notes :")}{" "}</span>
           {photo.notes}
         </p>
       )}
 
       {hasFeedback && photo.coach_feedback && (
-        <div className="pt-2 border-t border-[#890404]/10 space-y-1.5">
+        <div className="pt-2 border-t border-(--ep-line)/10 space-y-1.5">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/60">
             {t("Ton retour envoyé")}
           </p>
-          <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{photo.coach_feedback}</p>
+          <p className="text-xs text-(--ep-ink)/55 leading-relaxed">{photo.coach_feedback}</p>
         </div>
       )}
 
@@ -301,9 +301,9 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
   if (photos.length < 2) return null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 space-y-4">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
           {t("Comparaison")}
         </p>
         <div className="flex items-center gap-2">
@@ -311,8 +311,8 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
             onClick={() => setDrawMode((v) => !v)}
             className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border transition-colors ${
               drawMode
-                ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                : "border-(--ep-line)/25 text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Pencil size={11} />
@@ -322,7 +322,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
             <button
               onClick={() => setClearKey((k) => k + 1)}
               title={t("Effacer les traits")} aria-label={t("Effacer les traits")}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-(--ep-line)/25 text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
             >
               <Eraser size={12} />
             </button>
@@ -331,7 +331,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
       </div>
 
       {drawMode && (
-        <p className="text-[10px] text-[#F5EDED]/30 italic">
+        <p className="text-[10px] text-(--ep-ink)/30 italic">
           {t("Trace directement sur les photos pour pointer un détail à l'oral, chaque trait s'efface automatiquement au bout de 5 secondes.")}
         </p>
       )}
@@ -346,7 +346,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
             : null;
           return (
             <div key={label} className="space-y-2">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30">
                 {label}
               </p>
               <select value={id} onChange={(e) => setId(e.target.value)} aria-label={label} className={inputCls}>
@@ -361,8 +361,8 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
                 <DrawableImage key={`${id}-${clearKey}`} src={imgUrl} alt={label} drawMode={drawMode} />
               )}
               {photo && !imgUrl && (
-                <div className="aspect-[3/4] flex items-center justify-center bg-[#150000] border border-[#890404]/15 rounded-lg text-center px-4">
-                  <p className="text-[10px] text-[#F5EDED]/30">
+                <div className="aspect-[3/4] flex items-center justify-center bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg text-center px-4">
+                  <p className="text-[10px] text-(--ep-ink)/30">
                     {photo.video_url || photo.video_link || photo.drive_link
                       ? t("Pas de photo pour cette mise à jour (vidéo).")
                       : t("Aperçu indisponible. Le lien Drive doit être partagé en «Tous les utilisateurs disposant du lien».")}
@@ -371,16 +371,16 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
               )}
 
               {photo && (
-                <div className="bg-[#150000] border border-[#890404]/15 rounded-lg p-3 space-y-1.5">
-                  <p className="text-xs text-white font-bold">{TYPE_LABELS[photo.type] ?? photo.type}</p>
-                  <p className="text-[10px] text-[#F5EDED]/40">{formatDate(photo.submitted_at)}</p>
-                  {photo.notes && <p className="text-[10px] text-[#F5EDED]/40 italic">{photo.notes}</p>}
+                <div className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg p-3 space-y-1.5">
+                  <p className="text-xs text-(--ep-strong) font-bold">{TYPE_LABELS[photo.type] ?? photo.type}</p>
+                  <p className="text-[10px] text-(--ep-ink)/40">{formatDate(photo.submitted_at)}</p>
+                  {photo.notes && <p className="text-[10px] text-(--ep-ink)/40 italic">{photo.notes}</p>}
                   {photo.video_url && (
                     <a
                       href={safeExternalUrl(photo.video_url) ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
                     >
                       <ExternalLink size={10} />
                       {t("Voir la vidéo")}
@@ -392,7 +392,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
                       href={safeExternalUrl(photo.drive_link) ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
                     >
                       <ExternalLink size={10} />
                       {t("Ouvrir Drive")}
@@ -431,8 +431,8 @@ export default function CoachClientPhotosView({
   return (
     <div className="space-y-8">
       {/* Paramètres */}
-      <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
           {t("Paramètres photo")}
         </p>
         <CompetitionSettings client={client} save={saveCompetitionSettings} />
@@ -444,7 +444,7 @@ export default function CoachClientPhotosView({
       {/* Toutes les photos — en attente */}
       <div>
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-sm font-black uppercase tracking-widest text-white">
+          <h2 className="text-sm font-black uppercase tracking-widest text-(--ep-strong)">
             {t("En attente de retour")}
           </h2>
           {pendingPhotos.length > 0 && (
@@ -455,9 +455,9 @@ export default function CoachClientPhotosView({
         </div>
 
         {pendingPhotos.length === 0 ? (
-          <div className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4">
+          <div className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-5 py-4">
             <CheckCircle2 size={16} className="text-green-400" />
-            <p className="text-xs text-[#F5EDED]/40">{t("Tout à jour, aucune photo en attente.")}</p>
+            <p className="text-xs text-(--ep-ink)/40">{t("Tout à jour, aucune photo en attente.")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -479,7 +479,7 @@ export default function CoachClientPhotosView({
         <div>
           <button
             onClick={() => setShowDone((v) => !v)}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/50 transition-colors mb-3"
+            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/50 transition-colors mb-3"
           >
             <Camera size={12} />
             {t("Retours envoyés (")}{donePhotos.length})
@@ -502,8 +502,8 @@ export default function CoachClientPhotosView({
       )}
 
       {photos.length === 0 && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-8 text-center">
-          <p className="text-xs text-[#F5EDED]/25 italic">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-8 text-center">
+          <p className="text-xs text-(--ep-ink)/25 italic">
             {t("Aucune photo soumise pour ce client.")}
           </p>
         </div>

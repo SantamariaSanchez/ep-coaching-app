@@ -20,9 +20,9 @@ function ToolCta({ guideSlug, guideTitle }: { guideSlug: string; guideTitle: str
         className="ep-card"
         style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none" }}
       >
-        <BookOpen size={16} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
-        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", flex: 1 }}>{guideTitle}</p>
-        <ArrowRight size={14} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+        <BookOpen size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--ep-ink)", flex: 1 }}>{guideTitle}</p>
+        <ArrowRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
       </Link>
       <Link
         href="/auth/client"
@@ -36,8 +36,8 @@ function ToolCta({ guideSlug, guideTitle }: { guideSlug: string; guideTitle: str
 }
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-const labelCls = "text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
+const labelCls = "text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block";
 
 const ACTIVITY_MULTIPLIERS = [
   { key: "sedentaire", label: "Sédentaire (peu ou pas de sport)", value: 1.2 },
@@ -72,24 +72,24 @@ export default function OutilsView() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/ressources"
-          className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors mb-4"
+          className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors mb-4"
         >
           <ArrowLeft size={11} />{" "}{t("Ressources")}
         </Link>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("EP Coaching")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Outils gratuits")}</h1>
-        <p className="mt-2 text-sm text-[#F5EDED]/45">
+        <p className="mt-2 text-sm text-(--ep-ink)/45">
           {t("Deux calculateurs rapides, sans compte. Pour un suivi qui s'ajuste vraiment à toi dans la durée, un coaching complet fait bien plus qu'une formule figée.")}
         </p>
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20 overflow-x-auto">
         <button
           onClick={() => setTab("calories")}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-            tab === "calories" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+            tab === "calories" ? "text-(--ep-accent) border-b-2 border-(--ep-accent)" : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
           }`}
         >
           <Calculator size={13} />{" "}{t("Calories & macros")}
@@ -97,7 +97,7 @@ export default function OutilsView() {
         <button
           onClick={() => setTab("1rm")}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-            tab === "1rm" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+            tab === "1rm" ? "text-(--ep-accent) border-b-2 border-(--ep-accent)" : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
           }`}
         >
           <Dumbbell size={13} />{" "}{t("Charge maximale (1RM)")}
@@ -146,7 +146,7 @@ function CaloriesCalculator() {
         <button
           onClick={() => setGender("Homme")}
           className={`py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest border transition-colors ${
-            gender === "Homme" ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            gender === "Homme" ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
           }`}
         >
           {t("Homme")}
@@ -154,7 +154,7 @@ function CaloriesCalculator() {
         <button
           onClick={() => setGender("Femme")}
           className={`py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest border transition-colors ${
-            gender === "Femme" ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            gender === "Femme" ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
           }`}
         >
           {t("Femme")}
@@ -187,25 +187,25 @@ function CaloriesCalculator() {
 
       {result && (
         <div className="ep-card" style={{ padding: 20, marginTop: 4 }}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1">
             {t("Maintenance estimée")}
           </p>
-          <p className="text-3xl font-black text-white mb-4">
-            {result.tdee} <span className="text-sm font-normal text-[#F5EDED]/40">{t("kcal / jour")}</span>
+          <p className="text-3xl font-black text-(--ep-strong) mb-4">
+            {result.tdee} <span className="text-sm font-normal text-(--ep-ink)/40">{t("kcal / jour")}</span>
           </p>
-          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-[#890404]/15">
+          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-(--ep-line)/15">
             {[
-              { label: t("Protéines"), value: result.proteinsG, color: "#E01E1E" },
-              { label: t("Glucides"), value: result.carbsG, color: "#4ade80" },
-              { label: t("Lipides"), value: result.fatsG, color: "#fbbf24" },
+              { label: t("Protéines"), value: result.proteinsG, color: "var(--ep-accent)" },
+              { label: t("Glucides"), value: result.carbsG, color: "var(--ep-ok)" },
+              { label: t("Lipides"), value: result.fatsG, color: "var(--ep-warn)" },
             ].map((m) => (
               <div key={m.label} className="text-center">
                 <p className="text-lg font-black" style={{ color: m.color }}>{m.value}g</p>
-                <p className="text-[9px] uppercase tracking-widest text-[#F5EDED]/30 mt-0.5">{m.label}</p>
+                <p className="text-[9px] uppercase tracking-widest text-(--ep-ink)/30 mt-0.5">{m.label}</p>
               </div>
             ))}
           </div>
-          <p className="text-[10.5px] text-[#F5EDED]/30 mt-4 leading-relaxed">
+          <p className="text-[10.5px] text-(--ep-ink)/30 mt-4 leading-relaxed">
             {t("Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 200 à 400 kcal ; pour perdre du gras, retire environ 300 à 500 kcal.")}
           </p>
           <ToolCta guideSlug="guide-macros" guideTitle="Le guide des macros sans prise de tête" />
@@ -253,28 +253,28 @@ function OneRepMaxCalculator() {
 
       {result && (
         <div className="ep-card" style={{ padding: 20, marginTop: 4 }}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1">
             {t("Charge maximale estimée (1RM)")}
           </p>
-          <p className="text-3xl font-black text-white mb-4">
-            {result.oneRm} <span className="text-sm font-normal text-[#F5EDED]/40">{t("kg")}</span>
+          <p className="text-3xl font-black text-(--ep-strong) mb-4">
+            {result.oneRm} <span className="text-sm font-normal text-(--ep-ink)/40">{t("kg")}</span>
           </p>
           {percentages.length > 0 && (
-            <div className="pt-3 border-t border-[#890404]/15">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+            <div className="pt-3 border-t border-(--ep-line)/15">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-2">
                 {t("Zones de travail")}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {percentages.map((p) => (
-                  <div key={p.pct} className="bg-black/20 rounded-lg py-2 text-center">
-                    <p className="text-sm font-black text-white">{p.kg}{t("kg")}</p>
-                    <p className="text-[9px] text-[#F5EDED]/30">{p.pct}%</p>
+                  <div key={p.pct} className="bg-(--ep-shade)/20 rounded-lg py-2 text-center">
+                    <p className="text-sm font-black text-(--ep-strong)">{p.kg}{t("kg")}</p>
+                    <p className="text-[9px] text-(--ep-ink)/30">{p.pct}%</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
-          <p className="text-[10.5px] text-[#F5EDED]/30 mt-4 leading-relaxed">
+          <p className="text-[10.5px] text-(--ep-ink)/30 mt-4 leading-relaxed">
             {t("Formule d'Epley, fiable jusqu'à 10-12 répétitions. Au delà, l'estimation devient moins précise.")}
           </p>
           <ToolCta guideSlug="checklist-bases-avant-ajouter-poids" guideTitle="Les bases à maîtriser avant d'ajouter du poids sur la barre" />

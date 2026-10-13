@@ -19,7 +19,7 @@ function waitInfo(createdAt: string, now: number): { label: string; urgency: "ok
   const urgency = minutes < 15 ? "ok" : minutes < 60 ? "warn" : "late";
   return { label, urgency };
 }
-const URGENCY_COLOR = { ok: "rgba(245,237,237,0.35)", warn: "#facc15", late: "#E01E1E" } as const;
+const URGENCY_COLOR = { ok: "rgba(var(--ep-ink-rgb),0.35)", warn: "var(--ep-yellow)", late: "var(--ep-accent)" } as const;
 
 export default function FlashRequestsPanel({ requests }: { requests: FlashRequest[] }) {
   const t = useT();
@@ -66,17 +66,17 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
 
   return (
     <div className="ep-card" style={{ padding: "16px 18px", marginBottom: 16 }}>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3 flex items-center gap-1.5">
-        <Zap size={12} style={{ color: "#E01E1E" }} />
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3 flex items-center gap-1.5">
+        <Zap size={12} style={{ color: "var(--ep-accent)" }} />
         {t("Demandes de point flash (")}{requests.length})
       </p>
       <div className="space-y-2.5">
         {requests.map((r) => {
           const wait = waitInfo(r.created_at, now);
           return (
-          <div key={r.id} className="bg-black/20 border border-[#890404]/15 rounded-lg p-3">
+          <div key={r.id} className="bg-(--ep-shade)/20 border border-(--ep-line)/15 rounded-lg p-3">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-xs text-white font-bold">{r.client_name ?? t("Client")}</p>
+              <p className="text-xs text-(--ep-strong) font-bold">{r.client_name ?? t("Client")}</p>
               <span
                 title={t("Depuis combien de temps cette demande attend une réponse")}
                 style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: URGENCY_COLOR[wait.urgency], flexShrink: 0 }}
@@ -85,7 +85,7 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
                 {wait.label}
               </span>
             </div>
-            <p className="text-xs text-[#F5EDED]/55 mt-1">{r.reason}</p>
+            <p className="text-xs text-(--ep-ink)/55 mt-1">{r.reason}</p>
 
             {schedulingId === r.id ? (
               <div className="mt-2.5 space-y-2">
@@ -94,10 +94,10 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
                   <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label={t("Heure")} className="ep-input" style={{ fontSize: 12 }} />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => handleSchedule(r.id)} disabled={isPending} className="text-[11px] font-bold text-[#E01E1E]">
+                  <button onClick={() => handleSchedule(r.id)} disabled={isPending} className="text-[11px] font-bold text-(--ep-accent)">
                     {t("Confirmer")}
                   </button>
-                  <button onClick={() => setSchedulingId(null)} className="text-[11px] font-bold text-[#F5EDED]/40">
+                  <button onClick={() => setSchedulingId(null)} className="text-[11px] font-bold text-(--ep-ink)/40">
                     {t("Annuler")}
                   </button>
                 </div>
@@ -114,7 +114,7 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
                 <button
                   onClick={() => handleDecline(r.id)}
                   disabled={isPending}
-                  className="flex items-center gap-1 text-[11px] font-bold text-[#F5EDED]/35 hover:text-red-400"
+                  className="flex items-center gap-1 text-[11px] font-bold text-(--ep-ink)/35 hover:text-red-400"
                 >
                   <X size={12} />{" "}{t("Refuser")}
                 </button>

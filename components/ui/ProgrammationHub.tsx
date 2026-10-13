@@ -107,13 +107,13 @@ export default function ProgrammationHub({
 
   return (
     <div>
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20 overflow-x-auto">
         {tabs.map(({ key, label, icon: Icon, count }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-              tab === key ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+              tab === key ? "text-(--ep-accent) border-b-2 border-(--ep-accent)" : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Icon size={13} />
@@ -126,12 +126,12 @@ export default function ProgrammationHub({
       {tab === "programmes" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
               {programTemplates.length}{" "}{tr("modèle")}{programTemplates.length !== 1 ? "s" : ""}{" "}{tr("de programme")}
             </p>
             <Link
               href="/dashboard/coach/programmation/programmes/new"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
             >
               <Plus size={12} />
               {tr("Nouveau modèle")}
@@ -152,30 +152,30 @@ export default function ProgrammationHub({
                   <div key={t.id} className="ep-card p-4 flex flex-col gap-3">
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-bold text-white leading-tight">{t.name}</p>
+                        <p className="text-sm font-bold text-(--ep-strong) leading-tight">{t.name}</p>
                         {t.type && (
-                          <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/40">
+                          <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/40">
                             {t.type}
                           </span>
                         )}
                       </div>
-                      {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
-                      <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+                      {t.objective && <p className="text-[11px] text-(--ep-ink)/40 mt-1">{t.objective}</p>}
+                      <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">
                         {t.days.length}{" "}{tr("séance")}{t.days.length !== 1 ? "s" : ""} · {exerciseCount}{" "}{tr("exercice")}{exerciseCount !== 1 ? "s" : ""}
                         {t.frequency ? ` · ${t.frequency}×/semaine` : ""}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-auto pt-2 border-t border-[#890404]/15">
+                    <div className="flex items-center gap-2 mt-auto pt-2 border-t border-(--ep-line)/15">
                       <button
                         onClick={() => setApplyTarget({ kind: "programme", id: t.id, name: t.name })}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ep-accent)/15 border border-(--ep-accent)/40 rounded-lg text-(--ep-accent) hover:bg-(--ep-accent)/25 transition-colors"
                       >
                         <Send size={11} />{" "}{tr("Appliquer")}
                       </button>
                       <Link
                         href={`/dashboard/coach/programmation/programmes/${t.id}/edit`}
-                        className="p-2 text-[#F5EDED]/40 hover:text-white transition-colors"
+                        className="p-2 text-(--ep-ink)/40 hover:text-(--ep-strong) transition-colors"
                         title={tr("Modifier")}
                       >
                         <Pencil size={13} />
@@ -204,7 +204,7 @@ export default function ProgrammationHub({
       <div hidden={tab !== "diet"}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
               {dietTemplates.length}{" "}{tr("modèle")}{dietTemplates.length !== 1 ? "s" : ""}{" "}{tr("de diète")}
             </p>
             <div className="flex items-center gap-4">
@@ -214,14 +214,14 @@ export default function ProgrammationHub({
                   mélangé à la liste des modèles ci-dessous. */}
               <button
                 onClick={() => setShowBulkCalorie(true)}
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED] transition-colors"
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/50 hover:text-(--ep-ink) transition-colors"
               >
                 <SlidersHorizontal size={12} />
                 {tr("Ajuster les calories")}
               </button>
               <button
                 onClick={() => setShowDietBuilder((v) => !v)}
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
               >
                 <Plus size={12} />
                 {showDietBuilder ? tr("Fermer") : tr("Nouveau modèle")}
@@ -230,7 +230,7 @@ export default function ProgrammationHub({
           </div>
 
           {showDietBuilder && (
-            <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4">
+            <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-4">
               <PlanBuilder
                 foods={foods}
                 onCreate={async (name, mode, meals, structure, objective) => {
@@ -269,12 +269,12 @@ export default function ProgrammationHub({
       {tab === "roadmap" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
               {roadmapTemplates.length}{" "}{tr("modèle")}{roadmapTemplates.length !== 1 ? "s" : ""}{" "}{tr("de road map")}
             </p>
             <Link
               href="/dashboard/coach/programmation/roadmap/new"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
             >
               <Plus size={12} />
               {tr("Nouveau modèle")}
@@ -336,12 +336,12 @@ export default function ProgrammationHub({
 
 function EmptyState({ text, ctaHref, ctaLabel }: { text: string; ctaHref?: string; ctaLabel?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4 text-center px-6">
-      <p className="text-xs text-[#F5EDED]/35 max-w-sm">{text}</p>
+    <div className="flex flex-col items-center justify-center py-14 bg-(--ep-s1) border border-dashed border-(--ep-line)/30 rounded-xl gap-4 text-center px-6">
+      <p className="text-xs text-(--ep-ink)/35 max-w-sm">{text}</p>
       {ctaHref && ctaLabel && (
         <Link
           href={ctaHref}
-          className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           <Plus size={13} />
           {ctaLabel}
@@ -364,7 +364,7 @@ function DeleteButton({ onDelete }: { onDelete: () => Promise<{ error?: string }
         await onDelete();
         setBusy(false);
       }}
-      className="p-2 text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-50"
+      className="p-2 text-(--ep-ink)/30 hover:text-red-400 transition-colors disabled:opacity-50"
       title={tr("Supprimer")} aria-label={tr("Supprimer")}
     >
       <Trash2 size={13} />
@@ -396,11 +396,11 @@ function DietTemplateRow({
   }, [template]);
 
   return (
-    <div className="rounded-xl border border-[#890404]/20 bg-[#150000] overflow-hidden">
+    <div className="rounded-xl border border-(--ep-line)/20 bg-(--ep-s2) overflow-hidden">
       <button onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="w-full flex items-center justify-between px-4 py-3 text-left">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white truncate">{template.name}</p>
-          <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
+          <p className="text-sm font-bold text-(--ep-strong) truncate">{template.name}</p>
+          <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
             {MODE_LABELS[template.mode]}
             {template.structure === "weekly" && (
               <span className="inline-flex items-center gap-0.5"><CalendarDays size={9} />{" "}{tr("hebdo")}</span>
@@ -408,22 +408,22 @@ function DietTemplateRow({
             · {template.diet_plan_template_meals.length}{" "}{tr("aliment")}{template.diet_plan_template_meals.length !== 1 ? "s" : ""}
           </p>
         </div>
-        {expanded ? <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" /> : <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />}
+        {expanded ? <ChevronUp size={14} className="text-(--ep-ink)/30 flex-shrink-0" /> : <ChevronDown size={14} className="text-(--ep-ink)/30 flex-shrink-0" />}
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-3">
           {template.diet_plan_template_meals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Plan flexible, aucun aliment prédéfini.")}</p>
+            <p className="text-[10px] text-(--ep-ink)/25 italic">{tr("Plan flexible, aucun aliment prédéfini.")}</p>
           ) : (
             Object.entries(bySlot).map(([slot, meals]) => (
               <div key={slot}>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">{slot}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5">{slot}</p>
                 <div className="space-y-1">
                   {meals.map((m) => (
                     <div key={m.id} className="flex items-center justify-between py-1">
-                      <p className="text-xs text-white">{m.foods?.name ?? foods.find((f) => f.id === m.food_id)?.name ?? tr("Aliment")}</p>
-                      <p className="text-[10px] text-[#F5EDED]/35">{m.quantity_g}g</p>
+                      <p className="text-xs text-(--ep-strong)">{m.foods?.name ?? foods.find((f) => f.id === m.food_id)?.name ?? tr("Aliment")}</p>
+                      <p className="text-[10px] text-(--ep-ink)/35">{m.quantity_g}g</p>
                     </div>
                   ))}
                 </div>
@@ -434,7 +434,7 @@ function DietTemplateRow({
           <div className="flex gap-2 pt-2">
             <button
               onClick={onApply}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ep-accent)/15 border border-(--ep-accent)/40 rounded-lg text-(--ep-accent) hover:bg-(--ep-accent)/25 transition-colors"
             >
               <Send size={11} />{" "}{tr("Appliquer")}
             </button>
@@ -460,29 +460,29 @@ function RoadmapTemplateRow({
   const [startDate, setStartDate] = useState(todayISO());
 
   return (
-    <div className="rounded-xl border border-[#890404]/20 bg-[#150000] overflow-hidden">
+    <div className="rounded-xl border border-(--ep-line)/20 bg-(--ep-s2) overflow-hidden">
       <button onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="w-full flex items-center justify-between px-4 py-3 text-left">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white truncate">{template.name}</p>
-          {template.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-0.5 truncate">{template.objective}</p>}
-          <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap mt-0.5">
+          <p className="text-sm font-bold text-(--ep-strong) truncate">{template.name}</p>
+          {template.objective && <p className="text-[11px] text-(--ep-ink)/40 mt-0.5 truncate">{template.objective}</p>}
+          <p className="text-[10px] text-(--ep-ink)/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap mt-0.5">
             {template.duration_weeks ? `${template.duration_weeks} semaine${template.duration_weeks !== 1 ? "s" : ""}` : tr("Durée libre")}
             · {template.phases.length}{" "}{tr("phase")}{template.phases.length !== 1 ? "s" : ""}
             · {template.milestones.length}{" "}{tr("jalon")}{template.milestones.length !== 1 ? "s" : ""}
           </p>
         </div>
-        {expanded ? <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" /> : <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />}
+        {expanded ? <ChevronUp size={14} className="text-(--ep-ink)/30 flex-shrink-0" /> : <ChevronDown size={14} className="text-(--ep-ink)/30 flex-shrink-0" />}
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-3">
           {template.phases.length === 0 && template.milestones.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">{tr("Aucune phase ni jalon dans ce modèle.")}</p>
+            <p className="text-[10px] text-(--ep-ink)/25 italic">{tr("Aucune phase ni jalon dans ce modèle.")}</p>
           ) : (
             <>
               {template.phases.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 flex items-center gap-1.5">
                     <CalendarDays size={10} />{" "}{tr("Phases")}
                   </p>
                   <div className="space-y-1">
@@ -490,8 +490,8 @@ function RoadmapTemplateRow({
                       const colors = PHASE_COLORS[p.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
                       return (
                         <div key={p.id} className="flex items-center justify-between py-1">
-                          <p className="text-xs text-white truncate">{colors.icon} {p.label}</p>
-                          <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                          <p className="text-xs text-(--ep-strong) truncate">{colors.icon} {p.label}</p>
+                          <p className="text-[10px] text-(--ep-ink)/35 flex-shrink-0 ml-2">
                             {tr("Semaine")}{" "}{p.start_week_offset} à {p.end_week_offset}
                           </p>
                         </div>
@@ -503,14 +503,14 @@ function RoadmapTemplateRow({
 
               {template.milestones.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 flex items-center gap-1.5">
                     <Target size={10} />{" "}{tr("Jalons")}
                   </p>
                   <div className="space-y-1">
                     {template.milestones.map((m) => (
                       <div key={m.id} className="flex items-center justify-between py-1">
-                        <p className="text-xs text-white truncate">{m.label}</p>
-                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">{tr("Semaine")}{" "}{m.week_offset}</p>
+                        <p className="text-xs text-(--ep-strong) truncate">{m.label}</p>
+                        <p className="text-[10px] text-(--ep-ink)/35 flex-shrink-0 ml-2">{tr("Semaine")}{" "}{m.week_offset}</p>
                       </div>
                     ))}
                   </div>
@@ -520,27 +520,27 @@ function RoadmapTemplateRow({
           )}
 
           <div className="pt-2">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
               {tr("Date de démarrage à l'application")}
             </label>
             <input aria-label={tr("Date de démarrage à l'application")}
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-[#1f0101] border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
+              className="w-full bg-(--ep-s1) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-xs text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/60 transition-colors"
             />
           </div>
 
           <div className="flex gap-2 pt-1">
             <button
               onClick={() => onApply(startDate)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ep-accent)/15 border border-(--ep-accent)/40 rounded-lg text-(--ep-accent) hover:bg-(--ep-accent)/25 transition-colors"
             >
               <Send size={11} />{" "}{tr("Appliquer")}
             </button>
             <Link
               href={`/dashboard/coach/programmation/roadmap/${template.id}/edit`}
-              className="p-2 text-[#F5EDED]/40 hover:text-white transition-colors"
+              className="p-2 text-(--ep-ink)/40 hover:text-(--ep-strong) transition-colors"
               title={tr("Modifier")}
             >
               <Pencil size={13} />

@@ -88,7 +88,7 @@ function LinkRow({ href, icon, title, hint }: { href: string; icon: React.Elemen
   return (
     <Link href={href} style={{ textDecoration: "none" }}>
       <SettingRow icon={icon} title={title} hint={hint}>
-        <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
+        <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)" }} />
       </SettingRow>
     </Link>
   );

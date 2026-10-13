@@ -154,7 +154,7 @@ const sections: LegalSection[] = [
         plateforme pour les Coachs tiers, abonnement de coaching pour les Clients du Fondateur). Les
         modalités de tarification, de paiement, de renouvellement et de résiliation de ces abonnements
         sont détaillées dans nos{" "}
-        <Link href="/legal/cgv" style={{ color: "#E01E1E", fontWeight: 700 }}>
+        <Link href="/legal/cgv" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
           Conditions Générales de Vente
         </Link>
         .
@@ -231,7 +231,7 @@ const sections: LegalSection[] = [
       <P>
         Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil. Le
         traitement de vos données personnelles suite à cette suppression est décrit dans notre{" "}
-        <Link href="/legal/confidentialite" style={{ color: "#E01E1E", fontWeight: 700 }}>
+        <Link href="/legal/confidentialite" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
           Politique de confidentialité
         </Link>
         . La suppression de votre compte n&apos;emporte pas automatiquement remboursement d&apos;un
@@ -257,7 +257,7 @@ const sections: LegalSection[] = [
     body: (
       <P>
         Le traitement de vos données personnelles est décrit en détail dans notre{" "}
-        <Link href="/legal/confidentialite" style={{ color: "#E01E1E", fontWeight: 700 }}>
+        <Link href="/legal/confidentialite" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
           Politique de confidentialité
         </Link>
         , qui fait partie intégrante des présentes CGU.

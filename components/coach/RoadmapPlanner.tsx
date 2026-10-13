@@ -95,8 +95,8 @@ export default function RoadmapPlanner({
               onClick={() => setHorizon(h)}
               className={`flex-shrink-0 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-colors ${
                 active
-                  ? "bg-[#E01E1E] text-white"
-                  : "bg-[#150000] text-[#F5EDED]/40 border border-[#890404]/25 hover:text-[#F5EDED]/70"
+                  ? "bg-(--ep-accent) text-(--ep-strong)"
+                  : "bg-(--ep-s2) text-(--ep-ink)/40 border border-(--ep-line)/25 hover:text-(--ep-ink)/70"
               }`}
             >
               {ROADMAP_HORIZON_INFO[h].label}
@@ -107,7 +107,7 @@ export default function RoadmapPlanner({
       </div>
 
       <div className="ep-card" style={{ padding: "20px 20px 18px" }}>
-        <p className="text-sm font-black text-white mb-1">{info.prompt}</p>
+        <p className="text-sm font-black text-(--ep-strong) mb-1">{info.prompt}</p>
 
         <textarea
           value={visions[horizon] ?? ""}
@@ -117,7 +117,7 @@ export default function RoadmapPlanner({
           aria-label={info.prompt}
           rows={4}
           maxLength={20000}
-          className="w-full mt-2 bg-[#150000] border border-[#890404]/25 rounded-lg px-3.5 py-3 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none leading-relaxed"
+          className="w-full mt-2 bg-(--ep-s2) border border-(--ep-line)/25 rounded-lg px-3.5 py-3 text-[13px] text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50 resize-none leading-relaxed"
         />
         <div className="flex items-center justify-end gap-1.5 mt-1.5 h-4">
           {visionSaved && (
@@ -128,13 +128,13 @@ export default function RoadmapPlanner({
         </div>
 
         {/* Repères, jamais insérés automatiquement — juste pour amorcer la réflexion. */}
-        <div className="flex items-start gap-2 mt-3 pt-3 border-t border-[#890404]/10">
-          <Lightbulb size={13} className="text-[#F5EDED]/25 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 mt-3 pt-3 border-t border-(--ep-line)/10">
+          <Lightbulb size={13} className="text-(--ep-ink)/25 flex-shrink-0 mt-0.5" />
           <div className="flex flex-wrap gap-1.5">
             {info.examples.map((ex) => (
               <span
                 key={ex}
-                className="text-[10px] text-[#F5EDED]/35 bg-[#150000] border border-[#890404]/15 rounded-full px-2.5 py-1"
+                className="text-[10px] text-(--ep-ink)/35 bg-(--ep-s2) border border-(--ep-line)/15 rounded-full px-2.5 py-1"
               >
                 {ex}
               </span>
@@ -145,32 +145,32 @@ export default function RoadmapPlanner({
 
       {/* Jalons de cet horizon */}
       <div className="mt-4">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2.5">
           {t("Jalons ·")}{" "}{doneCount}/{horizonMilestones.length || 0}
         </p>
         <div className="space-y-1.5 mb-2.5">
           {horizonMilestones.map((m) => (
             <div
               key={m.id}
-              className="flex items-center gap-2.5 bg-[#1f0101] border border-[#890404]/20 rounded-lg px-3.5 py-2.5"
+              className="flex items-center gap-2.5 bg-(--ep-s1) border border-(--ep-line)/20 rounded-lg px-3.5 py-2.5"
             >
               <button
                 type="button"
                 onClick={() => toggleMilestone(m.id)}
                 disabled={isPending}
                 className={`flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                  m.done ? "bg-[#4ade80] border-[#4ade80]" : "border-[#890404]/40 bg-transparent"
+                  m.done ? "bg-(--ep-ok) border-(--ep-ok)" : "border-(--ep-line)/40 bg-transparent"
                 }`}
               >
-                {m.done && <Check size={12} className="text-[#0a1f0a]" strokeWidth={3} />}
+                {m.done && <Check size={12} className="text-(--ep-okbg)" strokeWidth={3} />}
               </button>
-              <span className={`flex-1 min-w-0 text-[13px] ${m.done ? "text-[#F5EDED]/35 line-through" : "text-white"}`}>
+              <span className={`flex-1 min-w-0 text-[13px] ${m.done ? "text-(--ep-ink)/35 line-through" : "text-(--ep-strong)"}`}>
                 {m.label}
               </span>
               <button
                 type="button"
                 onClick={() => removeMilestone(m.id)}
-                className="flex-shrink-0 text-[#F5EDED]/20 hover:text-red-400 transition-colors"
+                className="flex-shrink-0 text-(--ep-ink)/20 hover:text-red-400 transition-colors"
                 aria-label={t("Supprimer ce jalon")}
               >
                 <X size={14} />
@@ -184,13 +184,13 @@ export default function RoadmapPlanner({
             onChange={(e) => setNewMilestone(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addMilestone()}
             placeholder={t("Ajouter un jalon pour cet horizon...")} aria-label={t("Ajouter un jalon pour cet horizon...")}
-            className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/25 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+            className="flex-1 min-w-0 bg-(--ep-s2) border border-(--ep-line)/25 rounded-lg px-3.5 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50"
           />
           <button
             type="button"
             onClick={addMilestone}
             disabled={!newMilestone.trim() || isPending}
-            className="flex-shrink-0 flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-[11px] font-bold uppercase tracking-widest px-4 rounded-lg transition-colors"
+            className="flex-shrink-0 flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) text-[11px] font-bold uppercase tracking-widest px-4 rounded-lg transition-colors"
           >
             <Plus size={13} />{" "}{t("Ajouter")}
           </button>

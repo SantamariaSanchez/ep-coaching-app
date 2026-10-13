@@ -7,6 +7,7 @@ import { Mic, MicOff, ImagePlus, Send, Search, Pin, PinOff, Trash2, X, Check, Li
 import { createNoteAction, createCaptureAction, updateNoteAction, deleteNoteAction } from "@/app/actions/notes";
 import type { Note, NoteTag } from "@/lib/notes";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import { withAlpha } from "@/lib/theme-color";
 
 // Notes façon Obsidian/Tana (2026-09-30) : on jette tout en vrac (texte,
 // lien, capture, dictée), ça se range avec des #supertags, on relie des
@@ -14,7 +15,7 @@ import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 type View = { type: "all" } | { type: "inbox" } | { type: "pinned" } | { type: "tasks" } | { type: "tag"; tag: string };
 
-const PALETTE = ["#E01E1E", "#f59e0b", "#4ade80", "#60a5fa", "#a78bfa", "#f472b6", "#2dd4bf"];
+const PALETTE = ["var(--ep-accent)", "#f59e0b", "var(--ep-ok)", "var(--ep-info)", "var(--ep-violet)", "#f472b6", "#2dd4bf"];
 
 function colorFor(tag: string, tags: NoteTag[]): string {
   const known = tags.find((t) => t.name === tag)?.color;
@@ -148,15 +149,15 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
     fontWeight: 800,
     whiteSpace: "nowrap",
     cursor: "pointer",
-    border: `1px solid ${active ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.35)"}`,
-    background: active ? "rgba(224,30,30,0.15)" : "transparent",
-    color: active ? "#ff6b6b" : "rgba(245,237,237,0.6)",
+    border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-line-rgb),0.35)"}`,
+    background: active ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+    color: active ? "var(--ep-accent-hi2)" : "rgba(var(--ep-ink-rgb),0.6)",
   });
 
   return (
     <div className="page-transition" style={{ padding: "22px 16px 120px", maxWidth: 820, margin: "0 auto" }}>
       <h1 className="ep-h1" style={{ marginBottom: 4 }}>{tr("Notes")}</h1>
-      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 14px" }}>
+      <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "0 0 14px" }}>
         {tr("Jette tout ici : idées, liens, captures, dictées. Ajoute des #tags pour ranger, relie des notes avec [[Titre]].")}
       </p>
 
@@ -174,7 +175,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
           rows={draft.split("\n").length > 2 ? 5 : 2}
           aria-label={tr("Nouvelle note")}
           autoFocus={params.get("capture") === "1"}
-          style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", color: "#F5EDED", fontSize: 15, lineHeight: 1.5, fontFamily: "inherit" }}
+          style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", color: "var(--ep-ink)", fontSize: 15, lineHeight: 1.5, fontFamily: "inherit" }}
         />
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
           <button type="button" onClick={toggleDictation} aria-label={listening ? tr("Arrêter la dictée") : tr("Dicter")} style={{ ...chip(listening), padding: "8px 11px" }}>
@@ -194,7 +195,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
               e.target.value = "";
             }}
           />
-          <button type="button" disabled={pending || !draft.trim()} onClick={save} data-haptic style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.04em", cursor: "pointer", opacity: pending || !draft.trim() ? 0.5 : 1 }}>
+          <button type="button" disabled={pending || !draft.trim()} onClick={save} data-haptic style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.04em", cursor: "pointer", opacity: pending || !draft.trim() ? 0.5 : 1 }}>
             <Send size={13} />{" "}{tr("Ranger")}
           </button>
         </div>
@@ -203,10 +204,10 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
 
       {/* Recherche */}
       <div className="ep-card" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", marginBottom: 10 }}>
-        <Search size={16} style={{ color: "rgba(245,237,237,0.4)" }} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Chercher dans mes notes")} aria-label={tr("Chercher dans mes notes")} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }} />
+        <Search size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Chercher dans mes notes")} aria-label={tr("Chercher dans mes notes")} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ep-ink)", fontSize: 14 }} />
         {query && (
-          <button type="button" onClick={() => setQuery("")} aria-label={tr("Effacer")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.4)" }}>
+          <button type="button" onClick={() => setQuery("")} aria-label={tr("Effacer")} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
             <X size={15} />
           </button>
         )}
@@ -227,7 +228,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
           <ListChecks size={12} />{" "}{tr("Tâches")}
         </button>
         {tagCounts.map(([t, n]) => (
-          <button key={t} type="button" style={{ ...chip(view.type === "tag" && view.tag === t), borderColor: `${colorFor(t, tags)}66` }} onClick={() => setView({ type: "tag", tag: t })}>
+          <button key={t} type="button" style={{ ...chip(view.type === "tag" && view.tag === t), borderColor: `${withAlpha(colorFor(t, tags), "66")}` }} onClick={() => setView({ type: "tag", tag: t })}>
             <span style={{ width: 7, height: 7, borderRadius: 99, background: colorFor(t, tags) }} />#{t} ({n})
           </button>
         ))}
@@ -235,7 +236,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
 
       {/* Liste */}
       {shown.length === 0 ? (
-        <p className="ep-card" style={{ padding: "16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>
+        <p className="ep-card" style={{ padding: "16px", fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0 }}>
           {notes.length === 0 ? tr("Aucune note pour l'instant. Écris ta première idée juste au-dessus.") : tr("Rien ne correspond.")}
         </p>
       ) : (
@@ -246,32 +247,32 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
               type="button"
               onClick={() => setOpenId(n.id)}
               className="ep-card"
-              style={{ textAlign: "left", padding: 0, overflow: "hidden", cursor: "pointer", color: "#F5EDED", display: "flex", flexDirection: "column" }}
+              style={{ textAlign: "left", padding: 0, overflow: "hidden", cursor: "pointer", color: "var(--ep-ink)", display: "flex", flexDirection: "column" }}
             >
               {n.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={n.imageUrl} alt="" style={{ width: "100%", height: 130, objectFit: "cover", background: "#1a0202" }} />
+                <img src={n.imageUrl} alt="" style={{ width: "100%", height: 130, objectFit: "cover", background: "var(--ep-s3)" }} />
               )}
               <span style={{ padding: "12px 14px", display: "block" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {n.kind === "tache" && (
-                    <span style={{ width: 16, height: 16, borderRadius: 5, border: "1.5px solid rgba(245,237,237,0.4)", background: n.done ? "#4ade80" : "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      {n.done && <Check size={11} color="#0D0000" strokeWidth={3} />}
+                    <span style={{ width: 16, height: 16, borderRadius: 5, border: "1.5px solid rgba(var(--ep-ink-rgb),0.4)", background: n.done ? "var(--ep-ok)" : "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      {n.done && <Check size={11} color="var(--ep-bg)" strokeWidth={3} />}
                     </span>
                   )}
-                  {n.kind === "lien" && <Link2 size={13} style={{ color: "#60a5fa", flexShrink: 0 }} />}
-                  {n.kind === "dictee" && <Mic size={13} style={{ color: "#a78bfa", flexShrink: 0 }} />}
+                  {n.kind === "lien" && <Link2 size={13} style={{ color: "var(--ep-info)", flexShrink: 0 }} />}
+                  {n.kind === "dictee" && <Mic size={13} style={{ color: "var(--ep-violet)", flexShrink: 0 }} />}
                   <span style={{ fontSize: 14, fontWeight: 800, textDecoration: n.done ? "line-through" : "none", opacity: n.done ? 0.5 : 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title || tr("Sans titre")}</span>
-                  {n.pinned && <Pin size={12} style={{ color: "#E01E1E", flexShrink: 0, marginLeft: "auto" }} />}
+                  {n.pinned && <Pin size={12} style={{ color: "var(--ep-accent)", flexShrink: 0, marginLeft: "auto" }} />}
                 </span>
                 {n.body && n.body !== n.title && (
-                  <span style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", fontSize: 12.5, color: "rgba(245,237,237,0.6)", marginTop: 4, lineHeight: 1.45 }}>{n.body}</span>
+                  <span style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.6)", marginTop: 4, lineHeight: 1.45 }}>{n.body}</span>
                 )}
                 <span style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8, alignItems: "center" }}>
                   {n.tags.slice(0, 4).map((t) => (
-                    <span key={t} style={{ fontSize: 10.5, fontWeight: 800, color: colorFor(t, tags), background: `${colorFor(t, tags)}18`, borderRadius: 6, padding: "2px 6px" }}>#{t}</span>
+                    <span key={t} style={{ fontSize: 10.5, fontWeight: 800, color: colorFor(t, tags), background: `${withAlpha(colorFor(t, tags), "18")}`, borderRadius: 6, padding: "2px 6px" }}>#{t}</span>
                   ))}
-                  <span style={{ fontSize: 10.5, color: "rgba(245,237,237,0.35)", marginLeft: "auto" }}>{fmtDate(n.updated_at)}</span>
+                  <span style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)", marginLeft: "auto" }}>{fmtDate(n.updated_at)}</span>
                 </span>
               </span>
             </button>
@@ -316,14 +317,14 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
     persist({ tags: next });
   }
 
-  const btn: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 11px", borderRadius: 10, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.8)", fontSize: 12, fontWeight: 800, cursor: "pointer" };
+  const btn: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 11px", borderRadius: 10, border: "1px solid rgba(var(--ep-line-rgb),0.45)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.8)", fontSize: 12, fontWeight: 800, cursor: "pointer" };
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 80, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(3px)" }} />
-      <div className="ep-modal-panel" style={{ position: "relative", width: "100%", maxWidth: 720, maxHeight: "92vh", overflowY: "auto", background: "#150000", border: "1px solid rgba(137,4,4,0.4)", borderRadius: "18px 18px 0 0", padding: "16px 16px calc(24px + env(safe-area-inset-bottom, 0px))" }}>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(var(--ep-shade-rgb),0.7)", backdropFilter: "blur(3px)" }} />
+      <div className="ep-modal-panel" style={{ position: "relative", width: "100%", maxWidth: 720, maxHeight: "92vh", overflowY: "auto", background: "var(--ep-s2)", border: "1px solid rgba(var(--ep-line-rgb),0.4)", borderRadius: "18px 18px 0 0", padding: "16px 16px calc(24px + env(safe-area-inset-bottom, 0px))" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{saved ? tr("Enregistré") : tr("Modifications non enregistrées")}</span>
+          <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{saved ? tr("Enregistré") : tr("Modifications non enregistrées")}</span>
           <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
             {note.kind === "tache" && (
               <button type="button" style={btn} onClick={() => persist({ done: !note.done })}>
@@ -356,11 +357,11 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
         {note.imageUrl && (
           <a href={note.imageUrl} target="_blank" rel="noopener noreferrer">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={note.imageUrl} alt={tr("Capture")} style={{ width: "100%", maxHeight: 360, objectFit: "contain", borderRadius: 12, background: "#0D0000", marginBottom: 10 }} />
+            <img src={note.imageUrl} alt={tr("Capture")} style={{ width: "100%", maxHeight: 360, objectFit: "contain", borderRadius: 12, background: "var(--ep-bg)", marginBottom: 10 }} />
           </a>
         )}
         {note.source_url && (
-          <a href={note.source_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#60a5fa", fontSize: 13, fontWeight: 700, marginBottom: 10, wordBreak: "break-all" }}>
+          <a href={note.source_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--ep-info)", fontSize: 13, fontWeight: 700, marginBottom: 10, wordBreak: "break-all" }}>
             <Link2 size={13} />{" "}{tr("Ouvrir le lien")}
           </a>
         )}
@@ -374,7 +375,7 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
           onBlur={() => title !== note.title && persist({ title })}
           placeholder={tr("Titre")}
           aria-label={tr("Titre")}
-          style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 20, fontWeight: 900, marginBottom: 8 }}
+          style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--ep-ink)", fontSize: 20, fontWeight: 900, marginBottom: 8 }}
         />
         <textarea
           value={body}
@@ -387,18 +388,18 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
           aria-label={tr("Contenu")}
           rows={10}
           className="ep-selectable"
-          style={{ width: "100%", background: "rgba(0,0,0,0.25)", border: "1px solid rgba(245,237,237,0.08)", borderRadius: 12, outline: "none", color: "#F5EDED", fontSize: 15, lineHeight: 1.6, padding: 12, resize: "vertical", fontFamily: "inherit" }}
+          style={{ width: "100%", background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-ink-rgb),0.08)", borderRadius: 12, outline: "none", color: "var(--ep-ink)", fontSize: 15, lineHeight: 1.6, padding: 12, resize: "vertical", fontFamily: "inherit" }}
         />
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 10 }}>
           {note.tags.map((t) => (
-            <button key={t} type="button" onClick={() => persist({ tags: note.tags.filter((x) => x !== t) })} title={tr("Retirer ce tag")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800, color: colorFor(t, tags), background: `${colorFor(t, tags)}18`, border: "none", borderRadius: 8, padding: "5px 8px", cursor: "pointer" }}>
+            <button key={t} type="button" onClick={() => persist({ tags: note.tags.filter((x) => x !== t) })} title={tr("Retirer ce tag")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800, color: colorFor(t, tags), background: `${withAlpha(colorFor(t, tags), "18")}`, border: "none", borderRadius: 8, padding: "5px 8px", cursor: "pointer" }}>
               #{t} <X size={11} />
             </button>
           ))}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "1px dashed rgba(245,237,237,0.2)", borderRadius: 8, padding: "3px 8px" }}>
-            <Hash size={12} style={{ color: "rgba(245,237,237,0.4)" }} />
-            <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} onBlur={addTag} placeholder={tr("ajouter")} aria-label={tr("Ajouter un tag")} list="note-tags" style={{ width: 90, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 12 }} />
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "1px dashed rgba(var(--ep-ink-rgb),0.2)", borderRadius: 8, padding: "3px 8px" }}>
+            <Hash size={12} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
+            <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} onBlur={addTag} placeholder={tr("ajouter")} aria-label={tr("Ajouter un tag")} list="note-tags" style={{ width: 90, background: "transparent", border: "none", outline: "none", color: "var(--ep-ink)", fontSize: 12 }} />
             <datalist id="note-tags">
               {[...new Set(all.flatMap((n) => n.tags))].map((t) => (
                 <option key={t} value={t} />
@@ -408,20 +409,20 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
         </div>
 
         {(linked.length > 0 || backlinks.length > 0) && (
-          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(245,237,237,0.07)", display: "flex", flexDirection: "column", gap: 6 }}>
-            {linked.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: 0 }}>{tr("Liens")}</p>}
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(var(--ep-ink-rgb),0.07)", display: "flex", flexDirection: "column", gap: 6 }}>
+            {linked.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>{tr("Liens")}</p>}
             {linked.map((l) =>
               l.note ? (
-                <button key={l.label} type="button" onClick={() => onOpen(l.note!.id)} style={{ textAlign: "left", background: "none", border: "none", color: "#60a5fa", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>
+                <button key={l.label} type="button" onClick={() => onOpen(l.note!.id)} style={{ textAlign: "left", background: "none", border: "none", color: "var(--ep-info)", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>
                   → {l.note.title}
                 </button>
               ) : (
-                <span key={l.label} style={{ fontSize: 13, color: "rgba(245,237,237,0.45)" }}>→ {l.label}{" "}{tr("(note pas encore créée)")}</span>
+                <span key={l.label} style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)" }}>→ {l.label}{" "}{tr("(note pas encore créée)")}</span>
               )
             )}
-            {backlinks.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: "6px 0 0" }}>{tr("Mentionnée dans")}</p>}
+            {backlinks.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", margin: "6px 0 0" }}>{tr("Mentionnée dans")}</p>}
             {backlinks.map((b) => (
-              <button key={b.id} type="button" onClick={() => onOpen(b.id)} style={{ textAlign: "left", background: "none", border: "none", color: "#60a5fa", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>
+              <button key={b.id} type="button" onClick={() => onOpen(b.id)} style={{ textAlign: "left", background: "none", border: "none", color: "var(--ep-info)", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>
                 ← {b.title || tr("Sans titre")}
               </button>
             ))}

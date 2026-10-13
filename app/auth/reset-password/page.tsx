@@ -12,10 +12,10 @@ import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.15)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
   borderRadius: 8,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "11px 14px",
   fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
   fontWeight: 500,
@@ -29,7 +29,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.18em",
   textTransform: "uppercase",
-  color: "rgba(224,30,30,0.8)",
+  color: "rgba(var(--ep-accent-rgb),0.8)",
   marginBottom: 7,
 };
 
@@ -101,13 +101,13 @@ export default function ResetPasswordPage() {
 
         {done ? (
           <div style={{ textAlign: "center" }}>
-            <CheckCircle2 size={40} style={{ color: "#4ade80", margin: "0 auto 14px" }} />
-            <p style={{ color: "#F5EDED", fontSize: 15, fontWeight: 700 }}>{t("Mot de passe mis à jour.")}</p>
-            <p style={{ color: "rgba(245,237,237,0.4)", fontSize: 13, marginTop: 6 }}>{t("Redirection...")}</p>
+            <CheckCircle2 size={40} style={{ color: "var(--ep-ok)", margin: "0 auto 14px" }} />
+            <p style={{ color: "var(--ep-ink)", fontSize: 15, fontWeight: 700 }}>{t("Mot de passe mis à jour.")}</p>
+            <p style={{ color: "rgba(var(--ep-ink-rgb),0.4)", fontSize: 13, marginTop: 6 }}>{t("Redirection...")}</p>
           </div>
         ) : (
           <>
-            <h2 style={{ fontWeight: 800, fontSize: 20, color: "#F5EDED", letterSpacing: "-0.03em", margin: "0 0 20px", textAlign: "center" }}>
+            <h2 style={{ fontWeight: 800, fontSize: 20, color: "var(--ep-ink)", letterSpacing: "-0.03em", margin: "0 0 20px", textAlign: "center" }}>
               {t("Choisis un nouveau mot de passe")}
             </h2>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -137,10 +137,10 @@ export default function ResetPasswordPage() {
               {error && (
                 <div style={{
                   display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-                  background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)", borderRadius: 8,
+                  background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)", borderRadius: 8,
                 }}>
-                  <span style={{ color: "#E01E1E", flexShrink: 0 }}>⚠</span>
-                  <p style={{ fontSize: 13, color: "#FDC4C4", margin: 0, fontWeight: 500 }}>{t(error)}</p>
+                  <span style={{ color: "var(--ep-accent)", flexShrink: 0 }}>⚠</span>
+                  <p style={{ fontSize: 13, color: "var(--ep-pink)", margin: 0, fontWeight: 500 }}>{t(error)}</p>
                 </div>
               )}
 
@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
               href="/"
               style={{
                 display: "block", width: "100%", textAlign: "center",
-                marginTop: 18, color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, textDecoration: "none",
+                marginTop: 18, color: "rgba(var(--ep-ink-rgb),0.3)", fontSize: 12, fontWeight: 600, textDecoration: "none",
               }}
             >
               {t("Retour à l'accueil")}

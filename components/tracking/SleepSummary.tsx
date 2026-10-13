@@ -36,9 +36,9 @@ export default async function SleepSummary({ nights }: { nights: SleepNight[] })
 
   if (!withHours.length) {
     return (
-      <div className="rounded-2xl p-4 border border-[#890404]/25 bg-[#120000]/80">
-        <p className="text-sm font-bold text-white">{t("Pas encore de nuit enregistrée")}</p>
-        <p className="text-[12.5px] text-[#F5EDED]/55 mt-1 leading-relaxed">
+      <div className="rounded-2xl p-4 border border-(--ep-line)/25 bg-(--ep-bg)/80">
+        <p className="text-sm font-bold text-(--ep-strong)">{t("Pas encore de nuit enregistrée")}</p>
+        <p className="text-[12.5px] text-(--ep-ink)/55 mt-1 leading-relaxed">
           {t("Ton sommeil se remplit tout seul avec ton bilan du matin (ou ta bague Oura). Rien à saisir ici : reviens dans quelques jours pour voir tes tendances.")}
         </p>
       </div>
@@ -55,27 +55,27 @@ export default async function SleepSummary({ nights }: { nights: SleepNight[] })
   const delta = avg7 != null && avgPrev != null ? avg7 - avgPrev : null;
 
   return (
-    <div className="rounded-2xl p-4 border border-[#818cf8]/20" style={{ background: "linear-gradient(160deg, rgba(49,46,129,0.22), rgba(17,0,0,0.85))" }}>
+    <div className="rounded-2xl p-4 border border-[#818cf8]/20" style={{ background: "linear-gradient(160deg, rgba(49,46,129,0.22), rgba(var(--ep-bg-rgb),0.85))" }}>
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/45 flex items-center gap-1"><Moon size={11} /> {t("7 nuits")}</p>
-          <p className="text-2xl font-black text-white tabular-nums">{avg7 != null ? `${avg7.toFixed(1).replace(".", ",")} h` : "N/A"}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/45 flex items-center gap-1"><Moon size={11} /> {t("7 nuits")}</p>
+          <p className="text-2xl font-black text-(--ep-strong) tabular-nums">{avg7 != null ? `${avg7.toFixed(1).replace(".", ",")} h` : "N/A"}</p>
           {delta != null && Math.abs(delta) >= 0.1 && (
-            <p className="text-[11px] font-bold" style={{ color: delta > 0 ? "#4ade80" : "#fb923c" }}>{delta > 0 ? "+" : ""}{delta.toFixed(1).replace(".", ",")} h {t("vs avant")}</p>
+            <p className="text-[11px] font-bold" style={{ color: delta > 0 ? "var(--ep-ok)" : "var(--ep-orange)" }}>{delta > 0 ? "+" : ""}{delta.toFixed(1).replace(".", ",")} h {t("vs avant")}</p>
           )}
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/45 flex items-center gap-1"><Clock size={11} /> {t("Coucher")}</p>
-          <p className="text-2xl font-black text-white tabular-nums">{bedAvg != null ? fmtMin(bedAvg) : "N/A"}</p>
-          {spread != null && <p className="text-[11px] text-[#F5EDED]/50">± {Math.round(spread)} min</p>}
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/45 flex items-center gap-1"><Clock size={11} /> {t("Coucher")}</p>
+          <p className="text-2xl font-black text-(--ep-strong) tabular-nums">{bedAvg != null ? fmtMin(bedAvg) : "N/A"}</p>
+          {spread != null && <p className="text-[11px] text-(--ep-ink)/50">± {Math.round(spread)} min</p>}
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/45">{t("Nuits courtes")}</p>
-          <p className="text-2xl font-black tabular-nums" style={{ color: short >= 3 ? "#fb923c" : "#fff" }}>{short}/{last7.length}</p>
-          <p className="text-[11px] text-[#F5EDED]/50">{t("moins de 7 h")}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/45">{t("Nuits courtes")}</p>
+          <p className="text-2xl font-black tabular-nums" style={{ color: short >= 3 ? "var(--ep-orange)" : "var(--ep-strong)" }}>{short}/{last7.length}</p>
+          <p className="text-[11px] text-(--ep-ink)/50">{t("moins de 7 h")}</p>
         </div>
       </div>
-      <p className="mt-3 flex gap-2 text-[13px] leading-relaxed text-[#F5EDED]/80">
+      <p className="mt-3 flex gap-2 text-[13px] leading-relaxed text-(--ep-ink)/80">
         <Sparkles size={14} className="text-[#a5b4fc] shrink-0 mt-0.5" />
         <span>{verdict}</span>
       </p>
@@ -84,11 +84,11 @@ export default async function SleepSummary({ nights }: { nights: SleepNight[] })
         {nights.slice(-14).map((n) => {
           const h = n.hours ?? 0;
           return (
-            <div key={n.date} className="flex-1 rounded-sm" style={{ height: h ? `${Math.max(12, Math.min(100, ((h - 4) / 6) * 100))}%` : "6%", background: !h ? "rgba(245,237,237,0.08)" : h < 7 ? "rgba(251,146,60,0.7)" : "rgba(129,140,248,0.75)" }} title={`${n.date} : ${h || "?"} h`} />
+            <div key={n.date} className="flex-1 rounded-sm" style={{ height: h ? `${Math.max(12, Math.min(100, ((h - 4) / 6) * 100))}%` : "6%", background: !h ? "rgba(var(--ep-ink-rgb),0.08)" : h < 7 ? "rgba(var(--ep-orange-rgb),0.7)" : "rgba(129,140,248,0.75)" }} title={`${n.date} : ${h || "?"} h`} />
           );
         })}
       </div>
-      <p className="text-[10px] text-[#F5EDED]/35 mt-1">{t("14 dernières nuits. Orange : moins de 7 h.")}</p>
+      <p className="text-[10px] text-(--ep-ink)/35 mt-1">{t("14 dernières nuits. Orange : moins de 7 h.")}</p>
     </div>
   );
 }
@@ -105,15 +105,15 @@ export async function SleepUnderstand() {
   ];
   return (
     <section>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">{t("Comprendre ton sommeil")}</p>
-      <div className="rounded-2xl border border-[#890404]/25 bg-[#120000]/80 divide-y divide-[#890404]/15">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-2">{t("Comprendre ton sommeil")}</p>
+      <div className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-bg)/80 divide-y divide-(--ep-line)/15">
         {items.map(([title, body]) => (
           <details key={title} className="group px-4 py-3">
-            <summary className="list-none cursor-pointer flex items-center justify-between text-[13.5px] font-bold text-white">
+            <summary className="list-none cursor-pointer flex items-center justify-between text-[13.5px] font-bold text-(--ep-strong)">
               {t(title)}
-              <span className="text-[#F5EDED]/35 group-open:rotate-45 transition-transform text-lg leading-none">+</span>
+              <span className="text-(--ep-ink)/35 group-open:rotate-45 transition-transform text-lg leading-none">+</span>
             </summary>
-            <p className="text-[12.5px] text-[#F5EDED]/60 leading-relaxed mt-2">{t(body)}</p>
+            <p className="text-[12.5px] text-(--ep-ink)/60 leading-relaxed mt-2">{t(body)}</p>
           </details>
         ))}
       </div>

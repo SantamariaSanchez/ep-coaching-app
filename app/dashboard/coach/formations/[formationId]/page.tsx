@@ -40,7 +40,7 @@ export default async function CoachFormationDetailPage({
         href="/dashboard/coach/formations"
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          color: "rgba(245,237,237,0.3)", textDecoration: "none",
+          color: "rgba(var(--ep-ink-rgb),0.3)", textDecoration: "none",
           fontSize: 11, fontWeight: 600, marginBottom: 20, letterSpacing: "0.05em",
         }}
         className="animate-fade-in"

@@ -27,7 +27,7 @@ export default function ProgramBuilderTabs({
 
   return (
     <div>
-      <div className="flex gap-1 mb-5 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-5 border-b border-(--ep-line)/20 overflow-x-auto">
         {[
           { key: "wizard" as const, label: t("Créateur guidé"), icon: Wand2 },
           { key: "manual" as const, label: t("Construire moi-même"), icon: Pencil },
@@ -37,8 +37,8 @@ export default function ProgramBuilderTabs({
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               tab === key
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-(--ep-accent) border-b-2 border-(--ep-accent)"
+                : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Icon size={13} /> {label}

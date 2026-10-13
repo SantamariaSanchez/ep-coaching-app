@@ -43,7 +43,7 @@ export default async function ClientCheckinsPage({
     <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
       <Link
         href={`/dashboard/coach/clients/${id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {client.full_name}
@@ -51,13 +51,13 @@ export default async function ClientCheckinsPage({
 
       <div className="flex items-start justify-between mb-8">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
             {t("Check-ins")}
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">
             {client.full_name}
           </h1>
-          <p className="mt-1 text-xs text-[#F5EDED]/30">
+          <p className="mt-1 text-xs text-(--ep-ink)/30">
             {checkins.length}{" "}{t("check-in")}{checkins.length !== 1 ? "s" : ""}
             {pendingCount > 0 && (
               <span className="ml-2 text-amber-400 font-semibold">
@@ -72,10 +72,10 @@ export default async function ClientCheckinsPage({
 
       {checkins.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
+          <p className="text-sm font-semibold text-(--ep-ink)/40 uppercase tracking-widest">
             {t("Aucun check-in pour l'instant")}
           </p>
-          <p className="text-xs text-[#F5EDED]/25 mt-1">
+          <p className="text-xs text-(--ep-ink)/25 mt-1">
             {t("Le client n'a pas encore soumis de bilan hebdomadaire.")}
           </p>
         </div>

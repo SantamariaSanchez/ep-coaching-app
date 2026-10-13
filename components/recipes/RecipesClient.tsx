@@ -151,8 +151,8 @@ function Chip({
       onClick={onClick}
       className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap border transition-colors ${
         active
-          ? "bg-[#E01E1E] border-[#E01E1E] text-white"
-          : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50 hover:text-[#F5EDED]/75"
+          ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
+          : "bg-(--ep-s1) border-(--ep-line)/25 text-(--ep-ink)/50 hover:border-(--ep-line)/50 hover:text-(--ep-ink)/75"
       }`}
     >
       {children}
@@ -175,7 +175,7 @@ function FilterGroup<T extends string>({
 }) {
   return (
     <div className="mb-3">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+      <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">
         {label}
       </p>
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
@@ -233,12 +233,12 @@ function RecipeCard({
   }
   if (locked) {
     return (
-      <div className="bg-[#1f0101] border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
+      <div className="bg-(--ep-s1) border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center flex-shrink-0">
           <Lock size={15} className="text-amber-400" strokeWidth={1.8} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-white/80 truncate">{recipe.name}</p>
+          <p className="text-sm font-bold text-(--ep-strong)/80 truncate">{recipe.name}</p>
           <p className="text-[10px] text-amber-300/70">
             {tr("Recette exclusive, débloquée à")}{" "}{FEATURE_UNLOCK_POINTS.exclusive_recipes}{" "}{tr("pts ou avec l'abonnement")}
           </p>
@@ -249,18 +249,18 @@ function RecipeCard({
   }
 
   const tempAccent =
-    recipe.temp === "chaud" ? "#f97316" : recipe.temp === "froid" ? "#38bdf8" : "#a78bfa";
+    recipe.temp === "chaud" ? "#f97316" : recipe.temp === "froid" ? "#38bdf8" : "var(--ep-violet)";
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden flex flex-col h-full">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden flex flex-col h-full">
       <div style={{ height: 3, background: tempAccent, opacity: 0.6 }} />
       <button onClick={onToggle} className="w-full text-left p-4 flex-1">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-bold text-white">{recipe.name}</p>
+              <p className="text-sm font-bold text-(--ep-strong)">{recipe.name}</p>
               {recipe.isCommunity && (
-                <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/25 flex-shrink-0">
+                <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-(--ep-accent)/15 text-(--ep-accent) border border-(--ep-accent)/25 flex-shrink-0">
                   {tr("Communauté")}
                 </span>
               )}
@@ -279,7 +279,7 @@ function RecipeCard({
               <Link
                 href={`${basePath}/profile/${recipe.authorId}`}
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 text-[10px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+                className="inline-flex items-center gap-1.5 text-[10px] text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors"
               >
                 {recipe.authorAvatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -289,32 +289,32 @@ function RecipeCard({
                     className="w-3.5 h-3.5 rounded-full object-cover flex-shrink-0"
                   />
                 ) : (
-                  <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex-shrink-0" />
+                  <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-(--ep-accent) to-(--ep-line) flex-shrink-0" />
                 )}
                 {tr("par")}{" "}{recipe.authorName}
               </Link>
             )}
             <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-              <span className="text-[10px] text-[#F5EDED]/40 flex items-center gap-1">
+              <span className="text-[10px] text-(--ep-ink)/40 flex items-center gap-1">
                 <Clock size={11} strokeWidth={1.8} /> {recipe.prepMinutes}{" "}{tr("min")}
               </span>
-              <span className="text-[10px] text-[#F5EDED]/40 flex items-center gap-1">
+              <span className="text-[10px] text-(--ep-ink)/40 flex items-center gap-1">
                 <MapPin size={11} strokeWidth={1.8} /> {recipe.region}
               </span>
-              <span className="text-[10px] text-[#F5EDED]/40">{PRICE_LABELS[recipe.price]}</span>
-              <span className="text-[10px] text-[#F5EDED]/40 capitalize">{TEMP_LABELS[recipe.temp]}</span>
+              <span className="text-[10px] text-(--ep-ink)/40">{PRICE_LABELS[recipe.price]}</span>
+              <span className="text-[10px] text-(--ep-ink)/40 capitalize">{TEMP_LABELS[recipe.temp]}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span className="text-[10px] font-bold text-[#E01E1E] flex items-center gap-1">
+              <span className="text-[10px] font-bold text-(--ep-accent) flex items-center gap-1">
                 <Flame size={11} strokeWidth={2} /> {recipe.kcal}{" "}{tr("kcal")}
               </span>
-              <span className="text-[10px] text-[#F5EDED]/50">P {recipe.protein}g</span>
-              <span className="text-[10px] text-[#F5EDED]/50">G {recipe.carbs}g</span>
-              <span className="text-[10px] text-[#F5EDED]/50">L {recipe.fat}g</span>
+              <span className="text-[10px] text-(--ep-ink)/50">P {recipe.protein}g</span>
+              <span className="text-[10px] text-(--ep-ink)/50">G {recipe.carbs}g</span>
+              <span className="text-[10px] text-(--ep-ink)/50">L {recipe.fat}g</span>
               {classifyMacroProfiles(recipe)
                 .filter((p) => p !== "equilibre")
                 .map((p) => (
-                  <span key={p} className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[#890404]/20 text-[#F5EDED]/50 border border-[#890404]/20">
+                  <span key={p} className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-(--ep-line)/20 text-(--ep-ink)/50 border border-(--ep-line)/20">
                     {MACRO_PROFILE_LABELS[p]}
                   </span>
                 ))}
@@ -322,16 +322,16 @@ function RecipeCard({
           </div>
           <ChevronDown
             size={16}
-            className={`text-[#F5EDED]/30 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+            className={`text-(--ep-ink)/30 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
           />
         </div>
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3">
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3">
           <div className="flex items-center gap-1.5 flex-wrap mb-3">
             {recipe.diet.map((d) => (
-              <span key={d} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/55">
+              <span key={d} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-(--ep-line)/15 text-(--ep-ink)/55">
                 {DIET_LABELS[d]}
               </span>
             ))}
@@ -346,36 +346,36 @@ function RecipeCard({
               </span>
             ))}
             {recipe.texture.map((t) => (
-              <span key={t} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#F5EDED]/5 text-[#F5EDED]/40">
+              <span key={t} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-(--ep-ink)/5 text-(--ep-ink)/40">
                 {t}
               </span>
             ))}
           </div>
 
           {recipe.allergens.length > 0 && (
-            <p className="text-[10px] text-[#F5EDED]/35 mb-3">
-              <span className="font-bold text-[#F5EDED]/50">{tr("Allergènes :")}{" "}</span>
+            <p className="text-[10px] text-(--ep-ink)/35 mb-3">
+              <span className="font-bold text-(--ep-ink)/50">{tr("Allergènes :")}{" "}</span>
               {recipe.allergens.map((a) => ALLERGEN_LABELS[a]).join(", ")}
             </p>
           )}
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">{tr("Ingrédients")}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">{tr("Ingrédients")}</p>
               <ul className="space-y-1">
                 {recipe.ingredients.map((ing, i) => (
-                  <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
-                    <span className="text-[#E01E1E]">•</span> {ing}
+                  <li key={i} className="text-xs text-(--ep-ink)/65 flex gap-2">
+                    <span className="text-(--ep-accent)">•</span> {ing}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">{tr("Préparation")}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">{tr("Préparation")}</p>
               <ol className="space-y-1">
                 {recipe.steps.map((step, i) => (
-                  <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
-                    <span className="text-[#E01E1E] font-bold">{i + 1}.</span> {step}
+                  <li key={i} className="text-xs text-(--ep-ink)/65 flex gap-2">
+                    <span className="text-(--ep-accent) font-bold">{i + 1}.</span> {step}
                   </li>
                 ))}
               </ol>
@@ -383,7 +383,7 @@ function RecipeCard({
           </div>
 
           {recipe.tip && (
-            <p className="text-xs text-[#F5EDED]/45 italic mt-3 pt-3 border-t border-[#890404]/10">
+            <p className="text-xs text-(--ep-ink)/45 italic mt-3 pt-3 border-t border-(--ep-line)/10">
               💡 {recipe.tip}
             </p>
           )}
@@ -398,7 +398,7 @@ function RecipeCard({
                 disabled={logging}
                 title={tr("Ajoute chaque ingrédient de cette recette à ton journal alimentaire d'aujourd'hui")} aria-label={tr("Ajoute chaque ingrédient de cette recette à ton journal alimentaire d'aujourd'hui")}
                 className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                  logged ? "text-green-400" : "text-[#E01E1E] hover:text-[#ff4444]"
+                  logged ? "text-green-400" : "text-(--ep-accent) hover:text-(--ep-accent-hi)"
                 } disabled:opacity-50`}
               >
                 {logged ? <Check size={11} /> : <CalendarPlus size={11} />}
@@ -412,7 +412,7 @@ function RecipeCard({
                   e.stopPropagation();
                   onDelete();
                 }}
-                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors"
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-red-400 transition-colors"
               >
                 <Trash2 size={11} />{" "}{tr("Supprimer ma recette")}
               </button>
@@ -639,7 +639,7 @@ export default function RecipesClient({
   return (
     <div>
       {/* Tabs */}
-      <div className="flex gap-1 mb-5 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-5 border-b border-(--ep-line)/20 overflow-x-auto">
         {[
           { key: "bibliotheque" as const, label: tr("Bibliothèque"), icon: BookOpen },
           { key: "creer" as const, label: tr("Créateur de repas"), icon: Wand2 },
@@ -649,8 +649,8 @@ export default function RecipesClient({
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               tab === key
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-(--ep-accent) border-b-2 border-(--ep-accent)"
+                : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Icon size={13} /> {label}
@@ -733,7 +733,7 @@ export default function RecipesClient({
           ) : (
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#E01E1E] mb-4"
+              className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-(--ep-accent) mb-4"
             >
               <Plus size={13} />{" "}{tr("Ajouter ma recette")}
             </button>
@@ -741,21 +741,21 @@ export default function RecipesClient({
 
           {/* Search */}
           <div className="relative mb-4">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" strokeWidth={1.8} />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" strokeWidth={1.8} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={tr("Rechercher une recette ou un ingrédient...")} aria-label={tr("Rechercher une recette ou un ingrédient...")}
-              className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+              className="w-full bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
             />
           </div>
 
           {/* Filter toggle */}
           <button
             onClick={() => setShowFilters((s) => !s)}
-            className="flex items-center justify-between w-full bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-2.5 mb-3"
+            className="flex items-center justify-between w-full bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-2.5 mb-3"
           >
-            <span className="text-xs font-bold text-[#F5EDED]/60">
+            <span className="text-xs font-bold text-(--ep-ink)/60">
               {tr("Filtres")}{" "}{activeFilterCount > 0 && `(${activeFilterCount})`}
             </span>
             <div className="flex items-center gap-2">
@@ -765,20 +765,20 @@ export default function RecipesClient({
                     e.stopPropagation();
                     resetFilters();
                   }}
-                  className="text-[10px] font-bold text-[#E01E1E] flex items-center gap-1"
+                  className="text-[10px] font-bold text-(--ep-accent) flex items-center gap-1"
                 >
                   <X size={11} />{" "}{tr("Réinitialiser")}
                 </span>
               )}
               <ChevronDown
                 size={14}
-                className={`text-[#F5EDED]/40 transition-transform ${showFilters ? "rotate-180" : ""}`}
+                className={`text-(--ep-ink)/40 transition-transform ${showFilters ? "rotate-180" : ""}`}
               />
             </div>
           </button>
 
           {showFilters && (
-            <div className="bg-[#150000] border border-[#890404]/15 rounded-xl p-4 mb-4">
+            <div className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-xl p-4 mb-4">
               <FilterGroup label={tr("Type de repas")} options={Object.keys(MEAL_LABELS) as MealType[]} labels={MEAL_LABELS} selected={meals} toggle={(v) => toggleSet(setMeals, v)} />
               <FilterGroup label={tr("Régime alimentaire")} options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} selected={diets} toggle={(v) => toggleSet(setDiets, v)} />
               <FilterGroup label={tr("Phase nutritionnelle")} options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
@@ -791,10 +791,10 @@ export default function RecipesClient({
             </div>
           )}
 
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-3 flex items-center gap-1.5 flex-wrap">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-3 flex items-center gap-1.5 flex-wrap">
             {filtered.length}{" "}{tr("recette")}{filtered.length > 1 ? "s" : ""}
             {communityRecipes.length > 0 && (
-              <span className="flex items-center gap-1 text-[#E01E1E]/70">
+              <span className="flex items-center gap-1 text-(--ep-accent)/70">
                 <Heart size={10} />{" "}{tr("dont")}{" "}{communityRecipes.length}{" "}{tr("de la communauté")}
               </span>
             )}
@@ -806,9 +806,9 @@ export default function RecipesClient({
           </p>
 
           {filtered.length === 0 ? (
-            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-              <UtensilsCrossed size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-sm text-[#F5EDED]/35">{tr("Aucune recette ne correspond à ces filtres.")}</p>
+            <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+              <UtensilsCrossed size={26} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+              <p className="text-sm text-(--ep-ink)/35">{tr("Aucune recette ne correspond à ces filtres.")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ alignItems: "start" }}>

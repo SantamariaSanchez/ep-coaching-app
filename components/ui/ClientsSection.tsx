@@ -66,9 +66,9 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   cursor: "pointer",
   whiteSpace: "nowrap",
   transition: "background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ep-ease-out)",
-  background: active ? "rgba(224,30,30,0.14)" : "rgba(245,237,237,0.04)",
-  border: active ? "1px solid rgba(224,30,30,0.35)" : "1px solid rgba(137,4,4,0.25)",
-  color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",
+  background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-ink-rgb),0.04)",
+  border: active ? "1px solid rgba(var(--ep-accent-rgb),0.35)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
+  color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
 });
 
 export default function ClientsSection({
@@ -164,12 +164,12 @@ export default function ClientsSection({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
         <div>
           {!hideTitle && <span className="ep-section-title" style={{ marginBottom: 2 }}>{t("Mes clients")}</span>}
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
             {visible.length === clients.length
               ? `${clients.length} client${clients.length !== 1 ? "s" : ""}`
               : `${visible.length} sur ${clients.length}`}
             {totalAlerts > 0 && (
-              <span style={{ color: "rgba(224,30,30,0.75)", fontWeight: 700 }}>
+              <span style={{ color: "rgba(var(--ep-accent-rgb),0.75)", fontWeight: 700 }}>
                 {" "}{t(" · ")}{" "}{totalAlerts}{" "}{t("point")}{totalAlerts !== 1 ? "s" : ""}{" "}{t("à traiter")}
               </span>
             )}
@@ -185,7 +185,7 @@ export default function ClientsSection({
             <div style={{ position: "relative", flex: "1 1 220px", minWidth: 200 }}>
               <Search
                 size={14}
-                style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.28)" }}
+                style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.28)" }}
               />
               <input
                 value={query}
@@ -194,12 +194,12 @@ export default function ClientsSection({
                 aria-label={t("Chercher un client")}
                 style={{
                   width: "100%",
-                  background: "#150000",
-                  border: "1px solid rgba(137,4,4,0.3)",
+                  background: "var(--ep-s2)",
+                  border: "1px solid rgba(var(--ep-line-rgb),0.3)",
                   borderRadius: 10,
                   padding: "9px 32px 9px 34px",
                   fontSize: 13,
-                  color: "#F5EDED",
+                  color: "var(--ep-ink)",
                   outline: "none",
                 }}
               />
@@ -210,7 +210,7 @@ export default function ClientsSection({
                   style={{
                     position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
                     background: "none", border: "none", cursor: "pointer",
-                    color: "rgba(245,237,237,0.35)", display: "flex", padding: 0,
+                    color: "rgba(var(--ep-ink-rgb),0.35)", display: "flex", padding: 0,
                   }}
                 >
                   <X size={13} />
@@ -223,12 +223,12 @@ export default function ClientsSection({
               onChange={(e) => setSort(e.target.value as SortKey)}
               aria-label={t("Trier les clients")}
               style={{
-                background: "#150000",
-                border: "1px solid rgba(137,4,4,0.3)",
+                background: "var(--ep-s2)",
+                border: "1px solid rgba(var(--ep-line-rgb),0.3)",
                 borderRadius: 10,
                 padding: "9px 12px",
                 fontSize: 12.5,
-                color: "rgba(245,237,237,0.75)",
+                color: "rgba(var(--ep-ink-rgb),0.75)",
                 outline: "none",
                 cursor: "pointer",
               }}
@@ -268,7 +268,7 @@ export default function ClientsSection({
             alignItems: "center",
             justifyContent: "center",
             padding: "48px 24px",
-            background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
+            background: "linear-gradient(160deg, var(--ep-s5) 0%, var(--ep-bg) 100%)",
             border: "1px solid var(--ep-border)",
             borderRadius: "var(--radius-lg)",
             textAlign: "center",
@@ -279,20 +279,20 @@ export default function ClientsSection({
               width: 56,
               height: 56,
               borderRadius: 14,
-              background: "rgba(224,30,30,0.1)",
-              border: "1px solid rgba(224,30,30,0.2)",
+              background: "rgba(var(--ep-accent-rgb),0.1)",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               marginBottom: 16,
             }}
           >
-            <Users size={24} style={{ color: "rgba(224,30,30,0.6)" }} strokeWidth={1.5} />
+            <Users size={24} style={{ color: "rgba(var(--ep-accent-rgb),0.6)" }} strokeWidth={1.5} />
           </div>
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#F5EDED", margin: "0 0 6px" }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--ep-ink)", margin: "0 0 6px" }}>
             {t("Aucun client pour l'instant")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
             {t("Les clients s'inscrivent eux-mêmes depuis l'appli, ils apparaîtront ici. Il ne te reste plus qu'à activer leur coaching.")}
           </p>
         </div>
@@ -300,16 +300,16 @@ export default function ClientsSection({
         <div
           style={{
             padding: "36px 24px",
-            background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-            border: "1px dashed rgba(137,4,4,0.35)",
+            background: "linear-gradient(160deg, var(--ep-s5) 0%, var(--ep-bg) 100%)",
+            border: "1px dashed rgba(var(--ep-line-rgb),0.35)",
             borderRadius: "var(--radius-lg)",
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,237,237,0.55)", margin: "0 0 4px" }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 4px" }}>
             {t("Aucun client ne correspond")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
             {t("Change de filtre ou vide la recherche pour revoir toute la liste.")}
           </p>
         </div>

@@ -31,16 +31,16 @@ export default async function ProgrammationPage() {
   return (
     <div className="px-6 py-8 ep-page-wide page-transition">
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Programmation")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Bibliothèque de modèles")}</h1>
-        <p className="mt-1 text-xs text-[#F5EDED]/30 max-w-2xl">
+        <p className="mt-1 text-xs text-(--ep-ink)/30 max-w-2xl">
           {t("Le stock de points de départ réutilisables : modèles de programme, de diète et de road map, indépendants de tout client. La conception au cas par cas, elle, se fait directement dans la fiche du client, où ces modèles sont proposés en point de départ et personnalisables à la volée.")}
         </p>
         <Link
           href="/dashboard/coach/clients"
-          className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+          className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
         >
           <Users size={12} />
           {t("Aller travailler sur un client")}

@@ -209,7 +209,7 @@ export default function HomePage() {
               fontWeight: 900,
               fontSize: "clamp(28px, 7vw, 42px)",
               letterSpacing: "-0.05em",
-              color: "#F5EDED",
+              color: "var(--ep-ink)",
               margin: "0 0 10px",
               lineHeight: 1.05,
             }}
@@ -217,7 +217,7 @@ export default function HomePage() {
             TA TRANSFORMATION
             <br />
             <span style={{
-              background: "linear-gradient(135deg, #E01E1E 0%, #FDC4C4 100%)",
+              background: "linear-gradient(135deg, var(--ep-accent) 0%, var(--ep-pink) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -228,7 +228,7 @@ export default function HomePage() {
           <p
             style={{
               fontSize: 13.5,
-              color: "rgba(245,237,237,0.40)",
+              color: "rgba(var(--ep-ink-rgb),0.40)",
               fontWeight: 500,
               margin: "0 auto",
               maxWidth: 360,
@@ -253,15 +253,15 @@ export default function HomePage() {
           {STATS.map((s, i) => (
             <div key={s.label} style={{ display: "flex", alignItems: "center" }}>
               <div style={{ textAlign: "center", padding: "0 20px" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.03em" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "var(--ep-ink)", letterSpacing: "-0.03em" }}>
                   {s.value}
                 </div>
-                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.30)", marginTop: 2 }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.30)", marginTop: 2 }}>
                   {s.label}
                 </div>
               </div>
               {i < STATS.length - 1 && (
-                <div style={{ width: 1, height: 28, background: "rgba(224,30,30,0.18)" }} />
+                <div style={{ width: 1, height: 28, background: "rgba(var(--ep-accent-rgb),0.18)" }} />
               )}
             </div>
           ))}
@@ -295,20 +295,20 @@ export default function HomePage() {
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background: "linear-gradient(135deg, rgba(224,30,30,0.18) 0%, rgba(137,4,4,0.10) 100%)",
-                border: "1px solid rgba(224,30,30,0.22)",
+                background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.18) 0%, rgba(var(--ep-line-rgb),0.10) 100%)",
+                border: "1px solid rgba(var(--ep-accent-rgb),0.22)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}>
-                <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.9} />
+                <Icon size={17} style={{ color: "var(--ep-accent)" }} strokeWidth={1.9} />
               </div>
               <div>
-                <p style={{ fontSize: 11.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
+                <p style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 3px", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
                   {title}
                 </p>
-                <p style={{ fontSize: 9.5, color: "rgba(245,237,237,0.32)", margin: 0, lineHeight: 1.35, fontWeight: 500 }}>
+                <p style={{ fontSize: 9.5, color: "rgba(var(--ep-ink-rgb),0.32)", margin: 0, lineHeight: 1.35, fontWeight: 500 }}>
                   {desc}
                 </p>
               </div>
@@ -351,7 +351,7 @@ export default function HomePage() {
             textAlign: "center",
             marginTop: 14,
             fontSize: 11,
-            color: "rgba(245,237,237,0.3)",
+            color: "rgba(var(--ep-ink-rgb),0.3)",
             fontWeight: 500,
           }}>
             Accès gratuit · Sans engagement
@@ -377,7 +377,7 @@ export default function HomePage() {
               marginTop: 14,
               fontSize: 13,
               fontWeight: 800,
-              color: "#fbbf24",
+              color: "var(--ep-warn)",
               textDecoration: "none",
             }}
           >
@@ -399,7 +399,7 @@ export default function HomePage() {
               marginTop: 10,
               fontSize: 13,
               fontWeight: 800,
-              color: "#fbbf24",
+              color: "var(--ep-warn)",
               textDecoration: "none",
             }}
           >
@@ -417,7 +417,7 @@ export default function HomePage() {
               fontWeight: 800,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
-              color: "rgba(245,237,237,0.35)",
+              color: "rgba(var(--ep-ink-rgb),0.35)",
               textAlign: "center",
               marginBottom: 14,
             }}
@@ -427,10 +427,10 @@ export default function HomePage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {FAQS.map(({ q, a }) => (
               <div key={q} className="ep-card" style={{ padding: "14px 16px" }}>
-                <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>
+                <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px" }}>
                   {q}
                 </p>
-                <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: 0, lineHeight: 1.5 }}>
+                <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0, lineHeight: 1.5 }}>
                   {a}
                 </p>
               </div>
@@ -450,22 +450,22 @@ export default function HomePage() {
             padding: "18px 18px 16px",
             borderRadius: "var(--radius-xl)",
             textDecoration: "none",
-            background: "linear-gradient(150deg, rgba(224,30,30,0.16), rgba(23,1,1,0.85) 65%)",
-            border: "1px solid rgba(224,30,30,0.35)",
-            boxShadow: "0 0 40px rgba(224,30,30,0.12)",
+            background: "linear-gradient(150deg, rgba(var(--ep-accent-rgb),0.16), rgba(var(--ep-s1-rgb),0.85) 65%)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.35)",
+            boxShadow: "0 0 40px rgba(var(--ep-accent-rgb),0.12)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#E01E1E", marginBottom: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ep-accent)", marginBottom: 6 }}>
             <Shield size={13} /> Tu es coach ?
           </div>
-          <div style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
+          <div style={{ fontSize: 17, fontWeight: 900, color: "var(--ep-ink)", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
             L&apos;appli complète, gratuite, pour tous tes clients
           </div>
           <p className="ep-tagline" style={{ margin: "6px 0 10px", fontSize: 14 }}>Tu gagnes un outil. On gagne tes retours.</p>
-          <div style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.5, marginBottom: 12 }}>
             Clients illimités · Sans carte bancaire · Sans engagement
           </div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, color: "#fff" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, color: "var(--ep-strong)" }}>
             Créer mon espace coach gratuit <ArrowRight size={15} />
           </div>
         </Link>
@@ -496,7 +496,7 @@ export default function HomePage() {
             <Link
               key={l.href}
               href={l.href}
-              style={{ color: "#E01E1E", textDecoration: "none", fontSize: 12.5, fontWeight: 600 }}
+              style={{ color: "var(--ep-accent)", textDecoration: "none", fontSize: 12.5, fontWeight: 600 }}
             >
               {l.label}
             </Link>
@@ -510,7 +510,7 @@ export default function HomePage() {
             marginTop: 16,
             textAlign: "center",
             fontSize: 10,
-            color: "rgba(245,237,237,0.12)",
+            color: "rgba(var(--ep-ink-rgb),0.12)",
             fontWeight: 600,
             letterSpacing: "0.2em",
             textTransform: "uppercase",

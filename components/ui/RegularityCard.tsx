@@ -26,23 +26,23 @@ export default function RegularityCard({ streakDays, points }: { streakDays: num
         <div
           style={{
             width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: streakDays > 0 ? "rgba(251,146,60,0.12)" : "rgba(245,237,237,0.05)",
+            background: streakDays > 0 ? "rgba(var(--ep-orange-rgb),0.12)" : "rgba(var(--ep-ink-rgb),0.05)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <Flame size={16} style={{ color: streakDays > 0 ? "#fb923c" : "rgba(245,237,237,0.2)" }} strokeWidth={1.8} />
+          <Flame size={16} style={{ color: streakDays > 0 ? "var(--ep-orange)" : "rgba(var(--ep-ink-rgb),0.2)" }} strokeWidth={1.8} />
         </div>
         <div>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em" }}>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 900, color: "var(--ep-ink)", letterSpacing: "-0.02em" }}>
             {streakDays}j
           </p>
-          <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>
+          <p style={{ margin: 0, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.35)", fontWeight: 600 }}>
             {t("de régularité")}
           </p>
         </div>
       </div>
 
-      <div style={{ width: 1, height: 32, background: "rgba(137,4,4,0.2)", margin: "0 16px" }} />
+      <div style={{ width: 1, height: 32, background: "rgba(var(--ep-line-rgb),0.2)", margin: "0 16px" }} />
 
       <Link
         href="/dashboard/client/profile"
@@ -50,8 +50,8 @@ export default function RegularityCard({ streakDays, points }: { streakDays: num
       >
         <span style={{ fontSize: 20, lineHeight: 1 }}>{rank.emoji}</span>
         <div>
-          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "#F5EDED" }}>{t(rank.label)}</p>
-          <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "var(--ep-ink)" }}>{t(rank.label)}</p>
+          <p style={{ margin: 0, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.35)", fontWeight: 600 }}>
             {points}{" "}{t("pts")}
           </p>
         </div>

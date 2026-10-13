@@ -36,14 +36,14 @@ function KpiCard({
   return (
     <button onClick={onClick} className="ep-card text-left w-full group" style={{ padding: "16px 18px" }}>
       <div className="flex items-center justify-between mb-2">
-        <div className="w-8 h-8 rounded-lg bg-[#E01E1E]/12 flex items-center justify-center flex-shrink-0">
-          <Icon size={15} className="text-[#E01E1E]" strokeWidth={2} />
+        <div className="w-8 h-8 rounded-lg bg-(--ep-accent)/12 flex items-center justify-center flex-shrink-0">
+          <Icon size={15} className="text-(--ep-accent)" strokeWidth={2} />
         </div>
-        <ArrowRight size={13} className="text-[#F5EDED]/15 group-hover:text-[#E01E1E] transition-colors" />
+        <ArrowRight size={13} className="text-(--ep-ink)/15 group-hover:text-(--ep-accent) transition-colors" />
       </div>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">{label}</p>
-      <p className="text-xl font-black text-white">{value}</p>
-      {sub && <p className="text-[10.5px] text-[#F5EDED]/35 mt-0.5">{sub}</p>}
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-0.5">{label}</p>
+      <p className="text-xl font-black text-(--ep-strong)">{value}</p>
+      {sub && <p className="text-[10.5px] text-(--ep-ink)/35 mt-0.5">{sub}</p>}
     </button>
   );
 }
@@ -84,23 +84,23 @@ export default function BusinessDashboard({
         <button
           onClick={() => onNavigate("objectifs")}
           className="ep-card w-full text-left mb-4 group"
-          style={{ padding: "18px 20px", borderColor: "rgba(224,30,30,0.3)" }}
+          style={{ padding: "18px 20px", borderColor: "rgba(var(--ep-accent-rgb),0.3)" }}
         >
           <div className="flex items-center justify-between mb-2.5">
-            <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
-              <Target size={12} className="text-[#E01E1E]" />{" "}{t("Prochain objectif")}
+            <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40">
+              <Target size={12} className="text-(--ep-accent)" />{" "}{t("Prochain objectif")}
             </p>
             {nearestGoal.goal.target_date && (
-              <span className="text-[10px] font-bold text-[#F5EDED]/35">
+              <span className="text-[10px] font-bold text-(--ep-ink)/35">
                 {t("dans")}{" "}{daysUntil(nearestGoal.goal.target_date)}j
               </span>
             )}
           </div>
-          <p className="text-base font-black text-white mb-2">{nearestGoal.goal.title}</p>
-          <div className="h-2 bg-[#150000] rounded-full overflow-hidden">
-            <div className="h-full rounded-full bg-[#E01E1E] transition-all" style={{ width: `${nearestPct}%` }} />
+          <p className="text-base font-black text-(--ep-strong) mb-2">{nearestGoal.goal.title}</p>
+          <div className="h-2 bg-(--ep-s2) rounded-full overflow-hidden">
+            <div className="h-full rounded-full bg-(--ep-accent) transition-all" style={{ width: `${nearestPct}%` }} />
           </div>
-          <p className="text-[10.5px] text-[#F5EDED]/35 mt-1.5">{nearestPct}{t("% atteint")}</p>
+          <p className="text-[10.5px] text-(--ep-ink)/35 mt-1.5">{nearestPct}{t("% atteint")}</p>
         </button>
       )}
 

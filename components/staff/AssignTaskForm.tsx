@@ -50,7 +50,7 @@ export default function AssignTaskForm({ memberId, memberName }: { memberId: str
         <button type="submit" disabled={pending || !title.trim()} className="ep-btn-primary" style={{ height: 40, padding: "0 16px", fontSize: 12 }}>
           <Plus size={14} /> {pending ? t("Envoi...") : t("Assigner la tâche")}
         </button>
-        {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "#4ade80" : "#FDC4C4" }}>{message.text}</p>}
+        {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "var(--ep-ok)" : "var(--ep-pink)" }}>{message.text}</p>}
       </div>
     </form>
   );

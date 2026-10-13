@@ -41,9 +41,9 @@ function chip(active: boolean): React.CSSProperties {
     fontSize: 11,
     fontWeight: 800,
     textDecoration: "none",
-    border: `1px solid ${active ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.35)"}`,
-    background: active ? "rgba(224,30,30,0.15)" : "transparent",
-    color: active ? "#ff6b6b" : "rgba(245,237,237,0.55)",
+    border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-line-rgb),0.35)"}`,
+    background: active ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+    color: active ? "var(--ep-accent-hi2)" : "rgba(var(--ep-ink-rgb),0.55)",
     whiteSpace: "nowrap",
   };
 }
@@ -78,7 +78,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
   if (!data.ready) {
     return (
       <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto">
-        <p className="ep-card" style={{ padding: 16, fontSize: 13, color: "rgba(245,237,237,0.6)" }}>{tr("Les stats réseaux ne sont pas disponibles pour le moment.")}</p>
+        <p className="ep-card" style={{ padding: 16, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.6)" }}>{tr("Les stats réseaux ne sont pas disponibles pour le moment.")}</p>
       </div>
     );
   }
@@ -98,9 +98,9 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
 
   return (
     <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{tr("Business")}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{tr("Business")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{tr("Mes stats réseaux")}</h1>
-      <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(245,237,237,0.6)", fontSize: 16, margin: "0 0 18px" }}>
+      <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: 16, margin: "0 0 18px" }}>
         {tr("Tes vrais chiffres, pour savoir quoi refaire.")}
       </p>
 
@@ -115,12 +115,12 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
         return (
           <div className="ep-card-hero" style={{ padding: "14px 16px", marginBottom: 14 }}>
             <p className="ep-label" style={{ marginBottom: 6 }}>{tr("En bref")}</p>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#F5EDED", lineHeight: 1.45 }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--ep-ink)", lineHeight: 1.45 }}>
               {hasWeek ? `${week >= 0 ? "+" : ""}${week.toLocaleString("fr-FR")} abonnés en 7 jours` : `${fmt(totalFollowers)} abonnés au total`}
               {ins.postCount > 0 ? `, ${ins.perWeek ?? 0} publication${(ins.perWeek ?? 0) > 1 ? "s" : ""} par semaine.` : "."}
             </p>
             {(bestFormat || bestDay || bestHour) && (
-              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.55 }}>
+              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.55 }}>
                 {tr("Ce qui marche le mieux chez toi :")}{" "}{[bestFormat && `format ${bestFormat.toLowerCase()}`, bestDay && `le ${String(bestDay).toLowerCase()}`, bestHour && `vers ${bestHour}`].filter(Boolean).join(", ")}.
               </p>
             )}
@@ -138,17 +138,17 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
       </div>
 
       {profile?.is_platform_owner && (
-        <Link href="/dashboard/coach/admin/stats-reseaux" className="ep-card" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", marginBottom: 14, textDecoration: "none", fontSize: 12.5, color: "rgba(245,237,237,0.75)" }}>
-          <RefreshCw size={14} style={{ color: "#E01E1E" }} />{" "}{tr("Synchro automatique, audience et récap hebdo : ouvrir la vue Administration")}
+        <Link href="/dashboard/coach/admin/stats-reseaux" className="ep-card" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", marginBottom: 14, textDecoration: "none", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.75)" }}>
+          <RefreshCw size={14} style={{ color: "var(--ep-accent)" }} />{" "}{tr("Synchro automatique, audience et récap hebdo : ouvrir la vue Administration")}
         </Link>
       )}
 
       {needsUpdate.length > 0 && (
         <div className="ep-card-hero" style={{ padding: "12px 14px", marginBottom: 14 }}>
-          <p style={{ fontSize: 13, color: "#F5EDED", margin: 0, fontWeight: 700 }}>
+          <p style={{ fontSize: 13, color: "var(--ep-ink)", margin: 0, fontWeight: 700 }}>
             {tr("À mettre à jour :")}{" "}{needsUpdate.map((a) => PLATFORM_LABELS[a.platform]).join(", ")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "2px 0 0" }}>{tr("1 minute par semaine suffit pour voir ta vraie progression.")}</p>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "2px 0 0" }}>{tr("1 minute par semaine suffit pour voir ta vraie progression.")}</p>
         </div>
       )}
 
@@ -168,8 +168,8 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
           </div>
 
           {!platform && data.overview.length > 1 && (
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", margin: "0 0 10px" }}>
-              <strong style={{ color: "#F5EDED", fontSize: 18 }}>{fmt(totalFollowers)}</strong>{" "}{tr("abonnés au total sur")}{" "}{data.overview.length}{" "}{tr("plateformes")}
+            <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.7)", margin: "0 0 10px" }}>
+              <strong style={{ color: "var(--ep-ink)", fontSize: 18 }}>{fmt(totalFollowers)}</strong>{" "}{tr("abonnés au total sur")}{" "}{data.overview.length}{" "}{tr("plateformes")}
             </p>
           )}
 
@@ -182,33 +182,33 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                 <div key={a.id} className="ep-card" style={{ padding: "14px 16px" }}>
                   <p className="ep-label" style={{ marginBottom: 4 }}>
                     {PLATFORM_LABELS[a.platform]}
-                    {a.handle ? <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 600, color: "rgba(245,237,237,0.4)" }}> · {a.handle}</span> : null}
+                    {a.handle ? <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.4)" }}> · {a.handle}</span> : null}
                   </p>
-                  <p style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: 0, lineHeight: 1.1 }}>{fmt(a.followers)}</p>
-                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>
+                  <p style={{ fontSize: 26, fontWeight: 900, color: "var(--ep-ink)", margin: 0, lineHeight: 1.1 }}>{fmt(a.followers)}</p>
+                  <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 8px" }}>
                     {tr("abonnés")}{a.followersDate ? ` au ${new Date(`${a.followersDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}
                     {a.source === "windsor" ? tr(" · synchro auto") : ""}
                   </p>
                   <div style={{ display: "flex", gap: 10, fontSize: 11.5, marginBottom: 8 }}>
                     {(["d7", "d30", "d90"] as const).filter((k) => a.growth[k] !== null).map((k) => (
-                      <span key={k} style={{ color: (a.growth[k] ?? 0) > 0 ? "#4ade80" : (a.growth[k] ?? 0) < 0 ? "#fca5a5" : "rgba(245,237,237,0.5)" }}>
-                        {signed(a.growth[k])} <span style={{ color: "rgba(245,237,237,0.35)" }}>{k.slice(1)} j</span>
+                      <span key={k} style={{ color: (a.growth[k] ?? 0) > 0 ? "var(--ep-ok)" : (a.growth[k] ?? 0) < 0 ? "#fca5a5" : "rgba(var(--ep-ink-rgb),0.5)" }}>
+                        {signed(a.growth[k])} <span style={{ color: "rgba(var(--ep-ink-rgb),0.35)" }}>{k.slice(1)} j</span>
                       </span>
                     ))}
                   </div>
-                  <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.65)", margin: 0, lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.65)", margin: 0, lineHeight: 1.6 }}>
                     {tr("Sur")}{" "}{days === 365 ? tr("1 an") : `${days} jours`} : {fmt(a.period.views || a.period.impressions)} {a.period.views ? tr("vues") : tr("impressions")}, {fmt(a.period.reach)}{" "}{tr("de portée,")}{" "}{fmt(a.period.engagements || a.period.likes + a.period.comments + a.period.shares)}{" "}{tr("interactions")}
                   </p>
                   {a.goal && (
                     <div style={{ marginTop: 10 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(245,237,237,0.6)", marginBottom: 4 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.6)", marginBottom: 4 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Target size={11} /> {fmt(a.goal.followers)}{a.goal.date ? ` d'ici le ${new Date(`${a.goal.date}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}</span>
                         <span>{goalPct ?? 0} %</span>
                       </div>
-                      <div style={{ height: 5, borderRadius: 99, background: "rgba(245,237,237,0.07)" }}>
-                        <div style={{ width: `${goalPct ?? 0}%`, height: "100%", borderRadius: 99, background: "linear-gradient(90deg, #890404, #E01E1E)" }} />
+                      <div style={{ height: 5, borderRadius: 99, background: "rgba(var(--ep-ink-rgb),0.07)" }}>
+                        <div style={{ width: `${goalPct ?? 0}%`, height: "100%", borderRadius: 99, background: "linear-gradient(90deg, var(--ep-line), var(--ep-accent))" }} />
                       </div>
-                      {perWeekNeeded !== null && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.45)", margin: "4px 0 0" }}>{tr("Il te faut environ +")}{fmt(perWeekNeeded)}{" "}{tr("abonnés par semaine.")}</p>}
+                      {perWeekNeeded !== null && <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "4px 0 0" }}>{tr("Il te faut environ +")}{fmt(perWeekNeeded)}{" "}{tr("abonnés par semaine.")}</p>}
                     </div>
                   )}
                 </div>
@@ -231,7 +231,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
             <Zap size={12} />{" "}{tr("Ce qui marche chez toi (90 derniers jours)")}
           </p>
           <div className="ep-card" style={{ padding: "14px 16px" }}>
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", margin: "0 0 10px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.8)", margin: "0 0 10px", lineHeight: 1.6 }}>
               {ins.postCount}{" "}{tr("publication")}{ins.postCount > 1 ? "s" : ""}{tr(", soit")}{" "}{ins.perWeek ?? 0}{" "}{tr("par semaine,")}{" "}{fmt(ins.avgViews)}{" "}{tr("vues en moyenne")}
               {ins.avgEngagement !== null ? `, engagement moyen ${pct(ins.avgEngagement)}` : ""}.
             </p>
@@ -242,14 +242,14 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                 { title: tr("Meilleure heure"), rows: ins.byHour },
               ].map((b) => (
                 <div key={b.title}>
-                  <p style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(245,237,237,0.45)", margin: "0 0 6px" }}>{b.title}</p>
+                  <p style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 6px" }}>{b.title}</p>
                   {b.rows.length === 0 ? (
-                    <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>{tr("Pas encore assez de publications (2 minimum par groupe).")}</p>
+                    <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{tr("Pas encore assez de publications (2 minimum par groupe).")}</p>
                   ) : (
                     b.rows.slice(0, 3).map((r, i) => (
-                      <p key={r.key} style={{ fontSize: 12.5, margin: "0 0 3px", color: i === 0 ? "#F5EDED" : "rgba(245,237,237,0.6)" }}>
+                      <p key={r.key} style={{ fontSize: 12.5, margin: "0 0 3px", color: i === 0 ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.6)" }}>
                         {i === 0 ? "★ " : ""}
-                        {r.key} : {fmt(r.avgViews)}{" "}{tr("vues moy.")}{" "}<span style={{ color: "rgba(245,237,237,0.35)" }}>({r.count})</span>
+                        {r.key} : {fmt(r.avgViews)}{" "}{tr("vues moy.")}{" "}<span style={{ color: "rgba(var(--ep-ink-rgb),0.35)" }}>({r.count})</span>
                       </p>
                     ))
                   )}
@@ -257,7 +257,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
               ))}
             </div>
             {ins.scripted.withScript > 0 && ins.scripted.avgWith !== null && ins.scripted.avgWithout !== null && ins.postCount > ins.scripted.withScript && (
-              <p style={{ fontSize: 12, color: "rgba(245,237,237,0.65)", margin: "10px 0 0" }}>
+              <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.65)", margin: "10px 0 0" }}>
                 {tr("Avec un script du Studio :")}{" "}{fmt(ins.scripted.avgWith)}{" "}{tr("vues moy., sans :")}{" "}{fmt(ins.scripted.avgWithout)}.
               </p>
             )}
@@ -283,15 +283,15 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
           </p>
           <div className="ep-card" style={{ padding: "6px 0", overflow: "hidden" }}>
             {data.top.map((p, i) => (
-              <a key={p.id} href={p.url ?? undefined} target={p.url ? "_blank" : undefined} rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", textDecoration: "none", color: "#F5EDED", borderTop: i ? "1px solid rgba(245,237,237,0.05)" : "none" }}>
-                <span style={{ width: 22, fontSize: 14, fontWeight: 900, color: i < 3 ? "#E01E1E" : "rgba(245,237,237,0.35)", flexShrink: 0 }}>{i + 1}</span>
+              <a key={p.id} href={p.url ?? undefined} target={p.url ? "_blank" : undefined} rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", textDecoration: "none", color: "var(--ep-ink)", borderTop: i ? "1px solid rgba(var(--ep-ink-rgb),0.05)" : "none" }}>
+                <span style={{ width: 22, fontSize: 14, fontWeight: 900, color: i < 3 ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.35)", flexShrink: 0 }}>{i + 1}</span>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.scriptTitle || p.caption || tr("(sans titre)")}</span>
-                  <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.45)" }}>
+                  <span style={{ display: "block", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
                     {PLATFORM_LABELS[p.platform]}{p.post_type ? ` · ${TYPE_LABELS[p.post_type] ?? p.post_type}` : ""}{p.published_at ? ` · ${new Date(p.published_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })}` : ""}
                   </span>
                 </span>
-                <span style={{ fontSize: 13, fontWeight: 900, color: "#F5EDED", flexShrink: 0 }}>{fmt(p.views ?? p.impressions)}<span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}> {tr("vues")}</span></span>
+                <span style={{ fontSize: 13, fontWeight: 900, color: "var(--ep-ink)", flexShrink: 0 }}>{fmt(p.views ?? p.impressions)}<span style={{ fontSize: 10, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.45)" }}> {tr("vues")}</span></span>
               </a>
             ))}
           </div>
@@ -320,27 +320,27 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
           <PostEntryForm platforms={formPlatforms} scripts={data.scripts} nowLocal={nowLocal} />
         </div>
         {data.posts.length === 0 ? (
-          <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>
+          <p className="ep-card" style={{ padding: "14px 16px", fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0 }}>
             {tr("Aucune publication sur cette période. Ajoute tes derniers contenus avec leurs chiffres pour voir ce qui marche.")}
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {data.posts.map((p, i) => (
               <div key={p.id} className="ep-card" style={{ padding: "12px 14px", display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 14, fontWeight: 900, color: i < 3 && sort !== "recent" ? "#E01E1E" : "rgba(245,237,237,0.35)", minWidth: 22 }}>{i + 1}</span>
+                <span style={{ fontSize: 14, fontWeight: 900, color: i < 3 && sort !== "recent" ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.35)", minWidth: 22 }}>{i + 1}</span>
                 {p.thumbnail_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.thumbnail_url} alt="" style={{ width: 54, height: 72, objectFit: "cover", borderRadius: 8, flexShrink: 0, background: "#1a0202" }} />
+                  <img src={p.thumbnail_url} alt="" style={{ width: 54, height: 72, objectFit: "cover", borderRadius: 8, flexShrink: 0, background: "var(--ep-s3)" }} />
                 ) : null}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "0 0 2px" }}>
+                  <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 2px" }}>
                     {PLATFORM_LABELS[p.platform]}
                     {p.post_type ? ` · ${TYPE_LABELS[p.post_type] ?? p.post_type}` : ""}
                     {p.published_at ? ` · ${new Date(p.published_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}
                   </p>
-                  <p style={{ fontSize: 13, color: "#F5EDED", margin: "0 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{p.caption || p.scriptTitle || tr("(sans titre)")}</p>
-                  <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.7)", margin: "0 0 6px", lineHeight: 1.6 }}>
-                    <strong style={{ color: "#F5EDED" }}>{fmt(p.views ?? p.impressions ?? p.reach)}</strong> {p.views !== null ? tr("vues") : p.impressions !== null ? tr("impressions") : tr("portée")}
+                  <p style={{ fontSize: 13, color: "var(--ep-ink)", margin: "0 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{p.caption || p.scriptTitle || tr("(sans titre)")}</p>
+                  <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.7)", margin: "0 0 6px", lineHeight: 1.6 }}>
+                    <strong style={{ color: "var(--ep-ink)" }}>{fmt(p.views ?? p.impressions ?? p.reach)}</strong> {p.views !== null ? tr("vues") : p.impressions !== null ? tr("impressions") : tr("portée")}
                     {p.reach !== null && p.views !== null ? ` · ${fmt(p.reach)} portée` : ""}
                     {p.likes !== null ? ` · ${fmt(p.likes)} j'aime` : ""}
                     {p.comments !== null ? ` · ${fmt(p.comments)} com.` : ""}
@@ -350,13 +350,13 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                     {p.completion_rate !== null ? ` · vues complètes ${pct(p.completion_rate)}` : ""}
                     {p.avg_watch_seconds !== null ? ` · ${Math.round(p.avg_watch_seconds)} s regardées en moyenne` : ""}
                     {p.new_followers !== null ? ` · +${fmt(p.new_followers)} abonnés` : ""}
-                    {p.leads !== null ? <strong style={{ color: "#4ade80" }}>{` · ${fmt(p.leads)} lead${p.leads > 1 ? "s" : ""}`}</strong> : null}
+                    {p.leads !== null ? <strong style={{ color: "var(--ep-ok)" }}>{` · ${fmt(p.leads)} lead${p.leads > 1 ? "s" : ""}`}</strong> : null}
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
                     {!p.manual && <PostScriptLink postId={p.id} scriptId={p.script_id} source={p.script_link_source} scripts={data.scripts} />}
-                    {p.manual && p.scriptTitle && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)" }}>{tr("Script :")}{" "}{p.scriptTitle.slice(0, 50)}</span>}
+                    {p.manual && p.scriptTitle && <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)" }}>{tr("Script :")}{" "}{p.scriptTitle.slice(0, 50)}</span>}
                     {p.url && (
-                      <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11.5, fontWeight: 800, color: "#ff6b6b", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ep-accent-hi2)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
                         {tr("Voir")}{" "}<ExternalLink size={11} />
                       </a>
                     )}

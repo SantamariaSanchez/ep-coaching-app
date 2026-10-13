@@ -23,7 +23,7 @@ export default async function CoachAppSetupPage() {
     <div className="page-transition" style={{ maxWidth: 560, margin: "0 auto", padding: "28px 16px 90px" }}>
       <BackLink fallback="/dashboard/coach/plus" />
       <h1 className="ep-h1" style={{ marginBottom: 6 }}>{t("Mon appli")}</h1>
-      <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.55)", margin: "0 0 18px", lineHeight: 1.6 }}>
+      <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 18px", lineHeight: 1.6 }}>
         {t("Ta façon de travailler, tes objectifs et tes plateformes : l'appli s'adapte et évolue avec toi. Tu peux changer à tout moment.")}
       </p>
       <AppSetupWizard role="coach" initialAnswers={initial} doneHref="/dashboard/coach" />

@@ -38,11 +38,11 @@ export default async function ClientSemainePage({
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1 flex items-center gap-1.5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1 flex items-center gap-1.5">
           <CalendarCheck size={11} />{" "}{t("Suivi")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ma semaine")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Tout ce que tu as noté cette semaine, en un coup d'œil. Puis 2 minutes de recul pour préparer la suivante.")}
         </p>
       </div>
@@ -61,10 +61,10 @@ export default async function ClientSemainePage({
         </div>
       ) : (
         <div className="ep-card" style={{ padding: "20px 18px" }} role="alert">
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#fbbf24", display: "flex", alignItems: "center", gap: 8 }}>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "var(--ep-warn)", display: "flex", alignItems: "center", gap: 8 }}>
             <AlertTriangle size={15} />{" "}{t("Impossible de charger ta semaine")}
           </p>
-          <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>
+          <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5 }}>
             {t("Tes données sont intactes, c'est la lecture qui a échoué. Recharge la page dans un instant.")}
           </p>
         </div>
@@ -79,14 +79,14 @@ export default async function ClientSemainePage({
           style={{ marginTop: 12, padding: "14px 18px", textDecoration: "none" }}
         >
           <div className="min-w-0">
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
               {t("Envoie ta revue à un coach chaque semaine")}
             </p>
-            <p style={{ margin: "3px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.45 }}>
+            <p style={{ margin: "3px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.45 }}>
               {t("Avec l'accompagnement, ton coach la lit et te répond avec tes ajustements.")}
             </p>
           </div>
-          <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
+          <ArrowRight size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
         </Link>
       )}
     </div>

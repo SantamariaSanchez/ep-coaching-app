@@ -7,7 +7,7 @@ export default function ClientSuggestionsPanel({ suggestions }: { suggestions: C
   if (suggestions.length === 0) return null;
 
   return (
-    <div className="bg-[#1f0101] border border-amber-500/20 rounded-xl p-4">
+    <div className="bg-(--ep-s1) border border-amber-500/20 rounded-xl p-4">
       <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-amber-400/80 mb-3">
         <Lightbulb size={11} /> À prendre en compte ({suggestions.length})
       </p>
@@ -17,9 +17,9 @@ export default function ClientSuggestionsPanel({ suggestions }: { suggestions: C
             {s.severity === "warning" ? (
               <AlertTriangle size={13} className="text-amber-400 mt-0.5 flex-shrink-0" />
             ) : (
-              <Lightbulb size={13} className="text-[#F5EDED]/30 mt-0.5 flex-shrink-0" />
+              <Lightbulb size={13} className="text-(--ep-ink)/30 mt-0.5 flex-shrink-0" />
             )}
-            <p className="text-xs text-[#F5EDED]/70 leading-relaxed">{s.text}</p>
+            <p className="text-xs text-(--ep-ink)/70 leading-relaxed">{s.text}</p>
           </div>
         ))}
       </div>

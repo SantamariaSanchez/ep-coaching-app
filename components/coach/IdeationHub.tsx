@@ -94,7 +94,7 @@ export default function IdeationHub({
       <div
         role="tablist"
         aria-label={tr("Sections Idéation")}
-        className="flex gap-1.5 overflow-x-auto mb-5 border-b border-[#890404]/20 pb-0.5"
+        className="flex gap-1.5 overflow-x-auto mb-5 border-b border-(--ep-line)/20 pb-0.5"
       >
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = tab === id;
@@ -111,9 +111,9 @@ export default function IdeationHub({
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-t-lg text-[12.5px] font-extrabold whitespace-nowrap flex-shrink-0 transition-colors"
               style={{
                 border: "none",
-                borderBottom: active ? "2px solid #E01E1E" : "2px solid transparent",
-                background: active ? "rgba(224,30,30,0.1)" : "transparent",
-                color: active ? "#F5EDED" : "rgba(245,237,237,0.4)",
+                borderBottom: active ? "2px solid var(--ep-accent)" : "2px solid transparent",
+                background: active ? "rgba(var(--ep-accent-rgb),0.1)" : "transparent",
+                color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.4)",
               }}
             >
               <Icon size={13} />
@@ -165,8 +165,8 @@ function Count({ n, active }: { n: number; active: boolean }) {
     <span
       style={{
         fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 999,
-        background: active ? "rgba(224,30,30,0.25)" : "rgba(245,237,237,0.1)",
-        color: active ? "#F5EDED" : "rgba(245,237,237,0.4)",
+        background: active ? "rgba(var(--ep-accent-rgb),0.25)" : "rgba(var(--ep-ink-rgb),0.1)",
+        color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.4)",
       }}
     >
       {n}

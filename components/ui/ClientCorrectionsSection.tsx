@@ -32,27 +32,27 @@ function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
   }).format(new Date(c.created_at));
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 space-y-3">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white truncate">
+          <p className="text-sm font-bold text-(--ep-strong) truncate">
             {c.exercise_name}
           </p>
-          <p className="text-[10px] text-[#F5EDED]/30 mt-0.5">{date}</p>
+          <p className="text-[10px] text-(--ep-ink)/30 mt-0.5">{date}</p>
         </div>
         <StatusBadge status={c.status} />
       </div>
 
-      <div className="space-y-1.5 text-xs text-[#F5EDED]/60">
+      <div className="space-y-1.5 text-xs text-(--ep-ink)/60">
         <p>
-          <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
+          <span className="text-(--ep-ink)/35 font-semibold uppercase tracking-widest text-[9px]">
             {t("Objectif :")}{" "}
           </span>
           {c.objective}
         </p>
         {c.client_question && (
           <p>
-            <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
+            <span className="text-(--ep-ink)/35 font-semibold uppercase tracking-widest text-[9px]">
               {t("Question :")}{" "}
             </span>
             {c.client_question}
@@ -66,11 +66,11 @@ function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
       </div>
 
       {c.status === "answered" && (
-        <div className="pt-3 border-t border-[#890404]/15 space-y-2">
+        <div className="pt-3 border-t border-(--ep-line)/15 space-y-2">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70">
             {t("Retour de ton coach")}
           </p>
-          <p className="text-xs text-[#F5EDED]/75 leading-relaxed">
+          <p className="text-xs text-(--ep-ink)/75 leading-relaxed">
             {c.coach_feedback}
           </p>
           {c.coach_video_url ? (
@@ -148,32 +148,32 @@ export default function ClientCorrectionsSection({
   }
 
   const inputClass =
-    "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";
+    "w-full bg-(--ep-s2) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors";
   const labelClass =
-    "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+    "block text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
   return (
     <section className="mt-12 max-w-2xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Technique")}
         </p>
         <h2 className="text-xl font-black uppercase tracking-tight">
           {t("Corrections & Questions")}
         </h2>
-        <p className="mt-1 text-xs text-[#F5EDED]/30">
+        <p className="mt-1 text-xs text-(--ep-ink)/30">
           {t("Envoie une vidéo de ton exercice, ton coach te donne un retour.")}
         </p>
       </div>
 
       {/* Form */}
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-6">
         <form ref={formRef} action={formAction} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>
-                {t("Exercice")}{" "}<span className="text-[#E01E1E]">*</span>
+                {t("Exercice")}{" "}<span className="text-(--ep-accent)">*</span>
               </label>
               <input
                 name="exercise_name"
@@ -185,7 +185,7 @@ export default function ClientCorrectionsSection({
             </div>
             <div>
               <label className={labelClass}>
-                {t("Objectif")}{" "}<span className="text-[#E01E1E]">*</span>
+                {t("Objectif")}{" "}<span className="text-(--ep-accent)">*</span>
               </label>
               <input
                 name="objective"
@@ -199,7 +199,7 @@ export default function ClientCorrectionsSection({
 
           <div>
             <label className={labelClass}>
-              {t("Vidéo de l'exercice")}{" "}<span className="text-[#E01E1E]">*</span>
+              {t("Vidéo de l'exercice")}{" "}<span className="text-(--ep-accent)">*</span>
             </label>
             <input type="hidden" name="video_path" value={videoPath ?? ""} required />
             <input
@@ -214,14 +214,14 @@ export default function ClientCorrectionsSection({
               }}
             />
             {videoPath ? (
-              <div className="flex items-center gap-2 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5">
+              <div className="flex items-center gap-2 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5">
                 <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
-                <span className="text-sm text-white truncate flex-1">{videoName}</span>
+                <span className="text-sm text-(--ep-strong) truncate flex-1">{videoName}</span>
                 <button
                   type="button"
                   onClick={() => { setVideoPath(null); setVideoName(null); if (videoInputRef.current) videoInputRef.current.value = ""; }}
                   aria-label={t("Retirer la vidéo")}
-                  className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+                  className="text-(--ep-ink)/30 hover:text-(--ep-ink)/60"
                 >
                   <X size={14} />
                 </button>
@@ -245,7 +245,7 @@ export default function ClientCorrectionsSection({
               </button>
             )}
             {uploadError && (
-              <p className="text-[#FDC4C4] text-xs mt-1.5">{uploadError}</p>
+              <p className="text-(--ep-pink) text-xs mt-1.5">{uploadError}</p>
             )}
           </div>
 
@@ -260,7 +260,7 @@ export default function ClientCorrectionsSection({
           </div>
 
           {state?.error && (
-            <p className="text-[#FDC4C4] text-xs">{state.error}</p>
+            <p className="text-(--ep-pink) text-xs">{state.error}</p>
           )}
           {state?.success && (
             <p className="text-green-400 text-xs">
@@ -271,7 +271,7 @@ export default function ClientCorrectionsSection({
           <button
             type="submit"
             disabled={isPending || uploading || !videoPath}
-            className="w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
+            className="w-full bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 disabled:cursor-not-allowed text-(--ep-strong) text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
           >
             {isPending ? t("Envoi…") : t("Envoyer")}
           </button>
@@ -281,7 +281,7 @@ export default function ClientCorrectionsSection({
       {/* Past submissions */}
       {corrections.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
             {t("Mes dépôts (")}{corrections.length})
           </p>
           {corrections.map((c) => (

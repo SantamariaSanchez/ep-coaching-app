@@ -16,11 +16,11 @@ interface ProgressBarProps {
 }
 
 const COLOR_MAP: Record<BarColor, string> = {
-  red:    "#E01E1E",
-  green:  "#4ade80",
-  orange: "#fb923c",
-  blue:   "#60a5fa",
-  amber:  "#fbbf24",
+  red:    "var(--ep-accent)",
+  green:  "var(--ep-ok)",
+  orange: "var(--ep-orange)",
+  blue:   "var(--ep-info)",
+  amber:  "var(--ep-warn)",
 };
 
 export default function ProgressBar({
@@ -64,7 +64,7 @@ export default function ProgressBar({
       {(label || showPercent) && (
         <div className="flex items-center justify-between mb-1.5">
           {label && (
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
               {label}
             </span>
           )}
@@ -77,7 +77,7 @@ export default function ProgressBar({
       )}
       <div
         className="rounded-full overflow-hidden"
-        style={{ height, background: "#0D0000" }}
+        style={{ height, background: "var(--ep-bg)" }}
       >
         <div
           className="h-full rounded-full"

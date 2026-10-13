@@ -32,18 +32,18 @@ export default async function AdsTrackerPage() {
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
         href="/dashboard/coach/business"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {t("Retour")}
       </Link>
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Mon business")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Publicité")}</h1>
-        <p className="mt-2 text-sm text-[#F5EDED]/45">
+        <p className="mt-2 text-sm text-(--ep-ink)/45">
           {t("Saisis tes campagnes Google/Meta/TikTok Ads et leurs chiffres à jour. Pas de connexion aux régies, juste les métriques qui aident à décider quoi couper ou scaler.")}
         </p>
       </div>

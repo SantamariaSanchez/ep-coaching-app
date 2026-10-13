@@ -107,7 +107,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
   return (
     <div>
       <div className="ep-card" style={{ padding: "16px 18px", marginBottom: 20 }}>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
           {tr("Ajouter un créneau récurrent")}
         </p>
 
@@ -130,9 +130,9 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
                   textTransform: "uppercase",
                   cursor: "pointer",
                   transition: "background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ep-ease-out)",
-                  background: active ? "rgba(224,30,30,0.16)" : "rgba(245,237,237,0.04)",
-                  border: active ? "1px solid rgba(224,30,30,0.4)" : "1px solid rgba(137,4,4,0.25)",
-                  color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",
+                  background: active ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-ink-rgb),0.04)",
+                  border: active ? "1px solid rgba(var(--ep-accent-rgb),0.4)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
+                  color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
                 }}
               >
                 {d.short}
@@ -146,11 +146,11 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
             <button
               key={p.label}
               onClick={() => applyPreset(p.days)}
-              className="text-[10px] font-bold uppercase tracking-wider text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors"
+              className="text-[10px] font-bold uppercase tracking-wider text-(--ep-ink)/40 hover:text-(--ep-accent) transition-colors"
               style={{
                 padding: "4px 10px",
                 borderRadius: 8,
-                border: "1px solid rgba(137,4,4,0.22)",
+                border: "1px solid rgba(var(--ep-line-rgb),0.22)",
                 background: "transparent",
                 cursor: "pointer",
               }}
@@ -192,12 +192,12 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
         </div>
 
         {/* Aperçu avant validation : combien de rendez-vous cela ouvre. */}
-        <p className="text-[11px] text-[#F5EDED]/40 mb-3">
+        <p className="text-[11px] text-(--ep-ink)/40 mb-3">
           {selectedDays.length === 0 || previewSlots === 0 ? (
             tr("Choisis au moins un jour et une plage horaire valide.")
           ) : (
             <>
-              <span className="text-[#F5EDED]/70 font-bold">
+              <span className="text-(--ep-ink)/70 font-bold">
                 {previewSlots * selectedDays.length}{" "}{tr("créneau")}{previewSlots * selectedDays.length !== 1 ? "x" : ""}
               </span>{" "}
               {tr("réservables par semaine (")}{previewSlots}{" "}{tr("par jour sur")}{" "}{selectedDays.length}{" "}{tr("jour")}
@@ -219,11 +219,11 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
 
       {/* Semaine type, groupée par jour */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
           {tr("Ma semaine type")}
         </p>
         {totalWeeklySlots > 0 && (
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#E01E1E]">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-(--ep-accent)">
             <CalendarClock size={11} />
             {totalWeeklySlots}{" "}{tr("créneau")}{totalWeeklySlots !== 1 ? "x" : ""}{" "}{tr("par semaine")}
           </span>
@@ -231,11 +231,11 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
       </div>
 
       {byDay.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl py-10 text-center">
-          <p className="text-[12px] text-[#F5EDED]/35 m-0">
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/30 rounded-xl py-10 text-center">
+          <p className="text-[12px] text-(--ep-ink)/35 m-0">
             {tr("Aucune disponibilité définie pour l'instant.")}
           </p>
-          <p className="text-[11px] text-[#F5EDED]/22 mt-1 m-0">
+          <p className="text-[11px] text-(--ep-ink)/22 mt-1 m-0">
             {tr("Tant que rien n'est ouvert ici, tes clients ne peuvent pas réserver d'appel 1:1 eux mêmes.")}
           </p>
         </div>
@@ -243,7 +243,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
         <div className="space-y-3">
           {byDay.map((day) => (
             <div key={day.value}>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-1.5">
                 {day.label}
               </p>
               <div className="space-y-1.5">
@@ -252,13 +252,13 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
                   return (
                     <div
                       key={rule.id}
-                      className="flex items-center justify-between bg-[#1f0101] border border-[#890404]/20 rounded-lg px-3.5 py-2.5 gap-3"
+                      className="flex items-center justify-between bg-(--ep-s1) border border-(--ep-line)/20 rounded-lg px-3.5 py-2.5 gap-3"
                     >
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-white m-0">
+                        <p className="text-xs font-bold text-(--ep-strong) m-0">
                           {rule.start_time.slice(0, 5)} à {rule.end_time.slice(0, 5)}
                         </p>
-                        <p className="text-[10.5px] text-[#F5EDED]/38 m-0 mt-0.5">
+                        <p className="text-[10.5px] text-(--ep-ink)/38 m-0 mt-0.5">
                           {count}{" "}{tr("créneau")}{count !== 1 ? "x" : ""}{" "}{tr("de")}{" "}{formatDuration(rule.slot_duration_minutes)}
                         </p>
                       </div>
@@ -266,7 +266,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
                         onClick={() => handleDelete(rule.id)}
                         disabled={isPending}
                         aria-label={tr("Supprimer ce créneau")}
-                        className="text-[#F5EDED]/25 hover:text-red-400 transition-colors shrink-0"
+                        className="text-(--ep-ink)/25 hover:text-red-400 transition-colors shrink-0"
                       >
                         <Trash2 size={14} />
                       </button>

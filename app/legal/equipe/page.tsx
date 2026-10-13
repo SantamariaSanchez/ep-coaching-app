@@ -84,7 +84,7 @@ const sections: LegalSection[] = [
         <P>
           Les données personnelles des membres de l&apos;équipe eux-mêmes (identité, email, activité dans
           l&apos;espace) sont traitées pour la gestion de la collaboration, selon la{" "}
-          <Link href="/legal/confidentialite" style={{ color: "#E01E1E", fontWeight: 700 }}>politique de confidentialité</Link>.
+          <Link href="/legal/confidentialite" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>politique de confidentialité</Link>.
         </P>
       </>
     ),

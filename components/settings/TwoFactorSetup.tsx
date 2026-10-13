@@ -156,7 +156,7 @@ export default function TwoFactorSetup({
         <button
           onClick={start}
           disabled={busy}
-          className="flex items-center justify-center gap-2 w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 rounded-lg py-3 text-white font-bold text-xs uppercase tracking-widest transition-colors"
+          className="flex items-center justify-center gap-2 w-full bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 rounded-lg py-3 text-(--ep-strong) font-bold text-xs uppercase tracking-widest transition-colors"
         >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
           {busy ? t("Préparation…") : t("Activer la double authentification")}
@@ -167,7 +167,7 @@ export default function TwoFactorSetup({
 
   return (
     <div>
-      <p className="text-[12px] text-[#F5EDED]/60 leading-relaxed mb-3">
+      <p className="text-[12px] text-(--ep-ink)/60 leading-relaxed mb-3">
         {t("Scanne ce QR code avec ton application d'authentification (Google Authenticator, Authy, 1Password…), puis saisis le code à 6 chiffres qu'elle affiche.")}
       </p>
 
@@ -187,15 +187,15 @@ export default function TwoFactorSetup({
       )}
 
       {qrBroken && (
-        <p className="text-[12px] text-[#FDC4C4] leading-relaxed mb-3">
+        <p className="text-[12px] text-(--ep-pink) leading-relaxed mb-3">
           {t("Le QR code n'a pas pu s'afficher. Saisis la clé ci dessous à la main dans ton application d'authentification, ça revient exactement au même.")}
         </p>
       )}
 
-      <p className="text-[10px] text-[#F5EDED]/30 text-center mb-1 uppercase tracking-widest font-bold">
+      <p className="text-[10px] text-(--ep-ink)/30 text-center mb-1 uppercase tracking-widest font-bold">
         {t("Ou saisis cette clé à la main")}
       </p>
-      <p className="text-[11px] text-[#F5EDED]/55 text-center font-mono break-all mb-4">
+      <p className="text-[11px] text-(--ep-ink)/55 text-center font-mono break-all mb-4">
         {enrollment.secret}
       </p>
 
@@ -205,7 +205,7 @@ export default function TwoFactorSetup({
         inputMode="numeric"
         autoComplete="one-time-code"
         placeholder="123456" aria-label="123456"
-        className="w-full bg-black/40 border border-[#890404]/35 rounded-lg px-4 py-3 text-center text-lg tracking-[0.4em] text-[#F5EDED] outline-none focus:border-[#E01E1E]/60 mb-3"
+        className="w-full bg-(--ep-shade)/40 border border-(--ep-line)/35 rounded-lg px-4 py-3 text-center text-lg tracking-[0.4em] text-(--ep-ink) outline-none focus:border-(--ep-accent)/60 mb-3"
       />
 
       {error && <p className="text-xs text-red-400 mb-3">{t(error)}</p>}
@@ -213,7 +213,7 @@ export default function TwoFactorSetup({
       <button
         onClick={confirm}
         disabled={busy || code.length < 6}
-        className="flex items-center justify-center gap-2 w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 rounded-lg py-3 text-white font-bold text-xs uppercase tracking-widest transition-colors"
+        className="flex items-center justify-center gap-2 w-full bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 rounded-lg py-3 text-(--ep-strong) font-bold text-xs uppercase tracking-widest transition-colors"
       >
         {busy ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
         {busy ? t("Vérification…") : t("Confirmer et activer")}

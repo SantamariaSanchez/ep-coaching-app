@@ -22,16 +22,16 @@ export default function RoadmapContextPanel({
   const t = useT();
   if (!roadmap.roadmap) {
     return (
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Road map")}
         </p>
-        <p className="text-[11px] text-[#F5EDED]/30">
+        <p className="text-[11px] text-(--ep-ink)/30">
           {t("Pas de road map posée pour")}{" "}{subjectLabel}. {workTypeLabel}{" "}{t("n'est rattaché à aucune trajectoire déclarée.")}
           {roadmapHref && (
             <>
               {" "}
-              <a href={roadmapHref} className="text-[#E01E1E] hover:text-[#ff4444] underline">
+              <a href={roadmapHref} className="text-(--ep-accent) hover:text-(--ep-accent-hi) underline">
                 {t("En créer une")}
               </a>
               .
@@ -54,37 +54,37 @@ export default function RoadmapContextPanel({
     .slice(0, 3);
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
       <div className="flex items-center justify-between gap-2 mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
           {t("Road map de")}{" "}{subjectLabel}
         </p>
         {roadmapHref && (
-          <a href={roadmapHref} className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+          <a href={roadmapHref} className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60">
             {t("Voir la road map complète")}
           </a>
         )}
       </div>
       {currentPhase ? (
-        <p className="text-xs text-white mb-1">
+        <p className="text-xs text-(--ep-strong) mb-1">
           <span className="font-black">{t("Phase en cours :")}{" "}{currentPhase.label}</span>
-          <span className="text-[#F5EDED]/30"> ({currentPhase.start_date} → {currentPhase.end_date})</span>
+          <span className="text-(--ep-ink)/30"> ({currentPhase.start_date} → {currentPhase.end_date})</span>
         </p>
       ) : (
-        <p className="text-[11px] text-[#F5EDED]/30 mb-1">{t("Aucune phase active actuellement dans la road map.")}</p>
+        <p className="text-[11px] text-(--ep-ink)/30 mb-1">{t("Aucune phase active actuellement dans la road map.")}</p>
       )}
-      {currentPhase?.notes && <p className="text-[11px] text-[#F5EDED]/50 leading-relaxed mb-2">{currentPhase.notes}</p>}
+      {currentPhase?.notes && <p className="text-[11px] text-(--ep-ink)/50 leading-relaxed mb-2">{currentPhase.notes}</p>}
       {upcomingObjectives.length > 0 && (
-        <div className="mt-2 pt-2 border-t border-[#890404]/15 space-y-1">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">{t("Objectifs à venir")}</p>
+        <div className="mt-2 pt-2 border-t border-(--ep-line)/15 space-y-1">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25">{t("Objectifs à venir")}</p>
           {upcomingObjectives.map((o) => (
-            <p key={o.id} className="text-[11px] text-[#F5EDED]/55">
-              {o.label} <span className="text-[#F5EDED]/25">({o.target_date})</span>
+            <p key={o.id} className="text-[11px] text-(--ep-ink)/55">
+              {o.label} <span className="text-(--ep-ink)/25">({o.target_date})</span>
             </p>
           ))}
         </div>
       )}
-      <p className="text-[10px] text-[#F5EDED]/25 mt-2 leading-relaxed">
+      <p className="text-[10px] text-(--ep-ink)/25 mt-2 leading-relaxed">
         {t("Ce que tu construis ci-dessous doit servir cette trajectoire, pas exister à côté.")}
       </p>
     </div>

@@ -18,9 +18,9 @@ export default function RoleBadge({
         isSm ? "text-[9px] px-1.5 py-0.5" : "text-[10px] px-2 py-1"
       }`}
       style={{
-        background: accent ? "rgba(224,30,30,0.12)" : "#150000",
-        border: accent ? "1px solid rgba(224,30,30,0.35)" : "1px solid rgba(137,4,4,0.25)",
-        color: accent ? "#E01E1E" : "rgba(245,237,237,0.55)",
+        background: accent ? "rgba(var(--ep-accent-rgb),0.12)" : "var(--ep-s2)",
+        border: accent ? "1px solid rgba(var(--ep-accent-rgb),0.35)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
+        color: accent ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.55)",
       }}
     >
       {label}

@@ -70,12 +70,12 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
         <Link
           href={`/dashboard/coach/clients/${id}/program`}
           aria-label={t("Retour au programme")}
-          className="p-1.5 -ml-1.5 rounded-lg text-[#F5EDED]/45 hover:text-white hover:bg-[#890404]/25"
+          className="p-1.5 -ml-1.5 rounded-lg text-(--ep-ink)/45 hover:text-(--ep-strong) hover:bg-(--ep-line)/25"
         >
           <ChevronLeft size={18} />
         </Link>
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
             {program ? t("Modifier le programme") : t("Nouveau programme")}
           </p>
           <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight truncate">{clientName}</h1>

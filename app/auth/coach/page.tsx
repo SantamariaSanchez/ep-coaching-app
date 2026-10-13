@@ -31,10 +31,10 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
   return (
     <div style={{
       padding: "14px 16px", borderRadius: 8,
-      background: "rgba(245,237,237,0.03)", border: "1px solid rgba(245,237,237,0.08)",
+      background: "rgba(var(--ep-ink-rgb),0.03)", border: "1px solid rgba(var(--ep-ink-rgb),0.08)",
     }}>
       {sent ? (
-        <p style={{ fontSize: 13, color: "#F5EDED", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "var(--ep-ink)", margin: 0 }}>
           {tr("Si un compte existe avec cet email, un lien de réinitialisation vient d'être envoyé.")}
         </p>
       ) : (
@@ -54,7 +54,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
               disabled={sending}
               style={{
                 flex: 1, height: 40, borderRadius: 8, border: "none",
-                background: "#E01E1E", color: "#fff", fontWeight: 700, fontSize: 12,
+                background: "var(--ep-accent)", color: "#fff", fontWeight: 700, fontSize: 12,
                 textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer",
               }}
             >
@@ -63,7 +63,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
             <button
               type="button"
               onClick={onDone}
-              style={{ background: "none", border: "none", color: "rgba(245,237,237,0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+              style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
             >
               {tr("Annuler")}
             </button>
@@ -105,7 +105,7 @@ export default function CoachLoginPage() {
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            color: "rgba(245,237,237,0.28)",
+            color: "rgba(var(--ep-ink-rgb),0.28)",
             textDecoration: "none",
             fontSize: 11,
             fontWeight: 600,
@@ -127,8 +127,8 @@ export default function CoachLoginPage() {
           {/* Header */}
           <div className="animate-fade-up stagger-2" style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-              <Shield size={12} style={{ color: "rgba(224,30,30,0.65)" }} strokeWidth={2} />
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)" }}>
+              <Shield size={12} style={{ color: "rgba(var(--ep-accent-rgb),0.65)" }} strokeWidth={2} />
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.65)" }}>
                 {tr("Espace professionnel")}
               </span>
             </div>
@@ -138,7 +138,7 @@ export default function CoachLoginPage() {
                 fontWeight: 900,
                 fontSize: 26,
                 letterSpacing: "-0.05em",
-                color: "#F5EDED",
+                color: "var(--ep-ink)",
                 margin: 0,
                 lineHeight: 1.1,
               }}
@@ -156,9 +156,9 @@ export default function CoachLoginPage() {
                 onClick={() => setTab(t)}
                 style={{
                   flex: 1, height: 38, borderRadius: 8, cursor: "pointer",
-                  border: `1px solid ${tab === t ? "rgba(224,30,30,0.5)" : "rgba(245,237,237,0.12)"}`,
-                  background: tab === t ? "rgba(224,30,30,0.14)" : "transparent",
-                  color: tab === t ? "#F5EDED" : "rgba(245,237,237,0.4)",
+                  border: `1px solid ${tab === t ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-ink-rgb),0.12)"}`,
+                  background: tab === t ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent",
+                  color: tab === t ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.4)",
                   fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
                 }}
               >
@@ -184,7 +184,7 @@ export default function CoachLoginPage() {
                 fontWeight: 700,
                 letterSpacing: "0.2em",
                 textTransform: "uppercase",
-                color: "rgba(224,30,30,0.75)",
+                color: "rgba(var(--ep-accent-rgb),0.75)",
                 marginBottom: 8,
               }}>
                 {tr("Email")}
@@ -208,7 +208,7 @@ export default function CoachLoginPage() {
                 fontWeight: 700,
                 letterSpacing: "0.2em",
                 textTransform: "uppercase",
-                color: "rgba(224,30,30,0.75)",
+                color: "rgba(var(--ep-accent-rgb),0.75)",
                 marginBottom: 8,
               }}>
                 {tr("Mot de passe")}
@@ -225,7 +225,7 @@ export default function CoachLoginPage() {
                 onClick={() => setForgotOpen((v) => !v)}
                 style={{
                   display: "block", marginTop: 8, background: "none", border: "none",
-                  color: "rgba(245,237,237,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0,
+                  color: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0,
                 }}
               >
                 {tr("Mot de passe oublié ?")}
@@ -240,12 +240,12 @@ export default function CoachLoginPage() {
                 alignItems: "center",
                 gap: 10,
                 padding: "12px 16px",
-                background: "rgba(224,30,30,0.08)",
-                border: "1px solid rgba(224,30,30,0.25)",
+                background: "rgba(var(--ep-accent-rgb),0.08)",
+                border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
                 borderRadius: 10,
               }}>
-                <span style={{ color: "#E01E1E", flexShrink: 0 }}>⚠</span>
-                <p style={{ fontSize: 13, color: "#FDC4C4", margin: 0, fontWeight: 500 }}>
+                <span style={{ color: "var(--ep-accent)", flexShrink: 0 }}>⚠</span>
+                <p style={{ fontSize: 13, color: "var(--ep-pink)", margin: 0, fontWeight: 500 }}>
                   {state.error}
                 </p>
               </div>

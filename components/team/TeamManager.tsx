@@ -22,17 +22,17 @@ import {
 
 const input: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.35)",
-  border: "1px solid rgba(137,4,4,0.35)",
+  background: "rgba(var(--ep-shade-rgb),0.35)",
+  border: "1px solid rgba(var(--ep-line-rgb),0.35)",
   borderRadius: 10,
   padding: "9px 10px",
   fontSize: 14,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   outline: "none",
 };
-const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 4 };
-const primary: React.CSSProperties = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer" };
-const ghost: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 10, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.75)", fontSize: 11.5, fontWeight: 800, cursor: "pointer" };
+const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 4 };
+const primary: React.CSSProperties = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer" };
+const ghost: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 10, border: "1px solid rgba(var(--ep-line-rgb),0.45)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.75)", fontSize: 11.5, fontWeight: 800, cursor: "pointer" };
 
 function useAction() {
   const router = useRouter();
@@ -48,7 +48,7 @@ function useAction() {
       router.refresh();
     });
   };
-  const note = msg ? <p style={{ fontSize: 12, color: msg.ok ? "#4ade80" : "#fca5a5", margin: "8px 0 0", wordBreak: "break-word" }}>{msg.text}</p> : null;
+  const note = msg ? <p style={{ fontSize: 12, color: msg.ok ? "var(--ep-ok)" : "#fca5a5", margin: "8px 0 0", wordBreak: "break-word" }}>{msg.text}</p> : null;
   return { pending, run, note };
 }
 
@@ -85,20 +85,20 @@ export function CareerPicker({ current, options }: { current: string | null; opt
                 minHeight: 48,
                 borderRadius: 12,
                 cursor: on ? "default" : "pointer",
-                border: `1px solid ${on ? "rgba(224,30,30,0.7)" : "rgba(137,4,4,0.3)"}`,
-                background: on ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.25)",
-                color: "#F5EDED",
+                border: `1px solid ${on ? "rgba(var(--ep-accent-rgb),0.7)" : "rgba(var(--ep-line-rgb),0.3)"}`,
+                background: on ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-shade-rgb),0.25)",
+                color: "var(--ep-ink)",
                 fontSize: 12.5,
                 fontWeight: 800,
                 lineHeight: 1.25,
               }}
             >
-              {on && <Check size={13} color="#E01E1E" style={{ flexShrink: 0 }} />} {o.label}
+              {on && <Check size={13} color="var(--ep-accent)" style={{ flexShrink: 0 }} />} {o.label}
             </button>
           );
         })}
       </div>
-      <p style={{ fontSize: 12, color: "rgba(245,237,237,0.6)", margin: "10px 2px 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)", margin: "10px 2px 0", lineHeight: 1.5 }}>
         {active ? active.unlocks : tr("Choisis comment tu travailles : l'appli s'adapte, et tu peux changer à tout moment.")}
       </p>
       {note}
@@ -113,8 +113,8 @@ export function InviteResponse({ id, ownerName, title, share }: { id: string; ow
   const { pending, run, note } = useAction();
   return (
     <div className="ep-card-hero" style={{ padding: "14px 16px" }}>
-      <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{ownerName}{" "}{tr("t'invite dans son équipe")}</p>
-      <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.6)", margin: "2px 0 10px" }}>
+      <p style={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)", margin: 0 }}>{ownerName}{" "}{tr("t'invite dans son équipe")}</p>
+      <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.6)", margin: "2px 0 10px" }}>
         {tr("Poste :")}{" "}{title || tr("Coach")}
         {share !== null ? `, ${share} % du chiffre d'affaires reversé` : ""}
       </p>
@@ -270,7 +270,7 @@ export function InviteStaffForm({ roles }: { roles: { pole: string; items: { key
       >
         {pending ? "..." : tr("Donner l'accès")}
       </button>
-      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "8px 0 0" }}>{tr("La recrue reçoit son lien de connexion et retrouve un espace adapté à son métier.")}</p>
+      <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "8px 0 0" }}>{tr("La recrue reçoit son lien de connexion et retrouve un espace adapté à son métier.")}</p>
       {note}
     </div>
   );

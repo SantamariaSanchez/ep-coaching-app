@@ -30,11 +30,11 @@ export default async function CoachAvailabilityPage() {
     <div className="px-6 py-8 ep-page-medium pb-24 md:pb-8 page-transition">
       <BackButton fallbackHref="/dashboard/coach/live" />
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Live")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mes disponibilités")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Définis tes créneaux récurrents : tes clients réservent directement un appel 1:1 dans un créneau libre, sans que tu aies à le programmer toi-même. Toutes les heures sont en heure de Paris, et un créneau qui chevauche un live déjà au planning n'est jamais proposé.")}
         </p>
       </div>
@@ -46,16 +46,16 @@ export default async function CoachAvailabilityPage() {
           </p>
           {preview.length > 0 ? (
             <>
-              <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", margin: 0, lineHeight: 1.6 }}>
                 {t("Prochains créneaux libres :")}{" "}
                 {preview.map((s) => capitalize(formatLiveDateTime(s.startsAt))).join(", ")}.
               </p>
-              <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "4px 0 0" }}>
+              <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", margin: "4px 0 0" }}>
                 {slots.length}{" "}{t("créneau")}{slots.length > 1 ? "x" : ""}{" "}{t("proposé")}{slots.length > 1 ? "s" : ""}{" "}{t("sur les 14 prochains jours.")}
               </p>
             </>
           ) : (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", margin: 0 }}>
+            <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0 }}>
               {t("Aucun créneau libre sur les 14 prochains jours : ton planning est plein ou tes plages sont trop courtes.")}
             </p>
           )}

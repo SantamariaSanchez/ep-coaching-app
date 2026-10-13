@@ -29,34 +29,34 @@ export default async function CoachAssistantPage() {
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Mon espace")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <Bot size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
+          <Bot size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Mon assistant")}
         </h1>
-        <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
+        <p className="mt-1 text-sm text-(--ep-ink)/40 leading-relaxed max-w-xl">
           {t("Chaque jour, ton assistant vérifie tes clients : ceux dont le bilan est à l'arrêt reçoivent une relance automatiquement, et tout problème réel trouvé apparaît ici.")}
         </p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3 my-6">
         <div className="ep-card flex items-start gap-3" style={{ padding: "16px 18px" }}>
-          <MessageCircle size={16} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-          <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">
+          <MessageCircle size={16} className="text-(--ep-accent) flex-shrink-0 mt-0.5" />
+          <p className="text-[11.5px] text-(--ep-ink)/45 leading-relaxed">
             {t("Relance automatique dès qu'un client n'a pas fait son bilan depuis 3 jours, jamais plus d'une fois tous les 3 jours pour le même client.")}
           </p>
         </div>
         <div className="ep-card flex items-start gap-3" style={{ padding: "16px 18px" }}>
-          <ShieldCheck size={16} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-          <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">
+          <ShieldCheck size={16} className="text-(--ep-accent) flex-shrink-0 mt-0.5" />
+          <p className="text-[11.5px] text-(--ep-ink)/45 leading-relaxed">
             {t("Audit qualité quotidien : programmes laissés inachevés, décrochages réels, jamais un rapport creux, seulement ce qui mérite vraiment ton attention.")}
           </p>
         </div>
       </div>
 
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
         {t("À vérifier")}
       </p>
       <AssistantTaskList initialTasks={tasks} />

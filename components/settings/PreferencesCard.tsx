@@ -50,24 +50,24 @@ export default function PreferencesCard({
 
   return (
     <div className="mt-8">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1 flex items-center gap-1.5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1 flex items-center gap-1.5">
         <SlidersHorizontal size={12} />{" "}{t("Ton profil")}
       </p>
       <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Personnalisation")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
-        <p style={{ margin: "0 0 16px", fontSize: 11, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>
+        <p style={{ margin: "0 0 16px", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5 }}>
           {t("Tes réponses au questionnaire de bienvenue, modifiables à tout moment. Ça change l'ordre de ce qui t'est proposé sur ton tableau de bord et les messages que tu vois, donc ça vaut le coup de les tenir à jour si ta situation évolue.")}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {PREFERENCE_QUESTIONS.map((question) => (
             <div key={question.key}>
               <p style={{
-                margin: "0 0 8px", fontSize: 12.5, fontWeight: 700, color: "#F5EDED",
+                margin: "0 0 8px", fontSize: 12.5, fontWeight: 700, color: "var(--ep-ink)",
                 display: "flex", alignItems: "center", gap: 6,
               }}>
                 {t(question.title)}
                 {savedKey === question.key && (
-                  <span style={{ color: "#4ade80", fontWeight: 700, fontSize: 10.5, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                  <span style={{ color: "var(--ep-ok)", fontWeight: 700, fontSize: 10.5, display: "inline-flex", alignItems: "center", gap: 3 }}>
                     <Check size={11} />{" "}{t("Enregistré")}
                   </span>
                 )}
@@ -87,9 +87,9 @@ export default function PreferencesCard({
                         padding: "7px 12px",
                         borderRadius: 999,
                         cursor: "pointer",
-                        border: active ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-                        background: active ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-                        color: active ? "#F5EDED" : "rgba(245,237,237,0.55)",
+                        border: active ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+                        background: active ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+                        color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
                         transition: "background 0.15s ease, border-color 0.15s ease",
                       }}
                     >

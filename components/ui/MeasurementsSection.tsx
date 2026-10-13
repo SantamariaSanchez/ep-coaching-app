@@ -148,10 +148,10 @@ export default function MeasurementsSection({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-6">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 flex items-center gap-1.5">
-          <Ruler size={12} className="text-[#E01E1E]" /> {showCircumferences ? t("Mensurations") : t("Mesures")}
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 flex items-center gap-1.5">
+          <Ruler size={12} className="text-(--ep-accent)" /> {showCircumferences ? t("Mensurations") : t("Mesures")}
         </p>
         {saved && (
           <span className="flex items-center gap-1 text-[10px] font-bold text-green-400">
@@ -161,7 +161,7 @@ export default function MeasurementsSection({
       </div>
 
       {measurements.length > 0 && (
-        <p className="text-[11px] text-[#F5EDED]/35 mb-3">
+        <p className="text-[11px] text-(--ep-ink)/35 mb-3">
           {t("Dernière prise :")}{" "}{fmtDate(measurements[0].measured_at)}
           {measurements[0].weight != null && ` · ${measurements[0].weight}kg`}
           {showBodyFat && measurements[0].body_fat != null && ` · ${measurements[0].body_fat}% MG`}
@@ -178,21 +178,21 @@ export default function MeasurementsSection({
       {showForm ? (
         <div className="space-y-3">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{t("Date")}</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1.5">{t("Date")}</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               max={todayInParis()}
               aria-label={t("Date de la prise")}
-              className="bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
+              className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/50"
             />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {FIELDS.map(({ key, label, unit }) => (
               <div key={key}>
-                <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                  {label} <span className="normal-case font-normal text-[#F5EDED]/20">({unit})</span>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1">
+                  {label} <span className="normal-case font-normal text-(--ep-ink)/20">({unit})</span>
                 </label>
                 <input
                   type="number"
@@ -202,21 +202,21 @@ export default function MeasurementsSection({
                   onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
                   placeholder="N/A"
                   aria-label={label}
-                  className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm text-white placeholder:text-[#F5EDED]/15 focus:outline-none focus:border-[#E01E1E]/50"
+                  className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/15 focus:outline-none focus:border-(--ep-accent)/50"
                 />
               </div>
             ))}
           </div>
           {showBodyFat && (
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{t("Masse grasse mesurée avec")}</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1.5">{t("Masse grasse mesurée avec")}</label>
               <div className="flex flex-wrap gap-1.5">
                 {BODY_FAT_METHODS.map((m) => (
                   <button
                     key={m.value}
                     type="button"
                     onClick={() => setBodyFatMethod(m.value)}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${bodyFatMethod === m.value ? "bg-[#E01E1E]/15 border-[#E01E1E]/60 text-white" : "border-[#890404]/30 text-[#F5EDED]/45"}`}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${bodyFatMethod === m.value ? "bg-(--ep-accent)/15 border-(--ep-accent)/60 text-(--ep-strong)" : "border-(--ep-line)/30 text-(--ep-ink)/45"}`}
                   >
                     {m.label}
                   </button>
@@ -225,14 +225,14 @@ export default function MeasurementsSection({
             </div>
           )}
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{t("Notes")}</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-1.5">{t("Notes")}</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("Contexte, jeûne, moment de la journée...")}
               aria-label={t("Notes")}
-              className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+              className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
             />
           </div>
           {error && (
@@ -244,14 +244,14 @@ export default function MeasurementsSection({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 py-2.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-colors"
+              className="flex-1 py-2.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest rounded-lg transition-colors"
             >
               {saving ? "…" : t("Enregistrer")}
             </button>
             {measurements.length > 0 && (
               <button
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+                className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors"
               >
                 {t("Annuler")}
               </button>
@@ -261,17 +261,17 @@ export default function MeasurementsSection({
       ) : (
         <button
           onClick={() => setShowForm(true)}
-          className="text-[11px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+          className="text-[11px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
         >
           {t("+ Nouvelle prise")}{" "}{showCircumferences ? t("de mensurations") : t("de mesures")}
         </button>
       )}
 
       {measurements.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-[#890404]/15">
+        <div className="mt-4 pt-4 border-t border-(--ep-line)/15">
           <button
             onClick={() => setShowHistory((v) => !v)}
-            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
+            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/55 transition-colors"
           >
             {showHistory ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             {t("Historique (")}{measurements.length})
@@ -279,9 +279,9 @@ export default function MeasurementsSection({
           {showHistory && (
             <div className="mt-3 space-y-1.5">
               {measurements.map((m) => (
-                <div key={m.id} className="flex items-center justify-between bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2">
-                  <span className="text-[11px] text-[#F5EDED]/60 font-semibold">{fmtDate(m.measured_at)}</span>
-                  <span className="text-[10.5px] text-[#F5EDED]/35">
+                <div key={m.id} className="flex items-center justify-between bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2">
+                  <span className="text-[11px] text-(--ep-ink)/60 font-semibold">{fmtDate(m.measured_at)}</span>
+                  <span className="text-[10.5px] text-(--ep-ink)/35">
                     {[
                       m.weight != null ? `${m.weight}kg` : null,
                       showBodyFat && m.body_fat != null ? `${m.body_fat}% MG` : null,

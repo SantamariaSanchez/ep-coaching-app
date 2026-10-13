@@ -42,9 +42,9 @@ export default function FunnelIdeaCard({
   }
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2.5">
       <div className="flex items-start justify-between gap-2 mb-1">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E]">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent)">
           {platform} · {format}
         </p>
         <button
@@ -52,12 +52,12 @@ export default function FunnelIdeaCard({
           onClick={add}
           disabled={isPending || added}
           title={added ? t("Ajoutée à ton Studio créatif") : t("Ajouter à mon Studio créatif")}
-          className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full border border-[#890404]/30 text-[#F5EDED]/40 hover:text-[#E01E1E] hover:border-[#E01E1E]/40 disabled:opacity-60 transition-colors"
+          className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full border border-(--ep-line)/30 text-(--ep-ink)/40 hover:text-(--ep-accent) hover:border-(--ep-accent)/40 disabled:opacity-60 transition-colors"
         >
-          {added ? <Check size={10} className="text-[#4ade80]" /> : <Plus size={10} />}
+          {added ? <Check size={10} className="text-(--ep-ok)" /> : <Plus size={10} />}
         </button>
       </div>
-      <p className="text-[10.5px] text-[#F5EDED]/50 leading-relaxed">{idea}</p>
+      <p className="text-[10.5px] text-(--ep-ink)/50 leading-relaxed">{idea}</p>
       {error && <p className="text-[9.5px] text-red-400 mt-1.5">{t(error)}</p>}
     </div>
   );

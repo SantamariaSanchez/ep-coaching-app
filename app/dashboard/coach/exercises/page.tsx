@@ -55,14 +55,14 @@ export default async function CoachExercisesPage({
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {tr("Training")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <Dumbbell size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
+          <Dumbbell size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {tr("Bibliothèque")}
         </h1>
-        <p className="mt-1 text-sm text-[#F5EDED]/40 mb-3">
+        <p className="mt-1 text-sm text-(--ep-ink)/40 mb-3">
           {tr("Exercices et salles de musculation, dans un seul endroit. Le matériel d'une salle détermine ce qui y est réalisable. Tes membres peuvent aussi enrichir les deux listes.")}
         </p>
         <div className="flex flex-wrap gap-2">

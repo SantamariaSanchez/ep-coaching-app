@@ -6,7 +6,7 @@ import { Plus, Pill, X, RotateCcw, Trash2 } from "lucide-react";
 import type { ClientSupplement } from "@/utils/supplements";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 const TIMING_SUGGESTIONS = [
   "Matin",
@@ -79,30 +79,30 @@ export default function SupplementsSection({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <Pill size={14} className="text-[#E01E1E]" />
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40">
+          <Pill size={14} className="text-(--ep-accent)" />
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40">
             {tr("Compléments alimentaires")}
           </p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
         >
           {showForm ? <X size={12} /> : <Plus size={12} />}
           {showForm ? tr("Fermer") : isCoachView ? tr("Suggérer") : tr("Ajouter")}
         </button>
       </div>
-      <p className="text-[10px] text-[#F5EDED]/25 mb-4">
+      <p className="text-[10px] text-(--ep-ink)/25 mb-4">
         {isCoachView
           ? tr("Liste des compléments de ce client. Ajoute une suggestion, il la verra dans son espace nutrition.")
           : tr("Ta liste de compléments : nom, dosage, moment de prise. Ton coach peut aussi t'en suggérer.")}
       </p>
 
       {showForm && (
-        <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4 mb-4 space-y-3">
+        <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-4 mb-4 space-y-3">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -141,7 +141,7 @@ export default function SupplementsSection({
             <button
               onClick={handleAdd}
               disabled={!name.trim() || saving}
-              className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+              className="bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
               {saving ? tr("Ajout…") : isCoachView ? tr("Suggérer") : tr("Ajouter")}
             </button>
@@ -150,7 +150,7 @@ export default function SupplementsSection({
       )}
 
       {supplements.length === 0 && !showForm ? (
-        <p className="text-xs text-[#F5EDED]/25 text-center py-4">
+        <p className="text-xs text-(--ep-ink)/25 text-center py-4">
           {isCoachView ? tr("Aucun complément renseigné pour ce client.") : tr("Aucun complément renseigné pour l'instant.")}
         </p>
       ) : (
@@ -160,16 +160,16 @@ export default function SupplementsSection({
               key={s.id}
               className={`flex items-start justify-between gap-3 rounded-lg px-3 py-2.5 border ${
                 s.status === "stopped"
-                  ? "border-[#890404]/10 bg-[#150000]/40 opacity-50"
-                  : "border-[#890404]/20 bg-[#150000]"
+                  ? "border-(--ep-line)/10 bg-(--ep-s2)/40 opacity-50"
+                  : "border-(--ep-line)/20 bg-(--ep-s2)"
               }`}
             >
               <div className="min-w-0">
-                <p className="text-sm font-bold text-white truncate">
+                <p className="text-sm font-bold text-(--ep-strong) truncate">
                   {s.name}
-                  {s.dosage && <span className="text-[#F5EDED]/40 font-normal"> · {s.dosage}</span>}
+                  {s.dosage && <span className="text-(--ep-ink)/40 font-normal"> · {s.dosage}</span>}
                 </p>
-                <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+                <p className="text-[10px] text-(--ep-ink)/35 mt-0.5">
                   {s.timing && <span>{s.timing}</span>}
                   {s.suggested_by && (
                     <span className="text-amber-400/70">
@@ -177,7 +177,7 @@ export default function SupplementsSection({
                     </span>
                   )}
                 </p>
-                {s.notes && <p className="text-[10px] text-[#F5EDED]/25 mt-1">{s.notes}</p>}
+                {s.notes && <p className="text-[10px] text-(--ep-ink)/25 mt-1">{s.notes}</p>}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
@@ -186,8 +186,8 @@ export default function SupplementsSection({
                   title={s.status === "active" ? tr("Arrêter") : tr("Reprendre")} aria-label={s.status === "active" ? tr("Arrêter") : tr("Reprendre")}
                   className={`text-[9px] font-bold uppercase tracking-widest transition-colors disabled:opacity-30 ${
                     s.status === "active"
-                      ? "text-[#F5EDED]/30 hover:text-amber-400"
-                      : "text-[#F5EDED]/30 hover:text-green-400"
+                      ? "text-(--ep-ink)/30 hover:text-amber-400"
+                      : "text-(--ep-ink)/30 hover:text-green-400"
                   }`}
                 >
                   {s.status === "active" ? tr("Arrêter") : <RotateCcw size={12} />}
@@ -196,7 +196,7 @@ export default function SupplementsSection({
                   onClick={() => handleDelete(s.id)}
                   disabled={busyId === s.id}
                   aria-label={`Supprimer ${s.name}`}
-                  className="text-[#F5EDED]/20 hover:text-red-400 transition-colors disabled:opacity-30"
+                  className="text-(--ep-ink)/20 hover:text-red-400 transition-colors disabled:opacity-30"
                 >
                   <Trash2 size={12} strokeWidth={1.8} />
                 </button>

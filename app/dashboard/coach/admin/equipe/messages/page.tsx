@@ -25,10 +25,10 @@ export default async function FounderTeamMessagesPage({ searchParams }: { search
 
   return (
     <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
+      <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6">
         <ChevronLeft size={13} />{" "}{t("Pilotage de l'équipe")}
       </Link>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Administration")}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{t("Administration")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight mb-6">{t("Messagerie de l'équipe")}</h1>
       <TeamChat
         meId={user.id}

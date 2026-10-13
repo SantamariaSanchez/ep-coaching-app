@@ -90,64 +90,64 @@ export default function InstallAppHint() {
     <div className="flex justify-center">
       <button
         onClick={handleClick}
-        className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors py-2"
+        className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-(--ep-ink)/30 hover:text-(--ep-ink)/55 transition-colors py-2"
       >
         {deferredPrompt ? <Download size={11} strokeWidth={1.8} /> : <Smartphone size={11} strokeWidth={1.8} />}
         {t("Installer l'appli sur ton téléphone")}
       </button>
 
       {open && (
-        <div className="ep-modal-overlay fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
+        <div className="ep-modal-overlay fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-(--ep-shade)/60 p-4" onClick={() => setOpen(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="ep-modal-panel bg-[#1f0101] border border-[#890404]/25 rounded-2xl p-5 max-w-xs w-full relative"
+            className="ep-modal-panel bg-(--ep-s1) border border-(--ep-line)/25 rounded-2xl p-5 max-w-xs w-full relative"
           >
             <button
               onClick={() => setOpen(false)}
               aria-label={t("Fermer")}
-              className="absolute top-3 right-3 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+              className="absolute top-3 right-3 text-(--ep-ink)/30 hover:text-(--ep-ink)/60"
             >
               <X size={14} />
             </button>
-            <p className="text-sm font-black text-[#F5EDED] mb-3 pr-6">
+            <p className="text-sm font-black text-(--ep-ink) mb-3 pr-6">
               {t("Installer EP Coaching")}
             </p>
 
             {platform === "android" ? (
-              <ol className="space-y-2.5 text-xs text-[#F5EDED]/65">
+              <ol className="space-y-2.5 text-xs text-(--ep-ink)/65">
                 <li className="flex items-start gap-2">
-                  <span className="font-bold text-[#E01E1E]">1.</span>
+                  <span className="font-bold text-(--ep-accent)">1.</span>
                   {t("Ouvre ce lien dans Chrome (colle l'adresse si besoin)")}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold text-[#E01E1E]">2.</span>
+                  <span className="font-bold text-(--ep-accent)">2.</span>
                   {t("Touche les")}{" "}<MoreVertical size={12} className="inline -mt-0.5" />{" "}{t("trois petits points en haut à droite")}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold text-[#E01E1E]">3.</span>
-                  {t("Touche")}{" "}<span className="font-bold text-[#F5EDED]">{t("« Installer l'application »")}</span>{" "}{t("(ou « Ajouter à l'écran d'accueil »)")}
+                  <span className="font-bold text-(--ep-accent)">3.</span>
+                  {t("Touche")}{" "}<span className="font-bold text-(--ep-ink)">{t("« Installer l'application »")}</span>{" "}{t("(ou « Ajouter à l'écran d'accueil »)")}
                 </li>
               </ol>
             ) : (
-              <ol className="space-y-2.5 text-xs text-[#F5EDED]/65">
+              <ol className="space-y-2.5 text-xs text-(--ep-ink)/65">
                 <li className="flex items-start gap-2">
-                  <span className="font-bold text-[#E01E1E]">1.</span>
+                  <span className="font-bold text-(--ep-accent)">1.</span>
                   {t("Ouvre ce lien dans Safari")}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold text-[#E01E1E]">2.</span>
+                  <span className="font-bold text-(--ep-accent)">2.</span>
                   {t("Touche")}{" "}<Share size={12} className="inline -mt-0.5" />{" "}{t("le bouton Partager en bas")}
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold text-[#E01E1E]">3.</span>
-                  {t("Touche")}{" "}<span className="font-bold text-[#F5EDED]">{t("« Sur l'écran d'accueil »")}</span>
+                  <span className="font-bold text-(--ep-accent)">3.</span>
+                  {t("Touche")}{" "}<span className="font-bold text-(--ep-ink)">{t("« Sur l'écran d'accueil »")}</span>
                 </li>
               </ol>
             )}
 
             <button
               onClick={dismiss}
-              className="mt-4 text-[10px] font-semibold text-[#F5EDED]/25 hover:text-[#F5EDED]/50"
+              className="mt-4 text-[10px] font-semibold text-(--ep-ink)/25 hover:text-(--ep-ink)/50"
             >
               {t("Ne plus afficher")}
             </button>

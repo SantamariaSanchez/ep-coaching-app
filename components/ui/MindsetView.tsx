@@ -89,39 +89,39 @@ function QuizFlow({ onComplete }: { onComplete: (result: QuizResult) => void }) 
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
           {tr("Question")}{" "}{step + 1} / {QUIZ_QUESTIONS.length}
         </p>
         {step > 0 && (
           <button
             onClick={() => setStep((s) => s - 1)}
-            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
           >
             <ChevronLeft size={12} />{" "}{tr("Retour")}
           </button>
         )}
       </div>
 
-      <div className="h-1.5 bg-[#150000] rounded-full overflow-hidden mb-5">
+      <div className="h-1.5 bg-(--ep-s2) rounded-full overflow-hidden mb-5">
         <div
-          className="h-full bg-gradient-to-r from-[#E01E1E] to-[#B00202] rounded-full transition-all duration-300"
+          className="h-full bg-gradient-to-r from-(--ep-accent) to-(--ep-accent-2) rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <p className="text-base font-bold text-white mb-4 leading-snug">{q.question}</p>
+      <p className="text-base font-bold text-(--ep-strong) mb-4 leading-snug">{q.question}</p>
 
       <div className="space-y-2">
         {q.options.map((opt) => (
           <button
             key={opt.value}
             onClick={() => selectAnswer(opt.value)}
-            className="w-full text-left px-4 py-3 bg-[#150000] border border-[#890404]/25 hover:border-[#E01E1E]/50 hover:bg-[#250101] rounded-lg text-sm text-white transition-colors flex items-center justify-between gap-3"
+            className="w-full text-left px-4 py-3 bg-(--ep-s2) border border-(--ep-line)/25 hover:border-(--ep-accent)/50 hover:bg-(--ep-s4) rounded-lg text-sm text-(--ep-strong) transition-colors flex items-center justify-between gap-3"
           >
             {opt.label}
-            <ChevronRight size={14} className="text-[#F5EDED]/20 flex-shrink-0" />
+            <ChevronRight size={14} className="text-(--ep-ink)/20 flex-shrink-0" />
           </button>
         ))}
       </div>
@@ -133,10 +133,10 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40">{label}</span>
-        <span className="text-xs font-bold text-white">{value}%</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40">{label}</span>
+        <span className="text-xs font-bold text-(--ep-strong)">{value}%</span>
       </div>
-      <div className="h-2 bg-[#150000] rounded-full overflow-hidden">
+      <div className="h-2 bg-(--ep-s2) rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500" style={{ width: `${value}%`, background: color }} />
       </div>
     </div>
@@ -175,8 +175,8 @@ function ProfileTab({
       <div className="space-y-4">
         {error && <p className="text-xs text-red-400 text-center">{tr(error)}</p>}
         {saving ? (
-          <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-8 text-center">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">{tr("Sauvegarde…")}</p>
+          <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-8 text-center">
+            <p className="text-xs text-(--ep-ink)/40 uppercase tracking-widest font-semibold">{tr("Sauvegarde…")}</p>
           </div>
         ) : (
           <QuizFlow onComplete={handleComplete} />
@@ -184,7 +184,7 @@ function ProfileTab({
         {profile?.quiz_completed_at && (
           <button
             onClick={() => setShowQuiz(false)}
-            className="text-[10px] text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+            className="text-[10px] text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
           >
             {tr("Annuler et garder mon profil actuel")}
           </button>
@@ -195,15 +195,15 @@ function ProfileTab({
 
   if (!profile) {
     return (
-      <div className="bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl p-8 text-center">
-        <Brain size={32} className="text-[#E01E1E]/40 mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-sm font-bold text-white mb-1">{tr("Découvre ton profil mindset")}</p>
-        <p className="text-xs text-[#F5EDED]/35 mb-5 max-w-sm mx-auto">
+      <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/30 rounded-xl p-8 text-center">
+        <Brain size={32} className="text-(--ep-accent)/40 mx-auto mb-3" strokeWidth={1.5} />
+        <p className="text-sm font-bold text-(--ep-strong) mb-1">{tr("Découvre ton profil mindset")}</p>
+        <p className="text-xs text-(--ep-ink)/35 mb-5 max-w-sm mx-auto">
           {tr("7 questions pour comprendre ton rapport à la motivation, au stress, à ton image et à la discipline, et recevoir des conseils vraiment adaptés à ta situation.")}
         </p>
         <button
           onClick={() => setShowQuiz(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-xl transition-colors"
         >
           {tr("Commencer le quiz")}
         </button>
@@ -217,30 +217,30 @@ function ProfileTab({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#1f0101] border border-[#E01E1E]/30 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-1">{tr("Ton profil")}</p>
-        <p className="text-lg font-black text-white mb-1">{profileDef?.label}</p>
-        <p className="text-xs text-[#F5EDED]/40 mb-4 leading-relaxed">{profileDef?.description}</p>
+      <div className="bg-(--ep-s1) border border-(--ep-accent)/30 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-accent)/70 mb-1">{tr("Ton profil")}</p>
+        <p className="text-lg font-black text-(--ep-strong) mb-1">{profileDef?.label}</p>
+        <p className="text-xs text-(--ep-ink)/40 mb-4 leading-relaxed">{profileDef?.description}</p>
         <div className="flex flex-wrap gap-2 mb-5">
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/50">
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/50">
             {envDef?.label}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/50">
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/50">
             {tr("Obstacle principal ·")}{" "}{obstacleDef?.label}
           </span>
         </div>
 
         <div className="space-y-3">
-          <ScoreBar label={tr("Motivation")} value={profile.motivation_score ?? 0} color="#E01E1E" />
-          <ScoreBar label={tr("Gestion du stress")} value={profile.stress_score ?? 0} color="#60a5fa" />
-          <ScoreBar label={tr("Sérénité image corporelle")} value={profile.body_image_score ?? 0} color="#fbbf24" />
-          <ScoreBar label={tr("Discipline")} value={profile.discipline_score ?? 0} color="#4ade80" />
+          <ScoreBar label={tr("Motivation")} value={profile.motivation_score ?? 0} color="var(--ep-accent)" />
+          <ScoreBar label={tr("Gestion du stress")} value={profile.stress_score ?? 0} color="var(--ep-info)" />
+          <ScoreBar label={tr("Sérénité image corporelle")} value={profile.body_image_score ?? 0} color="var(--ep-warn)" />
+          <ScoreBar label={tr("Discipline")} value={profile.discipline_score ?? 0} color="var(--ep-ok)" />
         </div>
       </div>
 
       <button
         onClick={() => setShowQuiz(true)}
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
+        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-accent) transition-colors"
       >
         <RotateCcw size={12} />{" "}{tr("Refaire le quiz")}
       </button>
@@ -331,17 +331,17 @@ function HabitsTab({
   return (
     <div className="space-y-5">
       {error && <p className="text-xs text-red-400">{tr(error)}</p>}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">{tr("Aujourd'hui")}</p>
-          <p className="text-lg font-black text-white">{doneCount} / {HABITS.length}{" "}{tr("habitudes")}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-0.5">{tr("Aujourd'hui")}</p>
+          <p className="text-lg font-black text-(--ep-strong)">{doneCount} / {HABITS.length}{" "}{tr("habitudes")}</p>
         </div>
-        <Flame size={28} className={doneCount > 0 ? "text-[#E01E1E]" : "text-[#F5EDED]/15"} strokeWidth={1.7} />
+        <Flame size={28} className={doneCount > 0 ? "text-(--ep-accent)" : "text-(--ep-ink)/15"} strokeWidth={1.7} />
       </div>
 
       {Object.entries(byCategory).map(([cat, habits]) => (
         <div key={cat}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-2">
             {CATEGORY_TITLES[cat] ?? cat}
           </p>
           <div className="space-y-2">
@@ -354,20 +354,20 @@ function HabitsTab({
                   key={h.key}
                   onClick={() => handleToggle(h.key)}
                   className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                    checked ? "bg-[#1f0101] border-[#E01E1E]/35" : "bg-[#150000] border-[#890404]/20 hover:border-[#890404]/40"
+                    checked ? "bg-(--ep-s1) border-(--ep-accent)/35" : "bg-(--ep-s2) border-(--ep-line)/20 hover:border-(--ep-line)/40"
                   }`}
                 >
                   <span
                     className={`flex-shrink-0 w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
-                      checked ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
+                      checked ? "bg-(--ep-accent) border-(--ep-accent)" : "border-(--ep-line)/40"
                     }`}
                   >
-                    {checked && <Check size={13} className="text-white" strokeWidth={3} />}
+                    {checked && <Check size={13} className="text-(--ep-strong)" strokeWidth={3} />}
                   </span>
-                  <Icon size={16} className={checked ? "text-[#E01E1E]" : "text-[#F5EDED]/30"} strokeWidth={1.8} />
+                  <Icon size={16} className={checked ? "text-(--ep-accent)" : "text-(--ep-ink)/30"} strokeWidth={1.8} />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold ${checked ? "text-white" : "text-[#F5EDED]/70"}`}>{h.label}</p>
-                    <p className="text-[10px] text-[#F5EDED]/30 leading-snug">{h.description}</p>
+                    <p className={`text-sm font-semibold ${checked ? "text-(--ep-strong)" : "text-(--ep-ink)/70"}`}>{h.label}</p>
+                    <p className="text-[10px] text-(--ep-ink)/30 leading-snug">{h.description}</p>
                   </div>
                   {streak > 1 && (
                     <span className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-amber-400">
@@ -410,9 +410,9 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
 
   return (
     <div className="space-y-5">
-      <div className="bg-gradient-to-br from-[#1f0101] to-[#150000] border border-[#890404]/40 rounded-xl p-5 flex items-start gap-3">
-        <Quote size={18} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-white font-medium italic leading-relaxed">{getDailyQuote()}</p>
+      <div className="bg-gradient-to-br from-(--ep-s1) to-(--ep-s2) border border-(--ep-line)/40 rounded-xl p-5 flex items-start gap-3">
+        <Quote size={18} className="text-(--ep-accent) flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-(--ep-strong) font-medium italic leading-relaxed">{getDailyQuote()}</p>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -421,8 +421,8 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
             onClick={() => setActiveCategory("pour_toi")}
             className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
               activeCategory === "pour_toi"
-                ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                : "border-[#890404]/25 text-[#F5EDED]/40"
+                ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
+                : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {tr("Pour toi")}
@@ -431,7 +431,7 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
         <button
           onClick={() => setActiveCategory("all")}
           className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
-            activeCategory === "all" ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            activeCategory === "all" ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
           }`}
         >
           {tr("Tout")}
@@ -441,7 +441,7 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
             key={c}
             onClick={() => setActiveCategory(c)}
             className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
-              activeCategory === c ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              activeCategory === c ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {CATEGORY_LABELS[c]}
@@ -451,19 +451,19 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
 
       <div className="space-y-2.5">
         {visible.map((tip) => (
-          <div key={tip.id} className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+          <div key={tip.id} className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1.5">
               <Lightbulb size={13} className="text-amber-400" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30">
                 {CATEGORY_LABELS[tip.category]}
               </span>
             </div>
-            <p className="text-sm font-bold text-white mb-1">{tip.title}</p>
-            <p className="text-xs text-[#F5EDED]/45 leading-relaxed">{tip.body}</p>
+            <p className="text-sm font-bold text-(--ep-strong) mb-1">{tip.title}</p>
+            <p className="text-xs text-(--ep-ink)/45 leading-relaxed">{tip.body}</p>
           </div>
         ))}
         {visible.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">{tr("Aucun conseil dans cette catégorie.")}</p>
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-6">{tr("Aucun conseil dans cette catégorie.")}</p>
         )}
       </div>
     </div>
@@ -553,15 +553,15 @@ function JournalTab({
   return (
     <div className="space-y-5">
       {error && <p className="text-xs text-red-400">{tr(error)}</p>}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">{tr("Choisis un thème")}</p>
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-3">{tr("Choisis un thème")}</p>
         <div className="flex gap-2 overflow-x-auto pb-3">
           {JOURNAL_PROMPTS.map((p) => (
             <button
               key={p.key}
               onClick={() => setSelectedPrompt(p.key)}
               className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
-                selectedPrompt === p.key ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+                selectedPrompt === p.key ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
               }`}
             >
               {p.label}
@@ -570,7 +570,7 @@ function JournalTab({
         </div>
 
         {activePrompt && (
-          <p className="text-sm text-white italic mb-3 leading-relaxed">{activePrompt.prompt}</p>
+          <p className="text-sm text-(--ep-strong) italic mb-3 leading-relaxed">{activePrompt.prompt}</p>
         )}
 
         <textarea
@@ -578,18 +578,18 @@ function JournalTab({
           onChange={(e) => setContent(e.target.value)}
           rows={4}
           placeholder={tr("Écris librement…")} aria-label={tr("Écris librement…")}
-          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors resize-none"
+          className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/60 transition-colors resize-none"
         />
 
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 mr-1">{tr("Humeur")}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/30 mr-1">{tr("Humeur")}</span>
             {MOODS.map((m) => (
               <button
                 key={m.value}
                 onClick={() => setMood(mood === m.value ? null : m.value)}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${
-                  mood === m.value ? "bg-[#E01E1E]/20 border border-[#E01E1E]/50" : "border border-transparent hover:bg-[#150000]"
+                  mood === m.value ? "bg-(--ep-accent)/20 border border-(--ep-accent)/50" : "border border-transparent hover:bg-(--ep-s2)"
                 }`}
               >
                 {m.emoji}
@@ -599,7 +599,7 @@ function JournalTab({
           <button
             onClick={handleSubmit}
             disabled={!content.trim() || saving}
-            className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors"
+            className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) rounded-lg transition-colors"
           >
             {saving ? "…" : tr("Enregistrer")}
           </button>
@@ -608,20 +608,20 @@ function JournalTab({
 
       <div className="space-y-2">
         {localEntries.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">{tr("Aucune entrée pour l'instant.")}</p>
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-6">{tr("Aucune entrée pour l'instant.")}</p>
         ) : (
           localEntries.map((entry) => {
             const prompt = JOURNAL_PROMPTS.find((p) => p.key === entry.prompt_key);
             const moodEmoji = MOODS.find((m) => m.value === entry.mood)?.emoji;
             return (
-              <div key={entry.id} className="bg-[#150000] border border-[#890404]/15 rounded-xl p-4">
+              <div key={entry.id} className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30">
                       {fmtDate(entry.entry_date)}
                     </span>
                     {prompt && (
-                      <span className="text-[9px] font-semibold uppercase tracking-widest text-[#E01E1E]/60">
+                      <span className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-accent)/60">
                         {prompt.label}
                       </span>
                     )}
@@ -630,12 +630,12 @@ function JournalTab({
                   <button
                     onClick={() => handleDelete(entry.id)}
                     aria-label={tr("Supprimer cette entrée de journal")}
-                    className="text-[#F5EDED]/15 hover:text-red-400 transition-colors"
+                    className="text-(--ep-ink)/15 hover:text-red-400 transition-colors"
                   >
                     <Trash2 size={12} />
                   </button>
                 </div>
-                <p className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap">{entry.content}</p>
+                <p className="text-sm text-(--ep-strong)/85 leading-relaxed whitespace-pre-wrap">{entry.content}</p>
               </div>
             );
           })
@@ -687,22 +687,22 @@ export default function MindsetView({
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {tr("Mental & comportement")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <Brain size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
+          <Brain size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {tr("Mindset")}
         </h1>
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20 overflow-x-auto">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-              tab === key ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+              tab === key ? "text-(--ep-accent) border-b-2 border-(--ep-accent)" : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Icon size={13} />

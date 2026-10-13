@@ -19,9 +19,9 @@ import type { ClientMedicalConstraint, RecoveryLog } from "@/lib/client-medical-
 // décide, l'outil ne fait qu'attacher la référence au suivi.
 
 function painColor(pain: number): string {
-  if (pain <= 3) return "#4ade80";
-  if (pain <= 6) return "#facc15";
-  return "#E01E1E";
+  if (pain <= 3) return "var(--ep-ok)";
+  if (pain <= 6) return "var(--ep-yellow)";
+  return "var(--ep-accent)";
 }
 
 function formatShortDate(iso: string): string {
@@ -82,17 +82,17 @@ function RecoveryLogTool({
   }
 
   return (
-    <div style={{ borderTop: "1px solid rgba(245,237,237,0.06)", marginTop: 12, paddingTop: 12 }}>
+    <div style={{ borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)", marginTop: 12, paddingTop: 12 }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
-          <Activity size={12} className="text-[#E01E1E]" />
+        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40">
+          <Activity size={12} className="text-(--ep-accent)" />
           {t("Journal de reprise")}
         </p>
         {!formOpen && (
           <button
             type="button"
             onClick={() => setFormOpen(true)}
-            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
+            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi)"
           >
             <Plus size={11} />{" "}{t("Séance")}
           </button>
@@ -118,7 +118,7 @@ function RecoveryLogTool({
       )}
 
       {formOpen && (
-        <div className="rounded-lg border border-[#890404]/25 bg-[#150000] p-3 mb-3 space-y-2">
+        <div className="rounded-lg border border-(--ep-line)/25 bg-(--ep-s2) p-3 mb-3 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <input
               type="date"
@@ -126,7 +126,7 @@ function RecoveryLogTool({
               max={today}
               onChange={(e) => setDate(e.target.value)}
               aria-label={t("Date")}
-              className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-[#E01E1E]/60"
+              className="bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) outline-none focus:border-(--ep-accent)/60"
             />
             <input
               type="number"
@@ -136,7 +136,7 @@ function RecoveryLogTool({
               onChange={(e) => setPain(Number(e.target.value))}
               aria-label={t("Douleur sur 10")}
               placeholder={t("Douleur /10")}
-              className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-[#E01E1E]/60"
+              className="bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) outline-none focus:border-(--ep-accent)/60"
             />
           </div>
           <input
@@ -144,14 +144,14 @@ function RecoveryLogTool({
             onChange={(e) => setZone(e.target.value)}
             placeholder={t("Zone / mouvement (ex. genou droit, squat)")}
             aria-label={t("Zone concernée")}
-            className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+            className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
           />
           <input
             value={loadNote}
             onChange={(e) => setLoadNote(e.target.value)}
             placeholder={t("Charge / répétitions (optionnel, ex. 40kg x 8)")}
             aria-label={t("Charge et répétitions")}
-            className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
+            className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60"
           />
           <textarea
             value={note}
@@ -159,14 +159,14 @@ function RecoveryLogTool({
             placeholder={t("Note (optionnel)")}
             aria-label={t("Note")}
             rows={2}
-            className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
+            className="w-full bg-(--ep-bg) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none focus:border-(--ep-accent)/60 resize-none"
           />
           {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setFormOpen(false)}
-              className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-3"
+              className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-strong) px-3"
             >
               {t("Annuler")}
             </button>
@@ -174,7 +174,7 @@ function RecoveryLogTool({
               type="button"
               onClick={handleSubmit}
               disabled={saving || !zone.trim()}
-              className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2"
+              className="flex-1 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest rounded-lg py-2"
             >
               {saving ? t("Enregistrement…") : t("Enregistrer")}
             </button>
@@ -183,26 +183,26 @@ function RecoveryLogTool({
       )}
 
       {logs.length === 0 ? (
-        <p className="text-[11px] text-[#F5EDED]/25">{t("Aucune séance de reprise loguée pour l'instant.")}</p>
+        <p className="text-[11px] text-(--ep-ink)/25">{t("Aucune séance de reprise loguée pour l'instant.")}</p>
       ) : (
         <div className="space-y-1.5">
           {logs.slice(0, 6).map((log) => (
             <div key={log.id} className="flex items-center gap-2 text-[11px]">
               <span
                 className="flex-shrink-0 rounded-full font-black flex items-center justify-center"
-                style={{ width: 20, height: 20, fontSize: 9, color: "#0D0000", background: painColor(log.pain) }}
+                style={{ width: 20, height: 20, fontSize: 9, color: "var(--ep-bg)", background: painColor(log.pain) }}
               >
                 {log.pain}
               </span>
-              <span className="text-[#F5EDED]/60 flex-1 min-w-0 truncate">
-                <strong className="text-[#F5EDED]/85 font-semibold">{log.zone}</strong>
+              <span className="text-(--ep-ink)/60 flex-1 min-w-0 truncate">
+                <strong className="text-(--ep-ink)/85 font-semibold">{log.zone}</strong>
                 {log.load_note ? ` · ${log.load_note}` : ""} · {formatShortDate(log.log_date)}
               </span>
               <button
                 type="button"
                 onClick={() => deleteRecoveryLog(clientId, log.id)}
                 aria-label={t("Supprimer cette séance")}
-                className="text-[#F5EDED]/15 hover:text-red-400 flex-shrink-0"
+                className="text-(--ep-ink)/15 hover:text-red-400 flex-shrink-0"
               >
                 <Trash2 size={11} />
               </button>
@@ -248,8 +248,8 @@ export default function ClientMedicalConstraintsPanel({
 
   return (
     <div className="ep-card" style={{ padding: "16px 18px" }}>
-      <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-        <HeartPulse size={13} className="text-[#E01E1E]" />
+      <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
+        <HeartPulse size={13} className="text-(--ep-accent)" />
         {t("Contraintes médicales de ce client")}
       </p>
 
@@ -267,9 +267,9 @@ export default function ClientMedicalConstraintsPanel({
               onClick={() => handleToggle(c.slug, !active)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-colors disabled:opacity-50"
               style={{
-                background: active ? "rgba(224,30,30,0.15)" : "transparent",
-                borderColor: active ? "rgba(224,30,30,0.5)" : "rgba(137,4,4,0.25)",
-                color: active ? "#fff" : "rgba(245,237,237,0.45)",
+                background: active ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+                borderColor: active ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-line-rgb),0.25)",
+                color: active ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.45)",
               }}
             >
               {active ? <X size={10} /> : <Plus size={10} />}
@@ -280,7 +280,7 @@ export default function ClientMedicalConstraintsPanel({
       </div>
 
       {activeConstraints.length === 0 ? (
-        <p className="text-[11.5px] text-[#F5EDED]/25 leading-relaxed">
+        <p className="text-[11.5px] text-(--ep-ink)/25 leading-relaxed">
           {t("Aucune contrainte rattachée. Ajoute une fiche ci-dessus si ce client a une blessure, une pathologie, un handicap ou une situation qui demande d'adapter son programme.")}
         </p>
       ) : (
@@ -290,17 +290,17 @@ export default function ClientMedicalConstraintsPanel({
             if (!constraint) return null;
             const expanded = expandedSlug === constraint.slug;
             return (
-              <div key={ac.id} className="rounded-lg border border-[#890404]/20 bg-black/20 px-3 py-3">
+              <div key={ac.id} className="rounded-lg border border-(--ep-line)/20 bg-(--ep-shade)/20 px-3 py-3">
                 <button
                   type="button"
                   onClick={() => setExpandedSlug(expanded ? null : constraint.slug)}
                   className="flex items-center justify-between w-full text-left"
                 >
-                  <span className="text-[12.5px] font-black text-white">{constraint.title}</span>
+                  <span className="text-[12.5px] font-black text-(--ep-strong)">{constraint.title}</span>
                   {expanded ? (
-                    <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+                    <ChevronDown size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
                   ) : (
-                    <ChevronRight size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+                    <ChevronRight size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
                   )}
                 </button>
 
@@ -328,15 +328,15 @@ export default function ClientMedicalConstraintsPanel({
                     )}
                     <ul className="space-y-1.5">
                       {constraint.adaptationPrinciples.map((p, i) => (
-                        <li key={i} className="text-[11.5px] text-[#F5EDED]/55 leading-relaxed flex gap-2">
-                          <span className="text-[#E01E1E] flex-shrink-0">•</span>
+                        <li key={i} className="text-[11.5px] text-(--ep-ink)/55 leading-relaxed flex gap-2">
+                          <span className="text-(--ep-accent) flex-shrink-0">•</span>
                           {p}
                         </li>
                       ))}
                     </ul>
                     <Link
                       href={`/dashboard/coach/contraintes/${constraint.slug}`}
-                      className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
+                      className="inline-block text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi)"
                     >
                       {t("Voir la fiche complète et les sources →")}
                     </Link>

@@ -27,14 +27,14 @@ export default async function CoachPendingPage() {
       <div className="animate-fade-up" style={{ width: "100%", maxWidth: 440, textAlign: "center" }}>
         <div style={{
           width: 64, height: 64, borderRadius: 18, margin: "0 auto 20px",
-          background: "linear-gradient(135deg, rgba(224,30,30,0.18), rgba(137,4,4,0.1))",
-          border: "1px solid rgba(224,30,30,0.3)",
+          background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.18), rgba(var(--ep-line-rgb),0.1))",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <Crown size={28} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <Crown size={28} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
         </div>
         <h1 className="ep-h2" style={{ margin: "0 0 12px" }}>{t("Plus qu'une étape")}</h1>
-        <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 28px" }}>
+        <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6, margin: "0 0 28px" }}>
           {t("Ton compte coach est créé. Choisis ta formule pour accéder à ton espace et suivre tes propres clients.")}
         </p>
         <form action={activateTesterPlan} style={{ marginBottom: 10 }}>
@@ -43,7 +43,7 @@ export default async function CoachPendingPage() {
             <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.85 }}>{t(COACH_TESTER_PLAN.sublabel)}</span>
           </button>
         </form>
-        <NotInIOSApp fallback={<p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", lineHeight: 1.6, margin: 0 }}>{t("Ton abonnement se gère depuis ton espace sur le web. Une fois actif, reviens ici : tout sera prêt.")}</p>}>
+        <NotInIOSApp fallback={<p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.6, margin: 0 }}>{t("Ton abonnement se gère depuis ton espace sur le web. Une fois actif, reviens ici : tout sera prêt.")}</p>}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {COACH_PLATFORM_PLANS.map((plan) => (
             <a

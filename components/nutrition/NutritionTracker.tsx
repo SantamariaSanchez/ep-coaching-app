@@ -92,15 +92,15 @@ function Ring({ label, value, target, color }: { label: string; value: number; t
     <div className="flex flex-col items-center gap-1">
       <div className="relative w-[68px] h-[68px]">
         <svg width="68" height="68" className="block -rotate-90">
-          <circle cx="34" cy="34" r={r} fill="none" stroke="rgba(245,237,237,0.07)" strokeWidth="6" />
+          <circle cx="34" cy="34" r={r} fill="none" stroke="rgba(var(--ep-ink-rgb),0.07)" strokeWidth="6" />
           <circle cx="34" cy="34" r={r} fill="none" stroke={over ? "#f59e0b" : color} strokeWidth="6" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round" style={{ transition: "stroke-dashoffset .4s ease" }} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-          <span className="text-[13px] font-black text-white">{Math.round(value)}</span>
-          <span className="text-[9px] text-[#F5EDED]/35">/{Math.round(target)}</span>
+          <span className="text-[13px] font-black text-(--ep-strong)">{Math.round(value)}</span>
+          <span className="text-[9px] text-(--ep-ink)/35">/{Math.round(target)}</span>
         </div>
       </div>
-      <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/45">{label}</span>
+      <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/45">{label}</span>
     </div>
   );
 }
@@ -514,37 +514,37 @@ export default function NutritionTracker({
   const sheetSuggest = sheet?.kind === "suggest" ? suggestions.find((s) => s.planMealId === sheet.planMealId) : undefined;
 
   if (!mounted) {
-    return <div className="h-64 rounded-2xl border border-[#890404]/20 bg-[#110000]/60 animate-pulse" aria-busy="true" />;
+    return <div className="h-64 rounded-2xl border border-(--ep-line)/20 bg-(--ep-s5)/60 animate-pulse" aria-busy="true" />;
   }
 
   return (
     <div className="space-y-4">
       {/* Jour */}
       <div className="flex items-center gap-2">
-        <button type="button" aria-label={tr("Jour précédent")} disabled={date <= minDate} onClick={() => goTo(shiftDate(date, -1))} className="w-9 h-9 rounded-lg border border-[#890404]/30 flex items-center justify-center text-[#F5EDED]/70 disabled:opacity-30">
+        <button type="button" aria-label={tr("Jour précédent")} disabled={date <= minDate} onClick={() => goTo(shiftDate(date, -1))} className="w-9 h-9 rounded-lg border border-(--ep-line)/30 flex items-center justify-center text-(--ep-ink)/70 disabled:opacity-30">
           <ChevronLeft size={16} />
         </button>
         <div className="flex-1 text-center">
-          <p className="text-sm font-black uppercase tracking-tight text-white first-letter:uppercase">{dayLabel}</p>
+          <p className="text-sm font-black uppercase tracking-tight text-(--ep-strong) first-letter:uppercase">{dayLabel}</p>
           {date !== today && (
-            <button type="button" onClick={() => goTo(today)} className="text-[10px] font-bold uppercase tracking-widest text-[#ff6b6b]">
+            <button type="button" onClick={() => goTo(today)} className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent-hi2)">
               {tr("Revenir à aujourd'hui")}
             </button>
           )}
         </div>
-        <button type="button" aria-label={tr("Jour suivant")} disabled={date >= today} onClick={() => goTo(shiftDate(date, 1))} className="w-9 h-9 rounded-lg border border-[#890404]/30 flex items-center justify-center text-[#F5EDED]/70 disabled:opacity-30">
+        <button type="button" aria-label={tr("Jour suivant")} disabled={date >= today} onClick={() => goTo(shiftDate(date, 1))} className="w-9 h-9 rounded-lg border border-(--ep-line)/30 flex items-center justify-center text-(--ep-ink)/70 disabled:opacity-30">
           <ChevronRight size={16} />
         </button>
       </div>
 
       {/* Mode */}
       {plan && (
-        <div className="rounded-xl border border-[#890404]/25 bg-black/25 p-3">
+        <div className="rounded-xl border border-(--ep-line)/25 bg-(--ep-shade)/25 p-3">
           <div className="flex items-center gap-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 flex-1 truncate">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 flex-1 truncate">
               {isOwnPlan ? tr("Mon plan") : tr("Plan de ton coach")} · {plan.name}
             </p>
-            {!onChangeMode && <Lock size={11} className="text-[#F5EDED]/30" />}
+            {!onChangeMode && <Lock size={11} className="text-(--ep-ink)/30" />}
           </div>
           <div className="grid grid-cols-3 gap-1.5 mt-2">
             {MODES.map((m) => (
@@ -554,33 +554,33 @@ export default function NutritionTracker({
                 disabled={!onChangeMode || busy}
                 onClick={() => changeMode(m.key)}
                 className={`py-2 rounded-lg border text-[10.5px] font-black uppercase tracking-wider transition-colors ${
-                  mode === m.key ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-[#ff6b6b]" : "border-[#890404]/25 text-[#F5EDED]/35"
+                  mode === m.key ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-accent-hi2)" : "border-(--ep-line)/25 text-(--ep-ink)/35"
                 } ${onChangeMode ? "" : "cursor-default"}`}
               >
                 {m.label}
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-[#F5EDED]/50 mt-2 leading-snug">{modeInfo.help}</p>
+          <p className="text-[11px] text-(--ep-ink)/50 mt-2 leading-snug">{modeInfo.help}</p>
         </div>
       )}
 
       {/* Anneaux */}
-      <div className="rounded-2xl border border-[#890404]/25 bg-[#110000]/80 p-4">
+      <div className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-s5)/80 p-4">
         <div className="flex justify-between">
-          <Ring label={tr("Calories")} value={consumed.calories} target={target.calories} color="#E01E1E" />
-          <Ring label={tr("Protéines")} value={consumed.proteins} target={target.proteins} color="#60a5fa" />
-          <Ring label={tr("Glucides")} value={consumed.carbs} target={target.carbs} color="#facc15" />
-          <Ring label={tr("Lipides")} value={consumed.fats} target={target.fats} color="#a78bfa" />
+          <Ring label={tr("Calories")} value={consumed.calories} target={target.calories} color="var(--ep-accent)" />
+          <Ring label={tr("Protéines")} value={consumed.proteins} target={target.proteins} color="var(--ep-info)" />
+          <Ring label={tr("Glucides")} value={consumed.carbs} target={target.carbs} color="var(--ep-yellow)" />
+          <Ring label={tr("Lipides")} value={consumed.fats} target={target.fats} color="var(--ep-violet)" />
         </div>
         {mode === "flexible" && suggestions.length > 0 && (
-          <p className="text-[11px] text-[#F5EDED]/55 mt-3 text-center">
-            <Sparkles size={11} className="inline -mt-0.5 mr-1 text-[#ff6b6b]" />
-            {tr("Avec les repas prévus :")}{" "}<b className="text-white">{Math.round(projected.calories)}{" "}{tr("kcal")}</b> · P {Math.round(projected.proteins)} · G {Math.round(projected.carbs)} · L {Math.round(projected.fats)}
+          <p className="text-[11px] text-(--ep-ink)/55 mt-3 text-center">
+            <Sparkles size={11} className="inline -mt-0.5 mr-1 text-(--ep-accent-hi2)" />
+            {tr("Avec les repas prévus :")}{" "}<b className="text-(--ep-strong)">{Math.round(projected.calories)}{" "}{tr("kcal")}</b> · P {Math.round(projected.proteins)} · G {Math.round(projected.carbs)} · L {Math.round(projected.fats)}
           </p>
         )}
         {!hasPlanToday && target.calories === 0 && (
-          <p className="text-[11px] text-[#F5EDED]/45 mt-3 text-center">{tr("Pas encore d'objectifs : ils s'affichent dès que ton plan ou tes besoins sont définis.")}</p>
+          <p className="text-[11px] text-(--ep-ink)/45 mt-3 text-center">{tr("Pas encore d'objectifs : ils s'affichent dès que ton plan ou tes besoins sont définis.")}</p>
         )}
       </div>
 
@@ -604,22 +604,22 @@ export default function NutritionTracker({
         const kcal = slotLogs.length ? sumMacros(slotLogs.map(logMacros)).calories : sumMacros(slotSuggest.map((s) => macrosFor(s.food, s.grams))).calories;
         const planForSlot = planItems.filter((i) => i.slot === slot);
         return (
-          <section key={slot} className="rounded-2xl border border-[#890404]/25 bg-[#110000]/70 overflow-hidden">
+          <section key={slot} className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-s5)/70 overflow-hidden">
             <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-              <p className="flex-1 text-[11px] font-black uppercase tracking-widest text-[#F5EDED]/70">{slotLabel(slot)}</p>
+              <p className="flex-1 text-[11px] font-black uppercase tracking-widest text-(--ep-ink)/70">{slotLabel(slot)}</p>
               {slotLogs.length > 0 ? (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
                   <Check size={11} /> {Math.round(kcal)}{" "}{tr("kcal")}
                 </span>
               ) : slotSuggest.length > 0 ? (
-                <span className="text-[10px] font-bold text-[#F5EDED]/40">{tr("Prévu ·")}{" "}{Math.round(kcal)}{" "}{tr("kcal")}</span>
+                <span className="text-[10px] font-bold text-(--ep-ink)/40">{tr("Prévu ·")}{" "}{Math.round(kcal)}{" "}{tr("kcal")}</span>
               ) : null}
             </div>
 
             {variants.length > 1 && (mode === "flexible" ? slotLogs.length === 0 : true) && (
               <div className="flex gap-1.5 px-4 pb-2">
                 {variants.map((v) => (
-                  <button key={v} type="button" disabled={busy} onClick={() => current !== v && chooseVariant(slot, v)} className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${current === v ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-[#ff6b6b]" : "border-[#890404]/30 text-[#F5EDED]/45"}`}>
+                  <button key={v} type="button" disabled={busy} onClick={() => current !== v && chooseVariant(slot, v)} className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${current === v ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-accent-hi2)" : "border-(--ep-line)/30 text-(--ep-ink)/45"}`}>
                     {v === 1 ? tr("Choix habituel") : `Option ${v}`}
                   </button>
                 ))}
@@ -628,40 +628,40 @@ export default function NutritionTracker({
 
             <div className="px-2">
               {slotLogs.map((l) => (
-                <button key={l.id} type="button" onClick={() => setSheet({ kind: "log", logId: l.id })} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/[0.03] text-left">
+                <button key={l.id} type="button" onClick={() => setSheet({ kind: "log", logId: l.id })} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-(--ep-hi)/[0.03] text-left">
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm text-white truncate">{l.foods?.name ?? tr("Aliment")}</span>
-                    <span className="block text-[10.5px] text-[#F5EDED]/40">
+                    <span className="block text-sm text-(--ep-strong) truncate">{l.foods?.name ?? tr("Aliment")}</span>
+                    <span className="block text-[10.5px] text-(--ep-ink)/40">
                       {Math.round(l.calories ?? 0)} kcal · P {Math.round(l.proteins ?? 0)} · G {Math.round(l.carbs ?? 0)} · L {Math.round(l.fats ?? 0)}
                     </span>
                   </span>
                   {/* Les grammes en gros (2026-10-08) : avant, le chiffre en gras
                       à droite était les kcal sans unité, lu comme des grammes
                       (« 15 » pour 100 g de légumes verts). */}
-                  <span className="text-sm font-black text-white tabular-nums whitespace-nowrap">{Math.round(Number(l.quantity_g) * 10) / 10} g</span>
+                  <span className="text-sm font-black text-(--ep-strong) tabular-nums whitespace-nowrap">{Math.round(Number(l.quantity_g) * 10) / 10} g</span>
                 </button>
               ))}
 
               {slotLogs.length === 0 &&
                 slotSuggest.map((s) => (
-                  <button key={s.planMealId} type="button" onClick={() => setSheet({ kind: "suggest", planMealId: s.planMealId })} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/[0.03] text-left opacity-80">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#F5EDED]/25 shrink-0" />
+                  <button key={s.planMealId} type="button" onClick={() => setSheet({ kind: "suggest", planMealId: s.planMealId })} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-(--ep-hi)/[0.03] text-left opacity-80">
+                    <span className="w-1.5 h-1.5 rounded-full bg-(--ep-ink)/25 shrink-0" />
                     <span className="flex-1 min-w-0">
-                      <span className="block text-sm text-[#F5EDED]/80 truncate">
+                      <span className="block text-sm text-(--ep-ink)/80 truncate">
                         {s.food.name}
-                        {s.overridden && <Shuffle size={11} className="inline ml-1.5 -mt-0.5 text-[#ff6b6b]" />}
+                        {s.overridden && <Shuffle size={11} className="inline ml-1.5 -mt-0.5 text-(--ep-accent-hi2)" />}
                       </span>
-                      <span className="block text-[10.5px] text-[#F5EDED]/40">
+                      <span className="block text-[10.5px] text-(--ep-ink)/40">
                         {Math.round(macrosFor(s.food, s.grams).calories)} kcal
                         {s.adjusted && <span className="text-amber-300/80">{" "}{tr("· ajusté (plan")}{" "}{s.planGrams} g)</span>}
                       </span>
                     </span>
-                    <span className="text-sm font-black text-[#F5EDED]/80 tabular-nums whitespace-nowrap">{s.grams} g</span>
+                    <span className="text-sm font-black text-(--ep-ink)/80 tabular-nums whitespace-nowrap">{s.grams} g</span>
                   </button>
                 ))}
 
               {slotLogs.length === 0 && slotSuggest.length === 0 && (
-                <p className="px-2 py-2 text-xs text-[#F5EDED]/35">
+                <p className="px-2 py-2 text-xs text-(--ep-ink)/35">
                   {isFixedLike && planForSlot.length > 0 ? tr("Repas retiré de ta journée.") : tr("Rien de logué pour l'instant.")}
                 </p>
               )}
@@ -669,16 +669,16 @@ export default function NutritionTracker({
 
             <div className="flex gap-2 px-4 pb-3 pt-1.5">
               {mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 && (
-                <button type="button" disabled={busy} onClick={() => eatSuggestions(slot)} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#E01E1E] text-white text-[11px] font-black uppercase tracking-widest disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={() => eatSuggestions(slot)} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-[11px] font-black uppercase tracking-widest disabled:opacity-50">
                   <Check size={13} />{" "}{tr("J'ai mangé ça")}
                 </button>
               )}
               {isFixedLike && slotLogs.length === 0 && planForSlot.length > 0 && (
-                <button type="button" disabled={busy} onClick={() => fillSlots([slot])} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[#890404]/40 text-[#F5EDED]/75 text-[11px] font-bold uppercase tracking-widest disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={() => fillSlots([slot])} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/75 text-[11px] font-bold uppercase tracking-widest disabled:opacity-50">
                   <RotateCcw size={12} />{" "}{tr("Remettre le repas du plan")}
                 </button>
               )}
-              <button type="button" onClick={() => setSheet({ kind: "add", slot })} className={`${mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? "" : "flex-1"} inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#890404]/40 text-[#F5EDED]/75 text-[11px] font-bold uppercase tracking-widest`}>
+              <button type="button" onClick={() => setSheet({ kind: "add", slot })} className={`${mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? "" : "flex-1"} inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/75 text-[11px] font-bold uppercase tracking-widest`}>
                 <Plus size={13} /> {mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? tr("Autre") : tr("Ajouter")}
               </button>
             </div>
@@ -691,7 +691,7 @@ export default function NutritionTracker({
           {otherSlots
             .filter((s) => !extraSlots.includes(s.key))
             .map((s) => (
-              <button key={s.key} type="button" onClick={() => setExtraSlots((p) => [...p, s.key])} className="px-3 py-1.5 rounded-full border border-dashed border-[#890404]/40 text-[11px] font-bold text-[#F5EDED]/50">
+              <button key={s.key} type="button" onClick={() => setExtraSlots((p) => [...p, s.key])} className="px-3 py-1.5 rounded-full border border-dashed border-(--ep-line)/40 text-[11px] font-bold text-(--ep-ink)/50">
                 + {s.label}
               </button>
             ))}
@@ -768,7 +768,7 @@ export default function NutritionTracker({
       )}
 
       {mode === "flexible" && Object.keys(dayOverrides).length > 0 && (
-        <button type="button" onClick={() => { setOverrides((p) => ({ ...p, [date]: {} })); writeLS(`ep-flex:${planKey}:${date}`, {}); }} className="w-full text-[11px] font-bold text-[#F5EDED]/45 underline">
+        <button type="button" onClick={() => { setOverrides((p) => ({ ...p, [date]: {} })); writeLS(`ep-flex:${planKey}:${date}`, {}); }} className="w-full text-[11px] font-bold text-(--ep-ink)/45 underline">
           {tr("Revenir aux repas du plan pour")}{" "}{date === today ? tr("aujourd'hui") : tr("ce jour")}
         </button>
       )}

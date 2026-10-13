@@ -37,11 +37,11 @@ export default async function CoachMoiSemainePage({
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1 flex items-center gap-1.5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1 flex items-center gap-1.5">
           <CalendarCheck size={11} />{" "}{t("Mon suivi")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ma semaine")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Ta semaine en chiffres, à partir de ce que tu as déjà noté. Puis 2 minutes de recul pour caler la suivante.")}
         </p>
       </div>
@@ -60,10 +60,10 @@ export default async function CoachMoiSemainePage({
         </div>
       ) : (
         <div className="ep-card" style={{ padding: "20px 18px" }} role="alert">
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#fbbf24", display: "flex", alignItems: "center", gap: 8 }}>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "var(--ep-warn)", display: "flex", alignItems: "center", gap: 8 }}>
             <AlertTriangle size={15} />{" "}{t("Impossible de charger ta semaine")}
           </p>
-          <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>
+          <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5 }}>
             {t("Tes données sont intactes, c'est la lecture qui a échoué. Recharge la page dans un instant.")}
           </p>
         </div>

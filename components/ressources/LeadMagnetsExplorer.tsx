@@ -71,7 +71,7 @@ function CopyLinkButton({ url }: { url: string }) {
       title={t("Copier le lien de cette ressource")}
       style={{
         display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 700,
-        color: copied ? "#4ade80" : "rgba(245,237,237,0.3)",
+        color: copied ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.3)",
         background: "none", border: "none", padding: 0, cursor: "pointer",
         fontFamily: "inherit",
       }}
@@ -114,9 +114,9 @@ function MagnetCard({
       className="group"
       style={{
         display: "flex", flexDirection: "column", gap: 10, padding: 16, borderRadius: 14,
-        background: "#1f0101",
-        border: `1px solid ${spotlight ? "rgba(224,30,30,0.5)" : "rgba(137,4,4,0.25)"}`,
-        boxShadow: spotlight ? "0 0 0 1px rgba(224,30,30,0.15), 0 8px 24px rgba(224,30,30,0.12)" : undefined,
+        background: "var(--ep-s1)",
+        border: `1px solid ${spotlight ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-line-rgb),0.25)"}`,
+        boxShadow: spotlight ? "0 0 0 1px rgba(var(--ep-accent-rgb),0.15), 0 8px 24px rgba(var(--ep-accent-rgb),0.12)" : undefined,
         textDecoration: "none",
       }}
     >
@@ -124,10 +124,10 @@ function MagnetCard({
         <div
           style={{
             width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: "rgba(224,30,30,0.12)", display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(var(--ep-accent-rgb),0.12)", display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <Icon size={16} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {/* Réservé aux coachs : c'est un outil d'organisation interne
@@ -137,7 +137,7 @@ function MagnetCard({
             <span
               style={{
                 display: "flex", alignItems: "center", gap: 3, fontSize: 9, fontWeight: 800,
-                letterSpacing: "0.04em", color: "rgba(245,237,237,0.3)", fontVariantNumeric: "tabular-nums",
+                letterSpacing: "0.04em", color: "rgba(var(--ep-ink-rgb),0.3)", fontVariantNumeric: "tabular-nums",
               }}
               title={t("Code à utiliser dans un reel pour renvoyer directement ici")}
             >
@@ -147,7 +147,7 @@ function MagnetCard({
           <span
             style={{
               display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 800,
-              letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)",
+              letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)",
             }}
           >
             <FormatIcon size={10} /> {formatLabel}
@@ -155,19 +155,19 @@ function MagnetCard({
         </div>
       </div>
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", lineHeight: 1.35, margin: "0 0 4px" }}>
+        <p style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)", lineHeight: 1.35, margin: "0 0 4px" }}>
           {magnet.title}
         </p>
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.5, margin: 0 }}>{magnet.hook}</p>
+        <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.5, margin: 0 }}>{magnet.hook}</p>
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "rgba(245,237,237,0.3)" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
           <Clock size={10} /> {magnet.readTime}
         </span>
-        <ChevronRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors" />
+        <ChevronRight size={14} className="text-(--ep-ink)/20 group-hover:text-(--ep-accent) transition-colors" />
       </div>
       {showCopyLink && (
-        <div style={{ borderTop: "1px solid rgba(137,4,4,0.15)", paddingTop: 8, marginTop: -2 }}>
+        <div style={{ borderTop: "1px solid rgba(var(--ep-line-rgb),0.15)", paddingTop: 8, marginTop: -2 }}>
           <CopyLinkButton url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/ressources/${magnet.slug}`} />
         </div>
       )}
@@ -308,30 +308,30 @@ export default function LeadMagnetsExplorer({
   return (
     <section style={{ marginBottom: 32 }}>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">{t("Gratuit, sans compte")}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">{t("Gratuit, sans compte")}</p>
         {magnets.length > 0 && (
-          <span className="text-[10px] font-semibold text-[#F5EDED]/25">{magnets.length}{" "}{t("ressources")}</span>
+          <span className="text-[10px] font-semibold text-(--ep-ink)/25">{magnets.length}{" "}{t("ressources")}</span>
         )}
       </div>
-      <h2 style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: "0 0 14px" }}>
+      <h2 style={{ fontSize: 18, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 14px" }}>
         {t("Guides, checklists et quiz")}
       </h2>
 
       {/* Recherche */}
       <div className="relative mb-3">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" strokeWidth={1.8} />
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" strokeWidth={1.8} />
         <input
           value={search}
           onChange={(e) => runSearch(e.target.value)}
           placeholder={isCoach ? t("Rechercher, ou taper un code (076)...") : t("Rechercher un guide, une checklist, un quiz...")}
           aria-label={t("Rechercher")}
-          className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+          className="w-full bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl pl-10 pr-9 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
         />
         {search && (
           <button
             onClick={() => runSearch("")}
             aria-label={t("Effacer la recherche")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
           >
             <X size={14} />
           </button>
@@ -341,12 +341,12 @@ export default function LeadMagnetsExplorer({
       {/* Recherches récentes, visibles seulement champ vide */}
       {!search && recentSearches.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
-          <span className="text-[10px] text-[#F5EDED]/25 mr-0.5">{t("Récent :")}</span>
+          <span className="text-[10px] text-(--ep-ink)/25 mr-0.5">{t("Récent :")}</span>
           {recentSearches.map((term) => (
             <button
               key={term}
               onClick={() => runSearch(term)}
-              className="text-[11px] text-[#F5EDED]/50 hover:text-[#F5EDED]/80 bg-[#1f0101] border border-[#890404]/20 rounded-full px-2.5 py-1 transition-colors"
+              className="text-[11px] text-(--ep-ink)/50 hover:text-(--ep-ink)/80 bg-(--ep-s1) border border-(--ep-line)/20 rounded-full px-2.5 py-1 transition-colors"
             >
               {term}
             </button>
@@ -360,9 +360,9 @@ export default function LeadMagnetsExplorer({
           onClick={() => selectCategory(null)}
           className="flex-shrink-0 text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full transition-colors"
           style={{
-            background: category === null ? "#E01E1E" : "#1f0101",
-            border: `1px solid ${category === null ? "#E01E1E" : "rgba(137,4,4,0.25)"}`,
-            color: category === null ? "#fff" : "rgba(245,237,237,0.55)",
+            background: category === null ? "var(--ep-accent)" : "var(--ep-s1)",
+            border: `1px solid ${category === null ? "var(--ep-accent)" : "rgba(var(--ep-line-rgb),0.25)"}`,
+            color: category === null ? "#fff" : "rgba(var(--ep-ink-rgb),0.55)",
           }}
         >
           {t("Tout")}
@@ -373,9 +373,9 @@ export default function LeadMagnetsExplorer({
             onClick={() => selectCategory(c)}
             className="flex-shrink-0 text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full transition-colors"
             style={{
-              background: category === c ? "#E01E1E" : "#1f0101",
-              border: `1px solid ${category === c ? "#E01E1E" : "rgba(137,4,4,0.25)"}`,
-              color: category === c ? "#fff" : "rgba(245,237,237,0.55)",
+              background: category === c ? "var(--ep-accent)" : "var(--ep-s1)",
+              border: `1px solid ${category === c ? "var(--ep-accent)" : "rgba(var(--ep-line-rgb),0.25)"}`,
+              color: category === c ? "#fff" : "rgba(var(--ep-ink-rgb),0.55)",
             }}
           >
             {c}
@@ -385,9 +385,9 @@ export default function LeadMagnetsExplorer({
           onClick={() => setFiltersOpen((v) => !v)}
           className="flex-shrink-0 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full transition-colors"
           style={{
-            background: filtersOpen || format ? "rgba(224,30,30,0.12)" : "#1f0101",
-            border: `1px solid ${filtersOpen || format ? "rgba(224,30,30,0.4)" : "rgba(137,4,4,0.25)"}`,
-            color: filtersOpen || format ? "#E01E1E" : "rgba(245,237,237,0.55)",
+            background: filtersOpen || format ? "rgba(var(--ep-accent-rgb),0.12)" : "var(--ep-s1)",
+            border: `1px solid ${filtersOpen || format ? "rgba(var(--ep-accent-rgb),0.4)" : "rgba(var(--ep-line-rgb),0.25)"}`,
+            color: filtersOpen || format ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.55)",
           }}
         >
           <SlidersHorizontal size={11} />{" "}{t("Format")}
@@ -401,9 +401,9 @@ export default function LeadMagnetsExplorer({
             onClick={() => setSubcategory(null)}
             className="flex-shrink-0 text-[10.5px] px-2.5 py-1 rounded-full transition-colors"
             style={{
-              background: subcategory === null ? "rgba(224,30,30,0.15)" : "transparent",
-              border: "1px solid rgba(137,4,4,0.2)",
-              color: subcategory === null ? "#E01E1E" : "rgba(245,237,237,0.4)",
+              background: subcategory === null ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+              border: "1px solid rgba(var(--ep-line-rgb),0.2)",
+              color: subcategory === null ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.4)",
             }}
           >
             {t("Tous les sous-thèmes")}
@@ -414,9 +414,9 @@ export default function LeadMagnetsExplorer({
               onClick={() => setSubcategory(sc === subcategory ? null : sc)}
               className="flex-shrink-0 text-[10.5px] px-2.5 py-1 rounded-full transition-colors"
               style={{
-                background: subcategory === sc ? "rgba(224,30,30,0.15)" : "transparent",
-                border: "1px solid rgba(137,4,4,0.2)",
-                color: subcategory === sc ? "#E01E1E" : "rgba(245,237,237,0.4)",
+                background: subcategory === sc ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+                border: "1px solid rgba(var(--ep-line-rgb),0.2)",
+                color: subcategory === sc ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.4)",
               }}
             >
               {sc}
@@ -437,9 +437,9 @@ export default function LeadMagnetsExplorer({
                 onClick={() => setFormat(active ? null : f)}
                 className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-colors"
                 style={{
-                  background: active ? "rgba(224,30,30,0.12)" : "#1f0101",
-                  border: `1px solid ${active ? "rgba(224,30,30,0.4)" : "rgba(137,4,4,0.2)"}`,
-                  color: active ? "#E01E1E" : "rgba(245,237,237,0.5)",
+                  background: active ? "rgba(var(--ep-accent-rgb),0.12)" : "var(--ep-s1)",
+                  border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.4)" : "rgba(var(--ep-line-rgb),0.2)"}`,
+                  color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.5)",
                 }}
               >
                 <Icon size={12} /> {label}
@@ -455,7 +455,7 @@ export default function LeadMagnetsExplorer({
             selectCategory(null);
             setFormat(null);
           }}
-          className="text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 underline mb-3 inline-block"
+          className="text-[10.5px] text-(--ep-ink)/35 hover:text-(--ep-ink)/60 underline mb-3 inline-block"
         >
           {t("Réinitialiser les filtres")}
         </button>
@@ -463,9 +463,9 @@ export default function LeadMagnetsExplorer({
 
       {/* Résultats */}
       {filtered.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-14 text-center">
-          <LayoutGrid size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-14 text-center">
+          <LayoutGrid size={24} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">
             {isCoach && normalizeKeyword(search)
               ? `Aucun lead magnet avec le code ${normalizeKeyword(search)}.`
               : t("Aucune ressource ne correspond à ces critères.")}
@@ -474,8 +474,8 @@ export default function LeadMagnetsExplorer({
       ) : (
         <>
           {keywordMatch && (
-            <p className="text-[11px] text-[#F5EDED]/40 mb-2">
-              {t("Résultat direct pour le code")}{" "}<span className="text-[#E01E1E] font-bold">{keywordMatch.keyword}</span>
+            <p className="text-[11px] text-(--ep-ink)/40 mb-2">
+              {t("Résultat direct pour le code")}{" "}<span className="text-(--ep-accent) font-bold">{keywordMatch.keyword}</span>
             </p>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
@@ -499,7 +499,7 @@ export default function LeadMagnetsExplorer({
           {visibleCount < filtered.length && (
             <button
               onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
-              className="w-full mt-4 text-center text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-[#F5EDED]/70 bg-[#1f0101] border border-[#890404]/20 rounded-xl py-3 transition-colors"
+              className="w-full mt-4 text-center text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-ink)/70 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl py-3 transition-colors"
             >
               {t("Voir plus (")}{filtered.length - visibleCount}{" "}{t("de plus)")}
             </button>

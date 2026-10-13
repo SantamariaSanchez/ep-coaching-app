@@ -14,11 +14,11 @@ export default function StreakChip({ streakDays, points, href, label }: { streak
       className="ep-press"
       style={{
         flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", minHeight: 32,
-        borderRadius: 999, background: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.25)",
-        textDecoration: "none", color: "#F5EDED", fontSize: 12, fontWeight: 800,
+        borderRadius: 999, background: "rgba(var(--ep-orange-rgb),0.1)", border: "1px solid rgba(var(--ep-orange-rgb),0.25)",
+        textDecoration: "none", color: "var(--ep-ink)", fontSize: 12, fontWeight: 800,
       }}
     >
-      <Flame size={13} style={{ color: streakDays > 0 ? "#fb923c" : "rgba(245,237,237,0.3)" }} strokeWidth={2} />
+      <Flame size={13} style={{ color: streakDays > 0 ? "var(--ep-orange)" : "rgba(var(--ep-ink-rgb),0.3)" }} strokeWidth={2} />
       {streakDays} j
       <span style={{ fontSize: 13, lineHeight: 1 }}>{rank.emoji}</span>
     </Link>

@@ -37,13 +37,13 @@ export default function BusinessChecklist({ initialDone }: { initialDone: string
 
   return (
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
         {t("Checklist de construction ·")}{" "}{doneCount}/{BUSINESS_CHECKLIST.length}
       </p>
       <div className="space-y-5">
         {categories.map((cat) => (
           <div key={cat}>
-            <p className="text-[10.5px] font-bold text-[#E01E1E] uppercase tracking-widest mb-2">{cat}</p>
+            <p className="text-[10.5px] font-bold text-(--ep-accent) uppercase tracking-widest mb-2">{cat}</p>
             <div className="space-y-1.5">
               {BUSINESS_CHECKLIST.filter((i) => i.category === cat).map((item) => {
                 const isDone = done.has(item.key);
@@ -53,20 +53,20 @@ export default function BusinessChecklist({ initialDone }: { initialDone: string
                     type="button"
                     onClick={() => toggle(item.key)}
                     disabled={isPending}
-                    className="w-full flex items-start gap-3 text-left bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3 hover:border-[#890404]/40 transition-colors"
+                    className="w-full flex items-start gap-3 text-left bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3 hover:border-(--ep-line)/40 transition-colors"
                   >
                     <span
                       className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border flex items-center justify-center transition-colors ${
-                        isDone ? "bg-[#4ade80] border-[#4ade80]" : "border-[#890404]/40 bg-transparent"
+                        isDone ? "bg-(--ep-ok) border-(--ep-ok)" : "border-(--ep-line)/40 bg-transparent"
                       }`}
                     >
-                      {isDone && <Check size={12} className="text-[#0a1f0a]" strokeWidth={3} />}
+                      {isDone && <Check size={12} className="text-(--ep-okbg)" strokeWidth={3} />}
                     </span>
                     <span className="min-w-0">
-                      <span className={`block text-[12.5px] font-bold ${isDone ? "text-[#F5EDED]/40 line-through" : "text-white"}`}>
+                      <span className={`block text-[12.5px] font-bold ${isDone ? "text-(--ep-ink)/40 line-through" : "text-(--ep-strong)"}`}>
                         {item.label}
                       </span>
-                      <span className="block text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">{item.detail}</span>
+                      <span className="block text-[11px] text-(--ep-ink)/35 mt-0.5 leading-relaxed">{item.detail}</span>
                     </span>
                   </button>
                 );

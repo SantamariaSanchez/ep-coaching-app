@@ -71,7 +71,7 @@ export default function ItemSheet({
             type="button"
             onClick={onRemove}
             disabled={busy}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl border border-[#890404]/40 text-[#F5EDED]/70 text-xs font-bold uppercase tracking-widest disabled:opacity-40"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/70 text-xs font-bold uppercase tracking-widest disabled:opacity-40"
           >
             <Trash2 size={14} />{" "}{t("Retirer")}
           </button>
@@ -79,16 +79,16 @@ export default function ItemSheet({
             type="button"
             onClick={() => onSave({ food: current, grams: roundGrams(g) || g })}
             disabled={busy || !changed || g <= 0}
-            className="flex-1 px-4 py-3 rounded-xl bg-[#E01E1E] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40"
+            className="flex-1 px-4 py-3 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-xs font-black uppercase tracking-widest disabled:opacity-40"
           >
             {busy ? "..." : t("Enregistrer")}
           </button>
         </div>
       }
     >
-      <div className="rounded-xl border border-[#890404]/25 bg-black/30 p-3 mb-4">
+      <div className="rounded-xl border border-(--ep-line)/25 bg-(--ep-shade)/30 p-3 mb-4">
         <div className="flex items-center gap-2">
-          <button type="button" aria-label={t("Moins")} onClick={() => setQty(String(Math.max(step, roundGrams(g - step))))} className="w-11 h-11 rounded-xl border border-[#890404]/35 text-white flex items-center justify-center">
+          <button type="button" aria-label={t("Moins")} onClick={() => setQty(String(Math.max(step, roundGrams(g - step))))} className="w-11 h-11 rounded-xl border border-(--ep-line)/35 text-(--ep-strong) flex items-center justify-center">
             <Minus size={16} />
           </button>
           <div className="flex-1 relative">
@@ -97,11 +97,11 @@ export default function ItemSheet({
               onChange={(e) => setQty(e.target.value)}
               inputMode="decimal"
               aria-label={t("Quantité en grammes")}
-              className="w-full h-11 text-center text-xl font-black bg-transparent border border-[#890404]/35 rounded-xl text-white focus:outline-none focus:border-[#E01E1E]/60"
+              className="w-full h-11 text-center text-xl font-black bg-transparent border border-(--ep-line)/35 rounded-xl text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/60"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#F5EDED]/40">g</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-(--ep-ink)/40">g</span>
           </div>
-          <button type="button" aria-label={t("Plus")} onClick={() => setQty(String(roundGrams(g + step)))} className="w-11 h-11 rounded-xl border border-[#890404]/35 text-white flex items-center justify-center">
+          <button type="button" aria-label={t("Plus")} onClick={() => setQty(String(roundGrams(g + step)))} className="w-11 h-11 rounded-xl border border-(--ep-line)/35 text-(--ep-strong) flex items-center justify-center">
             <Plus size={16} />
           </button>
         </div>
@@ -112,30 +112,30 @@ export default function ItemSheet({
             { label: "×1,5", v: roundGrams(g * 1.5) },
             { label: "×2", v: roundGrams(g * 2) },
           ].map((c) => (
-            <button key={c.label} type="button" onClick={() => setQty(String(c.v))} className="px-2.5 py-1 rounded-full border border-[#890404]/30 text-[11px] font-bold text-[#F5EDED]/65">
+            <button key={c.label} type="button" onClick={() => setQty(String(c.v))} className="px-2.5 py-1 rounded-full border border-(--ep-line)/30 text-[11px] font-bold text-(--ep-ink)/65">
               {c.label}
             </button>
           ))}
         </div>
-        <p className="text-[11px] text-[#F5EDED]/55 mt-2.5">
-          <b className="text-white">{Math.round(m.calories)}{" "}{t("kcal")}</b> · P {Math.round(m.proteins)} g · G {Math.round(m.carbs)} g · L {Math.round(m.fats)} g
+        <p className="text-[11px] text-(--ep-ink)/55 mt-2.5">
+          <b className="text-(--ep-strong)">{Math.round(m.calories)}{" "}{t("kcal")}</b> · P {Math.round(m.proteins)} g · G {Math.round(m.carbs)} g · L {Math.round(m.fats)} g
         </p>
         {hint && <p className="text-[11px] text-emerald-300/80 mt-1.5">{hint}</p>}
       </div>
 
       {allowSwap && (
         <>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2 flex items-center gap-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-2 flex items-center gap-1.5">
             <Repeat size={11} />{" "}{t("Remplacer par")}
           </p>
           <div className="relative mb-2">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("Chercher un autre aliment")}
               aria-label={t("Chercher un aliment de remplacement")}
-              className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
+              className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg pl-9 pr-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60"
             />
           </div>
           <div className="space-y-1">
@@ -147,21 +147,21 @@ export default function ItemSheet({
                   key={s.food.id}
                   type="button"
                   onClick={() => pick(s.food, s.grams)}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg border transition-colors ${active ? "border-[#E01E1E]/60 bg-[#E01E1E]/10" : "border-transparent hover:bg-[#1f0101]"}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg border transition-colors ${active ? "border-(--ep-accent)/60 bg-(--ep-accent)/10" : "border-transparent hover:bg-(--ep-s1)"}`}
                 >
-                  <p className="text-sm text-white font-medium leading-tight">
-                    {s.food.name} <span className="text-[#F5EDED]/50 font-normal">· {s.grams} g</span>
+                  <p className="text-sm text-(--ep-strong) font-medium leading-tight">
+                    {s.food.name} <span className="text-(--ep-ink)/50 font-normal">· {s.grams} g</span>
                   </p>
-                  <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
+                  <p className="text-[10.5px] text-(--ep-ink)/40 mt-0.5">
                     {Math.round(sm.calories)}{" "}{t("kcal · P")}{" "}{Math.round(sm.proteins)} · G {Math.round(sm.carbs)} · L {Math.round(sm.fats)}
                   </p>
                 </button>
               );
             })}
-            {searched.length === 0 && similar.length === 0 && <p className="text-xs text-[#F5EDED]/40 py-2">{t("Aucun aliment proche trouvé, cherche-le au-dessus.")}</p>}
+            {searched.length === 0 && similar.length === 0 && <p className="text-xs text-(--ep-ink)/40 py-2">{t("Aucun aliment proche trouvé, cherche-le au-dessus.")}</p>}
           </div>
           {current.id !== food.id && (
-            <button type="button" onClick={() => pick(food, grams)} className="mt-2 text-[11px] font-bold text-[#F5EDED]/50 underline">
+            <button type="button" onClick={() => pick(food, grams)} className="mt-2 text-[11px] font-bold text-(--ep-ink)/50 underline">
               {t("Revenir à")}{" "}{food.name}
             </button>
           )}

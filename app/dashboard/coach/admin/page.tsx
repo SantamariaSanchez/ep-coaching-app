@@ -6,15 +6,16 @@ import { getCoachBillingInfo } from "@/lib/coach-billing";
 import CoachStatusToggle from "@/components/coach/CoachStatusToggle";
 import CoachClientsToggle from "@/components/coach/CoachClientsToggle";
 import { ExternalLink, ChevronLeft } from "lucide-react";
+import { withAlpha } from "@/lib/theme-color";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  trialing: { label: "Essai gratuit", color: "#facc15" },
-  active: { label: "Actif", color: "#4ade80" },
-  past_due: { label: "Paiement en retard", color: "#E01E1E" },
-  unpaid: { label: "Impayé", color: "#E01E1E" },
-  canceled: { label: "Annulé", color: "rgba(245,237,237,0.4)" },
-  incomplete: { label: "Incomplet", color: "rgba(245,237,237,0.4)" },
-  erreur: { label: "Erreur Stripe", color: "#E01E1E" },
+  trialing: { label: "Essai gratuit", color: "var(--ep-yellow)" },
+  active: { label: "Actif", color: "var(--ep-ok)" },
+  past_due: { label: "Paiement en retard", color: "var(--ep-accent)" },
+  unpaid: { label: "Impayé", color: "var(--ep-accent)" },
+  canceled: { label: "Annulé", color: "rgba(var(--ep-ink-rgb),0.4)" },
+  incomplete: { label: "Incomplet", color: "rgba(var(--ep-ink-rgb),0.4)" },
+  erreur: { label: "Erreur Stripe", color: "var(--ep-accent)" },
 };
 
 function formatDate(iso: string | null): string | null {
@@ -50,16 +51,16 @@ export default async function CoachAdminPage() {
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
         href="/dashboard/coach"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} />{" "}{t("Retour")}
       </Link>
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Administration")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Coachs")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Coachs tiers inscrits sur la plateforme. Chacun ne voit que ses propres clients, toi seul peux consulter la liste de chacun ci-dessous (lecture seule, sans y accéder toi-même).")}
         </p>
       </div>
@@ -67,18 +68,18 @@ export default async function CoachAdminPage() {
       <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 24, marginBottom: 24 }}>
         <div>
           <p className="ep-label" style={{ marginBottom: 4 }}>{t("Coachs inscrits")}</p>
-          <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{coaches.length}</p>
+          <p style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{coaches.length}</p>
         </div>
         <div>
           <p className="ep-label" style={{ marginBottom: 4 }}>{t("Revenu mensuel estimé")}</p>
-          <p style={{ fontSize: 20, fontWeight: 900, color: "#4ade80", margin: 0 }}>
+          <p style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-ok)", margin: 0 }}>
             {mrr.toLocaleString("fr-FR", { maximumFractionDigits: 0 })}€
           </p>
         </div>
       </div>
 
       {coaches.length === 0 ? (
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)" }}>{t("Aucun coach tiers inscrit pour l'instant.")}</p>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{t("Aucun coach tiers inscrit pour l'instant.")}</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {coaches.map((coach, i) => {
@@ -88,37 +89,37 @@ export default async function CoachAdminPage() {
               <div key={coach.id} className="ep-card" style={{ padding: "14px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
                       {coach.full_name ?? t("Sans nom")}
                     </p>
-                    <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{coach.email}</p>
+                    <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{coach.email}</p>
                   </div>
                   <CoachStatusToggle coachId={coach.id} status={coach.platform_subscription_status} />
                 </div>
 
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(245,237,237,0.06)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   {statusInfo ? (
                     <span style={{
                       fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em",
-                      color: statusInfo.color, border: `1px solid ${statusInfo.color}55`, borderRadius: 999, padding: "2px 8px",
+                      color: statusInfo.color, border: `1px solid ${withAlpha(statusInfo.color, "55")}`, borderRadius: 999, padding: "2px 8px",
                     }}>
                       {statusInfo.label}
                     </span>
                   ) : (
-                    <span style={{ fontSize: 11, color: "rgba(245,237,237,0.35)" }}>{t("Pas encore de paiement Stripe")}</span>
+                    <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)" }}>{t("Pas encore de paiement Stripe")}</span>
                   )}
                   {b?.amount != null && (
-                    <span style={{ fontSize: 12, color: "rgba(245,237,237,0.55)" }}>
+                    <span style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
                       {b.amount}€ / {b.intervalMonths === 1 ? t("mois") : `${b.intervalMonths} mois`}
                     </span>
                   )}
                   {b?.status === "trialing" && b.trialEnd && (
-                    <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+                    <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                       {t("Essai jusqu'au")}{" "}{formatDate(b.trialEnd)}
                     </span>
                   )}
                   {b?.status === "active" && b.currentPeriodEnd && (
-                    <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+                    <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                       {t("Prochain prélèvement le")}{" "}{formatDate(b.currentPeriodEnd)}
                     </span>
                   )}
@@ -127,7 +128,7 @@ export default async function CoachAdminPage() {
                       href={b.stripeCustomerUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "#E01E1E", textDecoration: "none", fontWeight: 700, marginLeft: "auto" }}
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--ep-accent)", textDecoration: "none", fontWeight: 700, marginLeft: "auto" }}
                     >
                       {t("Voir sur Stripe")}{" "}<ExternalLink size={11} />
                     </a>

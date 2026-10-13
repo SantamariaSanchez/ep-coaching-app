@@ -16,7 +16,7 @@ type Step =
   | { kind: "final" };
 
 const inputCls =
-  "w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-xl px-4 py-3 text-[15px] text-[#F5EDED] placeholder-[#7a5c5c] outline-none transition-colors";
+  "w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-xl px-4 py-3 text-[15px] text-(--ep-ink) placeholder-[#7a5c5c] outline-none transition-colors";
 
 // ── Brouillon local ──────────────────────────────────────────────────────
 // Un questionnaire à 9 sections perdu d'un coup (page rechargée par l'OS,
@@ -97,18 +97,18 @@ function FieldControl({
               key={opt}
               style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 10,
-                border: `1px solid ${checked ? "#E01E1E" : "rgba(255,255,255,0.1)"}`,
-                background: checked ? "rgba(224,30,30,0.12)" : "rgba(255,255,255,0.02)",
-                boxShadow: checked ? "0 0 0 1px #E01E1E" : "none",
-                cursor: "pointer", fontSize: 13.5, fontWeight: 600, color: checked ? "#fff" : "#e8dede",
+                border: `1px solid ${checked ? "var(--ep-accent)" : "rgba(var(--ep-hi-rgb),0.1)"}`,
+                background: checked ? "rgba(var(--ep-accent-rgb),0.12)" : "rgba(var(--ep-hi-rgb),0.02)",
+                boxShadow: checked ? "0 0 0 1px var(--ep-accent)" : "none",
+                cursor: "pointer", fontSize: 13.5, fontWeight: 600, color: checked ? "var(--ep-strong)" : "#e8dede",
                 transition: "border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease",
               }}
             >
               <span style={{
                 width: 14, height: 14, borderRadius: "50%", flexShrink: 0,
-                border: `2px solid ${checked ? "#E01E1E" : "rgba(255,255,255,0.25)"}`,
-                background: checked ? "#E01E1E" : "transparent",
-                boxShadow: checked ? "0 0 10px rgba(224,30,30,0.8)" : "none",
+                border: `2px solid ${checked ? "var(--ep-accent)" : "rgba(var(--ep-hi-rgb),0.25)"}`,
+                background: checked ? "var(--ep-accent)" : "transparent",
+                boxShadow: checked ? "0 0 10px rgba(var(--ep-accent-rgb),0.8)" : "none",
               }} />
               <input type="radio" checked={checked} onChange={() => onChange(opt)} className="sr-only" style={{ display: "none" }} />
               {opt}
@@ -132,10 +132,10 @@ function FieldControl({
                 onClick={() => onChange(String(v))}
                 style={{
                   width: 32, height: 32, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
-                  border: `1px solid ${checked ? "#E01E1E" : "rgba(255,255,255,0.15)"}`,
-                  background: checked ? "linear-gradient(135deg, #E01E1E, #890404)" : "rgba(255,255,255,0.02)",
+                  border: `1px solid ${checked ? "var(--ep-accent)" : "rgba(var(--ep-hi-rgb),0.15)"}`,
+                  background: checked ? "linear-gradient(135deg, var(--ep-accent), var(--ep-line))" : "rgba(var(--ep-hi-rgb),0.02)",
                   color: checked ? "#fff" : "#ccb", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-                  boxShadow: checked ? "0 0 12px rgba(224,30,30,0.6)" : "none",
+                  boxShadow: checked ? "0 0 12px rgba(var(--ep-accent-rgb),0.6)" : "none",
                 }}
               >
                 {v}
@@ -203,22 +203,22 @@ function PhotoSlot({
       {preview ? (
         <div style={{ position: "relative" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt={label} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 12, border: "1px solid rgba(224,30,30,0.3)" }} />
+          <img src={preview} alt={label} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 12, border: "1px solid rgba(var(--ep-accent-rgb),0.3)" }} />
           <button
             type="button"
             onClick={onClear}
             aria-label={t("Retirer la photo")}
             style={{
               position: "absolute", top: 6, right: 6, width: 24, height: 24, borderRadius: "50%",
-              background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", display: "flex",
+              background: "rgba(var(--ep-shade-rgb),0.7)", border: "none", color: "var(--ep-strong)", display: "flex",
               alignItems: "center", justifyContent: "center", cursor: "pointer",
             }}
           >
             <X size={13} />
           </button>
-          <div style={{ position: "absolute", bottom: 6, left: 6, display: "flex", alignItems: "center", gap: 4, background: "rgba(74,222,128,0.15)", border: "1px solid rgba(74,222,128,0.4)", borderRadius: 999, padding: "2px 8px" }}>
-            <Check size={10} style={{ color: "#4ade80" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80" }}>{label}</span>
+          <div style={{ position: "absolute", bottom: 6, left: 6, display: "flex", alignItems: "center", gap: 4, background: "rgba(var(--ep-ok-rgb),0.15)", border: "1px solid rgba(var(--ep-ok-rgb),0.4)", borderRadius: 999, padding: "2px 8px" }}>
+            <Check size={10} style={{ color: "var(--ep-ok)" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--ep-ok)" }}>{label}</span>
           </div>
         </div>
       ) : (
@@ -226,12 +226,12 @@ function PhotoSlot({
           type="button"
           onClick={() => ref.current?.click()}
           style={{
-            width: "100%", height: 140, borderRadius: 12, border: "1px dashed rgba(224,30,30,0.35)",
-            background: "rgba(224,30,30,0.04)", display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", gap: 8, cursor: "pointer", color: "rgba(245,237,237,0.4)",
+            width: "100%", height: 140, borderRadius: 12, border: "1px dashed rgba(var(--ep-accent-rgb),0.35)",
+            background: "rgba(var(--ep-accent-rgb),0.04)", display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "center", gap: 8, cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.4)",
           }}
         >
-          <Upload size={22} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
+          <Upload size={22} style={{ color: "var(--ep-accent)" }} strokeWidth={1.6} />
           <span style={{ fontSize: 11.5, fontWeight: 700 }}>{label}</span>
         </button>
       )}
@@ -356,7 +356,7 @@ export default function ClientOnboardingIntake() {
       <div style={{ textAlign: "center", marginBottom: 18 }}>
         <p style={{
           fontFamily: "var(--font-playfair,'Playfair Display'),serif", fontStyle: "italic", fontWeight: 700,
-          fontSize: 24, color: "#E01E1E", textShadow: "0 0 24px rgba(224,30,30,0.5)", margin: 0,
+          fontSize: 24, color: "var(--ep-accent)", textShadow: "0 0 24px rgba(var(--ep-accent-rgb),0.5)", margin: 0,
         }}>
           {t("EP Coaching")}
         </p>
@@ -367,7 +367,7 @@ export default function ClientOnboardingIntake() {
 
       {restoredFromDraft && current.kind !== "final" && (
         <p style={{
-          fontSize: 11.5, fontWeight: 600, color: "#4ade80", textAlign: "center", marginBottom: 14,
+          fontSize: 11.5, fontWeight: 600, color: "var(--ep-ok)", textAlign: "center", marginBottom: 14,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
           <Check size={13} />{" "}{t("On reprend là où tu t'étais arrêté.")}
@@ -377,8 +377,8 @@ export default function ClientOnboardingIntake() {
 
       {current.kind !== "final" && (
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, #890404, #E01E1E)", boxShadow: "0 0 10px rgba(224,30,30,0.7)", transition: "width 0.3s ease" }} />
+          <div style={{ flex: 1, height: 3, background: "rgba(var(--ep-hi-rgb),0.08)", borderRadius: 2, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, var(--ep-line), var(--ep-accent))", boxShadow: "0 0 10px rgba(var(--ep-accent-rgb),0.7)", transition: "width 0.3s ease" }} />
           </div>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#c99", whiteSpace: "nowrap" }}>
             {String(displayStep).padStart(2, "0")} / {String(totalCountable).padStart(2, "0")}
@@ -389,8 +389,8 @@ export default function ClientOnboardingIntake() {
       <div className="ep-card" style={{ padding: "26px 22px", minHeight: 240, position: "relative", overflow: "hidden" }}>
         {current.kind === "intro" && (
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
-              {t("Bienvenue dans")}{" "}<span style={{ fontFamily: "var(--font-playfair,'Playfair Display'),serif", fontStyle: "italic", color: "#E01E1E" }}>{t("EP Coaching")}</span>
+            <h1 style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-strong)", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
+              {t("Bienvenue dans")}{" "}<span style={{ fontFamily: "var(--font-playfair,'Playfair Display'),serif", fontStyle: "italic", color: "var(--ep-accent)" }}>{t("EP Coaching")}</span>
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "#e3caca", margin: "0 0 20px" }}>
               {t("T'as accès à l'appli complète : programme, nutrition, suivi, road map, tout centralisé au même endroit. 5 formations (environ 25h) arrivent bientôt, pour que tu comprennes ce que tu fais, pas juste que tu le suives.")}
@@ -403,7 +403,7 @@ export default function ClientOnboardingIntake() {
 
         {current.kind === "fields" && (
           <div>
-            <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "#E01E1E", marginBottom: 16, display: "block" }}>
+            <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "var(--ep-accent)", marginBottom: 16, display: "block" }}>
               {current.section.kicker} · {current.section.title}
             </span>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -419,7 +419,7 @@ export default function ClientOnboardingIntake() {
                 );
               })}
             </div>
-            {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
+            {fieldError && <p style={{ color: "var(--ep-accent)", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>
               <button onClick={goPrev} className="ep-btn-secondary">{t("Retour")}</button>
               {safeStepIndex === steps.length - 2 ? (
@@ -435,7 +435,7 @@ export default function ClientOnboardingIntake() {
 
         {current.kind === "gym-photos" && (
           <div>
-            <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "#E01E1E", marginBottom: 16, display: "block" }}>
+            <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "var(--ep-accent)", marginBottom: 16, display: "block" }}>
               {t("Section 7 · Ta salle de sport")}
             </span>
             <p style={{ fontSize: 14, fontWeight: 700, color: "#f0e0e0", marginBottom: 12 }}>
@@ -469,16 +469,16 @@ export default function ClientOnboardingIntake() {
                 type="button"
                 onClick={() => gymInputRef.current?.click()}
                 style={{
-                  height: 140, borderRadius: 12, border: "1px dashed rgba(224,30,30,0.35)",
-                  background: "rgba(224,30,30,0.04)", display: "flex", flexDirection: "column", alignItems: "center",
-                  justifyContent: "center", gap: 8, cursor: "pointer", color: "rgba(245,237,237,0.4)",
+                  height: 140, borderRadius: 12, border: "1px dashed rgba(var(--ep-accent-rgb),0.35)",
+                  background: "rgba(var(--ep-accent-rgb),0.04)", display: "flex", flexDirection: "column", alignItems: "center",
+                  justifyContent: "center", gap: 8, cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.4)",
                 }}
               >
-                <Upload size={22} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
+                <Upload size={22} style={{ color: "var(--ep-accent)" }} strokeWidth={1.6} />
                 <span style={{ fontSize: 11.5, fontWeight: 700 }}>{t("Ajouter")}</span>
               </button>
             </div>
-            {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
+            {fieldError && <p style={{ color: "var(--ep-accent)", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>
               <button onClick={goPrev} className="ep-btn-secondary">{t("Retour")}</button>
               <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>{t("Suivant")}</button>
@@ -488,7 +488,7 @@ export default function ClientOnboardingIntake() {
 
         {current.kind === "physique-photos" && (
           <div>
-            <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "#E01E1E", marginBottom: 16, display: "block" }}>
+            <span style={{ fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: "var(--ep-accent)", marginBottom: 16, display: "block" }}>
               {t("Section 8 · Photos physique")}
             </span>
             <p style={{ fontSize: 14, fontWeight: 700, color: "#f0e0e0", marginBottom: 12 }}>
@@ -499,7 +499,7 @@ export default function ClientOnboardingIntake() {
               <PhotoSlot label={t("Profil")} file={physiqueFiles.profil} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, profil: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, profil: null }))} />
               <PhotoSlot label={t("Dos")} file={physiqueFiles.dos} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, dos: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, dos: null }))} />
             </div>
-            {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
+            {fieldError && <p style={{ color: "var(--ep-accent)", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>
               <button onClick={goPrev} className="ep-btn-secondary">{t("Retour")}</button>
               <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1 }}>{t("Suivant")}</button>
@@ -510,13 +510,13 @@ export default function ClientOnboardingIntake() {
         {current.kind === "final" && (
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 34, marginBottom: 14 }}>🔥</div>
-            <h2 style={{ fontSize: 23, fontWeight: 900, color: "#fff", letterSpacing: "-0.02em", marginBottom: 12 }}>
+            <h2 style={{ fontSize: 23, fontWeight: 900, color: "var(--ep-strong)", letterSpacing: "-0.02em", marginBottom: 12 }}>
               {t("C'est parti.")}
             </h2>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "#e3caca", marginBottom: 20 }}>
               {t("J'ai tout ce qu'il me faut pour construire ton programme et ton plan. Direction ton espace.")}
             </p>
-            {submitError && <p style={{ color: "#E01E1E", fontSize: 12, fontWeight: 700, marginBottom: 14 }}>{submitError}</p>}
+            {submitError && <p style={{ color: "var(--ep-accent)", fontSize: 12, fontWeight: 700, marginBottom: 14 }}>{submitError}</p>}
             {submitError ? (
               <button onClick={handleFinish} disabled={submitting} className="ep-btn-primary" style={{ width: "100%" }}>
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : t("Réessayer")}

@@ -15,7 +15,7 @@ const sections: LegalSection[] = [
       <P>
         Les présentes Conditions Générales de Vente (CGV) s&apos;appliquent à toute souscription payante
         proposée sur l&apos;application EP Coaching. Elles complètent nos{" "}
-        <Link href="/legal/cgu" style={{ color: "#E01E1E", fontWeight: 700 }}>
+        <Link href="/legal/cgu" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
           Conditions Générales d&apos;Utilisation
         </Link>
         . Toute souscription à une offre payante implique l&apos;acceptation pleine et entière des présentes

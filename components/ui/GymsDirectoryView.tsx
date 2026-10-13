@@ -11,8 +11,8 @@ import { safeExternalUrl } from "@/lib/sanitize";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
+const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 const GYM_TYPE_LABELS: Record<GymType, string> = {
   commerciale: "Commerciale",
@@ -32,7 +32,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
         <button key={n} onClick={() => onChange(n)} type="button" aria-label={`${n} étoile${n > 1 ? "s" : ""}`} aria-pressed={n <= value}>
-          <Star size={18} className={n <= value ? "text-amber-400 fill-amber-400" : "text-[#F5EDED]/15"} />
+          <Star size={18} className={n <= value ? "text-amber-400 fill-amber-400" : "text-(--ep-ink)/15"} />
         </button>
       ))}
     </div>
@@ -43,7 +43,7 @@ function StarDisplay({ value }: { value: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} size={12} className={n <= Math.round(value) ? "text-amber-400 fill-amber-400" : "text-[#F5EDED]/15"} />
+        <Star key={n} size={12} className={n <= Math.round(value) ? "text-amber-400 fill-amber-400" : "text-(--ep-ink)/15"} />
       ))}
     </div>
   );
@@ -95,7 +95,7 @@ function GymForm({
   }
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>{tr("Nom de la salle")}</label>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("Ex. Basic-Fit Lille Centre")} aria-label={tr("Nom de la salle")} className={inputCls} />
@@ -119,7 +119,7 @@ function GymForm({
               type="button"
               onClick={() => setType(t)}
               className={`flex-1 py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                type === t ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+                type === t ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
               }`}
             >
               {GYM_TYPE_LABELS[t]}
@@ -137,15 +137,15 @@ function GymForm({
               onClick={() => toggleType(t)}
               className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors ${
                 equipmentTypes.includes(t)
-                  ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-                  : "border-[#890404]/25 text-[#F5EDED]/40"
+                  ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)"
+                  : "border-(--ep-line)/25 text-(--ep-ink)/40"
               }`}
             >
               {EQUIPMENT_TYPE_LABELS[t]}
             </button>
           ))}
         </div>
-        <p className="mt-1 text-[9px] text-[#F5EDED]/25">
+        <p className="mt-1 text-[9px] text-(--ep-ink)/25">
           {tr("Sert au filtre et au croisement avec la bibliothèque d'exercices.")}
         </p>
       </div>
@@ -168,11 +168,11 @@ function GymForm({
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-lg transition-colors"
         >
           {saving ? tr("Enregistrement…") : initial ? tr("Mettre à jour") : tr("Ajouter à l'annuaire")}
         </button>
-        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -195,7 +195,7 @@ function ReviewForm({
   const [saving, setSaving] = useState(false);
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/25 rounded-lg p-3 space-y-2.5">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-lg p-3 space-y-2.5">
       <StarPicker value={rating} onChange={setRating} />
       <textarea
         value={comment}
@@ -208,11 +208,11 @@ function ReviewForm({
         <button
           onClick={async () => { setSaving(true); await onSave(rating, comment); setSaving(false); }}
           disabled={saving}
-          className="flex-1 py-2 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2 text-[10px] font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-lg transition-colors"
         >
           {saving ? "…" : tr("Publier l'avis")}
         </button>
-        <button onClick={onCancel} className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 rounded-lg">
+        <button onClick={onCancel} className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 rounded-lg">
           {tr("Annuler")}
         </button>
       </div>
@@ -273,11 +273,11 @@ function GymCard({
       ? { bg: "rgba(245,158,11,0.10)", border: "rgba(245,158,11,0.25)", text: "#fcd34d" }
       : gym.type === "associative"
       ? { bg: "rgba(34,197,94,0.10)", border: "rgba(34,197,94,0.25)", text: "#86efac" }
-      : { bg: "rgba(224,30,30,0.10)", border: "rgba(224,30,30,0.25)", text: "#E01E1E" };
+      : { bg: "rgba(var(--ep-accent-rgb),0.10)", border: "rgba(var(--ep-accent-rgb),0.25)", text: "var(--ep-accent)" };
 
   return (
     <div
-      className={`bg-[#1f0101] border rounded-xl overflow-hidden flex flex-col h-full ${isMyGym ? "border-[#E01E1E]/50" : "border-[#890404]/20"}`}
+      className={`bg-(--ep-s1) border rounded-xl overflow-hidden flex flex-col h-full ${isMyGym ? "border-(--ep-accent)/50" : "border-(--ep-line)/20"}`}
     >
       {/* Bandeau coloré selon le type — donne à chaque carte une identité
           visuelle immédiate dans la grille, sans dépendre d'une photo de
@@ -291,15 +291,15 @@ function GymCard({
           <Dumbbell size={18} style={{ color: typeAccent.text }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-black text-white leading-snug">{gym.name}</p>
+          <p className="text-sm font-black text-(--ep-strong) leading-snug">{gym.name}</p>
           {gym.city && (
-            <p className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/40 mt-0.5">
+            <p className="inline-flex items-center gap-1 text-[10px] text-(--ep-ink)/40 mt-0.5">
               <MapPin size={10} /> {gym.city}
             </p>
           )}
           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             {isMyGym && (
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]">
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)">
                 <Pin size={9} />{" "}{tr("Ta salle")}
               </span>
             )}
@@ -312,7 +312,7 @@ function GymCard({
               </span>
             )}
             {gym.avgRating != null && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/45">
+              <span className="inline-flex items-center gap-1 text-[10px] text-(--ep-ink)/45">
                 <StarDisplay value={gym.avgRating} /> {gym.avgRating} ({gym.reviews.length})
               </span>
             )}
@@ -321,61 +321,61 @@ function GymCard({
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
-          {gym.address && <p className="text-xs text-[#F5EDED]/50">{gym.address}</p>}
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-3">
+          {gym.address && <p className="text-xs text-(--ep-ink)/50">{gym.address}</p>}
           {gym.equipment_types.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {gym.equipment_types.map((t) => (
-                <span key={t} className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border border-[#890404]/25 text-[#F5EDED]/45">
+                <span key={t} className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border border-(--ep-line)/25 text-(--ep-ink)/45">
                   {EQUIPMENT_TYPE_LABELS[t]}
                 </span>
               ))}
             </div>
           )}
           {matchingExerciseCount != null && (
-            <p className="text-xs text-[#F5EDED]/40">
-              <strong className="text-[#F5EDED]/70">{matchingExerciseCount}</strong>{" "}{tr("exercice")}{matchingExerciseCount !== 1 ? "s" : ""}{" "}{tr("de la bibliothèque réalisable")}{matchingExerciseCount !== 1 ? "s" : ""}{" "}{tr("avec ce matériel.")}
+            <p className="text-xs text-(--ep-ink)/40">
+              <strong className="text-(--ep-ink)/70">{matchingExerciseCount}</strong>{" "}{tr("exercice")}{matchingExerciseCount !== 1 ? "s" : ""}{" "}{tr("de la bibliothèque réalisable")}{matchingExerciseCount !== 1 ? "s" : ""}{" "}{tr("avec ce matériel.")}
             </p>
           )}
           {!isCoach && onSetAsMyGym && !isMyGym && (
             <button
               onClick={async () => { setSettingMyGym(true); await onSetAsMyGym(); setSettingMyGym(false); }}
               disabled={settingMyGym}
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-accent) disabled:opacity-50 transition-colors"
             >
               <Pin size={11} /> {settingMyGym ? "…" : tr("Marquer comme ma salle")}
             </button>
           )}
           {gym.equipment_notes && (
-            <p className="text-xs text-[#F5EDED]/45 leading-relaxed italic">&ldquo;{gym.equipment_notes}&rdquo;</p>
+            <p className="text-xs text-(--ep-ink)/45 leading-relaxed italic">&ldquo;{gym.equipment_notes}&rdquo;</p>
           )}
           {gym.website && (
-            <a href={safeExternalUrl(gym.website) ?? "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors">
+            <a href={safeExternalUrl(gym.website) ?? "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors">
               <Globe size={11} />{" "}{tr("Site web")}
             </a>
           )}
 
-          <div className="border-t border-[#890404]/10 pt-3 space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+          <div className="border-t border-(--ep-line)/10 pt-3 space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30">
               {tr("Avis (")}{gym.reviews.length})
             </p>
             {gym.reviews.map((r) => (
-              <div key={r.id} className="bg-[#150000] border border-[#890404]/15 rounded-lg p-2.5">
+              <div key={r.id} className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg p-2.5">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <StarDisplay value={r.rating} />
-                    <span className="text-[10px] text-[#F5EDED]/30">{r.profiles?.full_name ?? tr("Membre")}</span>
+                    <span className="text-[10px] text-(--ep-ink)/30">{r.profiles?.full_name ?? tr("Membre")}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] text-[#F5EDED]/20">{formatDate(r.created_at)}</span>
+                    <span className="text-[9px] text-(--ep-ink)/20">{formatDate(r.created_at)}</span>
                     {r.author_id === currentUserId && (
-                      <button onClick={() => onDeleteReview(r.id)} aria-label={tr("Supprimer ton avis")} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
+                      <button onClick={() => onDeleteReview(r.id)} aria-label={tr("Supprimer ton avis")} className="text-(--ep-ink)/20 hover:text-red-400 transition-colors">
                         <Trash2 size={10} />
                       </button>
                     )}
                   </div>
                 </div>
-                {r.comment && <p className="text-xs text-[#F5EDED]/55">{r.comment}</p>}
+                {r.comment && <p className="text-xs text-(--ep-ink)/55">{r.comment}</p>}
               </div>
             ))}
 
@@ -387,7 +387,7 @@ function GymCard({
             ) : (
               <button
                 onClick={() => setReviewing(true)}
-                className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
               >
                 {myReview ? tr("Modifier mon avis") : tr("Laisser un avis")}
               </button>
@@ -395,14 +395,14 @@ function GymCard({
           </div>
 
           {isCoach && (
-            <div className="flex gap-2 pt-2 border-t border-[#890404]/10">
-              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+            <div className="flex gap-2 pt-2 border-t border-(--ep-line)/10">
+              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors">
                 <Pencil size={11} />{" "}{tr("Modifier")}
               </button>
               {confirmDelete ? (
                 <button onClick={onDelete} className="text-[10px] font-bold uppercase tracking-widest text-red-400">{tr("Confirmer")}</button>
               ) : (
-                <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors ml-auto">
+                <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-red-400 transition-colors ml-auto">
                   <Trash2 size={11} />{" "}{tr("Supprimer")}
                 </button>
               )}
@@ -487,18 +487,18 @@ export default function GymsDirectoryView({
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr("Rechercher une salle ou une ville…")} aria-label={tr("Rechercher une salle ou une ville…")} className={`${inputCls} pl-9`} />
         </div>
         <button
           onClick={() => setShowCreate((v) => !v)}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors flex-shrink-0"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg transition-colors flex-shrink-0"
         >
           <Plus size={13} /> {showCreate ? tr("Fermer") : tr("Ajouter une salle")}
         </button>
       </div>
 
-      <p className="text-[10px] text-[#F5EDED]/25">
+      <p className="text-[10px] text-(--ep-ink)/25">
         {gyms.length}{" "}{tr("salle")}{gyms.length !== 1 ? "s" : ""}{" "}{tr("référencée")}{gyms.length !== 1 ? "s" : ""}{tr(", partage la tienne et note celles que tu connais.")}
       </p>
 
@@ -506,7 +506,7 @@ export default function GymsDirectoryView({
         <button
           onClick={() => setActiveType(null)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-            activeType === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            activeType === null ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
           }`}
         >
           {tr("Toutes (")}{gyms.length})
@@ -516,7 +516,7 @@ export default function GymsDirectoryView({
             key={t}
             onClick={() => setActiveType(t)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeType === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              activeType === t ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {GYM_TYPE_LABELS[t]} ({typeCounts[t]})
@@ -529,7 +529,7 @@ export default function GymsDirectoryView({
           <button
             onClick={() => setActiveEquipment(null)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeEquipment === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              activeEquipment === null ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {tr("Tout matériel")}
@@ -539,7 +539,7 @@ export default function GymsDirectoryView({
               key={t}
               onClick={() => setActiveEquipment(t)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                activeEquipment === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+                activeEquipment === t ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
               }`}
             >
               {EQUIPMENT_TYPE_LABELS[t]} ({equipmentCounts[t]})
@@ -576,7 +576,7 @@ export default function GymsDirectoryView({
           />
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{tr("Aucune salle ne correspond à ta recherche.")}</p>
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-10">{tr("Aucune salle ne correspond à ta recherche.")}</p>
         )}
       </div>
     </div>

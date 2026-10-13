@@ -54,16 +54,16 @@ export default function NutritionModeSelector({ activeMode, onChange, changing =
             disabled={onChange ? changing || isActive : undefined}
             className={`flex-1 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl border transition-all ${
               isActive
-                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
-                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/30"
-            } ${onChange && !isActive ? "hover:border-[#E01E1E]/30 hover:text-[#F5EDED]/60 cursor-pointer disabled:opacity-40" : ""}`}
+                ? "bg-(--ep-accent)/12 border-(--ep-accent)/40 text-(--ep-accent)"
+                : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/30"
+            } ${onChange && !isActive ? "hover:border-(--ep-accent)/30 hover:text-(--ep-ink)/60 cursor-pointer disabled:opacity-40" : ""}`}
           >
             <Icon size={16} strokeWidth={isActive ? 2.5 : 1.8} />
             <span className="text-[9px] font-black uppercase tracking-widest leading-none">
               {label}
             </span>
             {isActive && (
-              <span className="text-[8px] text-[#E01E1E]/70 text-center leading-tight hidden sm:block">
+              <span className="text-[8px] text-(--ep-accent)/70 text-center leading-tight hidden sm:block">
                 {description}
               </span>
             )}

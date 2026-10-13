@@ -54,20 +54,20 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
     <div className="page-transition">
       {bienvenue === "1" && (
         <div className="ep-card-hero" style={{ padding: "16px 18px", marginBottom: 18, display: "flex", gap: 12, alignItems: "center" }}>
-          <PartyPopper size={20} style={{ color: "#4ade80", flexShrink: 0 }} />
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", margin: 0, lineHeight: 1.55 }}>
+          <PartyPopper size={20} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
+          <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.8)", margin: 0, lineHeight: 1.55 }}>
             {t("Contrat signé, bienvenue dans l'équipe. Ta copie, ta fiche de poste et ton parcours d'intégration viennent de partir par email. Ta journée type est juste en dessous.")}
           </p>
         </div>
       )}
 
       <p className="ep-label" style={{ marginBottom: 4 }}>{role.title}</p>
-      <h1 style={{ fontSize: 28, fontWeight: 900, color: "#F5EDED", margin: "0 0 10px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 10px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
         {t("Salut")}{" "}{firstName}
       </h1>
       <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 18 }}>
-        <Target size={15} style={{ color: "#E01E1E", marginTop: 2, flexShrink: 0 }} />
-        <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.65)", margin: 0, lineHeight: 1.6 }}>{cfg.focus}</p>
+        <Target size={15} style={{ color: "var(--ep-accent)", marginTop: 2, flexShrink: 0 }} />
+        <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.65)", margin: 0, lineHeight: 1.6 }}>{cfg.focus}</p>
       </div>
 
       <PushOptIn />
@@ -84,17 +84,17 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
               <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
                 <CalendarDays size={12} />{" "}{t("Rendez-vous du jour")}
               </p>
-              <Link href="/equipe/agenda" style={{ fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>{t("Agenda")}</Link>
+              <Link href="/equipe/agenda" style={{ fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}>{t("Agenda")}</Link>
             </div>
             {agenda.length === 0 ? (
-              <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Aucun rendez-vous aujourd'hui.")}</p>
+              <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{t("Aucun rendez-vous aujourd'hui.")}</p>
             ) : (
               agenda.map((a) => (
-                <div key={a.id} style={{ display: "flex", gap: 10, padding: "7px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "#E01E1E", minWidth: 42 }}>
+                <div key={a.id} style={{ display: "flex", gap: 10, padding: "7px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-accent)", minWidth: 42 }}>
                     {a.due_at ? new Date(a.due_at).toLocaleTimeString("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" }) : ""}
                   </span>
-                  <span style={{ fontSize: 12.5, color: "#F5EDED", fontWeight: 600 }}>{a.title}</span>
+                  <span style={{ fontSize: 12.5, color: "var(--ep-ink)", fontWeight: 600 }}>{a.title}</span>
                 </div>
               ))
             )}
@@ -114,7 +114,7 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
           <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
             <FileBarChart size={12} />{" "}{t("Rapport de fin de journée")}
           </p>
-          <p style={{ fontSize: 12.5, color: reportedToday ? "#4ade80" : "rgba(245,237,237,0.6)", margin: "0 0 12px", lineHeight: 1.55 }}>
+          <p style={{ fontSize: 12.5, color: reportedToday ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.6)", margin: "0 0 12px", lineHeight: 1.55 }}>
             {reportedToday ? t("Envoyé pour aujourd'hui. Tu peux encore le compléter.") : t("Pas encore envoyé aujourd'hui. Deux minutes, tes chiffres et ta journée.")}
           </p>
           <Link href="/equipe/rapports" className="ep-btn-primary" style={{ height: 38, padding: "0 16px", fontSize: 11.5, textDecoration: "none", display: "inline-flex" }}>
@@ -134,13 +134,13 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
             <Link
               key={k}
               href={k === "messages" ? "/equipe/messages?avec=general" : `/equipe/${k}`}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "9px 0", borderTop: "1px solid rgba(245,237,237,0.05)", textDecoration: "none" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "9px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)", textDecoration: "none" }}
             >
               <span>
-                <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>{MODULES[k].label}</span>
-                <span style={{ display: "block", fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>{MODULES[k].description}</span>
+                <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--ep-ink)" }}>{MODULES[k].label}</span>
+                <span style={{ display: "block", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{MODULES[k].description}</span>
               </span>
-              <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+              <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
             </Link>
           ))}
         </section>

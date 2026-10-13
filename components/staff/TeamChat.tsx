@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Send, Hash, Crown } from "lucide-react";
 import type { TeamMessage, TeamPerson } from "@/lib/staff-team";
 import { sendTeamMessageAction } from "@/app/equipe/team-actions";
+import { withAlpha } from "@/lib/theme-color";
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -77,34 +78,34 @@ export default function TeamChat({
 
   const thread = (
     <div className="ep-card" style={{ display: "flex", flexDirection: "column", minHeight: compact ? 320 : 520, maxHeight: compact ? 480 : "70vh" }}>
-      <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(245,237,237,0.06)" }}>
-        <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(var(--ep-ink-rgb),0.06)" }}>
+        <p style={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)", margin: 0 }}>
           {active === "general" ? tr("Canal équipe") : activePerson?.name ?? tr("Choisis une conversation")}
         </p>
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+        <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>
           {active === "general" ? tr("Visible par toute l'équipe et le fondateur") : activePerson?.subtitle ?? ""}
         </p>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
         {!active ? (
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: "auto", textAlign: "center" }}>{tr("Sélectionne une personne ou le canal équipe.")}</p>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "auto", textAlign: "center" }}>{tr("Sélectionne une personne ou le canal équipe.")}</p>
         ) : messages.length === 0 ? (
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: "auto", textAlign: "center" }}>{tr("Aucun message pour l'instant. Lance la conversation.")}</p>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "auto", textAlign: "center" }}>{tr("Aucun message pour l'instant. Lance la conversation.")}</p>
         ) : (
           messages.map((m) => {
             const mine = m.sender_id === meId;
             return (
               <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%" }}>
                 {!mine && active === "general" && (
-                  <p style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(245,237,237,0.45)", margin: "0 0 2px 4px" }}>{nameById[m.sender_id] ?? tr("Ancien membre")}</p>
+                  <p style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 2px 4px" }}>{nameById[m.sender_id] ?? tr("Ancien membre")}</p>
                 )}
                 <div
                   style={{
                     padding: "8px 12px",
                     borderRadius: 14,
-                    background: mine ? "linear-gradient(135deg, #B00202, #E01E1E)" : "rgba(245,237,237,0.06)",
-                    border: mine ? "none" : "1px solid rgba(245,237,237,0.08)",
-                    color: "#F5EDED",
+                    background: mine ? "linear-gradient(135deg, var(--ep-accent-2), var(--ep-accent))" : "rgba(var(--ep-ink-rgb),0.06)",
+                    border: mine ? "none" : "1px solid rgba(var(--ep-ink-rgb),0.08)",
+                    color: "var(--ep-ink)",
                     fontSize: 13,
                     lineHeight: 1.5,
                     whiteSpace: "pre-wrap",
@@ -113,7 +114,7 @@ export default function TeamChat({
                 >
                   {m.body}
                 </div>
-                <p style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", margin: "2px 6px 0", textAlign: mine ? "right" : "left" }}>{stamp(m.created_at)}</p>
+                <p style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", margin: "2px 6px 0", textAlign: mine ? "right" : "left" }}>{stamp(m.created_at)}</p>
               </div>
             );
           })
@@ -121,8 +122,8 @@ export default function TeamChat({
         <div ref={endRef} />
       </div>
       {active && (
-        <div style={{ padding: 10, borderTop: "1px solid rgba(245,237,237,0.06)" }}>
-          {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "0 0 6px" }}>{tr(error)}</p>}
+        <div style={{ padding: 10, borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)" }}>
+          {error && <p role="alert" style={{ fontSize: 12, color: "var(--ep-pink)", margin: "0 0 6px" }}>{tr(error)}</p>}
           <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
             <textarea
               value={text}
@@ -155,30 +156,30 @@ export default function TeamChat({
       <div className="ep-card" style={{ padding: 8, alignSelf: "start" }}>
         <Link
           href={`${basePath}general`}
-          style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 10, textDecoration: "none", background: active === "general" ? "rgba(224,30,30,0.14)" : "transparent" }}
+          style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 10, textDecoration: "none", background: active === "general" ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent" }}
         >
-          <span style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(224,30,30,0.12)", color: "#E01E1E", flexShrink: 0 }}>
+          <span style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-accent)", flexShrink: 0 }}>
             <Hash size={15} />
           </span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{tr("Canal équipe")}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{tr("Canal équipe")}</span>
         </Link>
         <p className="ep-label" style={{ margin: "10px 10px 4px" }}>{tr("Membres (")}{others.length})</p>
-        {others.length === 0 && <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "4px 10px 8px" }}>{tr("Personne d'autre dans l'équipe pour l'instant.")}</p>}
+        {others.length === 0 && <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "4px 10px 8px" }}>{tr("Personne d'autre dans l'équipe pour l'instant.")}</p>}
         {others.map((p) => (
           <Link
             key={p.id}
             href={`${basePath}${p.id}`}
-            style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, textDecoration: "none", background: active === p.id ? "rgba(224,30,30,0.14)" : "transparent" }}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, textDecoration: "none", background: active === p.id ? "rgba(var(--ep-accent-rgb),0.14)" : "transparent" }}
           >
-            <span style={{ width: 32, height: 32, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", background: `${p.poleColor}22`, color: p.poleColor, fontSize: 11, fontWeight: 800, flexShrink: 0 }}>
+            <span style={{ width: 32, height: 32, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", background: `${withAlpha(p.poleColor, "22")}`, color: p.poleColor, fontSize: 11, fontWeight: 800, flexShrink: 0 }}>
               {p.isFounder ? <Crown size={14} /> : initials(p.name)}
             </span>
             <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#F5EDED", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
-              <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{p.subtitle}</span>
+              <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+              <span style={{ display: "block", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{p.subtitle}</span>
             </span>
             {unread[p.id] ? (
-              <span style={{ minWidth: 20, height: 20, borderRadius: 999, background: "#E01E1E", color: "#fff", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 6px" }}>{unread[p.id]}</span>
+              <span style={{ minWidth: 20, height: 20, borderRadius: 999, background: "var(--ep-accent)", color: "#fff", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 6px" }}>{unread[p.id]}</span>
             ) : null}
           </Link>
         ))}

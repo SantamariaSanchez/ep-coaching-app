@@ -35,7 +35,7 @@ export default function DeviceAboutCard({ version }: { version: string }) {
           type="button"
           disabled={busy}
           onClick={clearCache}
-          style={{ flexShrink: 0, padding: "8px 12px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", background: "rgba(245,237,237,0.06)", border: "1px solid rgba(245,237,237,0.1)", color: "#F5EDED" }}
+          style={{ flexShrink: 0, padding: "8px 12px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", background: "rgba(var(--ep-ink-rgb),0.06)", border: "1px solid rgba(var(--ep-ink-rgb),0.1)", color: "var(--ep-ink)" }}
         >
           {busy ? "..." : t("Vider")}
         </button>

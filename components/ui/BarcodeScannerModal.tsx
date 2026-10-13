@@ -89,13 +89,13 @@ export default function BarcodeScannerModal({
   }, [supported]);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4">
-      <div className="relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#890404]/20">
-          <p className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
-            <ScanBarcode size={14} className="text-[#E01E1E]" />{" "}{tr("Scanner un code-barres")}
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-(--ep-shade)/85 p-4">
+      <div className="relative w-full max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-(--ep-line)/20">
+          <p className="text-xs font-black uppercase tracking-widest text-(--ep-strong) flex items-center gap-2">
+            <ScanBarcode size={14} className="text-(--ep-accent)" />{" "}{tr("Scanner un code-barres")}
           </p>
-          <button onClick={onClose} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white">
+          <button onClick={onClose} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong)">
             <X size={16} />
           </button>
         </div>
@@ -103,23 +103,23 @@ export default function BarcodeScannerModal({
         {!supported ? (
           <div className="p-6 flex flex-col items-center gap-3 text-center">
             <AlertTriangle size={24} className="text-amber-400" />
-            <p className="text-sm text-[#F5EDED]/70">
+            <p className="text-sm text-(--ep-ink)/70">
               {tr("Ton navigateur ne permet pas le scan de code-barres ici.")}
             </p>
-            <p className="text-xs text-[#F5EDED]/35">
+            <p className="text-xs text-(--ep-ink)/35">
               {tr("Ça marche avec Chrome sur Android. En attendant, ajoute l'aliment manuellement.")}
             </p>
           </div>
         ) : error ? (
           <div className="p-6 flex flex-col items-center gap-3 text-center">
             <AlertTriangle size={24} className="text-amber-400" />
-            <p className="text-sm text-[#F5EDED]/70">{tr(error)}</p>
+            <p className="text-sm text-(--ep-ink)/70">{tr(error)}</p>
           </div>
         ) : (
           <div className="relative aspect-square bg-black">
             <video ref={videoRef} muted playsInline className="w-full h-full object-cover" />
-            <div className="absolute inset-8 border-2 border-[#E01E1E]/70 rounded-xl pointer-events-none" />
-            <p className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-white/70 font-semibold">
+            <div className="absolute inset-8 border-2 border-(--ep-accent)/70 rounded-xl pointer-events-none" />
+            <p className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-(--ep-strong)/70 font-semibold">
               {tr("Centre le code-barres dans le cadre")}
             </p>
           </div>

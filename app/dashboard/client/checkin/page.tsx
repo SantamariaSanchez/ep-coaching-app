@@ -28,11 +28,11 @@ function BilanRating({ rating }: { rating: number }) {
       {Array.from({ length: 10 }, (_, i) => (
         <div key={i} style={{
           width: 8, height: 8, borderRadius: "50%",
-          background: i < rating ? "#fbbf24" : "rgba(137,4,4,0.2)",
+          background: i < rating ? "var(--ep-warn)" : "rgba(var(--ep-line-rgb),0.2)",
         }} />
       ))}
-      <span style={{ marginLeft: 8, fontSize: 14, fontWeight: 900, color: "#fbbf24" }}>
-        {rating}<span style={{ fontSize: 10, fontWeight: 400, color: "rgba(251,191,36,0.4)" }}>/10</span>
+      <span style={{ marginLeft: 8, fontSize: 14, fontWeight: 900, color: "var(--ep-warn)" }}>
+        {rating}<span style={{ fontSize: 10, fontWeight: 400, color: "rgba(var(--ep-warn-rgb),0.4)" }}>/10</span>
       </span>
     </div>
   );
@@ -41,9 +41,9 @@ function BilanRating({ rating }: { rating: number }) {
 function QA({ q, a }: { q: string; a: string | null | undefined }) {
   if (!a) return null;
   return (
-    <div style={{ paddingBottom: 14, marginBottom: 14, borderBottom: "1px solid rgba(137,4,4,0.06)" }}>
-      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.45)", margin: "0 0 5px" }}>{q}</p>
-      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>{a}</p>
+    <div style={{ paddingBottom: 14, marginBottom: 14, borderBottom: "1px solid rgba(var(--ep-line-rgb),0.06)" }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.45)", margin: "0 0 5px" }}>{q}</p>
+      <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.72)", lineHeight: 1.6, margin: 0 }}>{a}</p>
     </div>
   );
 }
@@ -64,10 +64,10 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
     <div className="ep-card" style={{ padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
         <div>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ink)" }}>
             Semaine {checkin.week_number}
           </p>
-          <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.3)" }}>{date}</p>
+          <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.3)" }}>{date}</p>
         </div>
         {hasBilan ? (
           <span className="ep-badge-green" style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
@@ -85,14 +85,14 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 12 }}>
           {checkin.weight != null && (
             <div>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Poids</p>
-              <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{checkin.weight} kg</p>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", margin: "0 0 2px" }}>Poids</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)", margin: 0 }}>{checkin.weight} kg</p>
             </div>
           )}
           {checkin.weight_avg != null && (
             <div>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
-              <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{checkin.weight_avg} kg</p>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)", margin: 0 }}>{checkin.weight_avg} kg</p>
             </div>
           )}
         </div>
@@ -101,10 +101,10 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
       {/* Attitude */}
       {checkin.attitude_rating != null && (
         <div style={{ marginBottom: 12 }}>
-          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.45)", margin: "0 0 5px" }}>
+          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.45)", margin: "0 0 5px" }}>
             Attitude sur la semaine
           </p>
-          <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{checkin.attitude_rating}/10</p>
+          <p style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{checkin.attitude_rating}/10</p>
         </div>
       )}
       <QA q="Pourquoi cette attitude" a={checkin.attitude_explanation} />
@@ -135,12 +135,12 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
           {checkin.photo_urls.map((url, i) => (
             <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(137,4,4,0.3)" }} />
+              <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(var(--ep-line-rgb),0.3)" }} />
             </a>
           ))}
           {checkin.video_url && (
             <a href={safeExternalUrl(checkin.video_url) ?? "#"} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}>
               <ExternalLink size={11} /> Vidéo
             </a>
           )}
@@ -152,13 +152,13 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
           {checkin.photo_drive_link && (
             <a href={checkin.photo_drive_link} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}>
               <ExternalLink size={11} /> Photos
             </a>
           )}
           {checkin.video_drive_link && (
             <a href={checkin.video_drive_link} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}>
               <ExternalLink size={11} /> Vidéo
             </a>
           )}
@@ -166,7 +166,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
       )}
 
       {hasBilan && (
-        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(224,30,30,0.1)" }}>
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(var(--ep-accent-rgb),0.1)" }}>
           <p className="ep-section-title" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 4 }}>
             <Star size={10} />
             Bilan de ton coach
@@ -177,7 +177,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
             </div>
           )}
           {replyText && (
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.72)", lineHeight: 1.6, margin: 0 }}>
               {replyText}
             </p>
           )}
@@ -243,17 +243,17 @@ export default async function CheckinPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 12,
-                background: "rgba(74,222,128,0.12)",
-                border: "1px solid rgba(74,222,128,0.22)",
+                background: "rgba(var(--ep-ok-rgb),0.12)",
+                border: "1px solid rgba(var(--ep-ok-rgb),0.22)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <CheckCircle2 size={16} style={{ color: "#4ade80" }} />
+                <CheckCircle2 size={16} style={{ color: "var(--ep-ok)" }} />
               </div>
               <div>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#4ade80" }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ok)" }}>
                   {t("Check-in envoyé")}
                 </p>
-                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.3)" }}>
+                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
                   {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" })
                     .format(new Date(existing.created_at))}
                 </p>
@@ -268,24 +268,24 @@ export default async function CheckinPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 14 }}>
                 {existing.weight != null && (
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>{t("Poids")}</p>
-                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight}{" "}{t("kg")}</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", margin: "0 0 2px" }}>{t("Poids")}</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{existing.weight}{" "}{t("kg")}</p>
                   </div>
                 )}
                 {existing.weight_avg != null && (
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>{t("Moy. semaine")}</p>
-                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight_avg}{" "}{t("kg")}</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", margin: "0 0 2px" }}>{t("Moy. semaine")}</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{existing.weight_avg}{" "}{t("kg")}</p>
                   </div>
                 )}
               </div>
             )}
             {existing.attitude_rating != null && (
               <div style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
+                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", margin: "0 0 2px" }}>
                   {t("Attitude sur la semaine")}
                 </p>
-                <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.attitude_rating}/10</p>
+                <p style={{ fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", margin: 0 }}>{existing.attitude_rating}/10</p>
               </div>
             )}
             <QA q="Pourquoi cette attitude" a={existing.attitude_explanation} />
@@ -303,12 +303,12 @@ export default async function CheckinPage() {
                 {existing.photo_urls.map((url, i) => (
                   <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)" }} />
+                    <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(var(--ep-line-rgb),0.3)" }} />
                   </a>
                 ))}
                 {existing.video_url && (
                   <a href={safeExternalUrl(existing.video_url) ?? "#"} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}>
                     <ExternalLink size={11} />{" "}{t("Vidéo")}
                   </a>
                 )}
@@ -318,13 +318,13 @@ export default async function CheckinPage() {
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 {existing.photo_drive_link && (
                   <a href={existing.photo_drive_link} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}>
                     <ExternalLink size={11} />{" "}{t("Photos")}
                   </a>
                 )}
                 {existing.video_drive_link && (
                   <a href={existing.video_drive_link} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}>
                     <ExternalLink size={11} />{" "}{t("Vidéo")}
                   </a>
                 )}
@@ -336,11 +336,11 @@ export default async function CheckinPage() {
           {existing.coach_replied_at || existing.bilan_sent_at ? (
             <div className="ep-card-highlighted" style={{ padding: "18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <Star size={13} style={{ color: "#E01E1E" }} />
+                <Star size={13} style={{ color: "var(--ep-accent)" }} />
                 <p className="ep-section-title" style={{ margin: 0 }}>
                   {t("Bilan de ton coach")}
                   {(existing.coach_rating ?? existing.bilan_rating) != null && (
-                    <span style={{ marginLeft: 8, color: "#fbbf24" }}>{existing.coach_rating ?? existing.bilan_rating}/10</span>
+                    <span style={{ marginLeft: 8, color: "var(--ep-warn)" }}>{existing.coach_rating ?? existing.bilan_rating}/10</span>
                   )}
                 </p>
               </div>
@@ -349,7 +349,7 @@ export default async function CheckinPage() {
                   <BilanRating rating={(existing.coach_rating ?? existing.bilan_rating)!} />
                 </div>
               )}
-              <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", lineHeight: 1.65, margin: 0 }}>
+              <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.8)", lineHeight: 1.65, margin: 0 }}>
                 {existing.coach_notes ?? existing.bilan_text}
               </p>
               {existing.coach_video_url && (
@@ -364,8 +364,8 @@ export default async function CheckinPage() {
           ) : (
             <div className="ep-card" style={{ padding: "16px 18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <Clock size={14} style={{ color: "rgba(251,191,36,0.5)" }} />
-                <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+                <Clock size={14} style={{ color: "rgba(var(--ep-warn-rgb),0.5)" }} />
+                <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
                   {t("En attente du bilan coach…")}
                 </p>
               </div>
@@ -379,8 +379,8 @@ export default async function CheckinPage() {
               lendemain plutôt que de sauter la semaine. */}
           {!isCheckinDay && (
             <div className="ep-card" style={{ padding: "12px 16px", display: "flex", gap: 10, alignItems: "center" }}>
-              <CalendarDays size={16} style={{ color: "rgba(224,30,30,0.7)", flexShrink: 0 }} />
-              <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.45 }}>
+              <CalendarDays size={16} style={{ color: "rgba(var(--ep-accent-rgb),0.7)", flexShrink: 0 }} />
+              <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.45 }}>
                 {t("Ton jour habituel, c'est le")}{" "}{DAY_NAMES[checkinDay]}{". "}{t("Pas dispo ce jour-là ? Envoie-le maintenant, ton coach le reçoit tout de suite.")}
               </p>
             </div>
@@ -392,7 +392,7 @@ export default async function CheckinPage() {
                   du formulaire : le résumé factuel, prêt à être complété. */}
               <div className="ep-card" style={{ padding: "12px 16px" }}>
                 <p className="ep-label" style={{ margin: "0 0 4px", fontSize: 9 }}>{t("Pour la question entraînement")}</p>
-                <p style={{ margin: 0, fontSize: 13, color: "rgba(245,237,237,0.75)", lineHeight: 1.5 }}>
+                <p style={{ margin: 0, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.75)", lineHeight: 1.5 }}>
                   {trainingSummary(weekReview)}
                 </p>
               </div>

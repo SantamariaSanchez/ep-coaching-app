@@ -147,14 +147,14 @@ export default function ExerciseCell({
         aria-label={tr("Exercice")}
         autoComplete="off"
         spellCheck={false}
-        className="w-full h-full bg-transparent px-2 py-2 text-[13px] font-semibold text-white placeholder:text-[#F5EDED]/20 placeholder:font-normal focus:outline-none"
+        className="w-full h-full bg-transparent px-2 py-2 text-[13px] font-semibold text-(--ep-strong) placeholder:text-(--ep-ink)/20 placeholder:font-normal focus:outline-none"
       />
       {showList &&
         pos &&
         createPortal(
           <div
             role="listbox"
-            className="fixed z-[80] bg-[#1a0000] border border-[#890404]/50 rounded-lg shadow-2xl overflow-hidden"
+            className="fixed z-[80] bg-(--ep-s3) border border-(--ep-line)/50 rounded-lg shadow-2xl overflow-hidden"
             style={{
               left: Math.min(pos.left, window.innerWidth - pos.width - 8),
               width: pos.width,
@@ -173,12 +173,12 @@ export default function ExerciseCell({
                   aria-selected={i === active}
                   onMouseEnter={() => setActive(i)}
                   onClick={() => pick(lib)}
-                  className={`w-full text-left px-3 py-2 flex items-center justify-between gap-3 border-b border-[#890404]/10 last:border-0 ${
-                    i === active ? "bg-[#890404]/30" : ""
+                  className={`w-full text-left px-3 py-2 flex items-center justify-between gap-3 border-b border-(--ep-line)/10 last:border-0 ${
+                    i === active ? "bg-(--ep-line)/30" : ""
                   }`}
                 >
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-semibold text-white truncate">{lib.name}</span>
+                    <span className="block text-[13px] font-semibold text-(--ep-strong) truncate">{lib.name}</span>
                     {conflicts.length > 0 && (
                       <span className="flex items-center gap-1 text-[10.5px] text-amber-300/90 truncate">
                         <AlertTriangle size={10} className="flex-shrink-0" />
@@ -186,14 +186,14 @@ export default function ExerciseCell({
                       </span>
                     )}
                   </span>
-                  <span className="text-[10px] text-[#F5EDED]/35 flex-shrink-0">
+                  <span className="text-[10px] text-(--ep-ink)/35 flex-shrink-0">
                     {lib.muscle_group}
                     {lib.equipment ? ` · ${lib.equipment}` : ""}
                   </span>
                 </button>
               );
             })}
-            <p className="px-3 py-1.5 text-[10px] text-[#F5EDED]/30 bg-black/20">
+            <p className="px-3 py-1.5 text-[10px] text-(--ep-ink)/30 bg-(--ep-shade)/20">
               {tr("Entrée pour choisir · ou continue à taper un nom libre")}
             </p>
           </div>,

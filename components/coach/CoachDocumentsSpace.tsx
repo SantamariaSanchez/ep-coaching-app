@@ -37,7 +37,7 @@ export default function CoachDocumentsSpace({
 
   return (
     <div>
-      <div className="flex gap-1.5 mb-6 border-b border-[#890404]/20">
+      <div className="flex gap-1.5 mb-6 border-b border-(--ep-line)/20">
         {(
           [
             { key: "modeles", label: tr("Modèles") },
@@ -51,8 +51,8 @@ export default function CoachDocumentsSpace({
             onClick={() => setTab(t.key)}
             className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-colors ${
               tab === t.key
-                ? "border-[#E01E1E] text-white"
-                : "border-transparent text-[#F5EDED]/35 hover:text-[#F5EDED]/60"
+                ? "border-(--ep-accent) text-(--ep-strong)"
+                : "border-transparent text-(--ep-ink)/35 hover:text-(--ep-ink)/60"
             }`}
           >
             {t.label}
@@ -99,28 +99,28 @@ function TemplatesTab() {
       {DOCUMENT_TEMPLATES.map((t) => {
         const isOpen = openSlug === t.slug;
         return (
-          <div key={t.slug} className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
+          <div key={t.slug} className="bg-(--ep-s3) border border-(--ep-line)/25 rounded-xl overflow-hidden">
             <button
               type="button"
               onClick={() => setOpenSlug(isOpen ? null : t.slug)}
               className="w-full flex items-start justify-between gap-3 px-4 py-3.5 text-left"
             >
               <div className="min-w-0">
-                <p className="text-sm font-black text-white flex items-center gap-2">
-                  <FileText size={14} className="text-[#E01E1E] flex-shrink-0" />
+                <p className="text-sm font-black text-(--ep-strong) flex items-center gap-2">
+                  <FileText size={14} className="text-(--ep-accent) flex-shrink-0" />
                   {t.title}
                 </p>
-                <p className="text-[11px] text-[#F5EDED]/40 mt-1 leading-relaxed">{t.summary}</p>
+                <p className="text-[11px] text-(--ep-ink)/40 mt-1 leading-relaxed">{t.summary}</p>
               </div>
               <ChevronDown
                 size={14}
-                className="text-[#F5EDED]/30 flex-shrink-0 mt-1"
+                className="text-(--ep-ink)/30 flex-shrink-0 mt-1"
                 style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s ease" }}
               />
             </button>
 
             {isOpen && (
-              <div className="border-t border-[#890404]/20 px-4 py-4">
+              <div className="border-t border-(--ep-line)/20 px-4 py-4">
                 <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2.5 mb-3">
                   <p className="text-[11px] text-amber-300/90 leading-relaxed">{t.disclaimer}</p>
                 </div>
@@ -128,13 +128,13 @@ function TemplatesTab() {
                 <button
                   type="button"
                   onClick={() => copy(t.slug, t.content)}
-                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2 mb-3"
+                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/50 hover:text-(--ep-accent) transition-colors border border-(--ep-line)/25 rounded-lg px-3 py-2 mb-3"
                 >
                   {copiedSlug === t.slug ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
                   {copiedSlug === t.slug ? tr("Copié") : tr("Copier le texte")}
                 </button>
 
-                <pre className="whitespace-pre-wrap font-sans text-[11.5px] text-[#F5EDED]/70 leading-relaxed bg-[#0f0000] border border-[#890404]/15 rounded-lg p-3.5 max-h-[420px] overflow-y-auto">
+                <pre className="whitespace-pre-wrap font-sans text-[11.5px] text-(--ep-ink)/70 leading-relaxed bg-(--ep-s5) border border-(--ep-line)/15 rounded-lg p-3.5 max-h-[420px] overflow-y-auto">
                   {t.content}
                 </pre>
               </div>
@@ -201,9 +201,9 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
 
   return (
     <div>
-      <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/50 rounded-xl py-8 cursor-pointer transition-colors mb-4">
-        <Upload size={18} className="text-[#F5EDED]/30" />
-        <span className="text-xs font-bold text-[#F5EDED]/50">
+      <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/50 rounded-xl py-8 cursor-pointer transition-colors mb-4">
+        <Upload size={18} className="text-(--ep-ink)/30" />
+        <span className="text-xs font-bold text-(--ep-ink)/50">
           {uploading ? tr("Envoi...") : tr("Choisis un fichier (PDF, image, Word, Excel, ZIP, 20MB max)")}
         </span>
         <input
@@ -222,18 +222,18 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
       {error && <p className="text-[12px] text-red-400 mb-3">{tr(error)}</p>}
 
       {files.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <FileText size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{tr("Rien encore. Dépose un premier fichier.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <FileText size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{tr("Rien encore. Dépose un premier fichier.")}</p>
         </div>
       ) : (
         <div className="space-y-1.5">
           {files.map((f) => (
-            <div key={f.id} className="flex items-center gap-3 bg-[#1a0000] border border-[#890404]/20 rounded-xl px-4 py-3">
-              <FileText size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+            <div key={f.id} className="flex items-center gap-3 bg-(--ep-s3) border border-(--ep-line)/20 rounded-xl px-4 py-3">
+              <FileText size={14} className="text-(--ep-ink)/30 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[12.5px] font-bold text-[#F5EDED] truncate">{f.filename}</p>
-                <p className="text-[10.5px] text-[#F5EDED]/35 mt-0.5">{formatSize(f.size_bytes)}</p>
+                <p className="text-[12.5px] font-bold text-(--ep-ink) truncate">{f.filename}</p>
+                <p className="text-[10.5px] text-(--ep-ink)/35 mt-0.5">{formatSize(f.size_bytes)}</p>
               </div>
               {f.url && (
                 <a
@@ -241,7 +241,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={tr("Télécharger")}
-                  className="text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors flex-shrink-0 p-1"
+                  className="text-(--ep-ink)/30 hover:text-(--ep-accent) transition-colors flex-shrink-0 p-1"
                 >
                   <Download size={14} />
                 </a>
@@ -251,7 +251,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
                 onClick={() => remove(f.id, f.storage_path)}
                 disabled={isPending}
                 aria-label={tr("Supprimer")}
-                className="text-[#F5EDED]/25 hover:text-red-400 transition-colors flex-shrink-0 p-1 disabled:opacity-30"
+                className="text-(--ep-ink)/25 hover:text-red-400 transition-colors flex-shrink-0 p-1 disabled:opacity-30"
               >
                 <Trash2 size={13} />
               </button>
@@ -331,14 +331,14 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
           }}
           placeholder={tr("Une note ou une tâche à ne pas oublier...")}
           aria-label={tr("Nouvelle note")}
-          className="flex-1 bg-[rgba(0,0,0,0.4)] border border-[#890404]/25 rounded-lg px-3.5 py-2.5 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+          className="flex-1 bg-[rgba(var(--ep-shade-rgb),0.4)] border border-(--ep-line)/25 rounded-lg px-3.5 py-2.5 text-[13px] text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50"
         />
         <button
           type="button"
           onClick={add}
           disabled={isPending || !content.trim()}
           aria-label={tr("Ajouter la note")}
-          className="flex items-center gap-1.5 bg-[#E01E1E] text-white px-4 py-2.5 rounded-lg text-[12px] font-bold disabled:opacity-40"
+          className="flex items-center gap-1.5 bg-(--ep-accent) text-(--ep-strong) px-4 py-2.5 rounded-lg text-[12px] font-bold disabled:opacity-40"
         >
           <Plus size={14} />
         </button>
@@ -347,32 +347,32 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
       {error && <p className="text-[12px] text-red-400 mb-3">{tr(error)}</p>}
 
       {notes.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <StickyNote size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{tr("Rien encore. Note une idée, une tâche, un pense-bête.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <StickyNote size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{tr("Rien encore. Note une idée, une tâche, un pense-bête.")}</p>
         </div>
       ) : (
         <div className="space-y-1.5">
           {notes.map((n) => (
-            <div key={n.id} className="flex items-start gap-3 bg-[#1a0000] border border-[#890404]/20 rounded-xl px-4 py-3">
+            <div key={n.id} className="flex items-start gap-3 bg-(--ep-s3) border border-(--ep-line)/20 rounded-xl px-4 py-3">
               <button
                 type="button"
                 onClick={() => toggle(n.id, n.done)}
                 aria-label={n.done ? tr("Marquer non fait") : tr("Marquer fait")}
                 className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border flex items-center justify-center transition-colors ${
-                  n.done ? "bg-[#4ade80] border-[#4ade80]" : "border-[#890404]/40 bg-transparent"
+                  n.done ? "bg-(--ep-ok) border-(--ep-ok)" : "border-(--ep-line)/40 bg-transparent"
                 }`}
               >
-                {n.done && <Check size={12} className="text-[#0a1f0a]" strokeWidth={3} />}
+                {n.done && <Check size={12} className="text-(--ep-okbg)" strokeWidth={3} />}
               </button>
-              <p className={`flex-1 min-w-0 text-[12.5px] leading-relaxed break-words ${n.done ? "text-[#F5EDED]/35 line-through" : "text-[#F5EDED]/85"}`}>
+              <p className={`flex-1 min-w-0 text-[12.5px] leading-relaxed break-words ${n.done ? "text-(--ep-ink)/35 line-through" : "text-(--ep-ink)/85"}`}>
                 {n.content}
               </p>
               <button
                 type="button"
                 onClick={() => remove(n.id)}
                 aria-label={tr("Supprimer")}
-                className="text-[#F5EDED]/25 hover:text-red-400 transition-colors flex-shrink-0 p-1"
+                className="text-(--ep-ink)/25 hover:text-red-400 transition-colors flex-shrink-0 p-1"
               >
                 <Trash2 size={13} />
               </button>

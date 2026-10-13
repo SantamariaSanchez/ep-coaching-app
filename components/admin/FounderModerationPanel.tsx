@@ -45,9 +45,9 @@ export default function FounderModerationPanel({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mt-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3 flex items-center gap-1.5">
-        <ShieldAlert size={12} style={{ color: "#E01E1E" }} />
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mt-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3 flex items-center gap-1.5">
+        <ShieldAlert size={12} style={{ color: "var(--ep-accent)" }} />
         {t("Modération (fondateur)")}
       </p>
 
@@ -73,7 +73,7 @@ export default function FounderModerationPanel({
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-[#F5EDED]/60">{t("Forcer la déconnexion de")}{" "}{targetName} ?</span>
+            <span className="text-[11px] text-(--ep-ink)/60">{t("Forcer la déconnexion de")}{" "}{targetName} ?</span>
             <button
               onClick={handleDisconnect}
               disabled={isPending}
@@ -84,7 +84,7 @@ export default function FounderModerationPanel({
             <button
               onClick={() => setConfirmingDisconnect(false)}
               disabled={isPending}
-              className="text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#F5EDED]/60"
+              className="text-[11px] font-bold text-(--ep-ink)/40 hover:text-(--ep-ink)/60"
             >
               {t("Annuler")}
             </button>
@@ -96,14 +96,14 @@ export default function FounderModerationPanel({
             onClick={() => setConfirmingDelete(true)}
             disabled={isPending}
             className="ep-btn-secondary"
-            style={{ fontSize: 11, color: "#ff6b6b" }}
+            style={{ fontSize: 11, color: "var(--ep-accent-hi2)" }}
           >
             <Trash2 size={13} />
             {t("Supprimer le compte")}
           </button>
         ) : (
           <div className="flex items-center gap-2 w-full mt-1">
-            <span className="text-[11px] text-[#F5EDED]/60">
+            <span className="text-[11px] text-(--ep-ink)/60">
               {t("Supprimer définitivement le compte de")}{" "}{targetName} ?
             </span>
             <button
@@ -116,7 +116,7 @@ export default function FounderModerationPanel({
             <button
               onClick={() => setConfirmingDelete(false)}
               disabled={isPending}
-              className="text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#F5EDED]/60"
+              className="text-[11px] font-bold text-(--ep-ink)/40 hover:text-(--ep-ink)/60"
             >
               {t("Annuler")}
             </button>

@@ -34,9 +34,9 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   cursor: "pointer",
   whiteSpace: "nowrap",
   transition: "background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ep-ease-out)",
-  background: active ? "rgba(224,30,30,0.14)" : "rgba(245,237,237,0.04)",
-  border: active ? "1px solid rgba(224,30,30,0.35)" : "1px solid rgba(137,4,4,0.25)",
-  color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",
+  background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-ink-rgb),0.04)",
+  border: active ? "1px solid rgba(var(--ep-accent-rgb),0.35)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
+  color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
 });
 
 export default function CoachConversationsList({ rows }: { rows: ConversationRow[] }) {
@@ -74,7 +74,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
           <div style={{ position: "relative" }}>
             <Search
               size={14}
-              style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.28)" }}
+              style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.28)" }}
             />
             <input
               value={query}
@@ -83,12 +83,12 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
               aria-label={t("Chercher un membre")}
               style={{
                 width: "100%",
-                background: "#150000",
-                border: "1px solid rgba(137,4,4,0.3)",
+                background: "var(--ep-s2)",
+                border: "1px solid rgba(var(--ep-line-rgb),0.3)",
                 borderRadius: 10,
                 padding: "9px 32px 9px 34px",
                 fontSize: 13,
-                color: "#F5EDED",
+                color: "var(--ep-ink)",
                 outline: "none",
               }}
             />
@@ -99,7 +99,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                 style={{
                   position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
                   background: "none", border: "none", cursor: "pointer",
-                  color: "rgba(245,237,237,0.35)", display: "flex", padding: 0,
+                  color: "rgba(var(--ep-ink-rgb),0.35)", display: "flex", padding: 0,
                 }}
               >
                 <X size={13} />
@@ -123,10 +123,10 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
 
       {visible.length === 0 ? (
         <div className="ep-card" style={{ padding: "36px 20px", textAlign: "center" }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,237,237,0.55)", margin: "0 0 4px" }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 4px" }}>
             {t("Aucune conversation ne correspond")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
             {t("Change de filtre ou vide la recherche pour revoir toute la liste.")}
           </p>
         </div>
@@ -155,13 +155,13 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                   width: 42,
                   height: 42,
                   borderRadius: 14,
-                  background: "linear-gradient(135deg, #E01E1E, #890404)",
+                  background: "linear-gradient(135deg, var(--ep-accent), var(--ep-line))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 13,
                   fontWeight: 800,
-                  color: "#F5EDED",
+                  color: "var(--ep-ink)",
                   flexShrink: 0,
                   position: "relative",
                 }}>
@@ -170,12 +170,12 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                     <span style={{
                       position: "absolute",
                       top: -4, right: -4,
-                      background: "#E01E1E",
-                      border: "2px solid #0D0000",
+                      background: "var(--ep-accent)",
+                      border: "2px solid var(--ep-bg)",
                       borderRadius: "50%",
                       width: 16, height: 16,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 8, fontWeight: 800, color: "#fff",
+                      fontSize: 8, fontWeight: 800, color: "var(--ep-strong)",
                     }}>
                       {row.unread > 9 ? "9+" : row.unread}
                     </span>
@@ -184,7 +184,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED", display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--ep-ink)", display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
                     {/* Nom tronqué plutôt que de pousser le badge hors de la
                         carte sur un écran de 390px. */}
                     <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -198,7 +198,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                     <p style={{
                       margin: "2px 0 0",
                       fontSize: 11,
-                      color: row.unread > 0 ? "rgba(245,237,237,0.7)" : "rgba(245,237,237,0.35)",
+                      color: row.unread > 0 ? "rgba(var(--ep-ink-rgb),0.7)" : "rgba(var(--ep-ink-rgb),0.35)",
                       fontWeight: row.unread > 0 ? 600 : 400,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -207,7 +207,7 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                       {row.lastContent}
                     </p>
                   ) : (
-                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.18)", fontStyle: "italic" }}>
+                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.18)", fontStyle: "italic" }}>
                       {t("Aucun message")}
                     </p>
                   )}
@@ -216,11 +216,11 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
                 {/* Right */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
                   {row.lastTime && (
-                    <span style={{ fontSize: 10, color: "rgba(245,237,237,0.22)" }}>
+                    <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.22)" }}>
                       {row.lastTime}
                     </span>
                   )}
-                  <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+                  <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
                 </div>
               </Link>
             );

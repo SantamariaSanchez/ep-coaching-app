@@ -31,22 +31,22 @@ export default function PrivacyCard({ initialVisible }: { initialVisible: boolea
 
   return (
     <div className="mt-8">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {t("Confidentialité")}
       </p>
       <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Visibilité")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {visible ? (
-            <Eye size={18} style={{ color: "#4ade80", flexShrink: 0 }} />
+            <Eye size={18} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
           ) : (
-            <EyeOff size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
+            <EyeOff size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--ep-ink)" }}>
               {visible ? t("Visible dans l'annuaire public des coachs") : t("Masqué de l'annuaire public")}
             </p>
-            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
               {visible
                 ? t("N'importe quel visiteur de /coachs peut te trouver et te contacter.")
                 : t("Personne ne te trouve depuis /coachs. Tes clients déjà liés à toi ne sont pas affectés.")}
@@ -61,12 +61,12 @@ export default function PrivacyCard({ initialVisible }: { initialVisible: boolea
             aria-label={t("Visibilité dans l'annuaire public des coachs")}
             style={{
               flexShrink: 0, width: 40, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
-              background: visible ? "#4ade80" : "rgba(245,237,237,0.15)", position: "relative", transition: "background 0.15s ease",
+              background: visible ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.15)", position: "relative", transition: "background 0.15s ease",
             }}
           >
             <span style={{
               position: "absolute", top: 3, left: visible ? 19 : 3, width: 18, height: 18, borderRadius: "50%",
-              background: "#0d0000", transition: "left 0.15s ease",
+              background: "var(--ep-bg)", transition: "left 0.15s ease",
             }} />
           </button>
         </div>

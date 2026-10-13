@@ -32,12 +32,12 @@ export default function HeadCoachAuditButton() {
         onClick={handleClick}
         disabled={isPending}
         className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest px-3.5 py-2.5 rounded-lg border transition-colors disabled:opacity-50"
-        style={{ background: "rgba(96,165,250,0.1)", borderColor: "rgba(96,165,250,0.3)", color: "#60a5fa" }}
+        style={{ background: "rgba(var(--ep-info-rgb),0.1)", borderColor: "rgba(var(--ep-info-rgb),0.3)", color: "var(--ep-info)" }}
       >
         <ShieldCheck size={13} />
         {isPending ? t("Audit en cours…") : t("Lancer l'audit qualité")}
       </button>
-      {result && <p className="text-[11px] text-[#F5EDED]/40 mt-2">{result}</p>}
+      {result && <p className="text-[11px] text-(--ep-ink)/40 mt-2">{result}</p>}
     </div>
   );
 }

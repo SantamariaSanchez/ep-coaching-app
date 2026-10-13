@@ -26,14 +26,14 @@ export default function CoachClientsToggle({ clients }: { clients: ClientRow[] }
   const [open, setOpen] = useState(false);
 
   return (
-    <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(245,237,237,0.06)" }}>
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)" }}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         style={{
           display: "flex", alignItems: "center", gap: 6, width: "100%",
           background: "none", border: "none", padding: 0, cursor: "pointer",
-          fontSize: 11.5, fontWeight: 700, color: "rgba(245,237,237,0.55)",
+          fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.55)",
         }}
       >
         <Users size={12} />
@@ -53,16 +53,16 @@ export default function CoachClientsToggle({ clients }: { clients: ClientRow[] }
               key={c.id}
               style={{
                 display: "flex", alignItems: "center", gap: 8,
-                padding: "6px 10px", borderRadius: 8, background: "rgba(245,237,237,0.02)",
+                padding: "6px 10px", borderRadius: 8, background: "rgba(var(--ep-ink-rgb),0.02)",
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#F5EDED" }}>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "var(--ep-ink)" }}>
                   {c.full_name ?? t("Sans nom")}
                 </p>
-                <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>{c.email}</p>
+                <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)" }}>{c.email}</p>
               </div>
-              <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(245,237,237,0.4)" }}>
+              <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                 {STATUS_LABELS[c.subscription_status] ?? c.subscription_status}
               </span>
             </div>

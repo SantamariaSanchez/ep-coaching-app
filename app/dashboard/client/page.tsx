@@ -169,19 +169,19 @@ async function CycleTrackingNudge() {
         style={{
           display: "flex", alignItems: "center", gap: 12,
           padding: "14px 18px", borderRadius: 14, textDecoration: "none",
-          background: "rgba(31,1,1,0.7)", border: "1px solid rgba(137,4,4,0.22)",
+          background: "rgba(var(--ep-s1-rgb),0.7)", border: "1px solid rgba(var(--ep-line-rgb),0.22)",
         }}
       >
-        <Droplet size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <Droplet size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
             {t("Active le suivi de ton cycle")}
           </p>
-          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
             {t("Utile pour comprendre tes fluctuations d'énergie, de poids d'eau et de performance.")}
           </p>
         </div>
-        <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+        <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
       </Link>
     </section>
   );
@@ -196,10 +196,10 @@ async function NoCoachBanner() {
         style={{ padding: "20px 20px", display: "flex", flexDirection: "column", gap: 12 }}
       >
         <div>
-          <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+          <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
             {t("Tu n'as plus de coach attitré")}
           </p>
-          <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>
             {t("Envie que Santamaria devienne ton coach ? Écris-lui directement sur Instagram. Tu peux aussi choisir un autre coach actif sur la plateforme.")}
           </p>
         </div>
@@ -242,16 +242,16 @@ async function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
             display: "flex",
             alignItems: "center",
             gap: 12,
-            border: "1px solid rgba(74,222,128,0.25)",
-            background: "rgba(74,222,128,0.06)",
+            border: "1px solid rgba(var(--ep-ok-rgb),0.25)",
+            background: "rgba(var(--ep-ok-rgb),0.06)",
           }}
         >
-          <CheckCircle2 size={20} style={{ color: "#4ade80", flexShrink: 0 }} strokeWidth={1.8} />
+          <CheckCircle2 size={20} style={{ color: "var(--ep-ok)", flexShrink: 0 }} strokeWidth={1.8} />
           <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
               {t("Bien joué, tu as pris en main l'appli")}
             </p>
-            <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
               {t("Programme, calories, bilan, communauté : tout est lancé.")}
             </p>
           </div>
@@ -264,19 +264,19 @@ async function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
     <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
         <p className="ep-section-title" style={{ marginBottom: 0 }}>{t("Pour bien démarrer")}</p>
-        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.35)" }}>
+        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
           {doneCount}/{items.length}
         </p>
       </div>
       <div
         style={{
-          height: 4, borderRadius: 999, background: "rgba(137,4,4,0.2)",
+          height: 4, borderRadius: 999, background: "rgba(var(--ep-line-rgb),0.2)",
           overflow: "hidden", marginBottom: 12,
         }}
       >
         <div
           style={{
-            height: "100%", borderRadius: 999, background: "#E01E1E",
+            height: "100%", borderRadius: 999, background: "var(--ep-accent)",
             width: `${(doneCount / items.length) * 100}%`,
             transition: "width 0.4s ease",
           }}
@@ -290,27 +290,27 @@ async function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
             style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "13px 16px", borderRadius: 12,
-              background: done ? "rgba(74,222,128,0.05)" : "rgba(31,1,1,0.7)",
-              border: done ? "1px solid rgba(74,222,128,0.2)" : "1px solid rgba(137,4,4,0.25)",
+              background: done ? "rgba(var(--ep-ok-rgb),0.05)" : "rgba(var(--ep-s1-rgb),0.7)",
+              border: done ? "1px solid rgba(var(--ep-ok-rgb),0.2)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
               textDecoration: "none",
             }}
           >
             {done ? (
-              <CheckCircle2 size={18} style={{ color: "#4ade80", flexShrink: 0 }} strokeWidth={1.8} />
+              <CheckCircle2 size={18} style={{ color: "var(--ep-ok)", flexShrink: 0 }} strokeWidth={1.8} />
             ) : (
-              <Circle size={18} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} strokeWidth={1.8} />
+              <Circle size={18} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} strokeWidth={1.8} />
             )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
                 margin: 0, fontSize: 13, fontWeight: 800,
-                color: done ? "rgba(245,237,237,0.5)" : "#F5EDED",
+                color: done ? "rgba(var(--ep-ink-rgb),0.5)" : "var(--ep-ink)",
                 textDecoration: done ? "line-through" : "none",
               }}>
                 {t(title)}
               </p>
-              <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{description}</p>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{description}</p>
             </div>
-            {!done && <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />}
+            {!done && <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />}
           </Link>
         ))}
       </div>
@@ -385,7 +385,7 @@ async function WelcomeGuide({
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Bienvenue")}</p>
         <h1 className="ep-h1">{t("Salut")}{" "}{firstName} 👋</h1>
-        <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
+        <p style={{ marginTop: 8, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6 }}>
           {personalization.welcomeSubtitle}
         </p>
       </div>
@@ -410,13 +410,13 @@ async function WelcomeGuide({
             {goal && (
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>{t("Objectif")}</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{goal}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{goal}</p>
               </div>
             )}
             {level && (
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>{t("Niveau")}</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{level}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{level}</p>
               </div>
             )}
           </div>
@@ -434,10 +434,10 @@ async function WelcomeGuide({
                 className="ep-card"
                 style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "flex-start" }}
               >
-                <Lightbulb size={16} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 2 }} strokeWidth={1.8} />
+                <Lightbulb size={16} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 2 }} strokeWidth={1.8} />
                 <div>
-                  <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{m.title}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>{m.body}</p>
+                  <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{m.title}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>{m.body}</p>
                 </div>
               </div>
             ))}
@@ -456,26 +456,26 @@ async function WelcomeGuide({
               style={{
                 display: "flex", alignItems: "center", gap: 12,
                 padding: "14px 16px", borderRadius: 12,
-                background: locked ? "rgba(224,30,30,0.06)" : "rgba(31,1,1,0.7)",
-                border: locked ? "1px solid rgba(224,30,30,0.25)" : "1px solid rgba(137,4,4,0.25)",
+                background: locked ? "rgba(var(--ep-accent-rgb),0.06)" : "rgba(var(--ep-s1-rgb),0.7)",
+                border: locked ? "1px solid rgba(var(--ep-accent-rgb),0.25)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
                 textDecoration: "none",
               }}
             >
               <div style={{
                 width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+                background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                <Icon size={17} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{t(title)}</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{t(title)}</p>
                   {locked ? (
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: 3,
                       fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
-                      color: "rgba(245,237,237,0.4)", border: "1px solid rgba(245,237,237,0.2)",
+                      color: "rgba(var(--ep-ink-rgb),0.4)", border: "1px solid rgba(var(--ep-ink-rgb),0.2)",
                       borderRadius: 999, padding: "1px 7px",
                     }}>
                       <Lock size={9} strokeWidth={2} />{" "}{t("Coaching")}
@@ -483,16 +483,16 @@ async function WelcomeGuide({
                   ) : (
                     <span style={{
                       fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
-                      color: "#4ade80", border: "1px solid rgba(74,222,128,0.35)",
+                      color: "var(--ep-ok)", border: "1px solid rgba(var(--ep-ok-rgb),0.35)",
                       borderRadius: 999, padding: "1px 7px",
                     }}>
                       {t("Gratuit")}
                     </span>
                   )}
                 </div>
-                <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{t(desc)}</p>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{t(desc)}</p>
               </div>
-              <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+              <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
             </Link>
           ))}
         </div>
@@ -505,20 +505,20 @@ async function WelcomeGuide({
         style={{
           display: "flex", alignItems: "center", gap: 14,
           padding: "18px 20px", borderRadius: 14,
-          background: "linear-gradient(135deg, rgba(224,30,30,0.14) 0%, rgba(137,4,4,0.08) 100%)",
-          border: "1px solid rgba(224,30,30,0.3)", textDecoration: "none",
+          background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.14) 0%, rgba(var(--ep-line-rgb),0.08) 100%)",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.3)", textDecoration: "none",
         }}
       >
-        <Crown size={22} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <Crown size={22} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
             {pitch.title}
           </p>
-          <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+          <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
             {pitch.subtitle}
           </p>
         </div>
-        <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
+        <ArrowRight size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
       </Link>
     </div>
   );
@@ -530,9 +530,9 @@ async function WeightDelta({ delta, good }: { delta: number; good: boolean | nul
   const t = await getT();
   const Icon = delta === 0 ? Minus : delta < 0 ? TrendingDown : TrendingUp;
   const color =
-    good === true ? "#4ade80"
-    : good === false ? "#E01E1E"
-    : "rgba(245,237,237,0.45)";
+    good === true ? "var(--ep-ok)"
+    : good === false ? "var(--ep-accent)"
+    : "rgba(var(--ep-ink-rgb),0.45)";
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -679,12 +679,12 @@ export default async function ClientDashboard({
           style={{
             display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
             padding: "14px 18px", borderRadius: 14,
-            background: "linear-gradient(135deg, rgba(224,30,30,0.14) 0%, rgba(137,4,4,0.08) 100%)",
-            border: "1px solid rgba(224,30,30,0.3)",
+            background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.14) 0%, rgba(var(--ep-line-rgb),0.08) 100%)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
           }}
         >
-          <Gift size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
-          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", flex: 1 }}>
+          <Gift size={20} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--ep-ink)", flex: 1 }}>
             {t("Essai coaching gratuit, se termine dans")}{" "}{trialDaysLeft}{" "}{t("jour")}{trialDaysLeft > 1 ? "s" : ""}
           </p>
         </div>
@@ -701,7 +701,7 @@ export default async function ClientDashboard({
           <p style={{
             marginTop: 6,
             fontSize: 12,
-            color: "rgba(245,237,237,0.3)",
+            color: "rgba(var(--ep-ink-rgb),0.3)",
             fontWeight: 500,
           }}>
             {t("Sem.")}{" "}{weekNumber} &nbsp;·&nbsp; {weeksSinceStart}{" "}{t("sem. de coaching")}
@@ -727,14 +727,14 @@ export default async function ClientDashboard({
           marginBottom: 16, textDecoration: "none",
         }}
       >
-        <Sunrise size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <Sunrise size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{t("Aujourd'hui")}</p>
-          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{t("Aujourd'hui")}</p>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
             {t("Programme, habitudes, sommeil et journal du jour")}
           </p>
         </div>
-        <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+        <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
       </Link>
 
       {/* Sur grand écran le retour du coach (colonne principale) et le suivi
@@ -761,7 +761,7 @@ export default async function ClientDashboard({
                   margin: 0,
                   fontSize: 12,
                   fontWeight: 700,
-                  color: "#F5EDED",
+                  color: "var(--ep-ink)",
                   letterSpacing: "-0.01em",
                 }}>
                   {t("Bilan · Semaine")}{" "}{latestNote.week_number ?? "·"}
@@ -772,16 +772,16 @@ export default async function ClientDashboard({
                   display: "flex",
                   alignItems: "center",
                   gap: 4,
-                  background: "rgba(251,191,36,0.08)",
-                  border: "1px solid rgba(251,191,36,0.2)",
+                  background: "rgba(var(--ep-warn-rgb),0.08)",
+                  border: "1px solid rgba(var(--ep-warn-rgb),0.2)",
                   borderRadius: 8,
                   padding: "4px 10px",
                   flexShrink: 0,
                 }}>
-                  <Star size={11} fill="#fbbf24" style={{ color: "#fbbf24" }} />
-                  <span style={{ fontSize: 14, fontWeight: 900, color: "#fbbf24", letterSpacing: "-0.02em" }}>
+                  <Star size={11} fill="var(--ep-warn)" style={{ color: "var(--ep-warn)" }} />
+                  <span style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-warn)", letterSpacing: "-0.02em" }}>
                     {latestNote.rating}
-                    <span style={{ fontSize: 10, fontWeight: 400, color: "rgba(251,191,36,0.4)" }}>/10</span>
+                    <span style={{ fontSize: 10, fontWeight: 400, color: "rgba(var(--ep-warn-rgb),0.4)" }}>/10</span>
                   </span>
                 </div>
               )}
@@ -792,7 +792,7 @@ export default async function ClientDashboard({
                 <p className="ep-label" style={{ marginBottom: 6 }}>{t("Observations")}</p>
                 <p style={{
                   fontSize: 13,
-                  color: "rgba(245,237,237,0.7)",
+                  color: "rgba(var(--ep-ink-rgb),0.7)",
                   lineHeight: 1.6,
                   margin: 0,
                   display: "-webkit-box",
@@ -811,7 +811,7 @@ export default async function ClientDashboard({
                 <p className="ep-label" style={{ marginBottom: 6 }}>{t("Actions prévues")}</p>
                 <p style={{
                   fontSize: 13,
-                  color: "rgba(245,237,237,0.7)",
+                  color: "rgba(var(--ep-ink-rgb),0.7)",
                   lineHeight: 1.6,
                   margin: 0,
                   display: "-webkit-box",
@@ -833,17 +833,17 @@ export default async function ClientDashboard({
                 gap: 6,
                 marginTop: 16,
                 padding: "9px 14px",
-                background: "rgba(224,30,30,0.07)",
-                border: "1px solid rgba(224,30,30,0.14)",
+                background: "rgba(var(--ep-accent-rgb),0.07)",
+                border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
                 borderRadius: 10,
                 textDecoration: "none",
               }}
             >
-              <MessageCircle size={14} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(245,237,237,0.7)", flex: 1 }}>
+              <MessageCircle size={14} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.7)", flex: 1 }}>
                 {t("Ouvrir les messages")}
               </span>
-              <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
+              <ChevronRight size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
             </Link>
           </div>
         ) : (
@@ -859,17 +859,17 @@ export default async function ClientDashboard({
                 width: 44,
                 height: 44,
                 borderRadius: "50%",
-                background: "rgba(137,4,4,0.12)",
+                background: "rgba(var(--ep-line-rgb),0.12)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}>
-                <Star size={18} style={{ color: "rgba(245,237,237,0.2)" }} strokeWidth={1.5} />
+                <Star size={18} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} strokeWidth={1.5} />
               </div>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
                 {t("Ton coach prépare ton bilan")}
               </p>
-              <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.22)" }}>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.22)" }}>
                 {t("Les retours apparaîtront ici chaque semaine")}
               </p>
             </div>
@@ -905,19 +905,19 @@ export default async function ClientDashboard({
                         fontSize: 28,
                         fontWeight: 900,
                         letterSpacing: "-0.04em",
-                        color: "#F5EDED",
+                        color: "var(--ep-ink)",
                         margin: 0,
                         lineHeight: 1,
                       }}>
                         {val != null ? (
                           <>
                             {val}
-                            <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(245,237,237,0.3)", marginLeft: 3 }}>
+                            <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(var(--ep-ink-rgb),0.3)", marginLeft: 3 }}>
                               {t("kg")}
                             </span>
                           </>
                         ) : (
-                          <span style={{ color: "rgba(245,237,237,0.2)" }}>···</span>
+                          <span style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }}>···</span>
                         )}
                       </p>
                     </div>
@@ -949,7 +949,7 @@ export default async function ClientDashboard({
             {weeksSinceStart != null && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: profile?.goal ? 12 : 0 }}>
                 <span className="ep-label">{t("Coaching")}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,237,237,0.65)" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.65)" }}>
                   {weeksSinceStart}{" "}{t("semaine")}{weeksSinceStart !== 1 ? "s" : ""}
                 </span>
               </div>
@@ -960,7 +960,7 @@ export default async function ClientDashboard({
                 <p className="ep-label" style={{ marginBottom: 6 }}>{t("Mon objectif")}</p>
                 <p style={{
                   fontSize: 13,
-                  color: "rgba(245,237,237,0.65)",
+                  color: "rgba(var(--ep-ink-rgb),0.65)",
                   lineHeight: 1.6,
                   margin: 0,
                 }}>
@@ -980,20 +980,20 @@ export default async function ClientDashboard({
             style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "16px 18px", borderRadius: 14, textDecoration: "none",
-              background: "linear-gradient(135deg, rgba(224,30,30,0.14) 0%, rgba(137,4,4,0.08) 100%)",
-              border: "1px solid rgba(224,30,30,0.3)",
+              background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.14) 0%, rgba(var(--ep-line-rgb),0.08) 100%)",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
             }}
           >
-            <Trophy size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+            <Trophy size={20} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
                 {t("Bilan envoyé, et ta victoire de la semaine ?")}
               </p>
-              <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.45)" }}>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
                 {t("Partage la avec la communauté, ça motive tout le monde (et ça rapporte des points).")}
               </p>
             </div>
-            <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
+            <ArrowRight size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
           </Link>
         </section>
       )}
@@ -1009,23 +1009,23 @@ export default async function ClientDashboard({
               style={{
                 display: "flex", alignItems: "center", gap: 12,
                 padding: "13px 16px", borderRadius: 12,
-                background: "rgba(31,1,1,0.7)",
-                border: "1px solid rgba(137,4,4,0.22)",
+                background: "rgba(var(--ep-s1-rgb),0.7)",
+                border: "1px solid rgba(var(--ep-line-rgb),0.22)",
                 textDecoration: "none",
               }}
             >
               <div style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+                background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                <Icon size={16} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>{t(title)}</p>
-                <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.4)" }}>{t(desc)}</p>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "var(--ep-ink)" }}>{t(title)}</p>
+                <p style={{ margin: 0, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{t(desc)}</p>
               </div>
-              <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+              <ChevronRight size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
             </Link>
           ))}
         </div>

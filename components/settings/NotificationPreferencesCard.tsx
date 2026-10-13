@@ -42,16 +42,16 @@ export default function NotificationPreferencesCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
         <BellRing size={12} />{" "}{t("Ce que tu reçois en notification")}
       </p>
 
-      <div className="flex items-start gap-2.5 pb-3.5 mb-3.5 border-b border-[#890404]/10">
-        <ShieldCheck size={14} className="text-[#F5EDED]/25 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2.5 pb-3.5 mb-3.5 border-b border-(--ep-line)/10">
+        <ShieldCheck size={14} className="text-(--ep-ink)/25 flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-white">{t(CATEGORY_META.essentiel.label)}</p>
-          <p className="text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">{t(CATEGORY_META.essentiel.description)}</p>
+          <p className="text-sm font-semibold text-(--ep-strong)">{t(CATEGORY_META.essentiel.label)}</p>
+          <p className="text-[11px] text-(--ep-ink)/35 mt-0.5 leading-relaxed">{t(CATEGORY_META.essentiel.description)}</p>
         </div>
       </div>
 
@@ -61,8 +61,8 @@ export default function NotificationPreferencesCard({
         return (
           <div key={category} className="flex items-center justify-between gap-3 py-2.5">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white">{t(meta.label)}</p>
-              <p className="text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">{t(meta.description)}</p>
+              <p className="text-sm font-semibold text-(--ep-strong)">{t(meta.label)}</p>
+              <p className="text-[11px] text-(--ep-ink)/35 mt-0.5 leading-relaxed">{t(meta.description)}</p>
             </div>
             <button
               type="button"
@@ -72,7 +72,7 @@ export default function NotificationPreferencesCard({
               onClick={() => toggle(category)}
               disabled={isPending}
               className="relative flex-shrink-0 w-11 h-6 rounded-full transition-colors disabled:opacity-50"
-              style={{ background: isMuted ? "rgba(245,237,237,0.12)" : "#E01E1E" }}
+              style={{ background: isMuted ? "rgba(var(--ep-ink-rgb),0.12)" : "var(--ep-accent)" }}
             >
               <span
                 className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"

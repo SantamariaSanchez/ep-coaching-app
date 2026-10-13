@@ -21,8 +21,8 @@ export default function RoadmapLoadError({ message, hint }: { message: string; h
       className="ep-card"
       style={{ padding: "16px 18px", marginBottom: 24, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}
     >
-      <AlertCircle size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
-      <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.65)", lineHeight: 1.5, margin: 0, flex: "1 1 200px" }}>
+      <AlertCircle size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+      <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: 1.5, margin: 0, flex: "1 1 200px" }}>
         {message}
         {hint ? ` ${hint}` : ""}
       </p>

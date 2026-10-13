@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { withAlpha } from "@/lib/theme-color";
 
 interface MetricGaugeProps {
   value: number;
@@ -13,9 +14,9 @@ interface MetricGaugeProps {
 }
 
 function gaugeColor(pct: number): string {
-  if (pct >= 0.9) return "#E01E1E";  // over target
-  if (pct >= 0.7) return "#4ade80";  // good
-  if (pct >= 0.4) return "#fbbf24";  // moderate
+  if (pct >= 0.9) return "var(--ep-accent)";  // over target
+  if (pct >= 0.7) return "var(--ep-ok)";  // good
+  if (pct >= 0.4) return "var(--ep-warn)";  // moderate
   return "#ef4444";                   // low
 }
 
@@ -51,7 +52,7 @@ export default function MetricGauge({
           <circle
             cx={cx} cy={cy} r={R}
             fill="none"
-            stroke="rgba(224,30,30,0.06)"
+            stroke="rgba(var(--ep-accent-rgb),0.06)"
             strokeWidth={strokeWidth}
           />
           {/* Fill */}
@@ -67,7 +68,7 @@ export default function MetricGauge({
               transform={`rotate(-90 ${cx} ${cy})`}
               style={{
                 transition: "stroke-dashoffset 0.9s cubic-bezier(0.34,1.56,0.64,1)",
-                filter: `drop-shadow(0 0 5px ${color}60)`,
+                filter: `drop-shadow(0 0 5px ${withAlpha(color, "60")})`,
               }}
             />
           )}
@@ -83,7 +84,7 @@ export default function MetricGauge({
           <span style={{
             fontSize: size >= 88 ? 20 : 15,
             fontWeight: 900,
-            color: "#F5EDED",
+            color: "var(--ep-ink)",
             letterSpacing: "-0.03em",
             lineHeight: 1,
           }}>
@@ -92,7 +93,7 @@ export default function MetricGauge({
           {unit && (
             <span style={{
               fontSize: 8,
-              color: "rgba(245,237,237,0.35)",
+              color: "rgba(var(--ep-ink-rgb),0.35)",
               textTransform: "uppercase",
               letterSpacing: "0.07em",
               marginTop: 2,
@@ -108,7 +109,7 @@ export default function MetricGauge({
           fontWeight: 700,
           letterSpacing: "0.1em",
           textTransform: "uppercase",
-          color: "rgba(245,237,237,0.3)",
+          color: "rgba(var(--ep-ink-rgb),0.3)",
           margin: 0,
           textAlign: "center",
         }}>

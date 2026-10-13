@@ -28,10 +28,10 @@ export default function CheckinDaySettings({
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
-      background: "rgba(31,1,1,0.6)", border: "1px solid rgba(137,4,4,0.25)",
+      background: "rgba(var(--ep-s1-rgb),0.6)", border: "1px solid rgba(var(--ep-line-rgb),0.25)",
       borderRadius: 10, padding: "10px 14px", marginBottom: 20,
     }}>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
         {t("Jour de check-in fixe")}
       </span>
       <form action={action} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -42,8 +42,8 @@ export default function CheckinDaySettings({
           disabled={isPending}
           aria-label={t("Jour de check-in fixe")}
           style={{
-            background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)",
-            borderRadius: 8, padding: "6px 10px", fontSize: 12, color: "#F5EDED", outline: "none",
+            background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.3)",
+            borderRadius: 8, padding: "6px 10px", fontSize: 12, color: "var(--ep-ink)", outline: "none",
           }}
         >
           {DAYS.map((d) => (
@@ -54,7 +54,7 @@ export default function CheckinDaySettings({
           type="submit"
           disabled={isPending}
           style={{
-            background: "#E01E1E", color: "#fff", border: "none", borderRadius: 8,
+            background: "var(--ep-accent)", color: "#fff", border: "none", borderRadius: 8,
             padding: "6px 12px", fontSize: 11, fontWeight: 700, textTransform: "uppercase",
             cursor: isPending ? "wait" : "pointer", opacity: isPending ? 0.6 : 1,
           }}
@@ -63,10 +63,10 @@ export default function CheckinDaySettings({
         </button>
       </form>
       {state && "success" in state && (
-        <span style={{ fontSize: 11, color: "#4ade80" }}>{t("✓ Enregistré")}</span>
+        <span style={{ fontSize: 11, color: "var(--ep-ok)" }}>{t("✓ Enregistré")}</span>
       )}
       {state && "error" in state && (
-        <span style={{ fontSize: 11, color: "#FDC4C4" }}>{state.error}</span>
+        <span style={{ fontSize: 11, color: "var(--ep-pink)" }}>{state.error}</span>
       )}
     </div>
   );

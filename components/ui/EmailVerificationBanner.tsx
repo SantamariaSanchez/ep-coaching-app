@@ -28,17 +28,17 @@ export default function EmailVerificationBanner({ email }: { email: string | nul
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-2.5 bg-[#1f0101] border-b border-[#890404]/35"
-      style={{ boxShadow: "inset 0 -12px 24px -20px rgba(224,30,30,0.55)" }}
+      className="flex items-center gap-3 px-4 py-2.5 bg-(--ep-s1) border-b border-(--ep-line)/35"
+      style={{ boxShadow: "inset 0 -12px 24px -20px rgba(var(--ep-accent-rgb),0.55)" }}
     >
-      <MailWarning size={15} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2} />
-      <p className="text-[12px] text-[#F5EDED]/70 leading-snug flex-1 m-0">
+      <MailWarning size={15} className="text-(--ep-accent) flex-shrink-0" strokeWidth={2} />
+      <p className="text-[12px] text-(--ep-ink)/70 leading-snug flex-1 m-0">
         {sent ? (
           <>{t("Email envoyé")}{email ? ` à ${email}` : ""}{t(". Pense à regarder tes spams.")}</>
         ) : (
           <>
             {t("Confirme ton adresse email pour sécuriser ton compte.")}
-            <span className="hidden sm:inline text-[#F5EDED]/40">
+            <span className="hidden sm:inline text-(--ep-ink)/40">
               {" "}
               {t("C'est ce qui te permet de le récupérer si tu perds ton mot de passe.")}
             </span>
@@ -50,7 +50,7 @@ export default function EmailVerificationBanner({ email }: { email: string | nul
         <button
           onClick={resend}
           disabled={sending}
-          className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#F5EDED] disabled:opacity-50 transition-colors"
+          className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-ink) disabled:opacity-50 transition-colors"
         >
           {sending ? t("Envoi…") : t("Renvoyer")}
         </button>
@@ -59,7 +59,7 @@ export default function EmailVerificationBanner({ email }: { email: string | nul
       <button
         onClick={() => setHidden(true)}
         aria-label={t("Masquer")}
-        className="flex-shrink-0 text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
+        className="flex-shrink-0 text-(--ep-ink)/25 hover:text-(--ep-ink)/60 transition-colors"
       >
         <X size={14} />
       </button>

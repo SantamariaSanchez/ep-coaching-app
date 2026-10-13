@@ -52,9 +52,9 @@ export default function UrgentAlertsSection() {
   if (loadError) {
     return (
       <section className="mb-10">
-        <div className="flex items-center gap-2.5 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5">
-          <WifiOff size={15} className="text-[#F5EDED]/35 flex-shrink-0" strokeWidth={1.8} />
-          <p className="text-xs text-[#F5EDED]/40">
+        <div className="flex items-center gap-2.5 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5">
+          <WifiOff size={15} className="text-(--ep-ink)/35 flex-shrink-0" strokeWidth={1.8} />
+          <p className="text-xs text-(--ep-ink)/40">
             {t("Impossible de vérifier les alertes pour l'instant. Réessaie en rechargeant la page.")}
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function UrgentAlertsSection() {
       <section className="mb-10">
         <div className="flex items-center gap-2.5 bg-green-500/5 border border-green-500/15 rounded-xl px-4 py-3.5">
           <CheckCircle2 size={15} className="text-green-400/70 flex-shrink-0" strokeWidth={1.8} />
-          <p className="text-xs text-[#F5EDED]/45">
+          <p className="text-xs text-(--ep-ink)/45">
             {t("Rien à signaler. Tous tes clients suivis sont à jour.")}
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function UrgentAlertsSection() {
             plus les clients sans signal mais silencieux depuis 30j+. */}
         <Link
           href="/dashboard/coach/prioritaires"
-          className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+          className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors"
         >
           {t("Voir tout")}
           <ChevronRight size={12} />
@@ -109,7 +109,7 @@ export default function UrgentAlertsSection() {
           <Link
             key={i}
             href={`/dashboard/coach/clients/${item.clientId}`}
-            className="flex items-start gap-3 bg-[#1f0101] border border-red-500/15 hover:border-red-500/30 rounded-xl px-4 py-3.5 transition-colors group"
+            className="flex items-start gap-3 bg-(--ep-s1) border border-red-500/15 hover:border-red-500/30 rounded-xl px-4 py-3.5 transition-colors group"
           >
             {item.alert.severity === "high" ? (
               <AlertTriangle size={13} className="text-red-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
@@ -117,8 +117,8 @@ export default function UrgentAlertsSection() {
               <AlertCircle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-black text-white">{item.clientName ?? t("Client")}</p>
-              <p className="text-[10px] text-[#F5EDED]/50 mt-0.5 leading-snug">{item.alert.label}</p>
+              <p className="text-xs font-black text-(--ep-strong)">{item.clientName ?? t("Client")}</p>
+              <p className="text-[10px] text-(--ep-ink)/50 mt-0.5 leading-snug">{item.alert.label}</p>
             </div>
             <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border flex-shrink-0 ${
               item.alert.severity === "high"
@@ -131,7 +131,7 @@ export default function UrgentAlertsSection() {
                 l'affordance "ceci mène ailleurs", déjà présent sur les lignes
                 visuellement identiques d'"En attente de retour" juste en
                 dessous (DashboardStats) mais absent ici. */}
-            <ChevronRight size={13} className="text-[#F5EDED]/20 flex-shrink-0" />
+            <ChevronRight size={13} className="text-(--ep-ink)/20 flex-shrink-0" />
           </Link>
         ))}
       </div>
@@ -139,7 +139,7 @@ export default function UrgentAlertsSection() {
       <div className="mt-3 text-center">
         <Link
           href="/dashboard/coach/clients"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-accent) transition-colors"
         >
           <Users size={12} />
           {t("Voir tous les clients")}

@@ -45,8 +45,8 @@ function OptionGrid<T extends string>({
             onClick={() => onSelect(opt)}
             className={`text-left px-4 py-3.5 rounded-xl border text-sm font-bold transition-all ${
               active
-                ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
+                ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+                : "bg-(--ep-s1) border-(--ep-line)/25 text-(--ep-ink)/55 hover:border-(--ep-line)/50"
             }`}
           >
             {labels[opt]}
@@ -78,8 +78,8 @@ function MultiChips<T extends string>({
             onClick={() => toggle(opt)}
             className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-colors ${
               active
-                ? "bg-[#E01E1E] border-[#E01E1E] text-white"
-                : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50"
+                ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
+                : "bg-(--ep-s1) border-(--ep-line)/25 text-(--ep-ink)/50 hover:border-(--ep-line)/50"
             }`}
           >
             {labels[opt]}
@@ -144,26 +144,26 @@ function FoodGroupPicker({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-sm font-black text-white">{label}</h3>
+        <h3 className="text-sm font-black text-(--ep-strong)">{label}</h3>
         {selected.size > 0 && (
-          <span className="text-[10px] font-bold text-[#E01E1E]">{selected.size}{" "}{tr("sélectionné")}{selected.size > 1 ? "s" : ""}</span>
+          <span className="text-[10px] font-bold text-(--ep-accent)">{selected.size}{" "}{tr("sélectionné")}{selected.size > 1 ? "s" : ""}</span>
         )}
       </div>
-      <p className="text-[11px] text-[#F5EDED]/35 mb-2">{hint}</p>
+      <p className="text-[11px] text-(--ep-ink)/35 mb-2">{hint}</p>
       <div className="relative mb-2">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" />
         <input
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setShowCreate(false); }}
           placeholder={tr("Rechercher un aliment...")} aria-label={tr("Rechercher un aliment...")}
-          className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg pl-8 pr-8 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#890404]/60"
+          className="w-full bg-(--ep-s1) border border-(--ep-line)/25 rounded-lg pl-8 pr-8 py-2 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-line)/60"
         />
         {search && (
           <button
             onClick={() => { setSearch(""); setShowCreate(false); }}
             aria-label={tr("Effacer la recherche")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-(--ep-ink)/30 hover:text-(--ep-ink)/60"
           >
             <X size={13} />
           </button>
@@ -178,17 +178,17 @@ function FoodGroupPicker({
               onClick={() => toggle(name)}
               className={`text-left px-3 py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 ${
                 active
-                  ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                  : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
+                  ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+                  : "bg-(--ep-s1) border-(--ep-line)/25 text-(--ep-ink)/55 hover:border-(--ep-line)/50"
               }`}
             >
-              {active && <Check size={11} className="text-[#E01E1E] flex-shrink-0" />}
+              {active && <Check size={11} className="text-(--ep-accent) flex-shrink-0" />}
               <span className="truncate">{name}</span>
             </button>
           );
         })}
         {filtered.length === 0 && (
-          <p className="col-span-2 text-xs text-[#F5EDED]/30 italic py-2">
+          <p className="col-span-2 text-xs text-(--ep-ink)/30 italic py-2">
             {query ? tr("Aucun résultat pour cette recherche.") : tr("Aucune option compatible avec ton régime/allergies.")}
           </p>
         )}
@@ -196,14 +196,14 @@ function FoodGroupPicker({
       {query && filtered.length === 0 && onCreateFood && !showCreate && (
         <button
           onClick={() => setShowCreate(true)}
-          className="mt-2 w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+          className="mt-2 w-full flex items-center justify-center gap-1.5 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/55 rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
         >
           {tr("+ Créer \"")}{search.trim()}{tr("\" comme nouvel aliment")}
         </button>
       )}
       {showCreate && (
-        <div className="mt-2 bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
-          <p className="text-[9px] text-[#F5EDED]/25">{tr("Valeurs pour 100g de \"")}{search.trim()}&quot;</p>
+        <div className="mt-2 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg p-3 space-y-2">
+          <p className="text-[9px] text-(--ep-ink)/25">{tr("Valeurs pour 100g de \"")}{search.trim()}&quot;</p>
           <div className="grid grid-cols-4 gap-1.5">
             {([
               { key: "calories", label: tr("Kcal") },
@@ -218,9 +218,9 @@ function FoodGroupPicker({
                   value={macros[key]}
                   onChange={(e) => setMacros((m) => ({ ...m, [key]: e.target.value }))}
                   placeholder="0" aria-label="0"
-                  className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-2 py-1.5 text-xs text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+                  className="w-full bg-(--ep-s1) border border-(--ep-line)/25 rounded-lg px-2 py-1.5 text-xs text-(--ep-strong) text-center placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
                 />
-                <p className="text-[8px] text-[#F5EDED]/25 text-center mt-0.5">{l}</p>
+                <p className="text-[8px] text-(--ep-ink)/25 text-center mt-0.5">{l}</p>
               </div>
             ))}
           </div>
@@ -228,14 +228,14 @@ function FoodGroupPicker({
           <div className="flex gap-1.5">
             <button
               onClick={() => setShowCreate(false)}
-              className="flex-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 border border-[#890404]/25 rounded-lg py-2"
+              className="flex-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 border border-(--ep-line)/25 rounded-lg py-2"
             >
               {tr("Annuler")}
             </button>
             <button
               onClick={handleCreate}
               disabled={creating}
-              className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2 transition-colors"
+              className="flex-1 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest rounded-lg py-2 transition-colors"
             >
               {creating ? tr("Création…") : tr("Créer et ajouter")}
             </button>
@@ -489,10 +489,10 @@ export default function MealCreatorWizard({
   const progress = ((stepIdx + 1) / STEP_ORDER.length) * 100;
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/20 rounded-2xl p-5 md:p-8 max-w-xl mx-auto">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-2xl p-5 md:p-8 max-w-xl mx-auto">
       {step !== "result" && (
-        <div className="h-1 bg-[#890404]/15 rounded-full mb-7 overflow-hidden">
-          <div className="h-full bg-[#E01E1E] rounded-full transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-1 bg-(--ep-line)/15 rounded-full mb-7 overflow-hidden">
+          <div className="h-full bg-(--ep-accent) rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
       )}
 
@@ -508,32 +508,32 @@ export default function MealCreatorWizard({
         >
           {step === "meal" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Quel repas tu veux créer ?")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("On part de là pour calibrer les calories.")}</p>
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Quel repas tu veux créer ?")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">{tr("On part de là pour calibrer les calories.")}</p>
               <OptionGrid options={Object.keys(MEAL_LABELS) as MealType[]} labels={MEAL_LABELS} value={meal} onSelect={setMeal} />
             </div>
           )}
 
           {step === "diet" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Ton régime alimentaire ?")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Pour ne te proposer que des aliments compatibles.")}</p>
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Ton régime alimentaire ?")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">{tr("Pour ne te proposer que des aliments compatibles.")}</p>
               <OptionGrid options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} value={diet} onSelect={setDiet} />
             </div>
           )}
 
           {step === "phase" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Ta phase actuelle ?")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("On ajuste les calories et les portions en fonction.")}</p>
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Ta phase actuelle ?")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">{tr("On ajuste les calories et les portions en fonction.")}</p>
               <OptionGrid options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} value={phase} onSelect={setPhase} />
             </div>
           )}
 
           {step === "macroProfile" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Quel profil de macros ?")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Pour varier : plus riche en glucides, en protéines, ou équilibré.")}</p>
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Quel profil de macros ?")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">{tr("Pour varier : plus riche en glucides, en protéines, ou équilibré.")}</p>
               <div className="flex flex-col gap-2.5">
                 {(Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]).map((p) => (
                   <button
@@ -541,12 +541,12 @@ export default function MealCreatorWizard({
                     onClick={() => setMacroProfile(p)}
                     className={`text-left px-4 py-3.5 rounded-xl border transition-all ${
                       macroProfile === p
-                        ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                        : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
+                        ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+                        : "bg-(--ep-s1) border-(--ep-line)/25 text-(--ep-ink)/55 hover:border-(--ep-line)/50"
                     }`}
                   >
                     <span className="block text-sm font-bold">{MACRO_PROFILE_LABELS[p]}</span>
-                    <span className="block text-[10px] text-[#F5EDED]/35 mt-0.5">{MACRO_PROFILE_DESC[p]}</span>
+                    <span className="block text-[10px] text-(--ep-ink)/35 mt-0.5">{MACRO_PROFILE_DESC[p]}</span>
                   </button>
                 ))}
               </div>
@@ -555,16 +555,16 @@ export default function MealCreatorWizard({
 
           {step === "allergens" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Des allergies à éviter ?")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Optionnel, laisse vide si aucune.")}</p>
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Des allergies à éviter ?")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">{tr("Optionnel, laisse vide si aucune.")}</p>
               <MultiChips options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={allergens} toggle={toggleAllergen} />
             </div>
           )}
 
           {step === "aliments" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Choisis tes aliments")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Choisis tes aliments")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">
                 {tr("Sélectionne autant d'aliments que tu veux par catégorie (protéine obligatoire, le reste est optionnel).")}
               </p>
               <div className="flex flex-col gap-6 max-h-[26rem] overflow-y-auto pr-1 -mr-1">
@@ -591,16 +591,16 @@ export default function MealCreatorWizard({
 
           {step === "temp" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Chaud ou froid ?")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Pour orienter la préparation.")}</p>
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Chaud ou froid ?")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">{tr("Pour orienter la préparation.")}</p>
               <OptionGrid options={Object.keys(TEMP_LABELS) as Temp[]} labels={TEMP_LABELS} value={temp} onSelect={setTemp} />
             </div>
           )}
 
           {step === "time" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">{tr("Combien de temps tu as ?")}</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Dernière question avant ta recette.")}</p>
+              <h2 className="text-xl font-black text-(--ep-strong) mb-1">{tr("Combien de temps tu as ?")}</h2>
+              <p className="text-xs text-(--ep-ink)/40 mb-5">{tr("Dernière question avant ta recette.")}</p>
               <div className="flex flex-col gap-2.5">
                 {(Object.keys(TIME_LABELS) as PrepTime[]).map((t) => (
                   <button
@@ -608,8 +608,8 @@ export default function MealCreatorWizard({
                     onClick={() => setPrepTime(t)}
                     className={`text-left px-4 py-3.5 rounded-xl border text-sm font-bold transition-all ${
                       prepTime === t
-                        ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                        : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
+                        ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+                        : "bg-(--ep-s1) border-(--ep-line)/25 text-(--ep-ink)/55 hover:border-(--ep-line)/50"
                     }`}
                   >
                     {TIME_LABELS[t]}
@@ -618,9 +618,9 @@ export default function MealCreatorWizard({
               </div>
 
               {/* Meal prep : cuisiner une fois pour plusieurs jours. */}
-              <div className="mt-5 pt-5 border-t border-[#890404]/15">
-                <p className="text-xs font-bold text-white mb-1">{tr("Tu prépares pour combien de portions ?")}</p>
-                <p className="text-[10.5px] text-[#F5EDED]/35 mb-3">
+              <div className="mt-5 pt-5 border-t border-(--ep-line)/15">
+                <p className="text-xs font-bold text-(--ep-strong) mb-1">{tr("Tu prépares pour combien de portions ?")}</p>
+                <p className="text-[10.5px] text-(--ep-ink)/35 mb-3">
                   {tr("Les quantités s'ajustent, la valeur nutritionnelle affichée reste toujours pour UNE portion.")}
                 </p>
                 <div className="flex items-center gap-3">
@@ -629,21 +629,21 @@ export default function MealCreatorWizard({
                     onClick={() => setPortions((p) => Math.max(1, p - 1))}
                     disabled={portions <= 1}
                     aria-label={tr("Moins de portions")}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#890404]/30 text-[#F5EDED]/60 disabled:opacity-30 hover:border-[#E01E1E]/50 transition-colors"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-(--ep-line)/30 text-(--ep-ink)/60 disabled:opacity-30 hover:border-(--ep-accent)/50 transition-colors"
                   >
                     <Minus size={14} />
                   </button>
-                  <span className="text-lg font-black text-white w-10 text-center tabular-nums">{portions}</span>
+                  <span className="text-lg font-black text-(--ep-strong) w-10 text-center tabular-nums">{portions}</span>
                   <button
                     type="button"
                     onClick={() => setPortions((p) => Math.min(6, p + 1))}
                     disabled={portions >= 6}
                     aria-label={tr("Plus de portions")}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#890404]/30 text-[#F5EDED]/60 disabled:opacity-30 hover:border-[#E01E1E]/50 transition-colors"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-(--ep-line)/30 text-(--ep-ink)/60 disabled:opacity-30 hover:border-(--ep-accent)/50 transition-colors"
                   >
                     <Plus size={14} />
                   </button>
-                  <span className="text-[10.5px] text-[#F5EDED]/30">
+                  <span className="text-[10.5px] text-(--ep-ink)/30">
                     {portions === 1 ? tr("juste pour maintenant") : `de quoi manger ${portions} fois`}
                   </span>
                 </div>
@@ -655,30 +655,30 @@ export default function MealCreatorWizard({
             <div>
               {!result ? (
                 <div className="text-center py-10">
-                  <p className="text-sm text-[#F5EDED]/40">
+                  <p className="text-sm text-(--ep-ink)/40">
                     {tr("Aucune combinaison trouvée, essaie avec d'autres choix.")}
                   </p>
-                  <button onClick={handleRestart} className="mt-4 text-xs font-bold text-[#E01E1E]">
+                  <button onClick={handleRestart} className="mt-4 text-xs font-bold text-(--ep-accent)">
                     {tr("Recommencer")}
                   </button>
                 </div>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <Sparkles size={16} className="text-[#E01E1E]" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]">
+                    <Sparkles size={16} className="text-(--ep-accent)" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent)">
                       {tr("Ta recette sur mesure")}
                     </p>
                   </div>
-                  <h2 className="text-2xl font-black text-white mb-3">{result.name}</h2>
+                  <h2 className="text-2xl font-black text-(--ep-strong) mb-3">{result.name}</h2>
                   <div className="flex items-center gap-3 flex-wrap mb-1">
-                    <span className="text-xs font-bold text-[#E01E1E]">{result.kcal}{" "}{tr("kcal")}</span>
-                    <span className="text-xs text-[#F5EDED]/50">P {result.protein}g</span>
-                    <span className="text-xs text-[#F5EDED]/50">G {result.carbs}g</span>
-                    <span className="text-xs text-[#F5EDED]/50">L {result.fat}g</span>
-                    <span className="text-xs text-[#F5EDED]/40">· {result.prepMinutes}{" "}{tr("min")}</span>
+                    <span className="text-xs font-bold text-(--ep-accent)">{result.kcal}{" "}{tr("kcal")}</span>
+                    <span className="text-xs text-(--ep-ink)/50">P {result.protein}g</span>
+                    <span className="text-xs text-(--ep-ink)/50">G {result.carbs}g</span>
+                    <span className="text-xs text-(--ep-ink)/50">L {result.fat}g</span>
+                    <span className="text-xs text-(--ep-ink)/40">· {result.prepMinutes}{" "}{tr("min")}</span>
                   </div>
-                  <p className="text-[10.5px] text-[#F5EDED]/30 mb-4">
+                  <p className="text-[10.5px] text-(--ep-ink)/30 mb-4">
                     {result.portions > 1
                       ? `Valeurs pour 1 portion · ingrédients ci-dessous pour ${result.portions} portions au total`
                       : tr("Pour 1 portion")}
@@ -686,25 +686,25 @@ export default function MealCreatorWizard({
 
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
                         {tr("Ingrédients")}
                       </p>
                       <ul className="space-y-1">
                         {result.ingredients.map((ing, i) => (
-                          <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
-                            <span className="text-[#E01E1E]">•</span> {ing}
+                          <li key={i} className="text-xs text-(--ep-ink)/65 flex gap-2">
+                            <span className="text-(--ep-accent)">•</span> {ing}
                           </li>
                         ))}
                       </ul>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
                         {tr("Préparation")}
                       </p>
                       <ol className="space-y-1">
                         {result.steps.map((s, i) => (
-                          <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
-                            <span className="text-[#E01E1E] font-bold">{i + 1}.</span> {s}
+                          <li key={i} className="text-xs text-(--ep-ink)/65 flex gap-2">
+                            <span className="text-(--ep-accent) font-bold">{i + 1}.</span> {s}
                           </li>
                         ))}
                       </ol>
@@ -712,20 +712,20 @@ export default function MealCreatorWizard({
                   </div>
 
                   {result.allergens.length > 0 && (
-                    <p className="text-[10px] text-[#F5EDED]/35 mb-3">
-                      <span className="font-bold text-[#F5EDED]/50">{tr("Allergènes :")}{" "}</span>
+                    <p className="text-[10px] text-(--ep-ink)/35 mb-3">
+                      <span className="font-bold text-(--ep-ink)/50">{tr("Allergènes :")}{" "}</span>
                       {result.allergens.map((a) => ALLERGEN_LABELS[a]).join(", ")}
                     </p>
                   )}
 
-                  <p className="text-xs text-[#F5EDED]/45 italic mb-5 pt-3 border-t border-[#890404]/10">
+                  <p className="text-xs text-(--ep-ink)/45 italic mb-5 pt-3 border-t border-(--ep-line)/10">
                     💡 {result.tip}
                   </p>
 
                   <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={handleRestart}
-                      className="flex-1 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/50 border border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-4 py-2.5"
+                      className="flex-1 text-xs font-bold uppercase tracking-widest text-(--ep-ink)/50 border border-(--ep-line)/25 hover:border-(--ep-line)/50 rounded-lg px-4 py-2.5"
                     >
                       {tr("Recommencer")}
                     </button>
@@ -733,7 +733,7 @@ export default function MealCreatorWizard({
                       <button
                         onClick={handleSave}
                         disabled={saveStatus === "saving" || saveStatus === "saved"}
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
                       >
                         {saveStatus === "saving" ? (
                           <Loader2 size={13} className="animate-spin" />
@@ -760,9 +760,9 @@ export default function MealCreatorWizard({
       {step !== "result" && (
         <div className="mt-7">
           {quotaError && (
-            <div className="flex items-start gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/25 rounded-xl px-4 py-3 mb-2.5">
-              <Sparkles size={13} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-              <p className="text-[12px] text-[#F5EDED]/75 leading-snug">{quotaError}</p>
+            <div className="flex items-start gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/25 rounded-xl px-4 py-3 mb-2.5">
+              <Sparkles size={13} className="text-(--ep-accent) flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-(--ep-ink)/75 leading-snug">{quotaError}</p>
             </div>
           )}
           <div className="flex gap-2">
@@ -770,7 +770,7 @@ export default function MealCreatorWizard({
               <button
                 onClick={() => go(stepIdx - 1, -1)}
                 aria-label={tr("Étape précédente")}
-                className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
+                className="w-12 h-12 flex items-center justify-center rounded-xl border border-(--ep-line)/25 text-(--ep-ink)/40 flex-shrink-0"
               >
                 <ArrowLeft size={16} />
               </button>
@@ -778,7 +778,7 @@ export default function MealCreatorWizard({
             <button
               onClick={handleNext}
               disabled={!canAdvance() || checkingQuota}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-sm font-bold uppercase tracking-widest h-12 rounded-xl transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) text-sm font-bold uppercase tracking-widest h-12 rounded-xl transition-colors"
             >
               {checkingQuota ? (
                 <Loader2 size={15} className="animate-spin" />

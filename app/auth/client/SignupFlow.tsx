@@ -13,10 +13,10 @@ const PREQUALIFICATION_URL = "https://ep-coaching-formulaires.vercel.app/prequal
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.15)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
   borderRadius: 8,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "11px 14px",
   fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
   fontWeight: 500,
@@ -30,7 +30,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.18em",
   textTransform: "uppercase",
-  color: "rgba(224,30,30,0.8)",
+  color: "rgba(var(--ep-accent-rgb),0.8)",
   marginBottom: 7,
 };
 
@@ -122,10 +122,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
       {step === "info" && (
         <form onSubmit={handleCreateAccount} className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ marginBottom: 2 }}>
-            <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
+            <h2 style={{ fontWeight: 800, fontSize: 19, color: "var(--ep-ink)", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
               {t("Crée ton compte")}
             </h2>
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0, lineHeight: 1.5 }}>
               {t("Accès immédiat à ton entraînement, ta nutrition et ton suivi de progression. Gratuit pendant 60 jours, en 30 secondes.")}
             </p>
           </div>
@@ -154,7 +154,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
                 visible qu'après un premier échec de soumission. Le dire
                 avant évite cet aller-retour, surtout ici où la promesse
                 affichée juste au-dessus est "en 30 secondes". */}
-            <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "6px 0 0" }}>
+            <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", margin: "6px 0 0" }}>
               {t("8 caractères minimum.")}
             </p>
           </div>
@@ -166,8 +166,8 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             style={{
               display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
               padding: "12px 14px", borderRadius: 8,
-              background: acceptedTerms ? "rgba(224,30,30,0.06)" : "rgba(245,237,237,0.03)",
-              border: `1px solid ${acceptedTerms ? "rgba(224,30,30,0.3)" : "rgba(245,237,237,0.08)"}`,
+              background: acceptedTerms ? "rgba(var(--ep-accent-rgb),0.06)" : "rgba(var(--ep-ink-rgb),0.03)",
+              border: `1px solid ${acceptedTerms ? "rgba(var(--ep-accent-rgb),0.3)" : "rgba(var(--ep-ink-rgb),0.08)"}`,
               transition: "background 160ms ease, border-color 160ms ease",
             }}
           >
@@ -175,19 +175,19 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               type="checkbox"
               checked={acceptedTerms}
               onChange={(e) => setAcceptedTerms(e.target.checked)}
-              style={{ width: 17, height: 17, marginTop: 1, accentColor: "#E01E1E", flexShrink: 0, cursor: "pointer" }}
+              style={{ width: 17, height: 17, marginTop: 1, accentColor: "var(--ep-accent)", flexShrink: 0, cursor: "pointer" }}
             />
-            <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(245,237,237,0.55)" }}>
+            <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
               {t("J'accepte les")}{" "}
-              <a href="/legal/cgu" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
+              <a href="/legal/cgu" target="_blank" rel="noopener noreferrer" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
                 {t("conditions d'utilisation")}
               </a>
               ,{" "}
-              <a href="/legal/cgv" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
+              <a href="/legal/cgv" target="_blank" rel="noopener noreferrer" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
                 {t("les CGV")}
               </a>{" "}
               {t("et la")}{" "}
-              <a href="/legal/confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
+              <a href="/legal/confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
                 {t("politique de confidentialité")}
               </a>
               {t(". Je comprends que le compte gratuit dure 60 jours, qu'il est suspendu ensuite si je ne prends pas d'accompagnement, et qu'un compte laissé sans connexion pendant 60 jours est supprimé.")}
@@ -201,8 +201,8 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             style={{
               display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
               padding: "12px 14px", borderRadius: 8, marginTop: 10,
-              background: wantsNewsletter ? "rgba(224,30,30,0.06)" : "rgba(245,237,237,0.03)",
-              border: `1px solid ${wantsNewsletter ? "rgba(224,30,30,0.3)" : "rgba(245,237,237,0.08)"}`,
+              background: wantsNewsletter ? "rgba(var(--ep-accent-rgb),0.06)" : "rgba(var(--ep-ink-rgb),0.03)",
+              border: `1px solid ${wantsNewsletter ? "rgba(var(--ep-accent-rgb),0.3)" : "rgba(var(--ep-ink-rgb),0.08)"}`,
               transition: "background 160ms ease, border-color 160ms ease",
             }}
           >
@@ -210,9 +210,9 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               type="checkbox"
               checked={wantsNewsletter}
               onChange={(e) => setWantsNewsletter(e.target.checked)}
-              style={{ width: 17, height: 17, marginTop: 1, accentColor: "#E01E1E", flexShrink: 0, cursor: "pointer" }}
+              style={{ width: 17, height: 17, marginTop: 1, accentColor: "var(--ep-accent)", flexShrink: 0, cursor: "pointer" }}
             />
-            <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(245,237,237,0.55)" }}>
+            <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
               {t("Je veux aussi recevoir la newsletter EP Coaching (conseils entraînement, nutrition, mindset, un mail de temps en temps). Optionnel, désinscription en un clic à tout moment.")}
             </span>
           </label>
@@ -220,8 +220,8 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           {error && (
             <div style={{
               padding: "12px 16px",
-              background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)",
-              borderRadius: 8, fontSize: 13, color: "#FDC4C4",
+              background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
+              borderRadius: 8, fontSize: 13, color: "var(--ep-pink)",
             }}>
               ⚠ {t(error)}
             </div>
@@ -236,10 +236,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
       {step === "choix" && (
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
+            <h2 style={{ fontWeight: 800, fontSize: 19, color: "var(--ep-ink)", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
               {t("Compte créé 🎉")}
             </h2>
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>
               {t("Rejoins la communauté gratuitement, ou passe directement en coaching premium.")}
             </p>
           </div>
@@ -251,29 +251,29 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "16px 18px", borderRadius: 12,
-              border: "1px solid rgba(245,237,237,0.3)",
-              background: "rgba(245,237,237,0.1)",
-              color: "#F5EDED", cursor: "pointer", textAlign: "left",
+              border: "1px solid rgba(var(--ep-ink-rgb),0.3)",
+              background: "rgba(var(--ep-ink-rgb),0.1)",
+              color: "var(--ep-ink)", cursor: "pointer", textAlign: "left",
             }}
           >
-            <Heart size={20} style={{ color: "#F5EDED", flexShrink: 0 }} strokeWidth={1.8} />
+            <Heart size={20} style={{ color: "var(--ep-ink)", flexShrink: 0 }} strokeWidth={1.8} />
             <span style={{ flex: 1 }}>
               <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{t("Rejoindre la communauté")}</span>
-              <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.5)", marginTop: 2 }}>
+              <span style={{ display: "block", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)", marginTop: 2 }}>
                 {t("Gratuit · Victoires, Questions, Ressources")}
               </span>
             </span>
             {submitting === "free" ? (
-              <div style={{ width: 16, height: 16, border: "2px solid #F5EDED", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
+              <div style={{ width: 16, height: 16, border: "2px solid var(--ep-ink)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
             ) : (
-              <ChevronRight size={16} style={{ color: "#F5EDED" }} />
+              <ChevronRight size={16} style={{ color: "var(--ep-ink)" }} />
             )}
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0" }}>
-            <div style={{ flex: 1, height: 1, background: "rgba(245,237,237,0.08)" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "rgba(245,237,237,0.25)", textTransform: "uppercase" }}>{t("ou")}</span>
-            <div style={{ flex: 1, height: 1, background: "rgba(245,237,237,0.08)" }} />
+            <div style={{ flex: 1, height: 1, background: "rgba(var(--ep-ink-rgb),0.08)" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "rgba(var(--ep-ink-rgb),0.25)", textTransform: "uppercase" }}>{t("ou")}</span>
+            <div style={{ flex: 1, height: 1, background: "rgba(var(--ep-ink-rgb),0.08)" }} />
           </div>
 
           <button
@@ -283,22 +283,22 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "16px 18px", borderRadius: 12,
-              border: "1px solid rgba(224,30,30,0.45)",
-              background: "rgba(224,30,30,0.12)",
-              color: "#F5EDED", cursor: "pointer", textAlign: "left",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.45)",
+              background: "rgba(var(--ep-accent-rgb),0.12)",
+              color: "var(--ep-ink)", cursor: "pointer", textAlign: "left",
             }}
           >
-            <PhoneCall size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+            <PhoneCall size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
             <span style={{ flex: 1 }}>
               <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{t("Je veux un coaching individuel")}</span>
-              <span style={{ display: "block", fontSize: 10, color: "rgba(245,237,237,0.35)", marginTop: 2 }}>
+              <span style={{ display: "block", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.35)", marginTop: 2 }}>
                 {t("Réserve ton appel découverte de 30 min")}
               </span>
             </span>
             {submitting === "coaching" ? (
-              <div style={{ width: 16, height: 16, border: "2px solid #E01E1E", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
+              <div style={{ width: 16, height: 16, border: "2px solid var(--ep-accent)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
             ) : (
-              <ChevronRight size={16} style={{ color: "rgba(224,30,30,0.6)" }} />
+              <ChevronRight size={16} style={{ color: "rgba(var(--ep-accent-rgb),0.6)" }} />
             )}
           </button>
         </div>
@@ -311,10 +311,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           style={{
             display: "block", width: "100%", textAlign: "center",
             marginTop: 18, background: "none", border: "none",
-            color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+            color: "rgba(var(--ep-ink-rgb),0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
           }}
         >
-          {t("Déjà membre ?")}{" "}<span style={{ color: "#E01E1E" }}>{t("Me connecter")}</span>
+          {t("Déjà membre ?")}{" "}<span style={{ color: "var(--ep-accent)" }}>{t("Me connecter")}</span>
         </button>
       )}
     </div>

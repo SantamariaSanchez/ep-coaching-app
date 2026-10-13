@@ -75,14 +75,14 @@ export default async function CoachBusinessPage() {
   return (
     <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Mon espace")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <Rocket size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
+          <Rocket size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Développer mon business")}
         </h1>
-        <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
+        <p className="mt-1 text-sm text-(--ep-ink)/40 leading-relaxed max-w-xl">
           {t("Suivre tes clients, c'est déjà couvert partout ailleurs dans l'appli. Ici, c'est ton propre business de coach : où tu en es, où tu vas, et un système pour y arriver.")}
         </p>
       </div>

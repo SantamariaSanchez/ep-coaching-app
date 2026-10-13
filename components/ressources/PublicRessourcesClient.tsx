@@ -55,7 +55,7 @@ export default function PublicRessourcesClient({
             top: 0,
             zIndex: 40,
             background: "#cc0000",
-            color: "#fff",
+            color: "var(--ep-strong)",
             padding: "10px 20px",
             display: "flex",
             alignItems: "center",
@@ -71,10 +71,10 @@ export default function PublicRessourcesClient({
           <button
             onClick={() => setManualOpen(true)}
             style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "1px solid rgba(255,255,255,0.35)",
+              background: "rgba(var(--ep-hi-rgb),0.15)",
+              border: "1px solid rgba(var(--ep-hi-rgb),0.35)",
               borderRadius: 999,
-              color: "#fff",
+              color: "var(--ep-strong)",
               fontSize: 11,
               fontWeight: 700,
               padding: "4px 12px",
@@ -91,7 +91,7 @@ export default function PublicRessourcesClient({
 
       <div className="px-6 py-8 max-w-2xl mx-auto pb-24">
         <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
             {tr("EP Coaching")}
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Ressources")}</h1>
@@ -105,16 +105,16 @@ export default function PublicRessourcesClient({
             lead magnets ci-dessus, découvrables sans avoir à chercher. */}
         <Link
           href="/outils"
-          className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
+          className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
         >
-          <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-            <Calculator size={15} className="text-[#890404]" strokeWidth={1.8} />
+          <div className="w-9 h-9 rounded-lg bg-(--ep-line)/10 flex items-center justify-center flex-shrink-0">
+            <Calculator size={15} className="text-(--ep-line)" strokeWidth={1.8} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white">{tr("Calculateurs gratuits")}</p>
-            <p className="text-[10px] text-[#F5EDED]/35">{tr("Calories, macros, charge maximale (1RM)")}</p>
+            <p className="text-sm font-bold text-(--ep-strong)">{tr("Calculateurs gratuits")}</p>
+            <p className="text-[10px] text-(--ep-ink)/35">{tr("Calories, macros, charge maximale (1RM)")}</p>
           </div>
-          <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
+          <ChevronRight size={15} className="text-(--ep-ink)/25 flex-shrink-0" strokeWidth={1.8} />
         </Link>
 
         {/* Axe 5 (VISION.md) : annuaire public des coachs, même logique de
@@ -122,16 +122,16 @@ export default function PublicRessourcesClient({
             visiteur pas encore décidé sur QUI le suivre. */}
         <Link
           href="/coachs"
-          className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
+          className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
         >
-          <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-            <Users size={15} className="text-[#890404]" strokeWidth={1.8} />
+          <div className="w-9 h-9 rounded-lg bg-(--ep-line)/10 flex items-center justify-center flex-shrink-0">
+            <Users size={15} className="text-(--ep-line)" strokeWidth={1.8} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white">{tr("Trouve ton coach")}</p>
-            <p className="text-[10px] text-[#F5EDED]/35">{tr("Annuaire des coachs, par spécialisation")}</p>
+            <p className="text-sm font-bold text-(--ep-strong)">{tr("Trouve ton coach")}</p>
+            <p className="text-[10px] text-(--ep-ink)/35">{tr("Annuaire des coachs, par spécialisation")}</p>
           </div>
-          <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
+          <ChevronRight size={15} className="text-(--ep-ink)/25 flex-shrink-0" strokeWidth={1.8} />
         </Link>
 
         {/* Item 44 : mur de réussites publiques, même logique de découverte
@@ -142,16 +142,16 @@ export default function PublicRessourcesClient({
         {hasVictories && (
           <Link
             href="/reussites"
-            className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
+            className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
           >
-            <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-              <Trophy size={15} className="text-[#890404]" strokeWidth={1.8} />
+            <div className="w-9 h-9 rounded-lg bg-(--ep-line)/10 flex items-center justify-center flex-shrink-0">
+              <Trophy size={15} className="text-(--ep-line)" strokeWidth={1.8} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white">{tr("Réussites des membres")}</p>
-              <p className="text-[10px] text-[#F5EDED]/35">{tr("Ce qu'ils partagent, avec leur accord")}</p>
+              <p className="text-sm font-bold text-(--ep-strong)">{tr("Réussites des membres")}</p>
+              <p className="text-[10px] text-(--ep-ink)/35">{tr("Ce qu'ils partagent, avec leur accord")}</p>
             </div>
-            <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
+            <ChevronRight size={15} className="text-(--ep-ink)/25 flex-shrink-0" strokeWidth={1.8} />
           </Link>
         )}
 

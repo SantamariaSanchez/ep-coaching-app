@@ -35,7 +35,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
     return (
       <div style={{
         display: "flex", alignItems: "center", gap: 10, justifyContent: "center",
-        color: "#4ade80", fontSize: 13, fontWeight: 700,
+        color: "var(--ep-ok)", fontSize: 13, fontWeight: 700,
       }}>
         <CheckCircle2 size={16} />{" "}{t("Tu es sur la liste d'attente, le coach te contactera.")}
       </div>
@@ -49,8 +49,8 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
         onChange={(e) => setNote(e.target.value)}
         placeholder={t("Un mot sur ta situation (facultatif)")} aria-label={t("Un mot sur ta situation (facultatif)")}
         style={{
-          width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.2)",
-          borderRadius: "var(--radius-lg)", color: "#F5EDED", padding: "12px 16px", fontSize: 13,
+          width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
+          borderRadius: "var(--radius-lg)", color: "var(--ep-ink)", padding: "12px 16px", fontSize: 13,
           marginBottom: 12, outline: "none",
         }}
       />
@@ -60,7 +60,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
         disabled={isPending}
         style={{
           display: "inline-flex", alignItems: "center", gap: 8,
-          background: "#E01E1E", color: "#fff", padding: "14px 28px", borderRadius: "var(--radius-lg)",
+          background: "var(--ep-accent)", color: "#fff", padding: "14px 28px", borderRadius: "var(--radius-lg)",
           fontWeight: 800, fontSize: 14, letterSpacing: "0.02em", border: "none", cursor: "pointer",
           opacity: isPending ? 0.6 : 1,
         }}

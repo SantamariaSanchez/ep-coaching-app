@@ -11,9 +11,9 @@ export default async function StaffInactivePage() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div className="ep-card" style={{ maxWidth: 420, padding: "28px 24px", textAlign: "center" }}>
-        <ShieldOff size={28} style={{ color: "#E01E1E", margin: "0 auto 12px" }} />
-        <h1 style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: "0 0 8px" }}>{t("Accès équipe désactivé")}</h1>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: 0 }}>
+        <ShieldOff size={28} style={{ color: "var(--ep-accent)", margin: "0 auto 12px" }} />
+        <h1 style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 8px" }}>{t("Accès équipe désactivé")}</h1>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.6, margin: 0 }}>
           {t("Ton espace métier n'est plus actif. Si tu penses que c'est une erreur, écris à peccoux.manu@gmail.com.")}
         </p>
       </div>

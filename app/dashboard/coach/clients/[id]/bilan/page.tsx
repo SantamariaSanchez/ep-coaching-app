@@ -42,7 +42,7 @@ export default async function CoachClientBilanPage({
       <div style={{ marginBottom: 28 }}>
         <Link
           href={`/dashboard/coach/clients/${id}`}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.3)", textDecoration: "none", marginBottom: 14, letterSpacing: "0.06em", textTransform: "uppercase" }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.3)", textDecoration: "none", marginBottom: 14, letterSpacing: "0.06em", textTransform: "uppercase" }}
         >
           <ArrowLeft size={13} />{" "}{t("Retour")}
         </Link>

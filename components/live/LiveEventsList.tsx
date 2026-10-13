@@ -154,9 +154,9 @@ export default function LiveEventsList({
       )}
 
       {upcoming.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center mb-6">
-          <CalendarX2 size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{t("Aucun live programmé pour l'instant.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-12 text-center mb-6">
+          <CalendarX2 size={24} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{t("Aucun live programmé pour l'instant.")}</p>
         </div>
       ) : (
         <div className="space-y-2 mb-6">
@@ -180,7 +180,7 @@ export default function LiveEventsList({
 
       {others.length > 0 && (
         <>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-2">
             {t("Passés / annulés")}
           </p>
           <div className="space-y-2 opacity-60">

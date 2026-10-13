@@ -31,27 +31,27 @@ export default function ContractSignForm({ expectedName }: { expectedName: strin
     });
   }
 
-  const box: React.CSSProperties = { marginTop: 3, flexShrink: 0, width: 16, height: 16, accentColor: "#E01E1E" };
+  const box: React.CSSProperties = { marginTop: 3, flexShrink: 0, width: 16, height: 16, accentColor: "var(--ep-accent)" };
 
   return (
     <div className="ep-card-hero" style={{ padding: "20px 18px" }}>
       <label style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 12, cursor: "pointer" }}>
         <input type="checkbox" checked={acceptedContract} onChange={(e) => setAcceptedContract(e.target.checked)} style={box} />
-        <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.55 }}>
+        <span style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.55 }}>
           {t("J'ai lu le contrat de collaboration ci-dessus et je l'accepte.")}
         </span>
       </label>
       <label style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16, cursor: "pointer" }}>
         <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} style={box} />
-        <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.55 }}>
+        <span style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.55 }}>
           {t("J'accepte les")}{" "}
-          <Link href="/legal/equipe" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>{t("Conditions de collaboration")}</Link>{" "}
+          <Link href="/legal/equipe" target="_blank" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("Conditions de collaboration")}</Link>{" "}
           {t("de l'équipe et la")}{" "}
-          <Link href="/legal/confidentialite" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>{t("politique de confidentialité")}</Link>.
+          <Link href="/legal/confidentialite" target="_blank" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("politique de confidentialité")}</Link>.
         </span>
       </label>
 
-      <label htmlFor="contract-signature" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(224,30,30,0.8)", marginBottom: 8 }}>
+      <label htmlFor="contract-signature" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.8)", marginBottom: 8 }}>
         {t("Signature : tape ton nom complet (")}{expectedName})
       </label>
       <input
@@ -65,7 +65,7 @@ export default function ContractSignForm({ expectedName }: { expectedName: strin
       />
 
       {error && (
-        <p role="alert" style={{ fontSize: 12.5, color: "#FDC4C4", margin: "12px 0 0" }}>{t(error)}</p>
+        <p role="alert" style={{ fontSize: 12.5, color: "var(--ep-pink)", margin: "12px 0 0" }}>{t(error)}</p>
       )}
 
       <button
@@ -78,7 +78,7 @@ export default function ContractSignForm({ expectedName }: { expectedName: strin
         <PenLine size={15} />
         {pending ? t("Signature...") : t("Signer mon contrat")}
       </button>
-      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "10px 0 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", margin: "10px 0 0", lineHeight: 1.5 }}>
         {t("Signature électronique horodatée (date, heure, adresse IP, version du contrat). Une copie t'est envoyée par email.")}
       </p>
     </div>

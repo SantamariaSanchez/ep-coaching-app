@@ -33,12 +33,12 @@ export default function CollapsibleSection({
         aria-expanded={open}
       >
         <div>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
-          {subtitle && <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{subtitle}</p>}
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{title}</p>
+          {subtitle && <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{subtitle}</p>}
         </div>
         <ChevronDown
           size={16}
-          style={{ color: "rgba(245,237,237,0.4)", flexShrink: 0, transition: "transform 0.2s ease", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+          style={{ color: "rgba(var(--ep-ink-rgb),0.4)", flexShrink: 0, transition: "transform 0.2s ease", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
       </button>
       {open && <div style={{ padding: "0 16px 16px" }}>{children}</div>}

@@ -279,13 +279,13 @@ export default function ProgramTemplateEditor({
   return (
     <div className="space-y-6">
       {/* Structure — phase de réflexion avant de remplir le moindre exercice */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
           {tr("1. Structure du modèle")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Nom du modèle")}
             </label>
             <input
@@ -296,7 +296,7 @@ export default function ProgramTemplateEditor({
             />
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Split")}
             </label>
             <select aria-label={tr("Split")} value={state.type} onChange={(e) => updateMeta("type", e.target.value)} className={inputCls}>
@@ -306,7 +306,7 @@ export default function ProgramTemplateEditor({
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Fréquence (séances/semaine)")}
             </label>
             <input
@@ -321,7 +321,7 @@ export default function ProgramTemplateEditor({
           </div>
         </div>
         <div className="mb-4">
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
             {tr("Objectif de phase")}
           </label>
           <input
@@ -332,8 +332,8 @@ export default function ProgramTemplateEditor({
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            {tr("Notes de conception")}{" "}<span className="text-[#F5EDED]/25 font-normal">{tr("(privé, jamais montré au client)")}</span>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
+            {tr("Notes de conception")}{" "}<span className="text-(--ep-ink)/25 font-normal">{tr("(privé, jamais montré au client)")}</span>
           </label>
           <textarea
             value={state.notes}
@@ -347,7 +347,7 @@ export default function ProgramTemplateEditor({
         {state.days.length === 0 && (
           <button
             onClick={applyScaffold}
-            className="mt-4 inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="mt-4 inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Wand2 size={13} />
             {tr("Générer les séances de cette structure")}
@@ -357,21 +357,21 @@ export default function ProgramTemplateEditor({
 
       {/* Days */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3 px-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-3 px-1">
           {tr("2. Séances & exercices")}
         </p>
 
         {state.days.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
-            <p className="text-xs text-[#F5EDED]/35 font-semibold uppercase tracking-widest">
+          <div className="flex flex-col items-center justify-center py-14 bg-(--ep-s1) border border-dashed border-(--ep-line)/30 rounded-xl gap-4">
+            <p className="text-xs text-(--ep-ink)/35 font-semibold uppercase tracking-widest">
               {tr("Aucune séance pour l'instant")}
             </p>
-            <p className="text-[11px] text-[#F5EDED]/25 max-w-sm text-center">
+            <p className="text-[11px] text-(--ep-ink)/25 max-w-sm text-center">
               {tr("Choisis un split et une fréquence ci-dessus puis génère les séances, ou ajoute une séance vide directement.")}
             </p>
             <button
               onClick={addDay}
-              className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
             >
               <Plus size={13} />
               {tr("Ajouter une séance")}
@@ -382,19 +382,19 @@ export default function ProgramTemplateEditor({
             <div className="overflow-x-auto pb-2">
               <div className="flex gap-4" style={{ minWidth: `${Math.max(state.days.length * 296, 296)}px` }}>
                 {state.days.map((day, dayIdx) => (
-                  <div key={day.localId} className="w-72 flex-shrink-0 bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
-                    <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-[#890404]/20">
+                  <div key={day.localId} className="w-72 flex-shrink-0 bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4">
+                    <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-(--ep-line)/20">
                       <input
                         value={day.day_label}
                         onChange={(e) => updateDayLabel(day.localId, e.target.value)}
                         aria-label={tr("Nom du jour")}
-                        className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-[#E01E1E] focus:outline-none border-b border-transparent focus:border-[#E01E1E]/40 pb-0.5 min-w-0"
+                        className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-(--ep-accent) focus:outline-none border-b border-transparent focus:border-(--ep-accent)/40 pb-0.5 min-w-0"
                       />
                       <button
                         onClick={() => moveDay(day.localId, -1)}
                         disabled={dayIdx === 0}
                         title={tr("Déplacer à gauche")} aria-label={tr("Déplacer à gauche")}
-                        className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
+                        className="text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 transition-colors flex-shrink-0"
                       >
                         <ChevronLeft size={14} />
                       </button>
@@ -402,21 +402,21 @@ export default function ProgramTemplateEditor({
                         onClick={() => moveDay(day.localId, 1)}
                         disabled={dayIdx === state.days.length - 1}
                         title={tr("Déplacer à droite")} aria-label={tr("Déplacer à droite")}
-                        className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
+                        className="text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 transition-colors flex-shrink-0"
                       >
                         <ChevronRight size={14} />
                       </button>
                       <button
                         onClick={() => duplicateDay(day.localId)}
                         title={tr("Dupliquer cette séance")} aria-label={tr("Dupliquer cette séance")}
-                        className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
+                        className="text-(--ep-ink)/30 hover:text-(--ep-ink)/70 transition-colors flex-shrink-0"
                       >
                         <Copy size={12} />
                       </button>
                       <button
                         onClick={() => removeDay(day.localId)}
                         title={tr("Supprimer la séance")} aria-label={tr("Supprimer la séance")}
-                        className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
+                        className="text-(--ep-ink)/25 hover:text-red-500 transition-colors flex-shrink-0"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -424,7 +424,7 @@ export default function ProgramTemplateEditor({
 
                     <div className="space-y-2 mb-3">
                       {day.exercises.map((ex, exIdx) => (
-                        <div key={ex.localId} className="bg-[#150000] border border-[#890404]/20 rounded-lg p-2.5 space-y-2">
+                        <div key={ex.localId} className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-2.5 space-y-2">
                           <div className="flex items-center gap-1.5">
                             <ExerciseNameField
                               value={ex.name}
@@ -440,7 +440,7 @@ export default function ProgramTemplateEditor({
                                 onClick={() => moveExercise(day.localId, ex.localId, -1)}
                                 disabled={exIdx === 0}
                                 title={tr("Monter")} aria-label={tr("Monter")}
-                                className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
+                                className="text-(--ep-ink)/25 hover:text-(--ep-ink)/60 disabled:opacity-10 transition-colors p-0.5"
                               >
                                 <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><path d="M5 2 L9 8 L1 8 Z" /></svg>
                               </button>
@@ -448,14 +448,14 @@ export default function ProgramTemplateEditor({
                                 onClick={() => moveExercise(day.localId, ex.localId, 1)}
                                 disabled={exIdx === day.exercises.length - 1}
                                 title={tr("Descendre")} aria-label={tr("Descendre")}
-                                className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
+                                className="text-(--ep-ink)/25 hover:text-(--ep-ink)/60 disabled:opacity-10 transition-colors p-0.5"
                               >
                                 <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><path d="M5 8 L1 2 L9 2 Z" /></svg>
                               </button>
                               <button
                                 onClick={() => removeExercise(day.localId, ex.localId)}
                                 title={tr("Supprimer")} aria-label={tr("Supprimer")}
-                                className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
+                                className="text-(--ep-ink)/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
                               >
                                 <Trash2 size={11} />
                               </button>
@@ -472,7 +472,7 @@ export default function ProgramTemplateEditor({
                               ] as const
                             ).map(({ field, label, type, placeholder }) => (
                               <div key={field}>
-                                <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-0.5">
+                                <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-0.5">
                                   {label}
                                 </label>
                                 <input aria-label={label}
@@ -481,7 +481,7 @@ export default function ProgramTemplateEditor({
                                   value={ex[field]}
                                   onChange={(e) => updateExercise(day.localId, ex.localId, field, e.target.value)}
                                   placeholder={placeholder}
-                                  className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/50 transition-colors"
+                                  className="w-full bg-(--ep-s1)/80 border border-(--ep-line)/20 rounded px-2 py-1 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-line)/50 transition-colors"
                                 />
                               </div>
                             ))}
@@ -491,18 +491,18 @@ export default function ProgramTemplateEditor({
                             value={ex.notes}
                             onChange={(e) => updateExercise(day.localId, ex.localId, "notes", e.target.value)}
                             placeholder={tr("Notes (optionnel)")} aria-label={tr("Notes (optionnel)")}
-                            className="w-full bg-transparent text-[10px] text-[#F5EDED]/40 placeholder:text-[#F5EDED]/20 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/10 pb-0.5 transition-colors"
+                            className="w-full bg-transparent text-[10px] text-(--ep-ink)/40 placeholder:text-(--ep-ink)/20 focus:outline-none border-b border-transparent focus:border-(--ep-ink)/10 pb-0.5 transition-colors"
                           />
 
-                          <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-[#890404]/10">
+                          <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-(--ep-line)/10">
                             <div>
-                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/25 block mb-0.5">
                                 {tr("Groupe musculaire")}
                               </label>
                               <select aria-label={tr("Groupe musculaire")}
                                 value={ex.muscle_group}
                                 onChange={(e) => updateExerciseMuscleGroup(day.localId, ex.localId, e.target.value)}
-                                className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
+                                className="w-full bg-(--ep-s1)/80 border border-(--ep-line)/20 rounded px-2 py-1 text-[10px] text-(--ep-strong) focus:outline-none focus:border-(--ep-line)/50 transition-colors"
                               >
                                 <option value="">{tr("Non défini")}</option>
                                 {MUSCLE_GROUPS.map((g) => (
@@ -511,7 +511,7 @@ export default function ProgramTemplateEditor({
                               </select>
                             </div>
                             <div>
-                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/25 block mb-0.5">
                                 {tr("Type")}
                               </label>
                               <div className="flex gap-1.5 pt-1">
@@ -525,7 +525,7 @@ export default function ProgramTemplateEditor({
                                       onChange={() => updateExercise(day.localId, ex.localId, "is_direct", val)}
                                       className="sr-only peer"
                                     />
-                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-[#890404]/20 text-[#F5EDED]/30 peer-checked:border-[#E01E1E]/50 peer-checked:text-[#E01E1E] transition-colors cursor-pointer">
+                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-(--ep-line)/20 text-(--ep-ink)/30 peer-checked:border-(--ep-accent)/50 peer-checked:text-(--ep-accent) transition-colors cursor-pointer">
                                       {val === "true" ? tr("Direct") : tr("Indirect")}
                                     </span>
                                   </label>
@@ -536,13 +536,13 @@ export default function ProgramTemplateEditor({
 
                           {ex.muscle_group && MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup]?.length > 0 && (
                             <div>
-                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/25 block mb-0.5">
                                 {tr("Sous-groupe")}
                               </label>
                               <select aria-label={tr("Sous-groupe")}
                                 value={ex.muscle_subgroup}
                                 onChange={(e) => updateExercise(day.localId, ex.localId, "muscle_subgroup", e.target.value)}
-                                className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
+                                className="w-full bg-(--ep-s1)/80 border border-(--ep-line)/20 rounded px-2 py-1 text-[10px] text-(--ep-strong) focus:outline-none focus:border-(--ep-line)/50 transition-colors"
                               >
                                 <option value="">{tr("Non défini")}</option>
                                 {MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup].map((sg) => (
@@ -557,7 +557,7 @@ export default function ProgramTemplateEditor({
 
                     <button
                       onClick={() => addExercise(day.localId)}
-                      className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/20 hover:border-[#890404]/40 rounded-lg transition-colors"
+                      className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 border border-dashed border-(--ep-line)/20 hover:border-(--ep-line)/40 rounded-lg transition-colors"
                     >
                       <Plus size={11} />
                       {tr("Exercice")}
@@ -569,7 +569,7 @@ export default function ProgramTemplateEditor({
 
             <button
               onClick={addDay}
-              className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
             >
               <Plus size={13} />
               {tr("Ajouter une séance")}
@@ -585,18 +585,18 @@ export default function ProgramTemplateEditor({
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#890404]/15">
+      <div className="flex items-center justify-end gap-3 pt-2 border-t border-(--ep-line)/15">
         <button
           onClick={() => router.back()}
-          className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2.5 transition-colors"
+          className="text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 px-4 py-2.5 transition-colors"
         >
           {tr("Annuler")}
         </button>
         <button
           onClick={handleSave}
           disabled={saving || saved}
-          className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
-            saved ? "bg-green-800/60 border border-green-600/30" : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
+          className={`inline-flex items-center gap-2 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
+            saved ? "bg-green-800/60 border border-green-600/30" : "bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60"
           }`}
         >
           {saved ? (

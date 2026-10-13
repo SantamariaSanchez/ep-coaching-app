@@ -8,7 +8,7 @@ import { SCIENCE_TOPICS, ARTICLE_TYPE_LABELS, guessArticleType, type ScienceArti
 import type { ImportArticleInput } from "@/app/dashboard/client/science/actions";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 // Suggestions cliquables — PubMed n'indexe qu'en anglais, la plupart des
 // clients ne savent pas quel terme medical taper. Mappe des sujets courants
@@ -49,7 +49,7 @@ function ImportForm({ result, onImport, onCancel }: {
   const canImport = titleFr.trim().length > 0 && summaryFr.trim().length > 0;
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 mt-2 space-y-2">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg p-3 mt-2 space-y-2">
       <div className="grid grid-cols-2 gap-2">
         <select value={topic} onChange={(e) => setTopic(e.target.value)} aria-label={tr("Thématique")} className={inputCls}>
           {SCIENCE_TOPICS.map((t) => (
@@ -75,7 +75,7 @@ function ImportForm({ result, onImport, onCancel }: {
         placeholder={tr("Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…")} aria-label={tr("Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…")}
         className={`${inputCls} resize-none`}
       />
-      <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
+      <label className="flex items-center gap-2 text-[11px] text-(--ep-ink)/50">
         <input type="checkbox" checked={asActualite} onChange={(e) => setAsActualite(e.target.checked)} />
         {tr("Afficher aussi dans Actualité")}
       </label>
@@ -102,11 +102,11 @@ function ImportForm({ result, onImport, onCancel }: {
           }}
           disabled={saving || !canImport}
           title={canImport ? undefined : tr("Le titre FR et le résumé sont obligatoires")} aria-label={canImport ? undefined : tr("Le titre FR et le résumé sont obligatoires")}
-          className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-lg transition-colors"
         >
           {saving ? tr("Ajout…") : tr("Confirmer l'ajout")}
         </button>
-        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -124,10 +124,10 @@ function ResultCard({ result, isCoach, importArticle }: {
   const [imported, setImported] = useState(false);
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5">
-      <p className="text-sm font-bold text-white leading-snug">{result.title}</p>
-      <p className="text-[10px] text-[#F5EDED]/35 mt-1">{result.authors}</p>
-      <p className="text-[10px] text-[#F5EDED]/35">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3.5">
+      <p className="text-sm font-bold text-(--ep-strong) leading-snug">{result.title}</p>
+      <p className="text-[10px] text-(--ep-ink)/35 mt-1">{result.authors}</p>
+      <p className="text-[10px] text-(--ep-ink)/35">
         {result.journal}{result.pubDate ? ` · ${formatDate(result.pubDate)}` : ""}
       </p>
       <div className="flex items-center gap-3 mt-2">
@@ -135,14 +135,14 @@ function ResultCard({ result, isCoach, importArticle }: {
           href={result.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+          className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
         >
           <ExternalLink size={11} />{" "}{tr("Voir sur PubMed")}
         </a>
         {isCoach && importArticle && !imported && (
           <button
             onClick={() => setShowImport((v) => !v)}
-            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors ml-auto"
+            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors ml-auto"
           >
             <Plus size={11} />{" "}{tr("Ajouter à la biblio")}
           </button>
@@ -203,7 +203,7 @@ export default function SearchView({ isCoach, importArticle }: {
     <div className="space-y-4">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -215,18 +215,18 @@ export default function SearchView({ isCoach, importArticle }: {
         <button
           onClick={() => handleSearch()}
           disabled={!query.trim() || loading}
-          className="px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors flex-shrink-0"
+          className="px-4 py-2 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) rounded-lg transition-colors flex-shrink-0"
         >
           {loading ? "…" : tr("Rechercher")}
         </button>
       </div>
-      <p className="text-[10px] text-[#F5EDED]/25">
+      <p className="text-[10px] text-(--ep-ink)/25">
         {tr("Recherche directement sur PubMed (NCBI) en anglais, la base de référence des publications scientifiques en santé. Consulte la source pour te faire ta propre opinion.")}
       </p>
 
       {!searched && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-2">
             {tr("Pas d'idée de recherche ? Sujets courants (déjà traduits pour PubMed) :")}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -237,7 +237,7 @@ export default function SearchView({ isCoach, importArticle }: {
                   setQuery(t.query);
                   handleSearch(t.query);
                 }}
-                className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/60 hover:border-[#E01E1E]/50 hover:text-white transition-colors"
+                className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/60 hover:border-(--ep-accent)/50 hover:text-(--ep-strong) transition-colors"
               >
                 {t.label}
               </button>
@@ -253,7 +253,7 @@ export default function SearchView({ isCoach, importArticle }: {
           <ResultCard key={r.pmid} result={r} isCoach={isCoach} importArticle={importArticle} />
         ))}
         {searched && !loading && results.length === 0 && !error && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{tr("Aucun résultat pour cette recherche.")}</p>
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-10">{tr("Aucun résultat pour cette recherche.")}</p>
         )}
       </div>
     </div>

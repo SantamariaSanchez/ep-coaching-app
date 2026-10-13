@@ -53,9 +53,9 @@ export default function CoachDirectoryExplorer({ coaches }: { coaches: CoachDire
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <Tags size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">{tr("Aucun coach ne correspond à ce critère pour l'instant.")}</p>
+        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
+          <Tags size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-(--ep-ink)/35">{tr("Aucun coach ne correspond à ce critère pour l'instant.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -75,9 +75,9 @@ function chipStyle(active: boolean): React.CSSProperties {
     padding: "7px 12px",
     borderRadius: 999,
     cursor: "pointer",
-    border: active ? "1px solid #E01E1E" : "1px solid rgba(245,237,237,0.15)",
-    background: active ? "rgba(224,30,30,0.16)" : "rgba(0,0,0,0.25)",
-    color: active ? "#F5EDED" : "rgba(245,237,237,0.55)",
+    border: active ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+    background: active ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+    color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
     transition: "background 0.15s ease, border-color 0.15s ease",
   };
 }
@@ -96,26 +96,26 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
           <div
             style={{
               width: 52, height: 52, borderRadius: "50%", flexShrink: 0,
-              background: "rgba(96,165,250,0.12)", border: "1px solid rgba(96,165,250,0.35)",
+              background: "rgba(var(--ep-info-rgb),0.12)", border: "1px solid rgba(var(--ep-info-rgb),0.35)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
-            <Bot size={22} style={{ color: "#60a5fa" }} strokeWidth={1.8} />
+            <Bot size={22} style={{ color: "var(--ep-info)" }} strokeWidth={1.8} />
           </div>
         ) : coach.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={coach.avatar_url}
             alt=""
-            style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(224,30,30,0.25)" }}
+            style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(var(--ep-accent-rgb),0.25)" }}
           />
         ) : (
           <div
             style={{
               width: 52, height: 52, borderRadius: "50%", flexShrink: 0,
-              background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.25)",
+              background: "rgba(var(--ep-accent-rgb),0.15)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 15, fontWeight: 800, color: "#F5EDED", textTransform: "uppercase",
+              fontSize: 15, fontWeight: 800, color: "var(--ep-ink)", textTransform: "uppercase",
             }}
           >
             {initials(coach.full_name)}
@@ -124,7 +124,7 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#F5EDED" }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--ep-ink)" }}>
               {coach.full_name ?? tr("Coach")}
             </p>
             {coach.is_ai_coach && (
@@ -132,32 +132,32 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 3,
                   fontSize: 9.5, fontWeight: 800, padding: "3px 8px", borderRadius: 999,
-                  background: "rgba(96,165,250,0.15)", color: "#60a5fa",
-                  border: "1px solid rgba(96,165,250,0.35)", textTransform: "uppercase", letterSpacing: "0.03em",
+                  background: "rgba(var(--ep-info-rgb),0.15)", color: "var(--ep-info)",
+                  border: "1px solid rgba(var(--ep-info-rgb),0.35)", textTransform: "uppercase", letterSpacing: "0.03em",
                 }}
               >
                 <Bot size={10} />{" "}{tr("Coach IA")}
               </span>
             )}
             {coach.accepting_new_clients ? (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "#4ade80" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "var(--ep-ok)" }}>
                 <UserPlus size={11} />{" "}{tr("Places dispo")}
               </span>
             ) : (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "rgba(245,237,237,0.4)" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
                 <UserX size={11} />{" "}{tr("Complet")}
               </span>
             )}
           </div>
 
           {coach.bio && (
-            <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>
+            <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
               {coach.bio}
             </p>
           )}
 
           {coach.instagram_handle && (
-            <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "rgba(245,237,237,0.35)", display: "flex", alignItems: "center", gap: 4 }}>
+            <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.35)", display: "flex", alignItems: "center", gap: 4 }}>
               <AtSign size={11} /> {coach.instagram_handle}
             </p>
           )}
@@ -168,8 +168,8 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
                 key={tag}
                 style={{
                   fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 999,
-                  background: "rgba(245,237,237,0.06)", color: "rgba(245,237,237,0.5)",
-                  border: "1px solid rgba(245,237,237,0.1)",
+                  background: "rgba(var(--ep-ink-rgb),0.06)", color: "rgba(var(--ep-ink-rgb),0.5)",
+                  border: "1px solid rgba(var(--ep-ink-rgb),0.1)",
                 }}
               >
                 {tag}
@@ -183,14 +183,14 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
                 href={`/auth/client?coach=${coach.invite_code}`}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
-                  background: "#E01E1E", color: "#fff", padding: "10px 18px", borderRadius: "var(--radius-lg)",
+                  background: "var(--ep-accent)", color: "#fff", padding: "10px 18px", borderRadius: "var(--radius-lg)",
                   fontWeight: 800, fontSize: 12.5, letterSpacing: "0.02em", textDecoration: "none",
                 }}
               >
                 {tr("Commencer avec")}{" "}{coach.full_name?.split(" ")[0] ?? tr("ce coach")}
               </Link>
             ) : (
-              <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.35)" }}>
+              <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
                 {tr("Complet pour le moment, inscris-toi et rejoins sa liste d'attente depuis ton espace membre.")}
               </p>
             )}

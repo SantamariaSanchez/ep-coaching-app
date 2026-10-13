@@ -29,15 +29,15 @@ export default function NotFound() {
             width: 56,
             height: 56,
             borderRadius: "50%",
-            background: "rgba(224,30,30,0.12)",
-            border: "1px solid rgba(224,30,30,0.3)",
+            background: "rgba(var(--ep-accent-rgb),0.12)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             margin: "0 auto 20px",
           }}
         >
-          <Compass size={24} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <Compass size={24} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
         </div>
 
         <p
@@ -46,7 +46,7 @@ export default function NotFound() {
             fontWeight: 800,
             letterSpacing: "0.2em",
             textTransform: "uppercase",
-            color: "rgba(224,30,30,0.7)",
+            color: "rgba(var(--ep-accent-rgb),0.7)",
             marginBottom: 10,
           }}
         >
@@ -57,7 +57,7 @@ export default function NotFound() {
           style={{
             fontSize: 20,
             fontWeight: 900,
-            color: "#F5EDED",
+            color: "var(--ep-ink)",
             letterSpacing: "-0.01em",
             marginBottom: 10,
           }}
@@ -68,7 +68,7 @@ export default function NotFound() {
         <p
           style={{
             fontSize: 13.5,
-            color: "rgba(245,237,237,0.5)",
+            color: "rgba(var(--ep-ink-rgb),0.5)",
             lineHeight: 1.6,
             marginBottom: 28,
           }}

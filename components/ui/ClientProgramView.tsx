@@ -36,8 +36,8 @@ export default function ClientProgramView({
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="min-w-0">
           {program?.objective && (
-            <p className="text-xs text-[#F5EDED]/45">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 mr-2">
+            <p className="text-xs text-(--ep-ink)/45">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/30 mr-2">
                 {t("Objectif de phase")}
               </span>
               {program.objective}
@@ -46,7 +46,7 @@ export default function ClientProgramView({
         </div>
         <Link
           href={`/dashboard/coach/clients/${clientId}/program/edit`}
-          className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors flex-shrink-0 ml-auto"
+          className="inline-flex items-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors flex-shrink-0 ml-auto"
         >
           {program ? (
             <>
@@ -71,10 +71,10 @@ export default function ClientProgramView({
           intensité après. */}
       {!program || program.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
+          <p className="text-sm font-semibold text-(--ep-ink)/40 uppercase tracking-widest">
             {t("Aucun programme actif")}
           </p>
-          <p className="text-xs text-[#F5EDED]/25 mt-1">
+          <p className="text-xs text-(--ep-ink)/25 mt-1">
             {t("Crée le premier programme d'entraînement pour ce client.")}
           </p>
         </div>
@@ -90,30 +90,30 @@ export default function ClientProgramView({
               return (
               <div
                 key={day.id}
-                className="flex-1 min-w-[260px] bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
+                className="flex-1 min-w-[260px] bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4"
               >
                 <button
                   type="button"
                   onClick={() => setOpenDays((prev) => ({ ...prev, [day.id]: !prev[day.id] }))}
                   aria-expanded={isOpen}
-                  className={`flex items-center justify-between w-full text-left ${isOpen ? "mb-4 pb-2 border-b border-[#890404]/20" : ""}`}
+                  className={`flex items-center justify-between w-full text-left ${isOpen ? "mb-4 pb-2 border-b border-(--ep-line)/20" : ""}`}
                 >
-                  <span className="text-xs font-bold uppercase tracking-widest text-[#E01E1E]">
+                  <span className="text-xs font-bold uppercase tracking-widest text-(--ep-accent)">
                     {day.day_label}
                   </span>
                   <span className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[10px] text-[#F5EDED]/30 font-semibold">
+                    <span className="text-[10px] text-(--ep-ink)/30 font-semibold">
                       {day.exercises.length}{" "}{t("exercice")}{day.exercises.length > 1 ? "s" : ""}
                     </span>
-                    {isOpen ? <ChevronUp size={14} className="text-[#F5EDED]/30" /> : <ChevronDown size={14} className="text-[#F5EDED]/30" />}
+                    {isOpen ? <ChevronUp size={14} className="text-(--ep-ink)/30" /> : <ChevronDown size={14} className="text-(--ep-ink)/30" />}
                   </span>
                 </button>
 
                 {isOpen && (
                 <>
                 {accessories.length > 0 && (
-                  <div className="bg-black/30 border border-[#890404]/20 rounded-lg px-3 py-2.5 mb-3">
-                    <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                  <div className="bg-(--ep-shade)/30 border border-(--ep-line)/20 rounded-lg px-3 py-2.5 mb-3">
+                    <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
                       <Backpack size={11} />{" "}{t("À prévoir")}
                     </p>
                     <div className="flex flex-col gap-1">
@@ -126,13 +126,13 @@ export default function ClientProgramView({
                             href={a.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-[11.5px] font-bold text-white hover:text-[#E01E1E] transition-colors"
+                            className="flex items-center gap-1 text-[11.5px] font-bold text-(--ep-strong) hover:text-(--ep-accent) transition-colors"
                           >
                             {a.accessory}
-                            <ExternalLink size={9} className="text-[#F5EDED]/30" />
+                            <ExternalLink size={9} className="text-(--ep-ink)/30" />
                           </a>
                         ) : (
-                          <span key={a.accessory} className="flex items-center gap-1 text-[11.5px] font-bold text-white">
+                          <span key={a.accessory} className="flex items-center gap-1 text-[11.5px] font-bold text-(--ep-strong)">
                             {a.accessory}
                           </span>
                         )
@@ -142,7 +142,7 @@ export default function ClientProgramView({
                 )}
 
                 {day.exercises.length === 0 ? (
-                  <p className="text-xs text-[#F5EDED]/25 italic">
+                  <p className="text-xs text-(--ep-ink)/25 italic">
                     {t("Aucun exercice")}
                   </p>
                 ) : (

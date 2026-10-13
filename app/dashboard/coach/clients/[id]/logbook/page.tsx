@@ -33,7 +33,7 @@ export default async function CoachClientLogbookPage({
     <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
       <Link
         href={`/dashboard/coach/clients/${id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {client.full_name ?? t("Client")}
@@ -41,7 +41,7 @@ export default async function CoachClientLogbookPage({
 
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
             {t("Logbook")}
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">
@@ -50,7 +50,7 @@ export default async function CoachClientLogbookPage({
         </div>
         <a
           href={`/api/export-logbook?clientId=${id}`}
-          className="inline-flex items-center gap-2 border border-[#890404]/30 hover:border-[#890404]/60 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 border border-(--ep-line)/30 hover:border-(--ep-line)/60 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
         >
           {t("Exporter CSV")}
         </a>

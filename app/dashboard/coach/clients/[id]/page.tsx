@@ -67,7 +67,7 @@ const STATUS_BADGE = {
   },
   ended: {
     label: "Terminé",
-    className: "bg-[#F5EDED]/10 text-[#F5EDED]/40 border border-[#F5EDED]/10",
+    className: "bg-(--ep-ink)/10 text-(--ep-ink)/40 border border-(--ep-ink)/10",
   },
 };
 
@@ -199,7 +199,7 @@ export default async function ClientDetailPage({
     <div className="px-6 py-8 ep-page-wide page-transition">
       <Link
         href="/dashboard/coach/clients"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {t("Tous les clients")}
@@ -221,14 +221,14 @@ export default async function ClientDetailPage({
             directement dans l'éditeur de programme et de diète de sa fiche. */}
         <Link
           href="/dashboard/coach/programmation"
-          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
+          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-accent) transition-colors border border-(--ep-line)/25 rounded-lg px-3 py-2"
         >
           <LayoutTemplate size={12} />
           {t("Modèles")}
         </Link>
         <Link
           href={`/dashboard/coach/clients/${id}/notes`}
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-accent) transition-colors border border-(--ep-line)/25 rounded-lg px-3 py-2"
         >
           <FileText size={12} />
           {t("Mes notes")}

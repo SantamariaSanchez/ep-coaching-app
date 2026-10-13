@@ -10,6 +10,7 @@ import AcceptingClientsCard from "@/components/coach/AcceptingClientsCard";
 import CoachSpecializationsCard from "@/components/coach/CoachSpecializationsCard";
 import PrivacyCard from "@/components/settings/PrivacyCard";
 import AccessibilityCard from "@/components/settings/AccessibilityCard";
+import AmbianceCard from "@/components/settings/AmbianceCard";
 import PermissionsCard from "@/components/settings/PermissionsCard";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
@@ -97,10 +98,11 @@ export default async function CoachParametresPage() {
       sections={[
         {
           id: "affichage",
-          title: t("Langue et affichage"),
-          keywords: "langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation taille du texte animations accessibilité",
+          title: t("Ambiance, langue et affichage"),
+          keywords: "ambiance thème clair sombre rose douce couleur fond langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation taille du texte animations accessibilité",
           node: (
             <>
+              <AmbianceCard />
               <LanguageDisplayCard space="coach" />
               <AccessibilityCard />
             </>

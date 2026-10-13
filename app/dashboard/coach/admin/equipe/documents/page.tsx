@@ -56,40 +56,40 @@ export default async function FounderTeamDocumentsPage() {
     ...people.filter((p) => !p.isFounder).map((p) => ({ value: `user:${p.id}`, label: `${p.name} (${p.subtitle})` })),
   ];
 
-  const row: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: "1px solid rgba(245,237,237,0.06)", flexWrap: "wrap" };
-  const link: React.CSSProperties = { fontSize: 11.5, fontWeight: 800, color: "#ff6b6b", textDecoration: "none" };
+  const row: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)", flexWrap: "wrap" };
+  const link: React.CSSProperties = { fontSize: 11.5, fontWeight: 800, color: "var(--ep-accent-hi2)", textDecoration: "none" };
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
+      <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6">
         <ChevronLeft size={13} />{" "}{t("Pilotage de l'équipe")}
       </Link>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Administration")}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{t("Administration")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight mb-2">{t("Documents de l'équipe")}</h1>
-      <p className="text-sm text-[#F5EDED]/45 mb-6">{t("Contrats, CV et documents partagés : tout le papier de l'équipe au même endroit.")}</p>
+      <p className="text-sm text-(--ep-ink)/45 mb-6">{t("Contrats, CV et documents partagés : tout le papier de l'équipe au même endroit.")}</p>
 
       <section className="ep-card" style={{ padding: "16px 18px", marginBottom: 14 }}>
         <p className="ep-label" style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <FileSignature size={12} />{" "}{t("Contrats (")}{members.filter((m) => m.contract_signed_at).length}/{members.length}{" "}{t("signés)")}
         </p>
-        {members.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Personne dans l'équipe pour l'instant.")}</p>}
+        {members.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{t("Personne dans l'équipe pour l'instant.")}</p>}
         {members.map((m) => {
           const pdf = contractPdfs.get(m.user_id);
           const upToDate = m.contract_signed_at && m.contract_version === STAFF_CONTRACT_VERSION;
           return (
             <div key={m.user_id} style={row}>
               <div style={{ flex: 1, minWidth: 180 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{m.full_name}</p>
-                <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{m.full_name}</p>
+                <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
                   {getRoleCard(m.role_key)?.role.title ?? m.role_key} ·{" "}
                   {m.contract_signed_at ? (
-                    <span style={{ color: upToDate ? "#4ade80" : "#facc15" }}>
+                    <span style={{ color: upToDate ? "var(--ep-ok)" : "var(--ep-yellow)" }}>
                       {t("signé le")}{" "}{new Date(m.contract_signed_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}
                       {upToDate ? "" : t(" (ancienne version)")}
                       {m.contract_signature?.includes("JotForm") ? t(" via JotForm") : ""}
                     </span>
                   ) : (
-                    <span style={{ color: "#facc15" }}>{t("pas encore signé")}</span>
+                    <span style={{ color: "var(--ep-yellow)" }}>{t("pas encore signé")}</span>
                   )}
                 </p>
               </div>
@@ -110,12 +110,12 @@ export default async function FounderTeamDocumentsPage() {
         <p className="ep-label" style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
           <FileText size={12} />{" "}{t("CV reçus (")}{cvs.length})
         </p>
-        {cvs.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Aucun CV reçu pour l'instant (page Carrières).")}</p>}
+        {cvs.length === 0 && <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{t("Aucun CV reçu pour l'instant (page Carrières).")}</p>}
         {cvs.slice(0, 60).map((a) => (
           <div key={a.id} style={row}>
             <div style={{ flex: 1, minWidth: 180 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{a.full_name}</p>
-              <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{a.full_name}</p>
+              <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
                 {getRoleCard(a.role_key)?.role.title ?? a.role_key} · {new Date(a.created_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })} · {a.email}
               </p>
             </div>
@@ -124,14 +124,14 @@ export default async function FounderTeamDocumentsPage() {
             </a>
           </div>
         ))}
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "8px 0 0" }}>{t("Liens sécurisés temporaires (contrats 10 minutes, CV une heure) : recharge la page pour en générer de nouveaux.")}</p>
+        <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", margin: "8px 0 0" }}>{t("Liens sécurisés temporaires (contrats 10 minutes, CV une heure) : recharge la page pour en générer de nouveaux.")}</p>
       </section>
 
       <section>
         <p className="ep-label" style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
           <FolderOpen size={12} />{" "}{t("Documents partagés")}
         </p>
-        <p className="text-sm text-[#F5EDED]/45 mb-4">{t("Ce que tu partages ici apparaît dans l'onglet Documents des personnes concernées.")}</p>
+        <p className="text-sm text-(--ep-ink)/45 mb-4">{t("Ce que tu partages ici apparaît dans l'onglet Documents des personnes concernées.")}</p>
         <DocumentsPanel documents={otherDocs} meId={user.id} founder targets={targets} />
       </section>
     </div>

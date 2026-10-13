@@ -44,12 +44,12 @@ export default function CoachStatusToggle({
   if (confirming) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 11, color: "rgba(245,237,237,0.6)" }}>{t("Désactiver ce coach ?")}</span>
+        <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.6)" }}>{t("Désactiver ce coach ?")}</span>
         <button
           type="button"
           onClick={() => apply("canceled")}
           disabled={pending}
-          style={{ fontSize: 11, fontWeight: 700, color: "#ff6b6b", background: "none", border: "none", cursor: "pointer" }}
+          style={{ fontSize: 11, fontWeight: 700, color: "var(--ep-accent-hi2)", background: "none", border: "none", cursor: "pointer" }}
         >
           {pending ? "…" : t("Confirmer")}
         </button>
@@ -57,7 +57,7 @@ export default function CoachStatusToggle({
           type="button"
           onClick={() => setConfirming(false)}
           disabled={pending}
-          style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", background: "none", border: "none", cursor: "pointer" }}
+          style={{ fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", background: "none", border: "none", cursor: "pointer" }}
         >
           {t("Annuler")}
         </button>
@@ -72,8 +72,8 @@ export default function CoachStatusToggle({
       disabled={pending}
       style={{
         height: 32, padding: "0 14px", borderRadius: 8, border: "none",
-        background: current === "active" ? "rgba(74,222,128,0.15)" : "#E01E1E",
-        color: current === "active" ? "#4ade80" : "#fff",
+        background: current === "active" ? "rgba(var(--ep-ok-rgb),0.15)" : "var(--ep-accent)",
+        color: current === "active" ? "var(--ep-ok)" : "var(--ep-strong)",
         fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em",
         cursor: "pointer", whiteSpace: "nowrap",
       }}

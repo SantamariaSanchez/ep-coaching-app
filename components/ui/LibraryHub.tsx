@@ -29,11 +29,11 @@ export default function LibraryHub({
       {/* overflow-x-auto : même pattern que les autres barres d'onglets de
           l'appli (CoachClientNutritionTabs, ClientNutritionView, etc.) —
           sans ça, un onglet peut rester inatteignable sur petit écran. */}
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20 overflow-x-auto">
         <button
           onClick={() => setTab("exercises")}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-            tab === "exercises" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+            tab === "exercises" ? "text-(--ep-accent) border-b-2 border-(--ep-accent)" : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
           }`}
         >
           <Dumbbell size={13} />{" "}{t("Exercices (")}{exerciseCount})
@@ -41,7 +41,7 @@ export default function LibraryHub({
         <button
           onClick={() => setTab("gyms")}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-            tab === "gyms" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+            tab === "gyms" ? "text-(--ep-accent) border-b-2 border-(--ep-accent)" : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
           }`}
         >
           <MapPin size={13} />{" "}{t("Salles (")}{gymCount})

@@ -41,14 +41,14 @@ export default function StagnationBanner() {
           display: "flex",
           flexDirection: "column",
           gap: 12,
-          borderColor: "rgba(224,30,30,0.35)",
+          borderColor: "rgba(var(--ep-accent-rgb),0.35)",
         }}
       >
         <div>
-          <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+          <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
             {t("On dirait que ça coince depuis")}{" "}{status.daysSince}j
           </p>
-          <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>
             {t("Ton coach a été prévenu, mais un vrai échange règle toujours plus vite les choses qu'une appli. Réserve un créneau, ça prend deux minutes.")}
           </p>
         </div>

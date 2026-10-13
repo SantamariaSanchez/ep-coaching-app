@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { ChevronDown, ChevronRight, Clock, FileText, Clapperboard, PlayCircle, CheckCircle2, Film } from "lucide-react";
 import { updateVideoStatus, updateVideoYoutubeUrl, updateVideoNotes, updateVideoScript } from "@/app/dashboard/coach/admin/tournage/actions";
 import { STATUS_LABELS, VIDEO_STATUSES, type FormationGroup, type FounderVideoScript, type VideoStatus } from "@/lib/founder-video-scripts";
+import { withAlpha } from "@/lib/theme-color";
 
 // Tournage des formations (fondateur), refait le 2026-09-30 : on ouvre sur
 // la PROCHAINE vidéo à tourner (prompteur en un tap), puis la progression
@@ -15,11 +16,11 @@ import { STATUS_LABELS, VIDEO_STATUSES, type FormationGroup, type FounderVideoSc
 const Teleprompter = dynamic(() => import("@/components/coach/Teleprompter"), { ssr: false });
 
 const STATUS_COLORS: Record<VideoStatus, string> = {
-  a_ecrire: "rgba(245,237,237,0.45)",
-  a_completer: "#facc15",
-  pret_a_tourner: "#60a5fa",
+  a_ecrire: "rgba(var(--ep-ink-rgb),0.45)",
+  a_completer: "var(--ep-yellow)",
+  pret_a_tourner: "var(--ep-info)",
   tourne: "#c084fc",
-  publie: "#4ade80",
+  publie: "var(--ep-ok)",
 };
 
 type Filter = "tout" | "a_tourner" | "a_ecrire" | "tourne" | "publie";
@@ -43,14 +44,14 @@ function chip(active: boolean): React.CSSProperties {
     fontWeight: 800,
     whiteSpace: "nowrap",
     cursor: "pointer",
-    border: `1px solid ${active ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.35)"}`,
-    background: active ? "rgba(224,30,30,0.15)" : "transparent",
-    color: active ? "#ff6b6b" : "rgba(245,237,237,0.6)",
+    border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-line-rgb),0.35)"}`,
+    background: active ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+    color: active ? "var(--ep-accent-hi2)" : "rgba(var(--ep-ink-rgb),0.6)",
   };
 }
 
-const btn: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, letterSpacing: "0.03em", textTransform: "uppercase", cursor: "pointer" };
-const ghost: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 12, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.8)", fontSize: 12, fontWeight: 800, cursor: "pointer" };
+const btn: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12, fontWeight: 900, letterSpacing: "0.03em", textTransform: "uppercase", cursor: "pointer" };
+const ghost: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 12, border: "1px solid rgba(var(--ep-line-rgb),0.45)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.8)", fontSize: 12, fontWeight: 800, cursor: "pointer" };
 
 export default function TournageWorkspace({ formations }: { formations: FormationGroup[] }) {
   const tr = useT();
@@ -92,21 +93,21 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px 96px" }}>
       <p className="ep-label" style={{ marginBottom: 4 }}>{tr("Administration")}</p>
       <h1 style={{ fontSize: 26, fontWeight: 900, textTransform: "uppercase", letterSpacing: "-0.01em", margin: "0 0 4px" }}>{tr("Tournage des formations")}</h1>
-      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 18px", maxWidth: 640 }}>
+      <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "0 0 18px", maxWidth: 640 }}>
         {tr("Tes 5 formations, vidéo par vidéo : script mot pour mot, prompteur, puis lien YouTube une fois en ligne.")}
       </p>
 
       {/* Chiffres clés */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 8, marginBottom: 14 }}>
         {[
-          { v: counts.ready, l: "prêtes à tourner", c: "#60a5fa" },
+          { v: counts.ready, l: "prêtes à tourner", c: "var(--ep-info)" },
           { v: counts.filmed, l: "tournées", c: "#c084fc" },
-          { v: counts.published, l: "publiées", c: "#4ade80" },
-          { v: counts.toWrite, l: "scripts à finir", c: "#facc15" },
+          { v: counts.published, l: "publiées", c: "var(--ep-ok)" },
+          { v: counts.toWrite, l: "scripts à finir", c: "var(--ep-yellow)" },
         ].map((t) => (
           <div key={t.l} className="ep-card" style={{ padding: "12px 14px" }}>
             <p style={{ fontSize: 22, fontWeight: 900, color: t.c, margin: 0, lineHeight: 1.1 }}>{t.v}</p>
-            <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: "2px 0 0" }}>{t.l}</p>
+            <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "2px 0 0" }}>{t.l}</p>
           </div>
         ))}
       </div>
@@ -117,8 +118,8 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
           <p className="ep-label" style={{ margin: "0 0 6px", display: "flex", alignItems: "center", gap: 6 }}>
             <Clapperboard size={12} />{" "}{tr("Prochaine vidéo à tourner")}
           </p>
-          <p style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED", margin: 0, lineHeight: 1.3 }}>{next.video_title}</p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "3px 0 12px" }}>
+          <p style={{ fontSize: 17, fontWeight: 900, color: "var(--ep-ink)", margin: 0, lineHeight: 1.3 }}>{next.video_title}</p>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "3px 0 12px" }}>
             {tr("Formation")}{" "}{next.formation_num} · {next.section_title}{" "}{tr("· environ")}{" "}{minutesOf(next.word_count)}{" "}{tr("min")}
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -129,14 +130,14 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
               <CheckCircle2 size={14} />{" "}{tr("Déjà tournée")}
             </button>
           </div>
-          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "10px 0 0" }}>
+          <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "10px 0 0" }}>
             {queue.length}{" "}{tr("vidéo")}{queue.length > 1 ? "s" : ""}{" "}{tr("prête")}{queue.length > 1 ? "s" : ""}{" "}{tr("dans la file, environ")}{" "}{readyMinutes}{" "}{tr("min de tournage. Le prompteur enchaîne sur la suivante.")}
           </p>
         </section>
       ) : (
         <section className="ep-card" style={{ padding: "14px 16px", marginBottom: 18 }}>
-          <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{tr("Aucune vidéo prête à tourner pour l'instant.")}</p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "3px 0 0" }}>{tr("Termine un script puis passe-le en « Prêt à tourner » : il arrivera ici.")}</p>
+          <p style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)", margin: 0 }}>{tr("Aucune vidéo prête à tourner pour l'instant.")}</p>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "3px 0 0" }}>{tr("Termine un script puis passe-le en « Prêt à tourner » : il arrivera ici.")}</p>
         </section>
       )}
 
@@ -160,24 +161,24 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
               <button
                 type="button"
                 onClick={() => setOpen(isOpen ? null : g.formation_num)}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", color: "#F5EDED", textAlign: "left" }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", color: "var(--ep-ink)", textAlign: "left" }}
               >
                 {isOpen ? <ChevronDown size={18} style={{ flexShrink: 0, opacity: 0.6 }} /> : <ChevronRight size={18} style={{ flexShrink: 0, opacity: 0.6 }} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: "#E01E1E", textTransform: "uppercase", letterSpacing: "0.05em" }}>{tr("Formation")}{" "}{g.formation_num}</p>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: "var(--ep-accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{tr("Formation")}{" "}{g.formation_num}</p>
                   <p style={{ margin: "2px 0 0", fontSize: 15.5, fontWeight: 800 }}>{g.formation_title}</p>
-                  <p style={{ margin: "3px 0 0", fontSize: 11.5, color: "rgba(245,237,237,0.5)" }}>
+                  <p style={{ margin: "3px 0 0", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
                     {ready}/{g.totalVideos}{" "}{tr("scripts prêts ·")}{" "}{filmed}{" "}{tr("tournée")}{filmed > 1 ? "s" : ""}
                   </p>
                 </div>
-                <div style={{ width: 64, height: 6, borderRadius: 999, background: "rgba(245,237,237,0.1)", overflow: "hidden", flexShrink: 0 }}>
-                  <div style={{ width: `${g.totalVideos ? Math.round((ready / g.totalVideos) * 100) : 0}%`, height: "100%", background: ready === g.totalVideos ? "#4ade80" : "#E01E1E" }} />
+                <div style={{ width: 64, height: 6, borderRadius: 999, background: "rgba(var(--ep-ink-rgb),0.1)", overflow: "hidden", flexShrink: 0 }}>
+                  <div style={{ width: `${g.totalVideos ? Math.round((ready / g.totalVideos) * 100) : 0}%`, height: "100%", background: ready === g.totalVideos ? "var(--ep-ok)" : "var(--ep-accent)" }} />
                 </div>
               </button>
               {isOpen && (
-                <div style={{ borderTop: "1px solid rgba(245,237,237,0.08)", padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ borderTop: "1px solid rgba(var(--ep-ink-rgb),0.08)", padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
                   {videos.length === 0 ? (
-                    <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: "6px 4px" }}>{tr("Aucune vidéo «")}{" "}{f.label.toLowerCase()}{" "}{tr("» dans cette formation.")}</p>
+                    <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "6px 4px" }}>{tr("Aucune vidéo «")}{" "}{f.label.toLowerCase()}{" "}{tr("» dans cette formation.")}</p>
                   ) : (
                     videos.map((v) => <VideoRow key={v.id} video={v} status={statusOf(v)} onStatus={(s) => setStatus(v.id, s)} onPrompter={() => setPrompter(v)} />)
                   )}
@@ -219,21 +220,21 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
   const words = scriptDraft.trim() ? scriptDraft.trim().split(/\s+/).length : 0;
   const label = video.module_title ? `${video.module_num}.${video.video_num}` : `${video.video_num}`;
 
-  const field: React.CSSProperties = { width: "100%", background: "rgba(0,0,0,0.25)", border: "1px solid rgba(245,237,237,0.1)", borderRadius: 8, padding: "8px 10px", fontSize: 13, color: "#F5EDED" };
-  const lbl: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(245,237,237,0.45)", marginBottom: 4 };
+  const field: React.CSSProperties = { width: "100%", background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-ink-rgb),0.1)", borderRadius: 8, padding: "8px 10px", fontSize: 13, color: "var(--ep-ink)" };
+  const lbl: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 4 };
 
   return (
-    <div style={{ background: "rgba(245,237,237,0.03)", borderRadius: 10, border: "1px solid rgba(245,237,237,0.06)" }}>
-      <button type="button" onClick={() => setExpanded((e) => !e)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", background: "none", border: "none", cursor: "pointer", color: "#F5EDED", textAlign: "left" }}>
+    <div style={{ background: "rgba(var(--ep-ink-rgb),0.03)", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.06)" }}>
+      <button type="button" onClick={() => setExpanded((e) => !e)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", background: "none", border: "none", cursor: "pointer", color: "var(--ep-ink)", textAlign: "left" }}>
         {expanded ? <ChevronDown size={15} style={{ opacity: 0.5, flexShrink: 0 }} /> : <ChevronRight size={15} style={{ opacity: 0.5, flexShrink: 0 }} />}
         <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700 }}>
-          <span style={{ color: "rgba(245,237,237,0.4)" }}>{label}</span> {video.video_title}
+          <span style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }}>{label}</span> {video.video_title}
         </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(245,237,237,0.45)", flexShrink: 0 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", flexShrink: 0 }}>
           <Clock size={12} /> {video.word_count > 0 ? `${minutesOf(video.word_count)} min` : tr("vide")}
         </span>
         {youtubeUrl && <PlayCircle size={14} style={{ color: "#FF0000", flexShrink: 0 }} />}
-        <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, padding: "4px 9px", borderRadius: 999, border: `1px solid ${STATUS_COLORS[status]}55`, background: `${STATUS_COLORS[status]}18`, color: STATUS_COLORS[status] }}>{STATUS_LABELS[status]}</span>
+        <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, padding: "4px 9px", borderRadius: 999, border: `1px solid ${withAlpha(STATUS_COLORS[status], "55")}`, background: `${withAlpha(STATUS_COLORS[status], "18")}`, color: STATUS_COLORS[status] }}>{STATUS_LABELS[status]}</span>
       </button>
 
       {expanded && (
@@ -269,7 +270,7 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
               rows={10}
               style={{ ...field, lineHeight: 1.6, resize: "vertical", fontFamily: "inherit" }}
             />
-            {!scriptSaved && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.45)", margin: "4px 0 0" }}>{tr("Enregistrement dès que tu quittes le champ.")}</p>}
+            {!scriptSaved && <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "4px 0 0" }}>{tr("Enregistrement dès que tu quittes le champ.")}</p>}
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>

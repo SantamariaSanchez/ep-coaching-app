@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getFormations, getUserProgress, getFormationWithModules, countLessons, getResumeLesson, formatDuration, isLessonWatchable } from "@/utils/formations";
 import { BookOpen, PlayCircle, ChevronRight, Clock, Play } from "lucide-react";
+import { withAlpha } from "@/lib/theme-color";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export const dynamic = "force-dynamic";
 // (le compte coach n'est jamais free tier) : toute leçon publiée est
 // directement accessible, pas de bandeau d'upsell.
 const FORMATION_COLORS = [
-  { from: "#E01E1E", to: "#890404", shadow: "rgba(224,30,30,0.25)" },
+  { from: "var(--ep-accent)", to: "var(--ep-line)", shadow: "rgba(var(--ep-accent-rgb),0.25)" },
   { from: "#7c3aed", to: "#4c1d95", shadow: "rgba(124,58,237,0.25)" },
   { from: "#0891b2", to: "#164e63", shadow: "rgba(8,145,178,0.25)" },
   { from: "#059669", to: "#064e3b", shadow: "rgba(5,150,105,0.25)" },
@@ -74,10 +75,10 @@ export default async function CoachMoiFormationsPage() {
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Académie EP")}</p>
         <h1 className="ep-h1" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <BookOpen size={26} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <BookOpen size={26} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
           {t("Formations")}
         </h1>
-        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 500 }}>
           {totalLessons}{" "}{t("vidéo")}{totalLessons !== 1 ? "s" : ""}{" "}{t("disponible")}{totalLessons !== 1 ? "s" : ""}
           {totalMin > 0 && ` · ${formatDuration(totalMin)} de contenu`}
         </p>
@@ -94,26 +95,26 @@ export default async function CoachMoiFormationsPage() {
             padding: "16px 18px",
             marginBottom: 20,
             textDecoration: "none",
-            background: "linear-gradient(135deg, rgba(224,30,30,0.12) 0%, rgba(137,4,4,0.05) 100%)",
-            border: "1px solid rgba(224,30,30,0.3)",
+            background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.12) 0%, rgba(var(--ep-line-rgb),0.05) 100%)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
           }}
         >
           <div style={{
             width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
-            background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.3)",
+            background: "rgba(var(--ep-accent-rgb),0.15)", border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <Play size={16} style={{ color: "#E01E1E" }} strokeWidth={2} fill="#E01E1E" />
+            <Play size={16} style={{ color: "var(--ep-accent)" }} strokeWidth={2} fill="var(--ep-accent)" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", margin: "0 0 3px" }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.7)", margin: "0 0 3px" }}>
               {t("Reprendre")}{" "}{resumeLesson.formationEmoji} {resumeLesson.formationTitle}
             </p>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {resumeLesson.lessonTitle}
             </p>
           </div>
-          <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+          <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
         </Link>
       )}
 
@@ -121,15 +122,15 @@ export default async function CoachMoiFormationsPage() {
         <div className="ep-card animate-fade-up stagger-2" style={{ padding: "16px 20px", marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span className="ep-label">{t("Progression globale")}</span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-ink)" }}>
               {totalCompleted} / {totalLessons}
             </span>
           </div>
-          <div style={{ height: 4, background: "rgba(224,30,30,0.12)", borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ height: 4, background: "rgba(var(--ep-accent-rgb),0.12)", borderRadius: 2, overflow: "hidden" }}>
             <div style={{
               height: "100%",
               width: `${totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0}%`,
-              background: "linear-gradient(90deg, #E01E1E, #B00202)",
+              background: "linear-gradient(90deg, var(--ep-accent), var(--ep-accent-2))",
               borderRadius: 2,
               transition: "width 0.8s cubic-bezier(0.16,1,0.3,1)",
             }} />
@@ -139,11 +140,11 @@ export default async function CoachMoiFormationsPage() {
 
       {formations.length === 0 ? (
         <div className="ep-card" style={{ padding: "48px 24px", textAlign: "center" }}>
-          <BookOpen size={36} style={{ color: "rgba(224,30,30,0.25)", margin: "0 auto 16px" }} strokeWidth={1.3} />
-          <p style={{ fontSize: 14, fontWeight: 700, color: "rgba(245,237,237,0.5)", margin: "0 0 6px" }}>
+          <BookOpen size={36} style={{ color: "rgba(var(--ep-accent-rgb),0.25)", margin: "0 auto 16px" }} strokeWidth={1.3} />
+          <p style={{ fontSize: 14, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "0 0 6px" }}>
             {t("Formations à venir")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.25)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.25)", margin: 0 }}>
             {t("Le contenu sera disponible très prochainement")}
           </p>
         </div>
@@ -185,8 +186,8 @@ export default async function CoachMoiFormationsPage() {
                       width: 52,
                       height: 52,
                       borderRadius: 14,
-                      background: `linear-gradient(135deg, ${col.from}22 0%, ${col.to}11 100%)`,
-                      border: `1px solid ${col.from}33`,
+                      background: `linear-gradient(135deg, ${withAlpha(col.from, "22")} 0%, ${withAlpha(col.to, "11")} 100%)`,
+                      border: `1px solid ${withAlpha(col.from, "33")}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -203,23 +204,23 @@ export default async function CoachMoiFormationsPage() {
                         </p>
                         {isDraft && !isTeaser && <span className="ep-badge-subtle">{t("Brouillon, aperçu")}</span>}
                       </div>
-                      <h3 style={{ fontSize: 16, fontWeight: 900, letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 4px", lineHeight: 1.2 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 900, letterSpacing: "-0.03em", color: "var(--ep-ink)", margin: "0 0 4px", lineHeight: 1.2 }}>
                         {formation.title}
                       </h3>
                       {formation.subtitle && (
-                        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "0 0 10px", lineHeight: 1.4 }}>
+                        <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "0 0 10px", lineHeight: 1.4 }}>
                           {formation.subtitle}
                         </p>
                       )}
 
                       {!isTeaser && (
                         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
                             <PlayCircle size={10} />
                             {published}{" "}{t("vidéo")}{published !== 1 ? "s" : ""}
                           </span>
                           {fMin > 0 && (
-                            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
+                            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
                               <Clock size={10} />
                               {formatDuration(fMin)}
                             </span>
@@ -229,25 +230,25 @@ export default async function CoachMoiFormationsPage() {
                     </div>
 
                     {isAvailable && (
-                      <ChevronRight size={18} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0, marginTop: 4 }} />
+                      <ChevronRight size={18} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0, marginTop: 4 }} />
                     )}
                   </div>
 
                   {isAvailable && published > 0 && (
                     <div style={{ marginTop: 14 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                        <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.25)", letterSpacing: "0.08em" }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.25)", letterSpacing: "0.08em" }}>
                           {t("PROGRESSION")}
                         </span>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(245,237,237,0.4)" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.4)" }}>
                           {completedCount}/{published}
                         </span>
                       </div>
-                      <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                      <div style={{ height: 3, background: "rgba(var(--ep-hi-rgb),0.06)", borderRadius: 2, overflow: "hidden" }}>
                         <div style={{
                           height: "100%",
                           width: `${pct}%`,
-                          background: pct >= 100 ? "#4ade80" : `linear-gradient(90deg, ${col.from}, ${col.to})`,
+                          background: pct >= 100 ? "var(--ep-ok)" : `linear-gradient(90deg, ${col.from}, ${col.to})`,
                           borderRadius: 2,
                           boxShadow: pct > 0 ? `0 0 8px ${col.shadow}` : "none",
                         }} />

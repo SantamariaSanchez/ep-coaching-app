@@ -107,12 +107,12 @@ export default function SlotPicker({
   if (slots.length === 0) {
     return (
       <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>
           {t("Aucun créneau disponible pour l'instant. Contacte ton coach directement.")}
         </p>
         <Link
           href="/dashboard/client/messages"
-          style={{ display: "inline-block", marginTop: 10, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}
+          style={{ display: "inline-block", marginTop: 10, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}
         >
           {t("Lui écrire")}
         </Link>
@@ -131,7 +131,7 @@ export default function SlotPicker({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: 0 }}>
+      <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6, margin: 0 }}>
         {mode === "recurring"
           ? t("En choisissant un créneau, il sera automatiquement réservé chaque semaine à la même heure, pendant 8 semaines. ")
           : ""}
@@ -143,17 +143,17 @@ export default function SlotPicker({
           role="status"
           style={{
             display: "flex", alignItems: "flex-start", gap: 8,
-            background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.3)",
+            background: "rgba(var(--ep-ok-rgb),0.08)", border: "1px solid rgba(var(--ep-ok-rgb),0.3)",
             borderRadius: 10, padding: "10px 12px",
           }}
         >
-          <Check size={14} style={{ color: "#4ade80", flexShrink: 0, marginTop: 2 }} />
+          <Check size={14} style={{ color: "var(--ep-ok)", flexShrink: 0, marginTop: 2 }} />
           <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 12.5, color: "#F5EDED", margin: 0, lineHeight: 1.5 }}>{success.message}</p>
+            <p style={{ fontSize: 12.5, color: "var(--ep-ink)", margin: 0, lineHeight: 1.5 }}>{success.message}</p>
             {success.partial && (
               <Link
                 href="/dashboard/client/live"
-                style={{ display: "inline-block", marginTop: 6, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}
+                style={{ display: "inline-block", marginTop: 6, fontSize: 11, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none" }}
               >
                 {t("Voir mes lives")}
               </Link>
@@ -163,14 +163,14 @@ export default function SlotPicker({
       )}
 
       {error && (
-        <p role="alert" style={{ display: "flex", alignItems: "center", gap: 6, color: "#ff6b6b", fontSize: 12, margin: 0 }}>
+        <p role="alert" style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ep-accent-hi2)", fontSize: 12, margin: 0 }}>
           <AlertCircle size={13} style={{ flexShrink: 0 }} /> {t(error)}
         </p>
       )}
 
       {[...byDay.entries()].map(([dayKey, daySlots]) => (
         <div key={dayKey}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             {formatDayLabel(daySlots[0].startsAt)}
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -187,7 +187,7 @@ export default function SlotPicker({
                     fontSize: 12,
                     padding: "8px 14px",
                     ...(isBooked
-                      ? { background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.4)", color: "#4ade80", borderRadius: 10 }
+                      ? { background: "rgba(var(--ep-ok-rgb),0.12)", border: "1px solid rgba(var(--ep-ok-rgb),0.4)", color: "var(--ep-ok)", borderRadius: 10 }
                       : {}),
                   }}
                 >

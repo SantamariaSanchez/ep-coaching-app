@@ -13,16 +13,16 @@ import { grantFormationAccessAction, revokeFormationAccessAction } from "../acce
 
 const input: React.CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.35)",
-  border: "1px solid rgba(137,4,4,0.35)",
+  background: "rgba(var(--ep-shade-rgb),0.35)",
+  border: "1px solid rgba(var(--ep-line-rgb),0.35)",
   borderRadius: 10,
   padding: "9px 10px",
   fontSize: 14,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   outline: "none",
 };
-const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 4 };
-const ghost: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 10, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.75)", fontSize: 11.5, fontWeight: 800, cursor: "pointer" };
+const lbl: React.CSSProperties = { display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 4 };
+const ghost: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 10, border: "1px solid rgba(var(--ep-line-rgb),0.45)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.75)", fontSize: 11.5, fontWeight: 800, cursor: "pointer" };
 
 function chip(active: boolean): React.CSSProperties {
   return {
@@ -34,9 +34,9 @@ function chip(active: boolean): React.CSSProperties {
     padding: "11px 12px",
     borderRadius: 12,
     cursor: "pointer",
-    border: `1px solid ${active ? "rgba(224,30,30,0.7)" : "rgba(137,4,4,0.35)"}`,
-    background: active ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.25)",
-    color: "#F5EDED",
+    border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.7)" : "rgba(var(--ep-line-rgb),0.35)"}`,
+    background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-shade-rgb),0.25)",
+    color: "var(--ep-ink)",
     fontSize: 13,
     fontWeight: 800,
   };
@@ -87,10 +87,10 @@ export default function FormationSalesPanel({
       <p className="ep-label" style={{ margin: "0 0 10px" }}>{t("Vente et accès")}</p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
         <button type="button" style={chip(mode === "inclus")} onClick={() => setMode("inclus")}>
-          <Gift size={15} color="#E01E1E" />{" "}{t("Incluse pour mes clients")}
+          <Gift size={15} color="var(--ep-accent)" />{" "}{t("Incluse pour mes clients")}
         </button>
         <button type="button" style={chip(mode === "payant")} onClick={() => setMode("payant")}>
-          <Lock size={15} color="#E01E1E" />{" "}{t("Payante")}
+          <Lock size={15} color="var(--ep-accent)" />{" "}{t("Payante")}
         </button>
       </div>
       {mode === "payant" && (
@@ -105,7 +105,7 @@ export default function FormationSalesPanel({
           </div>
         </div>
       )}
-      <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: "0 0 10px", lineHeight: 1.5 }}>
+      <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 10px", lineHeight: 1.5 }}>
         {mode === "inclus"
           ? t("Tous tes clients la voient dès qu'elle est publiée. Tu peux aussi l'offrir à quelqu'un d'autre ci-dessous.")
           : t("Tes clients voient la formation et son prix, avec ton lien de paiement. Après l'achat, donne l'accès à la personne ci-dessous.")}
@@ -114,12 +114,12 @@ export default function FormationSalesPanel({
         type="button"
         disabled={pending}
         onClick={() => run(() => updateFormation(formationId, { access_mode: mode, price_eur: mode === "payant" && p.trim() ? Number(p.replace(",", ".")) : null, payment_url: mode === "payant" ? url : null }), "Réglages enregistrés.")}
-        style={{ width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}
+        style={{ width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}
       >
         {t("Enregistrer")}
       </button>
 
-      <div style={{ borderTop: "1px solid rgba(245,237,237,0.07)", marginTop: 14, paddingTop: 12 }}>
+      <div style={{ borderTop: "1px solid rgba(var(--ep-ink-rgb),0.07)", marginTop: 14, paddingTop: 12 }}>
         <p style={{ ...lbl, marginBottom: 8 }}>{t("Donner l'accès")}</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
           {grantable.length > 0 && (
@@ -146,12 +146,12 @@ export default function FormationSalesPanel({
         {granted.length > 0 && (
           <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
             {granted.map((g) => (
-              <div key={g.userId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12.5, color: "rgba(245,237,237,0.8)" }}>
+              <div key={g.userId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.8)" }}>
                 <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
                   {g.name}
-                  {g.email ? <span style={{ color: "rgba(245,237,237,0.4)" }}> · {g.email}</span> : null}
+                  {g.email ? <span style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }}> · {g.email}</span> : null}
                 </span>
-                <button type="button" disabled={pending} aria-label={t("Retirer l'accès")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer" }} onClick={() => run(() => revokeFormationAccessAction(formationId, g.userId), "Accès retiré.")}>
+                <button type="button" disabled={pending} aria-label={t("Retirer l'accès")} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.45)", cursor: "pointer" }} onClick={() => run(() => revokeFormationAccessAction(formationId, g.userId), "Accès retiré.")}>
                   <X size={14} />
                 </button>
               </div>
@@ -174,7 +174,7 @@ export default function FormationSalesPanel({
           <Copy size={12} /> {copied ? t("Lien copié") : t("Copier le lien de paiement")}
         </button>
       )}
-      {msg && <p style={{ fontSize: 12, color: msg.ok ? "#4ade80" : "#fca5a5", margin: "10px 0 0" }}>{msg.text}</p>}
+      {msg && <p style={{ fontSize: 12, color: msg.ok ? "var(--ep-ok)" : "#fca5a5", margin: "10px 0 0" }}>{msg.text}</p>}
     </section>
   );
 }

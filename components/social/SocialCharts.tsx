@@ -10,11 +10,11 @@ type Point = { date: string; [platform: string]: number | string | null };
 
 const COLORS: Record<string, string> = {
   tiktok: "#ff4d6d",
-  linkedin: "#60a5fa",
-  youtube: "#E01E1E",
-  facebook: "#a78bfa",
+  linkedin: "var(--ep-info)",
+  youtube: "var(--ep-accent)",
+  facebook: "var(--ep-violet)",
   instagram: "#f59e0b",
-  threads: "#F5EDED",
+  threads: "var(--ep-ink)",
 };
 
 const METRICS = [
@@ -44,9 +44,9 @@ export default function SocialCharts({ series, labels }: { series: Record<(typeo
               borderRadius: 999,
               fontSize: 11,
               fontWeight: 800,
-              border: `1px solid ${metric === m.key ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.35)"}`,
-              background: metric === m.key ? "rgba(224,30,30,0.15)" : "transparent",
-              color: metric === m.key ? "#ff6b6b" : "rgba(245,237,237,0.55)",
+              border: `1px solid ${metric === m.key ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-line-rgb),0.35)"}`,
+              background: metric === m.key ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+              color: metric === m.key ? "var(--ep-accent-hi2)" : "rgba(var(--ep-ink-rgb),0.55)",
               cursor: "pointer",
             }}
           >
@@ -55,22 +55,22 @@ export default function SocialCharts({ series, labels }: { series: Record<(typeo
         ))}
       </div>
       {data.length === 0 || platforms.length === 0 ? (
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: "24px 0", textAlign: "center" }}>{t("Pas encore de données sur cette période.")}</p>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "24px 0", textAlign: "center" }}>{t("Pas encore de données sur cette période.")}</p>
       ) : (
         <div style={{ width: "100%", height: 260 }}>
           <ResponsiveContainer>
             <LineChart data={data} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
-              <CartesianGrid stroke="rgba(245,237,237,0.06)" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: "rgba(245,237,237,0.4)", fontSize: 10 }} stroke="rgba(245,237,237,0.1)" minTickGap={24} />
-              <YAxis tick={{ fill: "rgba(245,237,237,0.4)", fontSize: 10 }} stroke="rgba(245,237,237,0.1)" allowDecimals={false} width={52} />
+              <CartesianGrid stroke="rgba(var(--ep-ink-rgb),0.06)" vertical={false} />
+              <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: "rgba(var(--ep-ink-rgb),0.4)", fontSize: 10 }} stroke="rgba(var(--ep-ink-rgb),0.1)" minTickGap={24} />
+              <YAxis tick={{ fill: "rgba(var(--ep-ink-rgb),0.4)", fontSize: 10 }} stroke="rgba(var(--ep-ink-rgb),0.1)" allowDecimals={false} width={52} />
               <Tooltip
-                contentStyle={{ background: "#140101", border: "1px solid rgba(137,4,4,0.5)", borderRadius: 10, fontSize: 12 }}
+                contentStyle={{ background: "var(--ep-s3)", border: "1px solid rgba(var(--ep-line-rgb),0.5)", borderRadius: 10, fontSize: 12 }}
                 labelFormatter={(l) => fmtDate(String(l))}
                 formatter={(v, name) => [typeof v === "number" ? v.toLocaleString("fr-FR") : String(v), labels[String(name)] ?? String(name)]}
               />
               <Legend formatter={(v) => labels[String(v)] ?? String(v)} wrapperStyle={{ fontSize: 11 }} />
               {platforms.map((p) => (
-                <Line key={p} type="monotone" dataKey={p} stroke={COLORS[p] ?? "#F5EDED"} strokeWidth={2} dot={false} connectNulls />
+                <Line key={p} type="monotone" dataKey={p} stroke={COLORS[p] ?? "var(--ep-ink)"} strokeWidth={2} dot={false} connectNulls />
               ))}
             </LineChart>
           </ResponsiveContainer>

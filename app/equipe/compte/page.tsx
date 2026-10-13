@@ -15,10 +15,10 @@ export default async function StaffAccountPage() {
   return (
     <div className="page-transition" style={{ maxWidth: 620 }}>
       <p className="ep-label" style={{ marginBottom: 4 }}>{ctx.role.title}</p>
-      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
         {t("Mon compte")}
       </h1>
-      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 20px" }}>
+      <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "0 0 20px" }}>
         {t("Connecté en tant que")}{" "}{ctx.member.full_name} ({ctx.member.email}).
       </p>
 
@@ -26,7 +26,7 @@ export default async function StaffAccountPage() {
         <div>
           <p className="ep-label" style={{ marginBottom: 8 }}>{t("Double authentification")}</p>
           {!ctx.profile?.mfa_enabled && (
-            <p style={{ fontSize: 12.5, color: "#facc15", margin: "0 0 10px", lineHeight: 1.55 }}>
+            <p style={{ fontSize: 12.5, color: "var(--ep-yellow)", margin: "0 0 10px", lineHeight: 1.55 }}>
               {t("Recommandée par ton contrat : tu as accès à des données de clients, un mot de passe seul ne suffit pas à les protéger.")}
             </p>
           )}

@@ -6,6 +6,7 @@ import { Compass, Scale, Utensils, Dumbbell } from "lucide-react";
 import type { PhasePilot, PilotTone, WeightPoint } from "@/lib/phase-pilot";
 import { diffDaysIso, formatIsoFr } from "@/lib/roadmap-weeks";
 import RoadmapLoadError from "@/components/roadmap/RoadmapLoadError";
+import { withAlpha } from "@/lib/theme-color";
 
 // Pilote de phase (audit 2026-09-28, voir lib/phase-pilot.ts) : en 5
 // secondes, où en est la phase en cours et est-ce que les suivis vont dans
@@ -13,10 +14,10 @@ import RoadmapLoadError from "@/components/roadmap/RoadmapLoadError";
 // composant ne fait qu'afficher. Il vit dans les vues road map uniquement.
 
 const TONE_COLORS: Record<PilotTone, string> = {
-  ok: "#4ade80",
-  warn: "#fbbf24",
-  bad: "#E01E1E",
-  info: "rgba(245,237,237,0.35)",
+  ok: "var(--ep-ok)",
+  warn: "var(--ep-warn)",
+  bad: "var(--ep-accent)",
+  info: "rgba(var(--ep-ink-rgb),0.35)",
 };
 
 const TONE_LABELS: Record<PilotTone, string> = {
@@ -27,9 +28,9 @@ const TONE_LABELS: Record<PilotTone, string> = {
 };
 
 const VERDICT_BG: Record<"ok" | "warn" | "info", { bg: string; border: string }> = {
-  ok: { bg: "rgba(74,222,128,0.07)", border: "rgba(74,222,128,0.25)" },
-  warn: { bg: "rgba(251,191,36,0.07)", border: "rgba(251,191,36,0.28)" },
-  info: { bg: "rgba(245,237,237,0.035)", border: "rgba(245,237,237,0.1)" },
+  ok: { bg: "rgba(var(--ep-ok-rgb),0.07)", border: "rgba(var(--ep-ok-rgb),0.25)" },
+  warn: { bg: "rgba(var(--ep-warn-rgb),0.07)", border: "rgba(var(--ep-warn-rgb),0.28)" },
+  info: { bg: "rgba(var(--ep-ink-rgb),0.035)", border: "rgba(var(--ep-ink-rgb),0.1)" },
 };
 
 const CTA_ICONS = { bilan: Scale, nutrition: Utensils, logbook: Dumbbell } as const;
@@ -112,8 +113,8 @@ function WeightSparkline({ pilot, accent }: { pilot: PhasePilot; accent: string 
         {band && (
           <polygon
             points={`${x(day0)},${y(band.anchor)} ${x(last.date)},${y(band.hi)} ${x(last.date)},${y(band.lo)}`}
-            fill="rgba(224,30,30,0.08)"
-            stroke="rgba(224,30,30,0.18)"
+            fill="rgba(var(--ep-accent-rgb),0.08)"
+            stroke="rgba(var(--ep-accent-rgb),0.18)"
             strokeWidth={1}
             vectorEffect="non-scaling-stroke"
           />
@@ -121,7 +122,7 @@ function WeightSparkline({ pilot, accent }: { pilot: PhasePilot; accent: string 
         <polyline
           points={points.map((p) => `${x(p.date)},${y(p.kg)}`).join(" ")}
           fill="none"
-          stroke="rgba(245,237,237,0.25)"
+          stroke="rgba(var(--ep-ink-rgb),0.25)"
           strokeWidth={1.2}
           vectorEffect="non-scaling-stroke"
         />
@@ -155,7 +156,7 @@ function WeightSparkline({ pilot, accent }: { pilot: PhasePilot; accent: string 
               height: isLast ? 8 : 5,
               borderRadius: "50%",
               transform: "translate(-50%, -50%)",
-              background: isLast ? accent : "rgba(245,237,237,0.55)",
+              background: isLast ? accent : "rgba(var(--ep-ink-rgb),0.55)",
               boxShadow: isLast ? `0 0 8px ${accent}` : "none",
             }}
           />
@@ -182,32 +183,32 @@ export default function PhasePilotCard({
   if (!pilot) return null;
 
   const phase = pilot.activePhase;
-  const accent = phase?.colors.solid ?? pilot.nextPhase?.colors.solid ?? "#E01E1E";
+  const accent = phase?.colors.solid ?? pilot.nextPhase?.colors.solid ?? "var(--ep-accent)";
   const verdictStyle = VERDICT_BG[pilot.verdict.tone];
 
   return (
     <section
       className="ep-card-hero"
       aria-label={tr("Pilote de phase")}
-      style={{ padding: "18px 16px 16px", marginBottom: 24, borderColor: `${accent}55` }}
+      style={{ padding: "18px 16px 16px", marginBottom: 24, borderColor: `${withAlpha(accent, "55")}` }}
     >
       {/* Liseré et halo à la couleur de la phase, par-dessus la brume rouge. */}
       <div aria-hidden="true" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
-      <div aria-hidden="true" style={{ position: "absolute", top: -90, left: -70, width: 240, height: 240, background: `radial-gradient(circle, ${accent}26 0%, transparent 70%)`, pointerEvents: "none" }} />
+      <div aria-hidden="true" style={{ position: "absolute", top: -90, left: -70, width: 240, height: 240, background: `radial-gradient(circle, ${withAlpha(accent, "26")} 0%, transparent 70%)`, pointerEvents: "none" }} />
 
       <div style={{ position: "relative" }}>
-        <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)", margin: "0 0 10px" }}>
+        <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.65)", margin: "0 0 10px" }}>
           <Compass size={12} />{" "}{tr("Pilote de phase")}
         </p>
 
         {/* En-tête : phase + semaine */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
           <div style={{ minWidth: 0, flex: "1 1 180px" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", margin: 0, overflowWrap: "anywhere" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ep-ink)", letterSpacing: "-0.02em", margin: 0, overflowWrap: "anywhere" }}>
               {phase ? `${phase.colors.icon} ${phase.label || phase.colors.label}` : pilot.headline}
             </h2>
             {phase && pilot.weekIndex != null && pilot.totalWeeks != null && (
-              <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "3px 0 0" }}>
+              <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "3px 0 0" }}>
                 {tr("Semaine")}{" "}{pilot.weekIndex}{" "}{tr("sur")}{" "}{pilot.totalWeeks}{" "}{tr("· fin le")}{" "}{fmtDate(phase.end_date, true)}
               </p>
             )}
@@ -242,11 +243,11 @@ export default function PhasePilotCard({
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(pilot.phaseProgressPct)}
-              style={{ height: 6, background: "rgba(0,0,0,0.45)", borderRadius: 3, overflow: "hidden" }}
+              style={{ height: 6, background: "rgba(var(--ep-shade-rgb),0.45)", borderRadius: 3, overflow: "hidden" }}
             >
-              <div style={{ width: `${pilot.phaseProgressPct}%`, height: "100%", background: accent, borderRadius: 3, boxShadow: `0 0 10px ${accent}80` }} />
+              <div style={{ width: `${pilot.phaseProgressPct}%`, height: "100%", background: accent, borderRadius: 3, boxShadow: `0 0 10px ${withAlpha(accent, "80")}` }} />
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginTop: 6, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginTop: 6, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
               <span>
                 {pilot.nextPhase
                   ? `J-${pilot.nextPhase.startsInDays} avant ${pilot.nextPhase.label}`
@@ -268,9 +269,9 @@ export default function PhasePilotCard({
             marginBottom: 12,
           }}
         >
-          <p style={{ fontSize: 13, lineHeight: 1.5, color: "#F5EDED", margin: 0 }}>{pilot.verdict.text}</p>
+          <p style={{ fontSize: 13, lineHeight: 1.5, color: "var(--ep-ink)", margin: 0 }}>{pilot.verdict.text}</p>
           {pilot.weightTrend?.projectedEndKg != null && (
-            <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "6px 0 0" }}>
+            <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "6px 0 0" }}>
               {tr("À ce rythme : environ")}{" "}{nf(pilot.weightTrend.projectedEndKg)}{" "}{tr("kg en fin de phase (projection, pas un objectif).")}
             </p>
           )}
@@ -284,7 +285,7 @@ export default function PhasePilotCard({
                 {tr("Pesées du")}{" "}{fmtDate(pilot.weightSeries[0].date)}{" "}{tr("au")}{" "}{fmtDate(pilot.weightSeries[pilot.weightSeries.length - 1].date)}
               </span>
               {pilot.corridor && pilot.weightTrend && (
-                <span style={{ fontSize: 9.5, color: "rgba(224,30,30,0.6)", whiteSpace: "nowrap" }}>{tr("zone rouge : couloir repère")}</span>
+                <span style={{ fontSize: 9.5, color: "rgba(var(--ep-accent-rgb),0.6)", whiteSpace: "nowrap" }}>{tr("zone rouge : couloir repère")}</span>
               )}
             </div>
             <WeightSparkline pilot={pilot} accent={accent} />
@@ -297,8 +298,8 @@ export default function PhasePilotCard({
             <div
               key={t.key}
               style={{
-                background: "rgba(0,0,0,0.32)",
-                border: "1px solid rgba(245,237,237,0.05)",
+                background: "rgba(var(--ep-shade-rgb),0.32)",
+                border: "1px solid rgba(var(--ep-ink-rgb),0.05)",
                 borderRadius: 10,
                 padding: "10px 11px",
                 minWidth: 0,
@@ -313,8 +314,8 @@ export default function PhasePilotCard({
                   style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0, background: TONE_COLORS[t.tone], boxShadow: t.tone === "info" ? "none" : `0 0 6px ${TONE_COLORS[t.tone]}` }}
                 />
               </div>
-              <p style={{ fontSize: 17, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", margin: 0, overflowWrap: "anywhere" }}>{t.value}</p>
-              <p style={{ fontSize: 10.5, lineHeight: 1.4, color: "rgba(245,237,237,0.4)", margin: "3px 0 0", overflowWrap: "anywhere" }}>{t.sub}</p>
+              <p style={{ fontSize: 17, fontWeight: 800, color: "var(--ep-ink)", letterSpacing: "-0.02em", margin: 0, overflowWrap: "anywhere" }}>{t.value}</p>
+              <p style={{ fontSize: 10.5, lineHeight: 1.4, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "3px 0 0", overflowWrap: "anywhere" }}>{t.sub}</p>
             </div>
           ))}
         </div>
@@ -325,10 +326,10 @@ export default function PhasePilotCard({
             style={{
               fontSize: 12,
               lineHeight: 1.5,
-              color: pilot.deloadHint.tone === "warn" ? "#fbbf24" : "rgba(245,237,237,0.55)",
+              color: pilot.deloadHint.tone === "warn" ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.55)",
               margin: "0 0 12px",
               paddingLeft: 10,
-              borderLeft: `2px solid ${pilot.deloadHint.tone === "warn" ? "#fbbf24" : "rgba(139,92,246,0.6)"}`,
+              borderLeft: `2px solid ${pilot.deloadHint.tone === "warn" ? "var(--ep-warn)" : "rgba(139,92,246,0.6)"}`,
             }}
           >
             🔄 {pilot.deloadHint.text}
@@ -354,7 +355,7 @@ export default function PhasePilotCard({
           </div>
         )}
 
-        <p style={{ fontSize: 9.5, lineHeight: 1.5, color: "rgba(245,237,237,0.28)", margin: 0 }}>
+        <p style={{ fontSize: 9.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.28)", margin: 0 }}>
           {tr("Repères indicatifs (Iraki et al. 2019 pour la prise de masse, Helms et al. 2014 pour la sèche), jamais une consigne. Calculé sur les pesées du bilan, le tracker nutrition, les séances terminées et le sommeil noté.")}
         </p>
       </div>

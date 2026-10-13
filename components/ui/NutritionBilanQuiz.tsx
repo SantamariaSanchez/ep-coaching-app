@@ -349,13 +349,13 @@ export default function NutritionBilanQuiz({
   // DONE
   if (phase === "done" && summary) {
     return (
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-2xl p-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[#E01E1E]/15 border border-[#E01E1E]/30 flex items-center justify-center mx-auto mb-4">
-          <Sparkles size={24} className="text-[#E01E1E]" strokeWidth={1.8} />
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-2xl p-6 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-(--ep-accent)/15 border border-(--ep-accent)/30 flex items-center justify-center mx-auto mb-4">
+          <Sparkles size={24} className="text-(--ep-accent)" strokeWidth={1.8} />
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">{t("Journée loggée")}</p>
-        <p className="text-3xl font-black text-white mb-1">{summary.cal}{" "}{t("kcal")}</p>
-        <p className="text-xs text-[#F5EDED]/40 mb-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1">{t("Journée loggée")}</p>
+        <p className="text-3xl font-black text-(--ep-strong) mb-1">{summary.cal}{" "}{t("kcal")}</p>
+        <p className="text-xs text-(--ep-ink)/40 mb-5">
           {t("estimé sur")}{" "}{activeMealKeys.length}{" "}{t("repas ·")}{" "}{entries(mealFoods)}{" "}{t("aliment")}{entries(mealFoods) !== 1 ? "s" : ""}
         </p>
         <div className="grid grid-cols-3 gap-2 mb-5">
@@ -364,13 +364,13 @@ export default function NutritionBilanQuiz({
             { label: t("Glucides"),  val: summary.carbs, color: "text-amber-300" },
             { label: t("Lipides"),   val: summary.fat,   color: "text-rose-300" },
           ].map(({ label, val, color }) => (
-            <div key={label} className="bg-[#150000] border border-[#890404]/20 rounded-xl p-3">
-              <p className="text-[9px] text-[#F5EDED]/35 mb-0.5">{label}</p>
+            <div key={label} className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl p-3">
+              <p className="text-[9px] text-(--ep-ink)/35 mb-0.5">{label}</p>
               <p className={`text-lg font-black ${color}`}>{val}g</p>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-[#F5EDED]/25">
+        <p className="text-[10px] text-(--ep-ink)/25">
           {t("Tu peux affiner dans l'onglet \"Aujourd'hui\" si besoin.")}
         </p>
       </div>
@@ -382,8 +382,8 @@ export default function NutritionBilanQuiz({
     return (
       <div className="space-y-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Récap")}</p>
-          <h3 className="text-xl font-black text-white">{t("Vérifie avant de logger")}</h3>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{t("Récap")}</p>
+          <h3 className="text-xl font-black text-(--ep-strong)">{t("Vérifie avant de logger")}</h3>
         </div>
 
         {activeMealKeys.map((key) => {
@@ -392,20 +392,20 @@ export default function NutritionBilanQuiz({
           if (foods.length === 0) return null;
           const slotCal = foods.reduce((s, sf) => s + calcMacros(sf.food, sf.qty).calories, 0);
           return (
-            <div key={key} className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+            <div key={key} className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                <p className="text-xs font-bold text-(--ep-strong) flex items-center gap-1.5">
                   <span>{slot.emoji}</span> {slot.label}
                 </p>
-                <p className="text-[10px] text-[#F5EDED]/40">{slotCal}{" "}{t("kcal")}</p>
+                <p className="text-[10px] text-(--ep-ink)/40">{slotCal}{" "}{t("kcal")}</p>
               </div>
               <div className="space-y-1">
                 {foods.map((sf) => {
                   const m = calcMacros(sf.food, sf.qty);
                   return (
                     <div key={sf.food.id} className="flex items-center justify-between">
-                      <p className="text-xs text-[#F5EDED]/70 truncate flex-1">{sf.food.name}</p>
-                      <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                      <p className="text-xs text-(--ep-ink)/70 truncate flex-1">{sf.food.name}</p>
+                      <p className="text-[10px] text-(--ep-ink)/35 flex-shrink-0 ml-2">
                         {QTY_G[sf.qty]}g · {m.calories}{" "}{t("kcal")}
                       </p>
                     </div>
@@ -416,12 +416,12 @@ export default function NutritionBilanQuiz({
           );
         })}
 
-        <div className="bg-[#E01E1E]/10 border border-[#E01E1E]/25 rounded-xl p-4">
+        <div className="bg-(--ep-accent)/10 border border-(--ep-accent)/25 rounded-xl p-4">
           <div className="flex gap-4">
-            <div><p className="text-2xl font-black text-[#E01E1E]">{totals.cal}</p><p className="text-[9px] text-[#F5EDED]/35">{t("kcal")}</p></div>
-            <div><p className="text-lg font-black text-blue-300">{totals.prot}g</p><p className="text-[9px] text-[#F5EDED]/35">{t("Prot")}</p></div>
-            <div><p className="text-lg font-black text-amber-300">{totals.carbs}g</p><p className="text-[9px] text-[#F5EDED]/35">{t("Gluc")}</p></div>
-            <div><p className="text-lg font-black text-rose-300">{totals.fat}g</p><p className="text-[9px] text-[#F5EDED]/35">{t("Lip")}</p></div>
+            <div><p className="text-2xl font-black text-(--ep-accent)">{totals.cal}</p><p className="text-[9px] text-(--ep-ink)/35">{t("kcal")}</p></div>
+            <div><p className="text-lg font-black text-blue-300">{totals.prot}g</p><p className="text-[9px] text-(--ep-ink)/35">{t("Prot")}</p></div>
+            <div><p className="text-lg font-black text-amber-300">{totals.carbs}g</p><p className="text-[9px] text-(--ep-ink)/35">{t("Gluc")}</p></div>
+            <div><p className="text-lg font-black text-rose-300">{totals.fat}g</p><p className="text-[9px] text-(--ep-ink)/35">{t("Lip")}</p></div>
           </div>
         </div>
 
@@ -430,14 +430,14 @@ export default function NutritionBilanQuiz({
         <div className="flex gap-2">
           <button
             onClick={() => { setCurrentSlotIdx(activeMealKeys.length - 1); setPhase("meal"); }}
-            className="flex items-center gap-1 px-4 py-2.5 border border-[#890404]/40 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED]/80"
+            className="flex items-center gap-1 px-4 py-2.5 border border-(--ep-line)/40 rounded-xl text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/50 hover:text-(--ep-ink)/80"
           >
             <ChevronLeft size={13} />{" "}{t("Modifier")}
           </button>
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
           >
             {submitting ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -455,9 +455,9 @@ export default function NutritionBilanQuiz({
     return (
       <div className="space-y-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Étape 1")}</p>
-          <h3 className="text-xl font-black text-white mb-1">{t("Quels repas as-tu fait aujourd'hui ?")}</h3>
-          <p className="text-xs text-[#F5EDED]/40">{t("Sélectionne tout ce qui s'applique.")}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{t("Étape 1")}</p>
+          <h3 className="text-xl font-black text-(--ep-strong) mb-1">{t("Quels repas as-tu fait aujourd'hui ?")}</h3>
+          <p className="text-xs text-(--ep-ink)/40">{t("Sélectionne tout ce qui s'applique.")}</p>
         </div>
 
         <div className="space-y-2">
@@ -470,20 +470,20 @@ export default function NutritionBilanQuiz({
                 onClick={() => toggleSlot(slot.key)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all ${
                   selected
-                    ? "bg-[#E01E1E]/12 border-[#E01E1E]/40"
-                    : "bg-[#1f0101] border-[#890404]/25 hover:border-[#890404]/50"
+                    ? "bg-(--ep-accent)/12 border-(--ep-accent)/40"
+                    : "bg-(--ep-s1) border-(--ep-line)/25 hover:border-(--ep-line)/50"
                 }`}
               >
                 <span className="text-xl flex-shrink-0">{slot.emoji}</span>
                 <span className="flex-1">
-                  <span className={`text-sm font-bold ${selected ? "text-white" : "text-[#F5EDED]/65"}`}>
+                  <span className={`text-sm font-bold ${selected ? "text-(--ep-strong)" : "text-(--ep-ink)/65"}`}>
                     {slot.label}
                   </span>
                   {hasPhoto && (
                     <span className="ml-2 text-[9px] text-purple-400 font-bold">{t("📸 photo")}</span>
                   )}
                 </span>
-                {selected && <Check size={15} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />}
+                {selected && <Check size={15} className="text-(--ep-accent) flex-shrink-0" strokeWidth={2.5} />}
               </button>
             );
           })}
@@ -492,7 +492,7 @@ export default function NutritionBilanQuiz({
         <button
           onClick={() => { setCurrentSlotIdx(0); setPhase("meal"); }}
           disabled={selectedSlots.length === 0}
-          className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
         >
           {t("Commencer le détail")}{" "}<ChevronRight size={15} />
         </button>
@@ -510,14 +510,14 @@ export default function NutritionBilanQuiz({
         {/* Header */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
               {t("Repas")}{" "}{mealProgress}
             </p>
-            <p className="text-[10px] text-[#F5EDED]/30">
+            <p className="text-[10px] text-(--ep-ink)/30">
               {currentSelections.length > 0 ? `${currentSelections.length} aliment(s)` : ""}
             </p>
           </div>
-          <h3 className="text-xl font-black text-white flex items-center gap-2">
+          <h3 className="text-xl font-black text-(--ep-strong) flex items-center gap-2">
             <span>{currentSlot.emoji}</span>
             {currentSlot.label}
           </h3>
@@ -527,23 +527,23 @@ export default function NutritionBilanQuiz({
         {photo && (
           <div className="relative rounded-xl overflow-hidden">
             <img src={photo} alt={currentSlot.label} className="w-full max-h-36 object-cover" />
-            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
-              <p className="text-[10px] text-white font-semibold">{t("📸 Ta photo de ce repas")}</p>
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-(--ep-shade)/70 to-transparent px-3 py-2">
+              <p className="text-[10px] text-(--ep-strong) font-semibold">{t("📸 Ta photo de ce repas")}</p>
             </div>
           </div>
         )}
 
         {/* Selected foods */}
         {currentSelections.length > 0 && (
-          <div className="bg-[#150000] border border-[#890404]/20 rounded-xl p-3 space-y-2">
+          <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl p-3 space-y-2">
             {currentSelections.map((sf) => (
               <div key={sf.food.id} className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-white truncate flex-1">{sf.food.name}</p>
+                  <p className="text-xs font-bold text-(--ep-strong) truncate flex-1">{sf.food.name}</p>
                   <button
                     onClick={() => toggleFood(sf.food)}
                     aria-label={`Retirer ${sf.food.name}`}
-                    className="text-[#F5EDED]/25 hover:text-red-400 ml-2 flex-shrink-0"
+                    className="text-(--ep-ink)/25 hover:text-red-400 ml-2 flex-shrink-0"
                   >
                     <X size={12} />
                   </button>
@@ -555,15 +555,15 @@ export default function NutritionBilanQuiz({
                       onClick={() => setQty(sf.food.id, q)}
                       className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg border transition-colors ${
                         sf.qty === q
-                          ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-                          : "border-[#890404]/25 text-[#F5EDED]/35 hover:border-[#890404]/50"
+                          ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)"
+                          : "border-(--ep-line)/25 text-(--ep-ink)/35 hover:border-(--ep-line)/50"
                       }`}
                     >
                       {q === "petit" ? t("Petite") : q === "moyen" ? t("Normale") : q === "grand" ? t("Grande") : t("Double")}
                     </button>
                   ))}
                 </div>
-                <p className="text-[9px] text-[#F5EDED]/30">
+                <p className="text-[9px] text-(--ep-ink)/30">
                   ≈ {QTY_G[sf.qty]}g · {calcMacros(sf.food, sf.qty).calories}{" "}{t("kcal")}
                 </p>
               </div>
@@ -574,7 +574,7 @@ export default function NutritionBilanQuiz({
         {/* History suggestions */}
         {historySuggestions.length > 0 && !showSearch && (
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2 flex items-center gap-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-2 flex items-center gap-1.5">
               <span>⏱</span>{" "}{t("Tes habitudes pour ce créneau")}
             </p>
             <div className="space-y-1.5">
@@ -586,21 +586,21 @@ export default function NutritionBilanQuiz({
                     onClick={() => toggleFood(food)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
                       selected
-                        ? "bg-[#E01E1E]/12 border-[#E01E1E]/35"
-                        : "bg-[#1f0101] border-[#890404]/20 hover:border-[#890404]/45"
+                        ? "bg-(--ep-accent)/12 border-(--ep-accent)/35"
+                        : "bg-(--ep-s1) border-(--ep-line)/20 hover:border-(--ep-line)/45"
                     }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-bold truncate ${selected ? "text-white" : "text-[#F5EDED]/70"}`}>
+                      <p className={`text-xs font-bold truncate ${selected ? "text-(--ep-strong)" : "text-(--ep-ink)/70"}`}>
                         {food.name}
                       </p>
-                      <p className="text-[9px] text-[#F5EDED]/30 mt-0.5">
+                      <p className="text-[9px] text-(--ep-ink)/30 mt-0.5">
                         {food.calories_per_100}{" "}{t("kcal/100g · P")}{" "}{food.proteins_per_100}g
                       </p>
                     </div>
                     {selected
-                      ? <Check size={14} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />
-                      : <Plus size={13} className="text-[#F5EDED]/25 flex-shrink-0" />
+                      ? <Check size={14} className="text-(--ep-accent) flex-shrink-0" strokeWidth={2.5} />
+                      : <Plus size={13} className="text-(--ep-ink)/25 flex-shrink-0" />
                     }
                   </button>
                 );
@@ -613,10 +613,10 @@ export default function NutritionBilanQuiz({
         {showSearch ? (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 flex-1">
                 {t("Rechercher un aliment")}
               </p>
-              <button onClick={() => { setShowSearch(false); setSearchQ(""); setShowCreateFood(false); }} aria-label={t("Fermer la recherche")} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+              <button onClick={() => { setShowSearch(false); setSearchQ(""); setShowCreateFood(false); }} aria-label={t("Fermer la recherche")} className="text-(--ep-ink)/30 hover:text-(--ep-ink)/60">
                 <X size={13} />
               </button>
             </div>
@@ -626,15 +626,15 @@ export default function NutritionBilanQuiz({
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
               placeholder={t("Ex. riz complet, poulet…")} aria-label={t("Rechercher un aliment")}
-              className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 mb-2"
+              className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50 mb-2"
             />
             <div className="space-y-1 max-h-48 overflow-y-auto">
               {searchResults.length === 0 && searchQ.trim() && !showCreateFood && (
                 <div className="py-4 text-center">
-                  <p className="text-xs text-[#F5EDED]/30 mb-2">{t("Aucun résultat pour \"")}{searchQ.trim()}{t("\"")}</p>
+                  <p className="text-xs text-(--ep-ink)/30 mb-2">{t("Aucun résultat pour \"")}{searchQ.trim()}{t("\"")}</p>
                   <button
                     onClick={openCreateFood}
-                    className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
                   >
                     <Plus size={12} />
                     {t("Créer \"")}{searchQ.trim()}{t("\" comme nouvel aliment")}
@@ -648,16 +648,16 @@ export default function NutritionBilanQuiz({
                     key={food.id}
                     onClick={() => toggleFood(food)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
-                      selected ? "bg-[#E01E1E]/12 border-[#E01E1E]/35" : "bg-[#1f0101] border-[#890404]/20"
+                      selected ? "bg-(--ep-accent)/12 border-(--ep-accent)/35" : "bg-(--ep-s1) border-(--ep-line)/20"
                     }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-[#F5EDED]/80 truncate">{food.name}</p>
-                      <p className="text-[9px] text-[#F5EDED]/30">{food.calories_per_100}{" "}{t("kcal/100g")}</p>
+                      <p className="text-xs font-bold text-(--ep-ink)/80 truncate">{food.name}</p>
+                      <p className="text-[9px] text-(--ep-ink)/30">{food.calories_per_100}{" "}{t("kcal/100g")}</p>
                     </div>
                     {selected
-                      ? <Check size={14} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />
-                      : <Plus size={13} className="text-[#F5EDED]/25 flex-shrink-0" />
+                      ? <Check size={14} className="text-(--ep-accent) flex-shrink-0" strokeWidth={2.5} />
+                      : <Plus size={13} className="text-(--ep-ink)/25 flex-shrink-0" />
                     }
                   </button>
                 );
@@ -665,12 +665,12 @@ export default function NutritionBilanQuiz({
             </div>
 
             {showCreateFood && (
-              <div className="mt-3 bg-[#150000] border border-[#890404]/30 rounded-xl p-3 space-y-2">
+              <div className="mt-3 bg-(--ep-s2) border border-(--ep-line)/30 rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40">
                     {t("Nouvel aliment")}
                   </p>
-                  <button onClick={() => setShowCreateFood(false)} aria-label={t("Fermer")} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+                  <button onClick={() => setShowCreateFood(false)} aria-label={t("Fermer")} className="text-(--ep-ink)/30 hover:text-(--ep-ink)/60">
                     <X size={13} />
                   </button>
                 </div>
@@ -678,9 +678,9 @@ export default function NutritionBilanQuiz({
                   value={createForm.name}
                   onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder={t("Nom de l'aliment")} aria-label={t("Nom de l'aliment")}
-                  className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+                  className="w-full bg-(--ep-s1) border border-(--ep-line)/25 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50"
                 />
-                <p className="text-[9px] text-[#F5EDED]/25">{t("Valeurs pour 100g")}</p>
+                <p className="text-[9px] text-(--ep-ink)/25">{t("Valeurs pour 100g")}</p>
                 <div className="grid grid-cols-4 gap-1.5">
                   {([
                     { key: "calories", label: t("Kcal") },
@@ -695,9 +695,9 @@ export default function NutritionBilanQuiz({
                         value={createForm[key]}
                         onChange={(e) => setCreateForm((f) => ({ ...f, [key]: e.target.value }))}
                         placeholder="0" aria-label="0"
-                        className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-2 py-1.5 text-xs text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+                        className="w-full bg-(--ep-s1) border border-(--ep-line)/25 rounded-lg px-2 py-1.5 text-xs text-(--ep-strong) text-center placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
                       />
-                      <p className="text-[8px] text-[#F5EDED]/25 text-center mt-0.5">{label}</p>
+                      <p className="text-[8px] text-(--ep-ink)/25 text-center mt-0.5">{label}</p>
                     </div>
                   ))}
                 </div>
@@ -705,7 +705,7 @@ export default function NutritionBilanQuiz({
                 <button
                   onClick={handleCreateFood}
                   disabled={creatingFood}
-                  className="w-full flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest py-2.5 rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[10px] font-bold uppercase tracking-widest py-2.5 rounded-lg transition-colors"
                 >
                   {creatingFood ? t("Création…") : t("Créer et ajouter au repas")}
                 </button>
@@ -715,7 +715,7 @@ export default function NutritionBilanQuiz({
         ) : (
           <button
             onClick={() => setShowSearch(true)}
-            className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-xl px-4 py-2.5 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+            className="w-full flex items-center justify-center gap-2 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/55 rounded-xl px-4 py-2.5 text-xs text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
           >
             <Search size={13} />
             {t("Ajouter un autre aliment")}
@@ -726,13 +726,13 @@ export default function NutritionBilanQuiz({
         <div className="flex gap-2 pt-1">
           <button
             onClick={goPrevMeal}
-            className="flex items-center gap-1 px-4 py-2.5 border border-[#890404]/30 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+            className="flex items-center gap-1 px-4 py-2.5 border border-(--ep-line)/30 rounded-xl text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
           >
             <ChevronLeft size={13} />{" "}{t("Retour")}
           </button>
           <button
             onClick={goNextMeal}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
           >
             {currentSlotIdx < activeMealKeys.length - 1 ? (
               <><span>{t("Repas suivant")}</span> <ChevronRight size={15} /></>

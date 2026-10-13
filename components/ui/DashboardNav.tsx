@@ -775,11 +775,11 @@ export default function DashboardNav({
           height: "100%",
           zIndex: 40,
           width: 220,
-          background: "rgba(6,0,0,0.88)",
+          background: "rgba(var(--ep-bg-rgb),0.88)",
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
-          borderRight: "1px solid rgba(224,30,30,0.1)",
-          boxShadow: "4px 0 32px rgba(0,0,0,0.5)",
+          borderRight: "1px solid rgba(var(--ep-accent-rgb),0.1)",
+          boxShadow: "4px 0 32px rgba(var(--ep-shade-rgb),0.5)",
         }}
       >
         {/* Logo */}
@@ -798,16 +798,16 @@ export default function DashboardNav({
           style={{
             display: "flex", alignItems: "center", gap: 8,
             margin: "0 16px 12px", padding: "8px 10px",
-            background: "rgba(245,237,237,0.04)", border: "1px solid rgba(224,30,30,0.14)",
-            borderRadius: 10, color: "rgba(245,237,237,0.35)", cursor: "pointer",
+            background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
+            borderRadius: 10, color: "rgba(var(--ep-ink-rgb),0.35)", cursor: "pointer",
             fontSize: 12, fontWeight: 600, textAlign: "left",
           }}
         >
           <Search size={13} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>{t("Rechercher")}</span>
           <span style={{
-            fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.25)",
-            border: "1px solid rgba(245,237,237,0.15)", borderRadius: 4, padding: "1px 5px",
+            fontSize: 9, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.25)",
+            border: "1px solid rgba(var(--ep-ink-rgb),0.15)", borderRadius: 4, padding: "1px 5px",
           }}>
             ⌘K
           </span>
@@ -825,7 +825,7 @@ export default function DashboardNav({
                   fontWeight: 700,
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
-                  color: "rgba(245,237,237,0.18)",
+                  color: "rgba(var(--ep-ink-rgb),0.18)",
                   padding: "14px 10px 5px",
                   margin: 0,
                 }}>
@@ -850,7 +850,7 @@ export default function DashboardNav({
                       borderRadius: 10,
                       marginBottom: 1,
                       position: "relative",
-                      color: active ? "#F5EDED" : "rgba(245,237,237,0.32)",
+                      color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.32)",
                       fontWeight: active ? 700 : 500,
                       fontSize: 13,
                       textDecoration: "none",
@@ -858,14 +858,14 @@ export default function DashboardNav({
                     onMouseEnter={(e) => {
                       if (active) return;
                       const el = e.currentTarget as HTMLAnchorElement;
-                      el.style.background = "rgba(224,30,30,0.05)";
-                      el.style.color = "rgba(245,237,237,0.65)";
+                      el.style.background = "rgba(var(--ep-accent-rgb),0.05)";
+                      el.style.color = "rgba(var(--ep-ink-rgb),0.65)";
                     }}
                     onMouseLeave={(e) => {
                       if (active) return;
                       const el = e.currentTarget as HTMLAnchorElement;
                       el.style.background = "transparent";
-                      el.style.color = "rgba(245,237,237,0.32)";
+                      el.style.color = "rgba(var(--ep-ink-rgb),0.32)";
                     }}
                   >
                     {/* layoutId partagé : Framer Motion fait glisser ce fond
@@ -888,25 +888,25 @@ export default function DashboardNav({
                           inset: 0,
                           zIndex: -1,
                           borderRadius: 10,
-                          background: "rgba(224,30,30,0.1)",
-                          borderLeft: "2px solid #E01E1E",
+                          background: "rgba(var(--ep-accent-rgb),0.1)",
+                          borderLeft: "2px solid var(--ep-accent)",
                         }}
                       />
                     )}
                     <Icon
                       size={16}
                       strokeWidth={active ? 2.2 : 1.7}
-                      style={{ color: active ? "#E01E1E" : "inherit", flexShrink: 0 }}
+                      style={{ color: active ? "var(--ep-accent)" : "inherit", flexShrink: 0 }}
                     />
                     <span style={{ flex: 1 }}>{t(label)}</span>
                     {locked && (
-                      <Lock size={11} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} strokeWidth={2} />
+                      <Lock size={11} style={{ color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0 }} strokeWidth={2} />
                     )}
                     {count > 0 && (
                       <span
                         className="animate-pulse-glow animate-badge-pop"
                         style={{
-                          background: "#E01E1E",
+                          background: "var(--ep-accent)",
                           color: "#fff",
                           borderRadius: "50%",
                           width: 16,
@@ -930,21 +930,21 @@ export default function DashboardNav({
         </nav>
 
         {/* Bottom: user + logout */}
-        <div style={{ borderTop: "1px solid rgba(224,30,30,0.08)", padding: "14px 12px" }}>
+        <div style={{ borderTop: "1px solid rgba(var(--ep-accent-rgb),0.08)", padding: "14px 12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <div style={{
               width: 34,
               height: 34,
               borderRadius: 10,
-              background: "linear-gradient(135deg, #E01E1E, #890404)",
+              background: "linear-gradient(135deg, var(--ep-accent), var(--ep-line))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
               fontWeight: 800,
-              color: "#F5EDED",
+              color: "var(--ep-ink)",
               flexShrink: 0,
-              boxShadow: "0 2px 8px rgba(224,30,30,0.25)",
+              boxShadow: "0 2px 8px rgba(var(--ep-accent-rgb),0.25)",
             }}>
               {initials}
             </div>
@@ -952,7 +952,7 @@ export default function DashboardNav({
               <div style={{
                 fontSize: 12,
                 fontWeight: 700,
-                color: "#F5EDED",
+                color: "var(--ep-ink)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -961,7 +961,7 @@ export default function DashboardNav({
               </div>
               <div style={{
                 fontSize: 10,
-                color: "rgba(245,237,237,0.28)",
+                color: "rgba(var(--ep-ink-rgb),0.28)",
                 textTransform: "capitalize",
               }}>
                 {userRole ?? "…"}
@@ -980,7 +980,7 @@ export default function DashboardNav({
                 padding: "7px 10px",
                 borderRadius: 8,
                 background: "transparent",
-                color: "rgba(245,237,237,0.4)",
+                color: "rgba(var(--ep-ink-rgb),0.4)",
                 fontSize: 12,
                 fontWeight: 600,
                 textDecoration: "none",
@@ -989,12 +989,12 @@ export default function DashboardNav({
               className="ep-nav-link"
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
-                el.style.color = "#E01E1E";
-                el.style.background = "rgba(224,30,30,0.07)";
+                el.style.color = "var(--ep-accent)";
+                el.style.background = "rgba(var(--ep-accent-rgb),0.07)";
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
-                el.style.color = "rgba(245,237,237,0.4)";
+                el.style.color = "rgba(var(--ep-ink-rgb),0.4)";
                 el.style.background = "transparent";
               }}
             >
@@ -1014,7 +1014,7 @@ export default function DashboardNav({
                 padding: "7px 10px",
                 borderRadius: 8,
                 background: "transparent",
-                color: "rgba(245,237,237,0.4)",
+                color: "rgba(var(--ep-ink-rgb),0.4)",
                 fontSize: 12,
                 fontWeight: 600,
                 textDecoration: "none",
@@ -1023,12 +1023,12 @@ export default function DashboardNav({
               className="ep-nav-link"
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
-                el.style.color = "#E01E1E";
-                el.style.background = "rgba(224,30,30,0.07)";
+                el.style.color = "var(--ep-accent)";
+                el.style.background = "rgba(var(--ep-accent-rgb),0.07)";
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
-                el.style.color = "rgba(245,237,237,0.4)";
+                el.style.color = "rgba(var(--ep-ink-rgb),0.4)";
                 el.style.background = "transparent";
               }}
             >
@@ -1048,7 +1048,7 @@ export default function DashboardNav({
               borderRadius: 8,
               background: "transparent",
               border: "none",
-              color: "rgba(245,237,237,0.22)",
+              color: "rgba(var(--ep-ink-rgb),0.22)",
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",
@@ -1056,12 +1056,12 @@ export default function DashboardNav({
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "#E01E1E";
-              el.style.background = "rgba(224,30,30,0.07)";
+              el.style.color = "var(--ep-accent)";
+              el.style.background = "rgba(var(--ep-accent-rgb),0.07)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "rgba(245,237,237,0.22)";
+              el.style.color = "rgba(var(--ep-ink-rgb),0.22)";
               el.style.background = "transparent";
             }}
           >
@@ -1104,10 +1104,10 @@ export default function DashboardNav({
               touchAction: "pan-x",
               overscrollBehavior: "contain",
               padding: "10px 12px",
-              background: "rgba(6,0,0,0.92)",
+              background: "rgba(var(--ep-bg-rgb),0.92)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              borderBottom: "1px solid rgba(224,30,30,0.1)",
+              borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.1)",
             }}
           >
             {mobileSubItems.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
@@ -1126,13 +1126,13 @@ export default function DashboardNav({
                     gap: 6,
                     padding: "7px 12px",
                     borderRadius: 999,
-                    background: active ? "rgba(224,30,30,0.14)" : "rgba(245,237,237,0.04)",
-                    color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",
+                    background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-ink-rgb),0.04)",
+                    color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
                     fontWeight: active ? 700 : 600,
                     fontSize: 11,
                     whiteSpace: "nowrap",
                     textDecoration: "none",
-                    border: active ? "1px solid rgba(224,30,30,0.3)" : "1px solid transparent",
+                    border: active ? "1px solid rgba(var(--ep-accent-rgb),0.3)" : "1px solid transparent",
                     position: "relative",
                   }}
                 >
@@ -1143,7 +1143,7 @@ export default function DashboardNav({
                     <span
                       className="animate-badge-pop"
                       style={{
-                        background: "#E01E1E",
+                        background: "var(--ep-accent)",
                         color: "#fff",
                         borderRadius: "50%",
                         width: 14,
@@ -1207,7 +1207,7 @@ export default function DashboardNav({
       >
         {!pathname.endsWith("/notes") && (
           <Link href={`${base}/notes?capture=1`} aria-label={t("Note rapide")} className="ep-btn-icon" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(245,237,237,0.5)" }} />
+            <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }} />
           </Link>
         )}
         <button
@@ -1217,7 +1217,7 @@ export default function DashboardNav({
           className="ep-btn-icon"
           style={{ width: 36, height: 36 }}
         >
-          <Search size={17} strokeWidth={1.8} style={{ color: "rgba(245,237,237,0.5)" }} />
+          <Search size={17} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }} />
         </button>
       </div>
 
@@ -1279,7 +1279,7 @@ export default function DashboardNav({
                         inset: 0,
                         zIndex: -1,
                         borderRadius: 15,
-                        background: "rgba(224,30,30,0.14)",
+                        background: "rgba(var(--ep-accent-rgb),0.14)",
                       }}
                     />
                   )}
@@ -1287,7 +1287,7 @@ export default function DashboardNav({
                     size={18}
                     strokeWidth={active ? 2.3 : 1.6}
                     style={{
-                      color: active ? "#E01E1E" : "rgba(245,237,237,0.28)",
+                      color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.28)",
                       transition: "color 0.2s, stroke-width 0.2s",
                     }}
                   />
@@ -1296,7 +1296,7 @@ export default function DashboardNav({
                       position: "absolute",
                       top: 1,
                       right: 3,
-                      background: "#E01E1E",
+                      background: "var(--ep-accent)",
                       color: "#fff",
                       borderRadius: "50%",
                       width: 15,
@@ -1306,7 +1306,7 @@ export default function DashboardNav({
                       justifyContent: "center",
                       fontSize: 8,
                       fontWeight: 800,
-                      border: "1.5px solid #070000",
+                      border: "1.5px solid var(--ep-bg)",
                     }}>
                       {count > 9 ? "9+" : count}
                     </span>
@@ -1318,7 +1318,7 @@ export default function DashboardNav({
                   fontSize: 9,
                   fontWeight: active ? 700 : 500,
                   letterSpacing: "0.03em",
-                  color: active ? "#E01E1E" : "rgba(245,237,237,0.28)",
+                  color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.28)",
                   transition: "color 0.2s",
                   lineHeight: 1,
                   whiteSpace: "nowrap",

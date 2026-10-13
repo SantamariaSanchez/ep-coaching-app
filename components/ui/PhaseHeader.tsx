@@ -43,17 +43,17 @@ export default function PhaseHeader({
       aria-expanded={collapsible ? open : undefined}
       className={`w-full flex items-center gap-3 pt-4 scroll-mt-4 text-left ${collapsible ? "cursor-pointer" : ""}`}
     >
-      <span className="flex-shrink-0 w-9 h-9 rounded-full bg-[#E01E1E]/15 border border-[#E01E1E]/40 flex items-center justify-center text-sm font-black text-[#E01E1E]">
+      <span className="flex-shrink-0 w-9 h-9 rounded-full bg-(--ep-accent)/15 border border-(--ep-accent)/40 flex items-center justify-center text-sm font-black text-(--ep-accent)">
         {n}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-black uppercase tracking-wide text-white leading-tight">{title}</p>
-        <p className="text-[10.5px] text-[#F5EDED]/35">{subtitle}</p>
+        <p className="text-sm font-black uppercase tracking-wide text-(--ep-strong) leading-tight">{title}</p>
+        <p className="text-[10.5px] text-(--ep-ink)/35">{subtitle}</p>
       </div>
       {collapsible && (
         <ChevronDown
           size={16}
-          className="flex-shrink-0 text-[#F5EDED]/30 transition-transform"
+          className="flex-shrink-0 text-(--ep-ink)/30 transition-transform"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
       )}

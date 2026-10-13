@@ -81,31 +81,31 @@ export default function ConfirmDialogProvider({ children }: { children: React.Re
       {children}
       {pending && (
         <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => settle(false)} />
-          <div className="relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl z-10 p-5">
+          <div className="absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm" onClick={() => settle(false)} />
+          <div className="relative w-full sm:max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl z-10 p-5">
             <div className="flex items-start gap-3 mb-5">
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: pending.options.danger === false ? "rgba(224,30,30,0.08)" : "rgba(224,30,30,0.12)",
-                  border: "1px solid rgba(224,30,30,0.3)",
+                  background: pending.options.danger === false ? "rgba(var(--ep-accent-rgb),0.08)" : "rgba(var(--ep-accent-rgb),0.12)",
+                  border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
                 }}
               >
-                <AlertTriangle size={16} className="text-[#E01E1E]" />
+                <AlertTriangle size={16} className="text-(--ep-accent)" />
               </div>
-              <p className="text-[13.5px] text-white leading-relaxed pt-1.5">{pending.message}</p>
+              <p className="text-[13.5px] text-(--ep-strong) leading-relaxed pt-1.5">{pending.message}</p>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => settle(false)}
                 autoFocus
-                className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-[#F5EDED]/50 hover:text-white transition-colors"
+                className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-(--ep-ink)/50 hover:text-(--ep-strong) transition-colors"
               >
                 {pending.options.cancelLabel ?? t("Annuler")}
               </button>
               <button
                 onClick={() => settle(true)}
-                className="flex-1 py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl transition-colors"
+                className="flex-1 py-3 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-xl transition-colors"
               >
                 {pending.options.confirmLabel ?? t("Confirmer")}
               </button>

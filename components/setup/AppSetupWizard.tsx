@@ -57,17 +57,17 @@ export default function AppSetupWizard({ role, initialAnswers, doneHref }: { rol
         <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
           <Sparkles size={12} />{" "}{t("Mon appli")}
         </p>
-        <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>
+        <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
           {Math.min(index, questions.length - 1) + 1} / {questions.length}
         </span>
       </div>
-      <div style={{ height: 4, borderRadius: 99, background: "rgba(245,237,237,0.07)", marginBottom: 18 }}>
-        <div style={{ width: `${((Math.min(index, questions.length - 1) + 1) / questions.length) * 100}%`, height: "100%", borderRadius: 99, background: "linear-gradient(90deg, #890404, #E01E1E)", transition: "width .3s ease" }} />
+      <div style={{ height: 4, borderRadius: 99, background: "rgba(var(--ep-ink-rgb),0.07)", marginBottom: 18 }}>
+        <div style={{ width: `${((Math.min(index, questions.length - 1) + 1) / questions.length) * 100}%`, height: "100%", borderRadius: 99, background: "linear-gradient(90deg, var(--ep-line), var(--ep-accent))", transition: "width .3s ease" }} />
       </div>
 
-      <h2 style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: "0 0 4px", lineHeight: 1.25 }}>{t(q.title)}</h2>
-      {q.subtitle && <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", margin: "0 0 14px" }}>{t(q.subtitle)}</p>}
-      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "0 0 10px" }}>{q.multi ? t("Plusieurs choix possibles") : t("Un seul choix")}</p>
+      <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 4px", lineHeight: 1.25 }}>{t(q.title)}</h2>
+      {q.subtitle && <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 14px" }}>{t(q.subtitle)}</p>}
+      <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", margin: "0 0 10px" }}>{q.multi ? t("Plusieurs choix possibles") : t("Un seul choix")}</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {q.options.map((o) => {
@@ -79,16 +79,16 @@ export default function AppSetupWizard({ role, initialAnswers, doneHref }: { rol
               onClick={() => toggle(o.value)}
               style={{
                 display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "13px 14px", borderRadius: 14, cursor: "pointer",
-                border: `1px solid ${on ? "rgba(224,30,30,0.7)" : "rgba(137,4,4,0.35)"}`,
-                background: on ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.25)",
+                border: `1px solid ${on ? "rgba(var(--ep-accent-rgb),0.7)" : "rgba(var(--ep-line-rgb),0.35)"}`,
+                background: on ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-shade-rgb),0.25)",
               }}
             >
-              <span style={{ width: 22, height: 22, borderRadius: q.multi ? 7 : 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: `1.5px solid ${on ? "#E01E1E" : "rgba(245,237,237,0.3)"}`, background: on ? "#E01E1E" : "transparent" }}>
+              <span style={{ width: 22, height: 22, borderRadius: q.multi ? 7 : 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: `1.5px solid ${on ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.3)"}`, background: on ? "var(--ep-accent)" : "transparent" }}>
                 {on && <Check size={13} color="#fff" strokeWidth={3} />}
               </span>
               <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: "#F5EDED" }}>{t(o.label)}</span>
-                {o.hint && <span style={{ display: "block", fontSize: 11.5, color: "rgba(245,237,237,0.45)", marginTop: 2 }}>{t(o.hint)}</span>}
+                <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: "var(--ep-ink)" }}>{t(o.label)}</span>
+                {o.hint && <span style={{ display: "block", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", marginTop: 2 }}>{t(o.hint)}</span>}
               </span>
             </button>
           );
@@ -99,7 +99,7 @@ export default function AppSetupWizard({ role, initialAnswers, doneHref }: { rol
 
       <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
         {index > 0 && (
-          <button type="button" onClick={() => setIndex((i) => i - 1)} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.7)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+          <button type="button" onClick={() => setIndex((i) => i - 1)} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(var(--ep-line-rgb),0.45)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.7)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
             <ChevronLeft size={14} />{" "}{t("Retour")}
           </button>
         )}
@@ -107,7 +107,7 @@ export default function AppSetupWizard({ role, initialAnswers, doneHref }: { rol
           type="button"
           disabled={!canNext || pending}
           onClick={next}
-          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: !canNext || pending ? 0.5 : 1 }}
+          style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: !canNext || pending ? 0.5 : 1 }}
         >
           {pending ? "..." : isLast ? t("Terminer") : t("Suivant")} {!pending && !isLast && <ChevronRight size={14} />}
         </button>

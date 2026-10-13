@@ -182,10 +182,10 @@ function computeWeeklyVolume(days: DayRow[]): Record<string, number> {
 }
 
 function volumeStatus(sets: number, mev: number, mav: number, mrv: number): { label: string; color: string } {
-  if (sets < mev) return { label: "Insuffisant", color: "#f87171" };
-  if (sets <= mav) return { label: "Optimal", color: "#4ade80" };
-  if (sets <= mrv) return { label: "Élevé, gérable", color: "#fbbf24" };
-  return { label: "Excessif", color: "#f87171" };
+  if (sets < mev) return { label: "Insuffisant", color: "var(--ep-bad)" };
+  if (sets <= mav) return { label: "Optimal", color: "var(--ep-ok)" };
+  if (sets <= mrv) return { label: "Élevé, gérable", color: "var(--ep-warn)" };
+  return { label: "Excessif", color: "var(--ep-bad)" };
 }
 
 // ── Budget de volume & intensité (fusionné, en Livraison) ────────────────
@@ -227,13 +227,13 @@ function VolumeBudgetReviewPanel({
   const mesoStatus = mesocycle ? computeMesocycleStatus(mesocycle.startDate, mesocycle.weeks) : null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {tr("Volume & intensité")}
       </p>
-      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
+      <p className="text-[10.5px] text-(--ep-ink)/30 mb-3 leading-relaxed max-w-2xl">
         {tr("Séries directes/semaine par groupe musculaire, comparées au budget visé et aux repères MEV/MAV/MRV (Renaissance Periodization). Un repère, pas une règle : récupération, historique et priorités du client comptent tout autant (")}
-        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
+        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-(--ep-ink)/50">
           {tr("Pelland et al., Sports Med 2025")}
         </a>
         ).
@@ -244,7 +244,7 @@ function VolumeBudgetReviewPanel({
           className={`flex items-center gap-2 rounded-lg px-3 py-2 mb-3 border ${
             mesoStatus.isOverdue || mesoStatus.isDeloadWeek
               ? "bg-amber-500/10 border-amber-500/25 text-amber-300"
-              : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/50"
+              : "bg-(--ep-s2) border-(--ep-line)/20 text-(--ep-ink)/50"
           }`}
         >
           <p className="text-[11px] font-bold">
@@ -258,7 +258,7 @@ function VolumeBudgetReviewPanel({
       )}
 
       {displayedGroups.length === 0 ? (
-        <p className="text-[11px] text-[#F5EDED]/25 italic">{tr("Aucun groupe travaillé pour l'instant.")}</p>
+        <p className="text-[11px] text-(--ep-ink)/25 italic">{tr("Aucun groupe travaillé pour l'instant.")}</p>
       ) : (
         <div className="space-y-1.5">
           {displayedGroups.map((group) => {
@@ -269,13 +269,13 @@ function VolumeBudgetReviewPanel({
               fullTarget != null && mesoStatus && !mesoStatus.isOverdue
                 ? Math.round(fullTarget * mesoStatus.volumeFactor)
                 : fullTarget;
-            const status = landmark ? volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv) : { label: "", color: "#F5EDED" };
+            const status = landmark ? volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv) : { label: "", color: "var(--ep-ink)" };
             return (
-              <div key={group} className="flex items-center gap-2.5 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2">
+              <div key={group} className="flex items-center gap-2.5 bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-white truncate">{group}</p>
+                  <p className="text-xs font-bold text-(--ep-strong) truncate">{group}</p>
                   {landmark && (
-                    <p className="text-[9px] text-[#F5EDED]/25">
+                    <p className="text-[9px] text-(--ep-ink)/25">
                       {tr("MEV")}{" "}{landmark.mev}{" "}{tr("· MAV")}{" "}{landmark.mav}{" "}{tr("· MRV")}{" "}{landmark.mrv}
                     </p>
                   )}
@@ -288,14 +288,14 @@ function VolumeBudgetReviewPanel({
                     onChange={(e) => onSetTarget(group, e.target.value)}
                     placeholder={landmark ? String(landmark.mav) : "0"}
                     aria-label={`${group}, séries par semaine visées`}
-                    className="w-12 bg-[#1f0101] border border-[#890404]/30 rounded px-1.5 py-1 text-xs text-center text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
+                    className="w-12 bg-(--ep-s1) border border-(--ep-line)/30 rounded px-1.5 py-1 text-xs text-center text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/60 transition-colors"
                   />
-                  <span className="text-[9px] text-[#F5EDED]/20">{tr("visé")}{mesoStatus && !mesoStatus.isOverdue ? tr(" (plein)") : ""}</span>
+                  <span className="text-[9px] text-(--ep-ink)/20">{tr("visé")}{mesoStatus && !mesoStatus.isOverdue ? tr(" (plein)") : ""}</span>
                 </div>
                 <div className="text-right flex-shrink-0" style={{ width: 64 }}>
                   <p className="text-sm font-black" style={{ color: status.color }}>
                     {sets}
-                    {target != null && <span className="text-[#F5EDED]/25 font-normal"> /{target}</span>}
+                    {target != null && <span className="text-(--ep-ink)/25 font-normal"> /{target}</span>}
                   </p>
                   {status.label && (
                     <p className="text-[8.5px] font-bold uppercase tracking-wider" style={{ color: status.color }}>
@@ -313,7 +313,7 @@ function VolumeBudgetReviewPanel({
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
-          className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+          className="mt-3 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 transition-colors"
         >
           {showAll
             ? tr("Masquer les groupes non travaillés")
@@ -346,11 +346,11 @@ function EquipmentInventoryPanel({
   if (baseline.length === 0) return null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {tr("Inventaire matériel de cette séance")}
       </p>
-      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
+      <p className="text-[10.5px] text-(--ep-ink)/30 mb-3 leading-relaxed max-w-2xl">
         {tr("Le lieu d'entraînement de la fiche client filtre déjà le gros du matériel injouable. Ici, affine pour la salle précise de")}{" "}{subjectLabel}{" "}{tr("et son horaire : une catégorie théoriquement disponible peut être absente de cette salle, ou son poste habituellement pris d'assaut à l'heure d'entraînement habituelle.")}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -364,7 +364,7 @@ function EquipmentInventoryPanel({
               className={`px-3 py-1.5 rounded-lg text-[10.5px] font-bold border transition-colors ${
                 isExcluded
                   ? "bg-amber-500/10 border-amber-500/40 text-amber-300"
-                  : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/60 hover:border-[#890404]/45"
+                  : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/60 hover:border-(--ep-line)/45"
               }`}
             >
               {EQUIPMENT_TYPE_LABELS[type]} {isExcluded ? tr("· écarté pour cette séance") : tr("· disponible")}
@@ -417,19 +417,19 @@ function DeliveryReviewPanel({
   ];
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-3">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-3">
         {tr("Bilan avant sauvegarde")}
       </p>
       <div className="space-y-1.5">
         {items.map((item, i) => (
-          <p key={i} className={`text-[11px] flex items-start gap-2 ${item.ok ? "text-[#F5EDED]/45" : "text-amber-300/85"}`}>
+          <p key={i} className={`text-[11px] flex items-start gap-2 ${item.ok ? "text-(--ep-ink)/45" : "text-amber-300/85"}`}>
             <span className="flex-shrink-0 mt-0.5">{item.ok ? "✓" : "!"}</span>
             {item.ok ? item.okText : item.warnText}
           </p>
         ))}
       </div>
-      <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
+      <p className="text-[10px] text-(--ep-ink)/25 mt-3 leading-relaxed">
         {tr("Rien ici n'empêche d'enregistrer, un point ouvert peut être un choix assumé. C'est un rappel, pas un blocage.")}
       </p>
     </div>
@@ -482,20 +482,20 @@ function PositionCoveragePanel({
   if (flagged.length === 0) return null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {tr("Diversité des positions de résistance")}
       </p>
-      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
+      <p className="text-[10.5px] text-(--ep-ink)/30 mb-3 leading-relaxed max-w-2xl">
         {tr("Un groupe travaillé uniquement en position Mi-course, Allongée ou Raccourcie sous-exploite l'hypertrophie par rapport à un mix des 3 (la tension mécanique maximale se déplace selon la longueur du muscle à laquelle il travaille). Un repère, pas une règle bloquante.")}
       </p>
       <div className="space-y-1.5">
         {flagged.map(([group, v]) => (
           <div
             key={group}
-            className="flex items-center gap-2.5 bg-[#150000] border border-amber-500/25 rounded-lg px-3 py-2"
+            className="flex items-center gap-2.5 bg-(--ep-s2) border border-amber-500/25 rounded-lg px-3 py-2"
           >
-            <p className="text-xs font-bold text-white flex-1">{group}</p>
+            <p className="text-xs font-bold text-(--ep-strong) flex-1">{group}</p>
             <p className="text-[10.5px] text-amber-300/85 text-right">
               {v.total}{" "}{tr("exercice")}{v.total > 1 ? "s" : ""}{tr(", tous en position")}{" "}{[...v.positions][0]}
             </p>
@@ -569,7 +569,7 @@ export function rowAssignment(row: ExerciseRow): AssignmentDecisions {
 }
 
 export const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 // Champ nom d'exercice avec recherche dans la bibliothèque — un choix
 // remplit aussi groupe/sous-groupe musculaire d'un coup. Reste un champ
@@ -654,14 +654,14 @@ export function ExerciseNameField({
             if (e.key === "Escape") setOpen(false);
           }}
           placeholder={tr("Exercice (recherche...)")} aria-label={tr("Exercice (recherche...)")}
-          className="w-full bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
+          className="w-full bg-transparent text-sm font-semibold text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none border-b border-transparent focus:border-(--ep-ink)/20 pb-0.5 min-w-0"
         />
         <button
           type="button"
           onClick={() => { setOpen(true); setShowFilters((v) => !v); }}
           title={tr("Filtrer par muscle / matériel")} aria-label={tr("Filtrer par muscle / matériel")}
           className={`flex-shrink-0 p-1 rounded transition-colors ${
-            hasActiveFilters ? "text-[#E01E1E]" : "text-[#F5EDED]/20 hover:text-[#F5EDED]/50"
+            hasActiveFilters ? "text-(--ep-accent)" : "text-(--ep-ink)/20 hover:text-(--ep-ink)/50"
           }`}
         >
           <SlidersHorizontal size={13} />
@@ -669,8 +669,8 @@ export function ExerciseNameField({
       </div>
 
       {open && pendingPick && (
-        <div className="absolute z-30 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-amber-500/40 rounded-lg shadow-xl p-3">
-          <p className="text-xs font-bold text-white mb-1.5">{pendingPick.lib.name}</p>
+        <div className="absolute z-30 top-full left-0 right-0 mt-1 bg-(--ep-s3) border border-amber-500/40 rounded-lg shadow-xl p-3">
+          <p className="text-xs font-bold text-(--ep-strong) mb-1.5">{pendingPick.lib.name}</p>
           <div className="space-y-1 mb-3">
             {pendingPick.conflicts.map((c, i) => (
               <p key={i} className="text-[10px] text-amber-300/90 flex items-start gap-1.5">
@@ -690,7 +690,7 @@ export function ExerciseNameField({
             <button
               type="button"
               onClick={() => setPendingPick(null)}
-              className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 rounded-lg transition-colors"
             >
               {tr("Annuler")}
             </button>
@@ -699,12 +699,12 @@ export function ExerciseNameField({
       )}
 
       {open && !pendingPick && (showFilters || hasActiveFilters) && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl p-2 flex gap-1.5">
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-(--ep-s3) border border-(--ep-line)/40 rounded-lg shadow-xl p-2 flex gap-1.5">
           <select
             value={filterGroup}
             onChange={(e) => setFilterGroup(e.target.value)}
             aria-label={tr("Filtrer par groupe musculaire")}
-            className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
+            className="flex-1 min-w-0 bg-(--ep-s2) border border-(--ep-line)/30 rounded px-1.5 py-1 text-[10px] text-(--ep-strong) focus:outline-none"
           >
             <option value="">{tr("Tout muscle")}</option>
             {LIBRARY_MUSCLE_GROUPS.map((g) => (
@@ -715,7 +715,7 @@ export function ExerciseNameField({
             value={filterEquipment}
             onChange={(e) => setFilterEquipment(e.target.value as EquipmentType | "")}
             aria-label={tr("Filtrer par matériel")}
-            className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
+            className="flex-1 min-w-0 bg-(--ep-s2) border border-(--ep-line)/30 rounded px-1.5 py-1 text-[10px] text-(--ep-strong) focus:outline-none"
           >
             <option value="">{tr("Tout matériel")}</option>
             {EQUIPMENT_TYPES.map((t) => (
@@ -727,7 +727,7 @@ export function ExerciseNameField({
 
       {open && !pendingPick && matches.length > 0 && (
         <div
-          className={`absolute z-20 left-0 right-0 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl max-h-64 overflow-y-auto ${
+          className={`absolute z-20 left-0 right-0 bg-(--ep-s3) border border-(--ep-line)/40 rounded-lg shadow-xl max-h-64 overflow-y-auto ${
             showFilters || hasActiveFilters ? "top-[calc(100%+38px)]" : "top-full mt-1"
           }`}
         >
@@ -736,16 +736,16 @@ export function ExerciseNameField({
             return (
               <div
                 key={lib.id}
-                className="flex items-stretch gap-1 border-b border-[#890404]/10 last:border-0"
+                className="flex items-stretch gap-1 border-b border-(--ep-line)/10 last:border-0"
               >
                 <button
                   type="button"
                   onClick={() => attemptPick(lib)}
-                  className="flex-1 min-w-0 text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors"
+                  className="flex-1 min-w-0 text-left px-3 py-2 text-xs text-(--ep-ink)/80 hover:bg-(--ep-line)/20 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-semibold">{lib.name}</span>
-                    <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
+                    <span className="text-[9px] text-(--ep-ink)/30 flex-shrink-0">{lib.muscle_group}</span>
                   </div>
                   <div className="flex items-center gap-1 mt-1 flex-wrap">
                     {conflicts.length > 0 && (
@@ -754,7 +754,7 @@ export function ExerciseNameField({
                       </span>
                     )}
                     {lib.category && (
-                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/20 text-(--ep-ink)/40">
                         {CATEGORY_LABELS[lib.category]}
                       </span>
                     )}
@@ -762,13 +762,13 @@ export function ExerciseNameField({
                       <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
                         lib.difficulty === "avance"
                           ? "bg-amber-500/10 border-amber-500/25 text-amber-400"
-                          : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
+                          : "bg-(--ep-s2) border-(--ep-line)/20 text-(--ep-ink)/40"
                       }`}>
                         {DIFFICULTY_LABELS[lib.difficulty]}
                       </span>
                     )}
                     {lib.equipment && (
-                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/20 text-(--ep-ink)/40">
                         {lib.equipment}
                       </span>
                     )}
@@ -778,7 +778,7 @@ export function ExerciseNameField({
                   type="button"
                   onClick={() => setDetailFor(lib)}
                   title={tr("Fiche exercice détaillée")} aria-label={tr("Fiche exercice détaillée")}
-                  className="flex-shrink-0 px-2 flex items-center justify-center text-[#F5EDED]/25 hover:text-[#E01E1E] hover:bg-[#890404]/20 transition-colors"
+                  className="flex-shrink-0 px-2 flex items-center justify-center text-(--ep-ink)/25 hover:text-(--ep-accent) hover:bg-(--ep-line)/20 transition-colors"
                 >
                   <Info size={13} />
                 </button>
@@ -788,9 +788,9 @@ export function ExerciseNameField({
         </div>
       )}
       {open && !pendingPick && q.length >= 2 && !hasActiveFilters && matches.length === 0 && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl px-3 py-2 flex items-center gap-2">
-          <Search size={11} className="text-[#F5EDED]/20 flex-shrink-0" />
-          <span className="text-[10px] text-[#F5EDED]/30">{tr("Aucun résultat, nom libre conservé")}</span>
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-(--ep-s3) border border-(--ep-line)/40 rounded-lg shadow-xl px-3 py-2 flex items-center gap-2">
+          <Search size={11} className="text-(--ep-ink)/20 flex-shrink-0" />
+          <span className="text-[10px] text-(--ep-ink)/30">{tr("Aucun résultat, nom libre conservé")}</span>
         </div>
       )}
       {detailFor && (
@@ -829,26 +829,26 @@ function AssignmentOnlyPanel({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
-      <div className="ep-modal-panel relative w-full sm:max-w-lg bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[88vh] overflow-y-auto">
-        <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-[#150000] border-b border-[#890404]/20 z-10">
+      <div className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm" onClick={onClose} />
+      <div className="ep-modal-panel relative w-full sm:max-w-lg bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl max-h-[88vh] overflow-y-auto">
+        <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-(--ep-s2) border-b border-(--ep-line)/20 z-10">
           <div className="min-w-0">
-            <p className="text-sm font-black text-white truncate">{name || tr("Exercice")}</p>
+            <p className="text-sm font-black text-(--ep-strong) truncate">{name || tr("Exercice")}</p>
             <p className="text-[10px] text-amber-400/80 font-semibold mt-1">
               {tr("Hors bibliothèque, ajoute-le à la bibliothèque pour avoir sa fiche de classification.")}
             </p>
           </div>
-          <button onClick={onClose} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+          <button onClick={onClose} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-strong) flex-shrink-0">
             <X size={18} />
           </button>
         </div>
         <div className="p-5">
-          <div className="bg-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4">
-            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#E01E1E] mb-1">
+          <div className="bg-(--ep-s1) border border-(--ep-accent)/25 rounded-xl p-4">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-(--ep-accent) mb-1">
               <ClipboardCheck size={12} />
               {tr("Décisions pour cette séance")}
             </p>
-            <p className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed mb-4">
+            <p className="text-[10.5px] text-(--ep-ink)/35 leading-relaxed mb-4">
               {tr("Ce que toi tu choisis pour ce client précis, à cette place précise du programme.")}
             </p>
             <div className="space-y-4">
@@ -861,14 +861,14 @@ function AssignmentOnlyPanel({
                 ] as const
               ).map(({ field, label, placeholder }) => (
                 <div key={field}>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{label}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{label}</p>
                   <textarea
                     value={assignment[field]}
                     onChange={(e) => onChange(field, e.target.value)}
                     rows={2}
                     placeholder={placeholder}
                     aria-label={label}
-                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                    className="w-full bg-(--ep-bg) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors resize-none"
                   />
                 </div>
               ))}
@@ -877,7 +877,7 @@ function AssignmentOnlyPanel({
           <button
             type="button"
             onClick={onClose}
-            className="mt-4 w-full py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
+            className="mt-4 w-full py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg transition-colors"
           >
             {tr("Terminé pour cet exercice")}
           </button>
@@ -1422,8 +1422,8 @@ export default function ProgramEditor({
           Pas une jauge de progression qui bloque — un sommaire qui montre
           l'état réel de chaque phase du travail, pour ne jamais perdre de
           vue l'ensemble en travaillant une section précise. */}
-      <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-3 flex flex-wrap items-center gap-2">
-        <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/25 mr-1">{tr("Ce projet :")}</span>
+      <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-3 flex flex-wrap items-center gap-2">
+        <span className="text-[9px] font-black uppercase tracking-widest text-(--ep-ink)/25 mr-1">{tr("Ce projet :")}</span>
         {[
           { n: 1, label: tr("Contexte"), detail: intake ? tr("fiche client chargée") : tr("fiche client absente") },
           {
@@ -1445,12 +1445,12 @@ export default function ProgramEditor({
             className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors"
             style={
               openPhase === phase.n
-                ? { background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.5)" }
-                : { background: "#1f0101", border: "1px solid rgba(137,4,4,0.25)" }
+                ? { background: "rgba(var(--ep-accent-rgb),0.15)", border: "1px solid rgba(var(--ep-accent-rgb),0.5)" }
+                : { background: "var(--ep-s1)", border: "1px solid rgba(var(--ep-line-rgb),0.25)" }
             }
           >
-            <span className="text-[10px] font-black uppercase tracking-widest text-white">{phase.label}</span>
-            <span className="text-[9px] text-[#F5EDED]/35">{phase.detail}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-(--ep-strong)">{phase.label}</span>
+            <span className="text-[9px] text-(--ep-ink)/35">{phase.detail}</span>
           </button>
         ))}
       </div>
@@ -1470,26 +1470,26 @@ export default function ProgramEditor({
 
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
       {(templates.length > 0 || templatesHref) && (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
           <div className="flex items-center justify-between gap-3 mb-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-              {tr("Point de départ")}{" "}<span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">{tr("(optionnel)")}</span>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
+              {tr("Point de départ")}{" "}<span className="text-(--ep-ink)/20 font-normal normal-case tracking-normal">{tr("(optionnel)")}</span>
             </p>
             {templates.length > 0 && (
               <button
                 onClick={() => setShowStartingPoint((v) => !v)}
-                className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+                className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors flex-shrink-0"
               >
                 {showStartingPoint ? tr("Masquer") : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
               </button>
             )}
           </div>
-          <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed">
+          <p className="text-[11px] text-(--ep-ink)/30 leading-relaxed">
             {tr("Pars d'un de tes modèles et personnalise le à la volée pour")}{" "}{subjectLabel}{tr(", ou conçois tout sur mesure ci dessous. Charger un modèle ne le modifie jamais, c'est une copie de travail.")}
           </p>
 
           {loadedTemplateName && (
-            <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-lg px-3 py-1.5">
+            <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) bg-(--ep-accent)/10 border border-(--ep-accent)/30 rounded-lg px-3 py-1.5">
               <Check size={11} />
               {tr("Chargé depuis «")}{" "}{loadedTemplateName}{" "}{tr("», personnalise librement")}
             </p>
@@ -1504,23 +1504,23 @@ export default function ProgramEditor({
                     key={t.id}
                     type="button"
                     onClick={() => loadTemplate(t)}
-                    className="text-left bg-[#150000] border border-[#890404]/25 hover:border-[#E01E1E]/45 rounded-xl px-4 py-3 transition-colors group"
+                    className="text-left bg-(--ep-s2) border border-(--ep-line)/25 hover:border-(--ep-accent)/45 rounded-xl px-4 py-3 transition-colors group"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-bold text-white leading-tight">{t.name}</p>
+                      <p className="text-sm font-bold text-(--ep-strong) leading-tight">{t.name}</p>
                       {t.type && (
-                        <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#1f0101] border border-[#890404]/25 text-[#F5EDED]/40">
+                        <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s1) border border-(--ep-line)/25 text-(--ep-ink)/40">
                           {t.type}
                         </span>
                       )}
                     </div>
-                    {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
-                    <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+                    {t.objective && <p className="text-[11px] text-(--ep-ink)/40 mt-1">{t.objective}</p>}
+                    <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">
                       {t.days.length}{" "}{tr("séance")}{t.days.length !== 1 ? "s" : ""} · {exerciseCount}{" "}{tr("exercice")}
                       {exerciseCount !== 1 ? "s" : ""}
                       {t.frequency ? ` · ${t.frequency}×/semaine` : ""}
                     </p>
-                    <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 group-hover:text-[#E01E1E] transition-colors">
+                    <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 group-hover:text-(--ep-accent) transition-colors">
                       <LayoutTemplate size={11} />
                       {tr("Charger et personnaliser")}
                     </span>
@@ -1533,7 +1533,7 @@ export default function ProgramEditor({
           {templatesHref && (
             <Link
               href={templatesHref}
-              className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+              className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors"
             >
               <ExternalLink size={11} />
               {tr("Gérer la bibliothèque de modèles")}
@@ -1557,13 +1557,13 @@ export default function ProgramEditor({
       <>
 
       {/* ── 1. Structure ──────────────────────────────────────────────────── */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
           {tr("Structure du programme")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-1">
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Nom du programme")}
             </label>
             <input
@@ -1574,7 +1574,7 @@ export default function ProgramEditor({
             />
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Split")}
             </label>
             <select aria-label={tr("Split")}
@@ -1588,7 +1588,7 @@ export default function ProgramEditor({
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
               {tr("Fréquence (séances/semaine)")}
             </label>
             <input
@@ -1604,7 +1604,7 @@ export default function ProgramEditor({
         </div>
 
         <div className="mt-4">
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
             {tr("Objectif de phase")}
           </label>
           <input
@@ -1616,9 +1616,9 @@ export default function ProgramEditor({
         </div>
 
         <div className="mt-4">
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
             {tr("Notes de conception")}{" "}
-            <span className="text-[#F5EDED]/25 font-normal">{tr("(pour toi, jamais affichées côté client)")}</span>
+            <span className="text-(--ep-ink)/25 font-normal">{tr("(pour toi, jamais affichées côté client)")}</span>
           </label>
           <textarea
             value={state.coach_notes}
@@ -1629,8 +1629,8 @@ export default function ProgramEditor({
           />
         </div>
 
-        <div className="mt-4 bg-[#150000] border border-[#890404]/20 rounded-xl p-4">
-          <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 cursor-pointer select-none">
+        <div className="mt-4 bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl p-4">
+          <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={state.mesocycle_start_date.trim() !== ""}
@@ -1645,18 +1645,18 @@ export default function ProgramEditor({
                   updateMeta("mesocycle_start_date", "");
                 }
               }}
-              className="accent-[#E01E1E]"
+              className="accent-(--ep-accent)"
             />
             {tr("Suivre un mésocycle (montée de volume programmée + décharge en fin de bloc)")}
           </label>
           {state.mesocycle_start_date.trim() !== "" && (
             <>
-              <p className="mt-2 text-[10.5px] text-[#F5EDED]/30 leading-relaxed max-w-2xl">
+              <p className="mt-2 text-[10.5px] text-(--ep-ink)/30 leading-relaxed max-w-2xl">
                 {tr("Le budget de volume ci-dessous (phase Livraison) sert de cible pour l'avant-dernière semaine du bloc : la première semaine démarre plus bas, la dernière est une décharge automatique à ~50%. Un repère de calcul, jamais une réécriture des séries : à toi d'ajuster.")}
               </p>
               <div className="mt-3 flex flex-wrap items-end gap-4">
                 <div>
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1 block">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1 block">
                     {tr("Date de départ")}
                   </label>
                   <input
@@ -1664,11 +1664,11 @@ export default function ProgramEditor({
                     value={state.mesocycle_start_date}
                     onChange={(e) => updateMeta("mesocycle_start_date", e.target.value)}
                     aria-label={tr("Date de départ du mésocycle")}
-                    className="bg-[#1f0101] border border-[#890404]/30 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
+                    className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-lg px-2.5 py-1.5 text-xs text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/60 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1 block">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1 block">
                     {tr("Durée (semaines)")}
                   </label>
                   <input
@@ -1678,7 +1678,7 @@ export default function ProgramEditor({
                     value={state.mesocycle_weeks}
                     onChange={(e) => updateMeta("mesocycle_weeks", e.target.value)}
                     aria-label={tr("Durée du mésocycle en semaines")}
-                    className="w-16 bg-[#1f0101] border border-[#890404]/30 rounded-lg px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
+                    className="w-16 bg-(--ep-s1) border border-(--ep-line)/30 rounded-lg px-2.5 py-1.5 text-xs text-center text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/60 transition-colors"
                   />
                 </div>
                 {(() => {
@@ -1686,7 +1686,7 @@ export default function ProgramEditor({
                   if (isNaN(weeksNum) || weeksNum < MESOCYCLE_WEEKS_MIN) return null;
                   const status = computeMesocycleStatus(state.mesocycle_start_date, weeksNum);
                   return (
-                    <p className="text-[10.5px] text-[#F5EDED]/45 pb-1.5">
+                    <p className="text-[10.5px] text-(--ep-ink)/45 pb-1.5">
                       {status.isOverdue
                         ? tr("Bloc déjà terminé selon ces dates, il est temps d'en démarrer un nouveau.")
                         : status.isDeloadWeek
@@ -1703,13 +1703,13 @@ export default function ProgramEditor({
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button
             onClick={applyScaffold}
-            className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Wand2 size={13} />
             {state.days.length === 0 ? tr("Séances vides de cette structure") : tr("Regénérer les séances vides")}
           </button>
         </div>
-        <p className="mt-2 text-[10px] text-[#F5EDED]/25 leading-relaxed">
+        <p className="mt-2 text-[10px] text-(--ep-ink)/25 leading-relaxed">
           {tr("Ça pose seulement les séances vides du split choisi, aucun exercice n'est choisi à ta place. Chaque exercice ajouté ensuite passe par sa propre configuration complète (position, amplitude, matériel, risque…), volontairement plus lente qu'un remplissage automatique.")}
         </p>
       </div>
@@ -1731,28 +1731,28 @@ export default function ProgramEditor({
       />
 
       {/* Vérification exercices — fiche client + contraintes ajoutées à la volée */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
           {tr("Vérification automatique des exercices")}
         </p>
         {intake && (intake.injuries || intake.exercises_problematic || intake.disliked_equipment) ? (
           <div className="space-y-1.5 mb-3">
             {intake.injuries && (
-              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">{tr("Blessures/douleurs :")}</strong> {intake.injuries}</p>
+              <p className="text-[11px] text-(--ep-ink)/50"><strong className="text-(--ep-ink)/75">{tr("Blessures/douleurs :")}</strong> {intake.injuries}</p>
             )}
             {intake.exercises_problematic && (
-              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">{tr("Exercices problématiques :")}</strong> {intake.exercises_problematic}</p>
+              <p className="text-[11px] text-(--ep-ink)/50"><strong className="text-(--ep-ink)/75">{tr("Exercices problématiques :")}</strong> {intake.exercises_problematic}</p>
             )}
             {intake.disliked_equipment && (
-              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">{tr("Matériel détesté :")}</strong> {intake.disliked_equipment}</p>
+              <p className="text-[11px] text-(--ep-ink)/50"><strong className="text-(--ep-ink)/75">{tr("Matériel détesté :")}</strong> {intake.disliked_equipment}</p>
             )}
           </div>
         ) : (
-          <p className="text-[11px] text-[#F5EDED]/30 italic mb-3">
+          <p className="text-[11px] text-(--ep-ink)/30 italic mb-3">
             {tr("Rien de déclaré dans la fiche client sur ce point. Remplis-la ou ajoute une contrainte ci-dessous.")}
           </p>
         )}
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
           {tr("Autres contraintes à vérifier (pas dans la fiche client)")}
         </label>
         <textarea
@@ -1762,7 +1762,7 @@ export default function ProgramEditor({
           placeholder={tr("Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…")} aria-label={tr("Contraintes particulières")}
           className={`${inputCls} resize-none`}
         />
-        <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+        <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">
           {tr("Chaque exercice sélectionné depuis la bibliothèque est comparé à tout ça. En cas de correspondance, une confirmation est demandée avant de l'ajouter, jamais un blocage silencieux.")}
         </p>
       </div>
@@ -1782,20 +1782,20 @@ export default function ProgramEditor({
       <>
 
       {/* Days */}
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 px-1">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 px-1">
         {tr("Séances & exercices")}
       </p>
       {state.days.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
-          <p className="text-xs text-[#F5EDED]/35 font-semibold uppercase tracking-widest">
+        <div className="flex flex-col items-center justify-center py-14 bg-(--ep-s1) border border-dashed border-(--ep-line)/30 rounded-xl gap-4">
+          <p className="text-xs text-(--ep-ink)/35 font-semibold uppercase tracking-widest">
             {tr("Aucune séance")}
           </p>
-          <p className="text-[11px] text-[#F5EDED]/25 max-w-sm text-center">
+          <p className="text-[11px] text-(--ep-ink)/25 max-w-sm text-center">
             {tr("Choisis un split et une fréquence ci dessus puis génère les séances, charge un de tes modèles, ou ajoute une séance vide directement.")}
           </p>
           <button
             onClick={() => addDay()}
-            className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
             {tr("Ajouter une séance")}
@@ -1813,12 +1813,12 @@ export default function ProgramEditor({
               {state.days.map((day, dayIdx) => (
                 <div
                   key={day.localId}
-                  className="w-72 flex-shrink-0 bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
+                  className="w-72 flex-shrink-0 bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4"
                 >
                   {/* Day header */}
-                  <div className="mb-4 pb-3 border-b border-[#890404]/20">
+                  <div className="mb-4 pb-3 border-b border-(--ep-line)/20">
                     {day.weekday ? (
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[#E01E1E]/70 mb-1">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-(--ep-accent)/70 mb-1">
                         {DAY_LABELS[day.weekday]}
                       </p>
                     ) : (
@@ -1833,13 +1833,13 @@ export default function ProgramEditor({
                         updateDayLabel(day.localId, e.target.value)
                       }
                       aria-label={tr("Nom du jour")}
-                      className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-[#E01E1E] focus:outline-none border-b border-transparent focus:border-[#E01E1E]/40 pb-0.5 min-w-0"
+                      className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-(--ep-accent) focus:outline-none border-b border-transparent focus:border-(--ep-accent)/40 pb-0.5 min-w-0"
                     />
                     <button
                       onClick={() => moveDay(day.localId, -1)}
                       disabled={dayIdx === 0}
                       title={tr("Déplacer à gauche")} aria-label={tr("Déplacer à gauche")}
-                      className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
+                      className="text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronLeft size={14} />
                     </button>
@@ -1847,21 +1847,21 @@ export default function ProgramEditor({
                       onClick={() => moveDay(day.localId, 1)}
                       disabled={dayIdx === state.days.length - 1}
                       title={tr("Déplacer à droite")} aria-label={tr("Déplacer à droite")}
-                      className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
+                      className="text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronRight size={14} />
                     </button>
                     <button
                       onClick={() => duplicateDay(day.localId)}
                       title={tr("Dupliquer cette séance")} aria-label={tr("Dupliquer cette séance")}
-                      className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
+                      className="text-(--ep-ink)/30 hover:text-(--ep-ink)/70 transition-colors flex-shrink-0"
                     >
                       <Copy size={12} />
                     </button>
                     <button
                       onClick={() => removeDay(day.localId)}
                       title={tr("Supprimer la séance")} aria-label={tr("Supprimer la séance")}
-                      className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
+                      className="text-(--ep-ink)/25 hover:text-red-500 transition-colors flex-shrink-0"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -1873,7 +1873,7 @@ export default function ProgramEditor({
                     {day.exercises.map((ex, exIdx) => (
                       <div
                         key={ex.localId}
-                        className="bg-[#150000] border border-[#890404]/20 rounded-lg p-2.5 space-y-2"
+                        className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-2.5 space-y-2"
                       >
                         {/* Name + controls */}
                         <div className="flex items-center gap-1.5">
@@ -1894,7 +1894,7 @@ export default function ProgramEditor({
                               }
                               disabled={exIdx === 0}
                               title={tr("Monter")} aria-label={tr("Monter")}
-                              className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
+                              className="text-(--ep-ink)/25 hover:text-(--ep-ink)/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
                                 width="9"
@@ -1911,7 +1911,7 @@ export default function ProgramEditor({
                               }
                               disabled={exIdx === day.exercises.length - 1}
                               title={tr("Descendre")} aria-label={tr("Descendre")}
-                              className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
+                              className="text-(--ep-ink)/25 hover:text-(--ep-ink)/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
                                 width="9"
@@ -1926,7 +1926,7 @@ export default function ProgramEditor({
                               <button
                                 onClick={() => swapExercise(day.localId, ex.localId)}
                                 title={tr("Remplacer par un autre exercice du même groupe/catégorie")} aria-label={tr("Remplacer par un autre exercice du même groupe/catégorie")}
-                                className="text-[#F5EDED]/25 hover:text-green-400 transition-colors p-0.5 ml-0.5"
+                                className="text-(--ep-ink)/25 hover:text-green-400 transition-colors p-0.5 ml-0.5"
                               >
                                 <RefreshCw size={11} />
                               </button>
@@ -1936,7 +1936,7 @@ export default function ProgramEditor({
                                 removeExercise(day.localId, ex.localId)
                               }
                               title={tr("Supprimer")} aria-label={tr("Supprimer")}
-                              className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
+                              className="text-(--ep-ink)/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
                             >
                               <Trash2 size={11} />
                             </button>
@@ -1973,7 +1973,7 @@ export default function ProgramEditor({
                             ] as const
                           ).map(({ field, label, type, placeholder }) => (
                             <div key={field}>
-                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-0.5">
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/30 block mb-0.5">
                                 {label}
                               </label>
                               <input aria-label={label}
@@ -1989,7 +1989,7 @@ export default function ProgramEditor({
                                   )
                                 }
                                 placeholder={placeholder}
-                                className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/50 transition-colors"
+                                className="w-full bg-(--ep-s1)/80 border border-(--ep-line)/20 rounded px-2 py-1 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-line)/50 transition-colors"
                               />
                             </div>
                           ))}
@@ -2007,13 +2007,13 @@ export default function ProgramEditor({
                             )
                           }
                           placeholder={tr("Notes (optionnel)")} aria-label={tr("Notes (optionnel)")}
-                          className="w-full bg-transparent text-[10px] text-[#F5EDED]/40 placeholder:text-[#F5EDED]/20 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/10 pb-0.5 transition-colors"
+                          className="w-full bg-transparent text-[10px] text-(--ep-ink)/40 placeholder:text-(--ep-ink)/20 focus:outline-none border-b border-transparent focus:border-(--ep-ink)/10 pb-0.5 transition-colors"
                         />
 
                         {/* Muscle group + Direct/Indirect */}
-                        <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-[#890404]/10">
+                        <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-(--ep-line)/10">
                           <div>
-                            <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                            <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/25 block mb-0.5">
                               {tr("Groupe musculaire")}
                             </label>
                             <select aria-label={tr("Groupe musculaire")}
@@ -2021,7 +2021,7 @@ export default function ProgramEditor({
                               onChange={(e) =>
                                 updateExerciseMuscleGroup(day.localId, ex.localId, e.target.value)
                               }
-                              className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
+                              className="w-full bg-(--ep-s1)/80 border border-(--ep-line)/20 rounded px-2 py-1 text-[10px] text-(--ep-strong) focus:outline-none focus:border-(--ep-line)/50 transition-colors"
                             >
                               <option value="">{tr("Non défini")}</option>
                               {MUSCLE_GROUPS.map((g) => (
@@ -2030,7 +2030,7 @@ export default function ProgramEditor({
                             </select>
                           </div>
                           <div>
-                            <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                            <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/25 block mb-0.5">
                               {tr("Type")}
                             </label>
                             <div className="flex gap-1.5 pt-1">
@@ -2046,7 +2046,7 @@ export default function ProgramEditor({
                                     }
                                     className="sr-only peer"
                                   />
-                                  <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-[#890404]/20 text-[#F5EDED]/30 peer-checked:border-[#E01E1E]/50 peer-checked:text-[#E01E1E] transition-colors cursor-pointer">
+                                  <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-(--ep-line)/20 text-(--ep-ink)/30 peer-checked:border-(--ep-accent)/50 peer-checked:text-(--ep-accent) transition-colors cursor-pointer">
                                     {val === "true" ? tr("Direct") : tr("Indirect")}
                                   </span>
                                 </label>
@@ -2059,7 +2059,7 @@ export default function ProgramEditor({
                         {ex.muscle_group &&
                           MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup]?.length > 0 && (
                             <div>
-                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-(--ep-ink)/25 block mb-0.5">
                                 {tr("Sous-groupe")}
                               </label>
                               <select aria-label={tr("Sous-groupe")}
@@ -2072,7 +2072,7 @@ export default function ProgramEditor({
                                     e.target.value
                                   )
                                 }
-                                className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
+                                className="w-full bg-(--ep-s1)/80 border border-(--ep-line)/20 rounded px-2 py-1 text-[10px] text-(--ep-strong) focus:outline-none focus:border-(--ep-line)/50 transition-colors"
                               >
                                 <option value="">{tr("Non défini")}</option>
                                 {MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup].map((sg) => (
@@ -2088,7 +2088,7 @@ export default function ProgramEditor({
                   {/* Add exercise */}
                   <button
                     onClick={() => addExercise(day.localId)}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/20 hover:border-[#890404]/40 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 border border-dashed border-(--ep-line)/20 hover:border-(--ep-line)/40 rounded-lg transition-colors"
                   >
                     <Plus size={11} />
                     {tr("Exercice")}
@@ -2101,7 +2101,7 @@ export default function ProgramEditor({
           {/* Add day */}
           <button
             onClick={() => addDay()}
-            className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
             {tr("Ajouter une séance")}
@@ -2119,7 +2119,7 @@ export default function ProgramEditor({
 
       {/* Enregistrer le travail en cours comme modèle réutilisable */}
       {saveAsTemplate && state.days.length > 0 && (
-        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl p-4">
           {templateSaved ? (
             <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-green-400">
               <Check size={13} />
@@ -2128,7 +2128,7 @@ export default function ProgramEditor({
           ) : templateFormOpen ? (
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                   {tr("Nom du modèle")}
                 </label>
                 <input aria-label={tr("Nom du modèle")}
@@ -2142,14 +2142,14 @@ export default function ProgramEditor({
               <div className="flex gap-2">
                 <button
                   onClick={() => { setTemplateFormOpen(false); setTemplateError(null); }}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/50 hover:text-(--ep-ink)/80 transition-colors"
                 >
                   {tr("Annuler")}
                 </button>
                 <button
                   onClick={handleSaveAsTemplate}
                   disabled={templateBusy}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-(--ep-accent)/15 border border-(--ep-accent)/40 rounded-lg text-(--ep-accent) hover:bg-(--ep-accent)/25 disabled:opacity-50 transition-colors"
                 >
                   {templateBusy ? tr("Enregistrement…") : tr("Enregistrer le modèle")}
                 </button>
@@ -2157,12 +2157,12 @@ export default function ProgramEditor({
             </div>
           ) : (
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed max-w-md">
+              <p className="text-[11px] text-(--ep-ink)/35 leading-relaxed max-w-md">
                 {tr("Cette structure te resservira ? Enregistre la comme modèle réutilisable, sans quitter cette page.")}
               </p>
               <button
                 onClick={() => { setTemplateName(state.name); setTemplateFormOpen(true); }}
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors flex-shrink-0"
               >
                 <BookmarkPlus size={12} />
                 {tr("Enregistrer comme modèle")}
@@ -2208,20 +2208,20 @@ export default function ProgramEditor({
       {/* Actions — toujours visibles, jamais cachées derrière une phase
           repliée : sauvegarder ou annuler doit rester atteignable en 1 clic
           depuis n'importe quelle phase ouverte, pas seulement "Livraison". */}
-      <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#890404]/15">
+      <div className="flex items-center justify-end gap-3 pt-2 border-t border-(--ep-line)/15">
         <button
           onClick={() => router.back()}
-          className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2.5 transition-colors"
+          className="text-xs font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 px-4 py-2.5 transition-colors"
         >
           {tr("Annuler")}
         </button>
         <button
           onClick={handleSave}
           disabled={saving || saved}
-          className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
+          className={`inline-flex items-center gap-2 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
             saved
               ? "bg-green-800/60 border border-green-600/30"
-              : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
+              : "bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60"
           }`}
         >
           {saved ? (

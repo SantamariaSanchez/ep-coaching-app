@@ -57,11 +57,11 @@ export default function ProfileSetupStep({
           disabled={busy}
           style={{
             display: "flex", alignItems: "center", gap: 5,
-            background: "rgba(245,237,237,0.06)",
-            border: "1px solid rgba(245,237,237,0.18)",
+            background: "rgba(var(--ep-ink-rgb),0.06)",
+            border: "1px solid rgba(var(--ep-ink-rgb),0.18)",
             borderRadius: 999,
             cursor: "pointer",
-            color: "rgba(245,237,237,0.75)", fontSize: 12, fontWeight: 700,
+            color: "rgba(var(--ep-ink-rgb),0.75)", fontSize: 12, fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.06em",
             flexShrink: 0, padding: "7px 12px", whiteSpace: "nowrap",
           }}
@@ -74,18 +74,18 @@ export default function ProfileSetupStep({
         <div className="animate-fade-up" style={{ width: "100%", maxWidth: 420 }}>
           <p style={{
             fontSize: 11, fontWeight: 800, letterSpacing: "0.18em",
-            textTransform: "uppercase", color: "#E01E1E", margin: "0 0 6px", textAlign: "center",
+            textTransform: "uppercase", color: "var(--ep-accent)", margin: "0 0 6px", textAlign: "center",
           }}>
             {t("Ton profil")}
           </p>
           <h1 style={{
             fontSize: "clamp(20px, 5vw, 26px)", fontWeight: 900,
-            letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 8px",
+            letterSpacing: "-0.03em", color: "var(--ep-ink)", margin: "0 0 8px",
             lineHeight: 1.2, textAlign: "center",
           }}>
             {t("Personnalise ta page")}
           </h1>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", textAlign: "center", margin: "0 0 28px" }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", textAlign: "center", margin: "0 0 28px" }}>
             {t("100% facultatif, tu pourras toujours le faire plus tard.")}
           </p>
 
@@ -97,21 +97,21 @@ export default function ProfileSetupStep({
               disabled={uploading}
               style={{
                 position: "relative", width: 84, height: 84, borderRadius: "50%",
-                border: "1px dashed rgba(224,30,30,0.4)",
-                background: avatarUrl ? `url(${avatarUrl}) center/cover no-repeat` : "rgba(224,30,30,0.08)",
+                border: "1px dashed rgba(var(--ep-accent-rgb),0.4)",
+                background: avatarUrl ? `url(${avatarUrl}) center/cover no-repeat` : "rgba(var(--ep-accent-rgb),0.08)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", flexShrink: 0,
               }}
             >
               {!avatarUrl && (
                 uploading
-                  ? <div style={{ width: 18, height: 18, border: "2px solid #E01E1E", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
-                  : <User size={28} style={{ color: "rgba(224,30,30,0.6)" }} strokeWidth={1.6} />
+                  ? <div style={{ width: 18, height: 18, border: "2px solid var(--ep-accent)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
+                  : <User size={28} style={{ color: "rgba(var(--ep-accent-rgb),0.6)" }} strokeWidth={1.6} />
               )}
               <div style={{
                 position: "absolute", bottom: -2, right: -2, width: 26, height: 26, borderRadius: "50%",
-                background: "#E01E1E", display: "flex", alignItems: "center", justifyContent: "center",
-                border: "2px solid #1a0000",
+                background: "var(--ep-accent)", display: "flex", alignItems: "center", justifyContent: "center",
+                border: "2px solid var(--ep-s3)",
               }}>
                 <Camera size={12} style={{ color: "#fff" }} />
               </div>
@@ -122,7 +122,7 @@ export default function ProfileSetupStep({
             <div>
               <label style={{
                 display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
-                textTransform: "uppercase", color: "rgba(224,30,30,0.8)", marginBottom: 7,
+                textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.8)", marginBottom: 7,
               }}>
                 {t("Bio")}
               </label>
@@ -133,8 +133,8 @@ export default function ProfileSetupStep({
                 rows={3}
                 maxLength={280}
                 style={{
-                  width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.15)",
-                  borderRadius: 8, color: "#F5EDED", padding: "11px 14px", fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
+                  width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
+                  borderRadius: 8, color: "var(--ep-ink)", padding: "11px 14px", fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
                   fontWeight: 500, fontSize: 14, outline: "none", resize: "none",
                 }}
               />
@@ -142,7 +142,7 @@ export default function ProfileSetupStep({
             <div>
               <label style={{
                 display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
-                textTransform: "uppercase", color: "rgba(224,30,30,0.8)", marginBottom: 7,
+                textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.8)", marginBottom: 7,
               }}>
                 {t("Instagram")}
               </label>
@@ -151,8 +151,8 @@ export default function ProfileSetupStep({
                 onChange={(e) => setInstagram(e.target.value)}
                 placeholder={t("tonpseudo")} aria-label={t("tonpseudo")}
                 style={{
-                  width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.15)",
-                  borderRadius: 8, color: "#F5EDED", padding: "11px 14px", fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
+                  width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
+                  borderRadius: 8, color: "var(--ep-ink)", padding: "11px 14px", fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
                   fontWeight: 500, fontSize: 14, outline: "none",
                 }}
               />

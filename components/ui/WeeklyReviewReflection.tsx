@@ -131,8 +131,8 @@ export default function WeeklyReviewReflection({
       <div className="ep-card" style={{ padding: "18px" }}>
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2 min-w-0">
-            <CheckCircle2 size={16} style={{ color: "#4ade80", flexShrink: 0 }} />
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#4ade80" }}>{t("Revue faite")}</p>
+            <CheckCircle2 size={16} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ok)" }}>{t("Revue faite")}</p>
             {moodInfo && (
               <span title={`Semaine ${moodInfo.label.toLowerCase()}`} style={{ fontSize: 16 }}>
                 {moodInfo.emoji}
@@ -152,15 +152,15 @@ export default function WeeklyReviewReflection({
           {REFLECTION_FIELDS.map((f) =>
             shown[f.key].trim() ? (
               <div key={f.key}>
-                <p className="ep-label" style={{ margin: "0 0 4px", color: "rgba(224,30,30,0.55)" }}>{f.label}</p>
-                <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "rgba(245,237,237,0.78)", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+                <p className="ep-label" style={{ margin: "0 0 4px", color: "rgba(var(--ep-accent-rgb),0.55)" }}>{f.label}</p>
+                <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "rgba(var(--ep-ink-rgb),0.78)", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
                   {shown[f.key]}
                 </p>
               </div>
             ) : null,
           )}
         </div>
-        <p style={{ margin: "14px 0 0", fontSize: 11, color: "rgba(245,237,237,0.3)" }}>
+        <p style={{ margin: "14px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
           {t("Enregistrée aussi dans ton journal Mindset.")}
         </p>
       </div>
@@ -170,7 +170,7 @@ export default function WeeklyReviewReflection({
   return (
     <div className="ep-card" style={{ padding: "18px" }}>
       <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Prends 2 minutes de recul")}</p>
-      <p style={{ margin: "0 0 16px", fontSize: 12, color: "rgba(245,237,237,0.4)", lineHeight: 1.5 }}>
+      <p style={{ margin: "0 0 16px", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.5 }}>
         {t("3 questions, réponds à celles qui te parlent. Ta revue est enregistrée dans ton journal Mindset.")}
       </p>
 
@@ -208,8 +208,8 @@ export default function WeeklyReviewReflection({
                   style={{
                     width: 44, height: 44, borderRadius: 12, fontSize: 20,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    background: active ? "rgba(224,30,30,0.18)" : "rgba(0,0,0,0.35)",
-                    border: `1px solid ${active ? "rgba(224,30,30,0.55)" : "rgba(224,30,30,0.12)"}`,
+                    background: active ? "rgba(var(--ep-accent-rgb),0.18)" : "rgba(var(--ep-shade-rgb),0.35)",
+                    border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.55)" : "rgba(var(--ep-accent-rgb),0.12)"}`,
                     cursor: "pointer",
                   }}
                 >
@@ -221,7 +221,7 @@ export default function WeeklyReviewReflection({
         </div>
 
         {error && (
-          <p role="alert" style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "#f87171" }}>
+          <p role="alert" style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "var(--ep-bad)" }}>
             {t(error)}
           </p>
         )}

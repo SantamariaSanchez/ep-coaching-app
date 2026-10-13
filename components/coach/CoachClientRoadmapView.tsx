@@ -44,7 +44,7 @@ export default function CoachClientRoadmapView({
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
         <Link
           href={`/dashboard/coach/clients/${clientId}`}
-          style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(245,237,237,0.3)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}
+          style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(var(--ep-ink-rgb),0.3)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}
         >
           <ChevronLeft size={14} />
           {clientName || t("Client")}

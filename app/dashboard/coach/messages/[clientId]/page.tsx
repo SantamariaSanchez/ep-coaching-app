@@ -43,15 +43,15 @@ export default async function CoachClientMessagesPage({
       <PushPermission userId={user.id} />
 
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[#890404]/20 flex items-center gap-3">
+      <div className="px-5 py-4 border-b border-(--ep-line)/20 flex items-center gap-3">
         <Link
           href="/dashboard/coach/messages"
-          className="p-1.5 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+          className="p-1.5 text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
         >
           <ChevronLeft size={18} />
         </Link>
-        <div className="w-8 h-8 rounded-full bg-[#890404]/20 border border-[#890404]/30 flex items-center justify-center flex-shrink-0">
-          <span className="text-[10px] font-black text-[#E01E1E] uppercase">
+        <div className="w-8 h-8 rounded-full bg-(--ep-line)/20 border border-(--ep-line)/30 flex items-center justify-center flex-shrink-0">
+          <span className="text-[10px] font-black text-(--ep-accent) uppercase">
             {(client.full_name ?? "?")
               .split(" ")
               .map((n) => n[0])
@@ -60,7 +60,7 @@ export default async function CoachClientMessagesPage({
           </span>
         </div>
         <div>
-          <p className="text-sm font-black text-white flex items-center gap-1.5">
+          <p className="text-sm font-black text-(--ep-strong) flex items-center gap-1.5">
             {client.full_name ?? t("Client")}
             <RoleBadge label={roleBadge(client)} />
           </p>

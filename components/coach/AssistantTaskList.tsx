@@ -22,7 +22,7 @@ export default function AssistantTaskList({ initialTasks }: { initialTasks: Agen
 
   if (tasks.length === 0) {
     return (
-      <p className="text-[11.5px] text-[#F5EDED]/30 italic">
+      <p className="text-[11.5px] text-(--ep-ink)/30 italic">
         {tr("Rien à signaler pour l'instant, ton assistant garde un œil dessus chaque jour.")}
       </p>
     );
@@ -31,21 +31,21 @@ export default function AssistantTaskList({ initialTasks }: { initialTasks: Agen
   return (
     <div className="space-y-2">
       {tasks.map((task) => (
-        <div key={task.id} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-3">
+        <div key={task.id} className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3 flex items-start gap-3">
           <button
             type="button"
             onClick={() => markDone(task.id)}
             disabled={isPending}
             title={tr("Marquer comme fait")}
             aria-label={tr("Marquer comme fait")}
-            className="flex-shrink-0 w-5 h-5 mt-0.5 rounded border border-[#890404]/40 flex items-center justify-center hover:bg-[#4ade80] hover:border-[#4ade80] transition-colors group"
+            className="flex-shrink-0 w-5 h-5 mt-0.5 rounded border border-(--ep-line)/40 flex items-center justify-center hover:bg-(--ep-ok) hover:border-(--ep-ok) transition-colors group"
           >
-            <Check size={12} className="text-transparent group-hover:text-[#0a1f0a]" strokeWidth={3} />
+            <Check size={12} className="text-transparent group-hover:text-(--ep-okbg)" strokeWidth={3} />
           </button>
           <div className="min-w-0">
-            <p className="text-[12.5px] font-bold text-white leading-snug">{task.title}</p>
+            <p className="text-[12.5px] font-bold text-(--ep-strong) leading-snug">{task.title}</p>
             {task.description && (
-              <p className="text-[11px] text-[#F5EDED]/40 mt-1 leading-relaxed">{task.description}</p>
+              <p className="text-[11px] text-(--ep-ink)/40 mt-1 leading-relaxed">{task.description}</p>
             )}
           </div>
         </div>

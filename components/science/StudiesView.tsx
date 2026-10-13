@@ -18,11 +18,11 @@ const EXAMPLE_PROMPTS = [
 ];
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
+const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 const STATUS_COLORS: Record<ScienceStudy["status"], string> = {
-  idee: "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/45",
+  idee: "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/45",
   en_cours: "bg-amber-500/10 border-amber-500/25 text-amber-300",
   terminee: "bg-green-500/10 border-green-500/25 text-green-300",
 };
@@ -65,7 +65,7 @@ function StudyForm({ initial, onSave, onCancel }: {
   }
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>{t("Titre de l'étude")}</label>
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Ex. Impact du volume d'entraînement sur la prise de masse à 8 semaines")} aria-label={t("Titre de l'étude")} className={inputCls} />
@@ -111,11 +111,11 @@ function StudyForm({ initial, onSave, onCancel }: {
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-lg transition-colors"
         >
           {saving ? t("Enregistrement…") : initial ? t("Mettre à jour") : t("Créer l'étude")}
         </button>
-        <button onClick={onCancel} aria-label={t("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={t("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -153,7 +153,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden">
       <button onClick={() => setExpanded((v) => !v)} className="w-full text-left px-4 py-3.5">
         <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
           <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${STATUS_COLORS[study.status]}`}>
@@ -165,8 +165,8 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
             </span>
           )}
         </div>
-        <p className="text-sm font-bold text-white leading-snug">{study.title}</p>
-        <p className="text-[10px] text-[#F5EDED]/35 mt-1">
+        <p className="text-sm font-bold text-(--ep-strong) leading-snug">{study.title}</p>
+        <p className="text-[10px] text-(--ep-ink)/35 mt-1">
           {study.joined_count}{" "}{t("inscrit")}{study.joined_count > 1 ? "s" : ""}
           {study.participant_count != null ? ` · objectif ${study.participant_count}` : ""}
         </p>
@@ -181,7 +181,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
             <button
               onClick={async () => { setJoining(true); await onLeave(); setJoining(false); }}
               disabled={joining}
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-red-400 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-red-400 transition-colors disabled:opacity-50"
             >
               <LogOut size={11} />{" "}{t("Quitter l'étude")}
             </button>
@@ -189,7 +189,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
             <button
               onClick={async () => { setJoining(true); await onJoin(); setJoining(false); }}
               disabled={joining}
-              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) px-3 py-1.5 rounded-lg transition-colors"
             >
               <Users size={11} /> {joining ? "…" : t("Rejoindre l'étude")}
             </button>
@@ -197,34 +197,34 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
         </div>
       )}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-2">
           {study.hypothesis && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-0.5">{t("Hypothèse")}</p>
-              <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{study.hypothesis}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-0.5">{t("Hypothèse")}</p>
+              <p className="text-sm text-(--ep-ink)/60 leading-relaxed">{study.hypothesis}</p>
             </div>
           )}
           {study.protocol && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-0.5">{t("Protocole")}</p>
-              <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{study.protocol}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-0.5">{t("Protocole")}</p>
+              <p className="text-sm text-(--ep-ink)/60 leading-relaxed">{study.protocol}</p>
             </div>
           )}
           {study.results && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-0.5">{t("Résultats")}</p>
-              <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{study.results}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-0.5">{t("Résultats")}</p>
+              <p className="text-sm text-(--ep-ink)/60 leading-relaxed">{study.results}</p>
             </div>
           )}
           {isCoach && (
-            <div className="flex gap-2 pt-2 border-t border-[#890404]/10">
-              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+            <div className="flex gap-2 pt-2 border-t border-(--ep-line)/10">
+              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors">
                 <Pencil size={11} />{" "}{t("Modifier")}
               </button>
               {confirmDelete ? (
                 <button onClick={onDelete} className="text-[10px] font-bold uppercase tracking-widest text-red-400">{t("Confirmer la suppression")}</button>
               ) : (
-                <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors ml-auto">
+                <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-red-400 transition-colors ml-auto">
                   <Trash2 size={11} />{" "}{t("Supprimer")}
                 </button>
               )}
@@ -268,8 +268,8 @@ export default function StudiesView({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-        <p className="text-sm text-[#F5EDED]/55 leading-relaxed">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
+        <p className="text-sm text-(--ep-ink)/55 leading-relaxed">
           {t("Nos propres études, menées à l'échelle de la communauté EP Coaching : on teste des protocoles sur nos membres pour valider (ou réfuter) ce que dit la littérature dans des conditions réelles.")}
         </p>
       </div>
@@ -277,7 +277,7 @@ export default function StudiesView({
       {isCoach && (
         <button
           onClick={() => setShowCreate((v) => !v)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg transition-colors"
         >
           <Plus size={13} /> {showCreate ? t("Fermer") : t("Nouvelle étude")}
         </button>
@@ -346,20 +346,20 @@ export default function StudiesView({
           />
         ))}
         {studies.length === 0 && (
-          <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 px-6 text-center">
-            <FlaskConical size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-sm text-[#F5EDED]/40 max-w-md mx-auto">
+          <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-10 px-6 text-center">
+            <FlaskConical size={26} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+            <p className="text-sm text-(--ep-ink)/40 max-w-md mx-auto">
               {isCoach
                 ? t("Aucune étude interne pour l'instant. Une question précise sur tes clients, formalisée en protocole, vaut souvent plus qu'une méta-analyse générique.")
                 : t("Ton coach n'a pas encore lancé d'étude interne.")}
             </p>
             {isCoach && (
               <div className="mt-5 max-w-lg mx-auto text-left space-y-2">
-                <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
+                <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25">
                   <Lightbulb size={11} />{" "}{t("Pour t'inspirer")}
                 </p>
                 {EXAMPLE_PROMPTS.map((p) => (
-                  <p key={p} className="text-xs text-[#F5EDED]/45 italic leading-relaxed">
+                  <p key={p} className="text-xs text-(--ep-ink)/45 italic leading-relaxed">
                     &ldquo;{p}&rdquo;
                   </p>
                 ))}

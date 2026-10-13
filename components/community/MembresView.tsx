@@ -9,7 +9,7 @@ import RankBadge from "@/components/ui/RankBadge";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -47,26 +47,26 @@ function MemberRow({
   const isActive = activity.points > 0 || activity.sessionCount > 0 || activity.postCount > 0;
 
   return (
-    <div className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5">
+    <div className="flex items-center gap-3 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3.5">
       <Link href={`/dashboard/coach/profile/${member.id}`} className="flex items-center gap-3 flex-1 min-w-0">
         {member.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={member.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-(--ep-accent) to-(--ep-line) flex items-center justify-center text-[10px] font-black text-(--ep-strong) flex-shrink-0">
             {initials(member.full_name)}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <p className="text-sm font-bold text-white truncate">{member.full_name}</p>
+            <p className="text-sm font-bold text-(--ep-strong) truncate">{member.full_name}</p>
             <RankBadge points={activity.points} />
             {activity.isNew ? (
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#D9A94E]/10 border border-[#D9A94E]/30 text-[#D9A94E]">
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-gold)/10 border border-(--ep-gold)/30 text-(--ep-gold)">
                 <Sparkles size={9} />{" "}{t("Nouveau, à accueillir")}
               </span>
             ) : activity.neverReturned ? (
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/35">
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/35">
                 <MoonStar size={9} />{" "}{t("Jamais revenu")}
               </span>
             ) : isActive ? (
@@ -75,11 +75,11 @@ function MemberRow({
               </span>
             ) : null}
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-[#F5EDED]/35 mt-0.5">
+          <div className="flex items-center gap-1.5 text-[10px] text-(--ep-ink)/35 mt-0.5">
             <Mail size={10} />
             <span className="truncate">{member.email}</span>
           </div>
-          <p className="text-[10px] text-[#F5EDED]/30 mt-0.5">
+          <p className="text-[10px] text-(--ep-ink)/30 mt-0.5">
             {activity.sessionCount > 0
               ? `${activity.sessionCount} séance${activity.sessionCount > 1 ? "s" : ""} · dernière ${timeAgo(activity.lastSessionAt!)}`
               : t("Aucune séance loguée")}
@@ -87,12 +87,12 @@ function MemberRow({
           </p>
           <div className="flex flex-wrap gap-1 mt-1.5">
             {member.goal && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/50 border border-[#890404]/20">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-line)/15 text-(--ep-ink)/50 border border-(--ep-line)/20">
                 {member.goal}
               </span>
             )}
             {member.level && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/50 border border-[#890404]/20">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-line)/15 text-(--ep-ink)/50 border border-(--ep-line)/20">
                 {member.level}
               </span>
             )}
@@ -102,7 +102,7 @@ function MemberRow({
       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
         <Link
           href={`/dashboard/coach/messages/${member.id}`}
-          className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+          className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors"
         >
           <MessageCircle size={12} />{" "}{t("Message")}
         </Link>
@@ -187,11 +187,11 @@ export default function MembresView({
 
   if (members.length === 0) {
     return (
-      <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 px-6 text-center">
-        <p className="text-sm text-[#F5EDED]/45 font-semibold mb-1.5">{t("Aucun membre pour l'instant")}</p>
+      <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-12 px-6 text-center">
+        <p className="text-sm text-(--ep-ink)/45 font-semibold mb-1.5">{t("Aucun membre pour l'instant")}</p>
         {/* Item 40 : la précédente version s'arrêtait à "Aucun membre pour
             l'instant", sans dire d'où ils viennent ni ce que ça implique. */}
-        <p className="text-xs text-[#F5EDED]/25 max-w-sm mx-auto leading-relaxed">
+        <p className="text-xs text-(--ep-ink)/25 max-w-sm mx-auto leading-relaxed">
           {t("Les membres s'inscrivent eux-mêmes depuis l'appli (accès gratuit aux outils, sans coaching). Ils apparaîtront ici dès leur inscription.")}
         </p>
       </div>
@@ -200,7 +200,7 @@ export default function MembresView({
 
   return (
     <div className="space-y-4">
-      <p className="text-[10px] text-[#F5EDED]/30">
+      <p className="text-[10px] text-(--ep-ink)/30">
         {counts.all}{" "}{t("membre")}{counts.all > 1 ? "s" : ""}{" "}{t("gratuit")}{counts.all > 1 ? "s" : ""}
         {counts.fresh > 0 && ` · ${counts.fresh} nouveau${counts.fresh > 1 ? "x" : ""}`}
         {counts.active > 0 && ` · ${counts.active} actif${counts.active > 1 ? "s" : ""}`}
@@ -215,11 +215,11 @@ export default function MembresView({
       {counts.fresh > 0 && filter === "all" && (
         <button
           onClick={() => setFilter("new")}
-          className="w-full flex items-center gap-2.5 bg-[#D9A94E]/8 border border-[#D9A94E]/25 rounded-xl px-4 py-3 text-left"
+          className="w-full flex items-center gap-2.5 bg-(--ep-gold)/8 border border-(--ep-gold)/25 rounded-xl px-4 py-3 text-left"
         >
-          <Sparkles size={14} className="text-[#D9A94E] flex-shrink-0" />
-          <span className="flex-1 text-[12px] text-[#F5EDED]/70">
-            <strong className="text-[#D9A94E]">{counts.fresh}{" "}{t("nouveau")}{counts.fresh > 1 ? "x" : ""}</strong>
+          <Sparkles size={14} className="text-(--ep-gold) flex-shrink-0" />
+          <span className="flex-1 text-[12px] text-(--ep-ink)/70">
+            <strong className="text-(--ep-gold)">{counts.fresh}{" "}{t("nouveau")}{counts.fresh > 1 ? "x" : ""}</strong>
             {" "}{t("membre")}{counts.fresh > 1 ? "s" : ""}{" "}{t("inscrit")}{counts.fresh > 1 ? "s" : ""}{" "}{t("ces 3 derniers jours, encore rien fait, le meilleur moment pour un message perso.")}
           </span>
         </button>
@@ -227,7 +227,7 @@ export default function MembresView({
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -252,7 +252,7 @@ export default function MembresView({
             key={key}
             onClick={() => setFilter(key)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              filter === key ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              filter === key ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {label}
@@ -265,7 +265,7 @@ export default function MembresView({
           <MemberRow key={m.id} member={m} onRelaunch={handleRelaunch} />
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{t("Aucun membre ne correspond à ta recherche.")}</p>
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-10">{t("Aucun membre ne correspond à ta recherche.")}</p>
         )}
       </div>
     </div>

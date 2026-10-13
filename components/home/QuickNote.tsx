@@ -39,14 +39,14 @@ export default function QuickNote({ notesHref }: { notesHref: string }) {
         onKeyDown={(e) => { if (e.key === "Enter") save(); }}
         placeholder={saved ? t("Noté ✓") : t("Note rapide, une idée, une tâche...")}
         aria-label={t("Note rapide")}
-        style={{ flex: 1, minWidth: 0, background: "none", border: "none", outline: "none", color: "#F5EDED", fontSize: 14.5, height: 36 }}
+        style={{ flex: 1, minWidth: 0, background: "none", border: "none", outline: "none", color: "var(--ep-ink)", fontSize: 14.5, height: 36 }}
       />
       <button
         type="button"
         onClick={save}
         disabled={!text.trim() || pending}
         aria-label={t("Enregistrer la note")}
-        style={{ width: 34, height: 34, flexShrink: 0, borderRadius: 999, border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: text.trim() ? "#E01E1E" : "rgba(245,237,237,0.06)", color: text.trim() ? "#fff" : "rgba(245,237,237,0.35)", transition: "background 0.15s" }}
+        style={{ width: 34, height: 34, flexShrink: 0, borderRadius: 999, border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: text.trim() ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.06)", color: text.trim() ? "#fff" : "rgba(var(--ep-ink-rgb),0.35)", transition: "background 0.15s" }}
       >
         {saved ? <Check size={16} /> : <ArrowUp size={16} />}
       </button>

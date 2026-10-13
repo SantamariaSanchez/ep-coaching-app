@@ -94,33 +94,33 @@ export default async function TeamCockpitPage() {
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href={founder ? "/dashboard/coach" : "/dashboard/coach/mon-equipe"} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
+      <Link href={founder ? "/dashboard/coach" : "/dashboard/coach/mon-equipe"} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6">
         <ChevronLeft size={13} />{" "}{t("Retour")}
       </Link>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{founder ? t("Administration") : t("Mon équipe")}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{founder ? t("Administration") : t("Mon équipe")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight">{t("Pilotage de l'équipe")}</h1>
       <div className="flex flex-wrap gap-2 mt-4">
-        <Link href="/dashboard/coach/admin/equipe/messages" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-white bg-[#E01E1E] rounded-lg px-3 py-2">
+        <Link href="/dashboard/coach/admin/equipe/messages" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-strong) bg-(--ep-accent) rounded-lg px-3 py-2">
           <MessagesSquare size={13} />{" "}{t("Messagerie")}{unreadTotal > 0 ? ` (${unreadTotal})` : ""}
         </Link>
-        <Link href="/dashboard/coach/admin/equipe/documents" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED] border border-[#E01E1E]/35 rounded-lg px-3 py-2">
+        <Link href="/dashboard/coach/admin/equipe/documents" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink) border border-(--ep-accent)/35 rounded-lg px-3 py-2">
           <FolderOpen size={13} />{" "}{t("Documents partagés")}
         </Link>
       </div>
-      <p className="text-sm text-[#F5EDED]/45 mt-4 mb-6 leading-relaxed">
+      <p className="text-sm text-(--ep-ink)/45 mt-4 mb-6 leading-relaxed">
         {t("Tout ce que fait l'équipe, en un seul endroit. Les accès se gèrent dans")}{" "}
-        <Link href={founder ? "/dashboard/coach/admin/organisation" : "/dashboard/coach/mon-equipe"} className="text-[#E01E1E] font-bold">{founder ? t("Organisation") : t("Mon équipe")}</Link>.
+        <Link href={founder ? "/dashboard/coach/admin/organisation" : "/dashboard/coach/mon-equipe"} className="text-(--ep-accent) font-bold">{founder ? t("Organisation") : t("Mon équipe")}</Link>.
       </p>
 
       {founder && (
       <section className="ep-card" style={{ padding: "16px 18px", marginBottom: 16 }}>
         <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}><Workflow size={12} />{" "}{t("Automatisations")}</p>
         {flows.map((f) => (
-          <div key={f.label} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "7px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
-            {f.ok ? <CheckCircle2 size={15} style={{ color: "#4ade80", flexShrink: 0, marginTop: 1 }} /> : <CircleDashed size={15} style={{ color: "#facc15", flexShrink: 0, marginTop: 1 }} />}
+          <div key={f.label} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "7px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>
+            {f.ok ? <CheckCircle2 size={15} style={{ color: "var(--ep-ok)", flexShrink: 0, marginTop: 1 }} /> : <CircleDashed size={15} style={{ color: "var(--ep-yellow)", flexShrink: 0, marginTop: 1 }} />}
             <span>
-              <span style={{ display: "block", fontSize: 12.5, color: "#F5EDED", fontWeight: 700 }}>{f.label}</span>
-              <span style={{ display: "block", fontSize: 11.5, color: f.ok ? "rgba(245,237,237,0.45)" : "#facc15" }}>{f.who}</span>
+              <span style={{ display: "block", fontSize: 12.5, color: "var(--ep-ink)", fontWeight: 700 }}>{f.label}</span>
+              <span style={{ display: "block", fontSize: 11.5, color: f.ok ? "rgba(var(--ep-ink-rgb),0.45)" : "var(--ep-yellow)" }}>{f.who}</span>
             </span>
           </div>
         ))}
@@ -130,25 +130,25 @@ export default async function TeamCockpitPage() {
       <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
         <section className="ep-card" style={{ padding: "16px 18px" }}>
           <p className="ep-label" style={{ margin: "0 0 10px" }}>{t("Pipeline commercial")}</p>
-          <p style={{ fontSize: 22, fontWeight: 900, color: "#4ade80", margin: "0 0 2px" }}>{Math.round(cash).toLocaleString("fr-FR")} €</p>
-          <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: "0 0 12px" }}>{t("encaissés ce mois,")}{" "}{closedThisMonth.length}{" "}{t("vente(s)")}</p>
+          <p style={{ fontSize: 22, fontWeight: 900, color: "var(--ep-ok)", margin: "0 0 2px" }}>{Math.round(cash).toLocaleString("fr-FR")} €</p>
+          <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 12px" }}>{t("encaissés ce mois,")}{" "}{closedThisMonth.length}{" "}{t("vente(s)")}</p>
           {stageCounts.map((s) => (
-            <div key={s.value} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, padding: "4px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
+            <div key={s.value} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, padding: "4px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)" }}>
               <span style={{ color: s.color, fontWeight: 700 }}>{s.label}</span>
-              <span style={{ color: "#F5EDED", fontWeight: 800 }}>{s.count}</span>
+              <span style={{ color: "var(--ep-ink)", fontWeight: 800 }}>{s.count}</span>
             </div>
           ))}
         </section>
         <section className="ep-card" style={{ padding: "16px 18px" }}>
           <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}><CalendarDays size={12} />{" "}{t("Rendez-vous du jour")}</p>
           {appointments.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>{t("Aucun rendez-vous aujourd'hui.")}</p>
+            <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0 }}>{t("Aucun rendez-vous aujourd'hui.")}</p>
           ) : (
             appointments.map((a) => (
-              <div key={a.id} style={{ display: "flex", gap: 10, padding: "6px 0", borderTop: "1px solid rgba(245,237,237,0.05)", fontSize: 12.5 }}>
-                <span style={{ fontWeight: 800, color: "#E01E1E", minWidth: 42 }}>{new Date(a.due_at!).toLocaleTimeString("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" })}</span>
-                <span style={{ color: "#F5EDED", flex: 1 }}>{a.title}</span>
-                <span style={{ color: "rgba(245,237,237,0.45)" }}>{nameOf(a.staff_id)}</span>
+              <div key={a.id} style={{ display: "flex", gap: 10, padding: "6px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)", fontSize: 12.5 }}>
+                <span style={{ fontWeight: 800, color: "var(--ep-accent)", minWidth: 42 }}>{new Date(a.due_at!).toLocaleTimeString("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" })}</span>
+                <span style={{ color: "var(--ep-ink)", flex: 1 }}>{a.title}</span>
+                <span style={{ color: "rgba(var(--ep-ink-rgb),0.45)" }}>{nameOf(a.staff_id)}</span>
               </div>
             ))
           )}
@@ -158,7 +158,7 @@ export default async function TeamCockpitPage() {
       <section className="ep-card" style={{ padding: "16px 18px" }}>
         <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}><Users size={12} />{" "}{t("L'équipe (")}{active.length}{" "}{t("actif")}{active.length > 1 ? "s" : ""})</p>
         {members.length === 0 ? (
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>
             {t("Personne pour l'instant. Envoie le lien d'un poste depuis Organisation pour recruter ta première personne.")}
           </p>
         ) : (
@@ -169,19 +169,19 @@ export default async function TeamCockpitPage() {
             const kpis = computeKpis(m.role_key, records, {}, [], now).slice(0, 3);
             const signed = isContractSigned(m);
             return (
-              <Link key={m.user_id} href={`/dashboard/coach/admin/equipe/${m.user_id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid rgba(245,237,237,0.05)", textDecoration: "none" }}>
+              <Link key={m.user_id} href={`/dashboard/coach/admin/equipe/${m.user_id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid rgba(var(--ep-ink-rgb),0.05)", textDecoration: "none" }}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "baseline" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{m.full_name}</span>
-                  {unreadBySender[m.user_id] ? <span style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "#E01E1E", borderRadius: 999, padding: "1px 7px" }}>{unreadBySender[m.user_id]}{" "}{t("message(s)")}</span> : null}
-                  <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>{getRoleCard(m.role_key)?.role.title ?? m.role_key}</span>
-                  {m.status !== "actif" && <span style={{ fontSize: 10.5, color: "#f87171", fontWeight: 700 }}>{m.status}</span>}
-                  {!signed && <span style={{ fontSize: 10.5, color: "#facc15", fontWeight: 700 }}>{t("contrat pas signé")}</span>}
-                  <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: reported ? "#4ade80" : "#facc15" }}>{reported ? t("Rapport envoyé") : t("Pas de rapport aujourd'hui")}</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)" }}>{m.full_name}</span>
+                  {unreadBySender[m.user_id] ? <span style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "var(--ep-accent)", borderRadius: 999, padding: "1px 7px" }}>{unreadBySender[m.user_id]}{" "}{t("message(s)")}</span> : null}
+                  <span style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{getRoleCard(m.role_key)?.role.title ?? m.role_key}</span>
+                  {m.status !== "actif" && <span style={{ fontSize: 10.5, color: "var(--ep-bad)", fontWeight: 700 }}>{m.status}</span>}
+                  {!signed && <span style={{ fontSize: 10.5, color: "var(--ep-yellow)", fontWeight: 700 }}>{t("contrat pas signé")}</span>}
+                  <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: reported ? "var(--ep-ok)" : "var(--ep-yellow)" }}>{reported ? t("Rapport envoyé") : t("Pas de rapport aujourd'hui")}</span>
                 </div>
-                <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.55)", margin: "3px 0 0", lineHeight: 1.55 }}>
+                <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "3px 0 0", lineHeight: 1.55 }}>
                   {kpis.map((k) => `${k.label} : ${k.value}`).join(" · ")}
-                  {urgent > 0 && <span style={{ color: "#f87171", fontWeight: 700 }}> · {urgent}{" "}{t("action(s) urgente(s) en attente")}</span>}
-                  <ChevronRight size={12} style={{ display: "inline", marginLeft: 6, verticalAlign: "-2px", color: "rgba(245,237,237,0.3)" }} />
+                  {urgent > 0 && <span style={{ color: "var(--ep-bad)", fontWeight: 700 }}> · {urgent}{" "}{t("action(s) urgente(s) en attente")}</span>}
+                  <ChevronRight size={12} style={{ display: "inline", marginLeft: 6, verticalAlign: "-2px", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
                 </p>
               </Link>
             );

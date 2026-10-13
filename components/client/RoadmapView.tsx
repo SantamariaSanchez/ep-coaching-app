@@ -57,11 +57,11 @@ export default function RoadmapView({
     return (
       <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 900, margin: "0 auto" }}>
         <div style={{ marginBottom: 20 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)" }}>
             {t("Road Map : Communauté")}
           </span>
           <h1 className="ep-h1" style={{ margin: "4px 0 6px" }}>{t("Ma Road Map")}</h1>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: "0 0 6px" }}>
+          <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 6px" }}>
             {t("Construis toi-même tes phases et tes objectifs, en autonomie, sans suivi coach.")}
           </p>
           {roadmap && <RoadmapStatusLine roadmap={roadmap} phases={phases} today={today} />}
@@ -93,11 +93,11 @@ export default function RoadmapView({
   if (!roadmap) {
     return (
       <div style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
-        <MapPin size={40} style={{ color: "rgba(224,30,30,0.3)", margin: "0 auto 16px" }} strokeWidth={1.5} />
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", marginBottom: 8 }}>
+        <MapPin size={40} style={{ color: "rgba(var(--ep-accent-rgb),0.3)", margin: "0 auto 16px" }} strokeWidth={1.5} />
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--ep-ink)", letterSpacing: "-0.02em", marginBottom: 8 }}>
           {t("Road Map non configurée")}
         </h1>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)" }}>
+        <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
           {t("Ton coach n'a pas encore configuré ta road map.")}
         </p>
       </div>
@@ -108,7 +108,7 @@ export default function RoadmapView({
     <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 700, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)" }}>
           {t("Road Map")}
         </span>
         <h1 className="ep-h1" style={{ fontSize: 28, margin: "4px 0 6px" }}>{t("Ma Road Map")}</h1>
@@ -119,7 +119,7 @@ export default function RoadmapView({
 
       {/* Calendar */}
       <section>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", marginBottom: 12 }}>
           {t("Calendrier")}
         </p>
         <div className="ep-card" style={{ padding: 16 }}>

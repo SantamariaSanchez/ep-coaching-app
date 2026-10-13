@@ -22,14 +22,14 @@ export default async function CoachContraintesPage() {
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Bibliothèque")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <HeartPulse size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
+          <HeartPulse size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Contraintes & populations spécifiques")}
         </h1>
-        <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
+        <p className="mt-1 text-sm text-(--ep-ink)/40 leading-relaxed max-w-xl">
           {t("Blessures, maladies chroniques, handicap, grossesse, ménopause, TCA, véganisme, Ramadan, obésité : comment adapter un programme, et surtout quand orienter vers un professionnel plutôt que d'essayer de gérer la situation seul.")}
         </p>
       </div>
@@ -50,10 +50,10 @@ export default async function CoachContraintesPage() {
             style={{ padding: "18px 20px", textDecoration: "none" }}
           >
             <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-black text-white leading-tight">{c.title}</p>
-              <ChevronRight size={15} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors flex-shrink-0 mt-0.5" />
+              <p className="text-sm font-black text-(--ep-strong) leading-tight">{c.title}</p>
+              <ChevronRight size={15} className="text-(--ep-ink)/20 group-hover:text-(--ep-accent) transition-colors flex-shrink-0 mt-0.5" />
             </div>
-            <p className="text-[11.5px] text-[#F5EDED]/40 mt-2 leading-relaxed">{c.summary}</p>
+            <p className="text-[11.5px] text-(--ep-ink)/40 mt-2 leading-relaxed">{c.summary}</p>
           </Link>
         ))}
       </div>

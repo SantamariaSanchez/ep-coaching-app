@@ -11,11 +11,12 @@ import {
   type QualifyingAnswers,
 } from "@/lib/job-applications-shared";
 import { onKeyActivate } from "@/lib/a11y";
+import { withAlpha } from "@/lib/theme-color";
 
 const STATUS_META: Record<RoleStatus, { label: string; color: string }> = {
-  a_pourvoir: { label: "Poste ouvert", color: "#4ade80" },
-  en_recrutement: { label: "En cours de recrutement", color: "#fbbf24" },
-  pourvu: { label: "Poste pourvu", color: "rgba(245,237,237,0.35)" },
+  a_pourvoir: { label: "Poste ouvert", color: "var(--ep-ok)" },
+  en_recrutement: { label: "En cours de recrutement", color: "var(--ep-warn)" },
+  pourvu: { label: "Poste pourvu", color: "rgba(var(--ep-ink-rgb),0.35)" },
 };
 
 function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string }) {
@@ -73,9 +74,9 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
   if (sent) {
     return (
       <div className="mt-3 space-y-2">
-        <div className="flex items-center gap-2 bg-[#0D2B15] border border-[#4ade80]/25 rounded-lg px-3 py-2.5">
-          <Check size={14} className="text-[#4ade80] flex-shrink-0" />
-          <p className="text-[11px] text-[#4ade80] font-semibold">
+        <div className="flex items-center gap-2 bg-(--ep-okbg) border border-(--ep-ok)/25 rounded-lg px-3 py-2.5">
+          <Check size={14} className="text-(--ep-ok) flex-shrink-0" />
+          <p className="text-[11px] text-(--ep-ok) font-semibold">
             {CAREERS_INTERVIEW_BOOKING_URL
               ? "Candidature envoyée et vraiment lue."
               : "Candidature envoyée. Elle est vraiment lue : si ça matche, tu es recontacté pour un appel."}
@@ -107,36 +108,36 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
         value={fullName}
         onChange={(e) => setFullName(e.target.value)}
         placeholder="Nom complet" aria-label="Nom complet"
-        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
+        className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60"
       />
       <input
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         type="email"
         placeholder="Email" aria-label="Email"
-        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
+        className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60"
       />
       <input
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
         type="tel"
         placeholder="Téléphone (optionnel)" aria-label="Téléphone (optionnel)"
-        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
+        className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60"
       />
 
       {/* Qualification (2026-09-08) : ce qui distingue une candidature
           alignée d'un formulaire rempli au hasard, avant même le premier
           échange. */}
       <div className="pt-1 pb-0.5">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30">
           Quelques questions, pour de vrai
         </p>
       </div>
       {QUALIFYING_QUESTIONS.map((q) => (
         <div key={q.key}>
-          <label className="block text-[11px] font-semibold text-[#F5EDED]/60 mb-1">
+          <label className="block text-[11px] font-semibold text-(--ep-ink)/60 mb-1">
             {q.label}
-            {!q.required && <span className="text-[#F5EDED]/25"> (optionnel)</span>}
+            {!q.required && <span className="text-(--ep-ink)/25"> (optionnel)</span>}
           </label>
           <textarea
             value={answers[q.key] ?? ""}
@@ -144,7 +145,7 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
             placeholder={q.placeholder}
             aria-label={q.label}
             rows={q.key === "motivation" ? 3 : 2}
-            className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
+            className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 resize-none"
           />
         </div>
       ))}
@@ -152,15 +153,15 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
       {/* CV obligatoire (demande directe 2026-09-25), en plus des questions
           de qualification. */}
       <div>
-        <label className="block text-[11px] font-semibold text-[#F5EDED]/60 mb-1" htmlFor={`cv-${roleKey}`}>
+        <label className="block text-[11px] font-semibold text-(--ep-ink)/60 mb-1" htmlFor={`cv-${roleKey}`}>
           Ton CV (PDF, 5 Mo max)
         </label>
         <label
           htmlFor={`cv-${roleKey}`}
-          className="flex items-center gap-2 w-full bg-[#150000] border border-dashed border-[#890404]/40 rounded-lg px-3 py-3 text-sm cursor-pointer hover:border-[#E01E1E]/60"
+          className="flex items-center gap-2 w-full bg-(--ep-s2) border border-dashed border-(--ep-line)/40 rounded-lg px-3 py-3 text-sm cursor-pointer hover:border-(--ep-accent)/60"
         >
-          <FileUp size={15} className="text-[#E01E1E] flex-shrink-0" />
-          <span className={cv ? "text-white truncate" : "text-[#F5EDED]/35"}>{cv ? cv.name : "Choisir mon CV en PDF"}</span>
+          <FileUp size={15} className="text-(--ep-accent) flex-shrink-0" />
+          <span className={cv ? "text-(--ep-strong) truncate" : "text-(--ep-ink)/35"}>{cv ? cv.name : "Choisir mon CV en PDF"}</span>
         </label>
         <input
           id={`cv-${roleKey}`}
@@ -197,23 +198,23 @@ function RoleCardPublic({
   const applyable = status !== "pourvu";
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/20 rounded-xl p-4">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl p-4">
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h3 className="text-sm font-bold text-white">{role.title}</h3>
+        <h3 className="text-sm font-bold text-(--ep-strong)">{role.title}</h3>
         <span
           className="flex-shrink-0 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full"
-          style={{ color: meta.color, border: `1px solid ${meta.color}44` }}
+          style={{ color: meta.color, border: `1px solid ${withAlpha(meta.color, "44")}` }}
         >
           <Circle size={6} fill={meta.color} stroke="none" />
           {meta.label}
         </span>
       </div>
-      <p className="text-[12px] text-[#F5EDED]/45 leading-relaxed mb-2.5">{role.mission}</p>
+      <p className="text-[12px] text-(--ep-ink)/45 leading-relaxed mb-2.5">{role.mission}</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {role.levels.map((l) => (
           <span
             key={l}
-            className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 border border-[#890404]/25 rounded-full px-2 py-0.5"
+            className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 border border-(--ep-line)/25 rounded-full px-2 py-0.5"
           >
             {l}
           </span>
@@ -226,7 +227,7 @@ function RoleCardPublic({
           collaboration indépendante rappelé en haut de page. */}
       <div
         className="rounded-lg px-3 py-2.5 mb-3"
-        style={{ background: "rgba(217,169,78,0.07)", border: "1px solid rgba(217,169,78,0.2)" }}
+        style={{ background: "rgba(var(--ep-gold-rgb),0.07)", border: "1px solid rgba(var(--ep-gold-rgb),0.2)" }}
       >
         <div className="flex items-center gap-1.5 mb-1.5">
           <Wallet size={11} style={{ color: "var(--ep-gold)" }} />
@@ -243,13 +244,13 @@ function RoleCardPublic({
           </p>
         )}
         {role.compensation.variable && (
-          <p className="text-[11px] text-[#F5EDED]/70 leading-relaxed">
-            <span className="font-bold text-[#F5EDED]/90">Variable </span>{role.compensation.variable}
+          <p className="text-[11px] text-(--ep-ink)/70 leading-relaxed">
+            <span className="font-bold text-(--ep-ink)/90">Variable </span>{role.compensation.variable}
           </p>
         )}
         {role.compensation.fixed && (
-          <p className="text-[11px] text-[#F5EDED]/70 leading-relaxed mt-1">
-            <span className="font-bold text-[#F5EDED]/90">Fixe </span>{role.compensation.fixed}
+          <p className="text-[11px] text-(--ep-ink)/70 leading-relaxed mt-1">
+            <span className="font-bold text-(--ep-ink)/90">Fixe </span>{role.compensation.fixed}
           </p>
         )}
       </div>
@@ -257,15 +258,15 @@ function RoleCardPublic({
       {role.nonNegotiable.length > 0 && (
         <div className="mb-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <ShieldCheck size={11} className="text-[#F5EDED]/35" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+            <ShieldCheck size={11} className="text-(--ep-ink)/35" />
+            <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
               Non négociable
             </span>
           </div>
           <ul className="space-y-1">
             {role.nonNegotiable.map((n) => (
-              <li key={n} className="text-[11px] text-[#F5EDED]/55 leading-relaxed pl-3 relative">
-                <span className="absolute left-0" style={{ color: "#890404" }}>·</span>
+              <li key={n} className="text-[11px] text-(--ep-ink)/55 leading-relaxed pl-3 relative">
+                <span className="absolute left-0" style={{ color: "var(--ep-line)" }}>·</span>
                 {n}
               </li>
             ))}
@@ -278,7 +279,7 @@ function RoleCardPublic({
           <button
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className="text-[11px] font-bold uppercase tracking-widest text-[#E01E1E] flex items-center gap-1"
+            className="text-[11px] font-bold uppercase tracking-widest text-(--ep-accent) flex items-center gap-1"
           >
             Postuler
             <ChevronDown size={13} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
@@ -286,7 +287,7 @@ function RoleCardPublic({
           {open && <ApplyForm roleKey={role.key} roleTitle={role.title} />}
         </>
       ) : (
-        <p className="text-[11px] text-[#F5EDED]/30 italic">
+        <p className="text-[11px] text-(--ep-ink)/30 italic">
           Poste actuellement pourvu, reviens vérifier plus tard.
         </p>
       )}
@@ -318,12 +319,12 @@ function PoleSection({
       >
         <div className="flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: pole.color }} />
-          <span className="text-sm font-bold text-white">{pole.name}</span>
-          <span className="text-[10px] text-[#F5EDED]/30 font-semibold">
+          <span className="text-sm font-bold text-(--ep-strong)">{pole.name}</span>
+          <span className="text-[10px] text-(--ep-ink)/30 font-semibold">
             {openCount} poste{openCount > 1 ? "s" : ""} ouvert{openCount > 1 ? "s" : ""}
           </span>
         </div>
-        <ChevronDown size={16} className={`text-[#F5EDED]/30 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={16} className={`text-(--ep-ink)/30 transition-transform ${open ? "rotate-180" : ""}`} />
       </div>
       {open && (
         <div className="px-4 pb-4 space-y-2.5">

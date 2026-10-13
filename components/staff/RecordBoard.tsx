@@ -8,6 +8,7 @@ import { KINDS, type FieldDef, type KindDef, type RecordKind } from "@/lib/staff
 import { isoToParisLocal, parisDate, type StaffRecord } from "@/lib/staff-kpis";
 import { createStaffRecord, updateStaffRecord, setStaffRecordStatus, deleteStaffRecord } from "@/app/equipe/actions";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import { withAlpha } from "@/lib/theme-color";
 
 type EditableKind = Exclude<RecordKind, "report">;
 type Values = Record<string, string>;
@@ -104,9 +105,9 @@ function FieldInput({ def, value, onChange, idPrefix }: { def: FieldDef; value: 
   }
   return (
     <div style={{ gridColumn: def.type === "textarea" || def.column === "title" ? "1 / -1" : undefined }}>
-      <label htmlFor={id} style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
+      <label htmlFor={id} style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 5 }}>
         {def.label}
-        {def.required && <span style={{ color: "#E01E1E" }}> *</span>}
+        {def.required && <span style={{ color: "var(--ep-accent)" }}> *</span>}
       </label>
       {control}
     </div>
@@ -148,7 +149,7 @@ function RecordForm({
       style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 12 }}
     >
       <div>
-        <label htmlFor={`${idPrefix}-status`} style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
+        <label htmlFor={`${idPrefix}-status`} style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 5 }}>
           {t("Étape")}
         </label>
         <select id={`${idPrefix}-status`} value={status} onChange={(e) => setStatus(e.target.value)} className="ep-input" style={inputStyle}>
@@ -161,7 +162,7 @@ function RecordForm({
         <FieldInput key={f.key} idPrefix={idPrefix} def={f} value={values[f.key] ?? ""} onChange={(v) => setValues((prev) => ({ ...prev, [f.key]: v }))} />
       ))}
       {error && (
-        <p role="alert" style={{ gridColumn: "1 / -1", fontSize: 12.5, color: "#FDC4C4", margin: 0 }}>{t(error)}</p>
+        <p role="alert" style={{ gridColumn: "1 / -1", fontSize: 12.5, color: "var(--ep-pink)", margin: 0 }}>{t(error)}</p>
       )}
       <div style={{ gridColumn: "1 / -1", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <button type="submit" disabled={pending} className="ep-btn-primary" style={{ height: 42, padding: "0 20px", fontSize: 12 }}>
@@ -169,7 +170,7 @@ function RecordForm({
           {pending ? t("Enregistrement...") : submitLabel}
         </button>
         {onCancel && (
-          <button type="button" onClick={onCancel} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button type="button" onClick={onCancel} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             {t("Annuler")}
           </button>
         )}
@@ -178,7 +179,7 @@ function RecordForm({
             type="button"
             onClick={onDelete}
             disabled={pending}
-            style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid rgba(248,113,113,0.3)", borderRadius: 8, color: "#f87171", fontSize: 11.5, fontWeight: 700, padding: "8px 12px", cursor: "pointer" }}
+            style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid rgba(var(--ep-bad-rgb),0.3)", borderRadius: 8, color: "var(--ep-bad)", fontSize: 11.5, fontWeight: 700, padding: "8px 12px", cursor: "pointer" }}
           >
             <Trash2 size={13} />{" "}{t("Supprimer")}
           </button>
@@ -233,7 +234,7 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
   }
 
   return (
-    <div className="ep-card" style={{ padding: "12px 14px", borderColor: late ? "rgba(248,113,113,0.35)" : undefined }}>
+    <div className="ep-card" style={{ padding: "12px 14px", borderColor: late ? "rgba(var(--ep-bad-rgb),0.35)" : undefined }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
         <button
           type="button"
@@ -241,20 +242,20 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
           aria-expanded={open}
           style={{ flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer" }}
         >
-          <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px", lineHeight: 1.35, display: "flex", alignItems: "center", gap: 6 }}>
+          <p style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px", lineHeight: 1.35, display: "flex", alignItems: "center", gap: 6 }}>
             {record.title}
-            <ChevronDown size={13} style={{ color: "rgba(245,237,237,0.3)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.15s", flexShrink: 0 }} />
+            <ChevronDown size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.15s", flexShrink: 0 }} />
           </p>
-          <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", margin: 0, lineHeight: 1.5 }}>
             {typeof record.data?._assigned_by_name === "string" && (
-              <span style={{ color: "#facc15", fontWeight: 700 }}>{t("Assignée par")}{" "}{record.data._assigned_by_name as string} · </span>
+              <span style={{ color: "var(--ep-yellow)", fontWeight: 700 }}>{t("Assignée par")}{" "}{record.data._assigned_by_name as string} · </span>
             )}
             {[...summary, ...derivedMetrics(kind, record)].join(" · ") || t("Aucun détail")}
-            {late && <span style={{ color: "#f87171", fontWeight: 700 }}>{" "}{t("· En retard")}</span>}
+            {late && <span style={{ color: "var(--ep-bad)", fontWeight: 700 }}>{" "}{t("· En retard")}</span>}
           </p>
         </button>
         {links[0] && (
-          <a href={links[0]} target="_blank" rel="noopener noreferrer" aria-label={t("Ouvrir le lien")} style={{ color: "rgba(245,237,237,0.45)", padding: 4 }}>
+          <a href={links[0]} target="_blank" rel="noopener noreferrer" aria-label={t("Ouvrir le lien")} style={{ color: "rgba(var(--ep-ink-rgb),0.45)", padding: 4 }}>
             <ExternalLink size={14} />
           </a>
         )}
@@ -265,7 +266,7 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
           onChange={(e) => changeStatus(e.target.value)}
           style={{
             flexShrink: 0, maxWidth: 150, fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em",
-            color: stage.color, background: "rgba(13,0,0,0.6)", border: `1px solid ${stage.color}55`, borderRadius: 999, padding: "5px 8px", cursor: "pointer",
+            color: stage.color, background: "rgba(var(--ep-bg-rgb),0.6)", border: `1px solid ${withAlpha(stage.color, "55")}`, borderRadius: 999, padding: "5px 8px", cursor: "pointer",
           }}
         >
           {def.stages.map((s) => (
@@ -273,9 +274,9 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
           ))}
         </select>
       </div>
-      {error && !open && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: "8px 0 0" }}>{t(error)}</p>}
+      {error && !open && <p role="alert" style={{ fontSize: 12, color: "var(--ep-pink)", margin: "8px 0 0" }}>{t(error)}</p>}
       {open && (
-        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(245,237,237,0.06)" }}>
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(var(--ep-ink-rgb),0.06)" }}>
           <RecordForm
             idPrefix={`edit-${record.id}`}
             kind={def}
@@ -388,7 +389,7 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
           {adding ? t("Fermer") : def.addLabel}
         </button>
         <div style={{ position: "relative", flex: "1 1 200px", maxWidth: 320 }}>
-          <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+          <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Rechercher")} aria-label={t("Rechercher")} className="ep-input" style={{ paddingLeft: 32, height: 40 }} />
         </div>
       </div>
@@ -434,9 +435,9 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
             aria-pressed={filter === chip.value}
             style={{
               flexShrink: 0, fontSize: 11, fontWeight: 700, padding: "6px 11px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap",
-              color: filter === chip.value ? "#F5EDED" : "rgba(245,237,237,0.5)",
-              background: filter === chip.value ? "rgba(224,30,30,0.16)" : "rgba(245,237,237,0.03)",
-              border: `1px solid ${filter === chip.value ? "rgba(224,30,30,0.4)" : "rgba(245,237,237,0.08)"}`,
+              color: filter === chip.value ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.5)",
+              background: filter === chip.value ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-ink-rgb),0.03)",
+              border: `1px solid ${filter === chip.value ? "rgba(var(--ep-accent-rgb),0.4)" : "rgba(var(--ep-ink-rgb),0.08)"}`,
             }}
           >
             {chip.label}
@@ -446,7 +447,7 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
 
       {visible.length === 0 ? (
         <div className="ep-card" style={{ padding: "22px 18px", textAlign: "center" }}>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: 0 }}>{records.length === 0 ? def.emptyText : t("Rien ne correspond à ce filtre.")}</p>
+          <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0 }}>{records.length === 0 ? def.emptyText : t("Rien ne correspond à ce filtre.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

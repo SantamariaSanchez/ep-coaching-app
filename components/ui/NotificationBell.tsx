@@ -128,17 +128,17 @@ export default function NotificationBell({
           position: "relative",
           width: variant === "mobile" ? 36 : 32,
           height: variant === "mobile" ? 36 : 32,
-          background: open ? "rgba(224,30,30,0.12)" : "rgba(245,237,237,0.04)",
+          background: open ? "rgba(var(--ep-accent-rgb),0.12)" : "rgba(var(--ep-ink-rgb),0.04)",
         }}
       >
-        <Bell size={size} strokeWidth={1.8} style={{ color: count > 0 ? "#E01E1E" : "rgba(245,237,237,0.5)" }} />
+        <Bell size={size} strokeWidth={1.8} style={{ color: count > 0 ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.5)" }} />
         {count > 0 && (
           <span
             style={{
               position: "absolute",
               top: -4,
               right: -4,
-              background: "#E01E1E",
+              background: "var(--ep-accent)",
               color: "#fff",
               borderRadius: "50%",
               minWidth: 16,
@@ -149,7 +149,7 @@ export default function NotificationBell({
               justifyContent: "center",
               fontSize: 9,
               fontWeight: 800,
-              border: "1.5px solid #070000",
+              border: "1.5px solid var(--ep-bg)",
             }}
           >
             {count > 9 ? "9+" : count}
@@ -176,11 +176,11 @@ export default function NotificationBell({
             maxWidth: "calc(100vw - 24px)",
             maxHeight: 420,
             overflowY: "auto",
-            background: "rgba(8,0,0,0.97)",
+            background: "rgba(var(--ep-page-rgb),0.97)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(224,30,30,0.18)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.18)",
             borderRadius: 14,
-            boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
+            boxShadow: "0 16px 48px rgba(var(--ep-shade-rgb),0.6)",
             zIndex: 100,
           }}
         >
@@ -190,17 +190,17 @@ export default function NotificationBell({
               alignItems: "center",
               justifyContent: "space-between",
               padding: "12px 14px",
-              borderBottom: "1px solid rgba(224,30,30,0.1)",
+              borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.1)",
             }}
           >
-            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "#F5EDED" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ep-ink)" }}>
               {t("Notifications")}
             </span>
-            <CheckCheck size={13} style={{ color: "rgba(245,237,237,0.25)" }} />
+            <CheckCheck size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }} />
           </div>
 
           {items.length === 0 ? (
-            <p style={{ padding: "24px 16px", textAlign: "center", fontSize: 12, color: "rgba(245,237,237,0.3)" }}>
+            <p style={{ padding: "24px 16px", textAlign: "center", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
               {t("Rien pour l'instant.")}
             </p>
           ) : (
@@ -212,23 +212,23 @@ export default function NotificationBell({
                 style={{
                   display: "block",
                   padding: "10px 14px",
-                  borderBottom: "1px solid rgba(224,30,30,0.06)",
+                  borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.06)",
                   textDecoration: "none",
                 }}
               >
-                <p style={{ fontSize: 12, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{n.title}</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{n.title}</p>
                 {n.sender?.full_name && (
                   <p style={{ display: "flex", alignItems: "center", gap: 5, margin: "3px 0 0" }}>
-                    <span style={{ fontSize: 10.5, color: "rgba(245,237,237,0.4)", fontWeight: 600 }}>
+                    <span style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)", fontWeight: 600 }}>
                       {n.sender.full_name.split(" ")[0]}
                     </span>
                     <RoleBadge label={roleBadge(n.sender)} />
                   </p>
                 )}
                 {n.body && (
-                  <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "2px 0 0" }}>{n.body}</p>
+                  <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "2px 0 0" }}>{n.body}</p>
                 )}
-                <p style={{ fontSize: 9, color: "rgba(245,237,237,0.22)", margin: "4px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <p style={{ fontSize: 9, color: "rgba(var(--ep-ink-rgb),0.22)", margin: "4px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   {timeAgo(n.created_at)}
                 </p>
               </Link>

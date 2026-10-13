@@ -19,7 +19,7 @@ export default async function ClientCoachsPage() {
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Coaching")}</p>
         <h1 className="ep-h1">{t("Choisis ton coach")}</h1>
-        <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
+        <p style={{ marginTop: 8, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6 }}>
           {t("Voici les coachs actifs sur la plateforme. Tu peux aussi contacter Santamaria directement sur Instagram si tu préfères qu'il te suive personnellement.")}
         </p>
         <a

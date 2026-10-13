@@ -89,10 +89,10 @@ export default async function StaffModulePage({
       body = (
         <>
           <a href={contractHref} className="ep-card" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", marginBottom: 14, textDecoration: "none" }}>
-            <FileSignature size={18} style={{ color: "#4ade80", flexShrink: 0 }} />
+            <FileSignature size={18} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
             <span style={{ flex: 1 }}>
-              <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{t("Mon contrat de collaboration")}</span>
-              <span style={{ display: "block", fontSize: 11.5, color: "rgba(245,237,237,0.5)" }}>
+              <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)" }}>{t("Mon contrat de collaboration")}</span>
+              <span style={{ display: "block", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
                 {t("Signé le")}{" "}{member.contract_signed_at ? new Date(member.contract_signed_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?"}
                 {signedPdf ? t(" · télécharger le PDF signé") : templatePdf ? t(" · télécharger le PDF") : t(", avec ta fiche technique")}
               </span>
@@ -125,8 +125,8 @@ export default async function StaffModulePage({
       body =
         member.contract_version === "hors-ep" ? (
           <div className="ep-card" style={{ padding: "16px 18px" }}>
-            <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>{t("Les offres de ton entreprise")}</p>
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: 0, lineHeight: 1.6 }}>{t("Ton responsable partage ses offres, prix et liens de paiement dans l'onglet Documents. Demande-lui dans la messagerie s'il manque quelque chose.")}</p>
+            <p style={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px" }}>{t("Les offres de ton entreprise")}</p>
+            <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.6)", margin: 0, lineHeight: 1.6 }}>{t("Ton responsable partage ses offres, prix et liens de paiement dans l'onglet Documents. Demande-lui dans la messagerie s'il manque quelque chose.")}</p>
           </div>
         ) : (
           <OffersPanel />
@@ -167,10 +167,10 @@ export default async function StaffModulePage({
   return (
     <div className="page-transition">
       <p className="ep-label" style={{ marginBottom: 4 }}>{ctx.role.title}</p>
-      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
         {mod.label}
       </h1>
-      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 20px" }}>{mod.description}</p>
+      <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "0 0 20px" }}>{mod.description}</p>
       {body}
     </div>
   );

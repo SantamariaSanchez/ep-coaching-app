@@ -63,11 +63,11 @@ export default async function CoachStudioPage({
   return (
     <div className="px-4 sm:px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Business")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Studio créatif")}</h1>
-        <p className="mt-2 text-sm text-[#F5EDED]/45">
+        <p className="mt-2 text-sm text-(--ep-ink)/45">
           {t("De l'idée à la vidéo publiée : idées, scripts prêts à tourner, prompteur, puis tes chiffres dans Mes stats réseaux.")}
         </p>
       </div>

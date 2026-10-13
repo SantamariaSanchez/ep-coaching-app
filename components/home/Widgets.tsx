@@ -18,12 +18,12 @@ const fr = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
 function Card({ href, icon: Icon, title, aside, children, tone = "#F06060" }: { href: string; icon: React.ElementType; title: string; aside?: React.ReactNode; children: React.ReactNode; tone?: string }) {
   return (
-    <Link href={href} className="ep-card ep-press" style={{ display: "block", padding: "12px 14px 13px", textDecoration: "none", color: "#F5EDED", minWidth: 0 }}>
+    <Link href={href} className="ep-card ep-press" style={{ display: "block", padding: "12px 14px 13px", textDecoration: "none", color: "var(--ep-ink)", minWidth: 0 }}>
       <span style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
         <Icon size={14} style={{ color: tone, flexShrink: 0 }} strokeWidth={2.2} />
-        <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)", whiteSpace: "nowrap" }}>{title}</span>
+        <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.5)", whiteSpace: "nowrap" }}>{title}</span>
         <span style={{ flex: 1, minWidth: 0, textAlign: "right", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{aside}</span>
-        <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.22)", flexShrink: 0 }} />
+        <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.22)", flexShrink: 0 }} />
       </span>
       {children}
     </Link>
@@ -31,7 +31,7 @@ function Card({ href, icon: Icon, title, aside, children, tone = "#F06060" }: { 
 }
 
 const big: React.CSSProperties = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontSize: 17, fontWeight: 900, letterSpacing: "-0.02em", lineHeight: 1.2, overflow: "hidden", wordBreak: "break-word" };
-const sub: React.CSSProperties = { display: "block", fontSize: 12, color: "rgba(245,237,237,0.55)", lineHeight: 1.45, marginTop: 3 };
+const sub: React.CSSProperties = { display: "block", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.45, marginTop: 3 };
 const line: React.CSSProperties = { display: "flex", alignItems: "baseline", gap: 8, fontSize: 13, lineHeight: 1.5, minWidth: 0 };
 
 export function WidgetSkeleton({ h = 96 }: { h?: number }) {
@@ -56,18 +56,18 @@ export async function AgendaW({ userId, href, hideEmpty = false }: { userId: str
       {a.current && (
         <span style={{ display: "block", marginBottom: a.upcoming.length ? 9 : 0 }}>
           <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 7, height: 7, borderRadius: 99, background: "#E01E1E", boxShadow: "0 0 8px rgba(224,30,30,0.8)", flexShrink: 0 }} />
+            <span style={{ width: 7, height: 7, borderRadius: 99, background: "var(--ep-accent)", boxShadow: "0 0 8px rgba(var(--ep-accent-rgb),0.8)", flexShrink: 0 }} />
             <span style={{ ...big, WebkitLineClamp: 1, flex: 1, minWidth: 0 }}>{a.current.label}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,237,237,0.5)", flexShrink: 0 }}>{t("jusqu'à")} {a.current.end}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)", flexShrink: 0 }}>{t("jusqu'à")} {a.current.end}</span>
           </span>
-          <span style={{ display: "block", height: 3, borderRadius: 99, background: "rgba(245,237,237,0.08)", marginTop: 7, overflow: "hidden" }}>
-            <span style={{ display: "block", height: "100%", width: `${Math.round(a.current.progress * 100)}%`, background: "linear-gradient(90deg, #890404, #E01E1E)", borderRadius: 99 }} />
+          <span style={{ display: "block", height: 3, borderRadius: 99, background: "rgba(var(--ep-ink-rgb),0.08)", marginTop: 7, overflow: "hidden" }}>
+            <span style={{ display: "block", height: "100%", width: `${Math.round(a.current.progress * 100)}%`, background: "linear-gradient(90deg, var(--ep-line), var(--ep-accent))", borderRadius: 99 }} />
           </span>
         </span>
       )}
       {a.upcoming.map((b) => (
         <span key={`${b.start}${b.label}`} style={line}>
-          <span style={{ width: 40, flexShrink: 0, fontSize: 12, fontWeight: 800, color: "rgba(245,237,237,0.45)", fontVariantNumeric: "tabular-nums" }}>{b.start}</span>
+          <span style={{ width: 40, flexShrink: 0, fontSize: 12, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.45)", fontVariantNumeric: "tabular-nums" }}>{b.start}</span>
           <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}>{b.label}</span>
         </span>
       ))}
@@ -80,7 +80,7 @@ export async function MealW({ userId, href }: { userId: string; href: string }) 
   const [t, m] = await Promise.all([getT(), loadMeal(userId)]);
   if (!m) {
     return (
-      <Card href={href} icon={Utensils} title={t("Repas")} tone="#4ade80">
+      <Card href={href} icon={Utensils} title={t("Repas")} tone="var(--ep-ok)">
         <span style={big}>{t("Pas encore de plan")}</span>
         <span style={sub}>{t("Calcule tes besoins en 1 minute")}</span>
       </Card>
@@ -88,14 +88,14 @@ export async function MealW({ userId, href }: { userId: string; href: string }) 
   }
   if (!m.slot) {
     return (
-      <Card href={href} icon={Utensils} title={t("Repas")} tone="#4ade80">
+      <Card href={href} icon={Utensils} title={t("Repas")} tone="var(--ep-ok)">
         <span style={big}>{t("Journée bouclée")}</span>
         <span style={sub}>{t("Tous les repas du plan sont passés")}</span>
       </Card>
     );
   }
   return (
-    <Card href={href} icon={Utensils} title={t(m.label)} tone="#4ade80" aside={<span style={{ fontSize: 11.5, fontWeight: 800, color: "rgba(245,237,237,0.55)" }}>{fr(m.kcal)} kcal</span>}>
+    <Card href={href} icon={Utensils} title={t(m.label)} tone="var(--ep-ok)" aside={<span style={{ fontSize: 11.5, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.55)" }}>{fr(m.kcal)} kcal</span>}>
       {m.foods.slice(0, 4).map((f) => (
         <span key={f.name} style={line}>
           <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.name}</span>
@@ -120,14 +120,14 @@ export async function WorkoutW({ userId, href }: { userId: string; href: string 
   }
   const when = w.when.replace("aujourd'hui", t("aujourd'hui")).replace("demain", t("demain"));
   return (
-    <Card href={href} icon={Dumbbell} title={t("Séance")} aside={when ? <span style={{ fontSize: 11.5, fontWeight: 800, color: w.isToday ? "#F06060" : "rgba(245,237,237,0.55)" }}>{when}</span> : undefined}>
+    <Card href={href} icon={Dumbbell} title={t("Séance")} aside={when ? <span style={{ fontSize: 11.5, fontWeight: 800, color: w.isToday ? "#F06060" : "rgba(var(--ep-ink-rgb),0.55)" }}>{when}</span> : undefined}>
       <span style={big}>{w.label}</span>
       {w.exercises.length > 0 ? (
         <span style={{ display: "block", marginTop: 5 }}>
           {w.exercises.slice(0, 4).map((e) => (
             <span key={e.name} style={line}>
-              <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "rgba(245,237,237,0.8)" }}>{e.name}</span>
-              {e.sets != null && <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.6)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{e.sets} × {e.reps ?? "?"}</span>}
+              <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "rgba(var(--ep-ink-rgb),0.8)" }}>{e.name}</span>
+              {e.sets != null && <span style={{ fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.6)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{e.sets} × {e.reps ?? "?"}</span>}
             </span>
           ))}
         </span>
@@ -153,7 +153,7 @@ export async function LiveW({ userId, role, coachId, href }: { userId: string; r
   const d = new Date(l.startsAt);
   const when = l.isNow ? t("En cours") : d.toLocaleString("fr-FR", { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
   return (
-    <Card href={href} icon={Radio} title={t("Live")} tone="#c084fc" aside={<span style={{ fontSize: 11.5, fontWeight: 800, color: l.isNow ? "#f87171" : "rgba(245,237,237,0.55)" }}>{when}</span>}>
+    <Card href={href} icon={Radio} title={t("Live")} tone="#c084fc" aside={<span style={{ fontSize: 11.5, fontWeight: 800, color: l.isNow ? "var(--ep-bad)" : "rgba(var(--ep-ink-rgb),0.55)" }}>{when}</span>}>
       <span style={big}>{l.title}</span>
     </Card>
   );
@@ -169,7 +169,7 @@ function Sparkline({ values }: { values: number[] }) {
   const pts = values.map((v, i) => `${(i / (values.length - 1)) * w},${h - (max === min ? h / 2 : ((v - min) / (max - min)) * (h - 4) - 2)}`).join(" ");
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden style={{ flexShrink: 0 }}>
-      <polyline points={pts} fill="none" stroke="#E01E1E" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={pts} fill="none" stroke="var(--ep-accent)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
@@ -184,7 +184,7 @@ export async function StatsW({ userId, href }: { userId: string; href: string })
       <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 26, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}>{fr(s.followers)}</span>
-          <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: up ? "#4ade80" : s.delta7 < 0 ? "#fb923c" : "rgba(245,237,237,0.5)", marginTop: 3 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: up ? "var(--ep-ok)" : s.delta7 < 0 ? "var(--ep-orange)" : "rgba(var(--ep-ink-rgb),0.5)", marginTop: 3 }}>
             <Trend size={13} /> {s.delta7 > 0 ? "+" : ""}{fr(s.delta7)} {t("abonnés en 7 jours")}
           </span>
         </span>
@@ -194,11 +194,11 @@ export async function StatsW({ userId, href }: { userId: string; href: string })
         <Eye size={12} /> {fr(s.views7)} {t("vues cette semaine")}
       </span>
       {s.staleSince && (
-        <span style={{ ...sub, color: "#fbbf24" }}>{t("Données du {d} : synchro à relancer", { d: new Date(`${s.staleSince}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) })}</span>
+        <span style={{ ...sub, color: "var(--ep-warn)" }}>{t("Données du {d} : synchro à relancer", { d: new Date(`${s.staleSince}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) })}</span>
       )}
       {s.best && (
         <span style={{ ...sub, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {t("Meilleur post")} : <b style={{ color: "#F5EDED" }}>{fr(s.best.views)} {t("vues")}</b> · {s.best.caption}
+          {t("Meilleur post")} : <b style={{ color: "var(--ep-ink)" }}>{fr(s.best.views)} {t("vues")}</b> · {s.best.caption}
         </span>
       )}
     </Card>
@@ -211,7 +211,7 @@ export async function DeskW({ userId, isOwner, includeDemo, href }: { userId: st
   if (!d) return null;
   const todo = d.unread + d.pendingBilans;
   return (
-    <Card href={href} icon={Users} title={t("Clients")} aside={todo ? <span style={{ fontSize: 11, fontWeight: 900, color: "#fff", background: "#E01E1E", borderRadius: 99, padding: "1px 7px" }}>{todo}</span> : undefined}>
+    <Card href={href} icon={Users} title={t("Clients")} aside={todo ? <span style={{ fontSize: 11, fontWeight: 900, color: "#fff", background: "var(--ep-accent)", borderRadius: 99, padding: "1px 7px" }}>{todo}</span> : undefined}>
       <span style={{ display: "block", fontSize: 24, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}>{fr(d.members)}</span>
       <span style={sub}>{isOwner ? t("membres") : t("clients")}{d.newMembers7 ? ` · +${d.newMembers7} ${t("en 7 j")}` : ""}</span>
       {isOwner && <span style={sub}>{t("{n} lead(s) en 7 j", { n: d.leads7 })} · {t("{n} au total", { n: d.leadsTotal })}</span>}
@@ -220,7 +220,7 @@ export async function DeskW({ userId, isOwner, includeDemo, href }: { userId: st
           <MessageCircle size={12} /> {t("{n} message(s) non lu(s)", { n: d.unread })}
         </span>
       )}
-      {d.pendingBilans > 0 && <span style={{ ...sub, color: "#fbbf24", fontWeight: 700 }}>{t("{n} bilan(s) à corriger", { n: d.pendingBilans })}</span>}
+      {d.pendingBilans > 0 && <span style={{ ...sub, color: "var(--ep-warn)", fontWeight: 700 }}>{t("{n} bilan(s) à corriger", { n: d.pendingBilans })}</span>}
     </Card>
   );
 }
@@ -230,7 +230,7 @@ export async function ContentW({ userId, href }: { userId: string; href: string 
   const [t, c] = await Promise.all([getT(), loadContent(userId)]);
   if (!c) return null;
   return (
-    <Card href={href} icon={Clapperboard} title={t("Contenu")} tone="#fb923c">
+    <Card href={href} icon={Clapperboard} title={t("Contenu")} tone="var(--ep-orange)">
       <span style={{ display: "block", fontSize: 24, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}>{fr(c.toFilm)}</span>
       <span style={sub}>{t("scripts prêts à tourner")}</span>
       {(c.newToday > 0 || c.filmed > 0) && (
@@ -246,7 +246,7 @@ export async function BodyW({ userId, href }: { userId: string; href: string }) 
   if (!b) return null;
   const Trend = b.trend7 == null ? Minus : b.trend7 > 0 ? TrendingUp : b.trend7 < 0 ? TrendingDown : Minus;
   return (
-    <Card href={href} icon={ClipboardCheck} title={t("Bilan du jour")} tone="#60a5fa" aside={<span style={{ fontSize: 11.5, fontWeight: 800, color: b.doneToday ? "#4ade80" : "#fbbf24" }}>{b.doneToday ? t("Fait ✓") : t("À faire")}</span>}>
+    <Card href={href} icon={ClipboardCheck} title={t("Bilan du jour")} tone="var(--ep-info)" aside={<span style={{ fontSize: 11.5, fontWeight: 800, color: b.doneToday ? "var(--ep-ok)" : "var(--ep-warn)" }}>{b.doneToday ? t("Fait ✓") : t("À faire")}</span>}>
       {b.weight != null ? (
         <>
           <span style={{ display: "block", fontSize: 24, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}>{b.weight.toLocaleString("fr-FR")} kg</span>
@@ -271,14 +271,14 @@ export async function ShoppingW({ userId, href }: { userId: string; href: string
   const [t, s] = await Promise.all([getT(), loadShopping(userId)]);
   if (!s) {
     return (
-      <Card href={href} icon={ShoppingBasket} title={t("Courses")} tone="#4ade80">
+      <Card href={href} icon={ShoppingBasket} title={t("Courses")} tone="var(--ep-ok)">
         <span style={big}>{t("Ta liste de courses")}</span>
         <span style={sub}>{t("Faite à partir de ton plan, le stock baisse tout seul")}</span>
       </Card>
     );
   }
   return (
-    <Card href={href} icon={ShoppingBasket} title={t("Courses")} tone="#4ade80">
+    <Card href={href} icon={ShoppingBasket} title={t("Courses")} tone="var(--ep-ok)">
       <span style={big}>{s.low.length ? t("{n} à racheter", { n: s.low.length }) : t("Stock à jour")}</span>
       {s.low.length > 0 && <span style={{ ...sub, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.low.slice(0, 4).join(", ")}</span>}
     </Card>
@@ -291,7 +291,7 @@ export async function PrepW({ userId, href }: { userId: string; href: string }) 
   if (!p) return null;
   const photoDays = p.photoDays;
   return (
-    <Card href={href} icon={Medal} title={t("Ma prépa")} tone="#fbbf24">
+    <Card href={href} icon={Medal} title={t("Ma prépa")} tone="var(--ep-warn)">
       <span style={big}>{p.phase ?? t("Construis ta road map")}</span>
       {p.daysLeft != null && <span style={sub}>{t("{n} jour(s) avant la fin de la phase", { n: Math.max(0, p.daysLeft) })}</span>}
       <span style={sub}>{photoDays == null ? t("Aucune photo de suivi pour l'instant") : photoDays === 0 ? t("Photos faites aujourd'hui ✓") : t("Dernières photos il y a {n} j", { n: photoDays })}</span>

@@ -10,7 +10,7 @@ import {
 import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actions";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 function Chip<T extends string>({
   options,
@@ -34,8 +34,8 @@ function Chip<T extends string>({
             onClick={() => toggle(opt)}
             className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
               active
-                ? "bg-[#E01E1E] border-[#E01E1E] text-white"
-                : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50"
+                ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
+                : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/50 hover:border-(--ep-line)/50"
             }`}
           >
             {labels[opt]}
@@ -128,8 +128,8 @@ export default function AddRecipeForm({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 space-y-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 space-y-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
         {t("Ajouter ma recette")}
       </p>
 
@@ -141,7 +141,7 @@ export default function AddRecipeForm({
       />
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Type de repas")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Type de repas")}</p>
         <select value={meal} onChange={(e) => setMeal(e.target.value as MealType)} aria-label={t("Type de repas")} className={inputCls}>
           {Object.entries(MEAL_LABELS).map(([k, l]) => (
             <option key={k} value={k}>{l}</option>
@@ -150,22 +150,22 @@ export default function AddRecipeForm({
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Régime(s) compatible(s)")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Régime(s) compatible(s)")}</p>
         <Chip options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} selected={diet} toggle={(v) => toggleSet(setDiet, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Phase(s)")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Phase(s)")}</p>
         <Chip options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Saison")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Saison")}</p>
         <Chip options={Object.keys(SEASON_LABELS) as Season[]} labels={SEASON_LABELS} selected={season} toggle={(v) => toggleSet(setSeason, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Allergènes présents")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Allergènes présents")}</p>
         <Chip options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={allergens} toggle={(v) => toggleSet(setAllergens, v)} />
       </div>
 
@@ -192,7 +192,7 @@ export default function AddRecipeForm({
       <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder={t("Région / localité")} aria-label={t("Région / localité")} className={inputCls} />
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Valeurs nutritionnelles (optionnel)")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Valeurs nutritionnelles (optionnel)")}</p>
         <div className="grid grid-cols-4 gap-2">
           <input type="number" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder={t("kcal")} aria-label={t("kcal")} className={inputCls} />
           <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder={t("Prot. (g)")} aria-label={t("Prot. (g)")} className={inputCls} />
@@ -202,7 +202,7 @@ export default function AddRecipeForm({
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Ingrédients")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Ingrédients")}</p>
         <div className="space-y-1.5">
           {ingredients.map((ing, i) => (
             <div key={i} className="flex gap-1.5">
@@ -214,7 +214,7 @@ export default function AddRecipeForm({
                 className={inputCls}
               />
               {ingredients.length > 1 && (
-                <button type="button" onClick={() => setIngredients(ingredients.filter((_, idx) => idx !== i))} aria-label={`Supprimer l'ingrédient ${i + 1}`} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
+                <button type="button" onClick={() => setIngredients(ingredients.filter((_, idx) => idx !== i))} aria-label={`Supprimer l'ingrédient ${i + 1}`} className="text-(--ep-ink)/30 hover:text-red-400 px-1">
                   <Trash2 size={14} />
                 </button>
               )}
@@ -224,14 +224,14 @@ export default function AddRecipeForm({
         <button
           type="button"
           onClick={() => setIngredients([...ingredients, ""])}
-          className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] mt-1.5"
+          className="flex items-center gap-1 text-[10px] font-bold text-(--ep-accent) mt-1.5"
         >
           <Plus size={11} />{" "}{t("Ajouter un ingrédient")}
         </button>
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Préparation")}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1.5">{t("Préparation")}</p>
         <div className="space-y-1.5">
           {steps.map((s, i) => (
             <div key={i} className="flex gap-1.5">
@@ -243,7 +243,7 @@ export default function AddRecipeForm({
                 className={inputCls}
               />
               {steps.length > 1 && (
-                <button type="button" onClick={() => setSteps(steps.filter((_, idx) => idx !== i))} aria-label={`Supprimer l'étape ${i + 1}`} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
+                <button type="button" onClick={() => setSteps(steps.filter((_, idx) => idx !== i))} aria-label={`Supprimer l'étape ${i + 1}`} className="text-(--ep-ink)/30 hover:text-red-400 px-1">
                   <Trash2 size={14} />
                 </button>
               )}
@@ -253,7 +253,7 @@ export default function AddRecipeForm({
         <button
           type="button"
           onClick={() => setSteps([...steps, ""])}
-          className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] mt-1.5"
+          className="flex items-center gap-1 text-[10px] font-bold text-(--ep-accent) mt-1.5"
         >
           <Plus size={11} />{" "}{t("Ajouter une étape")}
         </button>
@@ -271,11 +271,11 @@ export default function AddRecipeForm({
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           {submitting ? <Loader2 size={13} className="animate-spin" /> : t("Publier ma recette")}
         </button>
-        <button onClick={onDone} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+        <button onClick={onDone} className="text-xs text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors">
           {t("Annuler")}
         </button>
       </div>

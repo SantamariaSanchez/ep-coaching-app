@@ -4,8 +4,8 @@ export default function SeasonModeBadge({ mode }: { mode: "off_season" | "prep" 
     <span
       className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
         isPrep
-          ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-          : "bg-[#F5EDED]/5 border-[#F5EDED]/15 text-[#F5EDED]/45"
+          ? "bg-(--ep-accent)/15 border-(--ep-accent)/40 text-(--ep-accent)"
+          : "bg-(--ep-ink)/5 border-(--ep-ink)/15 text-(--ep-ink)/45"
       }`}
     >
       {isPrep ? "🔥 Prep" : "🧘 Off-season"}

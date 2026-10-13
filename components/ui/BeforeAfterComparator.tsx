@@ -27,18 +27,18 @@ function DeltaRow({ label, oldVal, newVal }: { label: string; oldVal: number | n
   if (oldVal == null && newVal == null) return null;
   const delta = oldVal != null && newVal != null ? Math.round((newVal - oldVal) * 10) / 10 : null;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(137,4,4,0.08)" }}>
-      <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>{label}</span>
-      <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.35)", fontWeight: 700, minWidth: 44, textAlign: "right" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(var(--ep-line-rgb),0.08)" }}>
+      <span style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.35)", fontWeight: 700, minWidth: 44, textAlign: "right" }}>
         {oldVal != null ? `${oldVal}` : "···"}
       </span>
-      <span style={{ fontSize: 12.5, color: "#F5EDED", fontWeight: 800, minWidth: 44, textAlign: "right" }}>
+      <span style={{ fontSize: 12.5, color: "var(--ep-ink)", fontWeight: 800, minWidth: 44, textAlign: "right" }}>
         {newVal != null ? `${newVal}` : "···"}
       </span>
       <span
         style={{
           display: "flex", alignItems: "center", gap: 2, fontSize: 11, fontWeight: 800, minWidth: 48, justifyContent: "flex-end",
-          color: delta == null ? "rgba(245,237,237,0.2)" : delta < 0 ? "#4ade80" : delta > 0 ? "#fb923c" : "rgba(245,237,237,0.35)",
+          color: delta == null ? "rgba(var(--ep-ink-rgb),0.2)" : delta < 0 ? "var(--ep-ok)" : delta > 0 ? "var(--ep-orange)" : "rgba(var(--ep-ink-rgb),0.35)",
         }}
       >
         {delta != null && delta !== 0 && (delta < 0 ? <ArrowDown size={11} /> : <ArrowUp size={11} />)}
@@ -77,10 +77,10 @@ export default function BeforeAfterComparator({
   return (
     <div className="ep-card" style={{ padding: "18px 20px", marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 6 }}>
-        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", margin: 0 }}>
+        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.5)", margin: 0 }}>
           Avant / Après
         </p>
-        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", fontWeight: 600 }}>
           {fmtDate(oldest.measured_at)} <ArrowRight size={11} /> {fmtDate(newest.measured_at)}
         </span>
       </div>
@@ -95,9 +95,9 @@ export default function BeforeAfterComparator({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: "0 10px", marginBottom: 4 }}>
         <span />
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", textAlign: "right" }}>Avant</span>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", textAlign: "right" }}>Après</span>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", textAlign: "right" }}>Écart</span>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", textAlign: "right" }}>Avant</span>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", textAlign: "right" }}>Après</span>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", textAlign: "right" }}>Écart</span>
       </div>
       {FIELDS.map(({ key, label }) => (
         <DeltaRow key={key} label={label} oldVal={oldest[key] as number | null} newVal={newest[key] as number | null} />

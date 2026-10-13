@@ -21,9 +21,9 @@ function weeksSince(dateStr: string): number {
 
 function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-[#890404]/10 last:border-0">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">{label}</span>
-      <span className="text-sm font-semibold text-[#F5EDED]/75">{value ?? "···"}</span>
+    <div className="flex items-center justify-between py-2.5 border-b border-(--ep-line)/10 last:border-0">
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">{label}</span>
+      <span className="text-sm font-semibold text-(--ep-ink)/75">{value ?? "···"}</span>
     </div>
   );
 }
@@ -50,7 +50,7 @@ export default async function ClientProfilePage() {
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Mon espace")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon profil")}</h1>
@@ -67,8 +67,8 @@ export default async function ClientProfilePage() {
       />
 
       {profile.subscription_status === "active" && (
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+        <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
             {t("Mon coaching")}
           </p>
           {weeks !== null && <InfoRow label={t("Semaines de coaching")} value={`${weeks} semaine${weeks !== 1 ? "s" : ""}`} />}
@@ -95,13 +95,13 @@ export default async function ClientProfilePage() {
         style={{
           display: "flex", alignItems: "center", gap: 10, marginTop: 8,
           padding: "14px 16px", borderRadius: 12,
-          background: "rgba(245,237,237,0.03)", border: "1px solid rgba(245,237,237,0.08)",
-          textDecoration: "none", color: "#F5EDED", fontSize: 13, fontWeight: 700,
+          background: "rgba(var(--ep-ink-rgb),0.03)", border: "1px solid rgba(var(--ep-ink-rgb),0.08)",
+          textDecoration: "none", color: "var(--ep-ink)", fontSize: 13, fontWeight: 700,
         }}
       >
-        <Settings size={16} style={{ color: "#E01E1E" }} />
+        <Settings size={16} style={{ color: "var(--ep-accent)" }} />
         <span style={{ flex: 1 }}>{t("Paramètres")}</span>
-        <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)" }} />
+        <ChevronRight size={15} style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }} />
       </Link>
     </div>
   );

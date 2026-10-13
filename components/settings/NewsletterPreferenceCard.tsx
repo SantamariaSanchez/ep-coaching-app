@@ -28,14 +28,14 @@ export default function NewsletterPreferenceCard({ initialSubscribed }: { initia
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
         <Mail size={12} />{" "}{t("Newsletter")}
       </p>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-white">{t("EP Coaching par email")}</p>
-          <p className="text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">
+          <p className="text-sm font-semibold text-(--ep-strong)">{t("EP Coaching par email")}</p>
+          <p className="text-[11px] text-(--ep-ink)/35 mt-0.5 leading-relaxed">
             {t("Conseils entraînement, nutrition, mindset. Désinscription en un clic à tout moment depuis n'importe quel email reçu.")}
           </p>
         </div>
@@ -48,13 +48,13 @@ export default function NewsletterPreferenceCard({ initialSubscribed }: { initia
             type="button"
             onClick={subscribe}
             disabled={isPending}
-            className="flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-[#E01E1E] border border-[#E01E1E]/40 rounded-lg px-3 py-2 disabled:opacity-50"
+            className="flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-(--ep-accent) border border-(--ep-accent)/40 rounded-lg px-3 py-2 disabled:opacity-50"
           >
             {isPending ? "..." : t("S'inscrire")}
           </button>
         )}
       </div>
-      {error && <p className="text-[11px] text-[#FDC4C4] mt-2">{t(error)}</p>}
+      {error && <p className="text-[11px] text-(--ep-pink) mt-2">{t(error)}</p>}
     </div>
   );
 }

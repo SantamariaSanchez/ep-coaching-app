@@ -16,7 +16,15 @@ import { recommendPreset, type PresetRecommendation } from "@/lib/preset-program
 
 type Step = "profile" | "quiz" | "tour";
 
-export default function OnboardingFlow({ canInstallStarter }: { canInstallStarter: boolean }) {
+export default function OnboardingFlow({
+  canInstallStarter,
+  coached = false,
+  checkinDayLabel = null,
+}: {
+  canInstallStarter: boolean;
+  coached?: boolean;
+  checkinDayLabel?: string | null;
+}) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("profile");
   const [personalization, setPersonalization] = useState<PersonalizationProfile>(() =>
@@ -38,6 +46,11 @@ export default function OnboardingFlow({ canInstallStarter }: { canInstallStarte
   // en filet de sécurité si l'écriture n'a pas encore atterri en base.
   function goToApp() {
     setFinishing(true);
+    // La visite de l'onboarding couvre déjà les onglets : pas de deuxième
+    // visite en arrivant sur l'accueil.
+    try {
+      localStorage.setItem("ep-tour-done-v1-client", "1");
+    } catch {}
     completeOnboarding().catch(() => {
       // Ignoré volontairement — best-effort.
     });
@@ -80,6 +93,8 @@ export default function OnboardingFlow({ canInstallStarter }: { canInstallStarte
 
   return (
     <OnboardingTour
+      coached={coached}
+      checkinDayLabel={checkinDayLabel}
       personalization={personalization}
       guide={guide}
       starter={starter}

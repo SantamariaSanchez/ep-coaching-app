@@ -48,12 +48,12 @@ export default function NewsletterSignupForm({
           justifyContent: "center",
           gap: 8,
           padding: compact ? "14px 16px" : "18px 20px",
-          color: "#F5EDED",
+          color: "var(--ep-ink)",
           fontSize: 14,
           fontWeight: 600,
         }}
       >
-        <Check size={16} color="#E01E1E" />{" "}{t("Inscription confirmée, à demain !")}
+        <Check size={16} color="var(--ep-accent)" />{" "}{t("Inscription confirmée, à demain !")}
       </div>
     );
   }
@@ -73,13 +73,13 @@ export default function NewsletterSignupForm({
           margin: 0,
           fontSize: 13,
           fontWeight: 700,
-          color: "rgba(245,237,237,0.7)",
+          color: "rgba(var(--ep-ink-rgb),0.7)",
           display: compact ? "none" : "flex",
           alignItems: "center",
           gap: 6,
         }}
       >
-        <Mail size={14} color="#E01E1E" />{" "}{t("Un mail par jour : conseils entraînement, nutrition, mindset")}
+        <Mail size={14} color="var(--ep-accent)" />{" "}{t("Un mail par jour : conseils entraînement, nutrition, mindset")}
       </p>
       <div style={{ display: "flex", gap: 8, width: "100%" }}>
         {/* Honeypot anti-bot : jamais visible, jamais rempli par un humain. */}
@@ -112,7 +112,7 @@ export default function NewsletterSignupForm({
         </button>
       </div>
       {state === "error" && (
-        <p style={{ margin: 0, fontSize: 12, color: "#FDC4C4" }}>
+        <p style={{ margin: 0, fontSize: 12, color: "var(--ep-pink)" }}>
           {t("L’inscription n’a pas fonctionné, réessaie dans un instant.")}
         </p>
       )}

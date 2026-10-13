@@ -130,7 +130,7 @@ export default async function CoachMessagesPage() {
           </h1>
           {totalUnread > 0 && (
             <span className="animate-pulse-glow" style={{
-              background: "#E01E1E",
+              background: "var(--ep-accent)",
               color: "#fff",
               borderRadius: 20,
               padding: "3px 10px",
@@ -144,7 +144,7 @@ export default async function CoachMessagesPage() {
         {!profile?.is_platform_owner && (
           <a
             href="/dashboard/coach/aide"
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, color: "rgba(245,237,237,0.4)", fontSize: 11, textDecoration: "none" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, color: "rgba(var(--ep-ink-rgb),0.4)", fontSize: 11, textDecoration: "none" }}
           >
             <Mail size={11} />
             {t("Besoin d'aide ? Aide et tutoriels")}
@@ -156,12 +156,12 @@ export default async function CoachMessagesPage() {
         <div
           role="alert"
           className="ep-card"
-          style={{ padding: "12px 16px", marginBottom: 14, borderColor: "rgba(224,30,30,0.4)" }}
+          style={{ padding: "12px 16px", marginBottom: 14, borderColor: "rgba(var(--ep-accent-rgb),0.4)" }}
         >
-          <p style={{ fontSize: 12, color: "#F5EDED", margin: 0, fontWeight: 700 }}>
+          <p style={{ fontSize: 12, color: "var(--ep-ink)", margin: 0, fontWeight: 700 }}>
             {t("Impossible de charger les derniers messages.")}
           </p>
-          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "2px 0 0" }}>
+          <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "2px 0 0" }}>
             {t("Les aperçus et les non lus peuvent être incomplets. Recharge la page dans un instant.")}
           </p>
         </div>
@@ -169,10 +169,10 @@ export default async function CoachMessagesPage() {
 
       {clients.length === 0 ? (
         <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,237,237,0.55)", margin: "0 0 4px" }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 4px" }}>
             {t("Aucun membre pour l'instant")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
             {t("Dès qu'un membre rejoint ta communauté, sa conversation apparaît ici.")}
           </p>
         </div>

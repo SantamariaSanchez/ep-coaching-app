@@ -15,11 +15,11 @@ import {
 // (/dashboard/coach/moi/semaine) et le check-in des membres coachés.
 
 function scoreColor(score: number): string {
-  if (score >= 90) return "#4ade80";
-  if (score >= 70) return "#E01E1E";
-  if (score >= 40) return "#fbbf24";
-  if (score > 0) return "rgba(245,237,237,0.3)";
-  return "rgba(245,237,237,0.12)";
+  if (score >= 90) return "var(--ep-ok)";
+  if (score >= 70) return "var(--ep-accent)";
+  if (score >= 40) return "var(--ep-warn)";
+  if (score > 0) return "rgba(var(--ep-ink-rgb),0.3)";
+  return "rgba(var(--ep-ink-rgb),0.12)";
 }
 
 const DOW_SHORT = ["L", "M", "M", "J", "V", "S", "D"];
@@ -29,11 +29,11 @@ function ScoreRing({ score }: { score: number | null }) {
   const circumference = 2 * Math.PI * radius;
   const value = score ?? 0;
   const offset = circumference * (1 - value / 100);
-  const color = score != null ? scoreColor(value) : "rgba(245,237,237,0.2)";
+  const color = score != null ? scoreColor(value) : "rgba(var(--ep-ink-rgb),0.2)";
   return (
     <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
       <svg width={72} height={72} style={{ transform: "rotate(-90deg)" }} aria-hidden>
-        <circle cx={36} cy={36} r={radius} fill="none" stroke="rgba(245,237,237,0.08)" strokeWidth={7} />
+        <circle cx={36} cy={36} r={radius} fill="none" stroke="rgba(var(--ep-ink-rgb),0.08)" strokeWidth={7} />
         {score != null && (
           <circle
             cx={36} cy={36} r={radius} fill="none" stroke={color} strokeWidth={7}
@@ -47,8 +47,8 @@ function ScoreRing({ score }: { score: number | null }) {
           alignItems: "center", justifyContent: "center", lineHeight: 1,
         }}
       >
-        <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{score != null ? score : "?"}</span>
-        <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(245,237,237,0.35)", marginTop: 2 }}>SCORE</span>
+        <span style={{ fontSize: 17, fontWeight: 900, color: "var(--ep-ink)" }}>{score != null ? score : "?"}</span>
+        <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.35)", marginTop: 2 }}>SCORE</span>
       </div>
     </div>
   );
@@ -67,18 +67,18 @@ function Tile({
   sub?: string | null;
   tone?: "neutral" | "good" | "warn";
 }) {
-  const valueColor = tone === "good" ? "#4ade80" : tone === "warn" ? "#fbbf24" : "#F5EDED";
+  const valueColor = tone === "good" ? "var(--ep-ok)" : tone === "warn" ? "var(--ep-warn)" : "var(--ep-ink)";
   return (
     <div className="ep-card" style={{ padding: "12px 14px", minWidth: 0 }}>
       <p className="ep-label" style={{ margin: "0 0 6px", display: "flex", alignItems: "center", gap: 5, fontSize: 9 }}>
-        <Icon size={11} style={{ color: "rgba(224,30,30,0.6)", flexShrink: 0 }} />
+        <Icon size={11} style={{ color: "rgba(var(--ep-accent-rgb),0.6)", flexShrink: 0 }} />
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
       </p>
       <p style={{ margin: 0, fontSize: 20, fontWeight: 900, letterSpacing: "-0.02em", color: valueColor, lineHeight: 1.1 }}>
         {value}
       </p>
       {sub && (
-        <p style={{ margin: "4px 0 0", fontSize: 11, color: "rgba(245,237,237,0.38)", lineHeight: 1.35, overflowWrap: "anywhere" }}>
+        <p style={{ margin: "4px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.38)", lineHeight: 1.35, overflowWrap: "anywhere" }}>
           {sub}
         </p>
       )}
@@ -126,10 +126,10 @@ export default function WeeklyReview({
             <p className="ep-section-title" style={{ marginBottom: 2 }}>
               Semaine {d.weekNumber}{d.isCurrentWeek ? " · en cours" : ""}
             </p>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#F5EDED", lineHeight: 1.3 }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--ep-ink)", lineHeight: 1.3 }}>
               {formatWeekRange(d.weekStart)}
             </p>
-            <p style={{ margin: "4px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.4 }}>
+            <p style={{ margin: "4px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.4 }}>
               {d.avgHabit != null
                 ? `Score d'habitudes moyen sur ${d.isCurrentWeek ? "les jours écoulés" : "la semaine"}`
                 : d.isCurrentWeek && days === 1
@@ -231,8 +231,8 @@ export default function WeeklyReview({
         </p>
         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
           {insights.map((line, i) => (
-            <li key={i} style={{ display: "flex", gap: 8, fontSize: 13, lineHeight: 1.55, color: "rgba(245,237,237,0.75)" }}>
-              <span aria-hidden style={{ width: 5, height: 5, borderRadius: 999, background: "#E01E1E", marginTop: 8, flexShrink: 0 }} />
+            <li key={i} style={{ display: "flex", gap: 8, fontSize: 13, lineHeight: 1.55, color: "rgba(var(--ep-ink-rgb),0.75)" }}>
+              <span aria-hidden style={{ width: 5, height: 5, borderRadius: 999, background: "var(--ep-accent)", marginTop: 8, flexShrink: 0 }} />
               <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{line}</span>
             </li>
           ))}
@@ -256,13 +256,13 @@ export default function WeeklyReview({
                       width: "100%",
                       height: `${h}%`,
                       borderRadius: 4,
-                      background: p.score != null ? scoreColor(p.score) : "rgba(245,237,237,0.06)",
-                      border: future ? "1px dashed rgba(245,237,237,0.12)" : "none",
+                      background: p.score != null ? scoreColor(p.score) : "rgba(var(--ep-ink-rgb),0.06)",
+                      border: future ? "1px dashed rgba(var(--ep-ink-rgb),0.12)" : "none",
                       opacity: isToday ? 0.7 : 1,
                     }}
                   />
                 </div>
-                <span style={{ fontSize: 9, fontWeight: isToday ? 900 : 700, color: isToday ? "#E01E1E" : "rgba(245,237,237,0.35)" }}>
+                <span style={{ fontSize: 9, fontWeight: isToday ? 900 : 700, color: isToday ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.35)" }}>
                   {DOW_SHORT[i]}
                 </span>
               </div>
@@ -280,10 +280,10 @@ export default function WeeklyReview({
           <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
             {d.records.slice(0, 6).map((r, i) => (
               <li key={i} className="flex items-center justify-between gap-3" style={{ fontSize: 13 }}>
-                <span style={{ color: "rgba(245,237,237,0.78)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ color: "rgba(var(--ep-ink-rgb),0.78)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {r.exercise}
                 </span>
-                <span style={{ fontWeight: 800, color: "#fbbf24", flexShrink: 0 }}>
+                <span style={{ fontWeight: 800, color: "var(--ep-warn)", flexShrink: 0 }}>
                   {r.weightKg != null ? `${fr(r.weightKg, r.weightKg % 1 === 0 ? 0 : 1)} kg` : ""}
                   {r.reps ? ` x ${r.reps}` : ""}
                 </span>

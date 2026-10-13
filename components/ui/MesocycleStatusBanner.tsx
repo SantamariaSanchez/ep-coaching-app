@@ -19,13 +19,13 @@ export default function MesocycleStatusBanner({
     <div
       className="flex items-center gap-2 rounded-lg px-3 py-2 mb-4"
       style={{
-        background: status.isOverdue || status.isDeloadWeek ? "rgba(245,158,11,0.08)" : "rgba(137,4,4,0.08)",
-        border: `1px solid ${status.isOverdue || status.isDeloadWeek ? "rgba(245,158,11,0.25)" : "rgba(137,4,4,0.2)"}`,
+        background: status.isOverdue || status.isDeloadWeek ? "rgba(245,158,11,0.08)" : "rgba(var(--ep-line-rgb),0.08)",
+        border: `1px solid ${status.isOverdue || status.isDeloadWeek ? "rgba(245,158,11,0.25)" : "rgba(var(--ep-line-rgb),0.2)"}`,
       }}
     >
       <p
         className="text-xs font-bold"
-        style={{ color: status.isOverdue || status.isDeloadWeek ? "#fbbf24" : "rgba(245,237,237,0.55)" }}
+        style={{ color: status.isOverdue || status.isDeloadWeek ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.55)" }}
       >
         {status.isOverdue
           ? "Bloc terminé : ton coach va bientôt en démarrer un nouveau."

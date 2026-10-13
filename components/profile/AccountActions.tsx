@@ -91,24 +91,24 @@ export default function AccountActions({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">{t("Compte")}</p>
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">{t("Compte")}</p>
 
       <button
         onClick={resetPwd}
-        className="flex items-center justify-between w-full py-3 border-b border-[#890404]/10"
+        className="flex items-center justify-between w-full py-3 border-b border-(--ep-line)/10"
       >
         <div className="flex items-center gap-2.5">
-          <Lock size={14} className="text-[#F5EDED]/40" />
-          <span className="text-sm text-white font-medium">
+          <Lock size={14} className="text-(--ep-ink)/40" />
+          <span className="text-sm text-(--ep-strong) font-medium">
             {resetSent ? t("Email envoyé !") : t("Changer mon mot de passe")}
           </span>
         </div>
-        <ChevronRight size={13} className="text-[#F5EDED]/20" />
+        <ChevronRight size={13} className="text-(--ep-ink)/20" />
       </button>
 
       {changingEmail ? (
-        <div className="py-3 border-b border-[#890404]/10">
+        <div className="py-3 border-b border-(--ep-line)/10">
           {emailChangeSent ? (
             <p className="text-xs text-green-400">
               {t("Email de confirmation envoyé à")}{" "}{newEmail}{t(". Clique sur le lien reçu pour valider le changement.")}
@@ -116,14 +116,14 @@ export default function AccountActions({
           ) : (
             <>
               <div className="flex items-center gap-2.5 mb-2.5">
-                <Mail size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
+                <Mail size={14} className="text-(--ep-ink)/40 flex-shrink-0" />
                 <input
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder={t("nouvelle.adresse@email.com")}
                   aria-label={t("Nouvelle adresse email")}
-                  className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60"
+                  className="flex-1 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/60"
                 />
               </div>
               {emailChangeError && <p className="text-xs text-red-400 mb-2.5">{emailChangeError}</p>}
@@ -131,7 +131,7 @@ export default function AccountActions({
                 <button
                   onClick={handleChangeEmail}
                   disabled={emailChangeSending || !newEmail.trim()}
-                  className="flex-1 bg-[#E01E1E]/15 hover:bg-[#E01E1E]/25 border border-[#E01E1E]/30 disabled:opacity-50 rounded-lg py-2 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
+                  className="flex-1 bg-(--ep-accent)/15 hover:bg-(--ep-accent)/25 border border-(--ep-accent)/30 disabled:opacity-50 rounded-lg py-2 text-(--ep-accent) font-bold text-xs uppercase tracking-widest transition-colors"
                 >
                   {emailChangeSending ? t("Envoi…") : t("Envoyer le lien de confirmation")}
                 </button>
@@ -141,7 +141,7 @@ export default function AccountActions({
                     setEmailChangeError(null);
                     setNewEmail("");
                   }}
-                  className="px-3 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+                  className="px-3 text-xs text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
                 >
                   {t("Annuler")}
                 </button>
@@ -152,13 +152,13 @@ export default function AccountActions({
       ) : (
         <button
           onClick={() => setChangingEmail(true)}
-          className="flex items-center justify-between w-full py-3 border-b border-[#890404]/10"
+          className="flex items-center justify-between w-full py-3 border-b border-(--ep-line)/10"
         >
           <div className="flex items-center gap-2.5">
-            <Mail size={14} className="text-[#F5EDED]/40" />
-            <span className="text-sm text-white font-medium">{t("Changer mon email")}</span>
+            <Mail size={14} className="text-(--ep-ink)/40" />
+            <span className="text-sm text-(--ep-strong) font-medium">{t("Changer mon email")}</span>
           </div>
-          <ChevronRight size={13} className="text-[#F5EDED]/20" />
+          <ChevronRight size={13} className="text-(--ep-ink)/20" />
         </button>
       )}
 
@@ -166,18 +166,18 @@ export default function AccountActions({
           répond avec Content-Disposition: attachment. */}
       <a
         href="/api/export-data"
-        className="flex items-center justify-between w-full py-3 border-b border-[#890404]/10"
+        className="flex items-center justify-between w-full py-3 border-b border-(--ep-line)/10"
       >
         <div className="flex items-center gap-2.5">
-          <Download size={14} className="text-[#F5EDED]/40" />
-          <span className="text-sm text-white font-medium">{t("Exporter mes données")}</span>
+          <Download size={14} className="text-(--ep-ink)/40" />
+          <span className="text-sm text-(--ep-strong) font-medium">{t("Exporter mes données")}</span>
         </div>
-        <ChevronRight size={13} className="text-[#F5EDED]/20" />
+        <ChevronRight size={13} className="text-(--ep-ink)/20" />
       </a>
 
       <button
         onClick={signOut}
-        className="flex items-center justify-center gap-2 w-full mt-4 bg-[#E01E1E]/10 border border-[#E01E1E]/25 hover:bg-[#E01E1E]/20 rounded-lg py-3 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
+        className="flex items-center justify-center gap-2 w-full mt-4 bg-(--ep-accent)/10 border border-(--ep-accent)/25 hover:bg-(--ep-accent)/20 rounded-lg py-3 text-(--ep-accent) font-bold text-xs uppercase tracking-widest transition-colors"
       >
         <LogOut size={13} />{" "}{t("Se déconnecter")}
       </button>
@@ -188,7 +188,7 @@ export default function AccountActions({
       <button
         onClick={signOutEverywhere}
         disabled={signingOutEverywhere}
-        className="flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-[#F5EDED]/25 hover:text-[#E01E1E] disabled:opacity-50 font-bold text-[11px] uppercase tracking-widest transition-colors"
+        className="flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-(--ep-ink)/25 hover:text-(--ep-accent) disabled:opacity-50 font-bold text-[11px] uppercase tracking-widest transition-colors"
       >
         <ShieldOff size={12} />
         {signingOutEverywhere ? t("Déconnexion…") : t("Se déconnecter partout")}
@@ -217,7 +217,7 @@ export default function AccountActions({
                 setDeleteError(null);
               }}
               disabled={deleting}
-              className="px-4 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+              className="px-4 text-xs text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
             >
               {t("Annuler")}
             </button>
@@ -226,7 +226,7 @@ export default function AccountActions({
       ) : (
         <button
           onClick={() => setConfirmingDelete(true)}
-          className="flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-[#F5EDED]/25 hover:text-red-400 font-bold text-[11px] uppercase tracking-widest transition-colors"
+          className="flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-(--ep-ink)/25 hover:text-red-400 font-bold text-[11px] uppercase tracking-widest transition-colors"
         >
           <Trash2 size={12} />{" "}{t("Supprimer mon compte")}
         </button>

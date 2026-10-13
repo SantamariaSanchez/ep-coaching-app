@@ -41,24 +41,24 @@ export default function ClientReferenceCard({
   if (rows.length === 0) return null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-6">
-      <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-3">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 mb-6">
+      <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-(--ep-accent) mb-3">
         <ClipboardList size={11} /> Fiche client : à garder en tête
       </p>
       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
         {rows.map(({ label, value }) => (
           <div key={label} className="flex flex-col gap-0.5">
-            <span className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30">{label}</span>
-            <span className="text-xs text-[#F5EDED]/75 leading-relaxed">{value}</span>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/30">{label}</span>
+            <span className="text-xs text-(--ep-ink)/75 leading-relaxed">{value}</span>
           </div>
         ))}
       </div>
       {gymEquipmentNotes && (
-        <div className="mt-3 pt-3 border-t border-[#890404]/15">
-          <span className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 block mb-0.5">
+        <div className="mt-3 pt-3 border-t border-(--ep-line)/15">
+          <span className="text-[9px] font-semibold uppercase tracking-widest text-(--ep-ink)/30 block mb-0.5">
             Matériel connu de cette salle (annuaire communautaire)
           </span>
-          <span className="text-xs text-[#F5EDED]/75 leading-relaxed whitespace-pre-wrap">{gymEquipmentNotes}</span>
+          <span className="text-xs text-(--ep-ink)/75 leading-relaxed whitespace-pre-wrap">{gymEquipmentNotes}</span>
         </div>
       )}
     </div>

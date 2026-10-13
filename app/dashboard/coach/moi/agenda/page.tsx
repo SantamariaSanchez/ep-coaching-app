@@ -39,11 +39,11 @@ export default async function CoachMoiAgendaPage() {
   return (
     <div className="px-5 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1 flex items-center gap-1.5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1 flex items-center gap-1.5">
           <CalendarDays size={11} />{" "}{t("Mon suivi")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon agenda")}</h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2">
+        <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Ton propre emploi du temps, exactement comme celui de tes clients. Ajoute tes créneaux et ajuste les horaires comme tu veux.")}
         </p>
       </div>

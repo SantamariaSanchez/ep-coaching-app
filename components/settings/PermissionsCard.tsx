@@ -162,16 +162,16 @@ export default function PermissionsCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">{tr("Autorisations")}</p>
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">{tr("Autorisations")}</p>
 
-      <div className="pb-4 mb-4 border-b border-[#890404]/10">
+      <div className="pb-4 mb-4 border-b border-(--ep-line)/10">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Bell size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
+            <Bell size={14} className="text-(--ep-ink)/40 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-white">{tr("Notifications push")}</p>
-              <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
+              <p className="text-sm font-semibold text-(--ep-strong)">{tr("Notifications push")}</p>
+              <p className="text-[11px] text-(--ep-ink)/35 mt-0.5">
                 {push ? tr("Activées sur cet appareil") : tr("À activer dans Réglages > Applications > EP Coaching > Notifications")}
               </p>
             </div>
@@ -184,7 +184,7 @@ export default function PermissionsCard({
             <button
               onClick={enablePush}
               disabled={pushLoading}
-              className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+              className="flex items-center gap-1.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
             >
               <Bell size={12} /> {pushLoading ? tr("Activation…") : tr("Activer")}
             </button>
@@ -199,27 +199,27 @@ export default function PermissionsCard({
         {/* Item 50 : n'a de sens que si le push est activé — coupe
             uniquement le son/la vibration la nuit, jamais la notif in-app. */}
         {push && (
-          <div className="flex items-center gap-2.5 mt-3.5 pt-3.5 border-t border-[#890404]/10">
-            <Moon size={13} className="text-[#F5EDED]/30 flex-shrink-0" />
-            <span className="text-[11px] text-[#F5EDED]/45 flex-shrink-0">{tr("Silence de")}</span>
+          <div className="flex items-center gap-2.5 mt-3.5 pt-3.5 border-t border-(--ep-line)/10">
+            <Moon size={13} className="text-(--ep-ink)/30 flex-shrink-0" />
+            <span className="text-[11px] text-(--ep-ink)/45 flex-shrink-0">{tr("Silence de")}</span>
             <select
               value={quietStart}
               onChange={(e) => saveQuietHours(Number(e.target.value), quietEnd)}
               disabled={quietSaving}
               aria-label={tr("Heure de début du silence")}
-              className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
+              className="bg-(--ep-shade)/30 border border-(--ep-line)/25 rounded-md px-1.5 py-1 text-[11px] text-(--ep-strong) focus:outline-none"
             >
               {HOURS.map((h) => (
                 <option key={h} value={h}>{String(h).padStart(2, "0")}h</option>
               ))}
             </select>
-            <span className="text-[11px] text-[#F5EDED]/45">à</span>
+            <span className="text-[11px] text-(--ep-ink)/45">à</span>
             <select
               value={quietEnd}
               onChange={(e) => saveQuietHours(quietStart, Number(e.target.value))}
               disabled={quietSaving}
               aria-label={tr("Heure de fin du silence")}
-              className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
+              className="bg-(--ep-shade)/30 border border-(--ep-line)/25 rounded-md px-1.5 py-1 text-[11px] text-(--ep-strong) focus:outline-none"
             >
               {HOURS.map((h) => (
                 <option key={h} value={h}>{String(h).padStart(2, "0")}h</option>
@@ -236,7 +236,7 @@ export default function PermissionsCard({
           <button
             onClick={handleTestPush}
             disabled={testPushState === "sending"}
-            className="flex items-center gap-1.5 mt-3 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 mt-3 text-[11px] font-bold text-(--ep-ink)/40 hover:text-(--ep-accent) disabled:opacity-50 transition-colors"
           >
             <Send size={11} />
             {testPushState === "sending" && tr("Envoi…")}
@@ -253,7 +253,7 @@ export default function PermissionsCard({
           <button
             onClick={handleLockedTest}
             disabled={lockedTest === "…"}
-            className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors text-left"
+            className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-(--ep-ink)/40 hover:text-(--ep-accent) disabled:opacity-50 transition-colors text-left"
           >
             <Moon size={11} />
             {lockedTest === null && tr("Tester appli fermée (notif dans 2 min)")}
@@ -266,13 +266,13 @@ export default function PermissionsCard({
           <div className="mt-2">
             <button
               onClick={() => setShowAndroidHelp((v) => !v)}
-              className="flex items-center gap-1.5 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-bold text-(--ep-ink)/40 hover:text-(--ep-accent) transition-colors"
             >
               <AlertTriangle size={11} />
               {tr("Les notifs arrivent seulement quand j'ouvre l'appli")}
             </button>
             {showAndroidHelp && (
-              <div className="mt-2 rounded-lg border border-[#890404]/25 bg-black/30 p-3 text-[11.5px] leading-relaxed text-[#F5EDED]/70 space-y-1.5">
+              <div className="mt-2 rounded-lg border border-(--ep-line)/25 bg-(--ep-shade)/30 p-3 text-[11.5px] leading-relaxed text-(--ep-ink)/70 space-y-1.5">
                 <p>{tr("L'appli envoie bien chaque notif à l'heure. Si elle n'arrive qu'à l'ouverture, ton téléphone endort Chrome pour économiser la batterie. À régler une seule fois :")}</p>
                 <p>{tr("1. Paramètres > Applications > Chrome > Batterie : choisis « Sans restriction » (ou « Non optimisée »).")}</p>
                 <p>{tr("2. Si l'appli EP Coaching est installée sur l'écran d'accueil, fais pareil pour elle.")}</p>
@@ -300,7 +300,7 @@ export default function PermissionsCard({
           <button
             onClick={enablePush}
             disabled={pushLoading}
-            className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-(--ep-ink)/40 hover:text-(--ep-accent) disabled:opacity-50 transition-colors"
           >
             <Bell size={11} />
             {pushLoading ? tr("Réactivation…") : tr("Le test n'arrive pas ? Réactiver les notifications")}
@@ -310,28 +310,28 @@ export default function PermissionsCard({
 
       <Link
         href={stepsHref}
-        className="flex items-center justify-between py-1 mb-1 border-b border-[#890404]/10 pb-4 group"
+        className="flex items-center justify-between py-1 mb-1 border-b border-(--ep-line)/10 pb-4 group"
       >
         <div className="flex items-center gap-2.5">
-          <Footprints size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
+          <Footprints size={14} className="text-(--ep-ink)/40 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-white">{tr("Mouvement (podomètre)")}</p>
-            <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
+            <p className="text-sm font-semibold text-(--ep-strong)">{tr("Mouvement (podomètre)")}</p>
+            <p className="text-[11px] text-(--ep-ink)/35 mt-0.5">
               {pedometerEnabled ? tr("Activé, réglages dans Steps") : tr("Non activé")}
             </p>
           </div>
         </div>
-        <ChevronRight size={13} className="text-[#F5EDED]/20 group-hover:text-[#F5EDED]/50 transition-colors flex-shrink-0" />
+        <ChevronRight size={13} className="text-(--ep-ink)/20 group-hover:text-(--ep-ink)/50 transition-colors flex-shrink-0" />
       </Link>
 
       {/* Caméra, photos, micro, localisation : plus de boutons « Autoriser »
           dans l'appli (2026-10-13). Le téléphone demande lui-même au moment où
           la fonction sert, et tout se règle dans les réglages du téléphone. */}
-      <div className="flex items-start gap-2.5 py-1 mb-1 border-b border-[#890404]/10 pb-4">
-        <Smartphone size={14} className="text-[#F5EDED]/40 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2.5 py-1 mb-1 border-b border-(--ep-line)/10 pb-4">
+        <Smartphone size={14} className="text-(--ep-ink)/40 flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-white">{tr("Caméra, photos, micro, localisation")}</p>
-          <p className="text-[11.5px] text-[#F5EDED]/45 mt-0.5 leading-relaxed">
+          <p className="text-sm font-semibold text-(--ep-strong)">{tr("Caméra, photos, micro, localisation")}</p>
+          <p className="text-[11.5px] text-(--ep-ink)/45 mt-0.5 leading-relaxed">
             {tr("Ton téléphone te les demande la première fois que tu t'en sers (photo de progression, vidéo de technique, dictée). Pour les modifier : Réglages du téléphone > Applications > EP Coaching > Autorisations.")}
           </p>
         </div>

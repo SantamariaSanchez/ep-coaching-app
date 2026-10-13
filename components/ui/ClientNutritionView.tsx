@@ -96,7 +96,7 @@ const FOOD_CATEGORIES = [
 ];
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
 
 // Bornes de la table foods, appliquées en base par des contraintes CHECK
 // (voir supabase/migrations/20260805k_input_hardening_constraints.sql). Les
@@ -158,7 +158,7 @@ function calcMacros(food: Food, quantityG: number) {
 }
 
 function getDayColor(cals: number, target: number) {
-  if (cals === 0) return "bg-[#F5EDED]/5 border-[#F5EDED]/10";
+  if (cals === 0) return "bg-(--ep-ink)/5 border-(--ep-ink)/10";
   const pct = target > 0 ? cals / target : 0;
   if (pct >= 0.9) return "bg-green-600/60 border-green-500/30";
   if (pct >= 0.7) return "bg-amber-500/60 border-amber-400/30";
@@ -198,7 +198,7 @@ function MacroRing({
             cy="38"
             r={r}
             fill="none"
-            stroke="rgba(245,237,237,0.07)"
+            stroke="rgba(var(--ep-ink-rgb),0.07)"
             strokeWidth="7"
           />
           <circle
@@ -216,13 +216,13 @@ function MacroRing({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-          <span className="text-sm font-black text-white">{fmt(current)}</span>
-          <span className="text-[9px] text-[#F5EDED]/35">
+          <span className="text-sm font-black text-(--ep-strong)">{fmt(current)}</span>
+          <span className="text-[9px] text-(--ep-ink)/35">
             /{target}{isCalorie ? "" : "g"}
           </span>
         </div>
       </div>
-      <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/45">
+      <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/45">
         {label}
       </span>
     </div>
@@ -243,18 +243,18 @@ function FoodResultButton({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
+      className="w-full text-left px-3 py-2.5 hover:bg-(--ep-s1) rounded-lg transition-colors"
     >
-      <p className="text-sm text-white font-medium leading-tight flex items-center gap-1.5">
+      <p className="text-sm text-(--ep-strong) font-medium leading-tight flex items-center gap-1.5">
         {food.name}
         {food.is_custom && (
-          <span className="ml-1.5 text-[9px] text-[#E01E1E] uppercase font-bold">
+          <span className="ml-1.5 text-[9px] text-(--ep-accent) uppercase font-bold">
             {tr("custom")}
           </span>
         )}
         {watchHits.length > 0 && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
       </p>
-      <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+      <p className="text-[10px] text-(--ep-ink)/35 mt-0.5">
         {food.calories_per_100}{" "}{tr("kcal/100g · P")}{" "}
         {food.proteins_per_100}g · G {food.carbs_per_100}g ·
         L {food.fats_per_100}g
@@ -1660,7 +1660,7 @@ export default function ClientNutritionView({
         <div className="min-w-0">
           <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Nutrition")}</h1>
           <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-            <p className="text-xs text-[#F5EDED]/40 first-letter:uppercase">
+            <p className="text-xs text-(--ep-ink)/40 first-letter:uppercase">
               {new Intl.DateTimeFormat("fr-FR", {
                 weekday: "long",
                 day: "numeric",
@@ -1673,7 +1673,7 @@ export default function ClientNutritionView({
         <button
           onClick={() => openCreateFood("", null)}
           aria-label={tr("Créer un aliment")}
-          className="flex-shrink-0 inline-flex items-center gap-1.5 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-[11px] font-bold px-3 py-2.5 rounded-xl transition-colors"
+          className="flex-shrink-0 inline-flex items-center gap-1.5 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-[11px] font-bold px-3 py-2.5 rounded-xl transition-colors"
         >
           <Plus size={13} />
           {tr("Aliment")}
@@ -1681,15 +1681,15 @@ export default function ClientNutritionView({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
+      <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20">
         {(["today", "history", "courses"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex-1 px-2 py-3 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               activeTab === tab
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-(--ep-accent) border-b-2 border-(--ep-accent)"
+                : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             {tab === "today" ? tr("Aujourd'hui") : tab === "history" ? tr("Historique") : tr("Courses")}
@@ -1722,7 +1722,7 @@ export default function ClientNutritionView({
               explicite. "Jour" est aussi la seule vue qui permet de logger
               un aliment oublié sur un jour passé — jusqu'ici l'historique
               était en lecture seule. */}
-          <div className="flex gap-1.5 bg-[#1f0101] border border-[#890404]/25 rounded-xl p-1">
+          <div className="flex gap-1.5 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-1">
             {([
               { key: "jour", label: tr("Jour") },
               { key: "semaine", label: tr("Semaine") },
@@ -1732,7 +1732,7 @@ export default function ClientNutritionView({
                 key={key}
                 onClick={() => setHistoryView(key)}
                 className={`flex-1 text-[10.5px] font-bold uppercase tracking-widest py-2 rounded-lg transition-colors ${
-                  historyView === key ? "bg-[#E01E1E]/15 text-[#E01E1E]" : "text-[#F5EDED]/35 hover:text-[#F5EDED]/60"
+                  historyView === key ? "bg-(--ep-accent)/15 text-(--ep-accent)" : "text-(--ep-ink)/35 hover:text-(--ep-ink)/60"
                 }`}
               >
                 {label}
@@ -1742,7 +1742,7 @@ export default function ClientNutritionView({
 
           {/* Legend, pertinente pour Semaine et Mois (couleur = adhérence à l'objectif) */}
           {historyView !== "jour" && (
-            <div className="flex items-center gap-4 text-[10px] text-[#F5EDED]/40 font-semibold uppercase tracking-widest">
+            <div className="flex items-center gap-4 text-[10px] text-(--ep-ink)/40 font-semibold uppercase tracking-widest">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm bg-green-600/60 inline-block" />
                 ≥ 90%
@@ -1760,7 +1760,7 @@ export default function ClientNutritionView({
 
           {/* ── Vue Mois : grille des 30 derniers jours ── */}
           {historyView === "mois" && (
-            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+            <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
               <div className="grid grid-cols-7 gap-1.5">
                 {last30Days.map((date) => {
                   const cals = calsByDate[date] ?? 0;
@@ -1777,10 +1777,10 @@ export default function ClientNutritionView({
                         cals,
                         targets.calories
                       )} ${
-                        isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""
+                        isSelected ? "ring-2 ring-(--ep-hi)/50 ring-offset-1 ring-offset-(--ep-s1)" : ""
                       }`}
                     >
-                      <span className="text-white/70">
+                      <span className="text-(--ep-strong)/70">
                         {new Date(date + "T12:00:00").getDate()}
                       </span>
                     </button>
@@ -1792,7 +1792,7 @@ export default function ClientNutritionView({
 
           {/* ── Vue Semaine : la semaine (lundi→dimanche) du jour affiché ── */}
           {historyView === "semaine" && (
-            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+            <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
               <div className="grid grid-cols-7 gap-2">
                 {weekDays.map((date) => {
                   const cals = calsByDate[date] ?? 0;
@@ -1811,14 +1811,14 @@ export default function ClientNutritionView({
                         setHistoryView("jour");
                       }}
                       className={`rounded-lg border py-2.5 flex flex-col items-center gap-1 transition-all ${
-                        outOfRange ? "opacity-20 cursor-default border-[#890404]/15" : getDayColor(cals, targets.calories)
-                      } ${isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""}`}
+                        outOfRange ? "opacity-20 cursor-default border-(--ep-line)/15" : getDayColor(cals, targets.calories)
+                      } ${isSelected ? "ring-2 ring-(--ep-hi)/50 ring-offset-1 ring-offset-(--ep-s1)" : ""}`}
                     >
-                      <span className="text-[8px] uppercase font-bold text-white/50">
+                      <span className="text-[8px] uppercase font-bold text-(--ep-strong)/50">
                         {["dim", "lun", "mar", "mer", "jeu", "ven", "sam"][d.getDay()]}
                       </span>
-                      <span className="text-sm font-black text-white">{d.getDate()}</span>
-                      {!outOfRange && <span className="text-[8px] text-white/60">{Math.round(cals)}{" "}{tr("kcal")}</span>}
+                      <span className="text-sm font-black text-(--ep-strong)">{d.getDate()}</span>
+                      {!outOfRange && <span className="text-[8px] text-(--ep-strong)/60">{Math.round(cals)}{" "}{tr("kcal")}</span>}
                     </button>
                   );
                 })}
@@ -1831,18 +1831,18 @@ export default function ClientNutritionView({
               les jours passés pas que aujourd'hui") ── */}
           {historyView === "jour" && (
             <div className="space-y-3">
-              <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl px-4 py-3 flex items-center justify-between">
+              <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl px-4 py-3 flex items-center justify-between">
                 <button
                   onClick={() => shiftHistoryDay(-1)}
                   disabled={!canGoPrevDay}
                   aria-label={tr("Jour précédent")}
-                  className="text-[#F5EDED]/40 hover:text-[#F5EDED]/80 disabled:opacity-20 disabled:hover:text-[#F5EDED]/40 transition-colors"
+                  className="text-(--ep-ink)/40 hover:text-(--ep-ink)/80 disabled:opacity-20 disabled:hover:text-(--ep-ink)/40 transition-colors"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <div className="text-center">
-                  <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5 justify-center">
-                    <CalendarDays size={12} className="text-[#E01E1E]" />
+                  <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong) flex items-center gap-1.5 justify-center">
+                    <CalendarDays size={12} className="text-(--ep-accent)" />
                     {viewedDate === today
                       ? tr("Aujourd'hui")
                       : new Intl.DateTimeFormat("fr-FR", {
@@ -1854,7 +1854,7 @@ export default function ClientNutritionView({
                   {viewedDate !== today && (
                     <button
                       onClick={() => setHistorySelectedDate(today)}
-                      className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mt-0.5"
+                      className="text-[9px] font-bold uppercase tracking-widest text-(--ep-accent) mt-0.5"
                     >
                       {tr("Revenir à aujourd'hui")}
                     </button>
@@ -1864,7 +1864,7 @@ export default function ClientNutritionView({
                   onClick={() => shiftHistoryDay(1)}
                   disabled={!canGoNextDay}
                   aria-label={tr("Jour suivant")}
-                  className="text-[#F5EDED]/40 hover:text-[#F5EDED]/80 disabled:opacity-20 disabled:hover:text-[#F5EDED]/40 transition-colors"
+                  className="text-(--ep-ink)/40 hover:text-(--ep-ink)/80 disabled:opacity-20 disabled:hover:text-(--ep-ink)/40 transition-colors"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -1888,7 +1888,7 @@ export default function ClientNutritionView({
               })}
 
               {historyDayLogs.length > 0 && (
-                <div className="px-1 text-xs font-bold text-[#F5EDED]/60 text-right">
+                <div className="px-1 text-xs font-bold text-(--ep-ink)/60 text-right">
                   {tr("Total :")}{" "}{fmt(calsByDate[viewedDate] ?? 0)}{" "}{tr("kcal")}
                 </div>
               )}
@@ -1907,20 +1907,20 @@ export default function ClientNutritionView({
 
           {/* Idées de sources — pour varier en plan flexible, sans dépendre
               uniquement de ce qui a déjà été loggué. */}
-          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3 flex items-center gap-1.5">
+          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3 flex items-center gap-1.5">
               <Lightbulb size={12} className="text-amber-400" />
               {tr("Idées pour varier")}
             </p>
             <div className="space-y-3">
               {FOOD_IDEAS.map((group) => (
                 <div key={group.key}>
-                  <p className="text-xs font-bold text-white mb-1.5">{group.label}</p>
+                  <p className="text-xs font-bold text-(--ep-strong) mb-1.5">{group.label}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {group.items.map((item) => (
                       <span
                         key={item}
-                        className="text-[10px] text-[#F5EDED]/55 bg-[#150000] border border-[#890404]/20 rounded-full px-2.5 py-1"
+                        className="text-[10px] text-(--ep-ink)/55 bg-(--ep-s2) border border-(--ep-line)/20 rounded-full px-2.5 py-1"
                       >
                         {item}
                       </span>
@@ -1937,12 +1937,12 @@ export default function ClientNutritionView({
       {addingToSlot && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
-            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#890404]/20 flex-shrink-0">
-              <p className="text-xs font-bold uppercase tracking-widest text-white">
+          <div className="ep-modal-panel relative w-full sm:max-w-md bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-(--ep-line)/20 flex-shrink-0">
+              <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong)">
                 {selectedFood
                   ? selectedFood.name
                   : selectedRecipe
@@ -1952,7 +1952,7 @@ export default function ClientNutritionView({
               <button
                 onClick={closeModal}
                 aria-label={tr("Fermer")}
-                className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                className="text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
               >
                 <X size={16} />
               </button>
@@ -1967,8 +1967,8 @@ export default function ClientNutritionView({
                     onClick={() => { setSearchTab(t); setSearchQuery(""); }}
                     className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors ${
                       searchTab === t
-                        ? "bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/30"
-                        : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                        ? "bg-(--ep-accent)/15 text-(--ep-accent) border border-(--ep-accent)/30"
+                        : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
                     }`}
                   >
                     {t === "aliments" && tr("Aliments")}
@@ -1998,14 +1998,14 @@ export default function ClientNutritionView({
                       onClick={() => setShowScannerModal(true)}
                       disabled={scanningProduct}
                       title={tr("Scanner un code-barres")} aria-label={tr("Scanner un code-barres")}
-                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#E01E1E] hover:border-[#E01E1E]/40 transition-colors disabled:opacity-40"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-(--ep-s2) border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-accent) hover:border-(--ep-accent)/40 transition-colors disabled:opacity-40"
                     >
                       <ScanBarcode size={16} />
                     </button>
                   </div>
                 )}
                 {scanningProduct && (
-                  <p className="px-5 pb-2 text-[11px] text-[#F5EDED]/40 flex-shrink-0">{tr("Recherche du produit…")}</p>
+                  <p className="px-5 pb-2 text-[11px] text-(--ep-ink)/40 flex-shrink-0">{tr("Recherche du produit…")}</p>
                 )}
                 {scanError && (
                   <p className="px-5 pb-2 text-[11px] text-amber-400 flex-shrink-0">{scanError}</p>
@@ -2023,7 +2023,7 @@ export default function ClientNutritionView({
                     )}
                     {!searchQuery && recentFoods.length > 0 && (
                       <div className="mb-1">
-                        <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
+                        <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 flex items-center gap-1.5">
                           <Clock size={10} />{" "}{tr("Récents")}
                         </p>
                         {recentFoods.map((food) => (
@@ -2033,7 +2033,7 @@ export default function ClientNutritionView({
                     )}
                     {!searchQuery && mostUsedFoods.length > 0 && (
                       <div className="mb-1">
-                        <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
+                        <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 flex items-center gap-1.5">
                           <Flame size={10} />{" "}{tr("Les plus utilisés")}
                         </p>
                         {mostUsedFoods.map((food) => (
@@ -2042,7 +2042,7 @@ export default function ClientNutritionView({
                       </div>
                     )}
                     {!searchQuery && (recentFoods.length > 0 || mostUsedFoods.length > 0) && (
-                      <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{tr("Tous les aliments")}</p>
+                      <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30">{tr("Tous les aliments")}</p>
                     )}
                     {filteredFoods.length === 0 ? (
                       searchQuery.trim() ? (
@@ -2051,16 +2051,16 @@ export default function ClientNutritionView({
                         // terme déjà repris, plutôt qu'en petit lien en bas de
                         // modale que personne ne remarque.
                         <div className="px-3 py-6 flex flex-col items-center gap-3 text-center">
-                          <Search size={20} className="text-[#F5EDED]/15" strokeWidth={1.5} />
-                          <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
+                          <Search size={20} className="text-(--ep-ink)/15" strokeWidth={1.5} />
+                          <p className="text-xs text-(--ep-ink)/40 leading-relaxed">
                             {tr("Aucun aliment ne correspond à")}
-                            <span className="text-white font-bold"> « {searchQuery.trim()} »</span>.
+                            <span className="text-(--ep-strong) font-bold"> « {searchQuery.trim()} »</span>.
                             <br />
                             {tr("Crée le maintenant, il restera dans ta liste.")}
                           </p>
                           <button
                             onClick={() => openCreateFood(searchQuery, addingToSlot)}
-                            className="w-full inline-flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
+                            className="w-full inline-flex items-center justify-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
                           >
                             <Plus size={13} />
                             {tr("Créer «")}{" "}{searchQuery.trim()} »
@@ -2079,7 +2079,7 @@ export default function ClientNutritionView({
                           </button>
                         </div>
                       ) : (
-                        <p className="text-center text-xs text-[#F5EDED]/30 py-8">{tr("Aucun résultat")}</p>
+                        <p className="text-center text-xs text-(--ep-ink)/30 py-8">{tr("Aucun résultat")}</p>
                       )
                     ) : (
                       filteredFoods.map((food) => (
@@ -2096,23 +2096,23 @@ export default function ClientNutritionView({
                         <button
                           onClick={handleImportPlanMeals}
                           disabled={importingPlan}
-                          className="w-full flex items-center justify-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 disabled:opacity-50 text-[#E01E1E] text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
+                          className="w-full flex items-center justify-center gap-2 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 disabled:opacity-50 text-(--ep-accent) text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
                         >
                           <Bookmark size={13} />
                           {importingPlan ? tr("Import…") : tr("Importer les repas de mon plan")}
                         </button>
                         {importError && <p className="text-[10.5px] text-red-400 mt-1.5 text-center">{importError}</p>}
-                        <p className="text-[10px] text-[#F5EDED]/25 mt-1.5 text-center leading-relaxed">
+                        <p className="text-[10px] text-(--ep-ink)/25 mt-1.5 text-center leading-relaxed">
                           {tr("Chaque repas de ton plan devient réutilisable en un tap, sans avoir à tout re-rentrer.")}
                         </p>
                       </div>
                     )}
                     {savedMeals.length === 0 ? (
                       <div className="text-center py-8 px-4">
-                        <UtensilsCrossed size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-                        <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
+                        <UtensilsCrossed size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+                        <p className="text-xs text-(--ep-ink)/35 leading-relaxed">
                           {tr("Aucun repas enregistré. Ajoute des aliments à un créneau, puis touche l'icône")}{" "}
-                          <Bookmark size={11} className="inline text-[#F5EDED]/40" />{" "}{tr("à côté pour le sauvegarder et le réutiliser en un tap.")}
+                          <Bookmark size={11} className="inline text-(--ep-ink)/40" />{" "}{tr("à côté pour le sauvegarder et le réutiliser en un tap.")}
                         </p>
                       </div>
                     ) : (
@@ -2125,18 +2125,18 @@ export default function ClientNutritionView({
                           return (
                             <div
                               key={meal.id}
-                              className="flex items-center gap-3 bg-[#150000] border border-[#890404]/25 rounded-xl px-3.5 py-3"
+                              className="flex items-center gap-3 bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl px-3.5 py-3"
                             >
                               <button
                                 onClick={() => handleLogSavedMeal(meal)}
                                 className="flex-1 min-w-0 text-left flex items-center gap-3"
                               >
-                                <div className="w-8 h-8 rounded-lg bg-[#E01E1E]/10 border border-[#E01E1E]/20 flex items-center justify-center flex-shrink-0">
-                                  <UtensilsCrossed size={14} className="text-[#E01E1E]" strokeWidth={1.8} />
+                                <div className="w-8 h-8 rounded-lg bg-(--ep-accent)/10 border border-(--ep-accent)/20 flex items-center justify-center flex-shrink-0">
+                                  <UtensilsCrossed size={14} className="text-(--ep-accent)" strokeWidth={1.8} />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-sm text-white font-bold truncate">{meal.name}</p>
-                                  <p className="text-[10px] text-[#F5EDED]/35">
+                                  <p className="text-sm text-(--ep-strong) font-bold truncate">{meal.name}</p>
+                                  <p className="text-[10px] text-(--ep-ink)/35">
                                     {meal.saved_meal_items.length}{" "}{tr("aliment")}{meal.saved_meal_items.length > 1 ? "s" : ""} · {fmt(totalKcal)}{" "}{tr("kcal")}
                                   </p>
                                 </div>
@@ -2144,7 +2144,7 @@ export default function ClientNutritionView({
                               <button
                                 onClick={() => handleDeleteSavedMeal(meal.id)}
                                 aria-label={`Supprimer le repas enregistré ${meal.name}`}
-                                className="text-[#F5EDED]/20 hover:text-red-500 transition-colors flex-shrink-0 p-1"
+                                className="text-(--ep-ink)/20 hover:text-red-500 transition-colors flex-shrink-0 p-1"
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -2165,22 +2165,22 @@ export default function ClientNutritionView({
                       <button
                         key={r.id}
                         onClick={() => { setSelectedRecipe(r); setRecipeServings("1"); }}
-                        className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
+                        className="w-full text-left px-3 py-2.5 hover:bg-(--ep-s1) rounded-lg transition-colors"
                       >
-                        <p className="text-sm text-white font-medium leading-tight">{r.name}</p>
-                        <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+                        <p className="text-sm text-(--ep-strong) font-medium leading-tight">{r.name}</p>
+                        <p className="text-[10px] text-(--ep-ink)/35 mt-0.5">
                           {r.kcal}{" "}{tr("kcal/portion · P")}{" "}{r.protein}g · G {r.carbs}g · L {r.fat}g
                         </p>
                       </button>
                     ))}
                     {allRecipes.length === 0 && (
-                      <p className="text-center text-xs text-[#F5EDED]/30 py-8">{tr("Aucune recette disponible")}</p>
+                      <p className="text-center text-xs text-(--ep-ink)/30 py-8">{tr("Aucune recette disponible")}</p>
                     )}
                   </div>
                 )}
 
                 {searchTab === "aliments" && (
-                  <div className="px-5 py-3 border-t border-[#890404]/20 flex-shrink-0 flex flex-col gap-1">
+                  <div className="px-5 py-3 border-t border-(--ep-line)/20 flex-shrink-0 flex flex-col gap-1">
                     <button
                       onClick={() => {
                         const slot = addingToSlot!;
@@ -2195,7 +2195,7 @@ export default function ClientNutritionView({
                     </button>
                     <button
                       onClick={() => openCreateFood(searchQuery, addingToSlot)}
-                      className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors py-2"
+                      className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors py-2"
                     >
                       <Plus size={11} />
                       {tr("Créer un aliment personnalisé")}
@@ -2207,12 +2207,12 @@ export default function ClientNutritionView({
               // ── Recipe servings view ──
               <div className="px-5 py-4 flex flex-col gap-4 overflow-y-auto flex-1">
                 <div>
-                  <p className="text-[10px] text-[#F5EDED]/35 mb-1">
+                  <p className="text-[10px] text-(--ep-ink)/35 mb-1">
                     {selectedRecipe.kcal}{" "}{tr("kcal/portion · P")}{" "}{selectedRecipe.protein}g · G {selectedRecipe.carbs}g · L {selectedRecipe.fat}g
                   </p>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                     {tr("Nombre de portions")}
                   </label>
                   <input
@@ -2227,16 +2227,16 @@ export default function ClientNutritionView({
                   />
                 </div>
                 {parseFloat(recipeServings) > 0 && (
-                  <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
+                  <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-lg p-3">
                     <div className="flex gap-4 text-xs">
                       {(() => {
                         const s = parseFloat(recipeServings) || 1;
                         return (
                           <>
-                            <div><p className="text-[#E01E1E] font-black text-base">{Math.round(selectedRecipe.kcal * s)}</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("kcal")}</p></div>
-                            <div><p className="text-blue-300 font-bold">{Math.round(selectedRecipe.protein * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("Prot")}</p></div>
-                            <div><p className="text-amber-300 font-bold">{Math.round(selectedRecipe.carbs * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("Gluc")}</p></div>
-                            <div><p className="text-rose-300 font-bold">{Math.round(selectedRecipe.fat * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">{tr("Lip")}</p></div>
+                            <div><p className="text-(--ep-accent) font-black text-base">{Math.round(selectedRecipe.kcal * s)}</p><p className="text-(--ep-ink)/40 text-[9px]">{tr("kcal")}</p></div>
+                            <div><p className="text-blue-300 font-bold">{Math.round(selectedRecipe.protein * s)}g</p><p className="text-(--ep-ink)/40 text-[9px]">{tr("Prot")}</p></div>
+                            <div><p className="text-amber-300 font-bold">{Math.round(selectedRecipe.carbs * s)}g</p><p className="text-(--ep-ink)/40 text-[9px]">{tr("Gluc")}</p></div>
+                            <div><p className="text-rose-300 font-bold">{Math.round(selectedRecipe.fat * s)}g</p><p className="text-(--ep-ink)/40 text-[9px]">{tr("Lip")}</p></div>
                           </>
                         );
                       })()}
@@ -2244,15 +2244,15 @@ export default function ClientNutritionView({
                   </div>
                 )}
                 <div className="flex gap-2">
-                  <button onClick={() => setSelectedRecipe(null)} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60">{tr("Retour")}</button>
-                  <button onClick={handleAddRecipe} disabled={!recipeServings || parseFloat(recipeServings) <= 0} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg disabled:opacity-40">{tr("Ajouter")}</button>
+                  <button onClick={() => setSelectedRecipe(null)} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/60">{tr("Retour")}</button>
+                  <button onClick={handleAddRecipe} disabled={!recipeServings || parseFloat(recipeServings) <= 0} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-(--ep-accent) text-(--ep-strong) rounded-lg disabled:opacity-40">{tr("Ajouter")}</button>
                 </div>
               </div>
             ) : selectedFood ? (
               // ── Quantity view ──
               <div className="px-5 py-4 flex flex-col gap-4">
                 <div>
-                  <p className="text-[10px] text-[#F5EDED]/35 mb-1">
+                  <p className="text-[10px] text-(--ep-ink)/35 mb-1">
                     {selectedFood.calories_per_100}{" "}{tr("kcal/100g · P")}{" "}
                     {selectedFood.proteins_per_100}g · G{" "}
                     {selectedFood.carbs_per_100}g · L{" "}
@@ -2260,7 +2260,7 @@ export default function ClientNutritionView({
                   </p>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                     {tr("Quantité (grammes)")}
                   </label>
                   {/* Retour direct 2026-09-09 : "très très mal fait pour loger
@@ -2276,7 +2276,7 @@ export default function ClientNutritionView({
                         setQuantityInput(String(Math.max(0, current - 10)));
                       }}
                       aria-label={tr("Moins 10 grammes")}
-                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/40 active:scale-95 transition-all text-lg font-bold"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-(--ep-s2) border border-(--ep-line)/30 text-(--ep-ink)/60 hover:text-(--ep-strong) hover:border-(--ep-accent)/40 active:scale-95 transition-all text-lg font-bold"
                     >
                       −
                     </button>
@@ -2297,7 +2297,7 @@ export default function ClientNutritionView({
                         setQuantityInput(String(current + 10));
                       }}
                       aria-label={tr("Plus 10 grammes")}
-                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/40 active:scale-95 transition-all text-lg font-bold"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-(--ep-s2) border border-(--ep-line)/30 text-(--ep-ink)/60 hover:text-(--ep-strong) hover:border-(--ep-accent)/40 active:scale-95 transition-all text-lg font-bold"
                     >
                       +
                     </button>
@@ -2310,8 +2310,8 @@ export default function ClientNutritionView({
                         onClick={() => setQuantityInput(String(preset))}
                         className={`text-[11px] font-bold px-3 py-1.5 rounded-full border transition-colors ${
                           parseFloat(quantityInput) === preset
-                            ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-[#E01E1E]"
-                            : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/45 hover:text-[#F5EDED]/75 hover:border-[#890404]/50"
+                            ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-accent)"
+                            : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/45 hover:text-(--ep-ink)/75 hover:border-(--ep-line)/50"
                         }`}
                       >
                         {preset}g
@@ -2320,7 +2320,7 @@ export default function ClientNutritionView({
                   </div>
                 </div>
                 {quantityInput && parseFloat(quantityInput) > 0 && (
-                  <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
+                  <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-lg p-3">
                     {(() => {
                       const m = calcMacros(
                         selectedFood!,
@@ -2329,22 +2329,22 @@ export default function ClientNutritionView({
                       return (
                         <div className="flex gap-4 text-xs">
                           <div>
-                            <p className="text-[#E01E1E] font-black text-base">
+                            <p className="text-(--ep-accent) font-black text-base">
                               {fmt(m.calories)}
                             </p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("kcal")}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("kcal")}</p>
                           </div>
                           <div>
                             <p className="text-blue-300 font-bold">{fmt(m.proteins)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Prot")}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("Prot")}</p>
                           </div>
                           <div>
                             <p className="text-amber-300 font-bold">{fmt(m.carbs)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Gluc")}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("Gluc")}</p>
                           </div>
                           <div>
                             <p className="text-rose-300 font-bold">{fmt(m.fats)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">{tr("Lip")}</p>
+                            <p className="text-(--ep-ink)/40 text-[9px]">{tr("Lip")}</p>
                           </div>
                         </div>
                       );
@@ -2357,14 +2357,14 @@ export default function ClientNutritionView({
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedFood(null)}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/60 hover:text-(--ep-ink)/80 transition-colors"
                   >
                     {tr("Retour")}
                   </button>
                   <button
                     onClick={handleAddFood}
                     disabled={!quantityInput || parseFloat(quantityInput) <= 0}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-40 transition-colors"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg disabled:opacity-40 transition-colors"
                   >
                     {tr("Confirmer")}
                   </button>
@@ -2379,19 +2379,19 @@ export default function ClientNutritionView({
       {savingMealSlot && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm"
             onClick={() => setSavingMealSlot(null)}
           />
-          <div className="ep-modal-panel relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+          <div className="ep-modal-panel relative w-full sm:max-w-sm bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
-                <Bookmark size={13} className="text-[#E01E1E]" />{" "}{tr("Enregistrer ce repas")}
+              <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong) flex items-center gap-2">
+                <Bookmark size={13} className="text-(--ep-accent)" />{" "}{tr("Enregistrer ce repas")}
               </p>
-              <button onClick={() => setSavingMealSlot(null)} aria-label={tr("Fermer")} className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70">
+              <button onClick={() => setSavingMealSlot(null)} aria-label={tr("Fermer")} className="text-(--ep-ink)/40 hover:text-(--ep-ink)/70">
                 <X size={16} />
               </button>
             </div>
-            <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
+            <p className="text-[11px] text-(--ep-ink)/40 mb-3 leading-relaxed">
               {tr("Donne-lui un nom pour le retrouver et le reloguer en un tap la prochaine fois.")}
             </p>
             <input
@@ -2404,7 +2404,7 @@ export default function ClientNutritionView({
             <button
               onClick={handleSaveSlotAsMeal}
               disabled={savingMealBusy || !savingMealName.trim()}
-              className="w-full mt-4 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors"
+              className="w-full mt-4 py-2.5 text-xs font-bold uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-40 text-(--ep-strong) rounded-lg transition-colors"
             >
               {savingMealBusy ? "…" : tr("Enregistrer")}
             </button>
@@ -2424,18 +2424,18 @@ export default function ClientNutritionView({
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm"
             onClick={() => setShowCreateModal(false)}
           />
-          <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+          <div className="ep-modal-panel relative w-full sm:max-w-md bg-(--ep-s2) border border-(--ep-line)/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-5">
-              <p className="text-xs font-bold uppercase tracking-widest text-white">
+              <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong)">
                 {tr("Créer un aliment")}
               </p>
               <button
                 onClick={() => setShowCreateModal(false)}
                 aria-label={tr("Fermer")}
-                className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                className="text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
               >
                 <X size={16} />
               </button>
@@ -2443,7 +2443,7 @@ export default function ClientNutritionView({
 
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                   {tr("Nom *")}
                 </label>
                 <input
@@ -2456,7 +2456,7 @@ export default function ClientNutritionView({
                 />
               </div>
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                   {tr("Catégorie")}
                 </label>
                 <select aria-label={tr("Catégorie")}
@@ -2482,7 +2482,7 @@ export default function ClientNutritionView({
                   { key: "fibers_per_100", label: tr("Fibres/100g") },
                 ].map(({ key, label }) => (
                   <div key={key}>
-                    <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                       {label}
                     </label>
                     <input
@@ -2510,14 +2510,14 @@ export default function ClientNutritionView({
             <div className="flex gap-2 mt-5">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
+                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/60 hover:text-(--ep-ink)/80 transition-colors"
               >
                 {tr("Annuler")}
               </button>
               <button
                 onClick={handleCreateFood}
                 disabled={creating}
-                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg disabled:opacity-50 transition-colors"
               >
                 {creating ? tr("Création…") : tr("Créer")}
               </button>
@@ -2530,30 +2530,30 @@ export default function ClientNutritionView({
       {showQuickAddModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-(--ep-shade)/75 backdrop-blur-sm"
             onClick={() => setShowQuickAddModal(false)}
           />
-          <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-amber-500/30 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+          <div className="ep-modal-panel relative w-full sm:max-w-md bg-(--ep-s2) border border-amber-500/30 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5">
+              <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong) flex items-center gap-1.5">
                 <Zap size={12} className="text-amber-400" />
                 {tr("Ajout rapide")}
               </p>
               <button
                 onClick={() => setShowQuickAddModal(false)}
                 aria-label={tr("Fermer")}
-                className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                className="text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
               >
                 <X size={16} />
               </button>
             </div>
-            <p className="text-[10px] text-[#F5EDED]/35 mb-5">
+            <p className="text-[10px] text-(--ep-ink)/35 mb-5">
               {tr("Au resto, pas le temps de chercher l'aliment exact ? Indique juste les calories (et les macros si tu les connais), ça compte direct dans ton suivi.")}
             </p>
 
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                   {tr("Nom (optionnel)")}
                 </label>
                 <input
@@ -2573,7 +2573,7 @@ export default function ClientNutritionView({
                   { key: "fats", label: tr("Lipides (g)") },
                 ].map(({ key, label }) => (
                   <div key={key}>
-                    <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5 block">
                       {label}
                     </label>
                     <input
@@ -2598,7 +2598,7 @@ export default function ClientNutritionView({
             <div className="flex gap-2 mt-5">
               <button
                 onClick={() => setShowQuickAddModal(false)}
-                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
+                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 rounded-lg text-(--ep-ink)/60 hover:text-(--ep-ink)/80 transition-colors"
               >
                 {tr("Annuler")}
               </button>
@@ -2935,7 +2935,7 @@ function DietPlanCard({
   const doneCount = Object.values(checkedMap).filter(Boolean).length;
 
   return (
-    <div className="bg-[#1f0101] border border-[#E01E1E]/30 rounded-xl overflow-hidden mb-6">
+    <div className="bg-(--ep-s1) border border-(--ep-accent)/30 rounded-xl overflow-hidden mb-6">
       <div
         className="flex items-center justify-between px-4 py-3 cursor-pointer"
         onClick={() => setExpanded((e) => !e)}
@@ -2945,24 +2945,24 @@ function DietPlanCard({
         aria-expanded={expanded}
       >
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-accent)/70 mb-0.5">
             {isOwnPlan ? tr("Mon plan") : tr("Plan de ton coach")}
             {/* Sur le total des items VISIBLES (variante affichée par créneau),
                 pas dayMeals.length qui compte aussi les items des options
                 masquées — sinon "6/12 cochés" alors que les 6 items affichés
                 sont tous cochés, cf. le fix checkedMap ci-dessus. */}
             {checkable && visibleMeals.length > 0 && (
-              <span className="ml-2 text-[#F5EDED]/30 font-normal">
+              <span className="ml-2 text-(--ep-ink)/30 font-normal">
                 {doneCount}/{visibleMeals.length}{" "}{tr("cochés")}
               </span>
             )}
           </p>
-          <p className="text-sm font-black text-white">{plan.name}</p>
+          <p className="text-sm font-black text-(--ep-strong)">{plan.name}</p>
         </div>
         {expanded ? (
-          <ChevronUp size={14} className="text-[#F5EDED]/30" />
+          <ChevronUp size={14} className="text-(--ep-ink)/30" />
         ) : (
-          <ChevronDown size={14} className="text-[#F5EDED]/30" />
+          <ChevronDown size={14} className="text-(--ep-ink)/30" />
         )}
       </div>
 
@@ -2976,12 +2976,12 @@ function DietPlanCard({
                 onClick={(e) => { e.stopPropagation(); setViewDow(d); }}
                 className={`flex-shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-colors ${
                   active
-                    ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                    : "border-[#890404]/25 text-[#F5EDED]/35"
+                    ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+                    : "border-(--ep-line)/25 text-(--ep-ink)/35"
                 }`}
               >
                 {DOW_LABELS[d]}
-                {d === todayDow && <span className="ml-1 text-[#E01E1E]">•</span>}
+                {d === todayDow && <span className="ml-1 text-(--ep-accent)">•</span>}
               </button>
             );
           })}
@@ -2989,7 +2989,7 @@ function DietPlanCard({
       )}
 
       {expanded && !isViewingToday && (
-        <p className="px-4 pt-2 text-[10px] text-[#F5EDED]/30 italic">
+        <p className="px-4 pt-2 text-[10px] text-(--ep-ink)/30 italic">
           {tr("Aperçu de")}{" "}{DOW_FULL_LABELS[viewDow]}{tr(", lecture seule, reviens sur")}{" "}{DOW_FULL_LABELS[todayDow]}{" "}{tr("pour cocher.")}
         </p>
       )}
@@ -3001,7 +3001,7 @@ function DietPlanCard({
             className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border transition-colors ${
               useHighDay
                 ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
-                : "border-[#890404]/25 text-[#F5EDED]/35"
+                : "border-(--ep-line)/25 text-(--ep-ink)/35"
             }`}
           >
             {tr("🔥 Aujourd'hui = jour high")}
@@ -3010,13 +3010,13 @@ function DietPlanCard({
       )}
 
       {expanded && dayMeals.length === 0 && isWeekly && (
-        <p className="px-4 pt-3 text-[10px] text-[#F5EDED]/25 italic">
+        <p className="px-4 pt-3 text-[10px] text-(--ep-ink)/25 italic">
           {tr("Aucun repas prévu pour aujourd'hui dans ce plan, jour libre ou off.")}
         </p>
       )}
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15 pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-(--ep-line)/15 pt-3">
           {MEAL_SLOTS.filter((slot) => bySlot[slot.key] && Object.keys(bySlot[slot.key]).length > 0).map((slot) => {
             // Variantes triées par numéro croissant, mais étiquetées par leur
             // POSITION (1, 2, 3...) plutôt que par leur variant_group brut —
@@ -3042,12 +3042,12 @@ function DietPlanCard({
               id={`diet-plan-slot-${slot.key}`}
               className={
                 highlightSlot === slot.key
-                  ? "-mx-2 px-2 py-1.5 rounded-xl border border-[#E01E1E]/40 animate-pulse-glow"
+                  ? "-mx-2 px-2 py-1.5 rounded-xl border border-(--ep-accent)/40 animate-pulse-glow"
                   : undefined
               }
             >
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40">
                   {slot.label}
                 </p>
                 {/* Bouton unique pour valider tout le repas (ou l'option
@@ -3079,7 +3079,7 @@ function DietPlanCard({
                       setValidatingSlot(null);
                     }}
                     disabled={isValidating}
-                    className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#4ade80] hover:text-[#6ee7a0] disabled:opacity-50 transition-colors"
+                    className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-(--ep-ok) hover:text-[#6ee7a0] disabled:opacity-50 transition-colors"
                   >
                     <Check size={11} strokeWidth={3} />
                     {isValidating ? tr("Validation…") : tr("Valider")}
@@ -3098,8 +3098,8 @@ function DietPlanCard({
                       }}
                       className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border transition-colors ${
                         i === activeVariantIndex
-                          ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                          : "border-[#890404]/25 text-[#F5EDED]/35"
+                          ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-strong)"
+                          : "border-(--ep-line)/25 text-(--ep-ink)/35"
                       }`}
                     >
                       {i === 0 ? tr("Choix habituel") : `Option ${i + 1}`}
@@ -3138,22 +3138,22 @@ function DietPlanCard({
                         <span
                           className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
                             isChecked
-                              ? "bg-[#E01E1E] border-[#E01E1E]"
-                              : "border-[#890404]/40 bg-transparent"
+                              ? "bg-(--ep-accent) border-(--ep-accent)"
+                              : "border-(--ep-line)/40 bg-transparent"
                           }`}
                         >
-                          {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
+                          {isChecked && <Check size={12} className="text-(--ep-strong)" strokeWidth={3} />}
                         </span>
                       )}
                       <div className="flex-1 flex items-center justify-between min-w-0">
                         <p
                           className={`text-xs font-medium truncate ${
-                            isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
+                            isChecked ? "text-(--ep-ink)/40 line-through" : "text-(--ep-strong)"
                           }`}
                         >
                           {m.foods?.name ?? tr("Aliment")}
                         </p>
-                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                        <p className="text-[10px] text-(--ep-ink)/35 flex-shrink-0 ml-2">
                           {m.quantity_g}g
                           {m.foods
                             ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
@@ -3223,7 +3223,7 @@ function MealSlotCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl overflow-hidden">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl overflow-hidden">
       <div
         className="flex items-center justify-between px-4 py-3 cursor-pointer"
         onClick={() => setExpanded((e) => !e)}
@@ -3234,12 +3234,12 @@ function MealSlotCard({
       >
         <div className="flex items-center gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-(--ep-strong) flex items-center gap-2">
               {label}
               {hasPhoto && <span className="text-purple-400 text-[9px] font-bold">📸</span>}
             </p>
             {logs.length > 0 && (
-              <p className="text-[10px] text-[#F5EDED]/35">
+              <p className="text-[10px] text-(--ep-ink)/35">
                 {fmt(totalCals)}{" "}{tr("kcal ·")}{" "}{logs.length}{" "}{tr("aliment")}
                 {logs.length > 1 ? "s" : ""}
               </p>
@@ -3253,7 +3253,7 @@ function MealSlotCard({
                 e.stopPropagation();
                 onSaveAsMeal();
               }}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-(--ep-ink)/25 hover:text-(--ep-accent) transition-colors"
               title={tr("Enregistrer ce repas pour le réutiliser en un tap")} aria-label={tr("Enregistrer ce repas pour le réutiliser en un tap")}
             >
               <Bookmark size={13} />
@@ -3263,7 +3263,7 @@ function MealSlotCard({
           <label
             onClick={(e) => e.stopPropagation()}
             className={`inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer ${
-              hasPhoto ? "text-purple-400" : "text-[#F5EDED]/20 hover:text-[#F5EDED]/50"
+              hasPhoto ? "text-purple-400" : "text-(--ep-ink)/20 hover:text-(--ep-ink)/50"
             }`}
             title={tr("Prendre une photo pour t'aider à loguer ce soir")}
           >
@@ -3280,33 +3280,33 @@ function MealSlotCard({
               e.stopPropagation();
               onAdd();
             }}
-            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors px-2 py-1"
+            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors px-2 py-1"
           >
             <Plus size={11} />
             {tr("Ajouter")}
           </button>
           {expanded ? (
-            <ChevronUp size={14} className="text-[#F5EDED]/30" />
+            <ChevronUp size={14} className="text-(--ep-ink)/30" />
           ) : (
-            <ChevronDown size={14} className="text-[#F5EDED]/30" />
+            <ChevronDown size={14} className="text-(--ep-ink)/30" />
           )}
         </div>
       </div>
 
       {expanded && logs.length > 0 && (
-        <div className="px-4 pb-3 space-y-1 border-t border-[#890404]/15">
+        <div className="px-4 pb-3 space-y-1 border-t border-(--ep-line)/15">
           {logs.map((log) => (
             <div
               key={log.id}
-              className="flex items-center justify-between py-2 border-b border-[#890404]/10 last:border-0"
+              className="flex items-center justify-between py-2 border-b border-(--ep-line)/10 last:border-0"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-white font-medium truncate">
+                <p className="text-xs text-(--ep-strong) font-medium truncate">
                   {log.foods?.name ?? tr("Aliment")}
                 </p>
-                <p className="text-[10px] text-[#F5EDED]/35">
+                <p className="text-[10px] text-(--ep-ink)/35">
                   {log.quantity_g}g ·{" "}
-                  <span className="text-[#E01E1E]/70">
+                  <span className="text-(--ep-accent)/70">
                     {fmt(log.calories ?? 0)}{" "}{tr("kcal")}
                   </span>{" "}
                   · P {fmt(log.proteins ?? 0)}g · G {fmt(log.carbs ?? 0)}g · L{" "}
@@ -3316,7 +3316,7 @@ function MealSlotCard({
               <button
                 onClick={() => onDelete(log.id)}
                 aria-label={tr("Supprimer ce repas logué")}
-                className="text-[#F5EDED]/20 hover:text-red-500 transition-colors ml-3 flex-shrink-0"
+                className="text-(--ep-ink)/20 hover:text-red-500 transition-colors ml-3 flex-shrink-0"
               >
                 <Trash2 size={12} />
               </button>

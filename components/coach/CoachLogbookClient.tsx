@@ -35,20 +35,20 @@ interface Props {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "#1f0101",
-    border: "1px solid rgba(137,4,4,0.4)",
+    backgroundColor: "var(--ep-s1)",
+    border: "1px solid rgba(var(--ep-line-rgb),0.4)",
     borderRadius: "8px",
-    color: "#F5EDED",
+    color: "var(--ep-ink)",
     fontSize: "11px",
   },
-  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
+  labelStyle: { color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: "10px" },
 };
 
-const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 9 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+    <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-3">
       {children}
     </p>
   );
@@ -87,9 +87,9 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
     : null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
           {t("7 derniers jours")}
         </p>
         {daysSinceLastSession != null && daysSinceLastSession > 2 && (
@@ -109,20 +109,20 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
           ];
           return (
             <div key={i} className="flex flex-col items-center gap-1">
-              <span className="text-[8px] text-[#F5EDED]/30 uppercase">
+              <span className="text-[8px] text-(--ep-ink)/30 uppercase">
                 {dayLabel}
               </span>
               <div
                 className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                   session
-                    ? "bg-[#E01E1E]/20 border border-[#E01E1E]/30"
-                    : "bg-[#890404]/10 border border-[#890404]/15"
+                    ? "bg-(--ep-accent)/20 border border-(--ep-accent)/30"
+                    : "bg-(--ep-line)/10 border border-(--ep-line)/15"
                 }`}
               >
                 {session ? (
-                  <CheckCircle2 size={14} className="text-[#E01E1E]" />
+                  <CheckCircle2 size={14} className="text-(--ep-accent)" />
                 ) : (
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#F5EDED]/15" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-(--ep-ink)/15" />
                 )}
               </div>
             </div>
@@ -132,21 +132,21 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
 
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center">
-          <p className="text-2xl font-black text-white">
+          <p className="text-2xl font-black text-(--ep-strong)">
             {recentSessions.length}
           </p>
-          <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
+          <p className="text-[9px] text-(--ep-ink)/30 uppercase tracking-wider">
             {t("Cette semaine")}
           </p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-black text-white">{sessions.length}</p>
-          <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
+          <p className="text-2xl font-black text-(--ep-strong)">{sessions.length}</p>
+          <p className="text-[9px] text-(--ep-ink)/30 uppercase tracking-wider">
             {t("Total sessions")}
           </p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-black text-white">
+          <p className="text-2xl font-black text-(--ep-strong)">
             {lastSession
               ? new Intl.DateTimeFormat("fr-FR", {
                   day: "numeric",
@@ -156,7 +156,7 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
                 )
               : "···"}
           </p>
-          <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
+          <p className="text-[9px] text-(--ep-ink)/30 uppercase tracking-wider">
             {t("Dernière")}
           </p>
         </div>
@@ -189,8 +189,8 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
 
   if (avgScores.length === 0) {
     return (
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
-        <p className="text-sm text-[#F5EDED]/40">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-8 text-center">
+        <p className="text-sm text-(--ep-ink)/40">
           {t("Les scores de standardisation apparaîtront ici")}
         </p>
       </div>
@@ -222,8 +222,8 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
         </div>
       )}
 
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
           {t("Score d'exécution moyen")}
         </p>
         <div className="h-48">
@@ -259,8 +259,8 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
                       entry.score < 3
                         ? "#ef4444"
                         : entry.score < 4
-                        ? "#fbbf24"
-                        : "#4ade80"
+                        ? "var(--ep-warn)"
+                        : "var(--ep-ok)"
                     }
                   />
                 ))}
@@ -313,7 +313,7 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
 
       {/* Tabs */}
       <div
-        className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto"
+        className="flex gap-1 mb-6 border-b border-(--ep-line)/20 overflow-x-auto"
         style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x", overscrollBehavior: "contain" }}
       >
         {tabs.map(({ key, label }) => (
@@ -322,8 +322,8 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
             onClick={() => setActiveTab(key)}
             className={`flex-shrink-0 whitespace-nowrap px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
               activeTab === key
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-(--ep-accent) border-b-2 border-(--ep-accent)"
+                : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             {label}
@@ -362,15 +362,15 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
         <div className="space-y-4">
           <SectionLabel>{t("Historique des séances")}</SectionLabel>
           {sessions.length === 0 ? (
-            <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
-              <Clock size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-sm text-[#F5EDED]/40 font-semibold mb-1">
+            <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-8 text-center">
+              <Clock size={24} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+              <p className="text-sm text-(--ep-ink)/40 font-semibold mb-1">
                 {t("Aucune séance enregistrée")}
               </p>
               {/* Item 40 : évite de laisser croire à un problème (logbook
                   cassé, séance perdue) quand c'est juste que le client n'a
                   encore rien validé lui-même. */}
-              <p className="text-xs text-[#F5EDED]/25 max-w-xs mx-auto leading-relaxed">
+              <p className="text-xs text-(--ep-ink)/25 max-w-xs mx-auto leading-relaxed">
                 {t("Se remplit automatiquement dès que le client valide une séance depuis son programme.")}
               </p>
             </div>

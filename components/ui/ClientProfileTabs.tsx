@@ -112,10 +112,10 @@ function InfoRow({
   const t = useT();
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
         {label}
       </span>
-      <span className="text-sm text-white font-medium">{value || t("Non renseigné")}</span>
+      <span className="text-sm text-(--ep-strong) font-medium">{value || t("Non renseigné")}</span>
     </div>
   );
 }
@@ -151,21 +151,21 @@ function IntakeWaitingState({
       <div className="flex flex-col items-center text-center py-6 px-2">
         <div
           className="flex items-center justify-center rounded-2xl mb-4"
-          style={{ width: 48, height: 48, background: "rgba(224,30,30,0.1)" }}
+          style={{ width: 48, height: 48, background: "rgba(var(--ep-accent-rgb),0.1)" }}
         >
-          <Hourglass size={20} className="text-[#E01E1E]" strokeWidth={1.8} />
+          <Hourglass size={20} className="text-(--ep-accent)" strokeWidth={1.8} />
         </div>
         {!isClientSubscribed ? (
           <>
-            <p className="text-sm font-black text-white mb-1.5">{t("Coaching pas encore activé")}</p>
-            <p className="text-xs text-[#F5EDED]/45 leading-relaxed max-w-xs">
+            <p className="text-sm font-black text-(--ep-strong) mb-1.5">{t("Coaching pas encore activé")}</p>
+            <p className="text-xs text-(--ep-ink)/45 leading-relaxed max-w-xs">
               {t("Active le coaching payant de")}{" "}{clientFirstName}{" "}{t("depuis l'onglet Profil pour débloquer son questionnaire d'onboarding. Il remplira alors sa fiche lui-même, en autonomie.")}
             </p>
           </>
         ) : (
           <>
-            <p className="text-sm font-black text-white mb-1.5">{t("En attente de")}{" "}{clientFirstName}</p>
-            <p className="text-xs text-[#F5EDED]/45 leading-relaxed max-w-xs mb-4">
+            <p className="text-sm font-black text-(--ep-strong) mb-1.5">{t("En attente de")}{" "}{clientFirstName}</p>
+            <p className="text-xs text-(--ep-ink)/45 leading-relaxed max-w-xs mb-4">
               {t("Son questionnaire d'onboarding n'est pas encore rempli. Sa fiche se complètera automatiquement dès qu'il le fera, tu pourras alors la consulter et la corriger ici.")}
             </p>
             <button
@@ -438,8 +438,8 @@ export default function ClientProfileTabs({
             onClick={() => setActiveTab(key)}
             className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
               activeTab === key
-                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
-                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/45 hover:border-[#890404]/40 hover:text-[#F5EDED]/70"
+                ? "bg-(--ep-accent)/12 border-(--ep-accent)/40 text-(--ep-accent)"
+                : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/45 hover:border-(--ep-line)/40 hover:text-(--ep-ink)/70"
             }`}
           >
             <Icon size={17} strokeWidth={activeTab === key ? 2.2 : 1.7} />
@@ -447,7 +447,7 @@ export default function ClientProfileTabs({
             {badge && (
               <span
                 className={`absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[8px] font-black ${
-                  badge.hasWarning ? "bg-[#E01E1E] text-white" : "bg-amber-500/90 text-black"
+                  badge.hasWarning ? "bg-(--ep-accent) text-(--ep-strong)" : "bg-amber-500/90 text-black"
                 }`}
               >
                 {badge.count}
@@ -505,7 +505,7 @@ export default function ClientProfileTabs({
                 )}
                 <div className="flex flex-wrap gap-1.5">
                   {intake.diet_type && (
-                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/60">
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/60">
                       {DIET_LABELS[intake.diet_type]}
                     </span>
                   )}
@@ -523,7 +523,7 @@ export default function ClientProfileTabs({
                 <button
                   type="button"
                   onClick={() => setActiveTab("intake")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                  className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
                 >
                   {t("Voir la fiche complète →")}
                 </button>
@@ -531,7 +531,7 @@ export default function ClientProfileTabs({
             </Card>
           ) : (
             <Card title={t("Fiche client : l'essentiel")}>
-              <p className="text-xs text-[#F5EDED]/40 mb-2">
+              <p className="text-xs text-(--ep-ink)/40 mb-2">
                 {client.subscription_status === "active"
                   ? t("En attente que le client remplisse son questionnaire d'onboarding. Objectifs, régime, blessures... tout ce qui sert ensuite dans le créateur de recette, de programme et de plan nutrition, se remplira automatiquement dès qu'il l'aura fait.")
                   : t("Active le coaching payant de ce client pour débloquer son questionnaire d'onboarding. C'est lui qui remplit sa fiche, pas toi.")}
@@ -539,7 +539,7 @@ export default function ClientProfileTabs({
               <button
                 type="button"
                 onClick={() => setActiveTab("intake")}
-                className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
               >
                 {t("Voir le statut →")}
               </button>
@@ -588,7 +588,7 @@ export default function ClientProfileTabs({
 
           {client.goal && (
             <Card title={t("Objectif")}>
-              <p className="text-sm text-[#F5EDED]/80 leading-relaxed">
+              <p className="text-sm text-(--ep-ink)/80 leading-relaxed">
                 {client.goal}
               </p>
             </Card>
@@ -596,20 +596,20 @@ export default function ClientProfileTabs({
 
           <Card title={t("Points & rang")}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-white">
+              <span className="text-sm font-bold text-(--ep-strong)">
                 {rank.emoji} {rank.label}
               </span>
-              <span className="text-xs text-[#F5EDED]/40">{points}{" "}{t("pts")}</span>
+              <span className="text-xs text-(--ep-ink)/40">{points}{" "}{t("pts")}</span>
             </div>
             {next && (
               <>
-                <div className="h-1.5 bg-[#890404]/15 rounded-full overflow-hidden mb-1.5">
+                <div className="h-1.5 bg-(--ep-line)/15 rounded-full overflow-hidden mb-1.5">
                   <div
-                    className="h-full rounded-full bg-[#E01E1E] transition-all"
+                    className="h-full rounded-full bg-(--ep-accent) transition-all"
                     style={{ width: `${Math.min(progressPct, 100)}%` }}
                   />
                 </div>
-                <p className="text-[10px] text-[#F5EDED]/35">
+                <p className="text-[10px] text-(--ep-ink)/35">
                   {t("Encore")}{" "}{next.minPoints - points}{" "}{t("pts avant")}{" "}{next.emoji} {next.label}
                 </p>
               </>
@@ -677,7 +677,7 @@ export default function ClientProfileTabs({
       */}
       {activeTab === "agenda" && (
         <div>
-          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+          <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-4">
             {t("Emploi du temps du client. Lecture seule, c'est lui qui le gère depuis son espace.")}
           </p>
           <WeeklyAgenda blocks={scheduleBlocks} editable={false} />
@@ -692,7 +692,7 @@ export default function ClientProfileTabs({
       */}
       {activeTab === "pas" && (
         <div>
-          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+          <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-4">
             {t("Suivi de pas du client. Lecture seule, c'est lui qui coche sa routine et logue ses pas au quotidien. L'objectif se règle depuis l'onglet Fiche client.")}
           </p>
           <StepsClient
@@ -713,7 +713,7 @@ export default function ClientProfileTabs({
       */}
       {activeTab === "sommeil" && (
         <div>
-          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+          <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-4">
             {t("Sommeil et récupération du client. Lecture seule, c'est lui qui logue ses données ou connecte sa bague Oura depuis son espace.")}
           </p>
           <TrackingClient logs={biometricLogs} insights={biometricInsights} ouraConnected={clientHasOura} readOnly />
@@ -728,7 +728,7 @@ export default function ClientProfileTabs({
       */}
       {activeTab === "mindset" && (
         <div>
-          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+          <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-4">
             {t("Profil mindset et habitudes du client. Lecture seule, c'est lui qui remplit son quiz et coche ses habitudes depuis son espace.")}
           </p>
           <CoachClientMindsetView profile={mindsetProfile} habitLogs={mindsetHabitLogs} />
@@ -745,10 +745,10 @@ export default function ClientProfileTabs({
       {activeTab === "roadmap" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">{t("Road Map client")}</p>
+            <p className="text-xs text-(--ep-ink)/40 uppercase tracking-widest font-semibold">{t("Road Map client")}</p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/roadmap`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
               <ExternalLink size={12} />
               {roadmapData ? t("Modifier") : t("Configurer")}
@@ -758,13 +758,13 @@ export default function ClientProfileTabs({
           {roadmapLoading ? (
             <Card>
               <div className="flex items-center justify-center py-8">
-                <p className="text-xs text-[#F5EDED]/40">{t("Chargement…")}</p>
+                <p className="text-xs text-(--ep-ink)/40">{t("Chargement…")}</p>
               </div>
             </Card>
           ) : roadmapError ? (
             <Card>
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-                <p className="text-xs text-[#F5EDED]/40">
+                <p className="text-xs text-(--ep-ink)/40">
                   {t("Impossible de vérifier si ce client a déjà une road map. Recharge la page avant de cliquer sur « Configurer », pour ne pas risquer d'en créer une en double.")}
                 </p>
               </div>
@@ -772,7 +772,7 @@ export default function ClientProfileTabs({
           ) : !roadmapData ? (
             <Card>
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-                <p className="text-xs text-[#F5EDED]/40">
+                <p className="text-xs text-(--ep-ink)/40">
                   {t("Clique sur « Configurer » pour créer la road map de ce client.")}
                 </p>
               </div>
@@ -780,7 +780,7 @@ export default function ClientProfileTabs({
           ) : (
             <div className="space-y-4">
               <Card title={t("Période")}>
-                <p className="text-sm text-white font-medium">
+                <p className="text-sm text-(--ep-strong) font-medium">
                   {formatDate(roadmapData.roadmap.start_date)} → {formatDate(roadmapData.roadmap.end_date)}
                 </p>
               </Card>
@@ -799,7 +799,7 @@ export default function ClientProfileTabs({
                           <span className="text-sm font-semibold" style={{ color: colors.solid }}>
                             {colors.icon} {phase.label}
                           </span>
-                          <span className="text-xs text-[#F5EDED]/40">
+                          <span className="text-xs text-(--ep-ink)/40">
                             {formatDate(phase.start_date)} → {formatDate(phase.end_date)}
                           </span>
                         </div>
@@ -817,18 +817,18 @@ export default function ClientProfileTabs({
                         key={obj.id}
                         className="flex items-center justify-between rounded-lg px-3 py-2"
                         style={{
-                          background: "rgba(0,0,0,0.2)",
-                          border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.15)"}`,
+                          background: "rgba(var(--ep-shade-rgb),0.2)",
+                          border: `1px solid ${obj.is_achieved ? "rgba(var(--ep-ok-rgb),0.3)" : "rgba(var(--ep-accent-rgb),0.15)"}`,
                         }}
                       >
                         <span
                           className="text-sm font-semibold"
-                          style={{ color: obj.is_achieved ? "#4ade80" : OBJECTIVE_TERM_COLORS[obj.term] }}
+                          style={{ color: obj.is_achieved ? "var(--ep-ok)" : OBJECTIVE_TERM_COLORS[obj.term] }}
                         >
                           {obj.is_achieved ? "✓ " : ""}{obj.label}
                           {obj.target_value ? ` : ${obj.target_value}${obj.target_unit ?? ""}` : ""}
                         </span>
-                        <span className="text-xs text-[#F5EDED]/40">{formatDate(obj.target_date)}</span>
+                        <span className="text-xs text-(--ep-ink)/40">{formatDate(obj.target_date)}</span>
                       </div>
                     ))}
                   </div>
@@ -958,7 +958,7 @@ export default function ClientProfileTabs({
       <div hidden={activeTab !== "checkins"}>
         <div>
           <div className="flex items-start justify-between mb-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-(--ep-ink)/40 uppercase tracking-widest font-semibold">
               {checkinsWithAverages.length}{" "}{t("check-in")}{checkinsWithAverages.length !== 1 ? "s" : ""}
               {pendingCheckins > 0 && (
                 <span className="ml-2 text-amber-400 font-semibold normal-case tracking-normal">
@@ -972,10 +972,10 @@ export default function ClientProfileTabs({
 
           {checkinsWithAverages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
+              <p className="text-sm font-semibold text-(--ep-ink)/40 uppercase tracking-widest">
                 {t("Aucun check-in pour l'instant")}
               </p>
-              <p className="text-xs text-[#F5EDED]/25 mt-1">
+              <p className="text-xs text-(--ep-ink)/25 mt-1">
                 {t("Le client n'a pas encore soumis de bilan hebdomadaire.")}
               </p>
             </div>

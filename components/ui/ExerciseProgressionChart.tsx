@@ -17,16 +17,16 @@ import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "#1f0101",
-    border: "1px solid rgba(137,4,4,0.4)",
+    backgroundColor: "var(--ep-s1)",
+    border: "1px solid rgba(var(--ep-line-rgb),0.4)",
     borderRadius: "8px",
-    color: "#F5EDED",
+    color: "var(--ep-ink)",
     fontSize: "11px",
   },
-  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
+  labelStyle: { color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: "10px" },
 };
 
-const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 9 };
 
 // Per-exercise weight progression chart, built straight from session_sets —
 // covers every exercise ever logged, not just the ones with a recorded PR.
@@ -46,9 +46,9 @@ export default function ExerciseProgressionChart({
 
   if (allExerciseNames.length === 0) {
     return (
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
-        <TrendingUp size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-sm text-[#F5EDED]/40">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-8 text-center">
+        <TrendingUp size={24} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
+        <p className="text-sm text-(--ep-ink)/40">
           {t("Tes performances par exercice apparaîtront ici après ta première séance")}
         </p>
       </div>
@@ -122,7 +122,7 @@ export default function ExerciseProgressionChart({
     });
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5">
       {/* Sélecteur d'exercice — avant, une simple liste de pastilles qui
           coupait les noms longs ("BARRE AU FRONT (SKULL CRUSHER)" devenait
           illisible une fois entourée de dizaines d'autres pastilles). De
@@ -142,8 +142,8 @@ export default function ExerciseProgressionChart({
                 textAlign: "left",
                 padding: "10px 12px",
                 borderRadius: 10,
-                background: isActive ? "rgba(224,30,30,0.12)" : "#150000",
-                border: `1px solid ${isActive ? "rgba(224,30,30,0.4)" : "rgba(137,4,4,0.2)"}`,
+                background: isActive ? "rgba(var(--ep-accent-rgb),0.12)" : "var(--ep-s2)",
+                border: `1px solid ${isActive ? "rgba(var(--ep-accent-rgb),0.4)" : "rgba(var(--ep-line-rgb),0.2)"}`,
                 transition: "background 0.15s, border-color 0.15s",
               }}
             >
@@ -155,7 +155,7 @@ export default function ExerciseProgressionChart({
                   letterSpacing: "0.02em",
                   textTransform: "uppercase",
                   lineHeight: 1.35,
-                  color: isActive ? "#E01E1E" : "rgba(245,237,237,0.55)",
+                  color: isActive ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.55)",
                 }}
               >
                 {ex}
@@ -170,17 +170,17 @@ export default function ExerciseProgressionChart({
         <div className="flex items-center gap-3 mb-4 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
           <Trophy size={14} className="text-amber-400" />
           <div>
-            <p className="text-[9px] text-[#F5EDED]/35 uppercase tracking-wider">{t("PR")}</p>
-            <p className="text-lg font-black text-white">
+            <p className="text-[9px] text-(--ep-ink)/35 uppercase tracking-wider">{t("PR")}</p>
+            <p className="text-lg font-black text-(--ep-strong)">
               {bestRecord.weight_kg}{" "}{t("kg")}
               {bestRecord.reps && (
-                <span className="text-sm font-normal text-[#F5EDED]/40 ml-1.5">
+                <span className="text-sm font-normal text-(--ep-ink)/40 ml-1.5">
                   × {bestRecord.reps}{" "}{t("reps")}
                 </span>
               )}
             </p>
           </div>
-          <p className="ml-auto text-[9px] text-[#F5EDED]/35">
+          <p className="ml-auto text-[9px] text-(--ep-ink)/35">
             {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
               new Date(bestRecord.achieved_at + "T12:00:00")
             )}
@@ -192,7 +192,7 @@ export default function ExerciseProgressionChart({
       {isStagnant && (
         <div className="flex items-start gap-3 mb-4 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
           <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-[#F5EDED]/60 leading-relaxed">
+          <p className="text-xs text-(--ep-ink)/60 leading-relaxed">
             <span className="font-bold text-amber-400">{t("Charge stable depuis 4 séances")}</span>{" "}{t("sur cet exercice (")}{recentWindow[0].maxWeight}{" "}{t("kg). Une décharge (volume ou intensité réduits une semaine) peut aider à relancer la progression.")}
           </p>
         </div>
@@ -203,31 +203,31 @@ export default function ExerciseProgressionChart({
         <div className="h-40 mb-5">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.15)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--ep-line-rgb),0.15)" />
               <XAxis dataKey="date" tick={TICK_STYLE} axisLine={false} tickLine={false} />
               <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} domain={["auto", "auto"]} />
               <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [`${v} kg`, "Charge max"]} />
               {bestRecord && (
                 <ReferenceLine
                   y={bestRecord.weight_kg}
-                  stroke="#fbbf24"
+                  stroke="var(--ep-warn)"
                   strokeDasharray="4 4"
-                  label={{ value: "PR", fill: "#fbbf24", fontSize: 9 }}
+                  label={{ value: "PR", fill: "var(--ep-warn)", fontSize: 9 }}
                 />
               )}
               <Line
                 type="monotone"
                 dataKey="maxWeight"
-                stroke="#E01E1E"
+                stroke="var(--ep-accent)"
                 strokeWidth={2}
-                dot={{ fill: "#E01E1E", r: 3 }}
+                dot={{ fill: "var(--ep-accent)", r: 3 }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-[#F5EDED]/25 italic mb-5">
+        <p className="text-xs text-(--ep-ink)/25 italic mb-5">
           {t("Encore trop peu de séances sur cet exercice pour tracer une courbe.")}
         </p>
       )}
@@ -241,7 +241,7 @@ export default function ExerciseProgressionChart({
                 {["Date", "Charge", "Reps", "RIR réel", "Score tech."].map((h) => (
                   <th
                     key={h}
-                    className="text-[8px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pb-2 text-left pr-3"
+                    className="text-[8px] font-bold uppercase tracking-widest text-(--ep-ink)/30 pb-2 text-left pr-3"
                   >
                     {h}
                   </th>
@@ -250,12 +250,12 @@ export default function ExerciseProgressionChart({
             </thead>
             <tbody>
               {recentTableData.map((row, i) => (
-                <tr key={i} className="border-t border-[#890404]/10">
-                  <td className="py-2 pr-3 text-[#F5EDED]/60">{row.date}</td>
-                  <td className="py-2 pr-3 font-black text-white">
+                <tr key={i} className="border-t border-(--ep-line)/10">
+                  <td className="py-2 pr-3 text-(--ep-ink)/60">{row.date}</td>
+                  <td className="py-2 pr-3 font-black text-(--ep-strong)">
                     {row.weight != null ? `${row.weight} kg` : "-"}
                   </td>
-                  <td className="py-2 pr-3 text-[#F5EDED]/60">{row.reps ?? "-"}</td>
+                  <td className="py-2 pr-3 text-(--ep-ink)/60">{row.reps ?? "-"}</td>
                   <td className="py-2 pr-3">
                     {row.rir != null ? (
                       <span

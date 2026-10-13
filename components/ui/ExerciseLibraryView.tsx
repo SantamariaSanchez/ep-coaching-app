@@ -61,8 +61,8 @@ function youtubeSearchUrl(exerciseName: string): string {
 }
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60 transition-colors";
+const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 // ── Exercise form (create / edit) ───────────────────────────────────────────
 
@@ -160,7 +160,7 @@ function ExerciseForm({
   }
 
   return (
-    <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
+    <div className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>{tr("Nom de l'exercice")}</label>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("Ex. Développé incliné haltères")} aria-label={tr("Nom de l'exercice")} className={inputCls} />
@@ -241,8 +241,8 @@ function ExerciseForm({
       </div>
 
       {showVideoField && (
-        <div className="border-t border-[#890404]/15 pt-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+        <div className="border-t border-(--ep-line)/15 pt-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mb-2">
             {tr("Précisions pour la construction de programme (pas montré au client)")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -324,7 +324,7 @@ function ExerciseForm({
         <div>
           <label className={labelCls}>{tr("Vidéo d'exemple")}</label>
           <div className="flex items-center gap-2 mb-2">
-            <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#890404]/40 bg-black/20 text-xs text-[#F5EDED]/50 hover:border-[#890404]/60 hover:text-[#F5EDED]/75 cursor-pointer transition-colors">
+            <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-(--ep-line)/40 bg-(--ep-shade)/20 text-xs text-(--ep-ink)/50 hover:border-(--ep-line)/60 hover:text-(--ep-ink)/75 cursor-pointer transition-colors">
               <Video size={13} />
               {uploadingVideo ? tr("Envoi…") : tr("Uploader une vidéo")}
               <input
@@ -360,11 +360,11 @@ function ExerciseForm({
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-50 text-(--ep-strong) rounded-lg transition-colors"
         >
           {saving ? tr("Enregistrement…") : initial ? tr("Mettre à jour") : tr("Ajouter à la bibliothèque")}
         </button>
-        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-(--ep-line)/40 text-(--ep-ink)/50 hover:text-(--ep-ink)/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -415,30 +415,30 @@ function ExerciseCard({
   const statusAccent = hasLockedVideo
     ? "#f59e0b"
     : exercise.video_url
-    ? "#E01E1E"
-    : "rgba(245,237,237,0.12)";
+    ? "var(--ep-accent)"
+    : "rgba(var(--ep-ink-rgb),0.12)";
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden flex flex-col h-full">
+    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl overflow-hidden flex flex-col h-full">
       <div style={{ height: 3, background: statusAccent, opacity: 0.7 }} />
       <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-start gap-3 px-4 pt-3.5 pb-3 text-left flex-1">
-        <div className="w-9 h-9 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-(--ep-s2) border border-(--ep-line)/25 flex items-center justify-center flex-shrink-0">
           {hasLockedVideo ? (
             <Lock size={14} className="text-amber-400" />
           ) : exercise.video_url ? (
-            <PlayCircle size={16} className="text-[#E01E1E]" />
+            <PlayCircle size={16} className="text-(--ep-accent)" />
           ) : (
-            <Dumbbell size={15} className="text-[#F5EDED]/25" />
+            <Dumbbell size={15} className="text-(--ep-ink)/25" />
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white leading-snug">{exercise.name}</p>
+          <p className="text-sm font-bold text-(--ep-strong) leading-snug">{exercise.name}</p>
           <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
             {exercise.muscle_subgroup && (
-              <span className="text-[9px] font-semibold text-[#F5EDED]/35">{exercise.muscle_subgroup}</span>
+              <span className="text-[9px] font-semibold text-(--ep-ink)/35">{exercise.muscle_subgroup}</span>
             )}
             {exercise.equipment && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/20 text-(--ep-ink)/40">
                 {exercise.equipment}
               </span>
             )}
@@ -457,37 +457,37 @@ function ExerciseCard({
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
+        <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             {exercise.category && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/45">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/20 text-(--ep-ink)/45">
                 {CATEGORY_LABELS[exercise.category]}
               </span>
             )}
             {exercise.difficulty && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/45">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/20 text-(--ep-ink)/45">
                 {DIFFICULTY_LABELS[exercise.difficulty]}
               </span>
             )}
           </div>
 
           {exercise.instructions && (
-            <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{exercise.instructions}</p>
+            <p className="text-sm text-(--ep-ink)/60 leading-relaxed">{exercise.instructions}</p>
           )}
 
           {isCoach && (
             (exercise.position || exercise.freedom_of_movement || exercise.is_unilateral != null ||
               exercise.microloadable != null || exercise.easy_to_replicate || exercise.learning_difficulty ||
               exercise.stability_demand || exercise.accessibility) && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
-                {exercise.position && <p className="text-[10px] text-[#F5EDED]/40">{tr("Position")}{" "}<strong className="text-[#F5EDED]/70">{exercise.position}</strong></p>}
-                {exercise.freedom_of_movement && <p className="text-[10px] text-[#F5EDED]/40">{tr("Liberté mvt")}{" "}<strong className="text-[#F5EDED]/70">{exercise.freedom_of_movement}</strong></p>}
-                {exercise.is_unilateral != null && <p className="text-[10px] text-[#F5EDED]/40">{tr("Uni/Bi")}{" "}<strong className="text-[#F5EDED]/70">{exercise.is_unilateral ? tr("Uni") : tr("Bi")}</strong></p>}
-                {exercise.microloadable != null && <p className="text-[10px] text-[#F5EDED]/40">{tr("Microcharg.")}{" "}<strong className="text-[#F5EDED]/70">{exercise.microloadable ? tr("Oui") : tr("Non")}</strong></p>}
-                {exercise.easy_to_replicate && <p className="text-[10px] text-[#F5EDED]/40">{tr("Réplicable")}{" "}<strong className="text-[#F5EDED]/70">{exercise.easy_to_replicate}</strong></p>}
-                {exercise.learning_difficulty && <p className="text-[10px] text-[#F5EDED]/40">{tr("Apprentissage")}{" "}<strong className="text-[#F5EDED]/70">{exercise.learning_difficulty}</strong></p>}
-                {exercise.stability_demand && <p className="text-[10px] text-[#F5EDED]/40">{tr("Stabilité")}{" "}<strong className="text-[#F5EDED]/70">{exercise.stability_demand}</strong></p>}
-                {exercise.accessibility && <p className="text-[10px] text-[#F5EDED]/40">{tr("Accessibilité")}{" "}<strong className="text-[#F5EDED]/70">{exercise.accessibility}</strong></p>}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1 bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2.5">
+                {exercise.position && <p className="text-[10px] text-(--ep-ink)/40">{tr("Position")}{" "}<strong className="text-(--ep-ink)/70">{exercise.position}</strong></p>}
+                {exercise.freedom_of_movement && <p className="text-[10px] text-(--ep-ink)/40">{tr("Liberté mvt")}{" "}<strong className="text-(--ep-ink)/70">{exercise.freedom_of_movement}</strong></p>}
+                {exercise.is_unilateral != null && <p className="text-[10px] text-(--ep-ink)/40">{tr("Uni/Bi")}{" "}<strong className="text-(--ep-ink)/70">{exercise.is_unilateral ? tr("Uni") : tr("Bi")}</strong></p>}
+                {exercise.microloadable != null && <p className="text-[10px] text-(--ep-ink)/40">{tr("Microcharg.")}{" "}<strong className="text-(--ep-ink)/70">{exercise.microloadable ? tr("Oui") : tr("Non")}</strong></p>}
+                {exercise.easy_to_replicate && <p className="text-[10px] text-(--ep-ink)/40">{tr("Réplicable")}{" "}<strong className="text-(--ep-ink)/70">{exercise.easy_to_replicate}</strong></p>}
+                {exercise.learning_difficulty && <p className="text-[10px] text-(--ep-ink)/40">{tr("Apprentissage")}{" "}<strong className="text-(--ep-ink)/70">{exercise.learning_difficulty}</strong></p>}
+                {exercise.stability_demand && <p className="text-[10px] text-(--ep-ink)/40">{tr("Stabilité")}{" "}<strong className="text-(--ep-ink)/70">{exercise.stability_demand}</strong></p>}
+                {exercise.accessibility && <p className="text-[10px] text-(--ep-ink)/40">{tr("Accessibilité")}{" "}<strong className="text-(--ep-ink)/70">{exercise.accessibility}</strong></p>}
               </div>
             )
           )}
@@ -505,7 +505,7 @@ function ExerciseCard({
             )
           ) : (
             <div className="flex items-center gap-3 mt-2 flex-wrap">
-              <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/25">
+              <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/25">
                 <Video size={11} />{" "}{tr("Vidéo d'exécution à venir")}
               </p>
               <a
@@ -513,7 +513,7 @@ function ExerciseCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors"
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-ink)/40 hover:text-(--ep-accent) transition-colors"
               >
                 <PlayCircle size={12} />{" "}{tr("Chercher une démo")}
               </a>
@@ -521,10 +521,10 @@ function ExerciseCard({
           )}
 
           {isCoach && (
-            <div className="flex gap-2 pt-2 border-t border-[#890404]/10">
+            <div className="flex gap-2 pt-2 border-t border-(--ep-line)/10">
               <button
                 onClick={() => setEditing(true)}
-                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
               >
                 <Pencil size={11} />{" "}{tr("Modifier / ajouter la vidéo")}
               </button>
@@ -535,7 +535,7 @@ function ExerciseCard({
               ) : (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors ml-auto"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-red-400 transition-colors ml-auto"
                 >
                   <Trash2 size={11} />{" "}{tr("Supprimer")}
                 </button>
@@ -655,14 +655,14 @@ export default function ExerciseLibraryView({
             <div className="mt-3 pt-3 border-t border-amber-500/15 grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
               {missingVideoTop.map((ex) => (
                 <div key={ex.name} className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-[#F5EDED]/70 truncate">{ex.name}</span>
+                  <span className="text-xs text-(--ep-ink)/70 truncate">{ex.name}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-[10px] font-bold text-amber-300/70">×{ex.timesPrescribed}</span>
                     <a
                       href={youtubeSearchUrl(ex.name)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
+                      className="text-(--ep-ink)/30 hover:text-(--ep-accent) transition-colors"
                       title={tr("Chercher une démo")}
                     >
                       <PlayCircle size={12} />
@@ -677,7 +677,7 @@ export default function ExerciseLibraryView({
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -687,13 +687,13 @@ export default function ExerciseLibraryView({
         </div>
         <button
           onClick={() => setShowCreate((v) => !v)}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors flex-shrink-0"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) rounded-lg transition-colors flex-shrink-0"
         >
           <Plus size={13} /> {showCreate ? tr("Fermer") : tr("Créer un exercice")}
         </button>
       </div>
 
-      <p className="text-[10px] text-[#F5EDED]/25">
+      <p className="text-[10px] text-(--ep-ink)/25">
         {exercises.length}{" "}{tr("exercice")}{exercises.length !== 1 ? "s" : ""}{" "}{tr("dans la bibliothèque, enrichis-la en ajoutant les tiens.")}
       </p>
 
@@ -719,7 +719,7 @@ export default function ExerciseLibraryView({
         <button
           onClick={() => setActiveGroup(null)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-            activeGroup === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            activeGroup === null ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
           }`}
         >
           {tr("Tout (")}{exercises.length})
@@ -729,7 +729,7 @@ export default function ExerciseLibraryView({
             key={g}
             onClick={() => setActiveGroup(g)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeGroup === g ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              activeGroup === g ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {g} ({groupCounts[g]})
@@ -738,13 +738,13 @@ export default function ExerciseLibraryView({
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
-        <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mr-1">
+        <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mr-1">
           {tr("Matériel :")}
         </span>
         <button
           onClick={() => setActiveEquipmentType(null)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-            activeEquipmentType === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            activeEquipmentType === null ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
           }`}
         >
           {tr("Tout")}
@@ -754,7 +754,7 @@ export default function ExerciseLibraryView({
             key={t}
             onClick={() => setActiveEquipmentType(t)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeEquipmentType === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              activeEquipmentType === t ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {EQUIPMENT_TYPE_LABELS[t]} ({equipmentTypeCounts[t]})
@@ -764,13 +764,13 @@ export default function ExerciseLibraryView({
 
       {Object.keys(brandCounts).length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1">
-          <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mr-1">
+          <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mr-1">
             {tr("Marque :")}
           </span>
           <button
             onClick={() => setActiveBrand(null)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeBrand === null ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[#890404]/25 text-[#F5EDED]/40"
+              activeBrand === null ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-(--ep-line)/25 text-(--ep-ink)/40"
             }`}
           >
             {tr("Toutes")}
@@ -780,7 +780,7 @@ export default function ExerciseLibraryView({
               key={b}
               onClick={() => setActiveBrand(b)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                activeBrand === b ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[#890404]/25 text-[#F5EDED]/40"
+                activeBrand === b ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-(--ep-line)/25 text-(--ep-ink)/40"
               }`}
             >
               {b} ({brandCounts[b]})
@@ -793,7 +793,7 @@ export default function ExerciseLibraryView({
         {Object.entries(byGroup).map(([group, list]) => (
           <div key={group}>
             {!activeGroup && (
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2">{group}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-2">{group}</p>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ alignItems: "start" }}>
               {list.map((ex) => (
@@ -819,7 +819,7 @@ export default function ExerciseLibraryView({
           </div>
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{tr("Aucun exercice ne correspond à ta recherche.")}</p>
+          <p className="text-xs text-(--ep-ink)/25 italic text-center py-10">{tr("Aucun exercice ne correspond à ta recherche.")}</p>
         )}
       </div>
     </div>

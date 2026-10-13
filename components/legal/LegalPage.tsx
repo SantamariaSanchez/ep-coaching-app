@@ -20,7 +20,7 @@ export function Ul({ children }: { children: ReactNode }) {
 }
 
 export function Strong({ children }: { children: ReactNode }) {
-  return <strong style={{ color: "rgba(245,237,237,0.88)", fontWeight: 700 }}>{children}</strong>;
+  return <strong style={{ color: "rgba(var(--ep-ink-rgb),0.88)", fontWeight: 700 }}>{children}</strong>;
 }
 
 export function LegalPage({
@@ -54,7 +54,7 @@ export function LegalPage({
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            color: "rgba(245,237,237,0.45)",
+            color: "rgba(var(--ep-ink-rgb),0.45)",
             textDecoration: "none",
             fontSize: 12,
             fontWeight: 600,
@@ -79,14 +79,14 @@ export function LegalPage({
             fontWeight: 900,
             fontSize: "clamp(24px, 6vw, 34px)",
             letterSpacing: "-0.03em",
-            color: "#F5EDED",
+            color: "var(--ep-ink)",
             margin: "12px 0 6px",
             lineHeight: 1.1,
           }}
         >
           {title}
         </h1>
-        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.35)", marginBottom: 28, fontWeight: 500 }}>
+        <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.35)", marginBottom: 28, fontWeight: 500 }}>
           Dernière mise à jour : {lastUpdated}
         </p>
 
@@ -98,7 +98,7 @@ export function LegalPage({
               marginBottom: 28,
               fontSize: 13.5,
               lineHeight: 1.7,
-              color: "rgba(245,237,237,0.75)",
+              color: "rgba(var(--ep-ink-rgb),0.75)",
             }}
           >
             {intro}
@@ -112,7 +112,7 @@ export function LegalPage({
               fontWeight: 800,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: "rgba(245,237,237,0.3)",
+              color: "rgba(var(--ep-ink-rgb),0.3)",
               margin: "0 0 10px",
             }}
           >
@@ -121,7 +121,7 @@ export function LegalPage({
           <ol style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6 }}>
             {sections.map((s) => (
               <li key={s.id} style={{ fontSize: 12.5 }}>
-                <a href={`#${s.id}`} style={{ color: "rgba(245,237,237,0.6)", textDecoration: "none" }}>
+                <a href={`#${s.id}`} style={{ color: "rgba(var(--ep-ink-rgb),0.6)", textDecoration: "none" }}>
                   {s.title}
                 </a>
               </li>
@@ -141,14 +141,14 @@ export function LegalPage({
                 style={{
                   fontSize: 15,
                   fontWeight: 800,
-                  color: "#F5EDED",
+                  color: "var(--ep-ink)",
                   margin: "0 0 12px",
                   letterSpacing: "-0.01em",
                 }}
               >
                 {s.title}
               </h2>
-              <div style={{ fontSize: 13, lineHeight: 1.8, color: "rgba(245,237,237,0.62)" }}>
+              <div style={{ fontSize: 13, lineHeight: 1.8, color: "rgba(var(--ep-ink-rgb),0.62)" }}>
                 {s.body}
               </div>
             </section>
@@ -160,7 +160,7 @@ export function LegalPage({
             textAlign: "center",
             marginTop: 40,
             fontSize: 10.5,
-            color: "rgba(245,237,237,0.2)",
+            color: "rgba(var(--ep-ink-rgb),0.2)",
             fontWeight: 600,
           }}
         >

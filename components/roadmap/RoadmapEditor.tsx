@@ -10,6 +10,7 @@ import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { validateRoadmapInput } from "@/lib/roadmap-validation";
 import { addDaysIso, diffDaysIso, isValidIsoDate } from "@/lib/roadmap-weeks";
 import { todayInParis } from "@/lib/dates";
+import { withAlpha } from "@/lib/theme-color";
 
 // ── Local form types ──────────────────────────────────────────────────────────
 
@@ -50,10 +51,10 @@ const TERM_OPTIONS = [
 // ── Components ────────────────────────────────────────────────────────────────
 
 const inputStyle: React.CSSProperties = {
-  background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.15)",
+  background: "rgba(var(--ep-shade-rgb),0.4)",
+  border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
   borderRadius: 8,
-  color: "#F5EDED",
+  color: "var(--ep-ink)",
   padding: "10px 14px",
   fontSize: 13,
   width: "100%",
@@ -68,7 +69,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.2em",
   textTransform: "uppercase",
-  color: "rgba(224,30,30,0.7)",
+  color: "rgba(var(--ep-accent-rgb),0.7)",
   marginBottom: 6,
   display: "block",
 };
@@ -113,7 +114,7 @@ function PhaseCard({
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
+      background: "linear-gradient(135deg, var(--ep-s3) 0%, var(--ep-bg) 100%)",
       border: `1px solid ${colors.border}`,
       borderRadius: 12,
       padding: 16,
@@ -149,17 +150,17 @@ function PhaseCard({
               les pages "tout empilé") : label + dates, pour ne pas perdre le
               repère d'ensemble en refermant une phase déjà remplie. */}
           {!open && (
-            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+            <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
               {phase.label || colors.label}
               {phase.start_date && phase.end_date ? ` · ${phase.start_date} → ${phase.end_date}` : ""}
             </span>
           )}
-          <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: "auto", color: "rgba(245,237,237,0.3)", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }} />
+          <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: "auto", color: "rgba(var(--ep-ink-rgb),0.3)", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }} />
         </button>
         <button
           type="button"
           onClick={onDelete}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: 4, flexShrink: 0 }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--ep-accent-rgb),0.4)", padding: 4, flexShrink: 0 }}
           title={tr("Supprimer la phase")}
           aria-label={tr("Supprimer la phase")}
         >
@@ -253,8 +254,8 @@ function ObjectiveCard({
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
-      border: "1px solid rgba(224,30,30,0.15)",
+      background: "linear-gradient(135deg, var(--ep-s3) 0%, var(--ep-bg) 100%)",
+      border: "1px solid rgba(var(--ep-accent-rgb),0.15)",
       borderRadius: 12,
       padding: 16,
     }}>
@@ -269,20 +270,20 @@ function ObjectiveCard({
             background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left",
           }}
         >
-          <Target size={13} style={{ flexShrink: 0, color: OBJECTIVE_TERM_COLORS[obj.term] ?? "rgba(245,237,237,0.4)" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+          <Target size={13} style={{ flexShrink: 0, color: OBJECTIVE_TERM_COLORS[obj.term] ?? "rgba(var(--ep-ink-rgb),0.4)" }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
             {obj.label || typeConfig?.label || tr("Objectif")}
           </span>
           {obj.is_achieved && (
-            <span style={{ fontSize: 9, fontWeight: 800, color: "#4ade80", textTransform: "uppercase", flexShrink: 0 }}>{tr("✓ Atteint")}</span>
+            <span style={{ fontSize: 9, fontWeight: 800, color: "var(--ep-ok)", textTransform: "uppercase", flexShrink: 0 }}>{tr("✓ Atteint")}</span>
           )}
-          <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: "auto", color: "rgba(245,237,237,0.3)", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }} />
+          <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: "auto", color: "rgba(var(--ep-ink-rgb),0.3)", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }} />
         </button>
         <button
           type="button"
           onClick={onDelete}
           aria-label={tr("Supprimer l'objectif")}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: "0 4px", flexShrink: 0 }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--ep-accent-rgb),0.4)", padding: "0 4px", flexShrink: 0 }}
         >
           <Trash2 size={13} />
         </button>
@@ -300,9 +301,9 @@ function ObjectiveCard({
                   flex: 1,
                   padding: "6px 8px",
                   borderRadius: 6,
-                  border: `1px solid ${obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(224,30,30,0.15)"}`,
-                  background: obj.term === t.value ? `${OBJECTIVE_TERM_COLORS[t.value]}15` : "transparent",
-                  color: obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(245,237,237,0.3)",
+                  border: `1px solid ${obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(var(--ep-accent-rgb),0.15)"}`,
+                  background: obj.term === t.value ? `${withAlpha(OBJECTIVE_TERM_COLORS[t.value], "15")}` : "transparent",
+                  color: obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(var(--ep-ink-rgb),0.3)",
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.08em",
@@ -393,7 +394,7 @@ function ObjectiveCard({
                     // Heure de Paris : toISOString() donnait la veille entre 0 h et 2 h.
                     achieved_at: e.target.checked ? todayInParis() : null,
                   })}
-                  style={{ accentColor: "#4ade80" }}
+                  style={{ accentColor: "var(--ep-ok)" }}
                 />
                 {tr("Objectif atteint")}
               </label>
@@ -461,8 +462,8 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
             <div key={phase.localId} title={`${c.icon} ${phase.label}`} style={{
               width: `${width}%`, background: c.solid, opacity: 0.8,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 9, fontWeight: 700, color: "#fff", overflow: "hidden",
-              whiteSpace: "nowrap", borderRight: "1px solid rgba(0,0,0,0.2)",
+              fontSize: 9, fontWeight: 700, color: "var(--ep-strong)", overflow: "hidden",
+              whiteSpace: "nowrap", borderRight: "1px solid rgba(var(--ep-shade-rgb),0.2)",
             }}>
               {width > 8 ? `${c.icon}` : ""}
             </div>
@@ -474,7 +475,7 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
           title={tr("Aujourd'hui")}
           style={{
             position: "absolute", top: -3, bottom: -3, left: `${todayPct}%`,
-            width: 2, background: "#fff", boxShadow: "0 0 4px rgba(255,255,255,0.8)",
+            width: 2, background: "#fff", boxShadow: "0 0 4px rgba(var(--ep-hi-rgb),0.8)",
             pointerEvents: "none",
           }}
         />
@@ -669,8 +670,8 @@ export default function RoadmapEditor({
   if (loading) {
     return (
       <div>
-        <div style={{ animation: "shimmer 1.5s ease infinite", background: "#1A0101", borderRadius: 12, height: 40, marginBottom: 16 }} />
-        <div style={{ animation: "shimmer 1.5s ease infinite", background: "#1A0101", borderRadius: 12, height: 200 }} />
+        <div style={{ animation: "shimmer 1.5s ease infinite", background: "var(--ep-s3)", borderRadius: 12, height: 40, marginBottom: 16 }} />
+        <div style={{ animation: "shimmer 1.5s ease infinite", background: "var(--ep-s3)", borderRadius: 12, height: 200 }} />
       </div>
     );
   }
@@ -681,8 +682,8 @@ export default function RoadmapEditor({
     // enregistré par-dessus une road map qu'on n'a pas réussi à lire.
     return (
       <div role="alert" className="ep-card" style={{ padding: "20px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <AlertCircle size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
-        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: 0, flex: "1 1 220px" }}>
+        <AlertCircle size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+        <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.6, margin: 0, flex: "1 1 220px" }}>
           {tr("Impossible de charger la road map pour l'instant. Ne modifie rien avant de recharger : si une road map existe déjà, l'enregistrer maintenant l'écraserait.")}
         </p>
         <button
@@ -721,7 +722,7 @@ export default function RoadmapEditor({
     <>
       {/* Section 1 — Global dates */}
       <section style={{ marginBottom: 28 }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", marginBottom: 12 }}>
           <CalendarRange size={12} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
           {tr("Période globale")}
         </p>
@@ -746,7 +747,7 @@ export default function RoadmapEditor({
             </Field>
           </div>
           {startDate && endDate && (
-            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", fontWeight: 500 }}>
+            <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", fontWeight: 500 }}>
               📅 {durationLabel(startDate, endDate)}
             </p>
           )}
@@ -758,7 +759,7 @@ export default function RoadmapEditor({
           au-dessus, voir plus bas) */}
       {!hasRoadmap && showCalendar && startDate && endDate && (
         <section style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", marginBottom: 12 }}>
             {tr("Vue d'ensemble : les phases sur les mois et les semaines")}
           </p>
           <div className="ep-card" style={{ padding: 20 }}>
@@ -775,9 +776,9 @@ export default function RoadmapEditor({
       {/* Section 2 — Phases */}
       <section style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", margin: 0 }}>
             {tr("Phases d'entraînement")}
-            <span style={{ color: "rgba(245,237,237,0.3)", marginLeft: 8 }}>({phases.length})</span>
+            <span style={{ color: "rgba(var(--ep-ink-rgb),0.3)", marginLeft: 8 }}>({phases.length})</span>
           </p>
           <button onClick={addPhase} className="ep-btn-primary" style={{ fontSize: 12 }}>
             <Plus size={13} />{" "}{tr("Ajouter une phase")}
@@ -792,7 +793,7 @@ export default function RoadmapEditor({
 
         {phases.length === 0 && (
           <div className="ep-card" style={{ padding: 32, textAlign: "center" }}>
-            <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13 }}>
+            <p style={{ color: "rgba(var(--ep-ink-rgb),0.3)", fontSize: 13 }}>
               {tr("Aucune phase. Clique sur « Ajouter une phase »")}
             </p>
           </div>
@@ -822,10 +823,10 @@ export default function RoadmapEditor({
       {/* Section 3 — Objectives */}
       <section>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", margin: 0 }}>
             <Target size={12} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
             {tr("Objectifs")}
-            <span style={{ color: "rgba(245,237,237,0.3)", marginLeft: 8 }}>({objectives.length})</span>
+            <span style={{ color: "rgba(var(--ep-ink-rgb),0.3)", marginLeft: 8 }}>({objectives.length})</span>
           </p>
           <button onClick={addObjective} className="ep-btn-primary" style={{ fontSize: 12 }}>
             <Plus size={13} />{" "}{tr("Ajouter un objectif")}
@@ -834,7 +835,7 @@ export default function RoadmapEditor({
 
         {objectives.length === 0 && (
           <div className="ep-card" style={{ padding: 32, textAlign: "center" }}>
-            <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13 }}>
+            <p style={{ color: "rgba(var(--ep-ink-rgb),0.3)", fontSize: 13 }}>
               {tr("Aucun objectif défini")}
             </p>
           </div>
@@ -866,22 +867,22 @@ export default function RoadmapEditor({
           role={saveAttempted && issues.errors.length > 0 ? "alert" : undefined}
           style={{
             marginTop: 24,
-            background: issues.errors.length > 0 ? "rgba(224,30,30,0.07)" : "rgba(251,191,36,0.06)",
-            border: `1px solid ${issues.errors.length > 0 ? "rgba(224,30,30,0.25)" : "rgba(251,191,36,0.25)"}`,
+            background: issues.errors.length > 0 ? "rgba(var(--ep-accent-rgb),0.07)" : "rgba(var(--ep-warn-rgb),0.06)",
+            border: `1px solid ${issues.errors.length > 0 ? "rgba(var(--ep-accent-rgb),0.25)" : "rgba(var(--ep-warn-rgb),0.25)"}`,
             borderRadius: 10,
             padding: "12px 14px",
           }}
         >
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: issues.errors.length > 0 ? "#E01E1E" : "#fbbf24", margin: "0 0 8px", display: "flex", alignItems: "center", gap: 6 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: issues.errors.length > 0 ? "var(--ep-accent)" : "var(--ep-warn)", margin: "0 0 8px", display: "flex", alignItems: "center", gap: 6 }}>
             <AlertTriangle size={12} />
             {issues.errors.length > 0 ? tr("À corriger avant d'enregistrer") : tr("À vérifier (n'empêche pas d'enregistrer)")}
           </p>
           <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
             {issues.errors.map((m, i) => (
-              <li key={`e-${i}`} style={{ fontSize: 12.5, lineHeight: 1.5, color: "#FDC4C4", overflowWrap: "anywhere" }}>{m}</li>
+              <li key={`e-${i}`} style={{ fontSize: 12.5, lineHeight: 1.5, color: "var(--ep-pink)", overflowWrap: "anywhere" }}>{m}</li>
             ))}
             {issues.warnings.map((m, i) => (
-              <li key={`w-${i}`} style={{ fontSize: 12.5, lineHeight: 1.5, color: "rgba(251,191,36,0.85)", overflowWrap: "anywhere" }}>{m}</li>
+              <li key={`w-${i}`} style={{ fontSize: 12.5, lineHeight: 1.5, color: "rgba(var(--ep-warn-rgb),0.85)", overflowWrap: "anywhere" }}>{m}</li>
             ))}
           </ul>
         </div>
@@ -893,12 +894,12 @@ export default function RoadmapEditor({
           <div
             style={{
               display: "flex", alignItems: "center", gap: 8,
-              background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)",
+              background: "rgba(var(--ep-accent-rgb),0.08)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
               borderRadius: 8, padding: "10px 14px",
             }}
           >
-            <AlertCircle size={13} style={{ color: "#E01E1E", flexShrink: 0 }} />
-            <p style={{ margin: 0, fontSize: 12.5, color: "#FDC4C4" }}>{tr(saveError)}</p>
+            <AlertCircle size={13} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+            <p style={{ margin: 0, fontSize: 12.5, color: "var(--ep-pink)" }}>{tr(saveError)}</p>
           </div>
         )}
         <button onClick={handleSave} disabled={saving} className="ep-btn-primary" style={{ fontSize: 14, padding: "14px 32px" }}>
@@ -926,7 +927,7 @@ export default function RoadmapEditor({
 
           {showCalendar && startDate && endDate && (
             <section style={{ marginBottom: 28 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", marginBottom: 12 }}>
                 {tr("Ma roadmap : les phases sur les mois et les semaines")}
               </p>
               <div className="ep-card" style={{ padding: 20 }}>

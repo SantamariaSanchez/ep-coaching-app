@@ -18,8 +18,8 @@ export default function CoachShortcuts({ objectives, configured }: { objectives:
   const items = ALL.filter((i) => objectives.includes(i.key));
   if (!configured || items.length === 0) {
     return (
-      <Link href="/dashboard/coach/mon-appli" className="ep-card animate-fade-up" style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", marginBottom: 20, textDecoration: "none", color: "rgba(245,237,237,0.8)", fontSize: 13, fontWeight: 700 }}>
-        <SlidersHorizontal size={15} style={{ color: "#E01E1E" }} /> Dis-nous tes objectifs : ton accueil mettra en avant tes outils.
+      <Link href="/dashboard/coach/mon-appli" className="ep-card animate-fade-up" style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", marginBottom: 20, textDecoration: "none", color: "rgba(var(--ep-ink-rgb),0.8)", fontSize: 13, fontWeight: 700 }}>
+        <SlidersHorizontal size={15} style={{ color: "var(--ep-accent)" }} /> Dis-nous tes objectifs : ton accueil mettra en avant tes outils.
       </Link>
     );
   }
@@ -32,9 +32,9 @@ export default function CoachShortcuts({ objectives, configured }: { objectives:
             key={i.href}
             href={i.href}
             className="ep-card"
-            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 14px", textDecoration: "none", color: "#F5EDED", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 14px", textDecoration: "none", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}
           >
-            <Icon size={14} style={{ color: "#E01E1E" }} /> {i.label}
+            <Icon size={14} style={{ color: "var(--ep-accent)" }} /> {i.label}
           </Link>
         );
       })}

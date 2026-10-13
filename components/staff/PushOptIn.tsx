@@ -47,8 +47,8 @@ export default function PushOptIn() {
   if (state !== "prompt") return null;
   return (
     <div className="ep-card" style={{ padding: "12px 15px", display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-      <BellRing size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
-      <p style={{ flex: 1, fontSize: 12.5, color: "rgba(245,237,237,0.7)", margin: 0, lineHeight: 1.5 }}>
+      <BellRing size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+      <p style={{ flex: 1, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.7)", margin: 0, lineHeight: 1.5 }}>
         {t("Active les notifications pour être prévenu à la seconde d'un nouveau lead, d'un RDV booké ou d'un paiement reçu.")}
       </p>
       <button type="button" onClick={enable} disabled={busy} className="ep-btn-primary" style={{ height: 36, padding: "0 14px", fontSize: 11, flexShrink: 0 }}>

@@ -35,7 +35,7 @@ export default function StaffPasswordCard() {
     <form onSubmit={save} className="ep-card" style={{ padding: "16px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
       <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("Nouveau mot de passe")} aria-label={t("Nouveau mot de passe")} autoComplete="new-password" className="ep-input" />
       <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t("Confirme le mot de passe")} aria-label={t("Confirme le mot de passe")} autoComplete="new-password" className="ep-input" />
-      {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "#4ade80" : "#FDC4C4" }}>{message.text}</p>}
+      {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "var(--ep-ok)" : "var(--ep-pink)" }}>{message.text}</p>}
       <button type="submit" disabled={busy} className="ep-btn-primary" style={{ height: 42, fontSize: 12 }}>
         {busy ? t("Mise à jour...") : t("Changer mon mot de passe")}
       </button>

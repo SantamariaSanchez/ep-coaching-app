@@ -65,7 +65,7 @@ export default function ClientTasksView() {
   return (
     <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: "0 0 4px" }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", margin: "0 0 4px" }}>
           {tr("Coach")}
         </p>
         <h1 className="ep-h1" style={{ fontSize: 28 }}>{tr("Mes tâches")}</h1>
@@ -73,8 +73,8 @@ export default function ClientTasksView() {
 
       {pending.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 20px" }}>
-          <ClipboardList size={32} style={{ color: "rgba(224,30,30,0.3)", margin: "0 auto 12px" }} strokeWidth={1.5} />
-          <p style={{ color: "rgba(245,237,237,0.4)", fontSize: 13 }}>
+          <ClipboardList size={32} style={{ color: "rgba(var(--ep-accent-rgb),0.3)", margin: "0 auto 12px" }} strokeWidth={1.5} />
+          <p style={{ color: "rgba(var(--ep-ink-rgb),0.4)", fontSize: 13 }}>
             {tr("Aucune tâche en attente. 🎉")}
           </p>
         </div>
@@ -91,24 +91,24 @@ export default function ClientTasksView() {
                 gap: 12,
                 width: "100%",
                 textAlign: "left",
-                background: "linear-gradient(135deg,#1A0101 0%,#0D0000 100%)",
-                border: "1px solid rgba(224,30,30,0.25)",
+                background: "linear-gradient(135deg,var(--ep-s3) 0%,var(--ep-bg) 100%)",
+                border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
                 borderRadius: 14,
                 padding: "14px 16px",
                 cursor: "pointer",
               }}
             >
               <span style={{ fontSize: 20 }}>{task.icon}</span>
-              <span style={{ flex: 1, fontSize: 15, fontWeight: 700, color: "#F5EDED" }}>
+              <span style={{ flex: 1, fontSize: 15, fontWeight: 700, color: "var(--ep-ink)" }}>
                 {task.label}
               </span>
               {completing === task.id ? (
                 <div
                   className="animate-spin"
-                  style={{ width: 18, height: 18, border: "2px solid #E01E1E", borderTopColor: "transparent", borderRadius: "50%" }}
+                  style={{ width: 18, height: 18, border: "2px solid var(--ep-accent)", borderTopColor: "transparent", borderRadius: "50%" }}
                 />
               ) : (
-                <Circle size={20} style={{ color: "rgba(224,30,30,0.4)" }} strokeWidth={2} />
+                <Circle size={20} style={{ color: "rgba(var(--ep-accent-rgb),0.4)" }} strokeWidth={2} />
               )}
             </button>
           ))}
@@ -117,7 +117,7 @@ export default function ClientTasksView() {
 
       {done.length > 0 && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 12px" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.25)", margin: "0 0 12px" }}>
             {tr("Terminées")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -128,18 +128,18 @@ export default function ClientTasksView() {
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
-                  background: "rgba(0,0,0,0.2)",
-                  border: "1px solid rgba(74,222,128,0.15)",
+                  background: "rgba(var(--ep-shade-rgb),0.2)",
+                  border: "1px solid rgba(var(--ep-ok-rgb),0.15)",
                   borderRadius: 12,
                   padding: "10px 14px",
                   opacity: 0.6,
                 }}
               >
                 <span style={{ fontSize: 16 }}>{task.icon}</span>
-                <span style={{ flex: 1, fontSize: 13, color: "#F5EDED", textDecoration: "line-through" }}>
+                <span style={{ flex: 1, fontSize: 13, color: "var(--ep-ink)", textDecoration: "line-through" }}>
                   {task.label}
                 </span>
-                <CheckCircle2 size={16} style={{ color: "#4ade80" }} />
+                <CheckCircle2 size={16} style={{ color: "var(--ep-ok)" }} />
               </div>
             ))}
           </div>
