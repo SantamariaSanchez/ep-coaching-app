@@ -2,7 +2,8 @@
 
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { enforceRateLimit, checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { rewriteScriptWithVocabulary, spokenDuration, type RewriteOutput } from "@/lib/script-rewrite";
 import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
 import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus } from "@/lib/coach-ideation";
@@ -471,6 +472,137 @@ export async function publishScript(id: string): Promise<{ error?: string; succe
   });
   const { error } = await admin.from("coach_scripts").delete().eq("id", id).eq("coach_id", guard.userId);
   if (error) return { error: "Publication impossible, réessaie." };
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+// ── Réécriture avec le vocabulaire du dictionnaire (2026-10-13) ──────────
+// Retour direct : « il y a des mots dans les scripts actuels qui ne sont pas
+// dans le vocabulaire, mets-les à jour ». Un script à la fois (aperçu puis
+// « Garder ») ou tous ceux qui sortent du vocabulaire d'un coup (le Studio
+// enchaîne les appels et enregistre au fil de l'eau). L'ancienne version est
+// gardée dans previous_version quand la colonne existe (migration
+// 20261013c_script_previous_version.sql), sinon la réécriture passe quand
+// même.
+
+export type ScriptRewrite = RewriteOutput & { durationSeconds: number; sourceReference: string | null };
+
+async function resolveGuide(admin: ReturnType<typeof createAdminClient>, sourceReference: string | null, cta: string | null) {
+  const ref = (sourceReference ?? "").trim();
+  const legacy = ref.match(/^lead_magnets:(\d+)\s+(\S+)/);
+  const slug = legacy ? legacy[2] : ref;
+  const numberHint = legacy?.[1] ?? cta?.match(/comment\w*\s+(\d{3,4})\b/i)?.[1] ?? null;
+  type Guide = { slug: string; title: string; keyword: string | null };
+  let guide: Guide | null = null;
+  if (slug && /^[a-z0-9-]+$/.test(slug) && slug.includes("-")) {
+    const { data } = await admin.from("lead_magnets").select("slug, title, keyword").eq("slug", slug).eq("published", true).maybeSingle();
+    guide = (data as Guide | null) ?? null;
+  }
+  if (!guide && numberHint) {
+    const { data } = await admin.from("lead_magnets").select("slug, title, keyword").eq("keyword", numberHint).eq("published", true).maybeSingle();
+    guide = (data as Guide | null) ?? null;
+  }
+  return guide;
+}
+
+async function saveRewrite(
+  admin: ReturnType<typeof createAdminClient>,
+  coachId: string,
+  previous: { title: string; hook: string | null; content: string | null; cta: string | null; instagram_caption: string | null },
+  id: string,
+  rewrite: ScriptRewrite
+): Promise<string | null> {
+  const patch: Record<string, unknown> = {
+    title: rewrite.title,
+    hook: rewrite.hook || null,
+    content: rewrite.content,
+    cta: rewrite.cta || null,
+    instagram_caption: rewrite.caption || null,
+    duration_seconds: rewrite.durationSeconds,
+    updated_at: new Date().toISOString(),
+  };
+  if (rewrite.sourceReference) patch.source_reference = rewrite.sourceReference;
+  const withBackup = { ...patch, previous_version: { ...previous, saved_at: new Date().toISOString() } };
+  let { error } = await admin.from("coach_scripts").update(withBackup).eq("id", id).eq("coach_id", coachId);
+  if (error && /previous_version/.test(error.message)) {
+    ({ error } = await admin.from("coach_scripts").update(patch).eq("id", id).eq("coach_id", coachId));
+  }
+  return error ? error.message : null;
+}
+
+export async function rewriteScriptVocabulary(
+  id: string,
+  // quiet : pendant « Tout mettre à jour », pas de rechargement de la page
+  // à chaque script (80 rechargements du Studio), l'écran se met à jour seul.
+  opts: { save: boolean; quiet?: boolean }
+): Promise<{ error?: string; rewrite?: ScriptRewrite }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+  const limit = await checkRateLimit(`script-rewrite:${guard.userId}`, 200, 3600);
+  if (!limit.allowed) return { error: "Beaucoup de réécritures cette heure-ci, reprends dans un moment." };
+
+  const admin = createAdminClient();
+  const { data: script } = await admin
+    .from("coach_scripts")
+    .select("id, title, hook, content, cta, instagram_caption, platform, duration_seconds, source_reference")
+    .eq("id", id)
+    .eq("coach_id", guard.userId)
+    .maybeSingle();
+  if (!script) return { error: "Script introuvable." };
+  if (!script.content?.trim()) return { error: "Ce script est vide." };
+
+  const guide = await resolveGuide(admin, script.source_reference, script.cta);
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
+  const { output, error } = await rewriteScriptWithVocabulary({
+    platform: script.platform,
+    title: script.title,
+    hook: script.hook,
+    content: script.content,
+    cta: script.cta,
+    caption: script.instagram_caption,
+    durationSeconds: script.duration_seconds,
+    guideKeyword: guide?.keyword ?? null,
+    guideTitle: guide?.title ?? null,
+    guideUrl: guide ? `${base}/ressources/${guide.slug}` : null,
+  });
+  if (!output) return { error: error ?? "La réécriture n'a pas abouti." };
+
+  const isWritten = script.platform === "linkedin" || script.platform === "threads";
+  const rewrite: ScriptRewrite = {
+    ...output,
+    caption: isWritten ? (script.instagram_caption ?? "") : output.caption,
+    durationSeconds: isWritten ? (script.duration_seconds ?? 0) : spokenDuration(output.content, script.platform),
+    // Les anciennes références « lead_magnets:123 slug » passent au format
+    // actuel (le slug seul), celui que lit le suivi des leads par script.
+    sourceReference: guide?.slug ?? null,
+  };
+
+  if (opts.save) {
+    const saveError = await saveRewrite(admin, guard.userId, script, id, rewrite);
+    if (saveError) return { error: saveError };
+    if (!opts.quiet) revalidatePath("/dashboard/coach/studio");
+  }
+  return { rewrite };
+}
+
+export async function applyScriptRewrite(id: string, rewrite: ScriptRewrite): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+  if (!rewrite?.content?.trim() || !rewrite.title?.trim()) return { error: "Version vide." };
+  const admin = createAdminClient();
+  const { data: script } = await admin
+    .from("coach_scripts")
+    .select("title, hook, content, cta, instagram_caption")
+    .eq("id", id)
+    .eq("coach_id", guard.userId)
+    .maybeSingle();
+  if (!script) return { error: "Script introuvable." };
+  const saveError = await saveRewrite(admin, guard.userId, script, id, {
+    ...rewrite,
+    title: rewrite.title.trim().slice(0, 200),
+    durationSeconds: Math.max(0, Math.round(Number(rewrite.durationSeconds) || 0)),
+  });
+  if (saveError) return { error: saveError };
   revalidatePath("/dashboard/coach/studio");
   return { success: true };
 }

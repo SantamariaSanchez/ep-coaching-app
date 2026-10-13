@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw } from "lucide-react";
-import { createScript, updateScript, deleteScript, publishScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
+import { createScript, updateScript, deleteScript, publishScript, rewriteScriptVocabulary, applyScriptRewrite, type ScriptDeletionReason, type ScriptRewrite } from "@/app/dashboard/coach/studio/actions";
 import Teleprompter from "@/components/coach/Teleprompter";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
@@ -723,8 +723,96 @@ function MyScripts({
   const [deleteDetail, setDeleteDetail] = useState("");
   const [showDeleteDetailInput, setShowDeleteDetailInput] = useState(false);
 
+  // Réécriture avec le vocabulaire du dictionnaire (2026-10-13). Un script :
+  // aperçu, puis « Garder ». Tous : le Studio enchaîne (3 en parallèle) et
+  // enregistre au fil de l'eau, chaque carte se met à jour sous tes yeux.
+  const [rewriteBusyId, setRewriteBusyId] = useState<string | null>(null);
+  const [rewritePreview, setRewritePreview] = useState<{ id: string; rewrite: ScriptRewrite } | null>(null);
+  const [bulk, setBulk] = useState<{ done: number; total: number; failed: number; running: boolean } | null>(null);
+  const flaggedScripts = scripts.filter((s) => s.status !== "publie" && s.platform !== "instagram_carrousel" && scriptVocabularyIssues(s).length > 0);
+
+  function mergeRewrite(id: string, r: ScriptRewrite) {
+    setScripts((prev) => prev.map((s) => (s.id === id
+      ? { ...s, title: r.title, hook: r.hook || null, content: r.content, cta: r.cta || null, instagram_caption: r.caption || null, duration_seconds: r.durationSeconds || s.duration_seconds, source_reference: r.sourceReference ?? s.source_reference }
+      : s)));
+  }
+
+  async function previewRewrite(id: string) {
+    setRewriteBusyId(id);
+    setError(null);
+    const result = await rewriteScriptVocabulary(id, { save: false });
+    setRewriteBusyId(null);
+    if (result.error || !result.rewrite) {
+      setError(result.error ?? tr("La réécriture n'a pas abouti."));
+      return;
+    }
+    setRewritePreview({ id, rewrite: result.rewrite });
+  }
+
+  function keepRewrite() {
+    if (!rewritePreview) return;
+    const { id, rewrite } = rewritePreview;
+    const backup = scripts;
+    mergeRewrite(id, rewrite);
+    setRewritePreview(null);
+    startTransition(async () => {
+      const result = await applyScriptRewrite(id, rewrite);
+      if (result.error) {
+        setScripts(backup);
+        setError(result.error);
+      }
+    });
+  }
+
+  async function rewriteAllFlagged() {
+    const ids = flaggedScripts.map((s) => s.id);
+    if (!ids.length) return;
+    if (!window.confirm(tr("Réécrire tous les scripts qui sortent du vocabulaire ? Le sujet et les faits restent, seule la façon de le dire change. Garde l'appli ouverte pendant la mise à jour."))) return;
+    let done = 0;
+    let failed = 0;
+    setBulk({ done, total: ids.length, failed, running: true });
+    const queue = [...ids];
+    async function worker() {
+      while (queue.length) {
+        const id = queue.shift()!;
+        const result = await rewriteScriptVocabulary(id, { save: true, quiet: true }).catch(() => ({ error: "réseau" } as { error: string; rewrite?: ScriptRewrite }));
+        if (result.rewrite) mergeRewrite(id, result.rewrite);
+        else failed += 1;
+        done += 1;
+        setBulk({ done, total: ids.length, failed, running: queue.length > 0 || done < ids.length });
+      }
+    }
+    await Promise.all([worker(), worker(), worker()]);
+    setBulk({ done, total: ids.length, failed, running: false });
+  }
+
   return (
     <div>
+      {(flaggedScripts.length > 0 || bulk) && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "rgba(var(--ep-yellow-rgb),0.08)", border: "1px solid rgba(var(--ep-yellow-rgb),0.3)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
+          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.45, color: "rgba(var(--ep-ink-rgb),0.8)", flex: "1 1 220px" }}>
+            {bulk?.running
+              ? `${tr("Mise à jour en cours")} : ${bulk.done}/${bulk.total}${bulk.failed ? ` (${bulk.failed} ${tr("à refaire")})` : ""}. ${tr("Garde l'appli ouverte.")}`
+              : bulk && !bulk.running && flaggedScripts.length === 0
+                ? `✓ ${bulk.total - bulk.failed} ${tr("scripts remis au vocabulaire du dictionnaire.")}`
+                : `${flaggedScripts.length} ${flaggedScripts.length > 1 ? tr("scripts sortent du vocabulaire du dictionnaire (lien en bio, étude citée, jargon...).") : tr("script sort du vocabulaire du dictionnaire.")}`}
+          </p>
+          {!bulk?.running && flaggedScripts.length > 0 && (
+            <button
+              type="button"
+              onClick={rewriteAllFlagged}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, padding: "8px 14px", borderRadius: 999, border: "none", background: "var(--ep-yellow)", color: "var(--ep-bg)", fontWeight: 800, fontSize: 12, cursor: "pointer" }}
+            >
+              <Sparkles size={13} /> {tr("Tout mettre à jour")}
+            </button>
+          )}
+          {bulk?.running && (
+            <div aria-hidden style={{ flexBasis: "100%", height: 4, borderRadius: 999, background: "rgba(var(--ep-ink-rgb),0.1)", overflow: "hidden" }}>
+              <div style={{ width: `${Math.round((bulk.done / Math.max(1, bulk.total)) * 100)}%`, height: "100%", background: "var(--ep-yellow)", transition: "width 0.4s ease" }} />
+            </div>
+          )}
+        </div>
+      )}
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 14 }}>
         <button
           type="button"
@@ -1161,15 +1249,18 @@ function MyScripts({
                     padding: "3px 8px", borderRadius: 999, border: `1px solid ${withAlpha(statusInfo.color, "55")}`, color: statusInfo.color,
                   }}
                 >
-                  {statusInfo.label}
+                  {WRITTEN_PLATFORMS.has(script.platform) && script.status === "a_tourner" ? tr("À poster") : statusInfo.label}
                 </span>
                 {(() => {
-                  const action = STATUS_ACTIONS[script.status] ?? STATUS_ACTIONS.a_tourner;
-                  const Icon = script.status === "a_tourner" ? Clapperboard : script.status === "tourne" ? Send : RotateCcw;
+                  // Un post écrit (LinkedIn, Threads) ne se tourne pas : une
+                  // seule étape, « J'ai posté », qui le sort du Studio.
+                  const written = WRITTEN_PLATFORMS.has(script.platform) && script.status === "a_tourner";
+                  const action = written ? STATUS_ACTIONS.tourne : (STATUS_ACTIONS[script.status] ?? STATUS_ACTIONS.a_tourner);
+                  const Icon = written ? Send : script.status === "a_tourner" ? Clapperboard : script.status === "tourne" ? Send : RotateCcw;
                   return (
                     <button
                       type="button"
-                      onClick={() => cycleStatus(script.id, script.status)}
+                      onClick={() => cycleStatus(script.id, written ? "tourne" : script.status)}
                       title={STATUS_TITLES[script.status]}
                       className="transition-transform active:scale-95 hover:brightness-110"
                       style={{
@@ -1203,6 +1294,37 @@ function MyScripts({
               {isExpanded ? (
                 <>
               <VocabularyWarnings issues={scriptVocabularyIssues(script)} />
+              {scriptVocabularyIssues(script).length > 0 && rewritePreview?.id !== script.id && (
+                <button
+                  type="button"
+                  onClick={() => previewRewrite(script.id)}
+                  disabled={rewriteBusyId === script.id || !!bulk?.running}
+                  style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, padding: "8px 14px", borderRadius: 999, border: "1px solid rgba(var(--ep-yellow-rgb),0.5)", background: "rgba(var(--ep-yellow-rgb),0.12)", color: "var(--ep-yellow)", fontWeight: 800, fontSize: 12, cursor: rewriteBusyId === script.id ? "wait" : "pointer" }}
+                >
+                  <Sparkles size={13} /> {rewriteBusyId === script.id ? tr("Réécriture en cours...") : tr("Réécrire avec le vocabulaire")}
+                </button>
+              )}
+              {rewritePreview?.id === script.id && (
+                <div style={{ marginTop: 10, background: "rgba(var(--ep-ok-rgb),0.06)", border: "1px solid rgba(var(--ep-ok-rgb),0.3)", borderRadius: 10, padding: "10px 12px" }}>
+                  <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-ok)" }}>{tr("Nouvelle version (vocabulaire du dictionnaire)")}</p>
+                  <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{rewritePreview.rewrite.title}</p>
+                  <div style={{ maxHeight: "40vh", overflowY: "auto", whiteSpace: "pre-wrap", fontSize: 12.5, lineHeight: 1.6, color: "rgba(var(--ep-ink-rgb),0.85)" }}>{rewritePreview.rewrite.content}</div>
+                  {rewritePreview.rewrite.caption && !WRITTEN_PLATFORMS.has(script.platform) && (
+                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(var(--ep-ink-rgb),0.1)", whiteSpace: "pre-wrap", fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.6)" }}>{rewritePreview.rewrite.caption}</div>
+                  )}
+                  <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                    <button type="button" onClick={keepRewrite} style={{ minHeight: 40, padding: "8px 16px", borderRadius: 999, border: "none", background: "var(--ep-ok)", color: "var(--ep-bg)", fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>
+                      {tr("Garder cette version")}
+                    </button>
+                    <button type="button" onClick={() => previewRewrite(script.id)} disabled={rewriteBusyId === script.id} style={{ minHeight: 40, padding: "8px 14px", borderRadius: 999, border: "1px solid rgba(var(--ep-ink-rgb),0.18)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.7)", fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>
+                      {rewriteBusyId === script.id ? tr("Réécriture en cours...") : tr("Une autre version")}
+                    </button>
+                    <button type="button" onClick={() => setRewritePreview(null)} style={{ minHeight: 40, padding: "8px 14px", borderRadius: 999, border: "none", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>
+                      {tr("Annuler")}
+                    </button>
+                  </div>
+                </div>
+              )}
               {/* Script mot pour mot — retour direct 2026-09-02 : "le script
                   que je dois lire mot pour mot y'a pas encore" — c'était déjà
                   là en base, mais noyé sous la description Instagram et
