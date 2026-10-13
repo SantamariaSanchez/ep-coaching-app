@@ -9,6 +9,7 @@ import VolumeIntensitySection from "./VolumeIntensitySection";
 import MesocycleStatusBanner from "./MesocycleStatusBanner";
 import { accessoriesForSession } from "@/lib/session-accessories";
 import { Pencil, Plus, Backpack, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import ProgramExerciseList from "@/components/program-builder/ProgramExerciseList";
 
 export default function ClientProgramView({
   clientId,
@@ -145,43 +146,7 @@ export default function ClientProgramView({
                     {t("Aucun exercice")}
                   </p>
                 ) : (
-                  <div className="space-y-2">
-                    {day.exercises.map((ex) => (
-                      <div
-                        key={ex.id}
-                        className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5"
-                      >
-                        <p className="text-sm font-semibold text-white leading-tight">
-                          {ex.name}
-                        </p>
-                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-                          {ex.sets != null && ex.reps && (
-                            <span className="text-[10px] text-[#F5EDED]/50">
-                              {ex.sets} × {ex.reps}
-                            </span>
-                          )}
-                          {ex.rir !== null && (
-                            <span className="text-[10px] text-[#F5EDED]/50">
-                              {t("RIR")}{" "}{ex.rir}
-                            </span>
-                          )}
-                          {ex.rest_seconds != null && ex.rest_seconds > 0 && (
-                            <span className="text-[10px] text-[#F5EDED]/50">
-                              {ex.rest_seconds >= 60
-                                ? `${Math.floor(ex.rest_seconds / 60)}min`
-                                : `${ex.rest_seconds}s`}{" "}
-                              {t("repos")}
-                            </span>
-                          )}
-                        </div>
-                        {ex.notes && (
-                          <p className="text-[10px] text-[#F5EDED]/35 mt-1 italic">
-                            {ex.notes}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <ProgramExerciseList exercises={day.exercises} dayNotes={day.notes} />
                 )}
                 </>
                 )}

@@ -1,6 +1,13 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProgramInput, DayInput } from "@/utils/programs";
+import { foldSheetFieldsIntoNotes } from "@/lib/program-sheet";
+
+function isUnknownColumnError(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  if (error.code === "42703" || error.code === "PGRST204") return true;
+  return /does not exist|could not find the .* column/i.test(error.message ?? "");
+}
 
 // ── Modèles de programme réutilisables ──────────────────────────────────────
 // Même forme que programs/program_days/exercises (utils/programs.ts), mais
@@ -21,6 +28,11 @@ export interface ProgramTemplateExercise {
   muscle_group: string | null;
   muscle_subgroup: string | null;
   is_direct: boolean;
+  // Migration 20261013_program_sheet, voir lib/program-sheet.ts.
+  superset_group?: string | null;
+  reps_unit?: string | null;
+  technique?: string | null;
+  tempo?: string | null;
 }
 
 export interface ProgramTemplateDay {
@@ -28,6 +40,7 @@ export interface ProgramTemplateDay {
   template_id: string;
   day_label: string;
   position: number;
+  notes?: string | null;
   exercises: ProgramTemplateExercise[];
 }
 
@@ -168,21 +181,27 @@ export async function saveProgramTemplate(
     }
 
     if (input.days.length > 0) {
-      const { data: dayRows, error: daysError } = await supabase
+      const dayBase = input.days.map((day, i) => ({
+        template_id: id,
+        day_label: day.day_label || `Séance ${i + 1}`,
+        position: i,
+      }));
+      let { data: dayRows, error: daysError } = await supabase
         .from("program_template_days")
-        .insert(
-          input.days.map((day, i) => ({
-            template_id: id,
-            day_label: day.day_label || `Séance ${i + 1}`,
-            position: i,
-          }))
-        )
+        .insert(dayBase.map((d, i) => ({ ...d, notes: input.days[i].notes?.trim() || null })))
         .select();
+      if (daysError && isUnknownColumnError(daysError)) {
+        ({ data: dayRows, error: daysError } = await supabase.from("program_template_days").insert(dayBase).select());
+      }
       if (daysError || !dayRows) return { error: "Erreur lors de la création des séances." };
 
       const sortedDayRows = [...dayRows].sort((a, b) => a.position - b.position);
       const exerciseRows = input.days.flatMap((day, i) =>
         day.exercises.map((ex, j) => ({
+          superset_group: ex.superset_group || null,
+          reps_unit: ex.reps_unit && ex.reps_unit !== "reps" ? ex.reps_unit : null,
+          technique: ex.technique || null,
+          tempo: ex.tempo?.trim() || null,
           day_id: sortedDayRows[i].id,
           name: ex.name,
           sets: ex.sets,
@@ -198,7 +217,15 @@ export async function saveProgramTemplate(
       );
 
       if (exerciseRows.length > 0) {
-        const { error: exError } = await supabase.from("program_template_exercises").insert(exerciseRows);
+        let { error: exError } = await supabase.from("program_template_exercises").insert(exerciseRows);
+        if (exError && isUnknownColumnError(exError)) {
+          ({ error: exError } = await supabase.from("program_template_exercises").insert(
+            exerciseRows.map(({ superset_group, reps_unit, technique, tempo, ...row }) => ({
+              ...row,
+              notes: foldSheetFieldsIntoNotes({ notes: row.notes, superset_group, reps_unit, technique, tempo }),
+            }))
+          ));
+        }
         if (exError) return { error: "Erreur lors de l'ajout des exercices." };
       }
     }
@@ -240,7 +267,12 @@ export function programTemplateToInput(template: ProgramTemplateWithDays, nameOv
     coach_notes: template.notes,
     days: template.days.map((d) => ({
       day_label: d.day_label,
+      notes: d.notes ?? null,
       exercises: d.exercises.map((e) => ({
+        superset_group: e.superset_group ?? null,
+        reps_unit: e.reps_unit ?? null,
+        technique: e.technique ?? null,
+        tempo: e.tempo ?? null,
         name: e.name,
         sets: e.sets,
         reps: e.reps,

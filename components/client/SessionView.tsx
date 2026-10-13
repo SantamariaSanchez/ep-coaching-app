@@ -57,6 +57,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { SessionSetsBreakdown } from "@/components/ui/SessionHistoryCard";
 import { TENSION_FOCUS_LABELS } from "@/lib/exercise-library-content";
 import { getDeviceSettings } from "@/lib/device-settings";
+import { isLastOfSuperset, supersetLabels, techniqueHint, techniqueLabel, unitShort } from "@/lib/program-sheet";
 import {
   parseRepScheme,
   rangeForSet,
@@ -1152,7 +1153,7 @@ function SetRow({
             <span>
               {set.repsActual || "···"}
               <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
-                {tr("reps")}
+                {exercise.reps_unit === "sec" ? tr("s") : exercise.reps_unit === "m" ? tr("m") : tr("reps")}
               </span>
             </span>
             <span>
@@ -1287,7 +1288,7 @@ function SetRow({
             </div>
             <div className="flex-1 min-w-0">
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
-                {tr("Reps")}
+                {exercise.reps_unit === "sec" ? tr("Secondes") : exercise.reps_unit === "m" ? tr("Mètres") : tr("Reps")}
               </label>
               {/* Placeholder = la fourchette de CETTE série ("6-8"), plus
                   jamais le schéma complet du programme ("1x12-15, 2x10-12")
@@ -1444,6 +1445,8 @@ function SetRow({
 
 function ExerciseCard({
   exState,
+  supersetTag = null,
+  chainNextName = null,
   prevWeight,
   prevSets,
   getPrThreshold,
@@ -1462,6 +1465,10 @@ function ExerciseCard({
   onNotesChange,
 }: {
   exState: ExerciseState;
+  /** « A1 », « A2 »… quand l'exercice fait partie d'un superset du programme. */
+  supersetTag?: string | null;
+  /** Superset : exercice à enchaîner juste après celui-ci (null = repos). */
+  chainNextName?: string | null;
   prevWeight: PrevWeight | null;
   /** Tous les sets de la dernière fois, pas juste le dernier — voir InitData.prevSets. */
   prevSets: PrevWeight[];
@@ -1515,6 +1522,9 @@ function ExerciseCard({
   const programNotes = exState.exercise.notes?.trim() || null;
   const tensionFocus = exState.exercise.tension_focus;
   const tensionLabel = tensionFocus ? TENSION_FOCUS_LABELS[tensionFocus] ?? null : null;
+  const unit = unitShort(exState.exercise.reps_unit);
+  const technique = techniqueLabel(exState.exercise.technique);
+  const techniqueTip = techniqueHint(exState.exercise.technique);
   const [programNotesOpen, setProgramNotesOpen] = useState(false);
 
   return (
@@ -1528,6 +1538,9 @@ function ExerciseCard({
           className="min-w-0 flex-1 text-left"
         >
           <p className="text-sm font-black text-white flex items-center gap-1.5">
+            {supersetTag && (
+              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#E01E1E]/20 text-[#ff6b6b]">{supersetTag}</span>
+            )}
             {exState.exercise.name}
             {hasPR && <span title={tr("Record personnel sur cet exercice")}>🏆</span>}
           </p>
@@ -1545,6 +1558,14 @@ function ExerciseCard({
                 {tr("Focus :")}{" "}{tensionLabel}
               </span>
             )}
+            {technique && (
+              <span
+                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25"
+                title={techniqueTip ?? undefined}
+              >
+                {technique}
+              </span>
+            )}
             {!isCustomExercise && exState.exercise.sets && (
               <span className="text-[9px] text-[#F5EDED]/30">
                 {/* Fourchettes différentes selon la série : une par série
@@ -1553,18 +1574,19 @@ function ExerciseCard({
                     10-12 reps" (même pour un schéma écrit "3x10-12").
                     Schéma illisible : texte d'avant, tel quel. */}
                 {ranges && rangesDiffer ? (
-                  `${ranges.map(formatRange).join(" · ")} reps`
+                  `${ranges.map(formatRange).join(" · ")} ${unit}`
                 ) : ranges ? (
-                  `${exState.exercise.sets} séries × ${formatRange(ranges[0])} reps`
+                  `${exState.exercise.sets} séries × ${formatRange(ranges[0])} ${unit}`
                 ) : (
                   <>
                     {exState.exercise.sets}{" "}{tr("séries")}
-                    {exState.exercise.reps && ` × ${exState.exercise.reps} reps`}
+                    {exState.exercise.reps && ` × ${exState.exercise.reps} ${unit}`}
                   </>
                 )}
                 {exState.exercise.rir != null &&
                   ` · RIR ${exState.exercise.rir}`}
-                {restSeconds != null && restSeconds > 0 && ` · repos ${formatRest(restSeconds)}`}
+                {exState.exercise.tempo && ` · tempo ${exState.exercise.tempo}`}
+                {chainNextName ? " · sans repos" : restSeconds != null && restSeconds > 0 && ` · repos ${formatRest(restSeconds)}`}
               </span>
             )}
             <span
@@ -1662,6 +1684,19 @@ function ExerciseCard({
 
       {!exState.collapsed && (
       <>
+      {/* Superset : savoir tout de suite quoi enchaîner, sans chercher. */}
+      {(chainNextName || (supersetTag && !chainNextName)) && (
+        <p className="border-t border-[#890404]/20 px-4 py-2 text-[11px] text-[#ff8a8a] leading-snug">
+          {chainNextName
+            ? `${tr("Superset : enchaîne directement avec")} ${chainNextName}`
+            : tr("Fin du superset : prends ton repos, puis reviens au début du bloc.")}
+        </p>
+      )}
+      {techniqueTip && (
+        <p className="border-t border-[#890404]/20 px-4 py-2 text-[11px] text-amber-200/80 leading-snug">
+          <b className="text-amber-300">{technique} :</b> {tr(techniqueTip)}
+        </p>
+      )}
       {/* Consigne du programme : 2 lignes, dépliable au tap pour tout lire. */}
       {programNotes && (
         <button
@@ -2352,11 +2387,16 @@ export default function SessionView({
       // un exercice sans repos programmé (séance libre, exercice ajouté).
       const rir = set.rirActual ? parseInt(set.rirActual) : 2;
       const programmedRest = exercises[exIdx]?.exercise.rest_seconds;
+      // Superset : pas de vrai repos entre A1 et A2, juste le temps de
+      // changer de poste ; le repos programmé tombe après le dernier du bloc.
+      const ssGroups = exercises.map((e) => e.exercise.superset_group ?? null);
+      const chainTo = !isLastOfSuperset(ssGroups, exIdx) ? exercises[exIdx + 1]?.exercise.name ?? null : null;
       // Sans repos programmé : le repos par défaut choisi dans les
       // paramètres de l'appareil, sinon le barème automatique par RIR.
       const deviceRest = getDeviceSettings().restDefaultSeconds;
-      const suggested =
-        programmedRest != null && programmedRest > 0
+      const suggested = chainTo
+        ? { seconds: 15, label: `→ ${chainTo}` }
+        : programmedRest != null && programmedRest > 0
           ? { seconds: programmedRest, label: formatRest(programmedRest) }
           : deviceRest > 0
             ? { seconds: deviceRest, label: formatRest(deviceRest) }
@@ -2608,6 +2648,7 @@ export default function SessionView({
   // personal_records. Séance déjà terminée : ses propres records sont dans
   // prMap, on relit donc les drapeaux enregistrés (dédoublonnés).
   const sessionRecords = computeSessionRecords(exercises, initData?.prMap ?? {});
+  const supersetTagsForSession = supersetLabels(exercises.map((e) => e.exercise.superset_group ?? null));
   const sessionPRs = (
     initData?.session.is_completed ? recordsFromFlags(exercises) : [...sessionRecords.values()]
   ).map((r) => ({ exerciseName: r.exerciseName, weightKg: r.weightKg, reps: r.reps }));
@@ -3289,6 +3330,12 @@ export default function SessionView({
           <ExerciseCard
             key={exState.exercise.id}
             exState={exState}
+            supersetTag={supersetTagsForSession[exIdx] ?? null}
+            chainNextName={
+              exState.exercise.superset_group && !isLastOfSuperset(exercises.map((e) => e.exercise.superset_group ?? null), exIdx)
+                ? exercises[exIdx + 1]?.exercise.name ?? null
+                : null
+            }
             prevWeight={
               initData.prevWeights[exState.exercise.name.toLowerCase()] ?? null
             }

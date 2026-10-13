@@ -9,7 +9,7 @@ import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getSessionsThisWeekCount } from "@/utils/sessions";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { saveCurrentProgramAsTemplate } from "@/app/dashboard/coach/clients/[id]/program/actions";
-import ProgramEditor from "@/components/ui/ProgramEditor";
+import ProgramBuilder from "@/components/program-builder/ProgramBuilder";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
 import MesocycleStatusBanner from "@/components/ui/MesocycleStatusBanner";
@@ -70,16 +70,17 @@ export default async function CoachMonProgrammePage() {
           title={program && program.days.length > 0 ? t("Modifier mon programme") : t("Créer mon programme")}
           defaultOpen={!program || program.days.length === 0}
         >
-          <ProgramEditor
+          <ProgramBuilder
+            mode="self"
             clientId={user.id}
+            clientName="moi"
             program={program}
             saveProgram={saveOwnCoachProgram}
-            successRedirect="/dashboard/coach/moi/programme"
             templates={templates}
             saveAsTemplate={saveCurrentProgramAsTemplate}
-            templatesHref="/dashboard/coach/programmation"
-            subjectLabel="moi"
             scheduleBlocks={scheduleBlocks}
+            backHref="/dashboard/coach/moi/programme"
+            programHref="/dashboard/coach/moi/programme"
           />
         </CollapsibleSection>
       </div>

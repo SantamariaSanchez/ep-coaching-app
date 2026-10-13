@@ -12,6 +12,7 @@ import type { ProgramWithDays } from "@/utils/programs";
 import { accessoriesForSession } from "@/lib/session-accessories";
 import { useStartSession } from "@/hooks/useStartSession";
 import { Backpack, ExternalLink, ChevronDown, ChevronUp, Play } from "lucide-react";
+import ProgramExerciseList from "@/components/program-builder/ProgramExerciseList";
 
 // "À prévoir" (lib/session-accessories.ts) existait déjà dans la séance en
 // cours (SessionView.tsx, 2026-09-08) mais nulle part en amont — retour
@@ -155,35 +156,7 @@ export default function ProgramDaysGrid({
                 {day.exercises.length === 0 ? (
                   <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>{t("Aucun exercice")}</p>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {day.exercises.map((ex) => (
-                      <div key={ex.id} style={{ background: "rgba(0,0,0,0.35)", border: "1px solid rgba(137,4,4,0.2)", borderRadius: 12, padding: "11px 14px" }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: "0 0 6px", lineHeight: 1.3 }}>
-                          {ex.name}
-                        </p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
-                          {ex.sets != null && ex.reps && (
-                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>
-                              {ex.sets} × {ex.reps}
-                            </span>
-                          )}
-                          {ex.rir !== null && (
-                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{t("RIR")}{" "}{ex.rir}</span>
-                          )}
-                          {ex.rest_seconds != null && ex.rest_seconds > 0 && (
-                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-                              {ex.rest_seconds >= 60 ? `${Math.floor(ex.rest_seconds / 60)}min` : `${ex.rest_seconds}s`}{" "}{t("repos")}
-                            </span>
-                          )}
-                        </div>
-                        {ex.notes && (
-                          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)", marginTop: 6, fontStyle: "italic", lineHeight: 1.4 }}>
-                            {ex.notes}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <ProgramExerciseList exercises={day.exercises} dayNotes={day.notes} />
                 )}
               </>
             )}

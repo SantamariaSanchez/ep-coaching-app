@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { foldSheetFieldsIntoNotes } from "@/lib/program-sheet";
 
 // Décisions du coach propres à CET exercice DANS CETTE séance — distinctes
 // des attributs de classification de exercise_library (partagés par tous les
@@ -24,6 +25,12 @@ export interface Exercise {
   rom_notes?: string | null;
   availability_notes?: string | null;
   discomfort_notes?: string | null;
+  // Conception façon tableur (migration 20261013_program_sheet) — voir
+  // lib/program-sheet.ts. Absents tant que la migration n'est pas passée.
+  superset_group?: string | null;
+  reps_unit?: string | null;
+  technique?: string | null;
+  tempo?: string | null;
 }
 
 export interface ProgramDay {
@@ -36,6 +43,8 @@ export interface ProgramDay {
   // 20260807b_program_days_weekday — permet de placer la séance contre
   // l'agenda réel du client plutôt que de rester une étiquette abstraite.
   weekday?: number | null;
+  /** Consigne de séance (échauffement, cardio de fin...), migration 20261013. */
+  notes?: string | null;
 }
 
 export interface Program {
@@ -59,6 +68,8 @@ export interface Program {
   // historique inchangé.
   mesocycle_start_date?: string | null;
   mesocycle_weeks?: number | null;
+  /** Livraison au client (migration 20261013_program_sheet). */
+  delivered_at?: string | null;
 }
 
 export interface ProgramWithDays extends Program {
@@ -86,12 +97,17 @@ export interface ExerciseInput {
   rom_notes?: string | null;
   availability_notes?: string | null;
   discomfort_notes?: string | null;
+  superset_group?: string | null;
+  reps_unit?: string | null;
+  technique?: string | null;
+  tempo?: string | null;
 }
 
 export interface DayInput {
   day_label: string;
   exercises: ExerciseInput[];
   weekday?: number | null;
+  notes?: string | null;
 }
 
 export interface ProgramInput {
@@ -212,15 +228,26 @@ export async function saveProgramForClient(
       volume_targets: input.volume_targets ?? null,
     };
 
+    const mesoRow = {
+      ...designRow,
+      mesocycle_start_date: input.mesocycle_start_date ?? null,
+      mesocycle_weeks: input.mesocycle_weeks ?? null,
+    };
+
     let { data: program, error: programError } = await supabase
       .from("programs")
-      .insert({
-        ...designRow,
-        mesocycle_start_date: input.mesocycle_start_date ?? null,
-        mesocycle_weeks: input.mesocycle_weeks ?? null,
-      })
+      .insert({ ...mesoRow, delivered_at: new Date().toISOString() })
       .select()
       .single();
+
+    // Migration 20261013_program_sheet pas encore passée : sans delivered_at.
+    if (programError && isUnknownColumnError(programError)) {
+      ({ data: program, error: programError } = await supabase
+        .from("programs")
+        .insert(mesoRow)
+        .select()
+        .single());
+    }
 
     // Migration 20260923_program_mesocycle pas encore exécutée dans le SQL
     // Editor : on retombe sur la ligne de conception SANS le mésocycle
@@ -253,46 +280,65 @@ export async function saveProgramForClient(
     // autant d'allers-retours réseau que de lignes à créer — pour un
     // programme de plusieurs séances, l'activation prenait plusieurs
     // secondes et paraissait figée. Deux inserts groupés suffisent.
-    const { data: dayRows, error: daysError } = await supabase
+    const dayBase = input.days.map((day, i) => ({
+      program_id: program.id,
+      day_label: day.day_label || `Séance ${i + 1}`,
+      position: i,
+      weekday: day.weekday ?? null,
+    }));
+    let { data: dayRows, error: daysError } = await supabase
       .from("program_days")
-      .insert(
-        input.days.map((day, i) => ({
-          program_id: program.id,
-          day_label: day.day_label || `Séance ${i + 1}`,
-          position: i,
-          weekday: day.weekday ?? null,
-        }))
-      )
+      .insert(dayBase.map((d, i) => ({ ...d, notes: input.days[i].notes?.trim() || null })))
       .select();
+    if (daysError && isUnknownColumnError(daysError)) {
+      ({ data: dayRows, error: daysError } = await supabase.from("program_days").insert(dayBase).select());
+    }
 
     if (daysError || !dayRows) {
       return { error: "Erreur lors de la création des séances." };
     }
 
     const sortedDayRows = [...dayRows].sort((a, b) => a.position - b.position);
-    const exerciseRows = input.days.flatMap((day, i) =>
+    const baseExercises = input.days.flatMap((day, i) =>
       day.exercises.map((ex, j) => ({
-        day_id: sortedDayRows[i].id,
-        name: ex.name,
-        sets: ex.sets,
-        reps: ex.reps || null,
-        rir: ex.rir,
-        rest_seconds: ex.rest_seconds,
-        notes: ex.notes || null,
-        position: j,
-        muscle_group: ex.muscle_group || null,
-        muscle_subgroup: ex.muscle_subgroup || null,
-        is_direct: ex.is_direct,
-        tension_focus: ex.tension_focus || null,
-        resistance_notes: ex.resistance_notes?.trim() || null,
-        rom_notes: ex.rom_notes?.trim() || null,
-        availability_notes: ex.availability_notes?.trim() || null,
-        discomfort_notes: ex.discomfort_notes?.trim() || null,
+        row: {
+          day_id: sortedDayRows[i].id,
+          name: ex.name,
+          sets: ex.sets,
+          reps: ex.reps || null,
+          rir: ex.rir,
+          rest_seconds: ex.rest_seconds,
+          notes: ex.notes || null,
+          position: j,
+          muscle_group: ex.muscle_group || null,
+          muscle_subgroup: ex.muscle_subgroup || null,
+          is_direct: ex.is_direct,
+          tension_focus: ex.tension_focus || null,
+          resistance_notes: ex.resistance_notes?.trim() || null,
+          rom_notes: ex.rom_notes?.trim() || null,
+          availability_notes: ex.availability_notes?.trim() || null,
+          discomfort_notes: ex.discomfort_notes?.trim() || null,
+        },
+        sheet: {
+          superset_group: ex.superset_group || null,
+          reps_unit: ex.reps_unit && ex.reps_unit !== "reps" ? ex.reps_unit : null,
+          technique: ex.technique || null,
+          tempo: ex.tempo?.trim() || null,
+        },
       }))
     );
 
-    if (exerciseRows.length > 0) {
-      const { error: exError } = await supabase.from("exercises").insert(exerciseRows);
+    if (baseExercises.length > 0) {
+      let { error: exError } = await supabase
+        .from("exercises")
+        .insert(baseExercises.map((e) => ({ ...e.row, ...e.sheet })));
+      // Migration 20261013_program_sheet pas encore passée : superset,
+      // unité, technique et tempo partent dans la note plutôt que d'être perdus.
+      if (exError && isUnknownColumnError(exError)) {
+        ({ error: exError } = await supabase
+          .from("exercises")
+          .insert(baseExercises.map((e) => ({ ...e.row, notes: foldSheetFieldsIntoNotes({ notes: e.row.notes, ...e.sheet }) }))));
+      }
       if (exError) {
         return { error: "Erreur lors de l'ajout des exercices." };
       }

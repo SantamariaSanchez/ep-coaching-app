@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Wrench, ChevronDown, ChevronUp } from "lucide-react";
-import ProgramEditor from "@/components/ui/ProgramEditor";
+import ProgramBuilder from "@/components/program-builder/ProgramBuilder";
 import type { ProgramInput, ProgramWithDays } from "@/utils/programs";
 
 export default function ProgramFromScratchSection({
@@ -31,11 +31,14 @@ export default function ProgramFromScratchSection({
 
       {open && (
         <div className="mt-4">
-          <ProgramEditor
+          <ProgramBuilder
+            mode="self"
             clientId={clientId}
+            clientName="moi"
             program={null}
             saveProgram={saveProgram}
-            successRedirect="/dashboard/client/program"
+            backHref="/dashboard/client/program"
+            programHref="/dashboard/client/program"
           />
         </div>
       )}
