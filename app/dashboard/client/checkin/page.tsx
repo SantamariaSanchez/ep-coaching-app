@@ -225,7 +225,7 @@ export default async function CheckinPage() {
   // c'est la semaine qui vient de se terminer qui compte.
   const today = todayInParis();
   const reviewWeekStart = resolveWeekStart(null, today);
-  const weekReview = !existing && isCheckinDay ? await getWeeklyReview(user.id, reviewWeekStart, today) : null;
+  const weekReview = !existing ? await getWeeklyReview(user.id, reviewWeekStart, today) : null;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 560, margin: "0 auto" }}>
@@ -372,8 +372,19 @@ export default async function CheckinPage() {
             </div>
           )}
         </div>
-      ) : isCheckinDay ? (
+      ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Check-in ouvert tous les jours (2026-10-13, « zéro friction ») :
+              un client occupé le jour prévu l'envoie la veille ou le
+              lendemain plutôt que de sauter la semaine. */}
+          {!isCheckinDay && (
+            <div className="ep-card" style={{ padding: "12px 16px", display: "flex", gap: 10, alignItems: "center" }}>
+              <CalendarDays size={16} style={{ color: "rgba(224,30,30,0.7)", flexShrink: 0 }} />
+              <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.45 }}>
+                {t("Ton jour habituel, c'est le")}{" "}{DAY_NAMES[checkinDay]}{". "}{t("Pas dispo ce jour-là ? Envoie-le maintenant, ton coach le reçoit tout de suite.")}
+              </p>
+            </div>
+          )}
           {weekReview && (
             <>
               <WeeklyReview data={weekReview} basePath={null} today={today} canGoNext={false} canGoPrev={false} />
@@ -390,16 +401,6 @@ export default async function CheckinPage() {
           <div className="ep-card">
             <CheckinForm weightAvgFromLogs={avgWeight} />
           </div>
-        </div>
-      ) : (
-        <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>
-          <CalendarDays size={22} style={{ color: "rgba(224,30,30,0.5)", margin: "0 auto 10px" }} />
-          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>
-            {t("Ton jour de check-in, c'est le")}{" "}{DAY_NAMES[checkinDay]}
-          </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.35)", margin: 0, lineHeight: 1.5 }}>
-            {t("Reviens ce jour-là pour l'envoyer. Continue de remplir ton bilan quotidien en attendant.")}
-          </p>
         </div>
       )}
 

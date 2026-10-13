@@ -330,11 +330,10 @@ export async function scheduleLockedTestPush(): Promise<{ ok: boolean; at?: stri
   const admin = createAdminClient();
   const { data: settings } = await admin.from("user_settings").select("timezone").eq("user_id", guard.userId).maybeSingle();
   const tz = safeTimeZone((settings as { timezone?: string | null } | null)?.timezone ?? null);
-  // Cron toutes les 5 min : on vise le prochain passage + une marge, pour que
-  // la personne ait le temps de verrouiller son téléphone.
+  // Cron à la minute (migration 20261013b) : 2 minutes de marge pour que la
+  // personne ait le temps de verrouiller son téléphone.
   const target = new Date(Date.now() + 2 * 60000);
-  const minutes = target.getUTCMinutes();
-  target.setUTCMinutes(minutes + ((5 - (minutes % 5)) % 5), 0, 0);
+  target.setUTCSeconds(0, 0);
   const local = localParts(target, tz);
   const [h, m] = local.time.split(":").map(Number);
   const end = `${String(Math.min(23, h + (m + 5 >= 60 ? 1 : 0))).padStart(2, "0")}:${String((m + 5) % 60).padStart(2, "0")}`;

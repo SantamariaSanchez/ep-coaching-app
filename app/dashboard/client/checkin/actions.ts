@@ -3,15 +3,16 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getWeekStart, getISOWeek } from "@/utils/checkins";
-import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
+import { getCoachForClient } from "@/utils/insert-notification";
 import { revalidatePath } from "next/cache";
-import { notifyCoachNewCheckin } from "@/app/actions/notifications";
+import { after } from "next/server";
+import { notifyUser } from "@/lib/notify";
+import { sendBrevoEmail } from "@/utils/brevo";
+import { escapeHtml } from "@/lib/sanitize";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { requireClient } from "@/lib/auth-guards";
 
 type SubmitState = { error: string } | { success: true } | null;
-
-const DAY_NAMES = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -22,14 +23,6 @@ function num(v: FormDataEntryValue | null): number | null {
 function txt(v: FormDataEntryValue | null): string | null {
   const s = (v as string | null)?.trim();
   return s || null;
-}
-
-// 1 = lundi ... 7 = dimanche — Date.getDay() renvoie 0 pour dimanche, d'où
-// le décalage pour rester cohérent avec profiles.checkin_day et les semaines
-// lundi→dimanche déjà utilisées par getWeekStart/getISOWeek.
-function isoWeekday(date: Date): number {
-  const d = date.getDay();
-  return d === 0 ? 7 : d;
 }
 
 export async function submitCheckin(
@@ -51,16 +44,18 @@ export async function submitCheckin(
 
   if (!profile) return { error: "Profil introuvable." };
 
-  const today = new Date();
-  const checkinDay = (profile as { checkin_day?: number }).checkin_day ?? 1;
-  if (isoWeekday(today) !== checkinDay) {
-    return {
-      error: `Ton jour de check-in est le ${DAY_NAMES[checkinDay]}. Reviens ce jour-là pour l'envoyer.`,
-    };
-  }
-
+  // Plus de blocage sur le jour prévu (2026-10-13) : un check-in par semaine,
+  // envoyé le jour qui arrange le client.
   const weekStart = getWeekStart();
   const weekNumber = getISOWeek(new Date(weekStart));
+  const { data: already } = await serverClient
+    .from("check_ins")
+    .select("id")
+    .eq("client_id", guard.userId)
+    .eq("week_start", weekStart)
+    .limit(1)
+    .maybeSingle();
+  if (already) return { error: "Ton check-in de cette semaine est déjà envoyé." };
 
   const photoPaths = formData
     .getAll("photo_paths")
@@ -111,21 +106,31 @@ export async function submitCheckin(
 
   const clientName = profile.full_name ?? "Un client";
 
-  // Email via Brevo (fire-and-forget)
-  notifyCoachNewCheckin(clientName, guard.userId).catch(() => {});
-
-  // DB notification (fire-and-forget)
-  getCoachForClient(guard.userId).then((coach) => {
+  // Coach prévenu (cloche + push + e-mail). after() : avant, ces envois
+  // partaient sans être attendus et la plateforme pouvait couper la fonction
+  // avant qu'ils n'aboutissent, d'où des check-ins reçus sans notification.
+  const clientId = guard.userId;
+  after(async () => {
+    const coach = await getCoachForClient(clientId).catch(() => null);
     if (!coach) return;
-    insertNotification({
-      userId: coach.id,
-      type: "new_checkin",
-      title: `Nouveau check-in de ${clientName}`,
-      body: `${clientName} vient d'envoyer son check-in hebdomadaire (S${weekNumber}).`,
-      url: `/dashboard/coach/clients/${guard.userId}/checkins`,
-      senderId: guard.userId,
-    }).catch(() => {});
-  }).catch(() => {});
+    const url = `/dashboard/coach/clients/${clientId}/checkins`;
+    await Promise.allSettled([
+      notifyUser(coach.id, {
+        type: "coach_checkin",
+        title: `📋 Check-in de ${clientName}`,
+        body: `Semaine ${weekNumber} reçue : poids, ressenti, victoires. À toi de faire son bilan.`,
+        url,
+        senderId: clientId,
+      }),
+      coach.email
+        ? sendBrevoEmail({
+            to: coach.email,
+            subject: `Nouveau check-in de ${clientName}`,
+            htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;"><h2 style="color:#E01E1E;margin-top:0;">Nouveau check-in reçu</h2><p>${escapeHtml(clientName)} vient d'envoyer son check-in de la semaine ${weekNumber}.</p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}${url}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">Faire son bilan</a></div>`,
+          })
+        : Promise.resolve(),
+    ]);
+  });
 
   revalidatePath("/dashboard/client/checkin");
   return { success: true };

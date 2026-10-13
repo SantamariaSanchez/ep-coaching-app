@@ -10,7 +10,7 @@ import WelcomeTour from "@/components/help/WelcomeTour";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import TimezoneSync from "@/components/ui/TimezoneSync";
 import AlarmPlayer from "@/components/ui/AlarmPlayer";
-import PermissionsPrimer from "@/components/ui/PermissionsPrimer";
+import PushAutoSubscribe from "@/components/native/PushAutoSubscribe";
 import FreeTierGate from "@/components/ui/FreeTierGate";
 import FreeTierBanner from "@/components/ui/FreeTierBanner";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
@@ -167,10 +167,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <NativeBridge />
       <WelcomeTour />
       <AlarmPlayer />
-      {/* Demande les vraies autorisations systeme au premier lancement : sans
-          appel effectif aux API du navigateur, le telephone n'affiche aucune
-          autorisation pour l'appli (voir PermissionsPrimer). */}
-      <PermissionsPrimer />
+      {/* Autorisations gérées par le téléphone lui-même (dialogue système au
+          premier usage, réglages dans Réglages > Applications > EP Coaching),
+          plus aucun écran d'autorisations dans l'appli. */}
+      <PushAutoSubscribe />
       <NavigationProgress />
       {/* Verrou dur : rien d'autre ne doit rester utilisable en dessous tant
           que le compte gratuit est verrouillé (voir lib/free-tier.ts). */}

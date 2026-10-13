@@ -2,6 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Pour tes photos de progression et filmer tes séries afin que ton coach corrige ta technique.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pour envoyer à ton coach tes photos de progression et les photos de ta salle.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Pour enregistrer tes photos et vidéos de progression.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Pour dicter tes notes et enregistrer le son de tes vidéos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Pour te proposer une salle de sport près de toi.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Pour compter tes pas dans l'appli.</string>
   <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
