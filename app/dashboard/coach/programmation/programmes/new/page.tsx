@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { saveProgramTemplate } from "../actions";
-import ProgramTemplateEditor from "@/components/ui/ProgramTemplateEditor";
+import TemplateSheetEditor from "@/components/program-builder/TemplateSheetEditor";
 import { ChevronLeft } from "lucide-react";
 
 export default async function NewProgramTemplatePage() {
@@ -15,7 +15,7 @@ export default async function NewProgramTemplatePage() {
   if (profile?.role === "client") redirect("/dashboard/client");
 
   return (
-    <div className="px-6 py-8 max-w-6xl mx-auto page-transition">
+    <div className="px-3 sm:px-6 py-6 max-w-6xl mx-auto page-transition">
       <Link
         href="/dashboard/coach/programmation"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
@@ -31,7 +31,7 @@ export default async function NewProgramTemplatePage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Modèle de programme")}</h1>
       </div>
 
-      <ProgramTemplateEditor templateId={null} template={null} saveProgramTemplate={saveProgramTemplate} />
+      <TemplateSheetEditor templateId={null} template={null} saveProgramTemplate={saveProgramTemplate} />
     </div>
   );
 }

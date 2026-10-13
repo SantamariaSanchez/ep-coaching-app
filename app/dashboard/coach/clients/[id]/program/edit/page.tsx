@@ -65,7 +65,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
   const clientName = client.full_name ?? t("Client");
 
   return (
-    <div className="px-3 sm:px-5 py-5 w-full max-w-[1500px] mx-auto page-transition">
+    <div className="px-2.5 sm:px-5 py-4 sm:py-5 w-full max-w-[1500px] mx-auto page-transition">
       <div className="flex items-center gap-3 mb-4">
         <Link
           href={`/dashboard/coach/clients/${id}/program`}

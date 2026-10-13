@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getProgramTemplateById } from "@/utils/program-templates";
 import { saveProgramTemplate } from "../../actions";
-import ProgramTemplateEditor from "@/components/ui/ProgramTemplateEditor";
+import TemplateSheetEditor from "@/components/program-builder/TemplateSheetEditor";
 import { ChevronLeft } from "lucide-react";
 
 export default async function EditProgramTemplatePage({
@@ -25,7 +25,7 @@ export default async function EditProgramTemplatePage({
   if (!template) notFound();
 
   return (
-    <div className="px-6 py-8 max-w-6xl mx-auto page-transition">
+    <div className="px-3 sm:px-6 py-6 max-w-6xl mx-auto page-transition">
       <Link
         href="/dashboard/coach/programmation"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
@@ -41,7 +41,7 @@ export default async function EditProgramTemplatePage({
         <h1 className="text-3xl font-black uppercase tracking-tight">{template.name}</h1>
       </div>
 
-      <ProgramTemplateEditor templateId={templateId} template={template} saveProgramTemplate={saveProgramTemplate} />
+      <TemplateSheetEditor templateId={templateId} template={template} saveProgramTemplate={saveProgramTemplate} />
     </div>
   );
 }

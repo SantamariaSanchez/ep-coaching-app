@@ -99,6 +99,15 @@ export default function SessionSheet({
   }, [day.rows]);
   const [menuFor, setMenuFor] = useState<{ rowId: string; rect: DOMRect } | null>(null);
   const pendingFocus = useRef<{ row: number; col: number } | null>(null);
+  // Téléphone : cartes au lieu du tableau (largeur 768 px, même seuil que la nav).
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const set = () => setIsMobile(mq.matches);
+    set();
+    mq.addEventListener("change", set);
+    return () => mq.removeEventListener("change", set);
+  }, []);
 
   // Focus différé après ajout de ligne (la cellule n'existe pas encore au moment du clavier).
   useLayoutEffect(() => {
@@ -292,7 +301,138 @@ export default function SessionSheet({
         />
       </div>
 
-      {/* Tableau */}
+      {/* Téléphone : une carte par exercice, tout visible sans défiler de côté. */}
+      {isMobile ? (
+        <div className="divide-y divide-(--ep-line)/15">
+          {day.rows.map((row, rowIdx) => {
+            const filledRow = isRowFilled(row);
+            // Sur téléphone : lignes remplies + une seule ligne vide pour continuer.
+            const firstEmpty = day.rows.findIndex((r) => !isRowFilled(r));
+            if (!filledRow && rowIdx !== firstEmpty) return null;
+            const lib = libByName.get(row.name.trim().toLowerCase()) ?? null;
+            const conflicts = intake && row.name.trim() ? checkExerciseConflicts({ name: row.name, equipment: lib?.equipment ?? null }, intake, "") : [];
+            const ss = labels[rowIdx];
+            const color = row.superset ? groupColor.get(row.superset) : undefined;
+            const linkedWithNext = !!row.superset && day.rows[rowIdx + 1]?.superset === row.superset;
+            const cell = "w-full h-11 rounded-lg bg-(--ep-shade)/15 border border-(--ep-line)/25 text-center text-[16px] font-bold text-(--ep-strong) placeholder:text-(--ep-ink)/25 placeholder:font-normal outline-none focus:border-(--ep-accent)";
+            const lab = "block text-[9.5px] font-bold uppercase tracking-widest text-(--ep-ink)/45 mb-1 text-center";
+            return (
+              <div key={row.id} className="px-3 py-3" style={color ? { boxShadow: `inset 4px 0 0 ${color}` } : undefined}>
+                <div className="flex items-center gap-2">
+                  <span className="w-7 text-center text-[13px] font-black flex-shrink-0" style={{ color: color ?? "rgba(var(--ep-ink-rgb),0.35)" }}>
+                    {ss ?? (filledRow ? rowIdx + 1 : "+")}
+                  </span>
+                  <div className="flex-1 min-w-0 rounded-lg bg-(--ep-shade)/15 border border-(--ep-line)/25 focus-within:border-(--ep-accent)">
+                    <ExerciseCell
+                      value={row.name}
+                      library={library}
+                      intake={intake}
+                      cellId={`${day.id}:${rowIdx}:0`}
+                      onChange={(v) => updateRow(row.id, { name: v })}
+                      onPick={(l) => pickLibrary(row.id, l)}
+                      onNavKey={(e) => navKey(e, rowIdx, 0)}
+                      onPickedMoveNext={() => setTimeout(() => focusCell(day.id, rowIdx, 1), 0)}
+                      onPasteGrid={(text) => pasteGrid(rowIdx, text)}
+                      placeholder={filledRow ? "" : tr("Ajouter un exercice…")}
+                    />
+                  </div>
+                  {conflicts.length > 0 && (
+                    <span className="text-amber-400 flex-shrink-0" title={conflicts.map((c) => `${conflictSourceLabel(c.source)} : ${c.keyword}`).join("\n")}>
+                      <AlertTriangle size={16} />
+                    </span>
+                  )}
+                  {filledRow && (
+                    <button
+                      type="button"
+                      onClick={(e) => setMenuFor({ rowId: row.id, rect: (e.currentTarget as HTMLElement).getBoundingClientRect() })}
+                      aria-label={tr("Plus d'options")}
+                      className="w-10 h-11 flex items-center justify-center rounded-lg text-(--ep-ink)/50 active:bg-(--ep-line)/30 flex-shrink-0"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                  )}
+                </div>
+                {filledRow && (
+                  <>
+                    <div className="mt-2 grid grid-cols-5 gap-1.5 pl-9">
+                      <label>
+                        <span className={lab}>{tr("Séries")}</span>
+                        <input data-cell={`${day.id}:${rowIdx}:1`} value={row.sets} inputMode="numeric" onChange={(e) => updateRow(row.id, { sets: e.target.value.replace(/[^\d]/g, "").slice(0, 2) })} onKeyDown={(e) => navKey(e, rowIdx, 1)} placeholder="3" className={cell} />
+                      </label>
+                      <label>
+                        <button type="button" onClick={() => updateRow(row.id, { unit: row.unit === "reps" ? "sec" : row.unit === "sec" ? "m" : "reps" })} className={`${lab} w-full ${row.unit !== "reps" ? "text-sky-300" : ""}`}>
+                          {row.unit === "sec" ? tr("Sec ⇄") : row.unit === "m" ? tr("Mètres ⇄") : tr("Reps ⇄")}
+                        </button>
+                        <input
+                          data-cell={`${day.id}:${rowIdx}:2`}
+                          value={row.reps}
+                          onChange={(e) => updateRow(row.id, { reps: e.target.value })}
+                          onBlur={(e) => {
+                            const n = normalizeRepsInput(e.target.value, row.unit);
+                            if (n.reps !== row.reps || n.unit !== row.unit) updateRow(row.id, n);
+                          }}
+                          onKeyDown={(e) => navKey(e, rowIdx, 2)}
+                          placeholder={row.unit === "sec" ? "30" : "8-12"}
+                          className={cell}
+                        />
+                      </label>
+                      <label>
+                        <span className={lab}>{tr("RIR")}</span>
+                        <input data-cell={`${day.id}:${rowIdx}:3`} value={row.rir} inputMode="numeric" onChange={(e) => updateRow(row.id, { rir: e.target.value.replace(/[^\d]/g, "").slice(0, 1) })} onKeyDown={(e) => navKey(e, rowIdx, 3)} placeholder="2" className={cell} />
+                      </label>
+                      <label>
+                        <span className={lab}>{tr("Repos")}</span>
+                        <input
+                          data-cell={`${day.id}:${rowIdx}:4`}
+                          value={row.rest}
+                          inputMode="decimal"
+                          onChange={(e) => updateRow(row.id, { rest: e.target.value })}
+                          onBlur={(e) => {
+                            const n = normalizeRestInput(e.target.value);
+                            if (n !== row.rest) updateRow(row.id, { rest: n });
+                          }}
+                          onKeyDown={(e) => navKey(e, rowIdx, 4)}
+                          placeholder={linkedWithNext ? "→" : "1:30"}
+                          className={cell}
+                        />
+                      </label>
+                      <label>
+                        <span className={lab}>{tr("Tech.")}</span>
+                        <select data-cell={`${day.id}:${rowIdx}:6`} value={row.technique} onChange={(e) => updateRow(row.id, { technique: e.target.value })} className={`${cell} text-[13px] px-1 ${row.technique ? "text-amber-300" : "text-(--ep-ink)/40"}`}>
+                          <option value="">—</option>
+                          {TECHNIQUES.map((t) => (
+                            <option key={t.key} value={t.key}>{t.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-1.5 pl-9">
+                      <input
+                        data-cell={`${day.id}:${rowIdx}:7`}
+                        value={row.notes}
+                        onChange={(e) => updateRow(row.id, { notes: e.target.value })}
+                        placeholder={tr("Note pour le client")}
+                        className="flex-1 min-w-0 h-10 rounded-lg bg-transparent border border-dashed border-(--ep-line)/25 px-2.5 text-[15px] text-(--ep-ink)/85 placeholder:text-(--ep-ink)/30 outline-none focus:border-(--ep-accent)"
+                      />
+                      {rowIdx < day.rows.length - 1 && isRowFilled(day.rows[rowIdx + 1] ?? emptyRow()) && (
+                        <button
+                          type="button"
+                          onClick={() => setRows(toggleLinkWithNext(day.rows, rowIdx))}
+                          aria-pressed={linkedWithNext}
+                          className={`h-10 px-2.5 rounded-lg text-[11px] font-bold flex items-center gap-1 flex-shrink-0 ${linkedWithNext ? "text-white" : "text-(--ep-ink)/55 border border-(--ep-line)/30"}`}
+                          style={linkedWithNext ? { background: color } : undefined}
+                        >
+                          <Link2 size={13} /> {linkedWithNext ? tr("Superset") : tr("+ Superset")}
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
       <div className="overflow-x-auto">
         <table className="w-full border-collapse table-fixed min-w-[880px]">
           <colgroup>
@@ -498,7 +638,8 @@ export default function SessionSheet({
         </table>
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-2 border-t border-(--ep-line)/20 bg-(--ep-shade)/15">
+      )}
+      <div className="hidden md:flex items-center gap-3 px-3 py-2 border-t border-(--ep-line)/20 bg-(--ep-shade)/15">
         <button
           type="button"
           onClick={() => {
