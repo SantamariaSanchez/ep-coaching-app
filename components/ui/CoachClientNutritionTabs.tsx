@@ -10,7 +10,8 @@ import SupplementsSection from "@/components/ui/SupplementsSection";
 import type { ClientIntake } from "@/utils/client-intake";
 import type { ClientSupplement } from "@/utils/supplements";
 import type { RoadmapWithData } from "@/utils/roadmap";
-import { PlanBuilder, PlansListView, MODE_LABELS } from "@/components/ui/DietPlanManager";
+import { PlansListView, MODE_LABELS } from "@/components/ui/DietPlanManager";
+import DietBuilder from "@/components/diet-builder/DietBuilder";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type {
   NutritionProfile,
@@ -340,6 +341,9 @@ export default function CoachClientNutritionTabs({
   const tr = useT();
   const [tab, setTab] = useState<Tab>("plan");
   const [showBuilder, setShowBuilder] = useState(allPlans.length === 0);
+  // Plan repris dans l'éditeur (« Modifier le plan actif ») : enregistrer
+  // crée une nouvelle version active, l'ancienne reste dans l'historique.
+  const [editPlan, setEditPlan] = useState<typeof activePlan>(null);
   const [changingMode, setChangingMode] = useState(false);
   // Objectifs TDEE repliés par défaut dès qu'un plan existe déjà — simplification
   // demandée le 2026-08-30 ("réorganise les onglets, que ce soit simple") :
@@ -471,51 +475,56 @@ export default function CoachClientNutritionTabs({
             )}
           </div>
 
-          <ClientReferenceCard intake={intake} />
-          <div className="flex items-center justify-between">
+          {isOwnPlan && <ClientReferenceCard intake={intake} />}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
               {allPlans.length}{" "}{tr("plan")}{allPlans.length !== 1 ? "s" : ""}
             </p>
-            <button
-              onClick={() => setShowBuilder((v) => !v)}
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) transition-colors"
-            >
-              <Plus size={12} />
-              {showBuilder ? tr("Fermer") : tr("Nouveau plan")}
-            </button>
+            <div className="flex items-center gap-4">
+              {activePlan && !showBuilder && (
+                <button
+                  onClick={() => { setEditPlan(activePlan); setShowBuilder(true); }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/60 hover:text-(--ep-strong) transition-colors"
+                >
+                  {tr("Modifier le plan actif")}
+                </button>
+              )}
+              <button
+                onClick={() => { setEditPlan(null); setShowBuilder((v) => !v); }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-(--ep-accent) px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-white"
+              >
+                <Plus size={12} />
+                {showBuilder ? tr("Fermer") : tr("Nouveau plan")}
+              </button>
+            </div>
           </div>
 
           {showBuilder && (
-            <div className="bg-(--ep-s2) border border-(--ep-line)/25 rounded-xl p-4">
-              <PlanBuilder
-                foods={foods}
-                intake={intake}
-                roadmap={roadmap}
-                roadmapHref={roadmapHref}
-                templates={dietTemplates}
-                templatesHref="/dashboard/coach/programmation"
-                subjectLabel={subjectLabel}
-                // Les cibles viennent de l'onglet Objectifs TDEE : on conçoit
-                // en visant la répartition macro décidée, plus en additionnant
-                // des aliments et en découvrant le total à la fin.
-                targets={
-                  nutritionProfile
-                    ? {
-                        calories: nutritionProfile.calories_target ?? 0,
-                        proteins: nutritionProfile.proteins_target ?? 0,
-                        carbs: nutritionProfile.carbs_target ?? 0,
-                        fats: nutritionProfile.fats_target ?? 0,
-                      }
-                    : null
-                }
-                saveAsTemplate={saveDietAsTemplate}
-                onCreate={async (name, mode, meals, structure, objective, dayNotes, socialNotes) => {
-                  const result = await createDietPlan(clientId, name, mode, meals, structure, objective, dayNotes, socialNotes);
-                  if (!result.error) setShowBuilder(false);
-                  return result;
-                }}
-              />
-            </div>
+            <DietBuilder
+              key={editPlan?.id ?? "new"}
+              clientName={isOwnPlan ? "moi" : subjectLabel}
+              self={isOwnPlan}
+              foods={foods}
+              intake={intake}
+              templates={dietTemplates}
+              initialPlan={editPlan}
+              targets={
+                nutritionProfile
+                  ? {
+                      calories: nutritionProfile.calories_target ?? 0,
+                      proteins: nutritionProfile.proteins_target ?? 0,
+                      carbs: nutritionProfile.carbs_target ?? 0,
+                      fats: nutritionProfile.fats_target ?? 0,
+                    }
+                  : null
+              }
+              saveAsTemplate={saveDietAsTemplate}
+              onEditTargets={() => { setShowObjectifs(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onClose={() => { setShowBuilder(false); setEditPlan(null); }}
+              onCreate={(name, mode, meals, structure, objective, dayNotes, socialNotes) =>
+                createDietPlan(clientId, name, mode, meals, structure, objective, dayNotes, socialNotes)
+              }
+            />
           )}
 
           <PlansListView

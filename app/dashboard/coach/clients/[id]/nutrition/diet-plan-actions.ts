@@ -1,4 +1,5 @@
 ﻿"use server";
+import { after } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireOwnClientOrSelf } from "@/lib/auth-guards";
@@ -232,13 +233,17 @@ export async function createDietPlan(
     // (mode gratuit, requireOwnClientOrSelf l'autorise aussi) qui crée son
     // propre plan n'a pas besoin d'être notifié de sa propre action.
     if (guard.userId !== clientId) {
-      notifyUser(clientId, {
-        type: "diet_plan_created",
-        title: "🥗 Nouveau plan nutritionnel",
-        body: `Ton coach vient de te préparer un plan : « ${name} ».`,
-        url: "/dashboard/client/nutrition",
-        senderId: guard.userId,
-      }).catch(() => {});
+      // after() : l'envoi va au bout même une fois la réponse partie.
+      const coachId = guard.userId;
+      after(() =>
+        notifyUser(clientId, {
+          type: "diet_plan_created",
+          title: "🥗 Ton plan nutrition est prêt",
+          body: `« ${name} » : ouvre Nutrition pour voir tes repas de la journée.`,
+          url: "/dashboard/client/nutrition",
+          senderId: coachId,
+        }).catch(() => {})
+      );
     }
 
     return { id: plan.id };

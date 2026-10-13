@@ -245,7 +245,7 @@ export default function ClientContextPanel({
   );
 }
 
-function Section({
+export function Section({
   icon,
   title,
   children,
@@ -276,7 +276,7 @@ function Section({
   );
 }
 
-function KV({ items }: { items: { k: string; v: string }[] }) {
+export function KV({ items }: { items: { k: string; v: string }[] }) {
   return (
     <dl className="space-y-1.5">
       {items.map(({ k, v }) => (

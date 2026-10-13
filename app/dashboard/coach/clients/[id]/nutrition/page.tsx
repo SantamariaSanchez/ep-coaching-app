@@ -77,7 +77,7 @@ export default async function CoachClientNutritionPage({
     ]);
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
+    <div className="px-3 sm:px-6 py-8 w-full max-w-[1400px] mx-auto page-transition">
       <Link
         href={`/dashboard/coach/clients/${id}`}
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"

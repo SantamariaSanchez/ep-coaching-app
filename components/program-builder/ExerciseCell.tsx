@@ -141,6 +141,16 @@ export default function ExerciseCell({
               return;
             }
           }
+          // Nom exact de la bibliothèque tapé en entier : on le prend (muscle,
+          // matériel) au lieu de le garder en texte libre.
+          if (e.key === "Enter" && q) {
+            const lib = library.find((l) => l.name.toLowerCase() === q.toLowerCase());
+            if (lib && lib.name !== value) {
+              pick(lib);
+            } else if (lib) {
+              onPick(lib);
+            }
+          }
           onNavKey(e);
         }}
         placeholder={placeholder ?? tr("Exercice")}

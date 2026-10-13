@@ -51,7 +51,7 @@ export interface MacroTargets {
 // par rapport à l'objectif fixé dans "Objectifs TDEE". C'est le repère qui
 // manquait pour concevoir une diète en partant de la répartition macro au
 // lieu d'empiler des aliments à l'aveugle et de compter à la fin.
-function MacroCoverage({
+export function MacroCoverage({
   label,
   current,
   target,
@@ -135,7 +135,7 @@ const AUTO_ADJUST_MAX_SCALE = 4; // jamais plus de x4 — au delà, il manque un
  * n'est pas résoluble (ex. un seul groupe macro présent) — dans ce cas
  * mieux vaut ne rien changer que produire un résultat aberrant.
  */
-function autoAdjustQuantities(
+export function autoAdjustQuantities(
   dayMeals: PlanMealRow[],
   foods: Food[],
   targets: MacroTargets
@@ -327,7 +327,7 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 9);
 }
 
-interface PlanMealRow {
+export interface PlanMealRow {
   localId: string;
   slotKey: string;
   foodId: string;
