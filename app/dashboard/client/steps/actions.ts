@@ -6,6 +6,11 @@ import { requireAuth } from "@/lib/auth-guards";
 import { getProfile, isSubscribed } from "@/utils/auth";
 import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { todayInParis, isWithinBilanBackfillWindow } from "@/lib/dates";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getStepsSyncStatus, type StepsSyncStatus } from "@/utils/steps";
+import { hashStepsToken, isMissingTable, MAX_STEPS, newStepsToken, tokenHint, upsertStepTotal } from "@/lib/steps-sync";
 
 // Les pas sont suivis côté client (/dashboard/client/steps) comme côté coach
 // pour lui-même (/dashboard/coach/moi/steps), d'où requireAuth() plutôt qu'un
@@ -181,6 +186,101 @@ export async function createReminderFromRoutine(label: string, time: string): Pr
     return {};
   } catch (e) {
     console.error("createReminderFromRoutine error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// ── Synchro automatique (2026-10-14) ─────────────────────────────────────
+// Retour direct du fondateur : « l'onglet steps met de la friction, c'est un
+// truc à remplir qui est chiant ». Une clé personnelle permet à un Raccourci
+// iOS (Santé) ou à une appli Android (Health Connect) d'envoyer le total du
+// jour tout seul, voir app/api/steps/ingest/route.ts.
+
+function revalidateSteps() {
+  revalidatePath("/dashboard/client/steps");
+  revalidatePath("/dashboard/coach/moi/steps");
+  revalidatePath("/dashboard/client/steps/synchro");
+  revalidatePath("/dashboard/coach/moi/steps/synchro");
+}
+
+/** Crée (ou remplace) la clé de synchro. La clé en clair n'est renvoyée qu'ici, une seule fois. */
+export async function createStepsSyncToken(): Promise<{ error?: string; token?: string; status?: StepsSyncStatus }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const limit = await checkRateLimit(`steps-token:${guard.userId}`, 10, 3600);
+  if (!limit.allowed) return { error: "Trop de clés créées d'un coup. Réessaie dans un moment." };
+
+  const token = newStepsToken();
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.from("step_sync_tokens").upsert(
+      { user_id: guard.userId, token_hash: hashStepsToken(token), token_hint: tokenHint(token), created_at: new Date().toISOString(), last_used_at: null, last_source: null },
+      { onConflict: "user_id" }
+    );
+    if (error) {
+      if (isMissingTable(error)) return { error: "La synchro automatique n'est pas encore activée. Réessaie un peu plus tard." };
+      console.error("createStepsSyncToken error:", error);
+      return { error: "Impossible de créer ta clé, réessaie." };
+    }
+    revalidateSteps();
+    return { token, status: await getStepsSyncStatus(guard.userId) };
+  } catch (e) {
+    console.error("createStepsSyncToken error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+/** Supprime la clé : le raccourci ou l'appli qui l'utilise est aussitôt refusé. */
+export async function revokeStepsSyncToken(): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.from("step_sync_tokens").delete().eq("user_id", guard.userId);
+    if (error && !isMissingTable(error)) return { error: "Impossible de supprimer ta clé, réessaie." };
+    revalidateSteps();
+    return {};
+  } catch (e) {
+    console.error("revokeStepsSyncToken error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+/** Total du jour tel qu'il est en base, pour afficher une synchro arrivée pendant que la page est ouverte. */
+export async function getTodayStepsLive(): Promise<{ steps: number | null; source: string | null; syncedAt: string | null }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { steps: null, source: null, syncedAt: null };
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("step_logs")
+      .select("*")
+      .eq("client_id", guard.userId)
+      .eq("log_date", todayInParis())
+      .maybeSingle();
+    if (error || !data) return { steps: null, source: null, syncedAt: null };
+    const row = data as { steps_actual: number; source?: string | null; synced_at?: string | null };
+    return { steps: row.steps_actual, source: row.source ?? null, syncedAt: row.synced_at ?? null };
+  } catch {
+    return { steps: null, source: null, syncedAt: null };
+  }
+}
+
+/** Saisie rapide (+1000, ou un total tapé) : écrit le nouveau total du jour, routine conservée. */
+export async function setManualStepsTotal(logDate: string, total: number): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(logDate) || !isWithinBilanBackfillWindow(logDate)) return { error: "Date invalide." };
+  if (!Number.isFinite(total) || total < 0 || total > MAX_STEPS) return { error: "Nombre de pas invalide." };
+  try {
+    const admin = createAdminClient();
+    const res = await upsertStepTotal(admin, guard.userId, logDate, Math.round(total), "manuel");
+    if (res.error) return { error: "Erreur lors de l'enregistrement." };
+    revalidateSteps();
+    notifyCoachIfGoalReached(guard.userId, logDate, Math.round(total)).catch(() => {});
+    return {};
+  } catch (e) {
+    console.error("setManualStepsTotal error:", e);
     return { error: "Erreur inattendue." };
   }
 }

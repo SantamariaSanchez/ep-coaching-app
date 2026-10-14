@@ -4,9 +4,9 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
+import { getStepSettings, getStepRoutineItems, getStepLogs, getStepsSyncStatus } from "@/utils/steps";
 import StepsClient from "@/components/steps/StepsClient";
-import { updateStepGoal, addRoutineItem, deleteRoutineItem, logSteps, createReminderFromRoutine } from "@/app/dashboard/client/steps/actions";
+import { updateStepGoal, addRoutineItem, deleteRoutineItem, logSteps, createReminderFromRoutine, setManualStepsTotal, getTodayStepsLive } from "@/app/dashboard/client/steps/actions";
 
 export default async function CoachMoiStepsPage() {
   const t = await getT();
@@ -18,16 +18,17 @@ export default async function CoachMoiStepsPage() {
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
   const admin = createAdminClient();
-  const [settings, routineItems, logs, { data: ouraConnection }] = await Promise.all([
+  const [settings, routineItems, logs, { data: ouraConnection }, syncStatus] = await Promise.all([
     getStepSettings(user.id),
     getStepRoutineItems(user.id),
     getStepLogs(user.id, 35),
     admin.from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
+    getStepsSyncStatus(user.id),
   ]);
 
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-6">
+    <div className="px-4 sm:px-6 py-6 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <div className="mb-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Mon suivi")}
         </p>
@@ -41,6 +42,10 @@ export default async function CoachMoiStepsPage() {
         hasOura={!!ouraConnection}
         ouraTrackingHref="/dashboard/coach/moi/tracking"
         bilanHref="/dashboard/coach/moi/bilan"
+        syncHref="/dashboard/coach/moi/steps/synchro"
+        syncStatus={syncStatus}
+        setManualStepsTotal={setManualStepsTotal}
+        getTodayStepsLive={getTodayStepsLive}
         updateStepGoal={updateStepGoal}
         addRoutineItem={addRoutineItem}
         deleteRoutineItem={deleteRoutineItem}
