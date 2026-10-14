@@ -9,6 +9,7 @@ import { syncDailyNutrition } from "@/lib/nutrition-sync";
 import { MEAL_SLOTS } from "@/lib/nutrition-engine";
 import { DISCIPLINE_BY_KEY, bestRecords, type PerformanceEntry } from "@/lib/disciplines";
 import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioning } from "@/lib/positioning";
+import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -84,7 +85,7 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "mes_scripts",
     roles: ["coach"],
-    description: "Scripts du Studio créatif du coach (titre, accroche, statut).",
+    description: "Scripts du Studio créatif du coach (identifiant court, titre, accroche, statut). L'identifiant sert à modifier_script et publier_script.",
     inputSchema: { type: "object", properties: { statut: { type: "string", enum: ["a_tourner", "tourne", "publie"] }, nombre: { type: "number" } } },
   },
   {
@@ -142,12 +143,15 @@ const numArg = (v: unknown, min: number, max: number): number | null => {
 };
 
 export function toolsForRole(role: Role) {
-  return EXTRA_TOOLS.filter((t) => t.roles.includes(role)).map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));
+  return [
+    ...EXTRA_TOOLS.filter((t) => t.roles.includes(role)).map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema })),
+    ...dailyToolsForRole(role),
+  ];
 }
 
 export async function callExtraTool(ownerId: string, role: Role, name: string, args: Record<string, unknown>) {
   const tool = EXTRA_TOOLS.find((t) => t.name === name);
-  if (!tool) return null;
+  if (!tool) return DAILY_TOOLS.some((t) => t.name === name) ? callDailyTool(ownerId, role, name, args) : null;
   if (!tool.roles.includes(role)) return text("Cet outil est réservé aux coachs.");
   const admin = createAdminClient();
   const today = todayInParis();
@@ -376,11 +380,11 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
 
     case "mes_scripts": {
       const limit = numArg(args.nombre, 1, 50) ?? 20;
-      let q = admin.from("coach_scripts").select("title, hook, status, platform, pillar, updated_at").eq("coach_id", ownerId).order("updated_at", { ascending: false }).limit(limit);
+      let q = admin.from("coach_scripts").select("id, title, hook, status, platform, pillar, updated_at").eq("coach_id", ownerId).order("updated_at", { ascending: false }).limit(limit);
       if (typeof args.statut === "string" && ["a_tourner", "tourne", "publie"].includes(args.statut)) q = q.eq("status", args.statut);
       const { data } = await q;
-      const rows = (data ?? []) as { title: string; hook: string | null; status: string; platform: string | null; pillar: string | null }[];
-      return text(rows.length ? rows.map((r) => `- [${r.status}] ${r.title}${r.platform ? ` (${r.platform})` : ""}${r.hook ? ` : « ${r.hook} »` : ""}`).join("\n") : "Aucun script.");
+      const rows = (data ?? []) as { id: string; title: string; hook: string | null; status: string; platform: string | null; pillar: string | null }[];
+      return text(rows.length ? rows.map((r) => `- ${r.id.slice(0, 8)} [${r.status}] ${r.title}${r.platform ? ` (${r.platform})` : ""}${r.hook ? ` : « ${r.hook} »` : ""}`).join("\n") : "Aucun script.");
     }
 
     case "ajouter_script": {

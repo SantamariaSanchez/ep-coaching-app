@@ -109,8 +109,8 @@ export async function POST(req: Request) {
         return ok(m.id, {
           protocolVersion: typeof m.params?.protocolVersion === "string" ? m.params.protocolVersion : "2025-06-18",
           capabilities: { tools: {} },
-          serverInfo: { name: "EP Coaching", version: "1.0.0" },
-          instructions: "Connecteur personnel EP Coaching (coaching sportif et nutrition). Notes, bilan du jour, repas, records, et pour un coach : clients, stats réseaux, scripts du Studio et positionnement. Réponds en français, en tutoyant.",
+          serverInfo: { name: "EP Coaching", version: "1.1.0" },
+          instructions: "Connecteur personnel EP Coaching (coaching sportif et nutrition). Notes, bilan du jour, repas, séance et diète du jour, séries, progrès, agenda, records ; pour un coach : clients à relancer, check-ins et réponses, messages aux clients, stats réseaux, scripts du Studio, guides avec leur numéro, positionnement et résumé business. Avant d'envoyer un message ou un retour à un client, montre le texte au coach et attends son accord. Réponds en français, en tutoyant.",
         });
       case "ping":
         return ok(m.id, {});

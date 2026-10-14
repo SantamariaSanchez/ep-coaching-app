@@ -44,6 +44,26 @@ const EVERYONE: PromptGroup = {
       hint: "Course, Hyrox, force, CrossFit ou musculation.",
       prompt: "Regarde mes records dans EP Coaching (outil mes_records). Dis-moi où j'ai le plus progressé et propose-moi un objectif réaliste pour les 8 prochaines semaines, avec la façon de le suivre dans l'appli.",
     },
+    {
+      title: "Ma séance et ma diète du jour",
+      hint: "Ce qui est prévu aujourd'hui, en un message.",
+      prompt: "Avec EP Coaching, donne-moi ma séance du jour (outil ma_seance_du_jour) et ma diète du jour (outil ma_diete_du_jour), puis dis-moi en 3 lignes comment organiser ma journée autour.",
+    },
+    {
+      title: "Noter mes séries pendant la séance",
+      hint: "Dicte tes séries, Claude les range dans ta séance.",
+      prompt: "Note dans ma séance EP Coaching (outil enregistrer_serie) : développé couché 80 kg × 8, puis 80 kg × 7 avec 1 rep en réserve.",
+    },
+    {
+      title: "Mes progrès sur 2 mois",
+      hint: "Poids, séances, records, nutrition et sommeil.",
+      prompt: "Regarde mes progrès des 8 dernières semaines dans EP Coaching (outil mes_progres). Dis-moi ce qui avance, ce qui bloque et une seule priorité pour les 2 prochaines semaines.",
+    },
+    {
+      title: "Bloquer un créneau dans mon agenda",
+      hint: "Ponctuel ou chaque semaine, avec rappel.",
+      prompt: "Regarde mon agenda EP Coaching de demain (outil mon_agenda) et ajoute un bloc « Séance jambes » de 18:00 à 19:15 avec un rappel (outil ajouter_bloc_agenda).",
+    },
   ],
 };
 
@@ -73,14 +93,19 @@ const COACH: PromptGroup[] = [
     title: "Mes clients",
     cards: [
       {
+        title: "Relancer ceux qui décrochent",
+        hint: "Alertes réelles, messages validés par toi avant envoi.",
+        prompt: "Avec EP Coaching (outil clients_a_relancer), liste les clients à relancer et pourquoi. Pour chacun, écris un message court et personnel. Montre-moi tout, et n'envoie (outil envoyer_message) que ceux que je valide.",
+      },
+      {
+        title: "Répondre à un bilan hebdo",
+        hint: "Remplace le prénom par celui de ton client.",
+        prompt: "Lis le dernier bilan hebdo de Hugo dans EP Coaching (outil lire_checkin) et sa fiche (outil fiche_client). Prépare mon retour : ce qui va bien, ce qu'on ajuste, une question pour la semaine, 120 mots maximum. Montre-le-moi et envoie-le avec repondre_checkin seulement quand je valide.",
+      },
+      {
         title: "Qui a besoin de moi aujourd'hui ?",
         hint: "Les bilans en attente et les clients silencieux, triés par urgence.",
         prompt: "Avec EP Coaching (outil mes_clients), dis-moi quels clients ont besoin de moi aujourd'hui, triés par urgence : bilans en attente de ma réponse, clients sans bilan depuis longtemps. Pour chacun, propose un message court à leur envoyer.",
-      },
-      {
-        title: "Préparer ma réponse à un bilan",
-        hint: "Remplace le prénom par celui de ton client.",
-        prompt: "Ouvre la fiche de Hugo dans EP Coaching (outil fiche_client) et prépare ma réponse à son dernier bilan hebdo : ce qui va bien, ce qu'on ajuste (nutrition, entraînement, pas), et une question pour la semaine. Ton direct et motivant, 120 mots maximum.",
       },
       {
         title: "Ma base clients dans Notion",
@@ -92,6 +117,21 @@ const COACH: PromptGroup[] = [
   {
     title: "Mon contenu",
     cards: [
+      {
+        title: "Retoucher un script puis le publier",
+        hint: "Accroche, description, appel à l'action.",
+        prompt: "Montre-moi mes scripts tournés dans EP Coaching (outil mes_scripts, statut tourne). Pour celui que je choisis, propose une meilleure accroche et une description de post, mets-les à jour avec modifier_script, puis marque-le publié avec publier_script quand je te le dis.",
+      },
+      {
+        title: "Le bon guide pour mon reel",
+        hint: "Le numéro à faire commenter.",
+        prompt: "Cherche dans les guides EP Coaching (outil lister_guides) ceux qui parlent de sèche et de faim. Donne-moi le meilleur pour mon prochain reel avec son numéro, et écris l'appel à l'action « commente ce numéro ».",
+      },
+      {
+        title: "Mon business en chiffres",
+        hint: "Clients, ventes, revenus, abonnés et contenus.",
+        prompt: "Fais-moi le résumé business des 30 derniers jours avec EP Coaching (outil resume_business) : ce qui progresse, ce qui stagne, et les 3 actions qui rapporteraient le plus cette semaine.",
+      },
       {
         title: "Ce qui marche sur mes réseaux",
         hint: "Tes vraies stats, pas des généralités.",
