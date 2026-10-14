@@ -1,5 +1,5 @@
 export interface EmbeddableVideo {
-  type: "youtube" | "vimeo" | "screenpal" | "file" | "link";
+  type: "youtube" | "vimeo" | "screenpal" | "loom" | "file" | "link";
   src: string;
 }
 
@@ -20,6 +20,10 @@ export function resolveVideoEmbed(url: string): EmbeddableVideo | null {
   // (fallback "link" ci-dessous) reste toujours l'option de repli sûre.
   const screenpal = url.match(/(?:go\.)?screenpal\.com\/(?:watch|player)\/([a-zA-Z0-9]+)/);
   if (screenpal) return { type: "screenpal", src: `https://go.screenpal.com/player/${screenpal[1]}` };
+
+  // Loom : lien partagé loom.com/share/<id>, lecteur intégrable loom.com/embed/<id>.
+  const loom = url.match(/loom\.com\/(?:share|embed)\/([a-zA-Z0-9]+)/);
+  if (loom) return { type: "loom", src: `https://www.loom.com/embed/${loom[1]}` };
 
   if (/\.(mp4|webm|mov)(\?.*)?$/i.test(url)) return { type: "file", src: url };
 

@@ -2,7 +2,9 @@
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
+import { alreadyNotifiedToday, getCoachForClient } from "@/utils/insert-notification";
+import { notifyUser } from "@/lib/notify";
+import { after } from "next/server";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
 import { revalidatePath } from "next/cache";
@@ -168,19 +170,24 @@ export async function upsertDailyLog(
       checkWeightObjectiveAchievements(guard.userId, weightLogged, log_date).catch(() => {});
     }
 
-    // Notify coach — fire-and-forget
+    // Coach prévenu (cloche + push) une seule fois par client et par jour :
+    // le bilan se remplit souvent en deux fois (matin puis soir), le coach
+    // n'a besoin de savoir qu'une chose, que c'est fait. after() : l'envoi
+    // n'est jamais coupé par la fin de la requête.
     const clientName = profile?.full_name ?? "Un client";
-    getCoachForClient(guard.userId).then((coach) => {
-      if (!coach) return;
-      insertNotification({
-        userId: coach.id,
+    const clientId = guard.userId;
+    after(async () => {
+      const coach = await getCoachForClient(clientId).catch(() => null);
+      if (!coach || coach.id === clientId) return;
+      if (await alreadyNotifiedToday(coach.id, "new_daily_log", clientId).catch(() => false)) return;
+      await notifyUser(coach.id, {
         type: "new_daily_log",
-        title: `Bilan quotidien de ${clientName}`,
-        body: `${clientName} a soumis son bilan du ${log_date}.`,
-        url: `/dashboard/coach/clients/${guard.userId}/bilan`,
-        senderId: guard.userId,
+        title: `✅ ${clientName} a fait son bilan`,
+        body: `Bilan du jour rempli${log_date ? ` (${log_date.split("-").reverse().join("/")})` : ""}.`,
+        url: `/dashboard/coach/clients/${clientId}/bilan`,
+        senderId: clientId,
       }).catch(() => {});
-    }).catch(() => {});
+    });
 
     revalidatePath("/dashboard/client/bilan");
     revalidatePath("/dashboard/client/nutrition");

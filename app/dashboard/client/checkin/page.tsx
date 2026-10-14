@@ -1,3 +1,4 @@
+import CoachReplyMedia from "@/components/ui/CoachReplyMedia";
 import { getT } from "@/lib/i18n-server";
 export const dynamic = "force-dynamic";
 
@@ -181,14 +182,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
               {replyText}
             </p>
           )}
-          {checkin.coach_video_url && (
-            <video
-              src={checkin.coach_video_url}
-              controls
-              playsInline
-              style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 10 }}
-            />
-          )}
+          <CoachReplyMedia audioUrl={checkin.coach_audio_url} videoUrl={checkin.coach_video_url} videoLink={checkin.coach_video_link} />
         </div>
       )}
     </div>
@@ -349,17 +343,12 @@ export default async function CheckinPage() {
                   <BilanRating rating={(existing.coach_rating ?? existing.bilan_rating)!} />
                 </div>
               )}
-              <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.8)", lineHeight: 1.65, margin: 0 }}>
-                {existing.coach_notes ?? existing.bilan_text}
-              </p>
-              {existing.coach_video_url && (
-                <video
-                  src={existing.coach_video_url}
-                  controls
-                  playsInline
-                  style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 10 }}
-                />
+              {(existing.coach_notes ?? existing.bilan_text) && (
+                <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.8)", lineHeight: 1.65, margin: 0, whiteSpace: "pre-wrap" }}>
+                  {existing.coach_notes ?? existing.bilan_text}
+                </p>
               )}
+              <CoachReplyMedia audioUrl={existing.coach_audio_url} videoUrl={existing.coach_video_url} videoLink={existing.coach_video_link} />
             </div>
           ) : (
             <div className="ep-card" style={{ padding: "16px 18px" }}>

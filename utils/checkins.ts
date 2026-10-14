@@ -84,12 +84,15 @@ export interface CheckIn {
   // Alternative à coach_video_path : lien externe (ScreenPal, YouTube,
   // Vimeo...) plutôt qu'un enregistrement natif dans l'appli.
   coach_video_link: string | null;
+  // Message vocal du coach en retour (bucket "coach-videos").
+  coach_audio_path?: string | null;
   // Media — URLs signées prêtes à afficher, calculées par les fonctions de
   // lecture ci-dessous. Vide par défaut pour les fonctions qui n'ont pas
   // besoin d'afficher les médias (ex. stats, bilans).
   photo_urls: string[];
   video_url: string | null;
   coach_video_url: string | null;
+  coach_audio_url?: string | null;
 }
 
 export interface CheckInWithClient extends CheckIn {
@@ -105,11 +108,11 @@ export interface CheckInWithClientProfile extends CheckIn {
 // résultat est effectivement rendu avec les médias (pas par celles qui ne
 // servent qu'à des compteurs/stats).
 async function withSignedMedia<
-  T extends { photo_paths: string[] | null; video_path: string | null; coach_video_path: string | null }
+  T extends { photo_paths: string[] | null; video_path: string | null; coach_video_path: string | null; coach_audio_path?: string | null }
 >(
   supabase: Awaited<ReturnType<typeof createServerSupabase>>,
   rows: T[]
-): Promise<(T & { photo_urls: string[]; video_url: string | null; coach_video_url: string | null })[]> {
+): Promise<(T & { photo_urls: string[]; video_url: string | null; coach_video_url: string | null; coach_audio_url: string | null })[]> {
   return Promise.all(
     rows.map(async (row) => {
       const photo_urls = row.photo_paths?.length
@@ -127,7 +130,10 @@ async function withSignedMedia<
       const coach_video_url = row.coach_video_path
         ? await getCachedOrCreateSignedUrl(supabase, COACH_VIDEOS_BUCKET, row.coach_video_path, CHECKIN_SIGNED_URL_TTL)
         : null;
-      return { ...row, photo_urls, video_url, coach_video_url };
+      const coach_audio_url = row.coach_audio_path
+        ? await getCachedOrCreateSignedUrl(supabase, COACH_VIDEOS_BUCKET, row.coach_audio_path, CHECKIN_SIGNED_URL_TTL)
+        : null;
+      return { ...row, photo_urls, video_url, coach_video_url, coach_audio_url };
     })
   );
 }

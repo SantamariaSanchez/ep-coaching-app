@@ -18,7 +18,7 @@ export default function EmbeddedVideo({
   const video = resolveVideoEmbed(url);
   if (!video) return null;
 
-  if (video.type === "youtube" || video.type === "vimeo" || video.type === "screenpal") {
+  if (video.type === "youtube" || video.type === "vimeo" || video.type === "screenpal" || video.type === "loom") {
     return (
       <div style={{ aspectRatio: "16 / 9", width: "100%", maxWidth, background: "#000", borderRadius: 10, overflow: "hidden", marginTop: 10 }}>
         <iframe

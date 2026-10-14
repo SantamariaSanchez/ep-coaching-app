@@ -7,10 +7,11 @@ import { ChevronDown, ChevronUp, ExternalLink, Mic } from "lucide-react";
 import { useDictation } from "@/hooks/useDictation";
 import type { CheckIn } from "@/utils/checkins";
 import type { WeeklyAverages } from "@/utils/daily-logs";
-import { replyToCheckin, attachCoachVideo, attachCoachVideoLink } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
+import { replyToCheckin, attachCoachVideo, attachCoachVideoLink, attachCoachAudio } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
 import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
-import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
+import CoachReplyMedia from "@/components/ui/CoachReplyMedia";
+import VoiceNoteRecorder from "@/components/coach/VoiceNoteRecorder";
 import { safeExternalUrl } from "@/lib/sanitize";
 
 const STRESS_HUNGER_LABEL = ["", "Bas", "Moyen", "Haut"];
@@ -101,6 +102,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
   const [videoLinkInput, setVideoLinkInput] = useState("");
   const [videoLink, setVideoLink] = useState<string | null>(null);
   const [linkPending, setLinkPending] = useState(false);
+  const [audioPath, setAudioPath] = useState<string | null>(checkin.coach_audio_path ?? null);
   // Retour plus rapide (2026-10-13) : dictée vocale et trame en un tap.
   const notesRef = useRef<HTMLTextAreaElement>(null);
   function appendToNotes(text: string) {
@@ -139,6 +141,29 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
     }
     setVideoPath(path);
     router.refresh();
+  }
+
+  async function handleAudioSend(blob: Blob) {
+    setVideoError(null);
+    const supabase = createClientSupabase();
+    const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+    const path = `${checkin.client_id}/${checkin.id}-vocal-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("coach-videos")
+      .upload(path, blob, { contentType: blob.type || "audio/webm", upsert: false });
+    if (uploadError) throw uploadError;
+    const result = await attachCoachAudio(checkin.id, checkin.client_id, path);
+    if (result.error) throw new Error(result.error);
+    setAudioPath(path);
+    router.refresh();
+  }
+
+  async function removeAudio() {
+    const result = await attachCoachAudio(checkin.id, checkin.client_id, null);
+    if (!result.error) {
+      setAudioPath(null);
+      router.refresh();
+    }
   }
 
   async function handleVideoLinkSave() {
@@ -195,9 +220,8 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
           ref={notesRef}
           name="coach_notes"
           rows={6}
-          required
           defaultValue={checkin.coach_notes ?? ""}
-          placeholder={t("Analyse, conseils, encouragements…")} aria-label={t("Analyse, conseils, encouragements…")}
+          placeholder={t("Analyse, conseils, encouragements… (facultatif si tu envoies un vocal ou une vidéo)")} aria-label={t("Ton retour écrit")}
           style={{
             width: "100%", background: "rgba(var(--ep-shade-rgb),0.45)", border: "1px solid rgba(var(--ep-line-rgb),0.35)",
             borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "var(--ep-ink)",
@@ -207,6 +231,22 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
       </div>
 
       <div style={{ marginBottom: 12 }}>
+        {audioPath ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ep-ok)" }}>{t("✓ Message vocal joint")}</span>
+            <button
+              type="button"
+              onClick={removeAudio}
+              style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.45)", fontSize: 11, fontWeight: 700, cursor: "pointer", textDecoration: "underline", minHeight: 32 }}
+            >
+              {t("Retirer")}
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginBottom: 10 }}>
+            <VoiceNoteRecorder onSend={handleAudioSend} />
+          </div>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <CoachVideoRecorder onSend={handleVideoSend} triggerLabel="Retour vidéo" />
           {!showLinkInput && (
@@ -215,7 +255,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
               onClick={() => setShowLinkInput(true)}
               style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.4)", fontSize: 11, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
             >
-              {t("ou coller un lien (ScreenPal, YouTube...)")}
+              {t("ou coller un lien Loom")}
             </button>
           )}
           {(videoPath || checkin.coach_video_path) && !videoError && (
@@ -231,8 +271,8 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
             <input
               value={videoLinkInput}
               onChange={(e) => setVideoLinkInput(e.target.value)}
-              placeholder={t("https://go.screenpal.com/watch/...")}
-              aria-label={t("Lien vidéo externe")}
+              placeholder={t("https://www.loom.com/share/...")}
+              aria-label={t("Lien Loom, ScreenPal ou YouTube")}
               style={{
                 flex: 1, background: "rgba(var(--ep-shade-rgb),0.45)", border: "1px solid rgba(var(--ep-line-rgb),0.35)",
                 borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "var(--ep-ink)", outline: "none",
@@ -266,7 +306,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
               borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "var(--ep-ink)", outline: "none",
             }}
           >
-            <option value="">{t("Non renseigné")}</option>
+            <option value="">{t("Aucune")}</option>
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}/10</option>
             ))}
@@ -553,7 +593,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
           )}
 
           {/* ── Coach reply ───────────────────────────────────────────────── */}
-          {checkin.coach_replied_at && checkin.coach_notes && !isEditingReply ? (
+          {checkin.coach_replied_at && !isEditingReply ? (
             <div style={{ paddingTop: 14, borderTop: "1px solid rgba(var(--ep-line-rgb),0.12)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--ep-ok-rgb),0.5)", margin: 0 }}>
@@ -571,21 +611,18 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                   {t("Modifier")}
                 </button>
               </div>
-              <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.72)", lineHeight: 1.6, margin: 0 }}>
-                {checkin.coach_notes}
-              </p>
-              {checkin.coach_video_url && (
-                <video src={checkin.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 10 }} />
+              {checkin.coach_notes && (
+                <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.72)", lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap" }}>
+                  {checkin.coach_notes}
+                </p>
               )}
-              {!checkin.coach_video_url && checkin.coach_video_link && (
-                <EmbeddedVideo url={checkin.coach_video_link} />
-              )}
+              <CoachReplyMedia audioUrl={checkin.coach_audio_url} videoUrl={checkin.coach_video_url} videoLink={checkin.coach_video_link} />
             </div>
           ) : (
             <CoachReplyForm
               checkin={checkin}
               onDone={() => setIsEditingReply(false)}
-              onCancel={checkin.coach_replied_at && checkin.coach_notes ? () => setIsEditingReply(false) : undefined}
+              onCancel={checkin.coach_replied_at ? () => setIsEditingReply(false) : undefined}
             />
           )}
         </div>

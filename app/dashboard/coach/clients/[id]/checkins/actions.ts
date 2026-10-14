@@ -27,9 +27,7 @@ export async function replyToCheckin(
   const coachNotes = ((formData.get("coach_notes") as string | null) ?? "").trim();
   const coachRating = formData.get("coach_rating") as string | null;
 
-  if (!checkinId || !coachNotes) {
-    return { error: "Le retour et la note sont requis." };
-  }
+  if (!checkinId) return { error: "Check-in introuvable." };
 
   const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
@@ -38,7 +36,7 @@ export async function replyToCheckin(
   // et pour refuser un check-in qui n'appartient pas à ce membre.
   const { data: existing, error: readError } = await supabase
     .from("check_ins")
-    .select("id, coach_replied_at")
+    .select("*")
     .eq("id", checkinId)
     .eq("client_id", clientId)
     .maybeSingle();
@@ -48,11 +46,18 @@ export async function replyToCheckin(
     return { error: "Erreur lors de l'envoi du retour, réessaie." };
   }
   if (!existing) return { error: "Check-in introuvable pour ce membre." };
+  // Un retour peut être un vocal ou une vidéo seuls : le texte n'est
+  // obligatoire que s'il n'y a rien d'autre.
+  const media = existing as { coach_video_path?: string | null; coach_video_link?: string | null; coach_audio_path?: string | null };
+  const hasMedia = !!(media.coach_video_path || media.coach_video_link || media.coach_audio_path);
+  if (!coachNotes && !hasMedia) {
+    return { error: "Écris ton retour, ou ajoute un vocal ou une vidéo." };
+  }
 
   const { error } = await supabase
     .from("check_ins")
     .update({
-      coach_notes: coachNotes,
+      coach_notes: coachNotes || null,
       coach_rating: coachRating ? parseInt(coachRating, 10) : null,
       coach_replied_at: new Date().toISOString(),
     })
@@ -77,7 +82,11 @@ export async function replyToCheckin(
     notifyUser(clientId, {
       type: isUpdate ? "client_checkin_reply_updated" : "client_checkin_reply",
       title: isUpdate ? "Ton coach a mis à jour son retour" : "Ton coach a répondu à ton check-in",
-      body: notificationExcerpt(coachNotes),
+      body: coachNotes
+        ? notificationExcerpt(coachNotes)
+        : media.coach_audio_path
+          ? "Il t'a laissé un message vocal, écoute-le."
+          : "Il t'a laissé une vidéo, regarde-la.",
       url: "/dashboard/client/checkin",
       senderId: coachId,
     }).catch(() => {})
@@ -139,6 +148,30 @@ export async function attachCoachVideo(
   const { error } = await supabase
     .from("check_ins")
     .update({ coach_video_path: videoPath })
+    .eq("id", checkinId)
+    .eq("client_id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
+  return {};
+}
+
+// Message vocal du coach en retour de check-in (fichier déjà uploadé côté
+// client dans coach-videos, comme la vidéo).
+export async function attachCoachAudio(
+  checkinId: string,
+  clientId: string,
+  audioPath: string | null
+): Promise<{ error?: string }> {
+  const guard = await requireOwnClient(clientId);
+  if (!guard.ok) return { error: guard.error };
+  if (audioPath && !audioPath.startsWith(`${clientId}/`)) return { error: "Fichier invalide." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("check_ins")
+    .update({ coach_audio_path: audioPath })
     .eq("id", checkinId)
     .eq("client_id", clientId);
 
