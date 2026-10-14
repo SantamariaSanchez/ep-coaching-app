@@ -13,6 +13,8 @@ const lbl =
   "block text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 const MAX_PHOTOS = 4;
+const MAX_VIDEOS = 6;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024; // limite du stockage checkin-media
 // Seuils qui déclenchent la question "pourquoi" sur l'attitude — une note
 // dans la moyenne n'a pas besoin d'explication, une note très basse ou très
 // haute si.
@@ -76,7 +78,8 @@ export default function CheckinForm({
   const t = useT();
   const [state, formAction, isPending] = useActionState(submitCheckin, null);
   const [photos, setPhotos] = useState<MediaItem[]>([]);
-  const [video, setVideo] = useState<MediaItem | null>(null);
+  const [videos, setVideos] = useState<(MediaItem & { label: string; tooBig?: boolean })[]>([]);
+  const [videoLink, setVideoLink] = useState("");
   const [attitudeRating, setAttitudeRating] = useState<number | "">("");
   const [feedbackFormat, setFeedbackFormat] = useState<"ecrit" | "vocal" | "video">("ecrit");
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -132,20 +135,29 @@ export default function CheckinForm({
     });
   }
 
-  async function handleVideoSelected(file: File) {
-    const item: MediaItem = {
+  // Vidéos d'exécution : plusieurs d'un coup depuis la galerie, chacune avec
+  // son exercice. Envoi immédiat, une par une, avec l'état visible.
+  async function handleVideosSelected(files: FileList) {
+    const room = MAX_VIDEOS - videos.length;
+    const toAdd = Array.from(files).slice(0, Math.max(room, 0));
+    const items = toAdd.map((file) => ({
       localId: Math.random().toString(36).slice(2),
       previewUrl: URL.createObjectURL(file),
       path: null,
-      uploading: true,
-      error: false,
-    };
-    setVideo(item);
-    const path = await uploadFile(file);
-    setVideo((prev) => (prev && prev.localId === item.localId ? { ...prev, path, uploading: false, error: !path } : prev));
+      uploading: file.size <= MAX_VIDEO_BYTES,
+      error: file.size > MAX_VIDEO_BYTES,
+      tooBig: file.size > MAX_VIDEO_BYTES,
+      label: "",
+    }));
+    setVideos((prev) => [...prev, ...items]);
+    toAdd.forEach(async (file, i) => {
+      if (file.size > MAX_VIDEO_BYTES) return;
+      const path = await uploadFile(file);
+      setVideos((prev) => prev.map((v) => (v.localId === items[i].localId ? { ...v, path, uploading: false, error: !path } : v)));
+    });
   }
 
-  const mediaUploading = photos.some((p) => p.uploading) || !!video?.uploading;
+  const mediaUploading = photos.some((p) => p.uploading) || videos.some((v) => v.uploading);
 
   if (state && "success" in state) {
     return (
@@ -400,55 +412,85 @@ export default function CheckinForm({
         </div>
       </div>
 
-      {/* ── Vidéo d'exécution ─────────────────────────────────────────────── */}
+      {/* ── Vidéos d'exécution ───────────────────────────────────────────── */}
       <div>
-        <Section title={t("Vidéo d'exécution (correction technique)")} />
-        {video ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 10, padding: "8px 12px" }}>
-            <Video size={14} style={{ color: video.error ? "var(--ep-accent)" : "var(--ep-ok)", flexShrink: 0 }} />
-            <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.6)", flex: 1 }}>
-              {video.uploading ? t("Envoi en cours…") : video.error ? t("Échec de l'envoi") : t("Vidéo prête")}
-            </span>
-            {video.uploading && <Loader2 size={13} className="animate-spin" style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />}
-            <button
-              type="button"
-              onClick={() => setVideo(null)}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
-              aria-label={t("Retirer la vidéo")}
-            >
-              <X size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
-            </button>
-            <input type="hidden" name="video_path" value={video.path ?? ""} />
+        <Section title={t("Vidéos d'exécution")} />
+        <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 10px", lineHeight: 1.5 }}>
+          {t("Ajoute les vidéos de tes séries depuis ta galerie (plusieurs d'un coup). Ton coach les regarde en premier pendant ton retour.")}
+        </p>
+        {videos.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+            {videos.map((v, i) => (
+              <div key={v.localId} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 10, padding: 8 }}>
+                <video src={v.previewUrl} muted playsInline preload="metadata" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, background: "#000", flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <input
+                    value={v.label}
+                    onChange={(e) => setVideos((prev) => prev.map((x) => (x.localId === v.localId ? { ...x, label: e.target.value } : x)))}
+                    placeholder={t("Exercice (ex. squat)")}
+                    aria-label={`${t("Exercice de la vidéo")} ${i + 1}`}
+                    maxLength={80}
+                    style={{ width: "100%", background: "rgba(var(--ep-shade-rgb),0.45)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 8, padding: "8px 10px", fontSize: 13, color: "var(--ep-ink)", outline: "none" }}
+                  />
+                  <span style={{ fontSize: 10.5, color: v.error ? "var(--ep-pink)" : v.uploading ? "rgba(var(--ep-ink-rgb),0.5)" : "var(--ep-ok)", display: "flex", alignItems: "center", gap: 5 }}>
+                    {v.uploading && <Loader2 size={11} className="animate-spin" />}
+                    {v.tooBig ? t("Vidéo trop lourde (100 Mo max) : coupe-la ou colle un lien plus bas.") : v.uploading ? t("Envoi en cours…") : v.error ? t("Échec de l'envoi, retire-la et réessaie.") : t("Vidéo prête")}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setVideos((prev) => prev.filter((x) => x.localId !== v.localId))}
+                  style={{ background: "none", border: "none", cursor: "pointer", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                  aria-label={t("Retirer la vidéo")}
+                >
+                  <X size={15} style={{ color: "rgba(var(--ep-ink-rgb),0.45)" }} />
+                </button>
+                {v.path && !v.error && (
+                  <>
+                    <input type="hidden" name="video_paths" value={v.path} />
+                    <input type="hidden" name="video_labels" value={v.label} />
+                  </>
+                )}
+              </div>
+            ))}
           </div>
-        ) : (
+        )}
+        {videos.length < MAX_VIDEOS && (
           <button
             type="button"
             onClick={() => videoInputRef.current?.click()}
             style={{
-              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              width: "100%", minHeight: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               border: "1px dashed rgba(var(--ep-line-rgb),0.4)", background: "rgba(var(--ep-shade-rgb),0.3)", borderRadius: 10,
-              padding: "10px 0", cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.4)",
+              cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.6)",
             }}
           >
-            <Video size={14} />
-            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("Filmer un exercice à corriger")}</span>
+            <Video size={15} />
+            <span style={{ fontSize: 12, fontWeight: 700 }}>{videos.length ? t("Ajouter une autre vidéo") : t("Ajouter mes vidéos")}</span>
           </button>
         )}
         <input
           ref={videoInputRef}
           type="file"
           accept="video/*"
-          aria-label={t("Filmer un exercice à corriger")}
+          multiple
+          aria-label={t("Ajouter mes vidéos d'exécution")}
           className="hidden"
           onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleVideoSelected(file);
+            if (e.target.files?.length) handleVideosSelected(e.target.files);
             e.target.value = "";
           }}
         />
-        <p style={{ fontSize: 9, color: "rgba(var(--ep-ink-rgb),0.2)", marginTop: 6 }}>
-          {t("Optionnel : pour un retour technique de ton coach sur un exercice précis.")}
-        </p>
+        <input
+          name="video_drive_link"
+          value={videoLink}
+          onChange={(e) => setVideoLink(e.target.value)}
+          type="url"
+          inputMode="url"
+          placeholder={t("Ou colle un lien (Drive, YouTube...) si une vidéo est trop lourde")}
+          aria-label={t("Lien vers tes vidéos")}
+          style={{ marginTop: 8, width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "var(--ep-ink)", outline: "none" }}
+        />
       </div>
 
       {state && "error" in state && (

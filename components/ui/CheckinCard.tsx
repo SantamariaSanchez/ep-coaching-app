@@ -3,7 +3,8 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, ExternalLink, Mic } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, Mic, PlayCircle } from "lucide-react";
+import Link from "next/link";
 import { useDictation } from "@/hooks/useDictation";
 import type { CheckIn } from "@/utils/checkins";
 import type { WeeklyAverages } from "@/utils/daily-logs";
@@ -590,6 +591,19 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                 </a>
               )}
             </div>
+          )}
+
+          {/* ── Check-in guidé (vidéos, photos, réponses, programme, diète, envoi) ── */}
+          {!checkin.coach_replied_at && (
+            <Link
+              href={`/dashboard/coach/clients/${checkin.client_id}/checkins/${checkin.id}`}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 48, marginTop: 16,
+                borderRadius: 12, background: "var(--ep-accent)", color: "var(--ep-strong)", fontWeight: 800, fontSize: 14, textDecoration: "none",
+              }}
+            >
+              <PlayCircle size={18} /> {t("Faire le check-in")}
+            </Link>
           )}
 
           {/* ── Coach reply ───────────────────────────────────────────────── */}

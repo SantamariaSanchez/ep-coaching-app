@@ -10,11 +10,12 @@ import { ChevronLeft } from "lucide-react";
 
 export default async function ClientCheckinsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ envoye?: string }>;
 }) {
-  const t = await getT();
-  const { id } = await params;
+  const [t, { id }, { envoye }] = await Promise.all([getT(), params, searchParams]);
 
   const user = await getUser();
   if (!user) redirect("/");
@@ -67,6 +68,12 @@ export default async function ClientCheckinsPage({
           </p>
         </div>
       </div>
+
+      {envoye === "1" && (
+        <div role="status" className="mb-6 rounded-xl border border-(--ep-ok)/30 bg-(--ep-ok)/10 px-4 py-3 text-sm font-semibold text-(--ep-ok)">
+          {t("Retour envoyé. Ton client a reçu une notification et un e-mail.")}
+        </div>
+      )}
 
       <CheckinDaySettings clientId={id} currentDay={client.checkin_day} />
 

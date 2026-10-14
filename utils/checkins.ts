@@ -78,6 +78,9 @@ export interface CheckIn {
   video_drive_link: string | null;
   photo_paths: string[] | null;
   video_path: string | null;
+  // Plusieurs vidéos d'exécution (et le nom de l'exercice de chacune).
+  video_paths?: string[] | null;
+  video_labels?: string[] | null;
   // Retour vidéo type Loom du coach, attaché à ce check-in (bucket
   // "coach-videos", distinct du video_path du client ci-dessus).
   coach_video_path: string | null;
@@ -93,6 +96,7 @@ export interface CheckIn {
   video_url: string | null;
   coach_video_url: string | null;
   coach_audio_url?: string | null;
+  video_items?: { url: string; label: string | null }[];
 }
 
 export interface CheckInWithClient extends CheckIn {
@@ -108,11 +112,11 @@ export interface CheckInWithClientProfile extends CheckIn {
 // résultat est effectivement rendu avec les médias (pas par celles qui ne
 // servent qu'à des compteurs/stats).
 async function withSignedMedia<
-  T extends { photo_paths: string[] | null; video_path: string | null; coach_video_path: string | null; coach_audio_path?: string | null }
+  T extends { photo_paths: string[] | null; video_path: string | null; video_paths?: string[] | null; video_labels?: string[] | null; coach_video_path: string | null; coach_audio_path?: string | null }
 >(
   supabase: Awaited<ReturnType<typeof createServerSupabase>>,
   rows: T[]
-): Promise<(T & { photo_urls: string[]; video_url: string | null; coach_video_url: string | null; coach_audio_url: string | null })[]> {
+): Promise<(T & { photo_urls: string[]; video_url: string | null; coach_video_url: string | null; coach_audio_url: string | null; video_items: { url: string; label: string | null }[] })[]> {
   return Promise.all(
     rows.map(async (row) => {
       const photo_urls = row.photo_paths?.length
@@ -133,7 +137,16 @@ async function withSignedMedia<
       const coach_audio_url = row.coach_audio_path
         ? await getCachedOrCreateSignedUrl(supabase, COACH_VIDEOS_BUCKET, row.coach_audio_path, CHECKIN_SIGNED_URL_TTL)
         : null;
-      return { ...row, photo_urls, video_url, coach_video_url, coach_audio_url };
+      const paths = row.video_paths?.length ? row.video_paths : row.video_path ? [row.video_path] : [];
+      const video_items = (
+        await Promise.all(
+          paths.map(async (p, i) => {
+            const url = await getCachedOrCreateSignedUrl(supabase, CHECKIN_MEDIA_BUCKET, p, CHECKIN_SIGNED_URL_TTL);
+            return url ? { url, label: row.video_labels?.[i] || null } : null;
+          })
+        )
+      ).filter((v): v is { url: string; label: string | null } => !!v);
+      return { ...row, photo_urls, video_url, coach_video_url, coach_audio_url, video_items };
     })
   );
 }

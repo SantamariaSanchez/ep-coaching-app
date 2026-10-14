@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { safeExternalUrl } from "@/lib/sanitize";
 import { notifyUser } from "@/lib/notify";
+import { sendBrevoEmail } from "@/utils/brevo";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Aperçu du retour dans la notification : assez pour donner envie d'ouvrir,
 // jamais le texte entier (un retour de check-in peut faire plusieurs paragraphes).
@@ -78,6 +80,21 @@ export async function replyToCheckin(
   // promesse non attendue peut être coupée à la fin de la fonction).
   const isUpdate = existing.coach_replied_at != null;
   const coachId = guard.userId;
+  // E-mail au client en plus de la notification, pour qu'il ouvre son retour
+  // même s'il n'a pas l'appli ouverte (première réponse seulement).
+  if (!isUpdate) {
+    after(async () => {
+      const { data: client } = await supabase.from("profiles").select("email, full_name").eq("id", clientId).maybeSingle();
+      if (!client?.email) return;
+      const first = (client.full_name ?? "").split(" ")[0] || "";
+      const url = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/dashboard/client/checkin`;
+      await sendBrevoEmail({
+        to: client.email,
+        subject: "Ton coach a répondu à ton check-in",
+        htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;"><h2 style="color:#E01E1E;margin-top:0;">Ton retour est prêt${first ? `, ${escapeHtml(first)}` : ""}</h2><p>Ton coach a fait le point sur ta semaine : ${media.coach_audio_path ? "message vocal" : media.coach_video_link || media.coach_video_path ? "vidéo" : "retour écrit"}, ajustements et focus pour la suite.</p><a href="${url}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">Voir mon retour</a></div>`,
+      }).catch(() => {});
+    });
+  }
   after(() =>
     notifyUser(clientId, {
       type: isUpdate ? "client_checkin_reply_updated" : "client_checkin_reply",

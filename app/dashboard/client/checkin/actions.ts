@@ -62,6 +62,11 @@ export async function submitCheckin(
     .map((v) => (v as string).trim())
     .filter(Boolean);
 
+  // Vidéos d'exécution : plusieurs possibles, chacune avec son exercice.
+  const videoPaths = formData.getAll("video_paths").map((v) => (v as string).trim()).filter(Boolean).slice(0, 6);
+  const videoLabels = formData.getAll("video_labels").map((v) => ((v as string) ?? "").trim().slice(0, 80)).slice(0, videoPaths.length);
+  const videoLink = txt(formData.get("video_drive_link"));
+
   const attitudeRating = num(formData.get("attitude_rating"));
   const attitudeExplanation = txt(formData.get("attitude_explanation"));
   if (attitudeRating != null && (attitudeRating <= 3 || attitudeRating >= 8) && !attitudeExplanation) {
@@ -97,7 +102,9 @@ export async function submitCheckin(
     // Médias — déjà uploadés côté client (voir CheckinForm), on ne reçoit ici
     // que les chemins de stockage, jamais les fichiers eux-mêmes.
     photo_paths: photoPaths.length > 0 ? photoPaths : null,
-    video_path: txt(formData.get("video_path")),
+    video_path: videoPaths[0] ?? txt(formData.get("video_path")),
+    ...(videoPaths.length > 0 ? { video_paths: videoPaths, video_labels: videoLabels } : {}),
+    ...(videoLink ? { video_drive_link: videoLink } : {}),
   });
 
   if (error) return { error: error.message };

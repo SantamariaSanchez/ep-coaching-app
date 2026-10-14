@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
+import CheckinReturnBar from "@/components/coach/CheckinReturnBar";
 
 // Bloque l'accès à tout l'espace coach tant que l'abonnement plateforme
 // n'est pas actif — sauf le propriétaire historique (is_platform_owner),
@@ -16,5 +17,10 @@ export default async function CoachDashboardLayout({ children }: { children: Rea
     redirect("/dashboard/coach-pending");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <CheckinReturnBar />
+    </>
+  );
 }
