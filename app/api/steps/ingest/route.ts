@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import { todayInParis } from "@/lib/dates";
@@ -139,7 +139,9 @@ export async function POST(req: Request) {
   const pct = goal > 0 ? Math.round((latestSteps / goal) * 100) : 0;
 
   if (latestDate === today && goal > 0 && latestSteps >= goal) {
-    notifyCoachGoalReached(owner.user_id, today, latestSteps).catch(() => {});
+    // after() : sans ça, la notif au coach se perdait quand la fonction
+    // s'arrête dès la réponse envoyée.
+    after(() => notifyCoachGoalReached(owner.user_id, today, latestSteps).catch(() => {}));
   }
 
   const message =
