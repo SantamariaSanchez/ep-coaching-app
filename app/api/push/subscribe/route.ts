@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     const rows = (existing ?? []) as { id: string; endpoint: string | null; quiet_hours_start: number | null; quiet_hours_end: number | null }[];
     const quiet = rows[0] ? { quiet_hours_start: rows[0].quiet_hours_start, quiet_hours_end: rows[0].quiet_hours_end } : {};
     await supabase.from("push_subscriptions").upsert(
-      { user_id: guard.userId, subscription, endpoint, updated_at: new Date().toISOString(), ...quiet },
+      { user_id: guard.userId, subscription, endpoint, updated_at: new Date().toISOString(), user_agent: req.headers.get("user-agent")?.slice(0, 300) ?? null, ...quiet },
       { onConflict: "user_id,endpoint" }
     );
     // Au delà de 6 appareils, les plus anciens sont oubliés.

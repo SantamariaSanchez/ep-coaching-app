@@ -54,6 +54,24 @@ self.addEventListener("push", (event) => {
       // Si aucun onglet n'est ouvert, seule la notification système (avec
       // vibration) reste disponible : Apple/Android ne laissent pas un
       // service worker jouer du son en tâche de fond hors app ouverte.
+      // Accusé de réception : mesure le retard réel entre l'envoi (pile à
+      // l'heure côté serveur) et l'arrivée sur l'appareil. Un téléphone qui
+      // retient les notifs (économie de batterie) est ainsi repéré, et
+      // l'appli affiche le réglage à faire.
+      if (data.sentAt) {
+        try {
+          const sub = await self.registration.pushManager.getSubscription();
+          await fetch("/api/push/ack", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sentAt: data.sentAt, endpoint: sub ? sub.endpoint : null }),
+            credentials: "include",
+          });
+        } catch {
+          // accusé de réception best-effort : la notif est déjà affichée
+        }
+      }
+
       if (isAlarm) {
         const windowClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
         for (const client of windowClients) {

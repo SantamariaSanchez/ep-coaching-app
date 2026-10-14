@@ -8,6 +8,7 @@ import InstallAppHint from "@/components/ui/InstallAppHint";
 import { PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
 import { setQuietHours } from "@/app/actions/quiet-hours";
 import { sendTestPush, scheduleLockedTestPush } from "@/app/actions/notifications";
+import PushDeliveryAlert from "@/components/settings/PushDeliveryAlert";
 
 // Item 50 : même défaut que lib/quiet-hours.ts côté serveur — affiché tel
 // quel tant que l'utilisateur n'a rien choisi explicitement.
@@ -164,6 +165,7 @@ export default function PermissionsCard({
   return (
     <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-4">{tr("Autorisations")}</p>
+      <PushDeliveryAlert />
 
       <div className="pb-4 mb-4 border-b border-(--ep-line)/10">
         <div className="flex items-center justify-between gap-3">

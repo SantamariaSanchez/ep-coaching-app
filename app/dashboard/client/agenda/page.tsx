@@ -5,6 +5,7 @@ import { getScheduleBlocks, getScheduleBlockTaskLog } from "@/utils/agenda";
 import { getDailyHabitScore, getWeeklyHabitScores, currentStreak } from "@/lib/habit-score";
 import { todayInParis } from "@/lib/dates";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
+import PushDeliveryAlert from "@/components/settings/PushDeliveryAlert";
 import HabitScoreCard from "@/components/ui/HabitScoreCard";
 import HabitScoreTrend from "@/components/ui/HabitScoreTrend";
 import {
@@ -49,6 +50,8 @@ export default async function ClientAgendaPage() {
         <HabitScoreCard habitScore={habitScore} />
         <HabitScoreTrend points={weeklyScores} streak={streak} />
       </div>
+
+      <PushDeliveryAlert />
 
       <WeeklyAgenda
         blocks={blocks}

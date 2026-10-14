@@ -97,13 +97,17 @@ export async function sendPushToUser(
     // urgency "high" demande une remise immédiate, et un TTL court évite
     // qu'un envoi resté en attente ne "rattrape" son retard bien après coup
     // (une notif "repas 17h" livrée à 19h n'a plus de sens).
-    const payload = JSON.stringify({ title, body, url: url ?? "/", type, blockId });
+    // sentAt : le service worker renvoie un accusé de réception (voir
+    // /api/push/ack) pour mesurer le retard réel de livraison sur l'appareil.
+    const sentAt = Date.now();
+    const payload = JSON.stringify({ title, body, url: url ?? "/", type, blockId, sentAt });
     let delivered = 0;
     let lastError: unknown = null;
     for (const sub of all) {
       try {
         await webpush.sendNotification(sub.subscription as webpush.PushSubscription, payload, { urgency: "high", TTL: type === "alarm" ? 1800 : 900 });
         delivered++;
+        await supabase.from("push_subscriptions").update({ last_sent_at: new Date(sentAt).toISOString() }).eq("id", sub.id);
       } catch (e) {
         const code = (e as { statusCode?: number })?.statusCode;
         // Appareil désabonné (404/410) : on l'oublie, les autres continuent.
