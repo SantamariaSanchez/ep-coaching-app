@@ -27,8 +27,7 @@ async function canMemberSend(coachId: string, clientId: string): Promise<boolean
 }
 
 export default async function ClientMessagesPage() {
-  const t = await getT();
-  const user = await getUser();
+  const [t, user] = await Promise.all([getT(), getUser()]);
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
@@ -62,12 +61,16 @@ export default async function ClientMessagesPage() {
     );
   }
 
+  // Le coach et le droit d'écrire se lisent en même temps.
   const admin = createAdminClient();
-  const { data: coachProfile } = await admin
-    .from("profiles")
-    .select("full_name, is_platform_owner, role, subscription_status, is_ai_coach")
-    .eq("id", coachId)
-    .maybeSingle();
+  const [{ data: coachProfile }, canSend] = await Promise.all([
+    admin
+      .from("profiles")
+      .select("full_name, is_platform_owner, role, subscription_status, is_ai_coach")
+      .eq("id", coachId)
+      .maybeSingle(),
+    isSubscribed(profile) ? Promise.resolve(true) : canMemberSend(coachId, user.id),
+  ]);
   const coachIsAI = coachProfile?.is_ai_coach === true;
   const coachName: string = coachProfile?.full_name ?? "Ton coach";
   const coachInitials = coachName
@@ -86,7 +89,6 @@ export default async function ClientMessagesPage() {
 
   // conversation_id is always the client's ID
   const conversationId = user.id;
-  const canSend = isSubscribed(profile) || (await canMemberSend(coachId, user.id));
 
   return (
     <div className="max-w-2xl mx-auto page-transition">

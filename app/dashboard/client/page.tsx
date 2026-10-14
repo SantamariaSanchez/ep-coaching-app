@@ -551,8 +551,8 @@ export default async function ClientDashboard({
 }: {
   searchParams: Promise<{ onboarded?: string }>;
 }) {
-  const t = await getT();
-  const user = await getUser();
+  // Traduction, session, paramètres et langue lus d'un coup (au lieu d'une file d'attente).
+  const [t, user, { onboarded }, locale] = await Promise.all([getT(), getUser(), searchParams, getLocale()]);
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
@@ -564,7 +564,6 @@ export default async function ClientDashboard({
   // l'onboarding navigue ici sans attendre la confirmation serveur (retour
   // instantané voulu) : ?onboarded=1 evite un aller-retour vers /onboarding
   // si l'ecriture onboarding_completed_at n'a pas encore atterri en base.
-  const { onboarded } = await searchParams;
   if (profile && !profile.onboarding_completed_at && onboarded !== "1") redirect("/onboarding");
 
   // Free community members get a welcome guide instead of the coached
@@ -640,7 +639,6 @@ export default async function ClientDashboard({
   const rawFirst = profile?.full_name?.split(" ")[0] ?? "";
   const firstName = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1).toLowerCase() : "";
   const greeting = t(timeAwareGreeting(Number(nowInParis().hhmm.split(":")[0])));
-  const locale = await getLocale();
   const today = new Date();
   const formattedDate = (() => {
     const s = new Intl.DateTimeFormat(intlLocale(locale), {
