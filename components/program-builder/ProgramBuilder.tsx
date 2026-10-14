@@ -27,7 +27,7 @@ import type { ProgramTemplateWithDays, ProgramTemplateInput } from "@/utils/prog
 import type { LibraryExercise } from "@/utils/exercise-library";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import { TENSION_FOCUS_LABELS, TENSION_FOCUS_OPTIONS } from "@/lib/exercise-library-content";
-import { findSwapCandidate } from "@/lib/plan-generator";
+import { findSwapCandidate, generateProgramDraft } from "@/lib/plan-generator";
 import { computeMesocycleStatus } from "@/lib/mesocycle";
 import SessionSheet from "./SessionSheet";
 import ClientContextPanel, { plannedVolume, volumeColor, SPORT_BLOCK, type ContextPhotos } from "./ClientContextPanel";
@@ -35,10 +35,12 @@ import {
   type SheetDay,
   type SheetRow,
   SPLITS,
+  DEFAULT_ROWS,
   daysFromProgram,
   daysFromTemplate,
   daysToInput,
   emptyDay,
+  emptyRow,
   isGeneratedLabel,
   isRowFilled,
   splitLabels,
@@ -214,6 +216,13 @@ export default function ProgramBuilder({
 
   function setSplit(key: string) {
     update((s) => {
+      // Aucune séance encore : choisir le split les crée directement (le
+      // nombre voulu par le client s'il l'a donné, sinon le classique du
+      // split), sans repasser par « Combien de séances ? ».
+      if (s.days.length === 0 && key !== "Custom") {
+        const n = suggestedCount ?? (key === "Upper/Lower" ? 4 : key === "PPL" ? 3 : 3);
+        return { ...s, type: key, days: splitLabels(key, n).map((l) => emptyDay(l)) };
+      }
       const labels = splitLabels(key, Math.max(s.days.length, 1));
       return {
         ...s,
@@ -275,6 +284,42 @@ export default function ProgramBuilder({
       type: t.type ?? s.type,
       objective: s.objective || t.objective || "",
       days: daysFromTemplate(t),
+    }));
+  }
+
+  // Base automatique : toute la semaine pré-remplie d'après la fiche
+  // (blessures, exercices qui font mal, matériel détesté, salle ou maison),
+  // avec séries/reps/RIR/repos par défaut. Le coach n'a plus qu'à ajuster.
+  const baseCount = sessionCount || suggestedCount || 4;
+  async function generateBase(n: number) {
+    setTemplateMenu(false);
+    if (library.length === 0) {
+      setError(tr("La bibliothèque d'exercices charge encore, réessaie dans une seconde."));
+      return;
+    }
+    if (state.days.some((d) => d.rows.some(isRowFilled)) && !(await confirm(tr("La base automatique remplace les séances en cours. Continuer ?")))) return;
+    const draft = generateProgramDraft(
+      n,
+      library,
+      intake?.disliked_equipment ?? null,
+      intake?.exercises_problematic ?? null,
+      intake?.training_access ?? null,
+      intake?.injuries ?? null
+    );
+    update((s) => ({
+      ...s,
+      type: "Custom",
+      days: draft.map((d) => {
+        const rows = d.exercises.map((e) => ({
+          ...emptyRow({ sets: e.sets, reps: e.reps, rir: e.rir, rest: `${Math.floor(Number(e.rest_seconds) / 60)}:${String(Number(e.rest_seconds) % 60).padStart(2, "0")}` }),
+          name: e.name,
+          muscle_group: e.muscle_group,
+          muscle_subgroup: e.muscle_subgroup ?? "",
+          is_direct: e.is_direct,
+        }));
+        while (rows.length < DEFAULT_ROWS) rows.push(emptyRow());
+        return { ...emptyDay(d.dayLabel, 0), rows };
+      }),
     }));
   }
 
@@ -503,6 +548,10 @@ export default function ProgramBuilder({
               </button>
               {templateMenu && (
                 <div className="absolute right-0 top-full mt-1 z-30 w-72 max-h-80 overflow-y-auto rounded-lg border border-(--ep-line)/50 bg-(--ep-s3) shadow-2xl py-1">
+                  <button type="button" onClick={() => generateBase(baseCount)} className="w-full text-left px-3 py-2 text-[12.5px] hover:bg-(--ep-line)/30 border-b border-(--ep-line)/25">
+                    <span className="font-semibold text-(--ep-accent)">{tr("Base automatique ({n} séances)", { n: baseCount })}</span>
+                    <span className="block text-[10.5px] text-(--ep-ink)/40">{tr("Pré-remplie selon sa fiche : blessures, matériel, salle ou maison")}</span>
+                  </button>
                   {program && program.days.length > 0 && (
                     <button type="button" onClick={loadCurrentProgram} className="w-full text-left px-3 py-2 text-[12.5px] hover:bg-(--ep-line)/30">
                       <span className="font-semibold text-(--ep-strong)">{tr("Son programme actuel")}</span>
@@ -665,6 +714,13 @@ export default function ProgramBuilder({
                 </button>
               ))}
             </div>
+            <p className="mt-4 text-[12px] text-(--ep-ink)/50">
+              {tr("ou")}{" "}
+              <button type="button" onClick={() => generateBase(baseCount)} className="font-bold text-(--ep-accent) underline underline-offset-2">
+                {tr("génère une base complète de {n} séances", { n: baseCount })}
+              </button>{" "}
+              {tr("adaptée à sa fiche, puis ajuste")}
+            </p>
             {templates.length > 0 && (
               <p className="mt-4 text-[11.5px] text-(--ep-ink)/40">
                 {tr("ou")}{" "}

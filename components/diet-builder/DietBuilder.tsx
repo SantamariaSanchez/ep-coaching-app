@@ -227,6 +227,30 @@ export default function DietBuilder({
     setDrafts((d) => ({ ...d }));
   }
 
+  // Copier un repas (ex. même collation matin et après-midi) ou le
+  // reporter sur toute la semaine, sans ressaisir aliment par aliment.
+  function copyMeal(from: string, to: string) {
+    const src = slotRows(from);
+    if (!src.length) return;
+    if (to === "__week") {
+      setRows((prev) => [
+        ...prev.filter((r) => !(r.slot === from && r.day !== currentDay)),
+        ...WEEK.filter((d) => d !== currentDay).flatMap((d) => src.map((r) => ({ ...r, id: uid(), day: d }))),
+      ]);
+      return;
+    }
+    setRows((prev) => [...prev, ...src.map((r) => ({ ...r, id: uid(), slot: to }))]);
+    if (!slots.includes(to)) setSlots((prev) => [...prev, to]);
+  }
+
+  async function clearMeal(slot: string) {
+    const list = slotRows(slot);
+    if (!list.length) return;
+    if (!(await confirm(tr("Vider ce repas ({n} aliment(s)) ?", { n: list.length })))) return;
+    const ids = new Set(list.map((r) => r.id));
+    setRows((prev) => prev.filter((r) => !ids.has(r.id)));
+  }
+
   function swap(r: Row) {
     const current = foodById.get(r.foodId);
     if (!current) return;
@@ -604,9 +628,38 @@ export default function DietBuilder({
                 <section key={slot.key} className="rounded-xl border border-(--ep-line)/30 bg-(--ep-s5) overflow-hidden">
                   <div className="flex items-center justify-between gap-2 px-3 py-2 bg-(--ep-s3) border-b border-(--ep-line)/20">
                     <p className="text-[13px] font-black uppercase tracking-wide text-(--ep-strong)">{tr(slot.label)}</p>
-                    <p className="text-[11px] text-(--ep-ink)/50">
-                      <b className="text-(--ep-strong)">{Math.round(st.calories)}</b> kcal · P {Math.round(st.proteins)} · G {Math.round(st.carbs)} · L {Math.round(st.fats)}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      {list.length > 0 && (
+                        <>
+                          <select
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) copyMeal(slot.key, e.target.value);
+                            }}
+                            aria-label={tr("Copier ce repas vers")}
+                            className="h-7 max-w-[130px] rounded-md border border-(--ep-line)/30 bg-(--ep-shade)/20 px-1.5 text-[11px] font-semibold text-(--ep-ink)/60"
+                          >
+                            <option value="">{tr("Copier vers…")}</option>
+                            {structure === "weekly" && <option value="__week">{tr("Tous les jours")}</option>}
+                            {MEAL_SLOTS.filter((m) => m.key !== slot.key).map((m) => (
+                              <option key={m.key} value={m.key}>{tr(m.label)}</option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => clearMeal(slot.key)}
+                            aria-label={tr("Vider ce repas")}
+                            title={tr("Vider ce repas")}
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-(--ep-ink)/35 hover:text-(--ep-bad)"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </>
+                      )}
+                      <p className="text-[11px] text-(--ep-ink)/50">
+                        <b className="text-(--ep-strong)">{Math.round(st.calories)}</b> kcal · P {Math.round(st.proteins)} · G {Math.round(st.carbs)} · L {Math.round(st.fats)}
+                      </p>
+                    </div>
                   </div>
                   {isMobile ? (
                     <div className="divide-y divide-(--ep-line)/15">
