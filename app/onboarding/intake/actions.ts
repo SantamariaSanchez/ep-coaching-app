@@ -4,6 +4,11 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { getCoachForClient } from "@/utils/insert-notification";
+import { notifyUser } from "@/lib/notify";
+import { sendBrevoEmail } from "@/utils/brevo";
+import { escapeHtml } from "@/lib/sanitize";
 import {
   ONBOARDING_SECTIONS,
   INTAKE_FIELD_MAP,
@@ -122,6 +127,33 @@ export async function submitOnboardingIntake(
       { onConflict: "client_id" }
     );
   if (error) return { error: "Erreur lors de l'enregistrement : " + error.message };
+
+  // Le coach reçoit la fiche tout de suite (cloche + push + e-mail), avec un
+  // lien direct vers l'onglet Fiche du client : c'est le moment où il
+  // commence à concevoir le programme, la diète et la road map.
+  const clientId = guard.userId;
+  const clientName = [prenom, nom].filter(Boolean).join(" ") || "Ton nouveau client";
+  after(async () => {
+    const coach = await getCoachForClient(clientId).catch(() => null);
+    if (!coach || coach.id === clientId) return;
+    const url = `/dashboard/coach/clients/${clientId}?tab=intake`;
+    await Promise.allSettled([
+      notifyUser(coach.id, {
+        type: "client_intake_done",
+        title: `📝 ${clientName} a rempli son questionnaire`,
+        body: "Objectifs, historique, mode de vie, photos : sa fiche est prête, tu peux préparer son programme.",
+        url,
+        senderId: clientId,
+      }),
+      coach.email
+        ? sendBrevoEmail({
+            to: coach.email,
+            subject: `${clientName} a rempli son questionnaire de coaching`,
+            htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;"><h2 style="color:#E01E1E;margin-top:0;">Nouvelle fiche client</h2><p>${escapeHtml(clientName)} vient de remplir son questionnaire de coaching. Sa fiche complète t'attend dans l'appli.</p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}${url}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">Voir sa fiche</a></div>`,
+          })
+        : Promise.resolve(),
+    ]);
+  });
 
   revalidatePath("/dashboard/client");
   revalidatePath("/dashboard/coach/clients");
