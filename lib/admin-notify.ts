@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { escapeHtml } from "@/lib/sanitize";
 import { notifyUsers } from "@/lib/notify";
@@ -20,7 +21,29 @@ const ADMIN_EMAIL = "peccoux.manu@gmail.com";
 // inscrit, quand il y a des coachs, quand il y a une candidature ») : en plus
 // de l'email, chaque événement arrive en notification sur le téléphone du
 // fondateur (cloche + push), sauf les récaps passés en { push: false }.
-export async function notifyAdmin(
+export function notifyAdmin(
+  subject: string,
+  bodyLines: string[],
+  opts?: { push?: boolean; url?: string }
+): Promise<void> {
+  return runAfterResponse(() => sendAdminNotification(subject, bodyLines, opts));
+}
+
+// Beaucoup d'appelants lancent la notif sans l'attendre : sur Vercel, la
+// fonction s'arrête dès la réponse envoyée et la notif partait rarement
+// (retour direct 2026-10-14 : « je suis censé recevoir des notifs quand un
+// coach ajoute son client »). after() garde la fonction en vie jusqu'à la
+// fin de l'envoi ; hors requête (script), on envoie tout de suite.
+function runAfterResponse(task: () => Promise<void>): Promise<void> {
+  try {
+    after(task);
+    return Promise.resolve();
+  } catch {
+    return task();
+  }
+}
+
+async function sendAdminNotification(
   subject: string,
   bodyLines: string[],
   opts?: { push?: boolean; url?: string }
@@ -38,7 +61,7 @@ export async function notifyAdmin(
     }),
   ];
   if (opts?.push !== false) {
-    tasks.push(pushFounder({ title: subject, body: htmlToText(bodyLines.slice(0, 2).join(" · ")), url: opts?.url }));
+    tasks.push(sendFounderPush({ title: subject, body: htmlToText(bodyLines.slice(0, 2).join(" · ")), url: opts?.url }));
   }
   await Promise.allSettled(tasks);
 }
@@ -75,7 +98,11 @@ async function platformOwnerIds(): Promise<string[]> {
  * onboarding terminé...). Type « admin_event » : jamais coupé par erreur
  * avec la communauté, réglable comme « Mon coaching ».
  */
-export async function pushFounder(params: { title: string; body?: string; url?: string }): Promise<void> {
+export function pushFounder(params: { title: string; body?: string; url?: string }): Promise<void> {
+  return runAfterResponse(() => sendFounderPush(params));
+}
+
+async function sendFounderPush(params: { title: string; body?: string; url?: string }): Promise<void> {
   try {
     const ids = await platformOwnerIds();
     if (!ids.length) return;

@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { startCalibrationPhase, endCoachingPhaseTracking } from "@/lib/coaching-phase";
 import { notifyUser } from "@/lib/notify";
 import { getClientIntake } from "@/utils/client-intake";
+import { notifyAdmin } from "@/lib/admin-notify";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Activer/désactiver le coaching individuel d'un client manuellement, avec
 // plan/échéance/note optionnels journalisés dans subscription_events. Le
@@ -75,6 +77,27 @@ export async function setClientSubscriptionStatus(
     }
   } else if (wasActive && status !== "active") {
     await endCoachingPhaseTracking(clientId, guard.userId);
+  }
+
+  // Le fondateur suit en direct les clients que les coachs ajoutent ou
+  // retirent de leur coaching (ses propres clients ne le notifient pas).
+  if (wasActive !== (status === "active")) {
+    const { data: people } = await admin.from("profiles").select("id, full_name, email, is_platform_owner").in("id", [clientId, guard.userId]);
+    const coach = people?.find((p) => p.id === guard.userId);
+    const client = people?.find((p) => p.id === clientId);
+    if (coach && !coach.is_platform_owner) {
+      const coachName = escapeHtml(coach.full_name ?? coach.email ?? "Un coach");
+      const clientName = escapeHtml(client?.full_name ?? client?.email ?? "un client");
+      void notifyAdmin(
+        status === "active" ? `${coach.full_name ?? "Un coach"} a ajouté un client en coaching` : `${coach.full_name ?? "Un coach"} a arrêté un coaching`,
+        [
+          `<strong>${coachName}</strong> ${status === "active" ? "a activé le coaching de" : "a arrêté le coaching de"} <strong>${clientName}</strong>`,
+          options?.plan ? `Formule : ${escapeHtml(options.plan)}` : "",
+          options?.note?.trim() ? `Note : ${escapeHtml(options.note.trim())}` : "",
+        ].filter(Boolean),
+        { url: "/dashboard/coach/admin" }
+      );
+    }
   }
 
   revalidatePath("/dashboard/coach/clients");

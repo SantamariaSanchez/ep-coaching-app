@@ -1,5 +1,7 @@
 "use server";
 
+import { notifyAdmin } from "@/lib/admin-notify";
+import { escapeHtml } from "@/lib/sanitize";
 import { requireClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -40,6 +42,14 @@ export async function chooseNewCoach(coachId: string): Promise<{ error?: string;
 
   // Fire-and-forget : un coach IA se présente vraiment, jamais bloquant.
   maybeSendAICoachWelcome(guard.userId, target.id).catch(() => {});
+
+  // Le fondateur voit en direct qui rejoint quel coach.
+  const { data: people } = await admin.from("profiles").select("id, full_name, email, is_ai_coach").in("id", [guard.userId, target.id]);
+  const me = people?.find((p) => p.id === guard.userId);
+  const coach = people?.find((p) => p.id === target.id);
+  void notifyAdmin(`${me?.full_name ?? "Un membre"} a choisi un coach`, [
+    `<strong>${escapeHtml(me?.full_name ?? me?.email ?? "Un membre")}</strong> a choisi <strong>${escapeHtml(coach?.full_name ?? "un coach")}</strong>${coach?.is_ai_coach ? " (coach IA)" : ""}`,
+  ], { url: "/dashboard/coach/communaute/membres" });
 
   revalidatePath("/dashboard/client");
   revalidatePath("/dashboard/client/coachs");
