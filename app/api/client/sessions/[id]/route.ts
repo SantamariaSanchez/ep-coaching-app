@@ -5,6 +5,7 @@ import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { getActiveProgram } from "@/utils/programs";
 import type { Session, SessionSet, PersonalRecord } from "@/utils/sessions";
 import type { Exercise } from "@/utils/programs";
+import { loadPreviousForNames } from "@/lib/session-previous";
 
 interface InitData {
   session: Session;
@@ -37,14 +38,17 @@ interface InitData {
   videoUrlsBySetId: Record<string, string>;
 }
 
-// Taille des paquets pour les filtres .in() : au-delà de quelques centaines
-// d'UUID, l'URL de la requête PostgREST dépasse les limites courantes.
-const IN_CHUNK = 150;
-
-function chunk<T>(list: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
-  return out;
+// Noms des exercices ajoutés ou remplaçants mémorisés dans l'état de séance
+// (sessions.live_state, migration 20261014), lecture tolérante.
+function addedNamesFromLiveState(sess: Session): string[] {
+  const live = (sess as Session & { live_state?: unknown }).live_state;
+  if (!live || typeof live !== "object") return [];
+  const added = (live as { added?: unknown }).added;
+  if (!Array.isArray(added)) return [];
+  return added
+    .map((e) => (e && typeof e === "object" ? (e as { name?: unknown }).name : null))
+    .filter((n): n is string => typeof n === "string" && n.trim().length > 0)
+    .slice(0, 50);
 }
 
 // Exercice "synthétique" pour des séries enregistrées dont le nom n'existe
@@ -189,82 +193,17 @@ export async function GET(
     }
   }
 
-  // Fetch previous weights for each exercise
-  const prevWeights: Record<string, { weight: number | null; reps: string | null; rir: number | null }> = {};
-  // Retour direct 2026-09-17 : voir le commentaire sur InitData.prevSets.
-  // Un seul groupe par exercice, celui de la séance la plus récente où il a
-  // été fait (session_id du tout premier set rencontré, puisque lastSets
-  // est trié par created_at décroissant), pas juste son dernier set.
-  const prevSets: Record<string, { weight: number | null; reps: string | null; rir: number | null }[]> = {};
-  const latestSessionIdByExercise: Record<string, string> = {};
-  const prevSetsUnsorted: Record<string, { setNumber: number; weight: number | null; reps: string | null; rir: number | null }[]> = {};
-  if (exercises.length > 0) {
-    const exerciseNames = exercises.map((e) => e.name);
-    // Uniquement les séances du client lui-même, filtrées explicitement.
-    // Avant, la requête ne filtrait que par nom d'exercice et comptait sur
-    // la RLS "Users see own session sets" ; or celle-ci laisse aussi un coach
-    // lire les séries de SES membres : dès qu'un membre aurait eu le
-    // fondateur comme coach, ses charges "dernière fois" auraient pu venir
-    // des séries de ce membre.
-    const { data: ownSessions } = await supabase
-      .from("sessions")
-      .select("id")
-      .eq("client_id", guard.userId)
-      .neq("id", sessionId) // exclude current session
-      // Les plus récentes d'abord : si la liste venait à être tronquée par
-      // le plafond de lignes de PostgREST, ce sont les plus anciennes qui
-      // sautent, jamais la "dernière fois".
-      .order("session_date", { ascending: false });
-    const ownSessionIds = ((ownSessions as { id: string }[]) ?? []).map((s) => s.id);
-
-    const lastSets: SessionSet[] = [];
-    for (const ids of chunk(ownSessionIds, IN_CHUNK)) {
-      const { data } = await supabase
-        .from("session_sets")
-        .select("exercise_name, weight_kg, reps_actual, rir_actual, created_at, session_id, set_number")
-        .in("exercise_name", exerciseNames)
-        .in("session_id", ids)
-        .order("created_at", { ascending: false });
-      lastSets.push(...((data as SessionSet[]) ?? []));
-    }
-    // Tri global après fusion des paquets (chaque paquet n'est trié que
-    // pour lui-même) : du plus récent au plus ancien, comme avant.
-    lastSets.sort((a, b) => b.created_at.localeCompare(a.created_at));
-
-    for (const set of lastSets) {
-      const key = set.exercise_name.toLowerCase();
-      if (!(key in prevWeights)) {
-        prevWeights[key] = {
-          weight: set.weight_kg,
-          reps: set.reps_actual != null ? String(set.reps_actual) : null,
-          rir: set.rir_actual,
-        };
-      }
-      if (!(key in latestSessionIdByExercise)) {
-        latestSessionIdByExercise[key] = set.session_id;
-      }
-      if (set.session_id === latestSessionIdByExercise[key]) {
-        const group = (prevSetsUnsorted[key] ??= []);
-        // Doublon d'enregistrement (même numéro de série : double-tap,
-        // revalidation) : on garde la version la plus récente, la première
-        // rencontrée ici. Sans ce filtre, un doublon décalait toutes les
-        // séries suivantes, et l'objectif "série par série" de la séance
-        // guidée se comparait à la mauvaise série de la dernière fois.
-        if (group.some((g) => g.setNumber === set.set_number)) continue;
-        group.push({
-          setNumber: set.set_number,
-          weight: set.weight_kg,
-          reps: set.reps_actual != null ? String(set.reps_actual) : null,
-          rir: set.rir_actual,
-        });
-      }
-    }
-    for (const [key, rows] of Object.entries(prevSetsUnsorted)) {
-      prevSets[key] = rows
-        .sort((a, b) => a.setNumber - b.setNumber)
-        .map(({ weight, reps, rir }) => ({ weight, reps, rir }));
-    }
-  }
+  // "Dernière fois" (voir lib/session-previous.ts) : exercices de la séance,
+  // plus les remplaçants et ajouts déjà mémorisés dans live_state (machine
+  // prise, exercice ajouté), pour qu'ils aient eux aussi leur historique au
+  // rechargement.
+  const liveAddedNames = addedNamesFromLiveState(sess);
+  const { prevWeights, prevSets } = await loadPreviousForNames(
+    supabase,
+    guard.userId,
+    sessionId,
+    [...exercises.map((e) => e.name), ...liveAddedNames]
+  );
 
   // Conseils + vidéo d'exemple par exercice, tirés de la bibliothèque —
   // match par nom (pas de FK entre les exercices d'un programme et la
@@ -358,11 +297,49 @@ export async function PATCH(
   if (body.warmup_validated !== undefined) update.warmup_validated = body.warmup_validated;
   if (body.warmup_duration_seconds !== undefined) update.warmup_duration_seconds = body.warmup_duration_seconds;
 
-  const { error } = await supabase
-    .from("sessions")
-    .update(update)
-    .eq("id", sessionId)
-    .eq("client_id", guard.userId);
+  // État de la séance en cours (ordre, exercices retirés ou remplacés,
+  // saisies pas encore validées), voir lib/live-session.ts. Un objet de
+  // quelques Ko : au-delà de 256 Ko, c'est un envoi anormal, refusé.
+  let liveState: unknown = undefined;
+  if (body.live_state !== undefined) {
+    const ok =
+      body.live_state === null ||
+      (typeof body.live_state === "object" &&
+        !Array.isArray(body.live_state) &&
+        JSON.stringify(body.live_state).length <= 262144);
+    if (!ok) return NextResponse.json({ error: "État de séance invalide." }, { status: 400 });
+    liveState = body.live_state;
+  }
+
+  if (Object.keys(update).length === 0 && liveState === undefined) {
+    return NextResponse.json({ ok: true });
+  }
+
+  let error: { code?: string; message?: string } | null = null;
+  if (Object.keys(update).length > 0) {
+    ({ error } = await supabase
+      .from("sessions")
+      .update(update)
+      .eq("id", sessionId)
+      .eq("client_id", guard.userId));
+  }
+
+  // Écrit à part : tant que la migration 20261014 n'est pas passée, la
+  // colonne n'existe pas et la séance vit seulement sur le téléphone, sans
+  // jamais faire échouer l'enregistrement de l'échauffement.
+  let liveStored: boolean | undefined;
+  if (!error && liveState !== undefined) {
+    const { error: liveError } = await supabase
+      .from("sessions")
+      .update({ live_state: liveState, live_state_updated_at: new Date().toISOString() })
+      .eq("id", sessionId)
+      .eq("client_id", guard.userId)
+      .eq("is_completed", false);
+    liveStored = !liveError;
+    if (liveError && liveError.code !== "PGRST204" && liveError.code !== "42703") {
+      console.error("PATCH session live_state error:", liveError);
+    }
+  }
 
   // Masterclass Axe P : error.message (texte brut Postgres/Supabase, peut
   // révéler des noms de colonnes ou de contraintes) partait tel quel au
@@ -371,7 +348,7 @@ export async function PATCH(
     console.error("PATCH session error:", error);
     return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json(liveStored === undefined ? { ok: true } : { ok: true, liveStored });
 }
 
 // DELETE — abandonner une séance non terminée (bouton "Annuler la séance").

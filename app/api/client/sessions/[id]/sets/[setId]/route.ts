@@ -3,9 +3,9 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
-// PATCH — completer un set deja enregistre. Le seul champ concerne est la
-// duree de repos : elle n'est connue qu'a la fermeture du chrono, donc
-// APRES l'enregistrement du set. Faute de cette route, la colonne
+// PATCH — completer un set deja enregistre : duree de repos, et chemin de la
+// video filmee pendant la serie. La duree de repos n'est connue qu'a la
+// fermeture du chrono, donc APRES l'enregistrement du set. Faute de cette route, la colonne
 // rest_duration_seconds n'a jamais ete remplie une seule fois en base
 // (elle est pourtant exportee dans le CSV du logbook, toujours vide).
 export async function PATCH(
@@ -38,10 +38,21 @@ export async function PATCH(
   }
 
   // Allowlist stricte, meme discipline que le POST : rien d'autre que la
-  // duree de repos ne peut etre reecrit par cette route.
+  // duree de repos et la video ne peut etre reecrit par cette route.
   const update: Record<string, unknown> = {};
   if (typeof body.rest_duration_seconds === "number") {
     update.rest_duration_seconds = Math.max(0, Math.min(7200, Math.round(body.rest_duration_seconds)));
+  }
+  // Vidéo de la série (bouton caméra du logbook) : uniquement un chemin du
+  // bucket set-videos rangé dans le dossier de la personne elle-même, la
+  // même règle que la policy de stockage (premier dossier = son id).
+  if (
+    typeof body.video_url === "string" &&
+    body.video_url.length <= 500 &&
+    body.video_url.startsWith(`${guard.userId}/`) &&
+    !body.video_url.includes("..")
+  ) {
+    update.video_url = body.video_url;
   }
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ ok: true });

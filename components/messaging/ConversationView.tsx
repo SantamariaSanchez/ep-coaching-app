@@ -317,7 +317,17 @@ function MessageBubble({
             />
           </a>
         ) : msg.type === "video" && msg.video_url ? (
-          <video src={msg.video_url} controls playsInline className="rounded-lg max-w-[240px] max-h-[300px]" />
+          <>
+            <video src={msg.video_url} controls playsInline preload="metadata" className="rounded-lg max-w-[240px] max-h-[300px]" />
+            {/* Légende d'une vidéo de série envoyée depuis le logbook
+                (exercice, série, charge) : sans elle, le coach recevait une
+                vidéo sans savoir de quelle série il s'agissait. */}
+            {msg.content && (
+              <p className="text-xs leading-snug mt-1.5 break-words text-(--ep-strong)" style={{ overflowWrap: "anywhere" }}>
+                {msg.content}
+              </p>
+            )}
+          </>
         ) : (
           <p
             className={`text-sm leading-relaxed break-words whitespace-pre-wrap ${

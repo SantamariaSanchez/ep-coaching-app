@@ -50,6 +50,29 @@ export async function POST(
   for (const field of allowedFields) {
     if (body[field] !== undefined) set[field] = body[field];
   }
+  // Détail d'une série à technique (myo-reps, rest-pause, dégressive...),
+  // voir lib/live-session.ts. Petit objet, jamais plus de quelques Ko.
+  let details: unknown = undefined;
+  if (body.details !== undefined) {
+    const ok =
+      body.details === null ||
+      (typeof body.details === "object" && !Array.isArray(body.details) && JSON.stringify(body.details).length <= 8192);
+    if (ok) details = body.details;
+  }
+  if (details !== undefined) set.details = details;
+  // Repli si la colonne details n'existe pas encore (migration 20261014
+  // pas passée) : le détail part en clair dans la note de la série.
+  const detailsNote = typeof body.details_note === "string" ? body.details_note.slice(0, 300) : null;
+  const isMissingColumn = (e: { code?: string } | null) => !!e && (e.code === "PGRST204" || e.code === "42703");
+  const withoutDetails = () => {
+    const copy = { ...set };
+    delete copy.details;
+    if (detailsNote) {
+      const base = typeof copy.notes === "string" && copy.notes ? `${copy.notes} ` : "";
+      copy.notes = `${base}${detailsNote}`.slice(0, 2000);
+    }
+    return copy;
+  };
 
   // Un set est identifie de facon unique par (seance, exercice, numero de
   // serie). Sans ce garde-fou, chaque re-envoi du meme set creait une ligne
@@ -79,11 +102,18 @@ export async function POST(
 
     if (existing) {
       const existingId = (existing as { id: string }).id;
-      const { error: updateError } = await supabase
+      let { error: updateError } = await supabase
         .from("session_sets")
         .update(set)
         .eq("id", existingId)
         .eq("session_id", sessionId);
+      if (isMissingColumn(updateError) && details !== undefined) {
+        ({ error: updateError } = await supabase
+          .from("session_sets")
+          .update(withoutDetails())
+          .eq("id", existingId)
+          .eq("session_id", sessionId));
+      }
 
       if (updateError) {
         console.error("POST session set (update) error:", updateError);
@@ -93,11 +123,18 @@ export async function POST(
     }
   }
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("session_sets")
     .insert(set)
     .select("id")
     .single();
+  if (isMissingColumn(error) && details !== undefined) {
+    ({ data, error } = await supabase
+      .from("session_sets")
+      .insert(withoutDetails())
+      .select("id")
+      .single());
+  }
 
   if (error) {
     // 23505 = violation de l'index unique (session, exercice, numero) : deux
@@ -115,7 +152,10 @@ export async function POST(
         .maybeSingle();
       if (raced) {
         const racedId = (raced as { id: string }).id;
-        await supabase.from("session_sets").update(set).eq("id", racedId);
+        const { error: racedError } = await supabase.from("session_sets").update(set).eq("id", racedId);
+        if (isMissingColumn(racedError)) {
+          await supabase.from("session_sets").update(withoutDetails()).eq("id", racedId);
+        }
         return NextResponse.json({ id: racedId });
       }
     }
