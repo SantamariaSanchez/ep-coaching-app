@@ -2,8 +2,7 @@
 
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { enforceRateLimit, checkRateLimit, PRESETS } from "@/lib/rate-limit";
-import { buildRewrite, saveRewrite, SCRIPT_COLUMNS, type ScriptRewrite, type ScriptRow } from "@/lib/script-autofix";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
 import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus } from "@/lib/coach-ideation";
@@ -472,69 +471,6 @@ export async function publishScript(id: string): Promise<{ error?: string; succe
   });
   const { error } = await admin.from("coach_scripts").delete().eq("id", id).eq("coach_id", guard.userId);
   if (error) return { error: "Publication impossible, réessaie." };
-  revalidatePath("/dashboard/coach/studio");
-  return { success: true };
-}
-
-// ── Réécriture avec le vocabulaire du dictionnaire (2026-10-13) ──────────
-// Retour direct : « il y a des mots dans les scripts actuels qui ne sont pas
-// dans le vocabulaire, mets-les à jour ». Un script à la fois (aperçu puis
-// « Garder ») ou tous ceux qui sortent du vocabulaire d'un coup (le Studio
-// enchaîne les appels et enregistre au fil de l'eau). L'ancienne version est
-// gardée dans previous_version quand la colonne existe (migration
-// 20261013c_script_previous_version.sql), sinon la réécriture passe quand
-// même.
-
-export type { ScriptRewrite };
-
-export async function rewriteScriptVocabulary(
-  id: string,
-  // quiet : pendant « Tout mettre à jour », pas de rechargement de la page
-  // à chaque script (80 rechargements du Studio), l'écran se met à jour seul.
-  opts: { save: boolean; quiet?: boolean }
-): Promise<{ error?: string; rewrite?: ScriptRewrite }> {
-  const guard = await requireCoach();
-  if (!guard.ok) return { error: guard.error };
-  const limit = await checkRateLimit(`script-rewrite:${guard.userId}`, 200, 3600);
-  if (!limit.allowed) return { error: "Beaucoup de réécritures cette heure-ci, reprends dans un moment." };
-
-  const admin = createAdminClient();
-  const { data: script } = await admin
-    .from("coach_scripts")
-    .select(SCRIPT_COLUMNS)
-    .eq("id", id)
-    .eq("coach_id", guard.userId)
-    .maybeSingle();
-  if (!script) return { error: "Script introuvable." };
-  const { rewrite, error } = await buildRewrite(admin, script as ScriptRow);
-  if (!rewrite) return { error };
-
-  if (opts.save) {
-    const saveError = await saveRewrite(admin, guard.userId, script, id, rewrite);
-    if (saveError) return { error: saveError };
-    if (!opts.quiet) revalidatePath("/dashboard/coach/studio");
-  }
-  return { rewrite };
-}
-
-export async function applyScriptRewrite(id: string, rewrite: ScriptRewrite): Promise<{ error?: string; success?: boolean }> {
-  const guard = await requireCoach();
-  if (!guard.ok) return { error: guard.error };
-  if (!rewrite?.content?.trim() || !rewrite.title?.trim()) return { error: "Version vide." };
-  const admin = createAdminClient();
-  const { data: script } = await admin
-    .from("coach_scripts")
-    .select("title, hook, content, cta, instagram_caption")
-    .eq("id", id)
-    .eq("coach_id", guard.userId)
-    .maybeSingle();
-  if (!script) return { error: "Script introuvable." };
-  const saveError = await saveRewrite(admin, guard.userId, script, id, {
-    ...rewrite,
-    title: rewrite.title.trim().slice(0, 200),
-    durationSeconds: Math.max(0, Math.round(Number(rewrite.durationSeconds) || 0)),
-  });
-  if (saveError) return { error: saveError };
   revalidatePath("/dashboard/coach/studio");
   return { success: true };
 }
