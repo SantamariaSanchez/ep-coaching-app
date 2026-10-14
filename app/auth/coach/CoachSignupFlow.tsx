@@ -6,8 +6,7 @@ import Link from "next/link";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { signupCoach } from "./actions";
 import { COACH_PLATFORM_PLANS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
-
-const PLANS = [COACH_TESTER_PLAN, ...COACH_PLATFORM_PLANS];
+import CoachPlanCards from "@/components/coach/CoachPlanCards";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -44,6 +43,8 @@ export default function CoachSignupFlow() {
   const [wantsNewsletter, setWantsNewsletter] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const paidPlan = COACH_PLATFORM_PLANS.find((p) => p.id === planId) ?? null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -99,27 +100,24 @@ export default function CoachSignupFlow() {
 
       <div>
         <label style={labelStyle}>{t("Formule")}</label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {PLANS.map((plan) => {
-            const active = planId === plan.id;
-            return (
-              <button
-                key={plan.id}
-                type="button"
-                onClick={() => setPlanId(plan.id)}
-                style={{
-                  gridColumn: plan.id === COACH_TESTER_PLAN.id ? "1 / -1" : undefined,
-                  flex: 1, textAlign: "left", padding: "12px 14px", borderRadius: 10, cursor: "pointer",
-                  background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-shade-rgb),0.3)",
-                  border: `1px solid ${active ? "rgba(var(--ep-accent-rgb),0.5)" : "rgba(var(--ep-ink-rgb),0.1)"}`,
-                }}
-              >
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{t(plan.label)}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: plan.id === COACH_TESTER_PLAN.id ? "var(--ep-ok)" : "var(--ep-accent)" }}>{t(plan.priceLabel)}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{t(plan.sublabel)}</p>
-              </button>
-            );
-          })}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <button
+            type="button"
+            onClick={() => setPlanId(COACH_TESTER_PLAN.id)}
+            aria-pressed={planId === COACH_TESTER_PLAN.id}
+            style={{
+              textAlign: "left", padding: "14px", borderRadius: 14, cursor: "pointer", minHeight: 48,
+              background: planId === COACH_TESTER_PLAN.id ? "rgba(var(--ep-ok-rgb),0.1)" : "rgba(var(--ep-shade-rgb),0.3)",
+              border: `${planId === COACH_TESTER_PLAN.id ? 2 : 1}px solid ${planId === COACH_TESTER_PLAN.id ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.12)"}`,
+            }}
+          >
+            <span style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)" }}>{t(COACH_TESTER_PLAN.label)}</span>
+              <span style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-ok)" }}>{t(COACH_TESTER_PLAN.priceLabel)}</span>
+            </span>
+            <span style={{ display: "block", marginTop: 3, fontSize: 12, lineHeight: 1.45, color: "rgba(var(--ep-ink-rgb),0.55)" }}>{t(COACH_TESTER_PLAN.sublabel)}</span>
+          </button>
+          <CoachPlanCards mode="select" compact selectedId={planId} onSelect={setPlanId} />
         </div>
       </div>
 
@@ -205,9 +203,13 @@ export default function CoachSignupFlow() {
         type="submit"
         disabled={submitting}
         className="ep-btn-primary"
-        style={{ width: "100%", height: 50, fontSize: 13 }}
+        style={{ width: "100%", minHeight: 50, height: "auto", padding: "12px 16px", fontSize: 13 }}
       >
-        {submitting ? t("Un instant…") : t("Créer mon compte coach")}
+        {submitting
+          ? t("Un instant…")
+          : paidPlan
+            ? `${t("Créer mon compte et payer")} ${paidPlan.amount} €${t("/mois")}`
+            : t("Créer mon compte coach gratuit")}
       </button>
     </form>
   );

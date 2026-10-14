@@ -1,6 +1,6 @@
 import { Wallet, AlertTriangle, ShieldCheck, Target, ListChecks } from "lucide-react";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
-import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
+import { COACH_PLATFORM_PLANS, COACH_PLAN_DETAILS } from "@/lib/coach-platform-plan";
 import { POLES } from "@/lib/org-roles";
 import { FORMATION_PAYMENT_URL } from "@/lib/stripe-products";
 import { parisDate, type StaffRecord } from "@/lib/staff-kpis";
@@ -45,8 +45,11 @@ export function OffersPanel() {
     ...COACH_PLATFORM_PLANS.map((p) => ({
       name: `Appli EP Coaching pour coachs, ${p.label}`,
       price: p.priceLabel,
-      forWho: p.id === "premium" ? "Un coach qui veut l'appli complète avec l'IA illimitée et les formations incluses." : "Un coach qui veut suivre ses clients dans l'appli, sans accompagnement.",
-      includes: [p.sublabel],
+      forWho: COACH_PLAN_DETAILS[p.id].forWho,
+      includes: [
+        ...(COACH_PLAN_DETAILS[p.id].includesIntro ? ["Tout ce qu'il y a dans Standard"] : []),
+        ...COACH_PLAN_DETAILS[p.id].includes.map((f) => f.title),
+      ],
       link: `${APP_URL}/auth/coach`,
       linkLabel: "Page d'inscription coach",
       warning: "Envoie toujours la page d'inscription, jamais le lien Stripe direct : sans inscription, le paiement passe mais aucun compte n'est activé.",
@@ -54,7 +57,7 @@ export function OffersPanel() {
     {
       name: "Formation à l'unité",
       price: "100€ l'unité",
-      forWho: "Quelqu'un qui veut apprendre un sujet précis sans suivi individuel. Incluse dans l'appli Premium.",
+      forWho: "Quelqu'un qui veut apprendre un sujet précis sans suivi individuel. Les formations de l'Académie EP sont incluses dans l'appli Premium.",
       includes: ["Accès à vie à la formation choisie"],
       link: FORMATION_PAYMENT_URL,
       linkLabel: "Lien de paiement",
