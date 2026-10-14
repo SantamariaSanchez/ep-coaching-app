@@ -16,6 +16,7 @@ import { isBlockTimeAlreadyPastToday } from "@/lib/schedule-time";
 import { getActivePlan } from "@/lib/nutrition-sync";
 import { MEAL_SLOTS, planItemsFor, slotLabel } from "@/lib/nutrition-engine";
 import { searchLeadMagnets, getCoachLeadMagnets } from "@/lib/lead-magnets";
+import { isRealAccount } from "@/lib/internal-accounts";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -401,8 +402,9 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
     case "resume_business": {
       const days = Math.round(numArg(args.jours, 7, 365) ?? 30);
       const since = shift(today, -days);
-      const { data: clients } = await admin.from("profiles").select("id, subscription_status, start_date").eq("coach_id", ownerId).eq("role", "client").neq("id", ownerId).limit(1000);
-      const list = (clients ?? []) as { id: string; subscription_status: string | null; start_date: string | null }[];
+      const { data: clients } = await admin.from("profiles").select("id, email, subscription_status, start_date").eq("coach_id", ownerId).eq("role", "client").neq("id", ownerId).limit(1000);
+      // Comptes démo et de test exclus des chiffres (lib/internal-accounts.ts).
+      const list = ((clients ?? []) as { id: string; email: string | null; subscription_status: string | null; start_date: string | null }[]).filter(isRealAccount);
       const [checks, finance, calls, accounts, scripts, published] = await Promise.all([
         list.length ? admin.from("check_ins").select("id", { count: "exact", head: true }).is("coach_replied_at", null).gte("week_start", shift(today, -21)).in("client_id", list.map((c) => c.id)) : Promise.resolve({ count: 0 }),
         admin.from("coach_finance_entries").select("kind, amount").eq("coach_id", ownerId).gte("entry_date", since),
