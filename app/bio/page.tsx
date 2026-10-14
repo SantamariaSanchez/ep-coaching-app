@@ -13,8 +13,8 @@ import { getPublicVictories } from "@/utils/community";
 
 export const dynamic = "force-dynamic";
 
-const TITLE = "EP Coaching";
-const DESCRIPTION = "Tous les liens EP Coaching au même endroit.";
+const TITLE = "Liens EP Coaching : appli, guides gratuits et coaching";
+const DESCRIPTION = "Tous les liens EP Coaching d'Emmanuel Santamaria Sanchéz au même endroit : l'appli gratuite, les guides d'entraînement et de nutrition, le coaching.";
 
 export const metadata: Metadata = {
   title: TITLE,

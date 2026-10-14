@@ -5337,4 +5337,7 @@ export const EN: Record<string, string> = {
   "Mon business en chiffres": "My business in numbers",
   "Clients, ventes, revenus, abonnés et contenus.": "Clients, sales, income, followers and content.",
   "Fais-moi le résumé business des 30 derniers jours avec EP Coaching (outil resume_business) : ce qui progresse, ce qui stagne, et les 3 actions qui rapporteraient le plus cette semaine.": "Give me the business summary for the last 30 days with EP Coaching (tool resume_business): what's growing, what's stalling, and the 3 actions that would pay off most this week.",
+  "Fil d'Ariane": "Breadcrumb",
+  "Accueil": "Home",
+  "Ressources gratuites": "Free resources",
 };

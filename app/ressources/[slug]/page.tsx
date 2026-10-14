@@ -4,6 +4,7 @@ import { getLeadMagnet, getLeadMagnetSlugs, getAllLeadMagnets } from "@/lib/lead
 import LeadMagnetLanding from "@/components/ressources/LeadMagnetLanding";
 import { submitLead } from "../actions";
 import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
+import { FOUNDER, FOUNDER_REF, SITE_URL, breadcrumbNode } from "@/lib/seo-entity";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 
@@ -85,25 +86,38 @@ export default async function LeadMagnetPage({
   // un moteur génératif n'a aucun signal d'expertise à citer derrière ce
   // contenu — juste "EP Coaching" en publisher, jamais une vraie personne.
   // Ajouté sur ~700+ pages d'un coup en touchant ce seul template.
-  // Auteur exact : Santamaria Sanchéz seulement pour le catalogue officiel
+  // Auteur exact : Emmanuel Santamaria Sanchéz seulement pour le catalogue officiel
   // (coach_id vide). Un lead magnet écrit par un coach tiers n'est pas de
   // lui : on crédite alors EP Coaching, jamais une personne qui n'a rien écrit.
   const author = magnet.isOfficial
-    ? { "@type": "Person", name: "Santamaria Sanchéz", sameAs: SANTAMARIA_SOCIALS }
+    ? { "@type": "Person", ...FOUNDER_REF, name: FOUNDER.name, url: `${SITE_URL}/a-propos`, sameAs: SANTAMARIA_SOCIALS }
     : { "@type": "Organization", name: "EP Coaching", url: APP_URL };
+  const pageUrl = `${APP_URL}/ressources/${slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: magnet.title,
-    description: magnet.hook,
-    articleSection: magnet.category,
-    url: `${APP_URL}/ressources/${slug}`,
-    author,
-    publisher: {
-      "@type": "Organization",
-      name: "EP Coaching",
-      url: APP_URL,
-    },
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${pageUrl}#guide`,
+        headline: magnet.title,
+        description: magnet.hook,
+        articleSection: magnet.category,
+        inLanguage: "fr-FR",
+        url: pageUrl,
+        mainEntityOfPage: pageUrl,
+        image: `${APP_URL}/og-image.jpg`,
+        isAccessibleForFree: true,
+        ...(magnet.publishedAt ? { datePublished: magnet.publishedAt } : {}),
+        ...(magnet.updatedAt ?? magnet.publishedAt ? { dateModified: magnet.updatedAt ?? magnet.publishedAt } : {}),
+        author,
+        publisher: { "@type": "Organization", "@id": `${SITE_URL}/#entreprise`, name: "EP Coaching", url: APP_URL, logo: `${APP_URL}/icon-512.png` },
+      },
+      breadcrumbNode([
+        { name: "Accueil", path: "/" },
+        { name: "Ressources gratuites", path: "/ressources" },
+        { name: magnet.title, path: `/ressources/${slug}` },
+      ]),
+    ],
   };
 
   return (

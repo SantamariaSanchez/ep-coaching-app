@@ -285,8 +285,15 @@ function CaptureForm({
 // ── En tête commun ─────────────────────────────────────────────────────
 
 function Header({ magnet, Icon, showKeyword }: { magnet: LeadMagnet; Icon: LucideIcon; showKeyword: boolean }) {
+  const t = useT();
   return (
     <div style={{ marginBottom: 28 }}>
+      {/* Fil d'Ariane visible, le même que le JSON-LD BreadcrumbList. */}
+      <nav aria-label={t("Fil d'Ariane")} style={{ display: "flex", flexWrap: "wrap", gap: 6, fontSize: 12, fontWeight: 600, marginBottom: 16 }}>
+        <Link href="/" style={{ color: "rgba(var(--ep-ink-rgb),0.5)", textDecoration: "none", padding: "6px 0" }}>{t("Accueil")}</Link>
+        <span aria-hidden style={{ color: "rgba(var(--ep-ink-rgb),0.3)", padding: "6px 0" }}>/</span>
+        <Link href="/ressources" style={{ color: "var(--ep-accent)", textDecoration: "none", padding: "6px 0" }}>{t("Ressources gratuites")}</Link>
+      </nav>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
         <div
           style={{
@@ -487,7 +494,12 @@ function QuizFlow({
   // localStorage n'existe pas côté serveur : lire un déblocage déjà acquis
   // pendant le rendu produirait un mismatch d'hydratation (même compromis
   // assumé ailleurs dans l'appli pour ce genre de lecture, ex. DashboardNav).
-  useEffect(() => setStoredUnlock(readUnlocked(magnet.slug)), [magnet.slug]);
+  useEffect(() => {
+    let cancelled = false;
+    // Hors du corps synchrone de l'effet (règle react-hooks/set-state-in-effect).
+    Promise.resolve().then(() => { if (!cancelled) setStoredUnlock(readUnlocked(magnet.slug)); });
+    return () => { cancelled = true; };
+  }, [magnet.slug]);
   const [answers, setAnswers] = useState<string[]>([]);
 
   const finished = step >= magnet.questions.length;
@@ -500,7 +512,7 @@ function QuizFlow({
     const remembered = readRememberedContact();
     if (!remembered) return;
     let cancelled = false;
-    setAutoUnlocking(true);
+    Promise.resolve().then(() => { if (!cancelled) setAutoUnlocking(true); });
     submitLead(magnet.slug, remembered.email, remembered.phone).then((res) => {
       if (cancelled) return;
       setAutoUnlocking(false);
@@ -691,7 +703,7 @@ export default function LeadMagnetLanding({
     const remembered = readRememberedContact();
     if (!remembered) return;
     let cancelled = false;
-    setAutoUnlocking(true);
+    Promise.resolve().then(() => { if (!cancelled) setAutoUnlocking(true); });
     submitLeadWithOrigin(magnet.slug, remembered.email, remembered.phone).then((res) => {
       if (cancelled) return;
       setAutoUnlocking(false);
@@ -736,6 +748,13 @@ export default function LeadMagnetLanding({
         </p>
       ) : (
         <div>
+          {/* Introduction visible par tous (visiteur comme moteur de
+              recherche, même HTML, aucun contenu caché aux uns ou aux
+              autres) : sans elle, la page n'offrait qu'un titre et une
+              accroche, trop peu pour être indexée (SEO 2026-10-14). */}
+          {magnet.intro && (
+            <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.7, margin: "0 0 20px" }}>{magnet.intro}</p>
+          )}
           <div
             style={{
               padding: "20px", borderRadius: 16, marginBottom: 20,
@@ -760,6 +779,9 @@ export default function LeadMagnetLanding({
             )}
           </div>
           <CaptureForm slug={magnet.slug} submitLead={submitLeadWithOrigin} onUnlocked={() => setStoredUnlock(true)} ctaLabel={t("Débloquer gratuitement")} />
+          {/* Maillage interne même avant déblocage : chaque guide mène à
+              d'autres guides du même thème (SEO 2026-10-14). */}
+          <RelatedMagnets items={relatedMagnets} />
         </div>
       )}
     </div>

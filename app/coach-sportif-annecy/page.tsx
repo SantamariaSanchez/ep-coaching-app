@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: "Y a-t-il un coach sportif EP Coaching à Annecy ?",
-    a: "Oui. EP Coaching est basé à Annecy et fondé par Santamaria Sanchéz, coach en musculation et nutrition. L'accompagnement se fait dans l'appli EP Coaching, avec des appels vidéo.",
+    a: "Oui. EP Coaching est basé à Annecy et fondé par Emmanuel Santamaria Sanchéz, coach en musculation et nutrition. L'accompagnement se fait dans l'appli EP Coaching, avec des appels vidéo.",
   },
   {
     q: "Le coaching se fait-il en présentiel ou en ligne ?",
@@ -81,7 +81,7 @@ export default function CoachAnnecyPage() {
       </Section>
       <Section title="Qui va t'accompagner">
         <p>
-          Santamaria Sanchéz, coach en musculation et nutrition, athlète naturel.{" "}
+          Emmanuel Santamaria Sanchéz, coach en musculation et nutrition, athlète naturel.{" "}
           <Link href="/a-propos" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
             Son parcours et sa méthode
           </Link>

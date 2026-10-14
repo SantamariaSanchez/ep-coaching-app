@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import { LegalPage, P, Strong, type LegalSection } from "@/components/legal/LegalPage";
 
+const TITLE = "Assistance EP Coaching : nous écrire, facturation, tes données";
+const DESCRIPTION = "Une question sur l'appli EP Coaching, ton abonnement ou tes données ? Comment nous écrire et ce qu'on peut faire pour toi.";
+
 export const metadata: Metadata = {
-  title: "Assistance · EP Coaching",
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: "/support" },
+  openGraph: { url: "/support", title: TITLE, description: DESCRIPTION },
 };
 
 // L'assistance n'est PAS un document contractuel : elle se tutoie comme le
@@ -18,7 +23,7 @@ const sections: LegalSection[] = [
     body: (
       <P>
         Une question sur ton compte, ton abonnement, ou un souci technique ? Écris directement à{" "}
-        <Strong>Santamaria Sanchéz</Strong> à l&apos;adresse <Strong>peccoux.manu@gmail.com</Strong>.
+        <Strong>Emmanuel Santamaria Sanchéz</Strong> à l&apos;adresse <Strong>peccoux.manu@gmail.com</Strong>.
         On te répond sous 48 heures ouvrées.
       </P>
     ),

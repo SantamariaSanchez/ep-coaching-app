@@ -7,9 +7,17 @@ import { getPlatformOwnerId } from "@/lib/job-applications";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { RoleStatus } from "@/components/ui/OrganisationView";
 import CareersClient from "@/components/careers/CareersClient";
+import { entityGraph, breadcrumbNode } from "@/lib/seo-entity";
 
-const TITLE = "Coachs, accès gratuit | EP Coaching";
-const DESCRIPTION = "Coachs : l'appli EP Coaching complète, gratuite, pour suivre tous tes clients. En échange, tes retours.";
+const JSON_LD = entityGraph([
+  breadcrumbNode([
+    { name: "Accueil", path: "/" },
+    { name: "Appli pour les coachs", path: "/carrieres" },
+  ]),
+]);
+
+const TITLE = "Appli pour coach sportif : suis tous tes clients gratuitement | EP Coaching";
+const DESCRIPTION = "Coach sportif : l'appli EP Coaching pour suivre tes clients (programmes, diètes, bilans, messagerie), clients illimités. Accès gratuit en échange de tes retours.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -44,6 +52,7 @@ export default async function CarrieresPage() {
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 640, margin: "0 auto" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors mb-6"

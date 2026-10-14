@@ -30,11 +30,11 @@ import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 import { ALL_LIVE_TYPES } from "@/lib/live-types";
-import { entityGraph, faqNode } from "@/lib/seo-entity";
+import { entityGraph, faqNode, SHOWCASE_URL } from "@/lib/seo-entity";
 
 const TITLE = "EP Coaching : coach sportif à Annecy et en ligne, appli musculation et nutrition";
 const DESCRIPTION =
-  "EP Coaching, coaching sportif en musculation et nutrition fondé à Annecy par Santamaria Sanchéz : programme sur mesure, plan alimentaire, bilans et suivi dans l'appli, partout en France. Gratuit pour commencer.";
+  "EP Coaching, coaching sportif en musculation et nutrition fondé à Annecy par Emmanuel Santamaria Sanchéz : programme sur mesure, plan alimentaire, bilans et suivi dans l'appli, partout en France. Gratuit pour commencer.";
 
 // Sans openGraph/twitter dédiés ici, un partage de la page d'accueil (lien
 // en bio Instagram, la destination la plus partagée du site) retombait sur
@@ -93,7 +93,7 @@ const STATS = [
 
 // JSON-LD (retour direct 2026-09-17 : "je veux que quand on cherche mon
 // nom ou EP Coaching sur Google, on ressorte en haut") : rien n'associait
-// jusqu'ici "Santamaria Sanchéz" à "EP Coaching" pour les moteurs de
+// jusqu'ici "Emmanuel Santamaria Sanchéz" à "EP Coaching" pour les moteurs de
 // recherche, ni en donnée structurée ni même dans le texte visible de
 // cette page (le nom n'apparaissait nulle part). sameAs pointe uniquement
 // vers des profils réels et confirmés (Instagram, TikTok, YouTube) —
@@ -116,15 +116,15 @@ const STATS = [
 const FAQS = [
   {
     q: "Qu'est-ce qu'EP Coaching ?",
-    a: "EP Coaching est un coaching sportif en ligne (bodybuilding, nutrition, performance) : accompagnement live, audits, suivi quotidien, programmes personnalisés et communauté, fondé par Santamaria Sanchéz.",
+    a: "EP Coaching est un coaching sportif en ligne (bodybuilding, nutrition, performance) : accompagnement live, audits, suivi quotidien, programmes personnalisés et communauté, fondé par Emmanuel Santamaria Sanchéz.",
   },
   {
     q: "Est-ce qu'EP Coaching est gratuit ?",
     a: "Oui, l'accès à EP Coaching est gratuit dès l'inscription, sans engagement.",
   },
   {
-    q: "Qui est Santamaria Sanchéz ?",
-    a: "Santamaria Sanchéz est le fondateur d'EP Coaching, coach en musculation et nutrition basé à Annecy, athlète naturel (objectif Heroes Cup WNBF France en Classic Physique) et coach pour les coachs.",
+    q: "Qui est Emmanuel Santamaria Sanchéz ?",
+    a: "Emmanuel Santamaria Sanchéz est le fondateur d'EP Coaching, coach en musculation et nutrition basé à Annecy, athlète naturel (objectif Heroes Cup WNBF France en Classic Physique) et coach pour les coachs.",
   },
   {
     q: "Où est basé EP Coaching ?",
@@ -133,6 +133,10 @@ const FAQS = [
   {
     q: "Qu'est-ce qui est inclus dans EP Coaching ?",
     a: `EP Coaching inclut ${FEATURES.filter((f) => !f.title.includes("à venir")).map((f) => f.title.toLowerCase()).join(", ")}.`,
+  },
+  {
+    q: "EP Coaching existe-t-il pour les coachs sportifs ?",
+    a: "Oui. Un coach suit ses propres clients dans l'appli EP Coaching : accès gratuit en échange de ses retours, ou formule Standard à 20 € par mois et Premium à 200 € par mois, sans engagement et sans limite de clients.",
   },
   {
     q: "Comment rejoindre EP Coaching ?",
@@ -158,7 +162,7 @@ export default function HomePage() {
     >
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
+         
         dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
       />
 
@@ -390,7 +394,7 @@ export default function HomePage() {
             en texte visible, liés aux pages À propos et Coach à Annecy. ── */}
         <section className="ep-card animate-fade-up stagger-6" style={{ marginTop: 32, padding: "18px 18px 16px" }}>
           <h2 style={{ fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
-            Fondé à Annecy par Santamaria Sanchéz
+            Fondé à Annecy par Emmanuel Santamaria Sanchéz
           </h2>
           <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.6)", margin: "0 0 12px", lineHeight: 1.55 }}>
             Coach en musculation et nutrition, athlète naturel. EP Coaching est né à Annecy, en Haute-Savoie, et accompagne en ligne
@@ -476,6 +480,29 @@ export default function HomePage() {
 
         <InstallAppHint />
 
+        {/* ── Plan du site public (maillage interne, SEO 2026-10-14) ── */}
+        <nav
+          aria-label="Plus sur EP Coaching"
+          className="animate-fade-up stagger-6"
+          style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", columnGap: 16, rowGap: 0, marginTop: 24, lineHeight: "44px" }}
+        >
+          {[
+            { href: "/a-propos", label: "À propos" },
+            { href: "/coach-sportif-annecy", label: "Coach sportif à Annecy" },
+            { href: "/ressources", label: "Guides gratuits" },
+            { href: "/outils", label: "Calculateurs" },
+            { href: "/coachs", label: "Les coachs" },
+            { href: "/carrieres", label: "Tu es coach ?" },
+          ].map((l) => (
+            <Link key={l.href} href={l.href} style={{ color: "rgba(var(--ep-ink-rgb),0.6)", textDecoration: "none", fontSize: 12.5, fontWeight: 700 }}>
+              {l.label}
+            </Link>
+          ))}
+          <a href={SHOWCASE_URL} target="_blank" rel="noopener" style={{ color: "rgba(var(--ep-ink-rgb),0.6)", textDecoration: "none", fontSize: 12.5, fontWeight: 700 }}>
+            Le site EP Coaching
+          </a>
+        </nav>
+
         {/* ── Legal links ── */}
         <div
           className="animate-fade-up stagger-6"
@@ -515,7 +542,7 @@ export default function HomePage() {
             textTransform: "uppercase",
           }}
         >
-          EP Coaching · Fondé par Santamaria Sanchéz · Coaching Bodybuilding & Performance
+          EP Coaching · Fondé par Emmanuel Santamaria Sanchéz · Coaching Bodybuilding & Performance
         </p>
       </div>
     </div>

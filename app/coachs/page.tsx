@@ -4,18 +4,19 @@ import { ArrowLeft } from "lucide-react";
 import { getCoachDirectory } from "@/lib/coach-directory";
 import CoachDirectoryExplorer from "@/components/coachs/CoachDirectoryExplorer";
 import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
+import { FOUNDER, FOUNDER_REF } from "@/lib/seo-entity";
 
 export const dynamic = "force-dynamic";
 
 // Titre/description enrichis du nom (audit SEO 2026-09-17, retour direct :
 // "quand on cherche mon nom [...] il faut qu'on ressorte en haut") : cette
-// page affiche déjà Santamaria Sanchéz visiblement (CoachDirectoryExplorer,
+// page affiche déjà Emmanuel Santamaria Sanchéz visiblement (CoachDirectoryExplorer,
 // seul coach humain à ce jour), mais son nom n'apparaissait dans aucune
 // balise title/description alors que c'est la page la plus directement
 // pertinente pour une recherche sur son nom propre.
-const TITLE = "Santamaria Sanchéz, coach EP Coaching";
+const TITLE = "Emmanuel Santamaria Sanchéz, coach EP Coaching";
 const DESCRIPTION =
-  "Qui t'accompagne chez EP Coaching : Santamaria Sanchéz, coach en bodybuilding et coach pour les coachs, et sur quoi il peut t'aider.";
+  "Qui t'accompagne chez EP Coaching : Emmanuel Santamaria Sanchéz, coach en bodybuilding et coach pour les coachs, et sur quoi il peut t'aider.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -39,7 +40,7 @@ export default async function CoachsDirectoryPage() {
   const isDirectory = coaches.length > 1;
   // GEO/SEO (retour direct 2026-09-18) : cette page a déjà le titre/desc
   // portant son nom (voir plus haut), mais aucune donnée structurée
-  // n'associait "Santamaria Sanchéz" à un vrai schema.org Person — le seul
+  // n'associait "Emmanuel Santamaria Sanchéz" à un vrai schema.org Person — le seul
   // endroit qui le fait (app/page.tsx) le décrit en 3 mots dans un champ
   // `founder`, pas avec sa vraie bio. Ici, la bio/spécialités réelles
   // viennent directement de la base (getCoachDirectory), jamais inventées.
@@ -51,7 +52,10 @@ export default async function CoachsDirectoryPage() {
     ? {
         "@context": "https://schema.org",
         "@type": "Person",
-        name: soloCoach.full_name ?? "Santamaria Sanchéz",
+        // Même entité que le graphe du site (lib/seo-entity.ts) : nom public
+        // fixe, jamais le nom saisi en base (qui pourrait être le nom légal).
+        "@id": FOUNDER_REF["@id"],
+        name: FOUNDER.name,
         jobTitle: "Coach en bodybuilding",
         description: soloCoach.bio ?? DESCRIPTION,
         ...(soloCoach.avatar_url ? { image: soloCoach.avatar_url } : {}),
@@ -66,7 +70,7 @@ export default async function CoachsDirectoryPage() {
       {personStructuredData && (
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
+           
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personStructuredData) }}
         />
       )}

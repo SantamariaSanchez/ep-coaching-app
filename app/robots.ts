@@ -1,17 +1,19 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo-entity";
 
-// Audit SEO 2026-09-16, voir app/sitemap.ts pour le contexte complet.
-// Aucun robots.txt n'existait avant, contrairement au site vitrine.
+// Pages publiques ouvertes à tous les robots (moteurs de recherche et
+// moteurs IA). Fermé : ce qui est derrière la connexion ou n'a aucun sens
+// dans un résultat de recherche (API, liens de redirection, aperçus de dev).
+// "/" et "/launch" ne redirigent qu'un visiteur DÉJÀ connecté (proxy.ts) :
+// un robot, sans session, voit toujours la vraie page d'accueil.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Rien d'utile à indexer derrière l'authentification, et certaines
-      // routes (dashboard, api) exposent des paramètres qui n'ont aucun
-      // sens à apparaître dans des résultats de recherche.
-      disallow: ["/dashboard", "/api", "/auth", "/onboarding", "/launch"],
+      disallow: ["/dashboard", "/api", "/auth", "/onboarding", "/launch", "/equipe", "/go/", "/guides/", "/preview-dev"],
     },
-    sitemap: "https://ep-coaching.vercel.app/sitemap.xml",
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

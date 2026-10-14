@@ -7,9 +7,9 @@ import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
 // Page « qui est derrière » (SEO/GEO 2026-10-13) : une recherche du nom du
 // fondateur doit tomber ici, pas sur les CGU.
 
-const TITLE = "Santamaria Sanchéz, coach sportif à Annecy et fondateur d'EP Coaching";
+const TITLE = "Emmanuel Santamaria Sanchéz, coach sportif à Annecy et fondateur d'EP Coaching";
 const DESCRIPTION =
-  "Qui est Santamaria Sanchéz ? Coach en musculation et nutrition basé à Annecy, athlète naturel, fondateur d'EP Coaching : son parcours, sa méthode et ce qu'il construit.";
+  "Qui est Emmanuel Santamaria Sanchéz ? Coach en musculation et nutrition basé à Annecy, athlète naturel, fondateur d'EP Coaching : son parcours, sa méthode et ce qu'il construit.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 const FAQS = [
   {
-    q: "Qui est Santamaria Sanchéz ?",
+    q: "Qui est Emmanuel Santamaria Sanchéz ?",
     a: `${FOUNDER.name} est coach en musculation et nutrition, basé à Annecy (Haute-Savoie), et le fondateur d'EP Coaching. ${FOUNDER.bio}`,
   },
   {
@@ -29,7 +29,7 @@ const FAQS = [
     a: "Un accompagnement humain et une appli : programme d'entraînement sur mesure, plan alimentaire, bilans, messages avec ton coach et suivi de tes progrès. L'appli sert aussi aux coachs pour suivre leurs clients.",
   },
   {
-    q: "Comment travailler avec Santamaria Sanchéz ?",
+    q: "Comment travailler avec Emmanuel Santamaria Sanchéz ?",
     a: "Crée ton compte gratuit dans l'appli EP Coaching, puis demande ton accompagnement depuis l'onglet Coach. Le suivi se fait en ligne, à Annecy comme partout en France.",
   },
 ] as const;
@@ -38,7 +38,7 @@ export default function AProposPage() {
   return (
     <PublicPage
       eyebrow="À propos"
-      title="Santamaria Sanchéz, fondateur d'EP Coaching"
+      title="Emmanuel Santamaria Sanchéz, fondateur d'EP Coaching"
       intro="Coach en musculation et nutrition, basé à Annecy. Je prends les gens motivés et je fais en sorte qu'ils aillent plus vite que s'ils étaient seuls."
       jsonLd={entityGraph([
         { "@type": "AboutPage", name: TITLE, url: `${SITE_URL}/a-propos`, about: { "@id": `${SITE_URL}/a-propos#fondateur` } },

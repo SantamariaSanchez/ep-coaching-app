@@ -1,35 +1,33 @@
 import type { MetadataRoute } from "next";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
+import { SITE_URL } from "@/lib/seo-entity";
 
-// Audit SEO 2026-09-16 (retour direct : "améliore encore le SEO du site
-// vitrine et de l'appli") : aucun sitemap n'existait pour cette appli,
-// contrairement au site vitrine (repo séparé) qui en a déjà un. Sans
-// sitemap, les moteurs de recherche découvrent les pages publiques
-// uniquement par leurs liens internes, ce qui rate en pratique la quasi
-// totalité des ~700+ pages /ressources/[slug] (peu de liens entrants
-// internes vers chacune individuellement, voir LEADMAGNETS.md).
-const BASE_URL = "https://ep-coaching.vercel.app";
+// Sitemap des pages publiques (audit SEO 2026-09-16, repris le 2026-10-14) :
+// toutes les pages lisibles sans compte, plus chaque guide /ressources/<slug>
+// avec sa vraie date de mise à jour. Pages légales exclues (noindex depuis
+// le 2026-10-13), comme tout ce qui est derrière la connexion.
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: BASE_URL, changeFrequency: "weekly", priority: 1 },
-    { url: `${BASE_URL}/a-propos`, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${BASE_URL}/coach-sportif-annecy`, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${BASE_URL}/ressources`, changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE_URL}/reussites`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE_URL}/carrieres`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE_URL}/coachs`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE_URL}/outils`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE_URL}/support`, changeFrequency: "yearly", priority: 0.3 },
-    // Pages légales retirées (noindex depuis le 2026-10-13).
+    { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
+    { url: `${SITE_URL}/a-propos`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${SITE_URL}/coach-sportif-annecy`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${SITE_URL}/ressources`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE_URL}/outils`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/coachs`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/carrieres`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE_URL}/reussites`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${SITE_URL}/bio`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${SITE_URL}/support`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  // Le vrai volume de contenu indexable : chaque lead magnet publié a sa
-  // propre page /ressources/[slug], jamais listée nulle part explicitement
-  // avant ce sitemap.
+  // Le vrai volume de contenu indexable : chaque guide publié a sa page.
   const leadMagnets = await getAllLeadMagnets();
   const leadMagnetRoutes: MetadataRoute.Sitemap = leadMagnets.map((m) => ({
-    url: `${BASE_URL}/ressources/${m.slug}`,
+    url: `${SITE_URL}/ressources/${m.slug}`,
+    ...(m.updatedAt ? { lastModified: new Date(m.updatedAt) } : {}),
     changeFrequency: "monthly",
     priority: 0.6,
   }));

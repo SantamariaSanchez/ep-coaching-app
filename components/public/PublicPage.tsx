@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
+import { SHOWCASE_URL } from "@/lib/seo-entity";
 
 // Gabarit des pages publiques de contenu (À propos, pages locales) :
 // lisible sur téléphone, un seul appel à l'action, maillage vers l'accueil.
@@ -40,12 +41,15 @@ export default function PublicPage({
             Sans carte bancaire · Sans engagement
           </p>
         </div>
-        <nav aria-label="Plus sur EP Coaching" style={{ marginTop: 32, display: "flex", flexWrap: "wrap", gap: 14, fontSize: 13 }}>
+        <nav aria-label="Plus sur EP Coaching" style={{ marginTop: 32, display: "flex", flexWrap: "wrap", columnGap: 16, rowGap: 4, fontSize: 13, lineHeight: "44px" }}>
           <Link href="/" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>Accueil</Link>
           <Link href="/a-propos" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>À propos</Link>
           <Link href="/coach-sportif-annecy" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>Coach sportif à Annecy</Link>
           <Link href="/ressources" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>Guides gratuits</Link>
           <Link href="/coachs" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>Les coachs</Link>
+          <Link href="/outils" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>Calculateurs gratuits</Link>
+          <Link href="/carrieres" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>Tu es coach ?</Link>
+          <a href={SHOWCASE_URL} target="_blank" rel="noopener" style={{ color: "var(--ep-accent)", fontWeight: 700, textDecoration: "none" }}>Le site EP Coaching</a>
         </nav>
       </article>
     </main>

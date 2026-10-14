@@ -41,6 +41,10 @@ interface LeadMagnetBase {
   // donc dans le HTML de la page publique, et l'identifiant du compte d'un
   // coach n'a rien à y faire.
   isOfficial?: boolean;
+  // Dates (SEO 2026-10-14) : lastModified du sitemap et dateModified /
+  // datePublished du JSON-LD Article. Optionnelles pour rester tolérant.
+  updatedAt?: string;
+  publishedAt?: string;
 }
 
 export interface GuideSection {
@@ -136,6 +140,7 @@ interface LeadMagnetSummaryRow {
   read_time: string;
   icon: string;
   keyword: string;
+  updated_at?: string | null;
 }
 
 interface LeadMagnetRow extends LeadMagnetSummaryRow {
@@ -156,6 +161,7 @@ function rowToSummary(row: LeadMagnetSummaryRow): LeadMagnetSummary {
     readTime: row.read_time,
     icon: row.icon,
     keyword: row.keyword,
+    ...(row.updated_at ? { updatedAt: row.updated_at } : {}),
   };
 }
 
@@ -165,12 +171,12 @@ function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
   // noms que l'ancien littéral TS : intro/sections/conclusion pour guide,
   // intro/groups/conclusion pour checklist, intro/questions/outcomes pour
   // quiz), voir le script de migration et LEADMAGNETS.md.
-  return { ...base, ...row.content, isOfficial: row.coach_id == null } as LeadMagnet;
+  return { ...base, ...row.content, isOfficial: row.coach_id == null, ...(row.created_at ? { publishedAt: row.created_at } : {}) } as LeadMagnet;
 }
 
 const SELECT_FIELDS_LIST =
-  "slug, title, hook, category, subcategory, format, read_time, icon, keyword";
-const SELECT_FIELDS_FULL = `${SELECT_FIELDS_LIST}, coach_id, content, sources`;
+  "slug, title, hook, category, subcategory, format, read_time, icon, keyword, updated_at";
+const SELECT_FIELDS_FULL = `${SELECT_FIELDS_LIST}, coach_id, content, sources, created_at`;
 
 // Contenu marketing public, pas scopé par coach ni par utilisateur — lu via
 // le client admin comme les autres références partagées (gyms, exercices).
@@ -198,7 +204,7 @@ const getAllLeadMagnetSummariesCached = unstable_cache(
       return [];
     }
   },
-  ["lead-magnets-summaries"],
+  ["lead-magnets-summaries-v2"],
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 
@@ -226,13 +232,13 @@ async function fetchOneFull(column: "slug" | "keyword", value: string): Promise<
 
 const getLeadMagnetBySlugCached = unstable_cache(
   async (slug: string) => fetchOneFull("slug", slug),
-  ["lead-magnet-one-v1"],
+  ["lead-magnet-one-v2"],
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 
 const getLeadMagnetByKeywordCached = unstable_cache(
   async (keyword: string) => fetchOneFull("keyword", keyword),
-  ["lead-magnet-kw-v1"],
+  ["lead-magnet-kw-v2"],
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 
