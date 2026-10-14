@@ -1,6 +1,7 @@
 import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { getUser } from "@/utils/auth";
 import { getClientDailyLogs } from "@/utils/daily-logs";
 import { getTodayLogs, getActiveDietPlan } from "@/utils/nutrition";
 import BilanDayPicker from "@/components/ui/BilanDayPicker";
@@ -22,9 +23,9 @@ function fmt(dateStr: string) {
 }
 
 export default async function ClientBilanPage({ searchParams }: { searchParams: Promise<{ jour?: string }> }) {
-  const t = await getT();
-  const supabase = await createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Session vérifiée sur place (utils/auth, signature locale) au lieu d'un
+  // aller-retour au serveur d'authentification, et tout chargé en parallèle.
+  const [t, user, { jour }, supabase] = await Promise.all([getT(), getUser(), searchParams, createServerSupabase()]);
   if (!user) redirect("/auth/client");
 
   // Un coach n'a pas de bilan "client" séparé du sien : sans cette
@@ -32,8 +33,6 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
   // daily_logs sont indexés par user id, pas par rôle) mais upsertDailyLog
   // (requireClient()) refusait ensuite l'enregistrement — la page semblait
   // fonctionner jusqu'au premier "Enregistrer", qui échouait silencieusement.
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role === "coach") redirect("/dashboard/coach/moi/bilan");
 
   // Le bilan quotidien (poids, sommeil, ressenti) est un outil de suivi
   // autonome accessible à tous les clients, gratuits ou coachés — c'est le
@@ -44,15 +43,16 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
   const today = todayInParis();
   // Bilan d'un jour passé (?jour=AAAA-MM-JJ, 30 jours max) : rattraper un
   // oubli avec exactement le même formulaire.
-  const { jour } = await searchParams;
   const date = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && isWithinBilanBackfillWindow(jour) ? jour : today;
-  const [allLogs, dayFoodLogs, autoSteps, activePlan, appSetup] = await Promise.all([
+  const [{ data: profile }, allLogs, dayFoodLogs, autoSteps, activePlan, appSetup] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
     getClientDailyLogs(user.id, 90),
     getTodayLogs(user.id, date),
     date === today ? getTodayStepsActual(user.id) : Promise.resolve(null),
     getActiveDietPlan(user.id),
     getAppSetup(user.id),
   ]);
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/bilan");
   const todayLog = allLogs.find((l) => l.log_date === date) ?? null;
   const todayFoodLogs = dayFoodLogs;
 
