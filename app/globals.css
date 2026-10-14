@@ -224,6 +224,248 @@ html[data-theme="douce"] {
   color-scheme: light;
 }
 
+/* ── Couleur de l'appli (2026-10-14, recommandation de Clara : « laisse la
+   personne choisir vraiment son app, fond clair/sombre et les couleurs ») :
+   <html data-accent> posé par lib/theme-color.ts. Rouge = l'identité
+   d'origine (aucun attribut). En sombre, les fonds prennent une teinte de
+   la couleur choisie ; en clair, seuls l'accent et les traits changent. */
+html:not([data-theme])[data-accent="rose"] {
+  --ep-accent: #EC4899;
+  --ep-accent-rgb: 236, 72, 153;
+  --ep-accent-2: #BE2B76;
+  --ep-accent-2-rgb: 190, 43, 118;
+  --ep-accent-hi: #F472B6;
+  --ep-accent-hi-rgb: 244, 114, 182;
+  --ep-accent-hi2: #F799C9;
+  --ep-accent-hi2-rgb: 247, 153, 201;
+  --ep-pink: #FBCFE8;
+  --ep-pink-rgb: 251, 207, 232;
+  --ep-line: #8A1F55;
+  --ep-line-rgb: 138, 31, 85;
+  --ep-page: #080005;
+  --ep-page-rgb: 8, 0, 5;
+  --ep-bg: #0D0008;
+  --ep-bg-rgb: 13, 0, 8;
+  --ep-s1: #1F0113;
+  --ep-s1-rgb: 31, 1, 19;
+  --ep-s2: #15000D;
+  --ep-s2-rgb: 21, 0, 13;
+  --ep-s3: #1A0010;
+  --ep-s3-rgb: 26, 0, 16;
+  --ep-s4: #270118;
+  --ep-s4-rgb: 39, 1, 24;
+  --ep-s5: #14000C;
+  --ep-s5-rgb: 20, 0, 12;
+}
+html:not([data-theme])[data-accent="bleu"] {
+  --ep-accent: #2F7BF6;
+  --ep-accent-rgb: 47, 123, 246;
+  --ep-accent-2: #1D5FD1;
+  --ep-accent-2-rgb: 29, 95, 209;
+  --ep-accent-hi: #5B9BFF;
+  --ep-accent-hi-rgb: 91, 155, 255;
+  --ep-accent-hi2: #7FB1FF;
+  --ep-accent-hi2-rgb: 127, 177, 255;
+  --ep-pink: #BFD6FF;
+  --ep-pink-rgb: 191, 214, 255;
+  --ep-line: #1B3F80;
+  --ep-line-rgb: 27, 63, 128;
+  --ep-page: #000308;
+  --ep-page-rgb: 0, 3, 8;
+  --ep-bg: #00040D;
+  --ep-bg-rgb: 0, 4, 13;
+  --ep-s1: #02091F;
+  --ep-s1-rgb: 2, 9, 31;
+  --ep-s2: #010615;
+  --ep-s2-rgb: 1, 6, 21;
+  --ep-s3: #01071A;
+  --ep-s3-rgb: 1, 7, 26;
+  --ep-s4: #030D27;
+  --ep-s4-rgb: 3, 13, 39;
+  --ep-s5: #010514;
+  --ep-s5-rgb: 1, 5, 20;
+}
+html:not([data-theme])[data-accent="vert"] {
+  --ep-accent: #19B36B;
+  --ep-accent-rgb: 25, 179, 107;
+  --ep-accent-2: #0E8A50;
+  --ep-accent-2-rgb: 14, 138, 80;
+  --ep-accent-hi: #34D38A;
+  --ep-accent-hi-rgb: 52, 211, 138;
+  --ep-accent-hi2: #5EE0A4;
+  --ep-accent-hi2-rgb: 94, 224, 164;
+  --ep-pink: #BDF2D8;
+  --ep-pink-rgb: 189, 242, 216;
+  --ep-line: #0B5A35;
+  --ep-line-rgb: 11, 90, 53;
+  --ep-page: #000803;
+  --ep-page-rgb: 0, 8, 3;
+  --ep-bg: #000D05;
+  --ep-bg-rgb: 0, 13, 5;
+  --ep-s1: #011F0E;
+  --ep-s1-rgb: 1, 31, 14;
+  --ep-s2: #00150A;
+  --ep-s2-rgb: 0, 21, 10;
+  --ep-s3: #001A0C;
+  --ep-s3-rgb: 0, 26, 12;
+  --ep-s4: #012712;
+  --ep-s4-rgb: 1, 39, 18;
+  --ep-s5: #001409;
+  --ep-s5-rgb: 0, 20, 9;
+}
+html:not([data-theme])[data-accent="violet"] {
+  --ep-accent: #8B5CF6;
+  --ep-accent-rgb: 139, 92, 246;
+  --ep-accent-2: #6D3FD9;
+  --ep-accent-2-rgb: 109, 63, 217;
+  --ep-accent-hi: #A78BFA;
+  --ep-accent-hi-rgb: 167, 139, 250;
+  --ep-accent-hi2: #BBA3FC;
+  --ep-accent-hi2-rgb: 187, 163, 252;
+  --ep-pink: #DDD0FE;
+  --ep-pink-rgb: 221, 208, 254;
+  --ep-line: #4A2A99;
+  --ep-line-rgb: 74, 42, 153;
+  --ep-page: #040008;
+  --ep-page-rgb: 4, 0, 8;
+  --ep-bg: #06000D;
+  --ep-bg-rgb: 6, 0, 13;
+  --ep-s1: #10031F;
+  --ep-s1-rgb: 16, 3, 31;
+  --ep-s2: #0A0115;
+  --ep-s2-rgb: 10, 1, 21;
+  --ep-s3: #0D021A;
+  --ep-s3-rgb: 13, 2, 26;
+  --ep-s4: #150427;
+  --ep-s4-rgb: 21, 4, 39;
+  --ep-s5: #090114;
+  --ep-s5-rgb: 9, 1, 20;
+}
+html:not([data-theme])[data-accent="orange"] {
+  --ep-accent: #F97316;
+  --ep-accent-rgb: 249, 115, 22;
+  --ep-accent-2: #C2560C;
+  --ep-accent-2-rgb: 194, 86, 12;
+  --ep-accent-hi: #FB8C3C;
+  --ep-accent-hi-rgb: 251, 140, 60;
+  --ep-accent-hi2: #FDA766;
+  --ep-accent-hi2-rgb: 253, 167, 102;
+  --ep-pink: #FED7B5;
+  --ep-pink-rgb: 254, 215, 181;
+  --ep-line: #8A3A06;
+  --ep-line-rgb: 138, 58, 6;
+  --ep-page: #080300;
+  --ep-page-rgb: 8, 3, 0;
+  --ep-bg: #0D0500;
+  --ep-bg-rgb: 13, 5, 0;
+  --ep-s1: #1F0C01;
+  --ep-s1-rgb: 31, 12, 1;
+  --ep-s2: #150800;
+  --ep-s2-rgb: 21, 8, 0;
+  --ep-s3: #1A0A00;
+  --ep-s3-rgb: 26, 10, 0;
+  --ep-s4: #271001;
+  --ep-s4-rgb: 39, 16, 1;
+  --ep-s5: #140700;
+  --ep-s5-rgb: 20, 7, 0;
+}
+html[data-theme="claire"][data-accent="bleu"] {
+  --ep-accent: #1F63D6;
+  --ep-accent-rgb: 31, 99, 214;
+  --ep-accent-2: #174FB0;
+  --ep-accent-2-rgb: 23, 79, 176;
+  --ep-accent-hi: #1B58C4;
+  --ep-accent-hi-rgb: 27, 88, 196;
+  --ep-accent-hi2: #2E6BD6;
+  --ep-accent-hi2-rgb: 46, 107, 214;
+  --ep-pink: #3B5FA8;
+  --ep-pink-rgb: 59, 95, 168;
+  --ep-line: #8EA9D8;
+  --ep-line-rgb: 142, 169, 216;
+  --ep-page: #F4F6FA;
+  --ep-page-rgb: 244, 246, 250;
+  --ep-bg: #F4F6FA;
+  --ep-bg-rgb: 244, 246, 250;
+  --ep-s2: #EDF1F7;
+  --ep-s2-rgb: 237, 241, 247;
+  --ep-s4: #E4EAF3;
+  --ep-s4-rgb: 228, 234, 243;
+  --ep-shade: #A6B1C4;
+  --ep-shade-rgb: 166, 177, 196;
+}
+html[data-theme="claire"][data-accent="vert"] {
+  --ep-accent: #138A52;
+  --ep-accent-rgb: 19, 138, 82;
+  --ep-accent-2: #0E6E41;
+  --ep-accent-2-rgb: 14, 110, 65;
+  --ep-accent-hi: #117A49;
+  --ep-accent-hi-rgb: 17, 122, 73;
+  --ep-accent-hi2: #1E8F5A;
+  --ep-accent-hi2-rgb: 30, 143, 90;
+  --ep-pink: #2F7A57;
+  --ep-pink-rgb: 47, 122, 87;
+  --ep-line: #86C3A5;
+  --ep-line-rgb: 134, 195, 165;
+  --ep-page: #F3F7F4;
+  --ep-page-rgb: 243, 247, 244;
+  --ep-bg: #F3F7F4;
+  --ep-bg-rgb: 243, 247, 244;
+  --ep-s2: #EBF2ED;
+  --ep-s2-rgb: 235, 242, 237;
+  --ep-s4: #E1ECE4;
+  --ep-s4-rgb: 225, 236, 228;
+  --ep-shade: #A3B8AA;
+  --ep-shade-rgb: 163, 184, 170;
+}
+html[data-theme="claire"][data-accent="violet"] {
+  --ep-accent: #6D3FD9;
+  --ep-accent-rgb: 109, 63, 217;
+  --ep-accent-2: #5A2FC0;
+  --ep-accent-2-rgb: 90, 47, 192;
+  --ep-accent-hi: #6236CC;
+  --ep-accent-hi-rgb: 98, 54, 204;
+  --ep-accent-hi2: #7449DD;
+  --ep-accent-hi2-rgb: 116, 73, 221;
+  --ep-pink: #6B4BB0;
+  --ep-pink-rgb: 107, 75, 176;
+  --ep-line: #B5A0E6;
+  --ep-line-rgb: 181, 160, 230;
+  --ep-page: #F6F4FB;
+  --ep-page-rgb: 246, 244, 251;
+  --ep-bg: #F6F4FB;
+  --ep-bg-rgb: 246, 244, 251;
+  --ep-s2: #EFEBF8;
+  --ep-s2-rgb: 239, 235, 248;
+  --ep-s4: #E7E1F4;
+  --ep-s4-rgb: 231, 225, 244;
+  --ep-shade: #B1A8C6;
+  --ep-shade-rgb: 177, 168, 198;
+}
+html[data-theme="claire"][data-accent="orange"] {
+  --ep-accent: #D9600C;
+  --ep-accent-rgb: 217, 96, 12;
+  --ep-accent-2: #B44E08;
+  --ep-accent-2-rgb: 180, 78, 8;
+  --ep-accent-hi: #C8580B;
+  --ep-accent-hi-rgb: 200, 88, 11;
+  --ep-accent-hi2: #D96A1E;
+  --ep-accent-hi2-rgb: 217, 106, 30;
+  --ep-pink: #A8562A;
+  --ep-pink-rgb: 168, 86, 42;
+  --ep-line: #E3A985;
+  --ep-line-rgb: 227, 169, 133;
+  --ep-page: #FAF5F1;
+  --ep-page-rgb: 250, 245, 241;
+  --ep-bg: #FAF5F1;
+  --ep-bg-rgb: 250, 245, 241;
+  --ep-s2: #F5EDE6;
+  --ep-s2-rgb: 245, 237, 230;
+  --ep-s4: #EFE3D8;
+  --ep-s4-rgb: 239, 227, 216;
+  --ep-shade: #C2AE9F;
+  --ep-shade-rgb: 194, 174, 159;
+}
+
 /* Texte « blanc » posé sur un fond accent ou un bouton plein : reste blanc
    dans toutes les ambiances (sinon texte foncé sur bouton rouge/rose). */
 :is([class~="bg-(--ep-accent)"], [class~="bg-(--ep-accent-2)"], [class~="bg-(--ep-accent)/90"], [class~="bg-(--ep-accent)/80"],

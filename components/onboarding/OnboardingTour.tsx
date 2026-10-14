@@ -37,8 +37,8 @@ function baseSlides(coached: boolean, checkinDayLabel: string | null): Slide[] {
     {
       icon: Palette,
       eyebrow: "Bienvenue",
-      title: "D'abord, ton ambiance",
-      desc: "Claire, douce ou sombre. Tu pourras changer quand tu veux dans Paramètres.",
+      title: "D'abord, ton appli à ton goût",
+      desc: "Fond sombre ou clair, et ta couleur : rouge, rose, bleu, vert, violet ou orange. Tu pourras changer quand tu veux dans Paramètres.",
       kind: "ambiance",
     },
     {

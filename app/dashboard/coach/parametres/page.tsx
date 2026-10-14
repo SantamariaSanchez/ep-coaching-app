@@ -99,7 +99,7 @@ export default async function CoachParametresPage() {
         {
           id: "affichage",
           title: t("Ambiance, langue et affichage"),
-          keywords: "ambiance thème clair sombre rose douce couleur fond langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation taille du texte animations accessibilité",
+          keywords: "ambiance apparence thème clair sombre rose bleu vert violet orange rouge douce couleur fond langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation taille du texte animations accessibilité",
           node: (
             <>
               <AmbianceCard />

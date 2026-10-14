@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getUser } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
+import { parseAppearance } from "@/lib/theme-color";
 
 // Réglages du compte (table user_settings) : langue et baisse automatique
 // du stock de courses. Ceux propres à un appareil sont dans
@@ -84,4 +85,24 @@ export async function setTimezoneAction(tz: string): Promise<{ error?: string }>
   const { error } = await upsert(user.id, { timezone: tz });
   if (error) console.error("setTimezoneAction error:", error);
   return {};
+}
+
+/** Apparence (fond + couleur) : retenue sur le compte pour suivre la personne sur ses autres appareils. */
+export async function setAppearanceAction(value: string): Promise<{ error?: string }> {
+  if (!parseAppearance(value)) return { error: "Apparence inconnue." };
+  const user = await getUser();
+  if (!user) return { error: "Non authentifié." };
+  const { error } = await upsert(user.id, { appearance: value });
+  if (error) {
+    console.error("setAppearanceAction error:", error);
+    return { error: "Enregistrement impossible, réessaie." };
+  }
+  return {};
+}
+
+export async function getAppearanceAction(): Promise<string | null> {
+  const user = await getUser();
+  if (!user) return null;
+  const { data } = await createAdminClient().from("user_settings").select("appearance").eq("user_id", user.id).maybeSingle();
+  return (data as { appearance?: string | null } | null)?.appearance ?? null;
 }
