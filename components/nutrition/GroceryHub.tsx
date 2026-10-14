@@ -12,18 +12,21 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { Check, Minus, Package, Plus, Search, ShoppingCart, Trash2, X } from "lucide-react";
 import { addToPantryAction, adjustPantryAction, deletePantryItemAction, getPantryAction, updatePantryItemAction } from "@/app/actions/pantry";
-import { buildBuyList, formatQuantity, guessPieceWeight, statusOf, stepFor, suggestUnit, toGrams, type BuySuggestion, type NeedItem, type PantryItem, type PantryUnit } from "@/lib/pantry";
+import { buildBuyList, formatQuantity, guessPieceWeight, statusOf, stepFor, suggestUnit, type BuySuggestion, type NeedItem, type PantryItem, type PantryUnit } from "@/lib/pantry";
 import { fuzzyFilter } from "@/lib/fuzzy-search";
-import type { Food } from "@/utils/nutrition";
+import type { DietPlanWithMeals, Food } from "@/utils/nutrition";
+import ShoppingList from "@/components/nutrition/ShoppingList";
 
-type View = "racheter" | "stock" | "semaine";
+type View = "liste" | "racheter" | "stock";
 
 const UNIT_LABELS: Record<PantryUnit, string> = { piece: "Pièces", g: "Grammes", ml: "Millilitres" };
 
-export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]; source: "plan" | "habitudes"; foods: Food[] }) {
+export default function GroceryHub({ needs, source, foods, plan = null, today }: { needs: NeedItem[]; source: "plan" | "habitudes"; foods: Food[]; plan?: DietPlanWithMeals | null; today: string }) {
   const t = useT();
   const [items, setItems] = useState<PantryItem[] | null>(null);
-  const [view, setView] = useState<View>("racheter");
+  // Liste de courses d'abord (2026-10-14) : c'est ce qu'on ouvre en magasin.
+  const hasList = (plan?.diet_plan_meals.length ?? 0) > 0 || needs.length > 0;
+  const [view, setView] = useState<View>(hasList ? "liste" : "racheter");
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<PantryItem | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,12 +46,12 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
       if (!alive) return;
       if (res.error) setError(res.error);
       setItems(res.items);
-      if (res.items.length > 0) setView("stock");
+      if (res.items.length > 0 && !hasList) setView("stock");
     });
     return () => {
       alive = false;
     };
-  }, []);
+  }, [hasList]);
 
   const dailyByFood = useMemo(() => new Map(needs.map((n) => [n.foodId, n.totalGrams / 7])), [needs]);
   const buyList = useMemo(() => (items ? buildBuyList(items, needs) : []), [items, needs]);
@@ -89,9 +92,9 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
         </div>
         <div role="tablist" aria-label={t("Courses")} className="grid grid-cols-3 gap-1 bg-(--ep-s2) rounded-lg p-1">
           {([
+            ["liste", "Liste"],
             ["racheter", `À racheter${buyList.length ? ` (${buyList.length})` : ""}`],
             ["stock", "Mon stock"],
-            ["semaine", "Semaine"],
           ] as [View, string][]).map(([v, label]) => (
             <button
               key={v}
@@ -155,36 +158,15 @@ export default function GroceryHub({ needs, source, foods }: { needs: NeedItem[]
         </div>
       )}
 
-      {view === "semaine" && (
-        <div className="space-y-2">
-          <p className="text-[11px] text-(--ep-ink)/50 px-1">
-            {source === "plan" ? t("Besoins de la semaine d'après ton plan, face à ton stock.") : t("Besoins de la semaine d'après ce que tu manges le plus, face à ton stock.")}
-          </p>
-          {needs.length === 0 ? (
-            <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-8 text-center">
-              <p className="text-xs text-(--ep-ink)/40">{t("Pas encore assez de données. Note tes repas quelques jours, ou demande un plan à ton coach.")}</p>
-            </div>
-          ) : (
-            <ul className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-3 space-y-2">
-              {needs.map((n) => {
-                const item = items?.find((i) => i.food_id === n.foodId);
-                const have = item ? toGrams(item) : 0;
-                const pct = Math.min(100, Math.round((have / Math.max(1, n.totalGrams)) * 100));
-                return (
-                  <li key={n.foodId}>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-(--ep-strong) truncate">{n.name}</span>
-                      <span className="text-[11px] text-(--ep-ink)/50">{Math.round(have)} / {n.totalGrams} g</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-(--ep-s2) mt-1 overflow-hidden" aria-hidden="true">
-                      <div className={`h-full rounded-full ${pct >= 100 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-400" : "bg-(--ep-accent)"}`} style={{ width: `${pct}%` }} />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+      {view === "liste" && (
+        <ShoppingList
+          plan={plan}
+          today={today}
+          pantry={items}
+          fallbackNeeds={needs}
+          pending={pending}
+          onStock={(list) => run(() => addToPantryAction(list))}
+        />
       )}
 
       {adding && <AddSheet foods={foods} onClose={() => setAdding(false)} onAdd={(p) => { setAdding(false); run(() => addToPantryAction([p])); }} />}

@@ -3,7 +3,11 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Lock, Plus, RotateCcw, Shuffle, Sparkles } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Lock, Plus, RotateCcw, Shuffle, SlidersHorizontal, Sparkles } from "lucide-react";
+import DietToday, { type DayMeal, type WeekDay } from "@/components/nutrition/DietToday";
+import CookMode, { readCookSession, type CookItem, type CookSession } from "@/components/nutrition/CookMode";
+import { dayAdherence, slotTime, type MealStatus } from "@/lib/diet-day";
+import { getMealChecks, setMealCheck, type MealChecks } from "@/app/dashboard/client/nutrition/meal-check-actions";
 import AddFoodSheet, { type PlanMealOption, type TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
 import ItemSheet from "@/components/nutrition/ItemSheet";
 import { notifyGateRefresh } from "@/lib/gate-events";
@@ -74,6 +78,17 @@ function writeLS(key: string, value: unknown) {
 }
 
 const noopSubscribe = () => () => {};
+const CHECKS_KEY = "ep-meal-checks";
+const DETAIL_KEY = "ep-diet-detail-open";
+const WEEK_LETTERS = ["L", "M", "M", "J", "V", "S", "D"];
+
+function weekOf(today: string): string[] {
+  const d = new Date(`${today}T12:00:00`);
+  const dow = d.getDay() === 0 ? 7 : d.getDay();
+  const out: string[] = [];
+  for (let i = 1; i <= 7; i++) out.push(shiftDate(today, i - dow));
+  return out;
+}
 
 function shiftDate(date: string, delta: number): string {
   const d = new Date(`${date}T12:00:00`);
@@ -178,6 +193,17 @@ export default function NutritionTracker({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [loadingDay, setLoadingDay] = useState(false);
+
+  // Cases « mangé » (2026-10-14) : gardées sur l'appareil pour un affichage
+  // immédiat, puis relues en base (table meal_checks, voir
+  // meal-check-actions.ts) qui fait foi dès qu'elle existe.
+  const [checks, setChecks] = useState<MealChecks>(() => readLS(CHECKS_KEY, {}));
+  const [cook, setCook] = useState<{ slot: string; initial: CookSession | null } | null>(() => {
+    const s = typeof window === "undefined" ? null : readCookSession(today);
+    return s ? { slot: s.slot, initial: s } : null;
+  });
+  const [replaceTarget, setReplaceTarget] = useState<{ slot: string; key: string } | null>(null);
+  const [showDetail, setShowDetail] = useState<boolean>(() => readLS(DETAIL_KEY, false));
 
   const choice = useMemo(() => choices[date] ?? {}, [choices, date]);
   const dayOverrides = useMemo(() => overrides[date] ?? {}, [overrides, date]);
@@ -360,7 +386,8 @@ export default function NutritionTracker({
     if (res.error) return setError(res.error);
     rememberFoods(res.logs);
     const next = [...logs, ...res.logs];
-    setDayLogs(date, () => next);
+    // Mise à jour fonctionnelle : plusieurs repas peuvent être cochés d'affilée.
+    setDayLogs(date, (prev) => [...prev, ...res.logs]);
     setSheet(null);
     notifyGateRefresh();
     await rebalanceAfter(slot, next);
@@ -455,6 +482,190 @@ export default function NutritionTracker({
     }
   }
 
+  // ── Ma diète du jour : cases « mangé », écarts, semaine (2026-10-14) ───
+  const weekDates = useMemo(() => weekOf(today), [today]);
+
+  useEffect(() => {
+    let alive = true;
+    const from = [weekDates[0], shiftDate(today, -13)].sort()[0];
+    getMealChecks(from, today)
+      .then((res) => {
+        if (!alive || res.local) return;
+        setChecks((prev) => {
+          const next: MealChecks = {};
+          for (const [d, v] of Object.entries(prev)) if (d < from || d > today) next[d] = v;
+          return { ...next, ...res.checks };
+        });
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [today, weekDates]);
+
+  useEffect(() => {
+    const min = shiftDate(today, -21);
+    const pruned: MealChecks = {};
+    for (const [d, v] of Object.entries(checks)) if (d >= min) pruned[d] = v;
+    writeLS(CHECKS_KEY, pruned);
+  }, [checks, today]);
+
+  /** Statut de chaque repas d'un jour : case cochée, sinon « mangé » si le repas est noté en flexible. */
+  const statusFor = useCallback(
+    (d: string, dayLogs: FoodLogWithFood[]): Record<string, MealStatus | undefined> => {
+      const out: Record<string, MealStatus | undefined> = { ...(checks[d] ?? {}) };
+      if (mode === "flexible") for (const l of dayLogs) out[l.meal_slot ?? "breakfast"] ??= "mange";
+      return out;
+    },
+    [checks, mode]
+  );
+
+  const planSlots = useMemo(() => [...new Set(planItems.map((i) => i.slot))].sort((a, b) => slotRank(a) - slotRank(b)), [planItems]);
+  const dayStatus = useMemo(() => statusFor(date, logs), [statusFor, date, logs]);
+
+  const displayItems = useCallback(
+    (slot: string): (CookItem & { logId?: string; planMealId?: string })[] => {
+      const slotLogs = logs.filter((l) => (l.meal_slot ?? "breakfast") === slot && l.foods);
+      const noteOf = (id: string | null | undefined) => (id ? plan?.diet_plan_meals.find((m) => m.id === id)?.notes ?? null : null);
+      if (slotLogs.length) return slotLogs.map((l) => ({ key: `log:${l.id}`, food: l.foods!, grams: Number(l.quantity_g), logId: l.id, planMealId: l.diet_plan_meal_id ?? undefined, note: noteOf(l.diet_plan_meal_id) }));
+      if (mode === "flexible") {
+        const sug = suggestions.filter((x) => x.slot === slot && x.grams > 0);
+        if (sug.length) return sug.map((x) => ({ key: `plan:${x.planMealId}`, food: x.food, grams: x.grams, planMealId: x.planMealId, note: noteOf(x.planMealId) }));
+      }
+      return planItems.filter((i) => i.slot === slot).map((i) => ({ key: `plan:${i.planMealId}`, food: i.food, grams: i.grams, planMealId: i.planMealId, note: noteOf(i.planMealId) }));
+    },
+    [logs, mode, suggestions, planItems, plan]
+  );
+
+  const dayMeals: DayMeal[] = useMemo(
+    () =>
+      planSlots.map((slot) => {
+        const items = displayItems(slot);
+        return { slot, label: slotLabel(slot), time: slotTime(slot), items, macros: sumMacros(items.map((i) => macrosFor(i.food, i.grams))) };
+      }),
+    [planSlots, displayItems]
+  );
+
+  const adherence = useMemo(
+    () => dayAdherence({ slots: planSlots, status: dayStatus, consumedKcal: date === today ? 0 : consumed.calories, targetKcal: planTarget.calories }),
+    [planSlots, dayStatus, consumed.calories, planTarget.calories, date, today]
+  );
+
+  const week: WeekDay[] = useMemo(
+    () =>
+      weekDates.map((d, i) => {
+        const future = d > today;
+        if (future || !plan) return { date: d, letter: WEEK_LETTERS[i], pct: null, basis: null, isToday: d === today, isSelected: d === date, future };
+        const items = planItemsFor(plan, d, choices[d] ?? readLS(`ep-variants:${planKey}:${d}`, {}));
+        const slots = [...new Set(items.map((x) => x.slot))];
+        const dayLogs = logsByDate[d] ?? [];
+        const a = dayAdherence({
+          slots,
+          status: statusFor(d, dayLogs),
+          // Aujourd'hui, la journée pré-remplie ne prouve pas ce qui est mangé.
+          consumedKcal: d === today ? 0 : sumMacros(dayLogs.map(logMacros)).calories,
+          targetKcal: planTotals(items).calories,
+        });
+        return { date: d, letter: WEEK_LETTERS[i], pct: a.pct, basis: a.basis, isToday: d === today, isSelected: d === date, future };
+      }),
+    [weekDates, today, plan, choices, planKey, logsByDate, statusFor, date]
+  );
+  const weekAvg = useMemo(() => {
+    const vals = week.filter((d) => d.pct != null).map((d) => d.pct!);
+    return vals.length ? Math.round(vals.reduce((x, y) => x + y, 0) / vals.length) : null;
+  }, [week]);
+
+  async function saveCheck(d: string, slot: string, st: MealStatus | null) {
+    const prev = checks[d]?.[slot];
+    setChecks((c) => {
+      const day = { ...(c[d] ?? {}) };
+      if (st) day[slot] = st;
+      else delete day[slot];
+      return { ...c, [d]: day };
+    });
+    const res = await setMealCheck(d, slot, st).catch(() => ({ error: "Connexion perdue, réessaie." }) as { error?: string; local?: boolean });
+    if (res.error) {
+      setError(res.error);
+      setChecks((c) => {
+        const day = { ...(c[d] ?? {}) };
+        if (prev) day[slot] = prev;
+        else delete day[slot];
+        return { ...c, [d]: day };
+      });
+      return;
+    }
+    notifyGateRefresh();
+  }
+
+  /** Coche un repas ; s'il n'est pas encore dans le journal, il y est ajouté tel que prévu. */
+  async function markMeal(slot: string, st: MealStatus | null) {
+    if (st === "mange" && !logs.some((l) => (l.meal_slot ?? "breakfast") === slot)) {
+      if (mode === "flexible" && suggestions.some((x) => x.slot === slot && x.grams > 0)) await eatSuggestions(slot);
+      else if (planItems.some((i) => i.slot === slot)) await fillSlots([slot]);
+    }
+    await saveCheck(date, slot, st);
+  }
+
+  async function toggleMeal(slot: string) {
+    if (!dayStatus[slot]) return markMeal(slot, "mange");
+    // Décocher en flexible retire ce que la case avait ajouté (aliments du plan).
+    if (mode === "flexible") {
+      const fromPlan = logs.filter((l) => (l.meal_slot ?? "breakfast") === slot && l.diet_plan_meal_id);
+      if (fromPlan.length) {
+        const del = await run(() => deleteTrackerLogs(fromPlan.map((l) => l.id)));
+        if (!del || del.error) return setError(del?.error ?? "Erreur.");
+        const ids = new Set(fromPlan.map((l) => l.id));
+        setDayLogs(date, (prev) => prev.filter((l) => !ids.has(l.id)));
+      }
+    }
+    await saveCheck(date, slot, null);
+  }
+
+  async function clearSlotLogs(slot: string, onlyPlan: boolean) {
+    const list = logs.filter((l) => (l.meal_slot ?? "breakfast") === slot && (!onlyPlan || l.diet_plan_meal_id));
+    if (list.length === 0) return true;
+    const del = await run(() => deleteTrackerLogs(list.map((l) => l.id)));
+    if (!del || del.error) {
+      setError(del?.error ?? "Erreur.");
+      return false;
+    }
+    const ids = new Set(list.map((l) => l.id));
+    setDayLogs(date, (prev) => prev.filter((l) => !ids.has(l.id)));
+    notifyGateRefresh();
+    return true;
+  }
+
+  async function skipMeal(slot: string) {
+    if (!(await clearSlotLogs(slot, false))) return;
+    await saveCheck(date, slot, "saute");
+  }
+
+  async function ateOther(slot: string) {
+    if (!(await clearSlotLogs(slot, true))) return;
+    await saveCheck(date, slot, "ecart");
+    setSheet({ kind: "add", slot });
+  }
+
+  async function replaceItem(slot: string, key: string, next: { food: Food; grams: number }) {
+    setReplaceTarget(null);
+    const items = displayItems(slot);
+    const target = items.find((i) => i.key === key);
+    if (!target) return;
+    if (target.logId) {
+      const log = logs.find((l) => l.id === target.logId);
+      if (log) await saveLog(log, next);
+    } else {
+      await addFoods(
+        slot,
+        items.map((i) => (i.key === key ? { food: next.food, grams: next.grams, planMealId: i.planMealId ?? null } : { food: i.food, grams: i.grams, planMealId: i.planMealId ?? null }))
+      );
+    }
+    await saveCheck(date, slot, "remplace");
+  }
+
+  const replaceItemData = replaceTarget ? displayItems(replaceTarget.slot).find((i) => i.key === replaceTarget.key) : undefined;
+  const cookMeal = cook ? dayMeals.find((m) => m.slot === cook.slot) ?? null : null;
+
   // ── Affichage ──────────────────────────────────────────────────────────
   const slotKeys = useMemo(() => {
     const keys = new Set<string>([...planItems.map((i) => i.slot), ...logs.map((l) => l.meal_slot ?? "breakfast")]);
@@ -537,6 +748,53 @@ export default function NutritionTracker({
         </button>
       </div>
 
+      {notice && <p role="status" className="text-xs text-(--ep-ok) text-center">{tr(notice)}</p>}
+      {error && <p role="alert" className="text-xs text-(--ep-bad) text-center">{tr(error)}</p>}
+
+      {/* Ma diète du jour : repas du moment, cases « mangé », semaine */}
+      {hasPlanToday && (
+        <DietToday
+          isToday={date === today}
+          dayLabel={dayLabel}
+          meals={dayMeals}
+          status={dayStatus}
+          adherence={adherence}
+          week={week}
+          weekAvg={weekAvg}
+          busy={busy}
+          onToggle={toggleMeal}
+          onSetStatus={(slot, st) => (st ? markMeal(slot, st) : toggleMeal(slot))}
+          onCook={(slot) => setCook({ slot, initial: null })}
+          onReplace={(slot, key) => setReplaceTarget({ slot, key })}
+          onAteOther={ateOther}
+          onSkip={skipMeal}
+          onSelectDay={goTo}
+          onMarkPast={async (slots) => {
+            for (const slot of slots) await markMeal(slot, "mange");
+          }}
+        />
+      )}
+
+      {hasPlanToday && (
+        <button
+          type="button"
+          aria-expanded={showDetail}
+          onClick={() => {
+            setShowDetail((v) => {
+              writeLS(DETAIL_KEY, !v);
+              return !v;
+            });
+          }}
+          className="w-full min-h-[48px] rounded-2xl border border-(--ep-line)/25 px-4 flex items-center gap-2 text-sm font-bold text-(--ep-ink)/70"
+        >
+          <SlidersHorizontal size={15} className="text-(--ep-ink)/40" />
+          <span className="flex-1 text-left">{tr("Macros, ajouts et options")}</span>
+          <ChevronDown size={16} className={`text-(--ep-ink)/40 transition-transform ${showDetail ? "rotate-180" : ""}`} />
+        </button>
+      )}
+
+      {(showDetail || !hasPlanToday) && (
+      <div className="space-y-4">
       {/* Mode */}
       {plan && (
         <div className="rounded-xl border border-(--ep-line)/25 bg-(--ep-shade)/25 p-3">
@@ -591,9 +849,6 @@ export default function NutritionTracker({
           {tr("J'ai suivi mon plan ce jour-là")}
         </button>
       )}
-
-      {notice && <p className="text-xs text-emerald-300/90 text-center">{notice}</p>}
-      {error && <p className="text-xs text-red-300 text-center">{tr(error)}</p>}
 
       {/* Repas */}
       {shownSlots.map((slot) => {
@@ -698,6 +953,14 @@ export default function NutritionTracker({
         </div>
       )}
 
+      {mode === "flexible" && Object.keys(dayOverrides).length > 0 && (
+        <button type="button" onClick={() => { setOverrides((p) => ({ ...p, [date]: {} })); writeLS(`ep-flex:${planKey}:${date}`, {}); }} className="w-full min-h-[44px] text-[11px] font-bold text-(--ep-ink)/45 underline">
+          {tr("Revenir aux repas du plan pour")}{" "}{date === today ? tr("aujourd'hui") : tr("ce jour")}
+        </button>
+      )}
+      </div>
+      )}
+
       {/* Panneaux */}
       {sheet?.kind === "add" && (
         <AddFoodSheet
@@ -767,10 +1030,45 @@ export default function NutritionTracker({
         />
       )}
 
-      {mode === "flexible" && Object.keys(dayOverrides).length > 0 && (
-        <button type="button" onClick={() => { setOverrides((p) => ({ ...p, [date]: {} })); writeLS(`ep-flex:${planKey}:${date}`, {}); }} className="w-full text-[11px] font-bold text-(--ep-ink)/45 underline">
-          {tr("Revenir aux repas du plan pour")}{" "}{date === today ? tr("aujourd'hui") : tr("ce jour")}
-        </button>
+      {replaceTarget && replaceItemData && (
+        <ItemSheet
+          title={`${slotLabel(replaceTarget.slot)} · ${tr("remplacement")}`}
+          food={replaceItemData.food}
+          grams={replaceItemData.grams}
+          planGrams={replaceItemData.grams}
+          foods={foods}
+          ctx={ctxFor(replaceTarget.slot)}
+          allowSwap
+          hint={tr("Choisis ce que tu as mangé à la place : la quantité équivalente est déjà calculée.")}
+          busy={busy}
+          onSave={(next) => replaceItem(replaceTarget.slot, replaceTarget.key, next)}
+          onRemove={() => {
+            const target = replaceItemData;
+            setReplaceTarget(null);
+            if (target.logId) {
+              const log = logs.find((l) => l.id === target.logId);
+              if (log) removeLog(log);
+            }
+          }}
+          onClose={() => setReplaceTarget(null)}
+        />
+      )}
+
+      {cook && cookMeal && (
+        <CookMode
+          date={date}
+          slot={cook.slot}
+          title={cookMeal.label}
+          time={cookMeal.time}
+          items={displayItems(cook.slot)}
+          initial={cook.initial}
+          onClose={() => setCook(null)}
+          onDone={() => {
+            const slot = cook.slot;
+            setCook(null);
+            if (dayStatus[slot] !== "mange") markMeal(slot, "mange");
+          }}
+        />
       )}
     </div>
   );

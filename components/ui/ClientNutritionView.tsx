@@ -1903,7 +1903,7 @@ export default function ClientNutritionView({
           — jamais vide de sens même sans plan fixe. */}
       {activeTab === "courses" && (
         <div className="space-y-5">
-          <GroceryHub needs={shoppingList.items} source={shoppingList.source} foods={foods} />
+          <GroceryHub needs={shoppingList.items} source={shoppingList.source} foods={foods} plan={activePlan} today={today} />
 
           {/* Idées de sources — pour varier en plan flexible, sans dépendre
               uniquement de ce qui a déjà été loggué. */}
