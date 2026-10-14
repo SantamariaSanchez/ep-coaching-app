@@ -38,7 +38,7 @@ const COMMON: Lesson[] = [
     minutes: 10,
     points: [
       "La mission : aider chacun à comprendre son corps et son entraînement pour décider lui-même, au lieu de subir la surinformation et les conseils contradictoires des réseaux.",
-      "Le fondateur, Santamaria Sanchéz, s'applique d'abord à lui-même ce qu'il enseigne (préparation pour la Heroes Cup WNBF France). C'est la preuve de légitimité de la marque : l'exécution, jamais un témoignage inventé.",
+      "Le fondateur, Emmanuel Santamaria Sanchéz, s'applique d'abord à lui-même ce qu'il enseigne (préparation pour la Heroes Cup WNBF France). C'est la preuve de légitimité de la marque : l'exécution, jamais un témoignage inventé.",
       "Les offres : coaching individuel physique, coaching business pour les coachs qui lancent ou développent leur activité, l'appli EP Coaching en Standard ou Premium, et des formations à l'unité.",
       "Règle absolue : seuls les prix de l'appli (Standard et Premium) sont affichés publiquement. Les prix des coachings et des formations se donnent uniquement en appel.",
     ],

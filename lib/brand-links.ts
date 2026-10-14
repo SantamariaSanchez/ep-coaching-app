@@ -32,7 +32,7 @@ export const BRAND_SOCIALS = {
   },
 } as const;
 
-// Comptes personnels de Santamaria Sanchéz, réels et confirmés (contrairement
+// Comptes personnels d'Emmanuel Santamaria Sanchéz, réels et confirmés (contrairement
 // aux placeholders @ep.coaching ci-dessus) — utilisés dans les données
 // structurées (schema.org `sameAs`) sur app/page.tsx ET app/coachs/page.tsx.
 // Centralisé ici (retour direct 2026-09-17 : "quand on cherche mon nom sur

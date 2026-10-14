@@ -64,7 +64,7 @@ export const TEMPLATES: Record<string, StaffTemplate[]> = {
     T("Légende de reel", "dm", "Publication Instagram", "[Accroche qui reprend la première phrase de la vidéo]\n\n[Le point clé en 2 phrases]\n\n[Question pour faire commenter]"),
   ],
   "personal-brand-manager": [
-    T("Demande d'intervention", "email", "Premier contact avec un podcast ou un média", "Bonjour [prénom],\n\nJe m'occupe de l'image de Santamaria Sanchéz, fondateur d'EP Coaching. Il prépare actuellement la Heroes Cup WNBF France en naturel et partage ce qu'il applique à lui-même : comprendre son corps plutôt que suivre des méthodes à l'aveugle.\n\nIl pourrait apporter à votre audience [angle précis pour ce média]. Seriez-vous ouvert à en parler ?\n\n[ton nom]"),
+    T("Demande d'intervention", "email", "Premier contact avec un podcast ou un média", "Bonjour [prénom],\n\nJe m'occupe de l'image d'Emmanuel Santamaria Sanchéz, fondateur d'EP Coaching. Il prépare actuellement la Heroes Cup WNBF France en naturel et partage ce qu'il applique à lui-même : comprendre son corps plutôt que suivre des méthodes à l'aveugle.\n\nIl pourrait apporter à votre audience [angle précis pour ce média]. Seriez-vous ouvert à en parler ?\n\n[ton nom]"),
     T("Validation d'une prise de parole", "interne", "Avant de confirmer une intervention", "Opportunité : [nom]\nFormat et date : [format, date]\nAudience : [taille, profil]\nAngle proposé : [sujet]\nRisque éventuel : [s'il y en a]\nÀ valider par Santamaria avant le : [date]"),
   ],
   "growth-traffic-manager": [
@@ -89,7 +89,7 @@ export const TEMPLATES: Record<string, StaffTemplate[]> = {
     T("Checklist d'arrivée d'une recrue", "interne", "Semaine 1 d'une recrue", "Accès créé et contrat signé : [oui / non]\nOutils ouverts : [liste]\nPremier point avec son responsable : [date]\nFormation commencée : [oui / non]\nQuestions en suspens : [liste]"),
   ],
   "secretaire-assistant": [
-    T("Confirmation de rendez-vous", "email", "Rendez-vous organisé pour le fondateur", "Bonjour [prénom],\n\nJe vous confirme votre rendez-vous avec Santamaria Sanchéz le [date] à [heure], [lieu ou lien visio].\n\nEn cas d'empêchement, merci de me prévenir en répondant à ce message.\n\n[ton nom], EP Coaching"),
+    T("Confirmation de rendez-vous", "email", "Rendez-vous organisé pour le fondateur", "Bonjour [prénom],\n\nJe vous confirme votre rendez-vous avec Emmanuel Santamaria Sanchéz le [date] à [heure], [lieu ou lien visio].\n\nEn cas d'empêchement, merci de me prévenir en répondant à ce message.\n\n[ton nom], EP Coaching"),
     T("Réponse d'attente", "email", "Demande qui prend plus de 48h", "Bonjour [prénom],\n\nNous avons bien reçu votre demande concernant [sujet]. Elle est en cours de traitement et nous revenons vers vous d'ici le [date].\n\n[ton nom], EP Coaching"),
   ],
   "finance-comptabilite": [
