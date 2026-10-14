@@ -32,6 +32,8 @@ const RULES: Rule[] = [
   { re: /\b(?:une|selon une|d'après une) [ée]tudes?\b|\bchercheurs?\b|\brevue scientifique\b/gi, why: "Aucune étude ni source citée", fix: "Parle comme un coach qui sait : « je vais être très clair là-dessus », « la vérité c'est que »." },
   { re: /[—–]/g, why: "Jamais de tiret cadratin ou demi-cadratin", fix: "Une virgule, un point, ou deux phrases." },
   { re: /j'accompagne (?:les|des) (?:gens|personnes|coachs)/gi, why: "Phrase de positionnement corporate", fix: "Dis ce que tu fais en vrai : « je suis coach en bodybuilding natural », « mes clients ont un suivi chaque semaine »." },
+  { re: /@santamariasanchezep(?![_\w])|instagram\.com\/santamariasanchez_\b|@santamariasanchez_(?=\s*(?:sur )?(?:insta|instagram|threads))/gi, why: "Compte Instagram mal écrit", fix: "Le compte Instagram et Threads est @santamariasanchezep_ (avec le tiret bas final)." },
+  { re: /\bici c'est @\w+/gi, why: "Présentation inutile dans la description", fix: "Commence directement par la douleur ou l'idée du reel." },
   { re: /aujourd'hui,? on va parler d[eu]/gi, why: "Ouverture interdite", fix: "Ouvre sur la douleur : « C'est une question qui revient extrêmement souvent. »" },
   { re: /\bn'h[ée]sitez? pas\b|\bau plaisir\b/gi, why: "Ton corporate", fix: "« Dis-moi en commentaire », « le lien est dans la description »." },
   // Jargon de coach LinkedIn et de vente.

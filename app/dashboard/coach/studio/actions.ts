@@ -3,7 +3,7 @@
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, checkRateLimit, PRESETS } from "@/lib/rate-limit";
-import { rewriteScriptWithVocabulary, spokenDuration, type RewriteOutput } from "@/lib/script-rewrite";
+import { buildRewrite, saveRewrite, SCRIPT_COLUMNS, type ScriptRewrite, type ScriptRow } from "@/lib/script-autofix";
 import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
 import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus } from "@/lib/coach-ideation";
@@ -485,50 +485,7 @@ export async function publishScript(id: string): Promise<{ error?: string; succe
 // 20261013c_script_previous_version.sql), sinon la réécriture passe quand
 // même.
 
-export type ScriptRewrite = RewriteOutput & { durationSeconds: number; sourceReference: string | null };
-
-async function resolveGuide(admin: ReturnType<typeof createAdminClient>, sourceReference: string | null, cta: string | null) {
-  const ref = (sourceReference ?? "").trim();
-  const legacy = ref.match(/^lead_magnets:(\d+)\s+(\S+)/);
-  const slug = legacy ? legacy[2] : ref;
-  const numberHint = legacy?.[1] ?? cta?.match(/comment\w*\s+(\d{3,4})\b/i)?.[1] ?? null;
-  type Guide = { slug: string; title: string; keyword: string | null };
-  let guide: Guide | null = null;
-  if (slug && /^[a-z0-9-]+$/.test(slug) && slug.includes("-")) {
-    const { data } = await admin.from("lead_magnets").select("slug, title, keyword").eq("slug", slug).eq("published", true).maybeSingle();
-    guide = (data as Guide | null) ?? null;
-  }
-  if (!guide && numberHint) {
-    const { data } = await admin.from("lead_magnets").select("slug, title, keyword").eq("keyword", numberHint).eq("published", true).maybeSingle();
-    guide = (data as Guide | null) ?? null;
-  }
-  return guide;
-}
-
-async function saveRewrite(
-  admin: ReturnType<typeof createAdminClient>,
-  coachId: string,
-  previous: { title: string; hook: string | null; content: string | null; cta: string | null; instagram_caption: string | null },
-  id: string,
-  rewrite: ScriptRewrite
-): Promise<string | null> {
-  const patch: Record<string, unknown> = {
-    title: rewrite.title,
-    hook: rewrite.hook || null,
-    content: rewrite.content,
-    cta: rewrite.cta || null,
-    instagram_caption: rewrite.caption || null,
-    duration_seconds: rewrite.durationSeconds,
-    updated_at: new Date().toISOString(),
-  };
-  if (rewrite.sourceReference) patch.source_reference = rewrite.sourceReference;
-  const withBackup = { ...patch, previous_version: { ...previous, saved_at: new Date().toISOString() } };
-  let { error } = await admin.from("coach_scripts").update(withBackup).eq("id", id).eq("coach_id", coachId);
-  if (error && /previous_version/.test(error.message)) {
-    ({ error } = await admin.from("coach_scripts").update(patch).eq("id", id).eq("coach_id", coachId));
-  }
-  return error ? error.message : null;
-}
+export type { ScriptRewrite };
 
 export async function rewriteScriptVocabulary(
   id: string,
@@ -544,38 +501,13 @@ export async function rewriteScriptVocabulary(
   const admin = createAdminClient();
   const { data: script } = await admin
     .from("coach_scripts")
-    .select("id, title, hook, content, cta, instagram_caption, platform, duration_seconds, source_reference")
+    .select(SCRIPT_COLUMNS)
     .eq("id", id)
     .eq("coach_id", guard.userId)
     .maybeSingle();
   if (!script) return { error: "Script introuvable." };
-  if (!script.content?.trim()) return { error: "Ce script est vide." };
-
-  const guide = await resolveGuide(admin, script.source_reference, script.cta);
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
-  const { output, error } = await rewriteScriptWithVocabulary({
-    platform: script.platform,
-    title: script.title,
-    hook: script.hook,
-    content: script.content,
-    cta: script.cta,
-    caption: script.instagram_caption,
-    durationSeconds: script.duration_seconds,
-    guideKeyword: guide?.keyword ?? null,
-    guideTitle: guide?.title ?? null,
-    guideUrl: guide ? `${base}/ressources/${guide.slug}` : null,
-  });
-  if (!output) return { error: error ?? "La réécriture n'a pas abouti." };
-
-  const isWritten = script.platform === "linkedin" || script.platform === "threads";
-  const rewrite: ScriptRewrite = {
-    ...output,
-    caption: isWritten ? (script.instagram_caption ?? "") : output.caption,
-    durationSeconds: isWritten ? (script.duration_seconds ?? 0) : spokenDuration(output.content, script.platform),
-    // Les anciennes références « lead_magnets:123 slug » passent au format
-    // actuel (le slug seul), celui que lit le suivi des leads par script.
-    sourceReference: guide?.slug ?? null,
-  };
+  const { rewrite, error } = await buildRewrite(admin, script as ScriptRow);
+  if (!rewrite) return { error };
 
   if (opts.save) {
     const saveError = await saveRewrite(admin, guard.userId, script, id, rewrite);

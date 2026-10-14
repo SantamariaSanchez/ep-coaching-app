@@ -58,6 +58,7 @@ INTERDITS ABSOLUS
 
 FORMAT
 - content : texte mot pour mot, à la première personne, en paragraphes courts séparés par une ligne vide. Phrases courtes, rythme parlé, un enfant doit comprendre. Pas de titre, pas de liste à puces, pas de crochet.
+- Chaque phrase doit être du français correct et naturel à l'oral : aucune tournure bizarre, traduite ou bancale, aucune phrase qui sonne comme une IA. Relis-toi phrase par phrase avant de répondre.
 - hook : la toute première phrase de content, telle quelle.
 - title : titre interne court (moins de 70 caractères), une vraie phrase.`;
 
