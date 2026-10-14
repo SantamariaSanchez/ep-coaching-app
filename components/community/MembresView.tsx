@@ -60,6 +60,16 @@ function MemberRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-bold text-(--ep-strong) truncate">{member.full_name}</p>
+            {member.memberKind && (
+              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${member.memberKind === "coach" ? "bg-(--ep-violet)/10 border-(--ep-violet)/30 text-(--ep-violet)" : member.memberKind === "client" ? "bg-(--ep-accent)/10 border-(--ep-accent)/30 text-(--ep-accent)" : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/50"}`}>
+                {member.memberKind === "coach" ? t("Coach") : member.memberKind === "client" ? t("Client suivi") : t("Membre gratuit")}
+              </span>
+            )}
+            {member.internalKind && (
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border border-(--ep-line)/25 text-(--ep-ink)/40">
+                {member.internalKind === "demo" ? t("Compte démo") : t("Compte test")}
+              </span>
+            )}
             <RankBadge points={activity.points} />
             {activity.isNew ? (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-gold)/10 border border-(--ep-gold)/30 text-(--ep-gold)">
@@ -78,6 +88,7 @@ function MemberRow({
           <div className="flex items-center gap-1.5 text-[10px] text-(--ep-ink)/35 mt-0.5">
             <Mail size={10} />
             <span className="truncate">{member.email}</span>
+            {member.coachName && member.memberKind !== "coach" && <span className="truncate">· {t("coach")} {member.coachName}</span>}
           </div>
           <p className="text-[10px] text-(--ep-ink)/30 mt-0.5">
             {activity.sessionCount > 0
@@ -139,9 +150,11 @@ function MemberRow({
 export default function MembresView({
   members,
   relaunchMember,
+  platformView = false,
 }: {
   members: CommunityMemberWithActivity[];
   relaunchMember: (id: string) => Promise<{ error?: string }>;
+  platformView?: boolean;
 }) {
   const t = useT();
   const [search, setSearch] = useState("");
@@ -152,12 +165,16 @@ export default function MembresView({
     let active = 0;
     let dormant = 0;
     let fresh = 0;
-    for (const m of members) {
+    // Les comptes démo et de test sont listés mais jamais comptés.
+    const real = members.filter((m) => !m.internalKind);
+    for (const m of real) {
       if (m.activity.isNew) fresh++;
       else if (m.activity.neverReturned) dormant++;
       else if (m.activity.points > 0 || m.activity.sessionCount > 0 || m.activity.postCount > 0) active++;
     }
-    return { all: members.length, active, dormant, fresh };
+    const byKind = { client: 0, membre: 0, coach: 0 };
+    for (const m of real) if (m.memberKind) byKind[m.memberKind]++;
+    return { all: real.length, active, dormant, fresh, byKind };
   }, [members]);
 
   const filtered = useMemo(() => {
@@ -201,7 +218,9 @@ export default function MembresView({
   return (
     <div className="space-y-4">
       <p className="text-[10px] text-(--ep-ink)/30">
-        {counts.all}{" "}{t("membre")}{counts.all > 1 ? "s" : ""}{" "}{t("gratuit")}{counts.all > 1 ? "s" : ""}
+        {platformView
+          ? `${counts.all} inscrit${counts.all > 1 ? "s" : ""} · ${counts.byKind.client} client${counts.byKind.client > 1 ? "s" : ""} suivi${counts.byKind.client > 1 ? "s" : ""} · ${counts.byKind.membre} membre${counts.byKind.membre > 1 ? "s" : ""} gratuit${counts.byKind.membre > 1 ? "s" : ""} · ${counts.byKind.coach} coach${counts.byKind.coach > 1 ? "s" : ""}`
+          : <>{counts.all}{" "}{t("membre")}{counts.all > 1 ? "s" : ""}{" "}{t("gratuit")}{counts.all > 1 ? "s" : ""}</>}
         {counts.fresh > 0 && ` · ${counts.fresh} nouveau${counts.fresh > 1 ? "x" : ""}`}
         {counts.active > 0 && ` · ${counts.active} actif${counts.active > 1 ? "s" : ""}`}
         {counts.dormant > 0 && ` · ${counts.dormant} jamais revenu${counts.dormant > 1 ? "s" : ""}`}

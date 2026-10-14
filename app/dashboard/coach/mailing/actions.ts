@@ -1,5 +1,6 @@
 "use server";
 
+import { isRealAccount } from "@/lib/internal-accounts";
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
@@ -61,12 +62,12 @@ export async function getMailingRecipientCount(audienceKey: string = "mes_client
 
   const admin = createAdminClient();
   if (audience.type === "tous_les_membres") {
-    const { count } = await admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client").not("email", "is", null);
-    return { count: count ?? 0 };
+    const { data } = await admin.from("profiles").select("email, is_ai_coach").eq("role", "client").not("email", "is", null);
+    return { count: (data ?? []).filter(isRealAccount).length };
   }
   if (audience.type === "coachs") {
-    const { count } = await admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "coach").not("email", "is", null);
-    return { count: count ?? 0 };
+    const { data } = await admin.from("profiles").select("email, is_ai_coach").eq("role", "coach").not("email", "is", null);
+    return { count: (data ?? []).filter(isRealAccount).length };
   }
 
   const clients = await getCoachClientsForMailing(guard.userId);

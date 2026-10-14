@@ -12,11 +12,11 @@ export default async function CoachMembresPage() {
 
   // members ne dépend que de user.id (déjà connu), pas du contenu de
   // profile : lancé en parallèle plutôt qu'après la vérification de rôle.
-  const [profile, members] = await Promise.all([
-    getProfile(user.id),
-    getCommunityMembersWithActivity(user.id),
-  ]);
+  const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/communaute/victoires");
+  // Le fondateur voit tous les inscrits de l'appli, un coach ses membres gratuits.
+  const platformView = !!profile?.is_platform_owner;
+  const members = await getCommunityMembersWithActivity(user.id, { allPlatform: platformView });
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -29,11 +29,13 @@ export default async function CoachMembresPage() {
           {t("Membres")}
         </h1>
         <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Membres gratuits de la communauté, autonomes, sans suivi coaching. Ils n'apparaissent pas dans tes clients.")}
+          {platformView
+            ? t("Toutes les personnes inscrites sur l'appli : clients suivis, membres gratuits et coachs. Les coachs IA ne sont pas comptés.")
+            : t("Membres gratuits de la communauté, autonomes, sans suivi coaching. Ils n'apparaissent pas dans tes clients.")}
         </p>
       </div>
 
-      <MembresView members={members} relaunchMember={relaunchMember} />
+      <MembresView members={members} relaunchMember={relaunchMember} platformView={platformView} />
     </div>
   );
 }

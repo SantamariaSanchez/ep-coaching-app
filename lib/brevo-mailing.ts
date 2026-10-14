@@ -1,3 +1,4 @@
+import { isRealAccount } from "@/lib/internal-accounts";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { MAX_RECIPIENTS_PER_SEND, type MailingAudience } from "@/lib/mailing-audience";
 import { todayInParis } from "@/lib/dates";
@@ -176,20 +177,20 @@ async function getAllMembersForMailing(): Promise<CoachClient[]> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("profiles")
-    .select("id, email, full_name")
+    .select("id, email, full_name, is_ai_coach")
     .eq("role", "client")
     .not("email", "is", null);
-  return (data as CoachClient[]) ?? [];
+  return ((data as (CoachClient & { is_ai_coach: boolean | null })[]) ?? []).filter(isRealAccount);
 }
 
 async function getAllCoachesForMailing(): Promise<CoachClient[]> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("profiles")
-    .select("id, email, full_name")
+    .select("id, email, full_name, is_ai_coach")
     .eq("role", "coach")
     .not("email", "is", null);
-  return (data as CoachClient[]) ?? [];
+  return ((data as (CoachClient & { is_ai_coach: boolean | null })[]) ?? []).filter(isRealAccount);
 }
 
 // wrapBrandedEmail vit dans lib/mailing-audience.ts (pas ici) : c'est une

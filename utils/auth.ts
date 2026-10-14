@@ -1,3 +1,4 @@
+import { isRealAccount, internalAccountKind, type InternalKind } from "@/lib/internal-accounts";
 import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -168,6 +169,42 @@ export async function getCommunityMembers(coachId: string): Promise<Profile[]> {
   }
 }
 
+export type PlatformMember = Profile & {
+  memberKind: "client" | "membre" | "coach";
+  internalKind: InternalKind | null;
+  coachName: string | null;
+};
+
+// Vue fondateur : toutes les personnes inscrites sur l'appli, quel que soit
+// leur coach (clients suivis, membres gratuits, coachs). Les coachs IA ne
+// sont pas des inscrits : jamais listés. Les comptes démo et de test sont
+// listés mais marqués, et ne comptent pas dans les chiffres.
+export async function getAllPlatformMembers(ownerId: string): Promise<PlatformMember[]> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select(`${PROFILE_FIELDS}, is_ai_coach`)
+      .neq("id", ownerId)
+      .order("start_date", { ascending: false, nullsFirst: false });
+    const rows = ((data as (Profile & { is_ai_coach: boolean | null })[]) ?? []).filter((p) => internalAccountKind(p) !== "ia");
+    const names = new Map(rows.map((p) => [p.id, p.full_name]));
+    const missing = [...new Set(rows.map((p) => p.coach_id).filter((id): id is string => !!id && !names.has(id)))];
+    if (missing.length) {
+      const { data: coaches } = await admin.from("profiles").select("id, full_name").in("id", missing);
+      for (const c of (coaches as { id: string; full_name: string | null }[]) ?? []) names.set(c.id, c.full_name);
+    }
+    return rows.map((p) => ({
+      ...p,
+      memberKind: p.role === "coach" ? "coach" : p.subscription_status === "active" ? "client" : "membre",
+      internalKind: internalAccountKind(p),
+      coachName: p.coach_id ? names.get(p.coach_id) ?? null : null,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export interface CommunityMemberActivity {
   points: number;
   sessionCount: number;
@@ -188,6 +225,10 @@ export interface CommunityMemberActivity {
 
 export interface CommunityMemberWithActivity extends Profile {
   activity: CommunityMemberActivity;
+  /** Vue fondateur seulement (getAllPlatformMembers). */
+  memberKind?: PlatformMember["memberKind"];
+  internalKind?: InternalKind | null;
+  coachName?: string | null;
 }
 
 // La liste brute des membres gratuits (getCommunityMembers) ne dit rien de
@@ -197,8 +238,11 @@ export interface CommunityMemberWithActivity extends Profile {
 // se noyait au même rang que les 11 autres, triés uniquement par date
 // d'inscription. 3 requêtes groupées (pas une par membre) pour rester léger
 // même avec beaucoup de membres.
-export async function getCommunityMembersWithActivity(coachId: string): Promise<CommunityMemberWithActivity[]> {
-  const members = await getCommunityMembers(coachId);
+export async function getCommunityMembersWithActivity(
+  coachId: string,
+  { allPlatform = false }: { allPlatform?: boolean } = {},
+): Promise<CommunityMemberWithActivity[]> {
+  const members: Profile[] = allPlatform ? await getAllPlatformMembers(coachId) : await getCommunityMembers(coachId);
   if (members.length === 0) return [];
 
   try {
@@ -334,11 +378,12 @@ export async function getAllCoaches(): Promise<Profile[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
-      .select(PROFILE_FIELDS)
+      .select(`${PROFILE_FIELDS}, is_ai_coach`)
       .eq("role", "coach")
       .eq("is_platform_owner", false)
       .order("full_name");
-    return (data as Profile[]) ?? [];
+    // Coachs IA, comptes démo et compte de test : pas de vrais coachs inscrits.
+    return ((data as (Profile & { is_ai_coach: boolean | null })[]) ?? []).filter(isRealAccount);
   } catch {
     return [];
   }
