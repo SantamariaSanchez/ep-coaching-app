@@ -3,9 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getDeviceSettings } from "@/lib/device-settings";
+import { appearanceThemeColor, currentAppearance } from "@/lib/theme-color";
 
 // Pont avec l'appli native iOS/Android (Capacitor). Ne fait rien dans un
-// navigateur. Dans l'appli : barre d'état sombre, bouton retour Android,
+// navigateur. Dans l'appli : barre d'état aux couleurs du thème, bouton retour Android,
 // liens profonds, liens externes ouverts dans le navigateur intégré,
 // retour haptique sur la navigation et les boutons principaux, et
 // enregistrement des notifications push natives.
@@ -27,8 +28,13 @@ export default function NativeBridge() {
         import("@capacitor/browser"),
         import("@capacitor/splash-screen"),
       ]);
-      StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
-      if (platform === "android") StatusBar.setBackgroundColor({ color: "var(--ep-bg)" }).catch(() => {});
+      // Le plugin natif veut une vraie couleur (#RRGGBB) : « var(--ep-bg) »,
+      // posé lors du passage aux couleurs de thème, était rejeté et la barre
+      // d'état Android restait à sa couleur par défaut. Texte de la barre
+      // aussi accordé au fond (clair ou sombre) choisi dans l'apparence.
+      const look = currentAppearance();
+      StatusBar.setStyle({ style: look.mode === "claire" ? Style.Light : Style.Dark }).catch(() => {});
+      if (platform === "android") StatusBar.setBackgroundColor({ color: appearanceThemeColor(look) }).catch(() => {});
       SplashScreen.hide().catch(() => {});
 
       const back = await App.addListener("backButton", ({ canGoBack }) => {
