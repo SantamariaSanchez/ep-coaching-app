@@ -316,7 +316,7 @@ export async function shiftDayFromBlock(input: {
     }
     // Aujourd'hui seulement : copie datée décalée, puis le modèle récurrent
     // est masqué à cette date.
-    const { error: insErr } = await supabase.from("schedule_blocks").insert({
+    const { data: copy, error: insErr } = await supabase.from("schedule_blocks").insert({
       owner_id: guard.userId,
       day_of_week: b.day_of_week,
       start_time: start,
@@ -329,13 +329,20 @@ export async function shiftDayFromBlock(input: {
       notify: b.notify,
       specific_date: input.date,
       last_notified_at: initialLastNotifiedAt(b.day_of_week, start),
-    });
-    if (insErr) continue;
-    await supabase
+    }).select("id").single();
+    if (insErr || !copy) continue;
+    const { error: skipErr } = await supabase
       .from("schedule_blocks")
       .update({ skipped_dates: [...new Set([...(b.skipped_dates ?? []), input.date])] })
       .eq("id", b.id)
       .eq("owner_id", guard.userId);
+    // Modèle pas masqué : la copie est retirée, sinon le bloc apparaissait
+    // deux fois ce jour-là (heure d'origine + heure décalée) et notifiait
+    // deux fois.
+    if (skipErr) {
+      await supabase.from("schedule_blocks").delete().eq("id", copy.id).eq("owner_id", guard.userId);
+      continue;
+    }
     moved++;
   }
   revalidateAgendaPaths();
