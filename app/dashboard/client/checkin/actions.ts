@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { notifyUser } from "@/lib/notify";
 import { sendBrevoEmail } from "@/utils/brevo";
-import { escapeHtml } from "@/lib/sanitize";
+import { escapeHtml, safeExternalUrl } from "@/lib/sanitize";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { requireClient } from "@/lib/auth-guards";
 
@@ -65,7 +65,9 @@ export async function submitCheckin(
   // Vidéos d'exécution : plusieurs possibles, chacune avec son exercice.
   const videoPaths = formData.getAll("video_paths").map((v) => (v as string).trim()).filter(Boolean).slice(0, 6);
   const videoLabels = formData.getAll("video_labels").map((v) => ((v as string) ?? "").trim().slice(0, 80)).slice(0, videoPaths.length);
-  const videoLink = txt(formData.get("video_drive_link"));
+  // Lien affiché tel quel au coach (<a href>) : seulement http(s), jamais
+  // un « javascript: » envoyé à la main en contournant le champ type="url".
+  const videoLink = safeExternalUrl(formData.get("video_drive_link"));
 
   const attitudeRating = num(formData.get("attitude_rating"));
   const attitudeExplanation = txt(formData.get("attitude_explanation"));

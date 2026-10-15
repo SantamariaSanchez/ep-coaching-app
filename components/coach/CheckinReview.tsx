@@ -16,6 +16,7 @@ import { resolveVideoEmbed } from "@/lib/video-embed-utils";
 import { CHECKIN_RETURN_KEY } from "@/components/coach/CheckinReturnBar";
 import PhotoCompareLauncher from "@/components/photos/PhotoCompareLauncher";
 import { checkinSetId, type PhotoSet } from "@/lib/photo-sets";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 export interface ReviewProgram {
   name: string;
@@ -104,7 +105,10 @@ export default function CheckinReview({
 
   const [step, setStep] = useState(initialStep);
   const [tool, setTool] = useState<Tool | null>(null);
-  const [message, setMessage] = useState(`${t("Merci pour ton check-in")} ${firstName} ! ${t("Voilà ton retour :")}`);
+  // Check-in déjà traité : on repart du retour envoyé. Sinon, corriger un
+  // retour (ajouter un lien Loom après coup) remplaçait le texte déjà lu
+  // par le client par la phrase d'accroche par défaut.
+  const [message, setMessage] = useState(checkin.coach_notes ?? `${t("Merci pour ton check-in")} ${firstName} ! ${t("Voilà ton retour :")}`);
   const [link, setLink] = useState(checkin.coach_video_link ?? "");
   const [rating, setRating] = useState<string>(checkin.coach_rating ? String(checkin.coach_rating) : "");
   const [audioPath, setAudioPath] = useState<string | null>(checkin.coach_audio_path ?? null);
@@ -314,7 +318,7 @@ export default function CheckinReview({
             </div>
           ))}
           {checkin.video_drive_link && (
-            <a href={checkin.video_drive_link} target="_blank" rel="noopener noreferrer" style={{ ...btnGhost, justifyContent: "flex-start" }}>
+            <a href={safeExternalUrl(checkin.video_drive_link) ?? "#"} target="_blank" rel="noopener noreferrer" style={{ ...btnGhost, justifyContent: "flex-start" }}>
               <ExternalLink size={15} /> {t("Ouvrir le lien vidéo envoyé par")} {firstName}
             </a>
           )}
