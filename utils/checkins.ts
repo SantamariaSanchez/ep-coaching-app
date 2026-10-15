@@ -291,3 +291,39 @@ export async function getPendingBilansCount(): Promise<number> {
     return 0;
   }
 }
+
+// Comparateur photo (2026-10-14) : uniquement les photos physique des
+// bilans (pas les vidéos ni les retours coach), pour la page Photos du
+// client et la page Photos d'un client côté coach. Même RLS que
+// getClientCheckins (client lui-même ou son coach).
+export async function getClientCheckinPhotos(
+  clientId: string
+): Promise<{ id: string; week_start: string; photo_urls: string[] }[]> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data } = await supabase
+      .from("check_ins")
+      .select("id, week_start, photo_paths")
+      .eq("client_id", clientId)
+      .not("photo_paths", "is", null)
+      .order("week_start", { ascending: false });
+    const rows = (data as { id: string; week_start: string; photo_paths: string[] | null }[]) ?? [];
+    return await Promise.all(
+      rows
+        .filter((r) => (r.photo_paths?.length ?? 0) > 0)
+        .map(async (r) => ({
+          id: r.id,
+          week_start: r.week_start,
+          photo_urls: (
+            await Promise.all(
+              (r.photo_paths ?? []).map((p) =>
+                getCachedOrCreateSignedUrl(supabase, CHECKIN_MEDIA_BUCKET, p, CHECKIN_SIGNED_URL_TTL)
+              )
+            )
+          ).filter((u): u is string => !!u),
+        }))
+    );
+  } catch {
+    return [];
+  }
+}
