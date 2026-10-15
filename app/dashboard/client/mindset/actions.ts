@@ -196,11 +196,12 @@ export async function deleteJournalEntry(entryId: string): Promise<{ error?: str
 
   try {
     const supabase = await createServerSupabase();
-    await supabase
+    const { error } = await supabase
       .from("mindset_journal_entries")
       .delete()
       .eq("id", entryId)
       .eq("client_id", guard.userId);
+    if (error) return { error: "Suppression impossible, réessaie." };
 
     revalidatePath("/dashboard/client/mindset");
     revalidatePath("/dashboard/coach/moi/mindset");

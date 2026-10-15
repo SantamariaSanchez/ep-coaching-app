@@ -46,14 +46,18 @@ export async function toggleRsvp(eventId: string): Promise<{ error?: string; rsv
     .eq("client_id", guard.userId)
     .maybeSingle();
 
+  // Erreurs d'écriture remontées : avant, un échec renvoyait quand même
+  // l'état inverse et l'écran affichait « inscrit » sans aucune inscription.
   if (existing) {
-    await admin.from("live_event_rsvps").delete().eq("event_id", eventId).eq("client_id", guard.userId);
+    const { error: delError } = await admin.from("live_event_rsvps").delete().eq("event_id", eventId).eq("client_id", guard.userId);
+    if (delError) return { error: "Désinscription impossible, réessaie." };
     revalidatePath("/dashboard/client/live");
     revalidatePath("/dashboard/coach/live");
     return { rsvped: false };
   }
 
-  await admin.from("live_event_rsvps").insert({ event_id: eventId, client_id: guard.userId });
+  const { error: insError } = await admin.from("live_event_rsvps").insert({ event_id: eventId, client_id: guard.userId });
+  if (insError) return { error: "Inscription impossible, réessaie." };
   revalidatePath("/dashboard/client/live");
   revalidatePath("/dashboard/coach/live");
   return { rsvped: true };

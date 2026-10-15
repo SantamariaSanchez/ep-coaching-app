@@ -52,7 +52,8 @@ export async function deleteClientTask(
 
   try {
     const supabase = createAdminClient();
-    await supabase.from("client_tasks").delete().eq("id", taskId).eq("client_id", clientId);
+    const { error } = await supabase.from("client_tasks").delete().eq("id", taskId).eq("client_id", clientId);
+    if (error) return { error: "Suppression impossible, réessaie." };
     revalidatePath(`/dashboard/coach/clients/${clientId}/tasks`);
     return {};
   } catch (e) {
