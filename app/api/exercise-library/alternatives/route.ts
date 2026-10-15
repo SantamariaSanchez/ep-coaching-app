@@ -18,7 +18,7 @@ interface ExerciseAlternative {
 function norm(v: string | null | undefined): string {
   return (v ?? "")
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
 }

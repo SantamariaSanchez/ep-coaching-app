@@ -1,30 +1,22 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Timer,
-  ChevronDown,
-  ChevronUp,
   CheckCircle2,
   Plus,
   Trophy,
   Dumbbell,
   Activity,
   AlertCircle,
-  BarChart2,
-  Clock,
   Star,
-  Video,
-  Loader2,
   X,
-  Pencil,
-  StickyNote,
   Backpack,
   ExternalLink,
   RotateCcw,
-  ClipboardList,
+  ChevronDown,
 } from "lucide-react";
 import {
   BarChart,
@@ -45,32 +37,45 @@ import {
   type MovementPrep,
 } from "@/lib/warmup-data";
 import ExercisePicker from "@/components/client/ExercisePicker";
-import { createClientSupabase } from "@/lib/supabase-client";
-import { getTips } from "@/lib/execution-tips";
 import { VOLUME_LANDMARKS } from "@/lib/volume-data";
 import { accessoriesForSession } from "@/lib/session-accessories";
 import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
-import { safeExternalUrl } from "@/lib/sanitize";
 import { todayInParis } from "@/lib/dates";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { SessionSetsBreakdown } from "@/components/ui/SessionHistoryCard";
-import { TENSION_FOCUS_LABELS } from "@/lib/exercise-library-content";
 import { getDeviceSettings } from "@/lib/device-settings";
-import { isLastOfSuperset, supersetLabels, techniqueHint, techniqueLabel, unitShort } from "@/lib/program-sheet";
-import {
-  parseRepScheme,
-  rangeForSet,
-  suggestSet,
-  formatRange,
-  formatRest,
-  formatKg,
-  type RepRange,
-} from "@/lib/set-targets";
+import { isLastOfSuperset, supersetLabels } from "@/lib/program-sheet";
 import { withAlpha } from "@/lib/theme-color";
+import {
+  emptyPlan,
+  exerciseKey,
+  parsePlan,
+  newestPlan,
+  loadLocalPlan,
+  saveLocalPlan,
+  clearLocalPlan,
+  parseDetails,
+  detailsToDrafts,
+  buildDetails,
+  detailsAsNote,
+  techniqueForm,
+  REST_MAX_AGE_MS,
+  type LivePlan,
+  type LiveExercise,
+  type LiveRest,
+  type SetDraft,
+} from "@/lib/live-session";
+import { uploadSetVideo, normalizeVideoType, videoExtension, isProbablyVideo } from "@/lib/set-video-upload";
+import { useWakeLock } from "@/hooks/useWakeLock";
+import ExerciseBlock from "@/components/client/session/ExerciseBlock";
+import RestBar from "@/components/client/session/RestBar";
+import SwapSheet from "@/components/client/session/SwapSheet";
+import VideoSheet, { MAX_VIDEO_BYTES, formatBytes } from "@/components/client/session/VideoSheet";
+import type { ExerciseState, LibraryTip, PrevWeight, SetState, VideoState } from "@/components/client/session/types";
 
 // Texte pré-rempli du post Victoire depuis un PR détecté en fin de séance
-// (voir le bouton "Partager en Victoire") — le client reste libre de le
+// (voir le bouton "Partager en Victoire") : le client reste libre de le
 // modifier ou de tout effacer avant de publier.
 function buildPRShareText(prs: { exerciseName: string; weightKg: number; reps: number | null }[]): string {
   const items = prs.map((pr) => `${pr.exerciseName} à ${pr.weightKg} kg${pr.reps ? ` × ${pr.reps}` : ""}`);
@@ -80,37 +85,10 @@ function buildPRShareText(prs: { exerciseName: string; weightKg: number; reps: n
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface PrevWeight {
-  weight: number | null;
-  reps: string | null;
-  rir: number | null;
-}
-
-// Item 31 : charge suggérée pour la prochaine série, à partir du RIR réel
-// de la dernière fois comparé au RIR cible du programme — autorégulation
-// simple (±2,5% de charge par point d'écart), la règle qu'un coach
-// appliquerait à l'œil plutôt qu'une "IA". Reste un placeholder éditable
-// dans le champ poids, jamais une valeur imposée.
-function suggestNextWeight(prevWeight: PrevWeight | null, targetRir: number | null): number | null {
-  if (prevWeight?.weight == null) return null;
-  if (prevWeight.rir == null || targetRir == null) return prevWeight.weight;
-
-  const diff = prevWeight.rir - targetRir; // positif = trop facile, négatif = trop dur
-  if (diff === 0) return prevWeight.weight;
-
-  const suggested = prevWeight.weight * (1 + diff * 0.025);
-  // Arrondi au 0,5kg le plus proche : repère indicatif, pas une valeur de
-  // plaque exacte (dépend du matériel réellement disponible).
-  return Math.round(suggested * 2) / 2;
-}
-
-interface LibraryTip {
-  instructions: string | null;
-  video_url: string | null;
-}
+type DbSet = SessionSet & { details?: unknown; video_sent_at?: string | null };
 
 interface InitData {
-  session: Session;
+  session: Session & { live_state?: unknown };
   exercises: Exercise[];
   prMap: Record<string, number>;
   prevWeights: Record<string, PrevWeight>;
@@ -119,81 +97,20 @@ interface InitData {
   // pas juste un set mais TOUS les sets"), dans l'ordre. Clé = nom en
   // minuscules, même convention que prevWeights.
   prevSets: Record<string, PrevWeight[]>;
-  existingSets: SessionSet[];
+  existingSets: DbSet[];
   libraryByName: Record<string, LibraryTip>;
   accessoriesByName: Record<string, string[]>;
   // Note libre persistante par exercice (client_exercise_notes), clé = nom
-  // exact — voir migration 20260917e.
+  // exact, voir migration 20260917e.
   exerciseNotes: Record<string, string>;
   // Séance terminée : set id → URL signée de la vidéo (récap, "Détail des
   // séries"). Optionnel : absent d'une réponse d'avant ce champ.
   videoUrlsBySetId?: Record<string, string>;
-}
-
-interface SetState {
-  localId: string;
-  setNumber: number;
-  weightKg: string;
-  repsActual: string;
-  rirActual: string;
-  standardizationScore: string;
-  validated: boolean;
-  isPR: boolean;
-  dbId: string | null;
-  restDuration: number | null;
-  hasVideo: boolean;
-  // Enregistrement en base en cours : bloque un second envoi du meme set
-  // (double-tap sur "Valider le set" en salle) qui creait une deuxieme ligne.
-  saving?: boolean;
-  // Le set est valide a l'ecran mais l'enregistrement a echoue (reseau coupe
-  // en salle, serveur indisponible). Avant, l'echec etait totalement muet et
-  // le set disparaissait au rechargement suivant.
-  saveFailed?: boolean;
-}
-
-interface ExerciseState {
-  exercise: Exercise;
-  sets: SetState[];
-  showTips: boolean;
-  showHistory: boolean;
-  showNotes: boolean;
-  clientNotes: string;
-  // Accordéon (2026-08-19, retour direct : "regarde sur toute l'appli si tu
-  // trouve des endroits où c'est mieux de mettre un bouton... pour pas que
-  // ya trop de truc d'un coup"). Purement une valeur d'INITIALISATION,
-  // jamais recalculée en cours de séance par un effet — la logique de
-  // validation/PR/timer live n'est jamais touchée, seul l'affichage du
-  // corps de la carte en dépend (voir ExerciseCard).
-  collapsed: boolean;
+  /** A un coach à qui envoyer ses vidéos de série. */
+  hasCoach?: boolean;
 }
 
 type Step = "warmup" | "session" | "recap";
-
-// Retour direct 2026-09-17 ("faut pas qu'on soit bloqué, faut juste le
-// mettre en petit en haut mais pas bloquant... 0 clic juste regarder") :
-// l'ancien RestTimerOverlay était un plein écran bloquant avec un
-// questionnaire "prêt physiquement/mentalement ?" à valider avant de
-// pouvoir continuer. Supprimé entièrement (mentalStep/mentalPhysical/
-// mentalMental/noWaitStartedAt disparaissent avec) au profit d'un badge
-// discret dans l'en-tête (RestTimerBadge) qui ne bloque plus rien : le
-// chrono tourne, se referme tout seul (voir handleValidateSet) dès que le
-// set suivant est validé, sans aucune action requise.
-interface RestTimer {
-  startedAt: number;
-  suggestedSeconds: number;
-  // Le libellé ("1-2 min", "3-5 min"...) correspondant au VRAI RIR de ce
-  // set, pas recalculé au hasard dans l'overlay — bug réel trouvé en
-  // creusant le retour direct 2026-09-09 sur le système de repos :
-  // RestTimerOverlay appelait getSuggestedRest(0) en dur pour l'affichage,
-  // donc affichait toujours "3-5 min" même quand le compte à rebours réel
-  // (suggestedSeconds, lui calculé avec le bon RIR) visait 90s ("1-2 min").
-  suggestedLabel: string;
-  // Identifie le set concerne par son localId, pas par sa position : entre
-  // l'ouverture et la fermeture du chrono, l'utilisateur peut retirer une
-  // serie ou reordonner ses exercices, ce qui decalait les index et faisait
-  // atterrir la duree de repos sur le mauvais set.
-  setLocalId: string;
-}
 
 const TOOLTIP_STYLE = {
   contentStyle: {
@@ -208,14 +125,6 @@ const TOOLTIP_STYLE = {
 
 const TICK_STYLE = { fill: "rgba(var(--ep-ink-rgb),0.35)", fontSize: 9 };
 
-const STANDARDIZATION_LABELS: Record<string, string> = {
-  "1": "Exécution approximative",
-  "2": "Quelques écarts techniques",
-  "3": "Correct mais améliorable",
-  "4": "Bonne exécution",
-  "5": "Exécution parfaite",
-};
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatTime(seconds: number) {
@@ -224,189 +133,278 @@ function formatTime(seconds: number) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function getSuggestedRest(rir: number): { seconds: number; label: string } {
-  if (rir <= 1) return { seconds: 180, label: "3-5 min" };
-  if (rir <= 3) return { seconds: 150, label: "2-3 min" };
-  return { seconds: 90, label: "1-2 min" };
-}
-
-function playBeep() {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.5);
-    // Sans ça, chaque bip (un par set validé, donc des dizaines par séance)
-    // laissait son AudioContext ouvert indéfiniment — WebKit/iOS plafonne le
-    // nombre de contextes audio simultanés, et les accumuler sur une longue
-    // séance ajoute une pression mémoire inutile.
-    osc.onended = () => { ctx.close().catch(() => {}); };
-  } catch {
-    // audio not available
-  }
+// Repos sans repos programmé ni réglage de l'appareil : barème par RIR.
+function getSuggestedRest(rir: number): number {
+  if (rir <= 1) return 180;
+  if (rir <= 3) return 150;
+  return 90;
 }
 
 function newLocalId() {
   return Math.random().toString(36).slice(2);
 }
 
-// Les exercices ajoutés à la volée (bouton "Ajouter un exercice", séance
-// libre) ne vivaient qu'en state React — un simple refresh de page les
-// effaçait tant qu'aucun set n'avait été validé pour eux. Persistés ici,
-// comme le timer de séance et d'échauffement.
-function customExercisesKey(sessionId: string) {
-  return `ep-custom-exercises-${sessionId}`;
-}
-
-function loadCustomExercises(sessionId: string): Exercise[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(customExercisesKey(sessionId));
-    return raw ? (JSON.parse(raw) as Exercise[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCustomExercises(sessionId: string, list: Exercise[]) {
-  try {
-    localStorage.setItem(customExercisesKey(sessionId), JSON.stringify(list));
-  } catch {}
-}
-
-// Ordre d'affichage des exercices dans la séance — modifiable par le client
-// (flèches haut/bas), persisté pour survivre à un refresh/retour sur la page.
-function exerciseOrderKey(sessionId: string) {
-  return `ep-exercise-order-${sessionId}`;
-}
-
-function loadExerciseOrder(sessionId: string): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(exerciseOrderKey(sessionId));
-    return raw ? (JSON.parse(raw) as string[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveExerciseOrder(sessionId: string, order: string[]) {
-  try {
-    localStorage.setItem(exerciseOrderKey(sessionId), JSON.stringify(order));
-  } catch {}
-}
-
-function applyExerciseOrder(exercises: Exercise[], order: string[]): Exercise[] {
-  if (order.length === 0) return exercises;
-  const byId = new Map(exercises.map((e) => [e.id, e]));
-  const ordered: Exercise[] = [];
-  for (const id of order) {
-    const ex = byId.get(id);
-    if (ex) {
-      ordered.push(ex);
-      byId.delete(id);
-    }
-  }
-  // Exercices non couverts par l'ordre sauvegardé (nouveaux ajouts) — à la suite.
-  ordered.push(...byId.values());
-  return ordered;
-}
-
 // Exercice reconstruit côté serveur à partir de séries déjà enregistrées
 // (voir syntheticExercisesFor dans app/api/client/sessions/[id]/route.ts).
-function isSyntheticExercise(ex: Exercise): boolean {
+function isSyntheticExercise(ex: Pick<Exercise, "id">): boolean {
   return ex.id.startsWith("local-set-");
 }
 
-// Chrono de repos persistant. Il ne vivait qu'en state React : la PWA est
-// régulièrement tuée quand le téléphone se verrouille entre deux séries, et
-// au retour le chrono avait disparu (d'où rest_duration_seconds rempli sur
-// seulement 45 séries sur 145). setDbId sert à retrouver la série après un
-// rechargement, où son localId devient son id en base. exerciseName +
-// setNumber prennent le relais si l'appli a été tuée avant la réponse du
-// serveur (la série est bien en base, mais son id n'a jamais été noté ici).
-interface StoredRestTimer extends RestTimer {
-  setDbId: string | null;
-  exerciseName: string | null;
-  setNumber: number | null;
+function emptySet(setNumber: number): SetState {
+  return {
+    localId: newLocalId(),
+    setNumber,
+    weightKg: "",
+    repsActual: "",
+    rirActual: "",
+    standardizationScore: "",
+    validated: false,
+    isPR: false,
+    dbId: null,
+    restDuration: null,
+    hasVideo: false,
+  };
 }
 
-// Au-delà, ce n'est plus un repos entre deux séries mais une séance
-// abandonnée puis rouverte : on ne ressuscite pas un chrono de 2 heures.
-const REST_TIMER_MAX_AGE_MS = 30 * 60 * 1000;
-
-function restTimerKey(sessionId: string) {
-  return `ep-rest-timer-${sessionId}`;
+function patchSetIn(
+  list: ExerciseState[],
+  localId: string,
+  patch: Partial<SetState> | ((s: SetState) => Partial<SetState>)
+): ExerciseState[] {
+  return list.map((ex) => {
+    const idx = ex.sets.findIndex((s) => s.localId === localId);
+    if (idx === -1) return ex;
+    const sets = [...ex.sets];
+    sets[idx] = { ...sets[idx], ...(typeof patch === "function" ? patch(sets[idx]) : patch) };
+    return { ...ex, sets };
+  });
 }
 
-function saveRestTimer(sessionId: string, stored: StoredRestTimer) {
+// ── Anciennes clés locales (avant LivePlan) ───────────────────────────────────
+//
+// Exercices ajoutés, ordre des cartes et chrono de repos vivaient chacun dans
+// leur clé. Relus une fois pour une séance commencée avant cette version,
+// puis effacés avec le reste à la fin de la séance.
+
+function legacyKeys(sessionId: string): string[] {
+  return [
+    `ep-custom-exercises-${sessionId}`,
+    `ep-exercise-order-${sessionId}`,
+    `ep-rest-timer-${sessionId}`,
+  ];
+}
+
+function loadLegacyPlan(sessionId: string, exercises: Exercise[]): LivePlan | null {
   try {
-    localStorage.setItem(restTimerKey(sessionId), JSON.stringify(stored));
-  } catch {}
-}
-
-function loadRestTimer(sessionId: string): StoredRestTimer | null {
-  try {
-    const raw = localStorage.getItem(restTimerKey(sessionId));
-    if (!raw) return null;
-    const t = JSON.parse(raw) as Partial<StoredRestTimer>;
-    if (
-      typeof t.startedAt !== "number" ||
-      typeof t.suggestedSeconds !== "number" ||
-      typeof t.suggestedLabel !== "string" ||
-      typeof t.setLocalId !== "string"
-    ) {
-      return null;
-    }
-    return {
-      startedAt: t.startedAt,
-      suggestedSeconds: t.suggestedSeconds,
-      suggestedLabel: t.suggestedLabel,
-      setLocalId: t.setLocalId,
-      setDbId: typeof t.setDbId === "string" ? t.setDbId : null,
-      exerciseName: typeof t.exerciseName === "string" ? t.exerciseName : null,
-      setNumber: typeof t.setNumber === "number" ? t.setNumber : null,
-    };
+    const rawCustom = localStorage.getItem(`ep-custom-exercises-${sessionId}`);
+    const rawOrder = localStorage.getItem(`ep-exercise-order-${sessionId}`);
+    if (!rawCustom && !rawOrder) return null;
+    const plan = emptyPlan();
+    const custom = rawCustom ? (JSON.parse(rawCustom) as Exercise[]) : [];
+    plan.added = custom.filter((e) => e && typeof e.id === "string" && e.id.startsWith("local-"));
+    const ids = rawOrder ? (JSON.parse(rawOrder) as string[]) : [];
+    const byId = new Map([...exercises, ...plan.added].map((e) => [e.id, e]));
+    plan.order = ids.map((id) => byId.get(id)).filter((e): e is Exercise => !!e).map(exerciseKey);
+    return plan;
   } catch {
     return null;
   }
 }
 
-function clearRestTimer(sessionId: string) {
+function clearSessionLocal(sessionId: string) {
   try {
-    localStorage.removeItem(restTimerKey(sessionId));
+    localStorage.removeItem(`ep-session-start-${sessionId}`);
+    localStorage.removeItem(`ep-warmup-start-${sessionId}`);
+    for (const k of legacyKeys(sessionId)) localStorage.removeItem(k);
+    localStorage.removeItem("ep-active-session-id");
   } catch {}
+  clearLocalPlan(sessionId);
 }
 
-// L'id en base n'arrive qu'après l'aller-retour réseau, le chrono est déjà
-// lancé : on le complète dès qu'il est connu, seulement si le chrono
-// mémorisé concerne toujours cette série.
-function attachRestTimerDbId(sessionId: string, setLocalId: string, dbId: string) {
-  const stored = loadRestTimer(sessionId);
-  if (stored && stored.setLocalId === setLocalId && stored.setDbId !== dbId) {
-    saveRestTimer(sessionId, { ...stored, setDbId: dbId });
+// ── Reprise de la séance ──────────────────────────────────────────────────────
+
+function str(v: number | null | undefined): string {
+  return v != null ? String(v) : "";
+}
+
+function applyDraft(base: SetState, d: SetDraft): SetState {
+  return {
+    ...base,
+    weightKg: d.w,
+    repsActual: d.r,
+    rirActual: d.rir,
+    standardizationScore: d.score,
+    segs: d.segs ?? base.segs,
+    partials: d.partials ?? base.partials,
+    validated: !!d.pending,
+    // Validée hors ligne : renvoyée automatiquement après la reprise.
+    saveFailed: !!d.pending,
+    wasValidated: base.dbId != null && !d.pending ? true : base.wasValidated,
+  };
+}
+
+function buildOne(ex: LiveExercise, existingSets: DbSet[], notes: Record<string, string>, plan: LivePlan): ExerciseState {
+  const key = exerciseKey(ex);
+  // Un set est identifié par (exercice, numéro de série) : deux lignes au
+  // même numéro sont un doublon d'enregistrement. On garde la dernière
+  // (existingSets arrive trié par created_at croissant).
+  const bySetNumber = new Map<number, DbSet>();
+  for (const s of existingSets) {
+    if (s.exercise_name === ex.name) bySetNumber.set(s.set_number, s);
   }
+  const dbNumbers = [...bySetNumber.keys()].sort((a, b) => a - b);
+  const planned = plan.setNumbers[key];
+  let numbers: number[];
+  if (planned && planned.length > 0) {
+    numbers = [...new Set([...planned, ...dbNumbers])].sort((a, b) => a - b);
+  } else {
+    // Jamais au-delà de la cible : rouvrir la séance ne doit pas rajouter
+    // de série vide. Les numéros repartent du plus haut déjà pris.
+    numbers = [...dbNumbers];
+    let next = numbers.reduce((m, n) => Math.max(m, n), 0);
+    while (numbers.length < (ex.sets ?? 3)) numbers.push(++next);
+  }
+  const drafts = plan.drafts[key] ?? {};
+  const sets = numbers.map((n): SetState => {
+    const db = bySetNumber.get(n);
+    const d = drafts[String(n)];
+    if (db) {
+      const det = detailsToDrafts(parseDetails(db.details));
+      const base: SetState = {
+        localId: db.id,
+        setNumber: n,
+        weightKg: str(db.weight_kg),
+        repsActual: str(db.reps_actual),
+        rirActual: str(db.rir_actual),
+        standardizationScore: str(db.standardization_score),
+        segs: det.segs,
+        partials: det.partials,
+        validated: true,
+        isPR: db.is_pr,
+        dbId: db.id,
+        restDuration: db.rest_duration_seconds,
+        hasVideo: !!db.video_url,
+        videoSentAt: db.video_sent_at ?? null,
+      };
+      return d ? applyDraft(base, d) : base;
+    }
+    const s = emptySet(n);
+    return d ? applyDraft(s, d) : s;
+  });
+  return { key, exercise: ex, sets, clientNotes: notes[ex.name] ?? "" };
 }
 
-// Série à laquelle rattacher un chrono mémorisé, après un rechargement.
-function findRestTimerSet(exStates: ExerciseState[], stored: StoredRestTimer): SetState | undefined {
-  if (stored.setDbId) {
-    for (const ex of exStates) {
-      const hit = ex.sets.find((st) => st.localId === stored.setDbId);
-      if (hit) return hit;
+function restoreExercises(data: InitData, plan: LivePlan): ExerciseState[] {
+  const removedKeys = new Set(plan.removed);
+  const removedNames = new Set(plan.removedNames);
+  const addedNames = new Set(plan.added.map((e) => e.name));
+  const base = data.exercises.filter((e) => {
+    if (removedKeys.has(exerciseKey(e))) return false;
+    if (isSyntheticExercise(e) && (addedNames.has(e.name) || removedNames.has(e.name))) return false;
+    return true;
+  });
+  const baseNames = new Set(base.map((e) => e.name));
+  let combined: LiveExercise[] = [
+    ...base,
+    ...plan.added.filter((e) => !baseNames.has(e.name) && !removedKeys.has(e.id)),
+  ];
+  if (plan.order.length > 0) {
+    const byKey = new Map(combined.map((e) => [exerciseKey(e), e]));
+    const ordered: LiveExercise[] = [];
+    for (const k of plan.order) {
+      const e = byKey.get(k);
+      if (e) {
+        ordered.push(e);
+        byKey.delete(k);
+      }
+    }
+    ordered.push(...byKey.values());
+    combined = ordered;
+  }
+  return combined.map((ex) => buildOne(ex, data.existingSets, data.exerciseNotes, plan));
+}
+
+function snapshotPlan(
+  exercises: ExerciseState[],
+  meta: { removed: string[]; removedNames: string[]; deferred: string[]; focus: string | null; rest: LiveRest | null }
+): LivePlan {
+  const plan = emptyPlan();
+  plan.order = exercises.map((e) => e.key);
+  plan.removed = meta.removed;
+  plan.removedNames = meta.removedNames;
+  plan.deferred = meta.deferred.filter((k) => plan.order.includes(k));
+  plan.focus = meta.focus;
+  plan.rest = meta.rest;
+  plan.added = exercises
+    .map((e) => e.exercise)
+    .filter((e) => e.id.startsWith("local-") && !isSyntheticExercise(e));
+  for (const ex of exercises) {
+    plan.setNumbers[ex.key] = ex.sets.map((s) => s.setNumber);
+    const drafts: Record<string, SetDraft> = {};
+    for (const s of ex.sets) {
+      const pending = s.validated && (s.saveFailed || !s.dbId);
+      const hasValues = !!(s.weightKg || s.repsActual || s.rirActual || s.standardizationScore || s.segs?.length || s.partials);
+      if (pending || (!s.validated && (hasValues || s.dbId))) {
+        drafts[String(s.setNumber)] = {
+          w: s.weightKg,
+          r: s.repsActual,
+          rir: s.rirActual,
+          score: s.standardizationScore,
+          ...(s.segs ? { segs: s.segs } : {}),
+          ...(s.partials ? { partials: s.partials } : {}),
+          ...(pending ? { pending: true } : {}),
+        };
+      }
+    }
+    if (Object.keys(drafts).length > 0) plan.drafts[ex.key] = drafts;
+  }
+  return plan;
+}
+
+function hasOpenSet(ex: ExerciseState): boolean {
+  return ex.sets.some((s) => !s.validated);
+}
+
+/** Exercice à déplier après une série validée (rotation dans un superset). */
+function nextFocus(exs: ExerciseState[], fromIdx: number): string | null {
+  const groups = exs.map((e) => e.exercise.superset_group ?? null);
+  const g = groups[fromIdx];
+  if (g) {
+    let start = fromIdx;
+    while (start > 0 && groups[start - 1] === g) start--;
+    let end = fromIdx;
+    while (end + 1 < groups.length && groups[end + 1] === g) end++;
+    if (end > start) {
+      const size = end - start + 1;
+      for (let k = 1; k <= size; k++) {
+        const i = start + ((fromIdx - start + k) % size);
+        if (hasOpenSet(exs[i])) return exs[i].key;
+      }
+      for (let i = end + 1; i < exs.length; i++) if (hasOpenSet(exs[i])) return exs[i].key;
+      for (let i = 0; i < start; i++) if (hasOpenSet(exs[i])) return exs[i].key;
+      return null;
     }
   }
-  if (stored.exerciseName != null && stored.setNumber != null) {
-    const ex = exStates.find((e) => e.exercise.name === stored.exerciseName);
-    return ex?.sets.find((st) => st.validated && st.setNumber === stored.setNumber);
-  }
-  return undefined;
+  if (hasOpenSet(exs[fromIdx])) return exs[fromIdx].key;
+  for (let i = fromIdx + 1; i < exs.length; i++) if (hasOpenSet(exs[i])) return exs[i].key;
+  for (let i = 0; i < fromIdx; i++) if (hasOpenSet(exs[i])) return exs[i].key;
+  return null;
+}
+
+function firstOpenKey(exs: ExerciseState[]): string | null {
+  return exs.find(hasOpenSet)?.key ?? null;
+}
+
+/** Blocs d'affichage : un exercice seul, ou un superset entier. */
+function blocksOf(exs: ExerciseState[]): number[][] {
+  const out: number[][] = [];
+  exs.forEach((e, i) => {
+    const g = e.exercise.superset_group ?? null;
+    const last = out[out.length - 1];
+    if (g && last && exs[last[last.length - 1]].exercise.superset_group === g) last.push(i);
+    else out.push([i]);
+  });
+  return out;
 }
 
 // ── Records de séance ─────────────────────────────────────────────────────────
@@ -518,127 +516,6 @@ function recordsFromFlags(exercises: ExerciseState[]): SessionRecord[] {
     }
   }
   return [...best.values()];
-}
-
-function buildExerciseState(
-  exercises: Exercise[],
-  existingSets: SessionSet[],
-  clientNotes: Record<string, string>
-): ExerciseState[] {
-  return exercises.map((ex) => {
-    const targetSets = ex.sets ?? 3;
-    // Un set est identifie par (exercice, numero de serie) : deux lignes qui
-    // partagent le meme numero sont un doublon d'enregistrement, pas deux
-    // series reelles. Sans ce filtre, les doublons deja presents en base
-    // s'affichaient litteralement deux fois ("Set 3" puis "Set 3") et
-    // comptaient double dans le volume. On garde la derniere version
-    // enregistree (existingSets arrive trie par created_at croissant), donc
-    // la plus recente correction.
-    const bySetNumber = new Map<number, SessionSet>();
-    for (const s of existingSets) {
-      if (s.exercise_name !== ex.name) continue;
-      bySetNumber.set(s.set_number, s);
-    }
-    const existing = [...bySetNumber.values()].sort((a, b) => a.set_number - b.set_number);
-
-    const sets: SetState[] = [];
-    // Populate from existing validated sets
-    for (const s of existing) {
-      sets.push({
-        localId: s.id,
-        setNumber: s.set_number,
-        weightKg: s.weight_kg != null ? String(s.weight_kg) : "",
-        repsActual: s.reps_actual != null ? String(s.reps_actual) : "",
-        rirActual: s.rir_actual != null ? String(s.rir_actual) : "",
-        standardizationScore: s.standardization_score != null ? String(s.standardization_score) : "",
-        validated: true,
-        isPR: s.is_pr,
-        dbId: s.id,
-        restDuration: s.rest_duration_seconds,
-        hasVideo: !!s.video_url,
-      });
-    }
-    // Fill remaining empty slots up to target — jamais au-delà : sinon
-    // rouvrir la séance (retour depuis un autre onglet, refresh) rajoutait à
-    // chaque fois un set vide supplémentaire que personne n'avait demandé.
-    // Le numero repart du plus haut numero deja pris, pas du nombre de sets :
-    // si la base contient les series 1 et 3 (une serie a ete retiree en
-    // cours de route), repartir de `existingCount + 1` redonnait le numero 3,
-    // deja utilise — deux "Set 3" a l'ecran et deux lignes en base.
-    const existingCount = sets.length;
-    let nextSetNumber = sets.reduce((max, s) => Math.max(max, s.setNumber), 0);
-    for (let i = existingCount; i < targetSets; i++) {
-      nextSetNumber += 1;
-      sets.push({
-        localId: newLocalId(),
-        setNumber: nextSetNumber,
-        weightKg: "",
-        repsActual: "",
-        rirActual: "",
-        standardizationScore: "",
-        validated: false,
-        isPR: false,
-        dbId: null,
-        restDuration: null,
-        hasVideo: false,
-      });
-    }
-    // Replié d'entrée uniquement si CET exercice était déjà entièrement
-    // validé lors d'une session reprise (retour après avoir quitté l'appli,
-    // refresh) — un exercice qui reste à faire s'ouvre toujours, jamais
-    // besoin de deviner "lequel je dois reprendre".
-    const allValidated = sets.length > 0 && sets.every((s) => s.validated);
-
-    return {
-      exercise: ex,
-      sets,
-      showTips: false,
-      showHistory: false,
-      showNotes: false,
-      clientNotes: clientNotes[ex.name] ?? "",
-      collapsed: allValidated,
-    };
-  });
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function VolumeGauge({
-  muscleGroup,
-  sets,
-}: {
-  muscleGroup: string;
-  sets: number;
-}) {
-  const lm = VOLUME_LANDMARKS[muscleGroup] ?? { mev: 8, mav: 16, mrv: 22 };
-  const pct = Math.min((sets / lm.mrv) * 100, 110);
-  const color =
-    sets < lm.mev
-      ? "#ef4444"
-      : sets <= lm.mav
-      ? "var(--ep-ok)"
-      : sets <= lm.mrv
-      ? "var(--ep-warn)"
-      : "#ef4444";
-
-  return (
-    <div className="flex flex-col gap-0.5">
-      <div className="flex justify-between">
-        <span className="text-[8px] text-(--ep-ink)/35 uppercase tracking-wider truncate max-w-[60px]">
-          {muscleGroup}
-        </span>
-        <span className="text-[8px] font-black" style={{ color }}>
-          {sets}/{lm.mev}
-        </span>
-      </div>
-      <div className="h-1 bg-(--ep-line)/20 rounded-full overflow-hidden w-full">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }}
-        />
-      </div>
-    </div>
-  );
 }
 
 // ── Warmup Step ───────────────────────────────────────────────────────────────
@@ -901,998 +778,6 @@ function WarmupStep({
   );
 }
 
-// ── Rest Timer ────────────────────────────────────────────────────────────────
-
-// Badge de repos non bloquant (retour direct 2026-09-17, remplace l'ancien
-// RestTimerOverlay plein écran + questionnaire "prêt ?" à valider) : juste
-// le temps qui défile, en petit, dans l'en-tête. Aucun clic requis, aucun
-// backdrop, le reste de l'écran (sets suivants, notes...) reste utilisable
-// pendant que ça compte. Se referme tout seul dès que le set suivant est
-// validé (voir handleValidateSet) — jamais par une action dédiée.
-function RestTimerBadge({ timer }: { timer: RestTimer }) {
-  const tr = useT();
-  const [elapsed, setElapsed] = useState(() =>
-    Math.floor((Date.now() - timer.startedAt) / 1000)
-  );
-  const beepedRef = useRef(false);
-
-  useEffect(() => {
-    // Chrono restauré après un rechargement alors que le repos est déjà
-    // écoulé : le bip a eu lieu (ou n'a plus de sens), il ne doit pas
-    // sonner à tort au retour dans l'appli. Chrono neuf : 0 s écoulée, donc
-    // false comme avant.
-    beepedRef.current =
-      Math.floor((Date.now() - timer.startedAt) / 1000) >= timer.suggestedSeconds;
-    const interval = setInterval(() => {
-      const s = Math.floor((Date.now() - timer.startedAt) / 1000);
-      setElapsed(s);
-      if (s >= timer.suggestedSeconds && !beepedRef.current) {
-        beepedRef.current = true;
-        const prefs = getDeviceSettings();
-        if (prefs.restSound) playBeep();
-        if (prefs.restVibration) {
-          try { navigator.vibrate([200, 100, 200]); } catch {}
-        }
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [timer.startedAt, timer.suggestedSeconds]);
-
-  const ready = elapsed >= timer.suggestedSeconds;
-
-  return (
-    <div
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-colors"
-      style={{
-        background: ready ? "rgba(var(--ep-ok-rgb),0.12)" : "rgba(var(--ep-yellow-rgb),0.12)",
-        border: `1px solid ${ready ? "rgba(var(--ep-ok-rgb),0.3)" : "rgba(var(--ep-yellow-rgb),0.3)"}`,
-      }}
-      title={`Repos suggéré : ${timer.suggestedLabel}`}
-    >
-      <span
-        className="text-[11px] font-black tabular-nums"
-        style={{ color: ready ? "var(--ep-ok)" : "var(--ep-yellow)" }}
-      >
-        {formatTime(elapsed)}
-      </span>
-      <span className="text-[8px] font-bold uppercase tracking-wider text-(--ep-ink)/35 whitespace-nowrap">
-        {tr("repos")}{" "}{timer.suggestedLabel}
-      </span>
-    </div>
-  );
-}
-
-// ── Session Step ──────────────────────────────────────────────────────────────
-
-// "32 kg × 5 · RIR 0" : une série de référence en une ligne. Poids du corps
-// (pas de charge) : juste les reps.
-function formatPrevSet(p: PrevWeight): string {
-  const parts: string[] = [];
-  if (p.weight != null && p.reps != null) parts.push(`${formatKg(p.weight)} kg × ${p.reps}`);
-  else if (p.weight != null) parts.push(`${formatKg(p.weight)} kg`);
-  else if (p.reps != null) parts.push(`${p.reps} reps`);
-  if (p.rir != null) parts.push(`RIR ${p.rir}`);
-  return parts.join(" · ");
-}
-
-const RIR_CHOICES = [0, 1, 2, 3, 4, 5] as const;
-const SCORE_CHOICES = [1, 2, 3, 4, 5] as const;
-
-function SetRow({
-  set,
-  position,
-  exercise,
-  prevWeight,
-  prevSet,
-  targetRange,
-  prevInSession,
-  prThreshold,
-  isSessionRecord,
-  sessionId,
-  onChange,
-  onValidate,
-  onRemove,
-  onUnvalidate,
-  onRetrySave,
-  onEnsureSetId,
-}: {
-  set: SetState;
-  position: number;
-  exercise: Exercise;
-  prevWeight: PrevWeight | null;
-  /** La même série (même rang) la dernière fois, voir InitData.prevSets. */
-  prevSet: PrevWeight | null;
-  /** Fourchette de reps du programme pour CETTE série, null si illisible. */
-  targetRange: RepRange | null;
-  /** Dernière série validée au-dessus de celle-ci, dans la même carte. */
-  prevInSession: SetState | null;
-  prThreshold: number | null;
-  /** Série validée qui détient le record de la séance pour cet exercice. */
-  isSessionRecord: boolean;
-  sessionId: string;
-  onChange: (patch: Partial<SetState>) => void;
-  onValidate: () => void;
-  onRemove: () => void;
-  onUnvalidate: () => void;
-  onRetrySave: () => void;
-  onEnsureSetId: () => Promise<string | null>;
-}) {
-  const tr = useT();
-  const weight = parseFloat(set.weightKg) || 0;
-  // Même règle que persistSet (isPR sauvegardé) : sans seuil (exercice
-  // jamais fait avant), n'importe quel poids saisi devient le premier
-  // record, donc candidat PR dès qu'il est positif — sinon le badge
-  // n'apparaissait qu'après coup, une fois le set sauvegardé, jamais
-  // pendant la saisie.
-  const isPRCandidate =
-    weight > 0 && (prThreshold == null || weight > prThreshold);
-  // Série validée : le badge suit le record réel de la séance (un seul par
-  // exercice), pas le drapeau enregistré au moment de la validation, qui
-  // peut être périmé après une correction ou un rechargement.
-  const showPR = set.validated ? isSessionRecord : isPRCandidate;
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [videoError, setVideoError] = useState<string | null>(null);
-
-  const suggestedWeight = suggestNextWeight(prevWeight, exercise.rir ?? null);
-  const suggestionDiffersFromLast =
-    suggestedWeight != null && prevWeight?.weight != null && suggestedWeight !== prevWeight.weight;
-
-  // Séance guidée : objectif de double progression calculé depuis la même
-  // série de la dernière fois et la fourchette du programme. Sans fourchette
-  // lisible ou sans série de référence, on retombe sur l'affichage d'avant
-  // (suggestNextWeight en placeholder).
-  const suggestion = targetRange
-    ? suggestSet({ range: targetRange, prev: prevSet, targetRir: exercise.rir ?? null })
-    : null;
-  const lastRef = prevSet ?? prevWeight;
-  const hasLastRef = lastRef != null && (lastRef.weight != null || lastRef.reps != null);
-  const weightPlaceholder = suggestion
-    ? `${suggestion.weightKg} kg`
-    : suggestedWeight != null
-    ? `${suggestedWeight} kg`
-    : "0";
-  const repsPlaceholder = targetRange
-    ? formatRange(targetRange)
-    : exercise.reps ?? (prevWeight?.reps != null ? prevWeight.reps : "0");
-  const copyableWeight =
-    prevInSession && prevInSession.weightKg && prevInSession.weightKg !== set.weightKg
-      ? prevInSession.weightKg
-      : null;
-
-  async function handleVideoSelect(file: File) {
-    setVideoError(null);
-    // MASTERCLASS.md Axe O : le bucket set-videos rejette déjà les fichiers
-    // trop lourds ou au mauvais type côté serveur, mais sans ce contrôle
-    // l'utilisateur attend l'échec de l'upload réseau d'une vidéo de
-    // plusieurs centaines de Mo avant de voir l'erreur.
-    if (file.size > 100 * 1024 * 1024) {
-      setVideoError("Vidéo trop lourde (100 Mo maximum).");
-      return;
-    }
-    setUploadingVideo(true);
-    try {
-      // Filmer AVANT d'avoir loggé poids/reps est le seul ordre qui a du
-      // sens (retour direct 2026-09-09 : "c'est incohérent de filmer après
-      // avoir fini le set") — si le set n'a pas encore de ligne en base,
-      // onEnsureSetId en crée une (sans le marquer validé, voir
-      // handleEnsureSetSaved) juste pour avoir un id à rattacher.
-      const dbId = set.dbId ?? (await onEnsureSetId());
-      if (!dbId) throw new Error("set non enregistré");
-
-      const supabase = createClientSupabase();
-      const ext = file.name.split(".").pop() || "mp4";
-      const path = `${sessionId}/${dbId}-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("set-videos")
-        .upload(path, file, { contentType: file.type || "video/mp4", upsert: false });
-      if (uploadError) throw uploadError;
-
-      const { error: updateError } = await supabase
-        .from("session_sets")
-        .update({ video_url: path })
-        .eq("id", dbId);
-      if (updateError) throw updateError;
-
-      onChange({ hasVideo: true, dbId });
-    } catch (e) {
-      console.error("Video upload failed:", e);
-      setVideoError("Échec de l'envoi de la vidéo. Réessaie.");
-    }
-    setUploadingVideo(false);
-  }
-
-  return (
-    <div
-      className={`relative rounded-xl border p-3 transition-all ${
-        set.validated
-          ? "bg-(--ep-okbg) border-green-500/20"
-          : "bg-(--ep-s1) border-(--ep-line)/20"
-      }`}
-    >
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-[9px] font-black uppercase tracking-widest text-(--ep-ink)/30 w-12">
-          {tr("Set")}{" "}{position}
-        </span>
-        {set.validated && (
-          <CheckCircle2 size={12} className="text-green-400" />
-        )}
-        {showPR && (
-          <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
-            {tr("🏆 PR !")}
-          </span>
-        )}
-        {set.validated ? (
-          <button
-            onClick={onUnvalidate}
-            className="ml-auto flex items-center gap-1 p-1 rounded-md text-(--ep-ink)/25 hover:text-(--ep-accent) transition-colors"
-            title={tr("Modifier ce set")}
-            aria-label={tr("Modifier ce set")}
-          >
-            <Pencil size={11} />
-          </button>
-        ) : (
-          <button
-            onClick={onRemove}
-            className="ml-auto p-1 rounded-md text-(--ep-ink)/25 hover:text-red-400 transition-colors"
-            title={tr("Retirer ce set")}
-            aria-label={tr("Retirer ce set")}
-          >
-            <X size={12} />
-          </button>
-        )}
-      </div>
-
-      {set.validated ? (
-        <div className="space-y-2">
-          <div className="flex gap-4 text-sm font-black text-(--ep-strong)">
-            <span>
-              {set.weightKg || "···"}
-              <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">
-                {tr("kg")}
-              </span>
-            </span>
-            <span>
-              {set.repsActual || "···"}
-              <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">
-                {exercise.reps_unit === "sec" ? tr("s") : exercise.reps_unit === "m" ? tr("m") : tr("reps")}
-              </span>
-            </span>
-            <span>
-              {tr("RIR")}{" "}
-              <span className="text-(--ep-accent)">{set.rirActual || "···"}</span>
-            </span>
-            {set.standardizationScore && (
-              <span className="text-[10px] text-(--ep-ink)/40">
-                ★{set.standardizationScore}
-              </span>
-            )}
-          </div>
-
-          {/* Enregistrement echoue : avant, l'erreur etait avalee en silence
-              et le set validé à l'écran n'existait nulle part en base — il
-              disparaissait au rechargement suivant sans un mot. */}
-          {set.saveFailed && (
-            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5">
-              <AlertCircle size={11} className="text-amber-400 flex-shrink-0" />
-              <p className="text-[10px] text-amber-300 flex-1">
-                {tr("Pas encore enregistré, vérifie ta connexion.")}
-              </p>
-              <button
-                onClick={onRetrySave}
-                disabled={set.saving}
-                className="text-[9px] font-black uppercase tracking-widest text-amber-300 hover:text-amber-200 disabled:opacity-50 transition-colors"
-              >
-                {set.saving ? tr("Envoi…") : tr("Réessayer")}
-              </button>
-            </div>
-          )}
-
-          {set.hasVideo ? (
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-400">
-              <Video size={11} />{" "}{tr("Vidéo envoyée à ton coach")}
-            </span>
-          ) : !set.dbId ? (
-            // Filmer un set exige la ligne en base (le chemin de la video y
-            // est rattache) — proposer le bouton alors qu'elle n'existe pas
-            // ne menait qu'a un clic sans effet.
-            <span className="text-[10px] text-(--ep-ink)/25">
-              {tr("Vidéo possible une fois le set enregistré")}
-            </span>
-          ) : (
-            <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 border border-dashed border-(--ep-line)/25 hover:border-(--ep-line)/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
-              {uploadingVideo ? (
-                <>
-                  <Loader2 size={11} className="animate-spin" />{" "}{tr("Envoi…")}
-                </>
-              ) : (
-                <>
-                  <Video size={11} />{" "}{tr("Filmer ce set")}
-                </>
-              )}
-              <input
-                type="file"
-                accept="video/*"
-                className="hidden"
-                disabled={uploadingVideo}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleVideoSelect(file);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          )}
-          {videoError && <p className="text-[10px] text-red-400 mt-1">{videoError}</p>}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {/* Séance guidée : ce qui a été fait sur CETTE série la dernière
-              fois, et l'objectif du jour (double progression dans la
-              fourchette du programme). "Remplir" pré-remplit poids et reps
-              en un tap, rien n'est jamais imposé. */}
-          {(hasLastRef || suggestion) && (
-            <div className="rounded-lg bg-(--ep-s2) border border-(--ep-line)/20 px-2.5 py-1.5 space-y-1">
-              {hasLastRef && lastRef && (
-                <p className="text-[10px] text-(--ep-ink)/50 leading-tight break-words">
-                  <span className="text-(--ep-ink)/30">{tr("Dernière fois :")}{" "}</span>
-                  {formatPrevSet(lastRef)}
-                </p>
-              )}
-              {suggestion && (
-                <div className="flex items-center gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold text-(--ep-strong) leading-tight">
-                      <span className="text-(--ep-accent)">{tr("Objectif :")}{" "}</span>
-                      {formatKg(suggestion.weightKg)}{" "}{tr("kg ×")}{" "}{suggestion.reps}
-                    </p>
-                    <p className="text-[9.5px] text-(--ep-ink)/35 leading-tight mt-0.5 break-words">
-                      {suggestion.reason}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onChange({
-                        weightKg: String(suggestion.weightKg),
-                        repsActual: String(suggestion.reps),
-                      })
-                    }
-                    className="flex-shrink-0 min-h-[36px] px-3 rounded-lg text-[10px] font-black uppercase tracking-widest bg-(--ep-accent)/15 text-(--ep-accent) border border-(--ep-accent)/30 hover:bg-(--ep-accent)/25 transition-colors"
-                    aria-label={`Remplir ${formatKg(suggestion.weightKg)} kg et ${suggestion.reps} reps`}
-                  >
-                    {tr("Remplir")}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Weight + Reps row */}
-          <div className="flex gap-2">
-            <div className="flex-1 min-w-0">
-              <label className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
-                {tr("Poids (kg)")}
-              </label>
-              <input aria-label={tr("Poids (kg)")}
-                type="number"
-                inputMode="decimal"
-                placeholder={weightPlaceholder}
-                value={set.weightKg}
-                onChange={(e) => onChange({ weightKg: e.target.value })}
-                className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-sm font-bold text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
-              />
-              {!suggestion && suggestionDiffersFromLast && !set.weightKg && (
-                <p className="text-[8.5px] text-(--ep-ink)/30 mt-1 leading-tight">
-                  💡 {suggestedWeight}{tr("kg suggéré (RIR")}{" "}{prevWeight!.rir}{" "}{tr("la dernière fois pour une cible")}{" "}{exercise.rir})
-                </p>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <label className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
-                {exercise.reps_unit === "sec" ? tr("Secondes") : exercise.reps_unit === "m" ? tr("Mètres") : tr("Reps")}
-              </label>
-              {/* Placeholder = la fourchette de CETTE série ("6-8"), plus
-                  jamais le schéma complet du programme ("1x12-15, 2x10-12")
-                  écrasé dans un petit champ numérique. */}
-              <input aria-label={tr("Reps")}
-                type="number"
-                inputMode="numeric"
-                placeholder={repsPlaceholder}
-                value={set.repsActual}
-                onChange={(e) => onChange({ repsActual: e.target.value })}
-                className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-sm font-bold text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50"
-              />
-            </div>
-          </div>
-
-          {/* Même charge que la série juste au-dessus, en un tap. */}
-          {copyableWeight && (
-            <button
-              type="button"
-              onClick={() => onChange({ weightKg: copyableWeight })}
-              className="inline-flex items-center min-h-[36px] px-3 rounded-lg text-[10px] font-bold text-(--ep-ink)/55 hover:text-(--ep-ink)/80 border border-(--ep-line)/25 hover:border-(--ep-line)/50 transition-colors"
-            >
-              {tr("= Série précédente (")}{copyableWeight.replace(".", ",")}{" "}{tr("kg)")}
-            </button>
-          )}
-
-          {/* RIR + Exécution en pastilles : un tap au lieu de deux menus
-              déroulants natifs par série (143 séries sur 146 renseignées,
-              c'était la saisie la plus répétée de la séance). Re-taper la
-              pastille choisie la vide. Même valeur texte qu'avant dans
-              SetState, persistSet ne change pas. */}
-          <div>
-            <div className="flex items-baseline justify-between gap-2 mb-1">
-              <span className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
-                {tr("RIR réel")}
-              </span>
-              <span className="text-[8.5px] text-(--ep-ink)/25">{tr("0 = échec · 5 = facile")}</span>
-            </div>
-            <div className="flex gap-1" role="group" aria-label={tr("RIR réel")}>
-              {RIR_CHOICES.map((v) => {
-                const selected = set.rirActual === String(v);
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    aria-pressed={selected}
-                    aria-label={`RIR ${v}${v === 0 ? " (échec)" : v >= 4 ? " (facile)" : ""}`}
-                    onClick={() => onChange({ rirActual: selected ? "" : String(v) })}
-                    className={`flex-1 min-w-[36px] h-9 rounded-lg border text-sm font-black tabular-nums transition-colors ${
-                      selected
-                        ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
-                        : "bg-(--ep-s2) border-(--ep-line)/30 text-(--ep-ink)/55 hover:border-(--ep-accent)/50"
-                    }`}
-                  >
-                    {v}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div>
-            <div className="flex items-baseline justify-between gap-2 mb-1">
-              <span className="text-[8px] text-(--ep-ink)/30 uppercase tracking-wider">
-                {tr("Exécution")}
-              </span>
-              <span className="text-[8.5px] text-(--ep-ink)/35 truncate">
-                {set.standardizationScore
-                  ? STANDARDIZATION_LABELS[set.standardizationScore]
-                  : tr("1 = approximative · 5 = parfaite")}
-              </span>
-            </div>
-            <div className="flex gap-1" role="group" aria-label={tr("Exécution")}>
-              {SCORE_CHOICES.map((v) => {
-                const selected = set.standardizationScore === String(v);
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    aria-pressed={selected}
-                    aria-label={`${v} : ${STANDARDIZATION_LABELS[String(v)]}`}
-                    title={STANDARDIZATION_LABELS[String(v)]}
-                    onClick={() => onChange({ standardizationScore: selected ? "" : String(v) })}
-                    className={`flex-1 min-w-[36px] h-9 rounded-lg border text-sm font-black tabular-nums transition-colors ${
-                      selected
-                        ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
-                        : "bg-(--ep-s2) border-(--ep-line)/30 text-(--ep-ink)/55 hover:border-amber-500/40"
-                    }`}
-                  >
-                    {v}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Filmer AVANT de valider, jamais après (retour direct
-              2026-09-09 : "c'est incohérent de filmer après avoir fini le
-              set, c'est juste con") — le seul moment où filmer capture
-              vraiment l'exécution du set, c'est pendant qu'il se fait,
-              donc avant que poids/reps soient forcément déjà remplis. */}
-          <div className="flex items-center justify-between gap-2">
-            {set.hasVideo ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-400">
-                <Video size={11} />{" "}{tr("Vidéo envoyée à ton coach")}
-              </span>
-            ) : (
-              <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 border border-dashed border-(--ep-line)/25 hover:border-(--ep-line)/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
-                {uploadingVideo ? (
-                  <>
-                    <Loader2 size={11} className="animate-spin" />{" "}{tr("Envoi…")}
-                  </>
-                ) : (
-                  <>
-                    <Video size={11} />{" "}{tr("Filmer ce set")}
-                  </>
-                )}
-                <input
-                  type="file"
-                  accept="video/*"
-                  className="hidden"
-                  disabled={uploadingVideo}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleVideoSelect(file);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-            )}
-          </div>
-          {videoError && <p className="text-[10px] text-red-400">{videoError}</p>}
-
-          {/* Validate button — desactive pendant l'enregistrement : un
-              double-tap partait sinon en deux requetes et creait deux fois
-              la meme serie en base. */}
-          <button
-            onClick={onValidate}
-            disabled={set.saving}
-            className="w-full py-2.5 bg-(--ep-accent) hover:bg-(--ep-accent-2) disabled:opacity-60 text-(--ep-strong) text-xs font-black uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            {set.saving ? (
-              <>
-                <Loader2 size={12} className="animate-spin" />{" "}{tr("Enregistrement…")}
-              </>
-            ) : (
-              tr("✓ Valider le set")
-            )}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ExerciseCard({
-  exState,
-  supersetTag = null,
-  chainNextName = null,
-  prevWeight,
-  prevSets,
-  getPrThreshold,
-  recordHolderId,
-  sessionId,
-  libraryTip,
-  onUpdate,
-  onValidateSet,
-  onUnvalidateSet,
-  onRetrySaveSet,
-  onRemoveExercise,
-  onRemoveSet,
-  onEnsureSetId,
-  onMoveUp,
-  onMoveDown,
-  onNotesChange,
-}: {
-  exState: ExerciseState;
-  /** « A1 », « A2 »… quand l'exercice fait partie d'un superset du programme. */
-  supersetTag?: string | null;
-  /** Superset : exercice à enchaîner juste après celui-ci (null = repos). */
-  chainNextName?: string | null;
-  prevWeight: PrevWeight | null;
-  /** Tous les sets de la dernière fois, pas juste le dernier — voir InitData.prevSets. */
-  prevSets: PrevWeight[];
-  /** Seuil PR de l'exercice, hors la série donnée (voir computeThreshold). */
-  getPrThreshold: (excludeLocalId: string) => number | null;
-  /** localId de la série qui détient le record de la séance, sinon null. */
-  recordHolderId: string | null;
-  sessionId: string;
-  libraryTip?: LibraryTip;
-  onUpdate: (patch: Partial<ExerciseState>) => void;
-  onValidateSet: (setIdx: number) => void;
-  onUnvalidateSet: (setIdx: number) => void;
-  onRetrySaveSet: (setIdx: number) => void;
-  onRemoveExercise: () => void;
-  onRemoveSet: (setIdx: number) => void;
-  onEnsureSetId: (setIdx: number) => Promise<string | null>;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-  onNotesChange: (notes: string) => void;
-}) {
-  const tr = useT();
-  const confirm = useConfirm();
-  // Conseils réels de la bibliothèque d'exercices en priorité — sinon les
-  // cues génériques (avant : c'était toujours ces cues génériques, quasi
-  // identiques pour tous les exercices faute de correspondance).
-  const libraryInstructions = libraryTip?.instructions?.trim() || null;
-  const tips = libraryInstructions ? null : getTips(exState.exercise.name);
-  // Les exercices ajoutés à la volée n'ont pas de nombre de séries cible
-  // fiable (défaut arbitraire) — l'afficher induisait en erreur.
-  const isCustomExercise = exState.exercise.id.startsWith("local-");
-
-  // Accordéon (voir ExerciseState.collapsed) : résumé de progression visible
-  // même repliée, pour ne jamais avoir à rouvrir juste pour savoir où on en
-  // est — calcul en lecture seule à partir de sets déjà en scope, aucun
-  // effet, aucun risque sur la validation/PR/timer live.
-  const validatedCount = exState.sets.filter((s) => s.validated).length;
-  const totalSets = exState.sets.length;
-  const hasPR = recordHolderId != null && exState.sets.some((s) => s.localId === recordHolderId);
-
-  // Schéma du programme découpé série par série ("1x12-15, 2x10-12" →
-  // 12-15, 10-12, 10-12). null si illisible : l'en-tête et les champs
-  // retombent alors exactement sur l'affichage d'avant.
-  const ranges = parseRepScheme(exState.exercise.reps, exState.exercise.sets);
-  const rangesDiffer =
-    ranges != null && ranges.some((r) => r.min !== ranges[0].min || r.max !== ranges[0].max);
-  const restSeconds = exState.exercise.rest_seconds;
-  // Consigne écrite dans le programme pour cet exercice (distincte de la
-  // note perso du membre, client_exercise_notes) et zone de tension visée :
-  // jamais affichées en séance jusqu'ici, alors que c'est ce que le coach a
-  // écrit pour CETTE séance.
-  const programNotes = exState.exercise.notes?.trim() || null;
-  const tensionFocus = exState.exercise.tension_focus;
-  const tensionLabel = tensionFocus ? TENSION_FOCUS_LABELS[tensionFocus] ?? null : null;
-  const unit = unitShort(exState.exercise.reps_unit);
-  const technique = techniqueLabel(exState.exercise.technique);
-  const techniqueTip = techniqueHint(exState.exercise.technique);
-  const [programNotesOpen, setProgramNotesOpen] = useState(false);
-
-  return (
-    <div className="bg-(--ep-s3) border border-(--ep-line)/25 rounded-xl overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-3.5 flex items-start justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => onUpdate({ collapsed: !exState.collapsed })}
-          aria-expanded={!exState.collapsed}
-          className="min-w-0 flex-1 text-left"
-        >
-          <p className="text-sm font-black text-(--ep-strong) flex items-center gap-1.5">
-            {supersetTag && (
-              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-(--ep-accent)/20 text-(--ep-accent-hi2)">{supersetTag}</span>
-            )}
-            {exState.exercise.name}
-            {hasPR && <span title={tr("Record personnel sur cet exercice")}>🏆</span>}
-          </p>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            {exState.exercise.muscle_group && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-line)/15 text-(--ep-ink)/40 border border-(--ep-line)/20">
-                {exState.exercise.muscle_group}
-              </span>
-            )}
-            {tensionLabel && (
-              <span
-                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-(--ep-accent)/10 text-(--ep-accent)/80 border border-(--ep-accent)/20"
-                title={tr("Zone de tension visée sur cet exercice")}
-              >
-                {tr("Focus :")}{" "}{tensionLabel}
-              </span>
-            )}
-            {technique && (
-              <span
-                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25"
-                title={techniqueTip ?? undefined}
-              >
-                {technique}
-              </span>
-            )}
-            {!isCustomExercise && exState.exercise.sets && (
-              <span className="text-[9px] text-(--ep-ink)/30">
-                {/* Fourchettes différentes selon la série : une par série
-                    ("12-15 · 10-12 · 10-12 reps") au lieu de "3 séries ×
-                    1x12-15, 2x10-12 reps". Fourchette unique : "3 séries ×
-                    10-12 reps" (même pour un schéma écrit "3x10-12").
-                    Schéma illisible : texte d'avant, tel quel. */}
-                {ranges && rangesDiffer ? (
-                  `${ranges.map(formatRange).join(" · ")} ${unit}`
-                ) : ranges ? (
-                  `${exState.exercise.sets} séries × ${formatRange(ranges[0])} ${unit}`
-                ) : (
-                  <>
-                    {exState.exercise.sets}{" "}{tr("séries")}
-                    {exState.exercise.reps && ` × ${exState.exercise.reps} ${unit}`}
-                  </>
-                )}
-                {exState.exercise.rir != null &&
-                  ` · RIR ${exState.exercise.rir}`}
-                {exState.exercise.tempo && ` · tempo ${exState.exercise.tempo}`}
-                {chainNextName ? " · sans repos" : restSeconds != null && restSeconds > 0 && ` · repos ${formatRest(restSeconds)}`}
-              </span>
-            )}
-            <span
-              className={`text-[9px] font-bold ${
-                validatedCount === totalSets && totalSets > 0 ? "text-green-400" : "text-(--ep-ink)/30"
-              }`}
-            >
-              {validatedCount}/{totalSets}{" "}{tr("validées")}
-            </span>
-          </div>
-        </button>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => onUpdate({ collapsed: !exState.collapsed })}
-            className="p-1.5 text-(--ep-ink)/30 hover:text-(--ep-ink)/70 transition-colors flex-shrink-0"
-            title={exState.collapsed ? tr("Déplier") : tr("Replier")}
-            aria-label={exState.collapsed ? tr("Déplier l'exercice") : tr("Replier l'exercice")}
-          >
-            <ChevronDown
-              size={14}
-              style={{ transform: exState.collapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.15s ease" }}
-            />
-          </button>
-          {(onMoveUp || onMoveDown) && (
-            <div className="flex flex-col border border-(--ep-line)/20 rounded-lg overflow-hidden mr-0.5">
-              <button
-                onClick={onMoveUp}
-                disabled={!onMoveUp}
-                className="p-0.5 text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 disabled:hover:text-(--ep-ink)/30 transition-colors"
-                title={tr("Monter l'exercice")}
-                aria-label={tr("Monter l'exercice")}
-              >
-                <ChevronUp size={12} />
-              </button>
-              <button
-                onClick={onMoveDown}
-                disabled={!onMoveDown}
-                className="p-0.5 text-(--ep-ink)/30 hover:text-(--ep-ink)/70 disabled:opacity-20 disabled:hover:text-(--ep-ink)/30 transition-colors border-t border-(--ep-line)/20"
-                title={tr("Descendre l'exercice")}
-                aria-label={tr("Descendre l'exercice")}
-              >
-                <ChevronDown size={12} />
-              </button>
-            </div>
-          )}
-          <button
-            onClick={() => onUpdate({ showTips: !exState.showTips })}
-            className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
-              exState.showTips
-                ? "bg-(--ep-accent)/15 text-(--ep-accent) border-(--ep-accent)/25"
-                : "text-(--ep-ink)/30 border-(--ep-line)/20 hover:border-(--ep-line)/40"
-            }`}
-            title={tr("Tips d'exécution")} aria-label={tr("Tips d'exécution")}
-          >
-            💡
-          </button>
-          <button
-            onClick={() => onUpdate({ showHistory: !exState.showHistory })}
-            className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
-              exState.showHistory
-                ? "bg-blue-500/15 text-blue-400 border-blue-500/25"
-                : "text-(--ep-ink)/30 border-(--ep-line)/20 hover:border-(--ep-line)/40"
-            }`}
-            title={tr("Historique")} aria-label={tr("Historique")}
-          >
-            <BarChart2 size={12} />
-          </button>
-          <button
-            onClick={() => onUpdate({ showNotes: !exState.showNotes })}
-            className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
-              exState.showNotes
-                ? "bg-amber-500/15 text-amber-400 border-amber-500/25"
-                : exState.clientNotes
-                ? "text-amber-400/70 border-amber-500/20"
-                : "text-(--ep-ink)/30 border-(--ep-line)/20 hover:border-(--ep-line)/40"
-            }`}
-            title={tr("Notes")} aria-label={tr("Notes")}
-          >
-            <StickyNote size={12} />
-          </button>
-          <button
-            onClick={async () => {
-              if (await confirm(`Retirer "${exState.exercise.name}" de cette séance ?`)) {
-                onRemoveExercise();
-              }
-            }}
-            className="p-1.5 rounded-lg text-[9px] font-bold border text-(--ep-ink)/30 border-(--ep-line)/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
-            title={tr("Retirer cet exercice")} aria-label={tr("Retirer cet exercice")}
-          >
-            <X size={12} />
-          </button>
-        </div>
-      </div>
-
-      {!exState.collapsed && (
-      <>
-      {/* Superset : savoir tout de suite quoi enchaîner, sans chercher. */}
-      {(chainNextName || (supersetTag && !chainNextName)) && (
-        <p className="border-t border-(--ep-line)/20 px-4 py-2 text-[11px] text-[#ff8a8a] leading-snug">
-          {chainNextName
-            ? `${tr("Superset : enchaîne directement avec")} ${chainNextName}`
-            : tr("Fin du superset : prends ton repos, puis reviens au début du bloc.")}
-        </p>
-      )}
-      {techniqueTip && (
-        <p className="border-t border-(--ep-line)/20 px-4 py-2 text-[11px] text-amber-200/80 leading-snug">
-          <b className="text-amber-300">{technique} :</b> {tr(techniqueTip)}
-        </p>
-      )}
-      {/* Consigne du programme : 2 lignes, dépliable au tap pour tout lire. */}
-      {programNotes && (
-        <button
-          type="button"
-          onClick={() => setProgramNotesOpen((v) => !v)}
-          aria-expanded={programNotesOpen}
-          className="w-full text-left border-t border-(--ep-line)/20 px-4 py-2.5 flex items-start gap-2 hover:bg-(--ep-line)/5 transition-colors"
-        >
-          <ClipboardList size={12} className="text-(--ep-accent)/70 mt-0.5 flex-shrink-0" />
-          <span className="min-w-0 flex-1">
-            <span className="ep-label block mb-0.5">{tr("Consigne du programme")}</span>
-            <span
-              className={`block text-[11px] text-(--ep-ink)/65 leading-snug whitespace-pre-wrap break-words ${
-                programNotesOpen ? "" : "line-clamp-2"
-              }`}
-            >
-              {programNotes}
-            </span>
-          </span>
-        </button>
-      )}
-
-      {/* Notes panel */}
-      {exState.showNotes && (
-        <div className="border-t border-(--ep-line)/20 bg-(--ep-s1) px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
-            {tr("Ta note sur cet exercice")}
-          </p>
-          <textarea
-            value={exState.clientNotes}
-            onChange={(e) => onNotesChange(e.target.value)}
-            placeholder={tr("Ex. variante testée, gêne à l'épaule, ressenti...")} aria-label={tr("Notes sur l'exercice")}
-            rows={2}
-            className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-xs text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/50 resize-none"
-          />
-        </div>
-      )}
-
-      {/* Tips panel */}
-      {exState.showTips && (
-        <div className="border-t border-(--ep-line)/20 bg-(--ep-s1) px-4 py-3 space-y-3">
-          <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
-              {libraryInstructions ? tr("Conseils d'exécution") : tr("Cues d'exécution")}
-            </p>
-            {libraryInstructions ? (
-              <p className="text-xs text-(--ep-ink)/65 leading-relaxed whitespace-pre-wrap">
-                {libraryInstructions}
-              </p>
-            ) : (
-              <ul className="space-y-1.5">
-                {tips!.map((tip, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-(--ep-accent) font-black text-xs mt-0 leading-[1.4]">
-                      {i + 1}.
-                    </span>
-                    <span className="text-xs text-(--ep-ink)/65 leading-relaxed">
-                      {tip}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          {libraryTip?.video_url && (
-            <a
-              href={safeExternalUrl(libraryTip.video_url) ?? "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
-            >
-              <Video size={11} />
-              {tr("Voir la vidéo d'exemple")}
-            </a>
-          )}
-        </div>
-      )}
-
-      {/* Historique — retour direct 2026-09-17 : "j'arrive sur mon exo et je
-          vois ce que j'ai fait la dernière fois, pas juste un set mais TOUS
-          les sets". Une ligne par set de la séance précédente (prevSets,
-          déjà dans l'ordre), plutôt qu'un seul groupe de chiffres qui ne
-          représentait qu'un set choisi arbitrairement (le plus récent
-          enregistré, pas forcément le premier de la série). */}
-      {exState.showHistory && prevSets.length > 0 && (
-        <div className="border-t border-(--ep-line)/20 bg-(--ep-s1) px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
-            {tr("Dernière séance (")}{prevSets.length}{" "}{tr("set")}{prevSets.length > 1 ? "s" : ""})
-          </p>
-          <div className="flex flex-col gap-1.5">
-            {prevSets.map((s, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm">
-                <span className="text-[10px] font-bold text-(--ep-ink)/30 w-10 flex-shrink-0">
-                  {tr("Set")}{" "}{i + 1}
-                </span>
-                <span className="flex gap-3 font-black text-(--ep-strong)">
-                  {s.weight != null && (
-                    <span>
-                      {s.weight}
-                      <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">{tr("kg")}</span>
-                    </span>
-                  )}
-                  {s.reps != null && (
-                    <span>
-                      {s.reps}
-                      <span className="text-[10px] font-normal text-(--ep-ink)/40 ml-0.5">{tr("reps")}</span>
-                    </span>
-                  )}
-                  {s.rir != null && (
-                    <span>
-                      {tr("RIR")}{" "}<span className="text-(--ep-accent)">{s.rir}</span>
-                    </span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Sets */}
-      <div className="px-3 pb-3 pt-2 space-y-2">
-        {exState.sets.map((set, idx) => (
-          <SetRow
-            key={set.localId}
-            set={set}
-            // Le numero AFFICHE est la position dans la liste, jamais le
-            // set_number stocke : celui-ci identifie la ligne en base et
-            // peut garder des trous apres un retrait de serie, ce qui
-            // affichait "Set 1" puis "Set 3" a l'ecran.
-            position={idx + 1}
-            exercise={exState.exercise}
-            prevWeight={prevWeight}
-            // Même rang que la dernière fois (prevSets est trié par numéro
-            // de série) : la série lourde se compare à la série lourde, plus
-            // au dernier set enregistré qui était souvent le back-off.
-            prevSet={prevSets[idx] ?? null}
-            targetRange={rangeForSet(ranges, idx)}
-            prevInSession={
-              [...exState.sets.slice(0, idx)].reverse().find((s) => s.validated) ?? null
-            }
-            prThreshold={getPrThreshold(set.localId)}
-            isSessionRecord={set.localId === recordHolderId}
-            sessionId={sessionId}
-            onChange={(patch) => {
-              const newSets = [...exState.sets];
-              newSets[idx] = { ...newSets[idx], ...patch };
-              onUpdate({ sets: newSets });
-            }}
-            onValidate={() => onValidateSet(idx)}
-            onUnvalidate={() => onUnvalidateSet(idx)}
-            onRetrySave={() => onRetrySaveSet(idx)}
-            onRemove={() => onRemoveSet(idx)}
-            onEnsureSetId={() => onEnsureSetId(idx)}
-          />
-        ))}
-
-        {/* Add set */}
-        <button
-          onClick={() => {
-            // Numero = le plus haut deja utilise + 1, jamais `length + 1` :
-            // apres le retrait d'une serie du milieu, `length + 1` redonnait
-            // un numero deja pris et creait un doublon (a l'ecran et en base).
-            const nextNumber =
-              exState.sets.reduce((max, s) => Math.max(max, s.setNumber), 0) + 1;
-            const newSets = [
-              ...exState.sets,
-              {
-                localId: newLocalId(),
-                setNumber: nextNumber,
-                weightKg: "",
-                repsActual: "",
-                rirActual: "",
-                standardizationScore: "",
-                validated: false,
-                isPR: false,
-                dbId: null,
-                restDuration: null,
-                hasVideo: false,
-              },
-            ];
-            onUpdate({ sets: newSets });
-          }}
-          className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-ink)/60 border border-dashed border-(--ep-line)/20 hover:border-(--ep-line)/40 rounded-lg transition-colors"
-        >
-          <Plus size={11} />
-          {tr("Ajouter un set")}
-        </button>
-      </div>
-      </>
-      )}
-    </div>
-  );
-}
-
 // ── Recap Step ────────────────────────────────────────────────────────────────
 
 function SliderInput({
@@ -1942,9 +827,9 @@ export default function SessionView({
   const tr = useT();
   const router = useRouter();
   const confirm = useConfirm();
-  // SessionView est aussi utilisé pour le logbook perso du coach
-  // (/dashboard/coach/moi/logbook) — le lien de partage doit pointer vers
-  // le mur Victoires du bon rôle, pas toujours celui du client.
+  // SessionView sert aussi au logbook perso du coach
+  // (/dashboard/coach/moi/logbook) : le lien de partage doit pointer vers le
+  // mur Victoires du bon rôle.
   const communityBasePath = returnPath.startsWith("/dashboard/coach") ? "/dashboard/coach" : "/dashboard/client";
 
   // Init state
@@ -1954,21 +839,32 @@ export default function SessionView({
 
   // Session state
   const [step, setStep] = useState<Step>("warmup");
+  // Durée de séance figée à l'entrée du récap (pas de chrono qui fait
+  // re-rendre toute la séance chaque seconde : la barre du bas a le sien).
   const [sessionElapsed, setSessionElapsed] = useState(0);
-  // MASTERCLASS (react-hooks/purity, 2026-08-16) : la vraie valeur de
-  // départ est toujours écrite avant lecture, soit par l'effet de
-  // chargement de séance ci-dessous (ligne ~1451, avant tout passage de
-  // `step` à "session"), soit par handleWarmupValidate — jamais lue tant
-  // que ces deux chemins n'ont pas tourné. Pas besoin d'un Date.now() ici
-  // (impur, interdit pendant le rendu), 0 est une valeur de repos sûre.
-  const sessionStartRef = useRef<number>(0);
-  const sessionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [sessionStart, setSessionStart] = useState(0);
 
-  // Exercise state
+  // État de la séance en cours, sauvegardé à chaque changement (LivePlan).
   const [exercises, setExercises] = useState<ExerciseState[]>([]);
+  const [removed, setRemoved] = useState<string[]>([]);
+  const [removedNames, setRemovedNames] = useState<string[]>([]);
+  const [deferred, setDeferred] = useState<string[]>([]);
+  const [focus, setFocus] = useState<string | null>(null);
+  const [rest, setRest] = useState<LiveRest | null>(null);
+  const [planReady, setPlanReady] = useState(false);
 
-  // Rest timer
-  const [restTimer, setRestTimer] = useState<RestTimer | null>(null);
+  // « Dernière fois » des exercices choisis en cours de séance.
+  const [extraPrev, setExtraPrev] = useState<{ prevWeights: Record<string, PrevWeight>; prevSets: Record<string, PrevWeight[]> }>({
+    prevWeights: {},
+    prevSets: {},
+  });
+
+  // Feuilles du bas, vidéos, messages courts.
+  const [swap, setSwap] = useState<{ mode: "busy" | "replace"; key: string } | null>(null);
+  const [videoStates, setVideoStates] = useState<Record<string, VideoState>>({});
+  const [videoDraft, setVideoDraft] = useState<{ key: string; localId: string; file: File; url: string } | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [accessoriesOpen, setAccessoriesOpen] = useState(false);
 
   // Recap state
   const [feeling, setFeeling] = useState(3);
@@ -1978,149 +874,173 @@ export default function SessionView({
   const [saving, setSaving] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
 
-  // Fetch initial data
+  // Toujours la dernière version des exercices pour les suites asynchrones
+  // (réponse réseau, envoi de vidéo) qui ne doivent pas lire un état périmé.
+  const exercisesRef = useRef<ExerciseState[]>([]);
+  useEffect(() => {
+    exercisesRef.current = exercises;
+  }, [exercises]);
+
+  const showNotice = useCallback((text: string) => {
+    setNotice(text);
+  }, []);
+  useEffect(() => {
+    if (!notice) return;
+    const id = setTimeout(() => setNotice(null), 4500);
+    return () => clearTimeout(id);
+  }, [notice]);
+
+  // ── Chargement et reprise exacte ────────────────────────────────────────────
   useEffect(() => {
     fetch(`/api/client/sessions/${sessionId}`)
       .then((r) => {
-        // Une réponse d'erreur ({ error }) était traitée comme des données :
-        // l'écran plantait sur data.exercises au lieu d'afficher "Séance
-        // introuvable".
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
       .then((data: InitData) => {
         setInitData(data);
-        // Exercices ajoutés en cours de séance (localStorage) : celui qui
-        // porte le même nom qu'un exercice synthétique renvoyé par le
-        // serveur le remplace (même exercice, et son id garde l'ordre
-        // mémorisé des cartes) ; celui qui double un exercice du programme
-        // est ignoré (même nom = mêmes séries en base, deux cartes se
-        // seraient écrasé leurs séries l'une l'autre).
-        const customExercises = loadCustomExercises(sessionId);
-        const customNames = new Set(customExercises.map((e) => e.name));
-        const serverExercises = data.exercises.filter(
-          (e) => !(isSyntheticExercise(e) && customNames.has(e.name))
-        );
-        const serverNames = new Set(serverExercises.map((e) => e.name));
-        const combined = applyExerciseOrder(
-          [...serverExercises, ...customExercises.filter((e) => !serverNames.has(e.name))],
-          loadExerciseOrder(sessionId)
-        );
-        const exStates = buildExerciseState(
-          combined,
-          data.existingSets,
-          data.exerciseNotes
-        );
+        // La version la plus récente gagne : téléphone (fermé en pleine
+        // séance) ou serveur (autre appareil). Sinon les anciennes clés.
+        const plan =
+          newestPlan(loadLocalPlan(sessionId), parsePlan(data.session.live_state)) ??
+          loadLegacyPlan(sessionId, data.exercises) ??
+          emptyPlan();
+        const exStates = restoreExercises(data, plan);
         setExercises(exStates);
+        setRemoved(plan.removed);
+        setRemovedNames(plan.removedNames);
+        setDeferred(plan.deferred);
+        setFocus(plan.focus && exStates.some((e) => e.key === plan.focus) ? plan.focus : firstOpenKey(exStates));
 
-        // Chrono de repos en cours avant le rechargement (voir
-        // saveRestTimer) : on le reprend là où il en était, rattaché à sa
-        // série par son id en base (le localId d'une série rechargée).
-        if (!data.session.is_completed && data.session.warmup_validated) {
-          const stored = loadRestTimer(sessionId);
-          if (stored) {
-            const age = Date.now() - stored.startedAt;
-            const target = findRestTimerSet(exStates, stored);
-            if (target && age >= 0 && age < REST_TIMER_MAX_AGE_MS) {
-              setRestTimer({
-                startedAt: stored.startedAt,
-                suggestedSeconds: stored.suggestedSeconds,
-                suggestedLabel: stored.suggestedLabel,
-                setLocalId: target.localId,
-              });
-            } else {
-              clearRestTimer(sessionId);
-            }
+        if (!data.session.is_completed && plan.rest) {
+          const age = Date.now() - plan.rest.startedAt;
+          if (age >= 0 && age < REST_MAX_AGE_MS) setRest(plan.rest);
+        }
+
+        // Exercice retiré dont les séries n'avaient pas pu être effacées
+        // (réseau coupé) : on retente, pour qu'il ne revienne jamais.
+        const removedNameSet = new Set(plan.removedNames);
+        const keptNames = new Set(exStates.map((e) => e.exercise.name));
+        for (const s of data.existingSets) {
+          if (removedNameSet.has(s.exercise_name) && !keptNames.has(s.exercise_name)) {
+            fetch(`/api/client/sessions/${sessionId}/sets/${s.id}`, { method: "DELETE" }).catch(() => {});
           }
         }
 
-        // Determine starting step
+        // Historique des remplaçants et ajouts déjà choisis.
+        const programNames = new Set(data.exercises.map((e) => e.name.toLowerCase()));
+        const missing = plan.added.map((e) => e.name).filter((n) => !programNames.has(n.toLowerCase()) && !(n.toLowerCase() in data.prevSets));
+        if (missing.length > 0) {
+          const qs = missing.slice(0, 10).map((n) => `name=${encodeURIComponent(n)}`).join("&");
+          fetch(`/api/client/sessions/${sessionId}/previous?${qs}`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((prev) => {
+              if (prev) setExtraPrev((cur) => ({ prevWeights: { ...cur.prevWeights, ...prev.prevWeights }, prevSets: { ...cur.prevSets, ...prev.prevSets } }));
+            })
+            .catch(() => {});
+        }
+
         if (data.session.is_completed) {
           setStep("recap");
         } else {
-          // Marquer la séance comme active dès qu'elle est chargée (pas
-          // seulement après validation de l'échauffement) — sinon revenir sur
-          // /logbook pendant l'échauffement ne propose pas de la reprendre et
-          // donne l'impression qu'elle a été arrêtée.
-          localStorage.setItem("ep-active-session-id", sessionId);
+          // Séance active dès son chargement (bandeau « reprendre » ailleurs
+          // dans l'appli), même pendant l'échauffement.
+          try {
+            localStorage.setItem("ep-active-session-id", sessionId);
+          } catch {}
           if (data.session.warmup_validated) {
             setStep("session");
-            const saved = localStorage.getItem(`ep-session-start-${sessionId}`);
-            sessionStartRef.current = saved ? parseInt(saved, 10) : Date.now();
+            let saved: string | null = null;
+            try {
+              saved = localStorage.getItem(`ep-session-start-${sessionId}`);
+            } catch {}
+            setSessionStart(saved ? parseInt(saved, 10) : new Date(data.session.created_at).getTime() || Date.now());
           }
         }
-
+        setPlanReady(true);
         setLoading(false);
       })
       .catch((e) => {
-        // 404 : la séance n'existe pas (ou plus) pour ce compte. Tout le
-        // reste (réseau coupé en salle, serveur indisponible) ne doit pas
-        // se faire passer pour une séance perdue.
+        // 404 : la séance n'existe pas (ou plus). Le reste (réseau coupé en
+        // salle) ne doit pas se faire passer pour une séance perdue.
         setLoadFailed(!(e instanceof Error && e.message === "HTTP 404"));
         setLoading(false);
       });
   }, [sessionId]);
 
-  // Session timer
-  useEffect(() => {
-    if (step === "session") {
-      sessionTimerRef.current = setInterval(
-        () =>
-          setSessionElapsed(
-            Math.floor((Date.now() - sessionStartRef.current) / 1000)
-          ),
-        1000
-      );
-    }
-    return () => {
-      if (sessionTimerRef.current) clearInterval(sessionTimerRef.current);
-    };
-  }, [step]);
+  // ── Sauvegarde : téléphone tout de suite, serveur juste après ───────────────
+  const lastSavedRef = useRef("");
+  const pendingServerRef = useRef<LivePlan | null>(null);
+  const serverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keep the screen awake during the workout — the OS auto-locking the
-  // phone between sets was the main reason a séance "felt" interrupted.
-  // The Wake Lock is released by the browser whenever the tab loses
-  // visibility, so it's re-acquired on visibilitychange (e.g. switching
-  // back from another app) rather than just once on mount.
-  useEffect(() => {
-    if (step !== "session" || typeof navigator === "undefined" || !("wakeLock" in navigator)) return;
-
-    let sentinel: WakeLockSentinel | null = null;
-
-    async function acquire() {
-      try {
-        sentinel = await navigator.wakeLock.request("screen");
-        sentinel.addEventListener("release", () => { sentinel = null; });
-      } catch {
-        // Unsupported / denied — degrade silently, the session itself
-        // still resumes correctly on reopen regardless of screen lock.
+  const flushServer = useCallback(
+    (keepalive = false) => {
+      if (serverTimerRef.current) {
+        clearTimeout(serverTimerRef.current);
+        serverTimerRef.current = null;
       }
-    }
+      const plan = pendingServerRef.current;
+      if (!plan) return;
+      pendingServerRef.current = null;
+      fetch(`/api/client/sessions/${sessionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ live_state: plan }),
+        keepalive,
+      })
+        .then((r) => {
+          if (!r.ok) throw new Error(String(r.status));
+        })
+        .catch(() => {
+          // Réseau coupé : on garde l'envoi pour la prochaine occasion, sauf
+          // si une version plus récente attend déjà.
+          if (!pendingServerRef.current) pendingServerRef.current = plan;
+        });
+    },
+    [sessionId]
+  );
 
-    acquire();
+  const isCompleted = !!initData?.session.is_completed;
+  useEffect(() => {
+    if (!planReady || isCompleted || step === "recap") return;
+    const plan = snapshotPlan(exercises, { removed, removedNames, deferred, focus, rest });
+    const signature = JSON.stringify(plan);
+    if (signature === lastSavedRef.current) return;
+    lastSavedRef.current = signature;
+    plan.updatedAt = Date.now();
+    saveLocalPlan(sessionId, plan);
+    pendingServerRef.current = plan;
+    if (serverTimerRef.current) clearTimeout(serverTimerRef.current);
+    serverTimerRef.current = setTimeout(() => flushServer(), 1500);
+  }, [planReady, isCompleted, step, exercises, removed, removedNames, deferred, focus, rest, sessionId, flushServer]);
 
-    function handleVisibility() {
-      if (document.visibilityState === "visible" && !sentinel) acquire();
-    }
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-      sentinel?.release().catch(() => {});
+  // Appli mise en arrière-plan ou fermée : envoi immédiat de ce qui attend.
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === "hidden") flushServer(true);
     };
-  }, [step]);
+    const onPageHide = () => flushServer(true);
+    const onOnline = () => flushServer();
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("online", onOnline);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("online", onOnline);
+    };
+  }, [flushServer]);
 
-  // Notification système quand on quitte l'app (autre onglet, autre app,
-  // écran verrouillé) pendant une séance active — sans ça, rien ne rappelle
-  // qu'une séance tourne toujours une fois qu'on a quitté la page, et on
-  // peut croire qu'il faut la relancer depuis zéro.
+  // Écran gardé allumé pendant la séance, repris au retour au premier plan.
+  useWakeLock(step === "session");
+
+  // Notification système quand on quitte l'app pendant une séance active :
+  // rien ne rappelait sinon qu'une séance tourne toujours.
   useEffect(() => {
     if (step === "recap" || typeof window === "undefined" || !("Notification" in window)) return;
-
     if (Notification.permission === "default") {
       Notification.requestPermission().catch(() => {});
     }
-
     function handleVisibility() {
       if (document.visibilityState !== "hidden") return;
       if (Notification.permission !== "granted") return;
@@ -2131,121 +1051,81 @@ export default function SessionView({
           icon: "/icon-192.png",
         });
       } catch {
-        // Notification API peut être indisponible (iOS Safari hors PWA) —
-        // le bandeau in-app reste le filet de sécurité principal.
+        // indisponible (iOS Safari hors PWA)
       }
     }
-
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [step]);
 
   const handleWarmupValidate = useCallback(
     (seconds: number) => {
-      // Move to the workout immediately — warmup_validated is just metadata
-      // for "resume where I left off" on reload, it must never block the
-      // transition if the network is slow/flaky.
+      // On passe à la séance tout de suite : warmup_validated ne sert qu'à
+      // reprendre au bon endroit, jamais à bloquer si le réseau traîne.
       const startTime = Date.now();
-      sessionStartRef.current = startTime;
-      localStorage.setItem(`ep-session-start-${sessionId}`, startTime.toString());
-      localStorage.setItem("ep-active-session-id", sessionId);
-      localStorage.removeItem(`ep-warmup-start-${sessionId}`);
+      setSessionStart(startTime);
+      try {
+        localStorage.setItem(`ep-session-start-${sessionId}`, startTime.toString());
+        localStorage.setItem("ep-active-session-id", sessionId);
+        localStorage.removeItem(`ep-warmup-start-${sessionId}`);
+      } catch {}
       setStep("session");
 
       const patchWarmup = () =>
         fetch(`/api/client/sessions/${sessionId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            warmup_validated: true,
-            warmup_duration_seconds: seconds,
-          }),
+          body: JSON.stringify({ warmup_validated: true, warmup_duration_seconds: seconds }),
         });
-
       patchWarmup().catch(() => {
-        // one silent retry — best effort, doesn't affect the UI either way
         patchWarmup().catch(() => {});
       });
     },
     [sessionId]
   );
 
-  // Bug réel confirmé sur son compte (88 sets tapés, 0 PR jamais détecté
-  // malgré des charges lourdes, ex. 120kg au soulevé de terre) : isPR
-  // exigeait un prThreshold déjà existant (initData.prMap, dérivé de
-  // personal_records) — sur un exercice jamais fait avant, ce seuil est
-  // toujours null, donc AUCUN poids ne peut jamais devenir un premier PR.
-  // Premier poids validé sur un exercice sans historique = PR (c'est
-  // littéralement son seul record), et il relève la barre pour les sets
-  // suivants de la même séance.
-  // Le seuil se recalcule désormais à partir des séries validées à l'écran
-  // (computeThreshold) au lieu d'un state "meilleur poids de la séance"
-  // perdu à chaque rechargement : partagé entre persistSet (vrai isPR
-  // sauvegardé) et le badge "🏆 PR !" affiché pendant la saisie, pour que
-  // les deux racontent toujours la même histoire.
+  // ── Records ─────────────────────────────────────────────────────────────────
   const getEffectiveThreshold = useCallback(
     (exerciseName: string, excludeLocalId?: string): number | null =>
       computeThreshold(exercises, initData?.prMap ?? {}, exerciseName, excludeLocalId),
     [exercises, initData]
   );
 
-  // Envois en vol, par set : un double-tap sur "Valider le set" partait en
-  // deux requetes a ~1s d'ecart et enregistrait deux fois la meme serie
-  // (doublons reels constates en base, comptes double dans le volume et le
-  // recap). Le bouton est aussi desactive pendant l'envoi, ce garde couvre
-  // les cas ou l'etat React n'a pas encore ete rendu.
+  // Envois en vol, par set : un double-tap sur « Valider » partait en deux
+  // requêtes et enregistrait deux fois la même série.
   const savingSetsRef = useRef<Set<string>>(new Set());
-
-  // Debounce des notes libres par exercice (client_exercise_notes) — un
-  // PATCH par frappe saturerait l'API pour rien, un par exercice suffit
-  // (une Map plutôt qu'un seul timer : deux exercices différents notés
-  // presque en même temps ne doivent pas s'annuler l'un l'autre).
   const noteSaveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  // Enregistre (ou re-enregistre) un set. La route POST est idempotente sur
-  // (seance, exercice, numero de serie) : la rappeler pour un set deja
-  // enregistre met a jour la meme ligne, elle n'en cree jamais une seconde.
+  const prevSetsFor = useCallback(
+    (name: string): PrevWeight[] =>
+      initData?.prevSets[name.toLowerCase()] ?? extraPrev.prevSets[name.toLowerCase()] ?? [],
+    [initData, extraPrev]
+  );
+  const prevWeightFor = useCallback(
+    (name: string): PrevWeight | null =>
+      initData?.prevWeights[name.toLowerCase()] ?? extraPrev.prevWeights[name.toLowerCase()] ?? null,
+    [initData, extraPrev]
+  );
+
+  // Enregistre (ou ré-enregistre) une série. La route POST est idempotente
+  // sur (séance, exercice, numéro de série) : jamais de seconde ligne.
+  // markValidated=false : ligne créée juste pour y rattacher une vidéo filmée
+  // AVANT de valider la série (le formulaire reste ouvert).
   const persistSet = useCallback(
-    // markValidated=false : utilisé pour créer la ligne en base juste pour
-    // pouvoir y rattacher une vidéo AVANT que le set soit réellement fini
-    // (voir handleEnsureSetSaved plus bas) — le formulaire poids/reps reste
-    // affiché, jamais basculé sur le récapitulatif comme si le set était
-    // déjà validé alors qu'il ne l'est pas encore.
-    async (exIdx: number, setIdx: number, options?: { markValidated?: boolean }): Promise<string | null> => {
-      const markValidated = options?.markValidated ?? true;
-      const exState = exercises[exIdx];
-      const set = exState?.sets[setIdx];
-      if (!exState || !set) return null;
+    async (exState: ExerciseState, set: SetState, markValidated = true): Promise<string | null> => {
       if (savingSetsRef.current.has(set.localId)) return set.dbId;
       savingSetsRef.current.add(set.localId);
 
       const ex = exState.exercise;
-      const prevWeight =
-        initData?.prevWeights[ex.name.toLowerCase()] ?? null;
+      const setIdx = Math.max(0, exState.sets.findIndex((s) => s.localId === set.localId));
+      const form = techniqueForm(ex.technique, setIdx, exState.sets.length);
+      const details = buildDetails(ex.technique, form, set.segs, set.partials);
+      const weight = parseFloat(set.weightKg.replace(",", ".")) || null;
+      const threshold = computeThreshold(exercisesRef.current, initData?.prMap ?? {}, ex.name, set.localId);
+      const isPR = markValidated && weight != null && (threshold == null || weight > threshold);
 
-      const weight = parseFloat(set.weightKg) || null;
-      // Hors la série elle-même : la revalider (après correction) ne doit
-      // pas lui retirer son PR parce qu'elle "égale" son propre poids.
-      const effectiveThreshold = getEffectiveThreshold(ex.name, set.localId);
-      const isPR = weight != null && (effectiveThreshold == null || weight > effectiveThreshold);
+      setExercises((prev) => patchSetIn(prev, set.localId, { saving: true }));
 
-      // Retrouve le set par son localId plutot que par son index : entre le
-      // depart de la requete et sa reponse, l'utilisateur a pu retirer une
-      // serie ou reordonner ses exercices.
-      const patchSet = (patch: Partial<SetState>) =>
-        setExercises((prev) =>
-          prev.map((exItem) => {
-            const idx = exItem.sets.findIndex((s) => s.localId === set.localId);
-            if (idx === -1) return exItem;
-            const newSets = [...exItem.sets];
-            newSets[idx] = { ...newSets[idx], ...patch };
-            return { ...exItem, sets: newSets };
-          })
-        );
-
-      patchSet({ saving: true });
-
-      // Insert set in DB
       let dbId: string | null = null;
       let failed = false;
       try {
@@ -2253,30 +1133,25 @@ export default function SessionView({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            // Locally-added exercises (free sessions) use a synthetic
-            // "local-…" id with no matching row in the exercises table —
-            // sending that as exercise_id would fail the uuid column check.
+            // Exercice ajouté ou remplaçant : id « local-… » sans ligne dans
+            // la table exercises, jamais envoyé comme uuid.
             exercise_id: ex.id && !ex.id.startsWith("local-") ? ex.id : null,
             exercise_name: ex.name,
             muscle_group: ex.muscle_group ?? null,
             set_number: set.setNumber,
             reps_target: ex.reps ?? null,
-            reps_actual: set.repsActual ? parseInt(set.repsActual) : null,
+            reps_actual: set.repsActual ? parseInt(set.repsActual, 10) : null,
             weight_kg: weight,
-            previous_weight_kg: prevWeight?.weight ?? null,
+            previous_weight_kg: prevWeightFor(ex.name)?.weight ?? null,
             rir_target: ex.rir ?? null,
-            rir_actual: set.rirActual ? parseInt(set.rirActual) : null,
-            standardization_score: set.standardizationScore
-              ? parseInt(set.standardizationScore)
-              : null,
+            rir_actual: set.rirActual ? parseInt(set.rirActual, 10) : null,
+            standardization_score: set.standardizationScore ? parseInt(set.standardizationScore, 10) : null,
             is_pr: isPR,
             notes: exState.clientNotes || null,
+            details,
+            details_note: detailsAsNote(details),
           }),
         });
-        // res.ok n'etait jamais teste : sur un 403/429/500 on lisait `id`
-        // dans un corps { error }, donc undefined, et le set passait quand
-        // meme au vert alors qu'il n'existait nulle part en base. Il
-        // disparaissait au rechargement suivant, sans un mot.
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = (await res.json()) as { id?: string };
         dbId = typeof json.id === "string" ? json.id : null;
@@ -2285,194 +1160,310 @@ export default function SessionView({
         console.error("Enregistrement du set impossible:", e);
         failed = true;
       }
-
       savingSetsRef.current.delete(set.localId);
-      if (dbId) attachRestTimerDbId(sessionId, set.localId, dbId);
 
-      // Update local state — le geste de l'utilisateur est conserve meme si
-      // le reseau a laché, mais le set porte alors un avertissement visible
-      // et un bouton "Réessayer" (voir SetRow).
-      // Pas d'ajout automatique d'un set vide supplémentaire ici — seul le
-      // bouton "Ajouter un set" doit en créer un, sinon ça apparaît comme
-      // un set rajouté tout seul sans que le client ait rien demandé.
-      patchSet({
-        ...(markValidated ? { validated: true } : {}),
-        isPR,
-        saving: false,
-        saveFailed: failed,
-        ...(dbId ? { dbId } : {}),
-      });
-
-      return dbId;
-    },
-    [exercises, initData, sessionId, getEffectiveThreshold]
-  );
-
-  // Rattacher une vidéo au set exige une ligne en base, mais filmer AVANT
-  // d'avoir logué poids/reps est justement le seul ordre qui a du sens
-  // (retour direct 2026-09-09 : "c'est incohérent de filmer après avoir
-  // fini le set, c'est juste con") — la ligne se crée alors avec ce qui est
-  // déjà rempli (même vide), sans marquer le set comme validé : le
-  // formulaire reste ouvert, la vidéo s'attache simplement en plus.
-  const handleEnsureSetSaved = useCallback(
-    async (exIdx: number, setIdx: number): Promise<string | null> => {
-      const existing = exercises[exIdx]?.sets[setIdx]?.dbId;
-      if (existing) return existing;
-      return persistSet(exIdx, setIdx, { markValidated: false });
-    },
-    [exercises, persistSet]
-  );
-
-  // Referme le chrono de repos EN COURS (celui du set précédent) et
-  // persiste sa durée réelle — retour direct 2026-09-17 : plus aucun clic
-  // ne ferme le chrono explicitement (voir RestTimerBadge, non bloquant),
-  // donc c'est la validation du set SUIVANT qui referme celui d'avant.
-  // Extrait de l'ancien handleRestClose (déclenché jusque-là par le bouton
-  // "C'est parti" de RestTimerOverlay), même logique de persistance.
-  const closeRestTimer = useCallback(
-    (timer: RestTimer, elapsedSeconds: number) => {
-      let dbId: string | null = null;
-      for (const ex of exercises) {
-        const s = ex.sets.find((x) => x.localId === timer.setLocalId);
-        if (s) {
-          dbId = s.dbId;
-          break;
-        }
-      }
-
-      setExercises((exs) =>
-        exs.map((ex) => {
-          const idx = ex.sets.findIndex((s) => s.localId === timer.setLocalId);
-          if (idx === -1) return ex;
-          const newSets = [...ex.sets];
-          newSets[idx] = { ...newSets[idx], restDuration: elapsedSeconds };
-          return { ...ex, sets: newSets };
+      setExercises((prev) =>
+        patchSetIn(prev, set.localId, {
+          isPR,
+          saving: false,
+          // Seule une série validée peut être « en attente d'envoi ».
+          saveFailed: markValidated ? failed : false,
+          ...(dbId ? { dbId } : {}),
         })
       );
+      return dbId;
+    },
+    [initData, sessionId, prevWeightFor]
+  );
 
-      // La duree de repos n'est connue qu'a la fermeture du chrono, donc
-      // apres l'enregistrement du set : sans ce PATCH la colonne
-      // rest_duration_seconds n'a jamais ete remplie pour un seul set, alors
-      // qu'elle figure dans l'export CSV du logbook.
-      if (dbId) {
-        fetch(`/api/client/sessions/${sessionId}/sets/${dbId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rest_duration_seconds: elapsedSeconds }),
-        }).catch(() => {});
+  // Séries validées hors ligne : renvoyées à la reprise et au retour du réseau.
+  const retryFailed = useCallback(() => {
+    for (const ex of exercisesRef.current) {
+      for (const s of ex.sets) {
+        if (s.validated && s.saveFailed && !s.saving) void persistSet(ex, s);
       }
+    }
+  }, [persistSet]);
+  useEffect(() => {
+    if (!planReady) return;
+    const id = setTimeout(retryFailed, 1200);
+    window.addEventListener("online", retryFailed);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener("online", retryFailed);
+    };
+  }, [planReady, retryFailed]);
+
+  // ── Repos ───────────────────────────────────────────────────────────────────
+  // Referme le repos en cours et enregistre sa durée réelle sur la série
+  // concernée (colonne rest_duration_seconds, exportée dans le CSV).
+  const closeRest = useCallback(() => {
+    if (!rest) return;
+    if (rest.kind === "set" && rest.exKey != null && rest.setNumber != null) {
+      const elapsed = Math.max(0, Math.round((Date.now() - rest.startedAt) / 1000));
+      const ex = exercises.find((e) => e.key === rest.exKey);
+      const set = ex?.sets.find((s) => s.setNumber === rest.setNumber);
+      if (set) {
+        setExercises((prev) => patchSetIn(prev, set.localId, { restDuration: elapsed }));
+        if (set.dbId) {
+          fetch(`/api/client/sessions/${sessionId}/sets/${set.dbId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rest_duration_seconds: elapsed }),
+          }).catch(() => {});
+        }
+      }
+    }
+    setRest(null);
+  }, [rest, exercises, sessionId]);
+
+  const handlePause = useCallback(
+    (seconds: number, label: string) => {
+      closeRest();
+      setRest({ startedAt: Date.now(), seconds, label, exKey: null, setNumber: null, kind: "pause" });
+    },
+    [closeRest]
+  );
+
+  // ── Séries ──────────────────────────────────────────────────────────────────
+  const handleSetChange = useCallback((localId: string, patch: Partial<SetState>) => {
+    setExercises((prev) => patchSetIn(prev, localId, patch));
+  }, []);
+
+  const handleValidateSet = useCallback(
+    (exIdx: number, setIdx: number, values: Partial<SetState>) => {
+      const exState = exercises[exIdx];
+      const set = exState?.sets[setIdx];
+      if (!exState || !set || set.saving || savingSetsRef.current.has(set.localId)) return;
+      const merged: SetState = { ...set, ...values, validated: true, wasValidated: false };
+      const isEdit = !!set.wasValidated;
+
+      const nextExs = exercises.map((e, i) =>
+        i === exIdx ? { ...e, sets: e.sets.map((s, k) => (k === setIdx ? merged : s)) } : e
+      );
+      setExercises(nextExs);
+      setDeferred((d) => d.filter((k) => k !== exState.key));
+
+      if (!isEdit) {
+        // Repos lancé à la fin de la série, pas après l'aller-retour réseau.
+        // Repos du programme d'abord, puis le réglage de l'appareil, puis le
+        // barème par RIR. Superset : juste le temps de changer de poste.
+        closeRest();
+        const groups = exercises.map((e) => e.exercise.superset_group ?? null);
+        const chainTo = !isLastOfSuperset(groups, exIdx) ? exercises[exIdx + 1]?.exercise.name ?? null : null;
+        const programmed = exState.exercise.rest_seconds;
+        const deviceRest = getDeviceSettings().restDefaultSeconds;
+        const seconds = chainTo
+          ? 15
+          : programmed != null && programmed > 0
+            ? programmed
+            : deviceRest > 0
+              ? deviceRest
+              : getSuggestedRest(merged.rirActual ? parseInt(merged.rirActual, 10) : 2);
+        setRest({
+          startedAt: Date.now(),
+          seconds,
+          label: chainTo ? `${tr("Enchaîne :")} ${chainTo}` : "",
+          exKey: exState.key,
+          setNumber: set.setNumber,
+          kind: "set",
+        });
+        setFocus(nextFocus(nextExs, exIdx));
+      }
+      void persistSet(nextExs[exIdx], merged);
+    },
+    [exercises, closeRest, persistSet, tr]
+  );
+
+  const handleEditSet = useCallback((localId: string) => {
+    setExercises((prev) =>
+      patchSetIn(prev, localId, { validated: false, wasValidated: true, isPR: false, saveFailed: false })
+    );
+  }, []);
+
+  const handleRemoveSet = useCallback(
+    (key: string, localId: string) => {
+      const ex = exercises.find((e) => e.key === key);
+      const removedSet = ex?.sets.find((s) => s.localId === localId);
+      // Une ligne déjà en base (série dévalidée, ligne créée pour une vidéo)
+      // est effacée aussi : sinon elle réapparaissait au rechargement.
+      if (removedSet?.dbId) {
+        fetch(`/api/client/sessions/${sessionId}/sets/${removedSet.dbId}`, { method: "DELETE" }).catch(() => {});
+      }
+      setExercises((prev) =>
+        prev.map((e) => (e.key === key ? { ...e, sets: e.sets.filter((s) => s.localId !== localId) } : e))
+      );
     },
     [exercises, sessionId]
   );
 
-  const handleValidateSet = useCallback(
-    (exIdx: number, setIdx: number) => {
-      const set = exercises[exIdx]?.sets[setIdx];
-      // Le ref est teste en plus de `set.saving` : sur un double-tap, les
-      // deux clics arrivent avant que React n'ait rendu le premier etat, et
-      // le second relancait aussi le chrono de repos a zero.
-      if (!set || set.saving || savingSetsRef.current.has(set.localId)) return;
+  const handleAddSet = useCallback((key: string) => {
+    setExercises((prev) =>
+      prev.map((e) => {
+        if (e.key !== key) return e;
+        // Le plus haut numéro déjà pris + 1, jamais length + 1 (doublons).
+        const next = e.sets.reduce((m, s) => Math.max(m, s.setNumber), 0) + 1;
+        return { ...e, sets: [...e.sets, emptySet(next)] };
+      })
+    );
+  }, []);
 
-      // Plus aucun blocage entre deux sets (retour direct 2026-09-17) : si
-      // un chrono de repos tournait déjà pour le set précédent, il se
-      // referme ici et sa durée réelle est celle qui vient de s'écouler.
-      if (restTimer) {
-        closeRestTimer(restTimer, Math.floor((Date.now() - restTimer.startedAt) / 1000));
-      }
-
-      // Chrono de repos ouvert immediatement : il doit demarrer quand la
-      // serie se termine, pas a la fin de l'aller-retour reseau.
-      // Repos du programme en priorité (45 s aux élévations latérales, 60 s
-      // au pec deck...) : avant, seul le RIR comptait, et avec un RIR 0
-      // partout le bip sonnait toujours à 3:00. Le barème par RIR reste pour
-      // un exercice sans repos programmé (séance libre, exercice ajouté).
-      const rir = set.rirActual ? parseInt(set.rirActual) : 2;
-      const programmedRest = exercises[exIdx]?.exercise.rest_seconds;
-      // Superset : pas de vrai repos entre A1 et A2, juste le temps de
-      // changer de poste ; le repos programmé tombe après le dernier du bloc.
-      const ssGroups = exercises.map((e) => e.exercise.superset_group ?? null);
-      const chainTo = !isLastOfSuperset(ssGroups, exIdx) ? exercises[exIdx + 1]?.exercise.name ?? null : null;
-      // Sans repos programmé : le repos par défaut choisi dans les
-      // paramètres de l'appareil, sinon le barème automatique par RIR.
-      const deviceRest = getDeviceSettings().restDefaultSeconds;
-      const suggested = chainTo
-        ? { seconds: 15, label: `→ ${chainTo}` }
-        : programmedRest != null && programmedRest > 0
-          ? { seconds: programmedRest, label: formatRest(programmedRest) }
-          : deviceRest > 0
-            ? { seconds: deviceRest, label: formatRest(deviceRest) }
-            : getSuggestedRest(rir);
-      const timer: RestTimer = {
-        startedAt: Date.now(),
-        suggestedSeconds: suggested.seconds,
-        suggestedLabel: suggested.label,
-        setLocalId: set.localId,
-      };
-      setRestTimer(timer);
-      saveRestTimer(sessionId, {
-        ...timer,
-        setDbId: set.dbId,
-        exerciseName: exercises[exIdx]?.exercise.name ?? null,
-        setNumber: set.setNumber,
-      });
-
-      void persistSet(exIdx, setIdx);
+  // ── Exercices : retirer, déplacer, machine prise, remplacer, ajouter ────────
+  const fetchPrevious = useCallback(
+    (name: string) => {
+      const lower = name.toLowerCase();
+      if (initData?.prevSets[lower] || extraPrev.prevSets[lower]) return;
+      fetch(`/api/client/sessions/${sessionId}/previous?name=${encodeURIComponent(name)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((prev) => {
+          if (prev) setExtraPrev((cur) => ({ prevWeights: { ...cur.prevWeights, ...prev.prevWeights }, prevSets: { ...cur.prevSets, ...prev.prevSets } }));
+        })
+        .catch(() => {});
     },
-    [exercises, persistSet, restTimer, closeRestTimer, sessionId]
+    [initData, extraPrev, sessionId]
   );
 
-  const handleRetrySaveSet = useCallback(
-    (exIdx: number, setIdx: number) => {
-      void persistSet(exIdx, setIdx);
+  // Retirer est définitif pour la séance (retour direct du fondateur : « si
+  // je supprime un exo il réapparaît quand je rouvre l'appli ») : mémorisé
+  // dans LivePlan, et ses séries déjà enregistrées sont effacées.
+  const handleRemoveExercise = useCallback(
+    async (key: string) => {
+      const ex = exercises.find((e) => e.key === key);
+      if (!ex) return;
+      const done = ex.sets.filter((s) => s.validated).length;
+      const ok = await confirm(
+        done > 0
+          ? `Retirer « ${ex.exercise.name} » de la séance ? Ses ${done} série${done > 1 ? "s" : ""} déjà faite${done > 1 ? "s" : ""} seront effacée${done > 1 ? "s" : ""}.`
+          : `Retirer « ${ex.exercise.name} » de la séance ?`
+      );
+      if (!ok) return;
+      for (const s of ex.sets) {
+        if (s.dbId) fetch(`/api/client/sessions/${sessionId}/sets/${s.dbId}`, { method: "DELETE" }).catch(() => {});
+      }
+      const idx = exercises.findIndex((e) => e.key === key);
+      const nextExs = exercises.filter((e) => e.key !== key);
+      setExercises(nextExs);
+      setRemoved((r) => (r.includes(key) ? r : [...r, key]));
+      setRemovedNames((n) => (n.includes(ex.exercise.name) ? n : [...n, ex.exercise.name]));
+      setDeferred((d) => d.filter((k) => k !== key));
+      if (focus === key) {
+        const after = nextExs.slice(idx).find(hasOpenSet) ?? nextExs.find(hasOpenSet);
+        setFocus(after?.key ?? null);
+      }
     },
-    [persistSet]
+    [exercises, confirm, sessionId, focus]
+  );
+
+  const handleMoveExercise = useCallback((key: string, dir: -1 | 1) => {
+    setExercises((prev) => {
+      const i = prev.findIndex((e) => e.key === key);
+      const target = i + dir;
+      if (i === -1 || target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[i], next[target]] = [next[target], next[i]];
+      return next;
+    });
+  }, []);
+
+  // « Machine prise » : l'exercice (ou son superset entier) passe après le
+  // bloc suivant, marqué « À reprendre ». Le choix est mémorisé.
+  const handleDefer = useCallback(
+    (key: string) => {
+      const idx = exercises.findIndex((e) => e.key === key);
+      if (idx === -1) return;
+      const blocks = blocksOf(exercises);
+      const b = blocks.findIndex((bl) => bl.includes(idx));
+      if (b === -1 || b >= blocks.length - 1) return;
+      const order = [...blocks];
+      [order[b], order[b + 1]] = [order[b + 1], order[b]];
+      const nextExs = order.flat().map((i) => exercises[i]);
+      const movedKeys = blocks[b].map((i) => exercises[i].key);
+      setExercises(nextExs);
+      setDeferred((d) => [...new Set([...d, ...movedKeys])]);
+      // L'exercice qui remonte à sa place devient l'exercice en cours.
+      const startPos = blocks.slice(0, b).flat().length;
+      const open = (e: ExerciseState) => hasOpenSet(e) && !movedKeys.includes(e.key);
+      const candidate =
+        nextExs.slice(startPos).find(open) ?? nextExs.find(open) ?? nextExs.find(hasOpenSet) ?? null;
+      setFocus(candidate?.key ?? null);
+      setSwap(null);
+      showNotice(tr("C'est noté : tu y reviens après."));
+    },
+    [exercises, showNotice, tr]
+  );
+
+  const handleReplace = useCallback(
+    (key: string, alt: { name: string; muscleGroup: string | null; muscleSubgroup: string | null }) => {
+      const idx = exercises.findIndex((e) => e.key === key);
+      const ex = exercises[idx];
+      if (!ex) return;
+      const already = exercises.find((e) => e.exercise.name.toLowerCase() === alt.name.toLowerCase());
+      if (already) {
+        setSwap(null);
+        setFocus(already.key);
+        showNotice(tr("Cet exercice est déjà dans ta séance."));
+        return;
+      }
+      const done = ex.sets.filter((s) => s.validated);
+      const remaining = Math.max(1, ex.sets.length - done.length);
+      const newEx: LiveExercise = {
+        ...ex.exercise,
+        id: `local-${newLocalId()}`,
+        day_id: "",
+        name: alt.name,
+        muscle_group: alt.muscleGroup ?? ex.exercise.muscle_group,
+        muscle_subgroup: alt.muscleSubgroup ?? null,
+        sets: remaining,
+        replaces: ex.exercise.replaces ?? ex.exercise.name,
+      };
+      const newState: ExerciseState = {
+        key: newEx.id,
+        exercise: newEx,
+        sets: Array.from({ length: remaining }, (_, i) => emptySet(i + 1)),
+        clientNotes: initData?.exerciseNotes[alt.name] ?? "",
+      };
+      // Lignes en base des séries pas faites (vidéo filmée avant de valider) :
+      // effacées, elles n'appartiennent plus à rien.
+      for (const s of ex.sets) {
+        if (!s.validated && s.dbId) fetch(`/api/client/sessions/${sessionId}/sets/${s.dbId}`, { method: "DELETE" }).catch(() => {});
+      }
+      let nextExs: ExerciseState[];
+      if (done.length === 0) {
+        // Rien de fait : remplacé sur place, l'original disparaît de la séance.
+        nextExs = exercises.map((e, i) => (i === idx ? newState : e));
+        setRemoved((r) => (r.includes(key) ? r : [...r, key]));
+        setRemovedNames((n) => (n.includes(ex.exercise.name) ? n : [...n, ex.exercise.name]));
+      } else {
+        // Séries déjà faites : elles restent, le remplaçant prend la suite.
+        nextExs = [...exercises];
+        nextExs[idx] = { ...ex, sets: done };
+        nextExs.splice(idx + 1, 0, newState);
+      }
+      setRemovedNames((n) => n.filter((x) => x !== alt.name));
+      setExercises(nextExs);
+      setDeferred((d) => d.filter((k) => k !== key));
+      setFocus(newState.key);
+      setSwap(null);
+      fetchPrevious(alt.name);
+    },
+    [exercises, initData, sessionId, fetchPrevious, showNotice, tr]
   );
 
   const handleAddExercise = useCallback(
     (input: { name: string; muscleGroup: string | null }) => {
-      // Exercice déjà présent sous ce nom exact : une seconde carte
-      // partagerait les mêmes séries en base (le POST est idempotent sur
-      // exercice + numéro de série) et sa "Set 1" écraserait celle déjà
-      // faite. On ajoute plutôt une série à la carte existante.
-      const existingIdx = exercises.findIndex((e) => e.exercise.name === input.name);
-      if (existingIdx !== -1) {
-        setExercises((prev) =>
-          prev.map((e, i) => {
-            if (i !== existingIdx) return e;
-            const nextNumber = e.sets.reduce((max, st) => Math.max(max, st.setNumber), 0) + 1;
-            return {
-              ...e,
-              collapsed: false,
-              sets: [
-                ...e.sets,
-                {
-                  localId: newLocalId(),
-                  setNumber: nextNumber,
-                  weightKg: "",
-                  repsActual: "",
-                  rirActual: "",
-                  standardizationScore: "",
-                  validated: false,
-                  isPR: false,
-                  dbId: null,
-                  restDuration: null,
-                  hasVideo: false,
-                },
-              ],
-            };
-          })
-        );
+      // Déjà présent sous ce nom : une seconde carte partagerait les mêmes
+      // séries en base. On ajoute plutôt une série à la carte existante.
+      const existing = exercises.find((e) => e.exercise.name === input.name);
+      if (existing) {
+        handleAddSet(existing.key);
+        setFocus(existing.key);
         return;
       }
-      // 1 set pour démarrer — "Ajouter un set" permet d'en rajouter autant
-      // que voulu, mais imposer 3 d'office ne laissait aucun moyen de
-      // choisir moins pour une séance libre.
-      const defaultSets = 1;
-      const newExercise: Exercise = {
+      const newExercise: LiveExercise = {
         id: `local-${newLocalId()}`,
         day_id: "",
         name: input.name,
-        sets: defaultSets,
+        sets: 1,
         reps: null,
         rir: null,
         rest_seconds: null,
@@ -2482,217 +1473,222 @@ export default function SessionView({
         muscle_subgroup: null,
         is_direct: true,
       };
-      const sets: SetState[] = Array.from({ length: defaultSets }, (_, i) => ({
-        localId: newLocalId(),
-        setNumber: i + 1,
-        weightKg: "",
-        repsActual: "",
-        rirActual: "",
-        standardizationScore: "",
-        validated: false,
-        isPR: false,
-        dbId: null,
-        restDuration: null,
-        hasVideo: false,
-      }));
       setExercises((prev) => [
         ...prev,
-        {
-          exercise: newExercise,
-          sets,
-          showTips: false,
-          showHistory: false,
-          showNotes: false,
-          clientNotes: "",
-          collapsed: false,
-        },
+        { key: newExercise.id, exercise: newExercise, sets: [emptySet(1)], clientNotes: initData?.exerciseNotes[input.name] ?? "" },
       ]);
-      saveCustomExercises(sessionId, [...loadCustomExercises(sessionId), newExercise]);
+      setRemovedNames((n) => n.filter((x) => x !== input.name));
+      setFocus(newExercise.id);
+      fetchPrevious(input.name);
     },
-    [exercises, sessionId]
+    [exercises, handleAddSet, initData, fetchPrevious]
   );
 
-  // Retirer un exercice de la séance — n'affecte que la vue locale, les
-  // sets déjà validés (donc déjà enregistrés en base) le restent.
-  const handleRemoveExercise = useCallback(
-    (exIdx: number) => {
-      setExercises((prev) => {
-        const removed = prev[exIdx];
-        if (removed.exercise.id.startsWith("local-")) {
-          saveCustomExercises(
-            sessionId,
-            loadCustomExercises(sessionId).filter((e) => e.id !== removed.exercise.id)
-          );
-        }
-        return prev.filter((_, i) => i !== exIdx);
-      });
-    },
-    [sessionId]
-  );
-
-  // Retirer un set d'un exercice.
-  const handleRemoveSet = useCallback(
-    (exIdx: number, setIdx: number) => {
-      const removed = exercises[exIdx]?.sets[setIdx];
-      // Retirer une serie ne supprimait jamais la ligne deja enregistree en
-      // base : elle reapparaissait telle quelle au rechargement suivant.
-      // (Le bouton n'apparait que sur un set non valide, mais un set peut
-      // avoir ete devalide juste avant tout en gardant sa ligne en base.)
-      if (removed?.dbId) {
-        fetch(`/api/client/sessions/${sessionId}/sets/${removed.dbId}`, {
-          method: "DELETE",
+  // Note libre par exercice (client_exercise_notes) : écran tout de suite,
+  // enregistrement 800 ms après la dernière frappe.
+  const handleExerciseNotesChange = useCallback((key: string, exerciseName: string, notes: string) => {
+    const existing = noteSaveTimersRef.current.get(exerciseName);
+    if (existing) clearTimeout(existing);
+    noteSaveTimersRef.current.set(
+      exerciseName,
+      setTimeout(() => {
+        noteSaveTimersRef.current.delete(exerciseName);
+        fetch("/api/client/exercise-notes", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ exercise_name: exerciseName, note: notes }),
         }).catch(() => {});
-      }
-      setExercises((prev) => {
-        const next = [...prev];
-        next[exIdx] = {
-          ...next[exIdx],
-          sets: next[exIdx].sets.filter((_, i) => i !== setIdx),
-        };
-        return next;
-      });
-    },
-    [exercises, sessionId]
-  );
+      }, 800)
+    );
+    setExercises((prev) => prev.map((e) => (e.key === key ? { ...e, clientNotes: notes } : e)));
+  }, []);
 
-  // Dévalider un set déjà validé — repasse en mode édition, les valeurs
-  // saisies restent modifiables. La ligne en base est CONSERVEE : la route
-  // POST est idempotente sur (séance, exercice, numéro de série), donc
-  // revalider écrase la même ligne au lieu d'en créer une seconde. Avant,
-  // on supprimait tout de suite en base : cliquer sur le crayon puis
-  // quitter la séance sans revalider effaçait la série pour de bon, sans le
-  // moindre message.
-  const handleUnvalidateSet = useCallback((exIdx: number, setIdx: number) => {
-    setExercises((prev) => {
-      const next = [...prev];
-      const newSets = [...next[exIdx].sets];
-      newSets[setIdx] = {
-        ...newSets[setIdx],
-        validated: false,
-        isPR: false,
-        saveFailed: false,
-      };
-      next[exIdx] = { ...next[exIdx], sets: newSets };
-      return next;
+  // ── Vidéo d'une série ───────────────────────────────────────────────────────
+  const videoFilesRef = useRef<Map<string, { file: File; sendToCoach: boolean }>>(new Map());
+  const setVideo = useCallback((localId: string, patch: Partial<VideoState> | null) => {
+    setVideoStates((cur) => {
+      if (patch === null) {
+        const next = { ...cur };
+        delete next[localId];
+        return next;
+      }
+      const base: VideoState = cur[localId] ?? { status: "uploading", progress: null, sendToCoach: false };
+      return { ...cur, [localId]: { ...base, ...patch } };
     });
   }, []);
 
-  // Réordonner les exercices de la séance (flèches haut/bas) — persisté pour
-  // survivre à un refresh, sans toucher à l'ordre défini dans le programme.
-  const handleMoveExercise = useCallback(
-    (exIdx: number, dir: -1 | 1) => {
-      setExercises((prev) => {
-        const target = exIdx + dir;
-        if (target < 0 || target >= prev.length) return prev;
-        const next = [...prev];
-        [next[exIdx], next[target]] = [next[target], next[exIdx]];
-        saveExerciseOrder(sessionId, next.map((e) => e.exercise.id));
-        return next;
-      });
+  const handleFilm = useCallback(
+    (key: string, localId: string, file: File) => {
+      if (!isProbablyVideo(file)) {
+        showNotice(tr("Ce fichier n'est pas une vidéo."));
+        return;
+      }
+      if (file.size > MAX_VIDEO_BYTES) {
+        showNotice(`${tr("Vidéo trop lourde")} (${formatBytes(file.size)}, ${tr("100 Mo maximum")}). ${tr("Filme juste la série.")}`);
+        return;
+      }
+      setVideoDraft({ key, localId, file, url: URL.createObjectURL(file) });
     },
-    [sessionId]
+    [showNotice, tr]
   );
 
-  // Notes libres du client sur un exercice — persistées en base
-  // (client_exercise_notes, toujours la même quelle que soit la séance) ET
-  // jointes aux sets envoyés pour rester visibles côté coach dans l'export.
-  // PATCH débouncé à 800ms : la frappe met à jour l'écran tout de suite,
-  // l'enregistrement réseau suit une fois que le client a fini d'écrire.
-  const handleExerciseNotesChange = useCallback(
-    (exIdx: number, exerciseName: string, notes: string) => {
-      const existing = noteSaveTimersRef.current.get(exerciseName);
-      if (existing) clearTimeout(existing);
-      noteSaveTimersRef.current.set(
-        exerciseName,
-        setTimeout(() => {
-          noteSaveTimersRef.current.delete(exerciseName);
-          fetch("/api/client/exercise-notes", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ exercise_name: exerciseName, note: notes }),
-          }).catch(() => {});
-        }, 800)
-      );
-      setExercises((prev) => {
-        const next = [...prev];
-        next[exIdx] = { ...next[exIdx], clientNotes: notes };
-        return next;
-      });
+  const closeVideoDraft = useCallback(() => {
+    setVideoDraft((d) => {
+      if (d) URL.revokeObjectURL(d.url);
+      return null;
+    });
+  }, []);
+
+  const findSet = (key: string, localId: string) => {
+    const ex = exercisesRef.current.find((e) => e.key === key);
+    const idx = ex ? ex.sets.findIndex((s) => s.localId === localId) : -1;
+    return ex && idx !== -1 ? { ex, set: ex.sets[idx], position: idx + 1 } : null;
+  };
+
+  const sendVideoToCoach = useCallback(
+    async (key: string, localId: string) => {
+      const found = findSet(key, localId);
+      if (!found?.set.dbId) return;
+      setVideo(localId, { status: "sending", progress: null, sendToCoach: true, error: undefined });
+      try {
+        const res = await fetch(`/api/client/sessions/${sessionId}/sets/${found.set.dbId}/send-video`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ position: found.position }),
+        });
+        const json = (await res.json().catch(() => ({}))) as { error?: string; sentAt?: string };
+        if (!res.ok) throw new Error(json.error || tr("Envoi au coach impossible, réessaie."));
+        setExercises((prev) => patchSetIn(prev, localId, { videoSentAt: json.sentAt ?? new Date().toISOString() }));
+        setVideo(localId, { status: "sent", error: undefined });
+        videoFilesRef.current.delete(localId);
+        showNotice(tr("Vidéo envoyée à ton coach."));
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : tr("Envoi au coach impossible, réessaie.");
+        setVideo(localId, { status: "error", error: msg });
+        showNotice(msg);
+      }
     },
-    []
+    [sessionId, setVideo, showNotice, tr]
   );
 
-  // Compute volume per muscle group
+  const uploadVideo = useCallback(
+    async (key: string, localId: string) => {
+      const entry = videoFilesRef.current.get(localId);
+      const found = findSet(key, localId);
+      if (!entry || !found || !initData) return;
+      setVideo(localId, { status: "uploading", progress: 0, sendToCoach: entry.sendToCoach, error: undefined });
+      try {
+        // Filmer AVANT de valider est l'ordre logique en salle : la ligne de
+        // la série est créée sans la valider, juste pour y rattacher la vidéo.
+        const dbId = found.set.dbId ?? (await persistSet(found.ex, found.set, found.set.validated));
+        if (!dbId) throw new Error(tr("Série pas encore enregistrée, vérifie ta connexion."));
+        const type = normalizeVideoType(entry.file);
+        const path = `${initData.session.client_id}/${sessionId}/${dbId}-${Date.now()}.${videoExtension(type)}`;
+        await uploadSetVideo(path, entry.file, (p) => setVideo(localId, { progress: p }));
+        const res = await fetch(`/api/client/sessions/${sessionId}/sets/${dbId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ video_url: path }),
+        });
+        if (!res.ok) throw new Error(tr("Vidéo envoyée mais pas rattachée à la série, réessaie."));
+        setExercises((prev) => patchSetIn(prev, localId, { hasVideo: true, dbId }));
+        if (entry.sendToCoach) {
+          await sendVideoToCoach(key, localId);
+        } else {
+          setVideo(localId, { status: "uploaded", progress: 1 });
+          videoFilesRef.current.delete(localId);
+          showNotice(tr("Vidéo enregistrée avec ta série."));
+        }
+      } catch (e) {
+        const msg = e instanceof Error && e.message ? e.message : tr("Échec de l'envoi de la vidéo, réessaie.");
+        setVideo(localId, { status: "error", error: msg });
+        showNotice(msg);
+      }
+    },
+    [initData, sessionId, persistSet, sendVideoToCoach, setVideo, showNotice, tr]
+  );
+
+  const confirmVideo = useCallback(
+    (sendToCoach: boolean) => {
+      if (!videoDraft) return;
+      videoFilesRef.current.set(videoDraft.localId, { file: videoDraft.file, sendToCoach });
+      const { key, localId } = videoDraft;
+      closeVideoDraft();
+      void uploadVideo(key, localId);
+    },
+    [videoDraft, closeVideoDraft, uploadVideo]
+  );
+
+  const retryVideo = useCallback(
+    (key: string, localId: string) => {
+      const found = findSet(key, localId);
+      if (found?.set.hasVideo) {
+        void sendVideoToCoach(key, localId);
+      } else if (videoFilesRef.current.has(localId)) {
+        void uploadVideo(key, localId);
+      } else {
+        setVideo(localId, null);
+        showNotice(tr("Vidéo perdue (appli fermée pendant l'envoi) : refilme ta série."));
+      }
+    },
+    [sendVideoToCoach, uploadVideo, setVideo, showNotice, tr]
+  );
+
+  // ── Dérivés ─────────────────────────────────────────────────────────────────
   const volumeByMuscle: Record<string, number> = {};
   for (const ex of exercises) {
     const mg = ex.exercise.muscle_group;
     if (!mg) continue;
     const validated = ex.sets.filter((s) => s.validated).length;
-    if (validated > 0) {
-      volumeByMuscle[mg] = (volumeByMuscle[mg] ?? 0) + validated;
-    }
+    if (validated > 0) volumeByMuscle[mg] = (volumeByMuscle[mg] ?? 0) + validated;
   }
-
-  // Average RIR of all validated sets
-  const validatedSets = exercises.flatMap((ex) =>
-    ex.sets.filter((s) => s.validated && s.rirActual !== "")
-  );
+  const validatedSets = exercises.flatMap((ex) => ex.sets.filter((s) => s.validated && s.rirActual !== ""));
   const avgRIR =
     validatedSets.length > 0
-      ? validatedSets.reduce((s, v) => s + parseInt(v.rirActual || "0"), 0) /
-        validatedSets.length
+      ? validatedSets.reduce((s, v) => s + parseInt(v.rirActual || "0"), 0) / validatedSets.length
       : null;
 
-  // PRs from this session : un seul par exercice (la série la plus lourde),
-  // et seulement s'il bat le record en base. Avant, TOUTES les séries
-  // marquées PR partaient à /complete, d'où les doublons dans
-  // personal_records. Séance déjà terminée : ses propres records sont dans
-  // prMap, on relit donc les drapeaux enregistrés (dédoublonnés).
+  // Un seul record par exercice (la série la plus lourde), et seulement s'il
+  // bat le record en base. Séance déjà terminée : drapeaux enregistrés.
   const sessionRecords = computeSessionRecords(exercises, initData?.prMap ?? {});
-  const supersetTagsForSession = supersetLabels(exercises.map((e) => e.exercise.superset_group ?? null));
   const sessionPRs = (
     initData?.session.is_completed ? recordsFromFlags(exercises) : [...sessionRecords.values()]
   ).map((r) => ({ exerciseName: r.exerciseName, weightKg: r.weightKg, reps: r.reps }));
 
   const [canceling, setCanceling] = useState(false);
 
-  // Abandonner une séance de test/erreur sans rien enregistrer — jusqu'ici
-  // seul "Terminer" existait, qui sauvegarde toujours tout.
+  // Abandonner une séance de test/erreur sans rien enregistrer.
   const handleCancelSession = useCallback(async () => {
     if (!(await confirm("Annuler cette séance ? Rien ne sera enregistré."))) return;
     setCanceling(true);
     try {
       await fetch(`/api/client/sessions/${sessionId}`, { method: "DELETE" });
     } catch {
-      // best-effort — on quitte quand même, la séance restera visible comme
-      // "en cours" au pire, sans bloquer l'utilisateur.
+      // best-effort : on quitte quand même
     }
-    localStorage.removeItem(`ep-session-start-${sessionId}`);
-    localStorage.removeItem(`ep-warmup-start-${sessionId}`);
-    localStorage.removeItem(customExercisesKey(sessionId));
-    localStorage.removeItem("ep-active-session-id");
-    clearRestTimer(sessionId);
+    pendingServerRef.current = null;
+    clearSessionLocal(sessionId);
     router.push(returnPath);
   }, [sessionId, returnPath, router, confirm]);
+
+  const goToRecap = useCallback(() => {
+    // Referme le repos du dernier set : sans set suivant, sa durée ne serait
+    // jamais enregistrée.
+    closeRest();
+    flushServer();
+    setSessionElapsed(sessionStart > 0 ? Math.floor((Date.now() - sessionStart) / 1000) : 0);
+    setStep("recap");
+    window.scrollTo({ top: 0 });
+  }, [closeRest, flushServer, sessionStart]);
 
   const handleCompleteSession = useCallback(async () => {
     setSaving(true);
     try {
-      // Build workout data summary (one entry per exercise)
       const workoutData = exercises.map((ex) => {
         const validated = ex.sets.filter((s) => s.validated);
-        const validatedWithRIR = validated.filter((s) => s.rirActual !== "");
-        const avgRirEx =
-          validatedWithRIR.length > 0
-            ? validatedWithRIR.reduce(
-                (s, v) => s + parseInt(v.rirActual || "0"),
-                0
-              ) / validatedWithRIR.length
-            : null;
-        const maxWeight = validated
-          .map((s) => parseFloat(s.weightKg) || 0)
-          .reduce((a, b) => Math.max(a, b), 0);
-
+        const withRIR = validated.filter((s) => s.rirActual !== "");
+        const avgRirEx = withRIR.length > 0 ? withRIR.reduce((s, v) => s + parseInt(v.rirActual || "0"), 0) / withRIR.length : null;
+        const maxWeight = validated.map((s) => parseFloat(s.weightKg) || 0).reduce((a, b) => Math.max(a, b), 0);
         return {
           exerciseName: ex.exercise.name,
           muscleGroup: ex.exercise.muscle_group ?? "",
@@ -2713,9 +1709,6 @@ export default function SessionView({
           energy_level: energy,
           pump,
           notes: sessionNotes,
-          // Recalculé ici depuis les séries validées plutôt que lu dans
-          // sessionPRs : même résultat (un record par exercice, au-dessus
-          // de prMap), sans dépendre d'une valeur dérivée d'une Map.
           prs: [...computeSessionRecords(exercises, initData?.prMap ?? {}).values()].map((r) => ({
             exerciseName: r.exerciseName,
             weightKg: r.weightKg,
@@ -2724,51 +1717,26 @@ export default function SessionView({
           workoutData,
         }),
       });
-      // La réponse n'était jamais lue : sur une erreur serveur, l'écran
-      // effaçait la séance en cours et repartait au logbook comme si tout
-      // était sauvegardé. On reste sur le récap, rien n'est perdu.
+      // Erreur serveur : on reste sur le récap, rien n'est perdu.
       if (!res.ok) {
         setCompleteError("La séance n'a pas pu être sauvegardée. Réessaie.");
         setSaving(false);
         return;
       }
-
-      // Séance sauvegardée : un stockage local inaccessible ne doit pas
-      // faire croire le contraire (le catch plus bas parle de connexion).
-      try {
-        localStorage.removeItem(`ep-session-start-${sessionId}`);
-        localStorage.removeItem(`ep-warmup-start-${sessionId}`);
-        localStorage.removeItem(customExercisesKey(sessionId));
-        localStorage.removeItem("ep-active-session-id");
-      } catch {}
-      clearRestTimer(sessionId);
+      pendingServerRef.current = null;
+      clearSessionLocal(sessionId);
       router.push(returnPath);
     } catch {
       setCompleteError("Pas de connexion, la séance n'est pas encore sauvegardée. Réessaie.");
       setSaving(false);
     }
-  }, [
-    exercises,
-    sessionId,
-    sessionElapsed,
-    feeling,
-    energy,
-    pump,
-    sessionNotes,
-    initData,
-    router,
-    returnPath,
-  ]);
+  }, [exercises, sessionId, sessionElapsed, feeling, energy, pump, sessionNotes, initData, router, returnPath]);
 
   const [reopening, setReopening] = useState(false);
   const [reopenError, setReopenError] = useState<string | null>(null);
 
-  // "Faut un bouton retour en arrière" (note laissée sur une séance "Pull",
-  // 2026-09-09) : jusqu'ici, une fois "Terminer" cliqué par erreur, c'était
-  // définitif — seul moyen de corriger était de contacter le coach. Défait
-  // précisément ce que /complete a produit (PR, volume, points), sans jamais
-  // toucher aux sets déjà tapés (session_sets) : ils restent là, prêts à
-  // être corrigés puis revalidés. Voir app/api/client/sessions/[id]/reopen.
+  // Rouvrir une séance terminée par erreur (le jour même) : défait le récap
+  // (PR, volume, points), les séries restent. Voir .../reopen.
   const handleReopenSession = useCallback(async () => {
     if (!(await confirm("Rouvrir cette séance ? Le récap (PR, volume, points) sera annulé, tes sets restent."))) return;
     setReopening(true);
@@ -2781,10 +1749,6 @@ export default function SessionView({
         setReopening(false);
         return;
       }
-      // Rechargement complet plutôt qu'un simple router.refresh() : session,
-      // exercises, existingSets... sont tous chargés une seule fois au
-      // montage dans du state local (pas des Server Components), un refresh
-      // Next.js seul ne les referait pas repasser par le fetch initial.
       window.location.reload();
     } catch {
       setReopenError("Erreur, réessaie.");
@@ -3071,7 +2035,7 @@ export default function SessionView({
                       ] ?? { mev: 8, mav: 16, mrv: 22 };
                       const sets = entry.sets;
                       const color =
-                        sets < lm.mev ? "#ef4444" : sets <= lm.mav ? "var(--ep-ok)" : "var(--ep-warn)";
+                        sets < lm.mev ? "var(--ep-bad)" : sets <= lm.mav ? "var(--ep-ok)" : "var(--ep-warn)";
                       return <Cell key={i} fill={color} />;
                     })}
                   </Bar>
@@ -3098,7 +2062,7 @@ export default function SessionView({
                       <Cell
                         key={i}
                         fill={
-                          entry.rir <= 1 ? "#ef4444" : entry.rir <= 3 ? "var(--ep-ok)" : "var(--ep-info)"
+                          entry.rir <= 1 ? "var(--ep-bad)" : entry.rir <= 3 ? "var(--ep-ok)" : "var(--ep-info)"
                         }
                       />
                     ))}
@@ -3125,7 +2089,7 @@ export default function SessionView({
                       <Cell
                         key={i}
                         fill={
-                          entry.score < 3 ? "#ef4444" : entry.score < 4 ? "var(--ep-warn)" : "var(--ep-ok)"
+                          entry.score < 3 ? "var(--ep-bad)" : entry.score < 4 ? "var(--ep-warn)" : "var(--ep-ok)"
                         }
                       />
                     ))}
@@ -3197,205 +2161,225 @@ export default function SessionView({
     );
   }
 
+
   // ── SESSION ──────────────────────────────────────────────────────────────────
-  const totalSetsAll = exercises.flatMap((e) => e.sets.filter((s) => s.validated)).length;
-  const musclesBeingTrained = Object.keys(volumeByMuscle);
-  // Accessoires à prévoir : UNIQUEMENT le bagage choisi explicitement par
-  // exercice (exercise_library.accessories) — plus aucune devinette par
-  // mots-clés affichée ici depuis le 2026-09-10, voir lib/session-accessories.ts.
+  const totalSetsAll = exercises.reduce((n, e) => n + e.sets.length, 0);
+  const doneSetsAll = exercises.reduce((n, e) => n + e.sets.filter((s) => s.validated).length, 0);
+  const groups = exercises.map((e) => e.exercise.superset_group ?? null);
+  const tags = supersetLabels(groups);
+  const blocks = blocksOf(exercises);
+  // Accessoires à prévoir : uniquement le bagage choisi explicitement par
+  // exercice (exercise_library.accessories), voir lib/session-accessories.ts.
   const sessionAccessories = accessoriesForSession(
     exercises.map((e) => e.exercise.name),
-    initData?.accessoriesByName
+    initData.accessoriesByName
   );
 
-  return (
-    <div className="pb-32">
-      {/* Fixed header */}
-      <div className="sticky top-0 z-30 bg-(--ep-s2) border-b border-(--ep-line)/30 px-4 py-3">
-        <div className="max-w-2xl mx-auto">
-          {/* Top row: session timer + day label */}
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
-                {session.day_label}
-              </p>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <Clock size={12} style={{ color: restTimer ? "var(--ep-yellow)" : "var(--ep-accent)" }} />
-                {/* Retour direct 2026-09-17 : "change subtilement la couleur
-                    du temps total dès que le set est fini et dès qu'on
-                    reprend, comme ça pas besoin de valider le repos, 0 clic
-                    juste regarder". Le temps total change de couleur au lieu
-                    d'ouvrir un questionnaire à valider — le badge de repos
-                    juste à côté donne le détail pour qui veut le temps exact. */}
-                <span
-                  className="text-lg font-black tabular-nums transition-colors"
-                  style={{ color: restTimer ? "var(--ep-yellow)" : "var(--ep-strong)" }}
-                >
-                  {formatTime(sessionElapsed)}
-                </span>
-                {restTimer && <RestTimerBadge timer={restTimer} />}
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-[9px] text-(--ep-ink)/35 uppercase tracking-wider">
-                {totalSetsAll}{" "}{tr("sets validés")}
-              </p>
-              {avgRIR != null && (
-                <p className="text-[9px] text-(--ep-ink)/35">
-                  {tr("RIR moy.")}{" "}
-                  <span className="font-black text-(--ep-strong)">
-                    {Math.round(avgRIR * 10) / 10}
-                  </span>
-                </p>
-              )}
-              <button
-                onClick={handleCancelSession}
-                disabled={canceling}
-                className="text-[9px] font-bold uppercase tracking-wider text-(--ep-ink)/25 hover:text-red-400 transition-colors mt-1 disabled:opacity-50"
-              >
-                {canceling ? tr("Annulation…") : tr("Annuler")}
-              </button>
-            </div>
-          </div>
+  // Prochaine série à faire, affichée dans la barre du bas.
+  const focusedEx = exercises.find((e) => e.key === focus) ?? exercises.find(hasOpenSet) ?? null;
+  const nextSetIdx = focusedEx ? focusedEx.sets.findIndex((s) => !s.validated) : -1;
+  const nextLabel =
+    focusedEx && nextSetIdx !== -1
+      ? `${tr("Ensuite :")} ${focusedEx.exercise.name} · ${tr("série")} ${nextSetIdx + 1}/${focusedEx.sets.length}`
+      : doneSetsAll > 0
+        ? tr("Toutes tes séries sont faites, bravo !")
+        : null;
 
-          {/* Volume gauges */}
-          {musclesBeingTrained.length > 0 && (
-            <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(musclesBeingTrained.length, 3)}, 1fr)` }}>
-              {musclesBeingTrained.slice(0, 3).map((mg) => (
-                <VolumeGauge key={mg} muscleGroup={mg} sets={volumeByMuscle[mg]} />
-              ))}
+  const swapEx = swap ? exercises.find((e) => e.key === swap.key) ?? null : null;
+  const swapIdx = swapEx ? exercises.indexOf(swapEx) : -1;
+  const swapBlock = swapIdx !== -1 ? blocks.findIndex((bl) => bl.includes(swapIdx)) : -1;
+  const videoDraftCaption = (() => {
+    if (!videoDraft) return "";
+    const ex = exercises.find((e) => e.key === videoDraft.key);
+    const idx = ex ? ex.sets.findIndex((s) => s.localId === videoDraft.localId) : -1;
+    return ex ? `${ex.exercise.name} · ${tr("série")} ${idx + 1}` : "";
+  })();
+
+  const renderBlock = (exIdx: number) => {
+    const exState = exercises[exIdx];
+    const isLast = isLastOfSuperset(groups, exIdx);
+    return (
+      <ExerciseBlock
+        key={exState.key}
+        ex={exState}
+        focused={focus === exState.key}
+        deferred={deferred.includes(exState.key)}
+        supersetTag={tags[exIdx] ?? null}
+        chainNextName={exState.exercise.superset_group && !isLast ? exercises[exIdx + 1]?.exercise.name ?? null : null}
+        prevSets={prevSetsFor(exState.exercise.name)}
+        prevWeight={prevWeightFor(exState.exercise.name)}
+        recordHolderId={sessionRecords.get(exState.exercise.name.toLowerCase())?.localId ?? null}
+        getPrThreshold={(excludeLocalId) => getEffectiveThreshold(exState.exercise.name, excludeLocalId)}
+        libraryTip={initData.libraryByName[exState.exercise.name.toLowerCase()]}
+        videoStates={videoStates}
+        hasCoach={!!initData.hasCoach}
+        canMoveUp={exIdx > 0}
+        canMoveDown={exIdx < exercises.length - 1}
+        onFocus={() => setFocus((f) => (f === exState.key ? null : exState.key))}
+        onSetChange={(setIdx, patch) => handleSetChange(exState.sets[setIdx].localId, patch)}
+        onValidateSet={(setIdx, values) => handleValidateSet(exIdx, setIdx, values)}
+        onEditSet={(setIdx) => handleEditSet(exState.sets[setIdx].localId)}
+        onRemoveSet={(setIdx) => handleRemoveSet(exState.key, exState.sets[setIdx].localId)}
+        onAddSet={() => handleAddSet(exState.key)}
+        onRetrySave={(setIdx) => void persistSet(exState, exState.sets[setIdx])}
+        onBusy={() => setSwap({ mode: "busy", key: exState.key })}
+        onReplace={() => setSwap({ mode: "replace", key: exState.key })}
+        onRemove={() => void handleRemoveExercise(exState.key)}
+        onMove={(dir) => handleMoveExercise(exState.key, dir)}
+        onNotesChange={(notes) => handleExerciseNotesChange(exState.key, exState.exercise.name, notes)}
+        onFilm={(setIdx, file) => handleFilm(exState.key, exState.sets[setIdx].localId, file)}
+        onRetryVideo={(setIdx) => retryVideo(exState.key, exState.sets[setIdx].localId)}
+        onSendVideo={(setIdx) => void sendVideoToCoach(exState.key, exState.sets[setIdx].localId)}
+        onPause={handlePause}
+      />
+    );
+  };
+
+  return (
+    <div className="pb-48">
+      {/* En-tête : la séance, la progression, rien d'autre. */}
+      <div className="sticky top-0 z-30 bg-(--ep-s2) border-b border-(--ep-line)/25 px-3 pt-2 pb-2">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black uppercase tracking-tight text-(--ep-strong) truncate">{session.day_label}</p>
+              <p className="text-[11px] text-(--ep-ink)/50 tabular-nums">
+                {doneSetsAll}/{totalSetsAll} {tr("séries")}
+                {avgRIR != null ? ` · ${tr("RIR moy.")} ${Math.round(avgRIR * 10) / 10}` : ""}
+              </p>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={handleCancelSession}
+              disabled={canceling}
+              className="h-11 px-2 text-[10px] font-bold uppercase tracking-wider text-(--ep-ink)/40 disabled:opacity-50"
+            >
+              {canceling ? tr("Annulation…") : tr("Annuler")}
+            </button>
+
+          </div>
+          <div className="mt-1.5 h-1 rounded-full bg-(--ep-line)/20 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-(--ep-accent) transition-[width] duration-300"
+              style={{ width: `${totalSetsAll > 0 ? (doneSetsAll / totalSetsAll) * 100 : 0}%` }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* À prévoir : accessoires déduits des exercices de la séance (demande
-          directe 2026-09-08). Rien ne s'affiche si aucun exercice ne le
-          justifie, plutôt qu'une carte vide. */}
-      {sessionAccessories.length > 0 && (
-        <div className="px-4 pt-5 max-w-2xl mx-auto">
-          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3">
-            <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
-              <Backpack size={11} />{" "}{tr("À prévoir pour cette séance")}
-            </p>
-            {/* La raison est affichée, pas cachée dans un title : sur mobile le
-                survol n'existe pas, et sans le pourquoi la liste n'est qu'un
-                nom de produit de plus. */}
-            <ul className="space-y-2">
-              {sessionAccessories.map((a) => {
-                // ALWAYS_ACCESSORIES (trépied, shaker) n'ont ni fiche produit
-                // ni exercice à justifier (lib/session-accessories.ts) : pas
-                // de lien cliquable ni de ligne "Pour ...".
-                const content = (
-                  <>
-                    <span className="flex items-center gap-1 text-[12.5px] font-bold text-(--ep-strong) group-hover:text-(--ep-accent) transition-colors">
-                      {a.accessory}
-                      {a.url && <ExternalLink size={10} className="text-(--ep-ink)/30" />}
-                    </span>
-                    <span className="block text-[11px] text-(--ep-ink)/45 leading-snug">{a.reason}</span>
-                    {a.forExercises.length > 0 && (
-                      <span className="block text-[10px] text-(--ep-ink)/25 mt-0.5">
-                        {tr("Pour")}{" "}{a.forExercises.slice(0, 3).join(", ")}
-                      </span>
-                    )}
-                  </>
-                );
-                return (
+      <div className="px-3 pt-3 max-w-2xl mx-auto space-y-2">
+        {/* À prévoir : replié en une ligne, déplié au tap. */}
+        {sessionAccessories.length > 0 && (
+          <div className="rounded-2xl border border-(--ep-line)/20 bg-(--ep-s1)">
+            <button
+              type="button"
+              onClick={() => setAccessoriesOpen((v) => !v)}
+              aria-expanded={accessoriesOpen}
+              className="w-full min-h-11 flex items-center gap-2 px-3 text-left"
+            >
+              <Backpack size={14} className="text-(--ep-ink)/45 shrink-0" />
+              <span className="flex-1 min-w-0 truncate text-[12px] font-bold text-(--ep-ink)/70">
+                {tr("À prévoir :")} {sessionAccessories.map((a) => a.accessory).join(", ")}
+              </span>
+              <ChevronDown size={14} className="text-(--ep-ink)/35 shrink-0" style={{ transform: accessoriesOpen ? "rotate(180deg)" : undefined }} />
+            </button>
+            {accessoriesOpen && (
+              <ul className="px-3 pb-3 space-y-2">
+                {sessionAccessories.map((a) => (
                   <li key={a.accessory}>
                     {a.url ? (
-                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="block group">
-                        {content}
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[12px] font-bold text-(--ep-strong)">
+                        {a.accessory}
+                        <ExternalLink size={10} className="text-(--ep-ink)/30" />
                       </a>
                     ) : (
-                      <div className="block">{content}</div>
+                      <span className="text-[12px] font-bold text-(--ep-strong)">{a.accessory}</span>
                     )}
+                    <span className="block text-[11px] text-(--ep-ink)/45 leading-snug">{a.reason}</span>
                   </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {/* Exercise cards */}
-      <div className="px-4 pt-5 max-w-2xl mx-auto space-y-4">
-        {exercises.length === 0 && (
-          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-5 py-8 text-center">
-            <p className="text-sm text-(--ep-ink)/40">
-              {tr("Séance libre, ajoute tes exercices ci-dessous")}
-            </p>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
-        {exercises.map((exState, exIdx) => (
-          <ExerciseCard
-            key={exState.exercise.id}
-            exState={exState}
-            supersetTag={supersetTagsForSession[exIdx] ?? null}
-            chainNextName={
-              exState.exercise.superset_group && !isLastOfSuperset(exercises.map((e) => e.exercise.superset_group ?? null), exIdx)
-                ? exercises[exIdx + 1]?.exercise.name ?? null
-                : null
-            }
-            prevWeight={
-              initData.prevWeights[exState.exercise.name.toLowerCase()] ?? null
-            }
-            prevSets={initData.prevSets[exState.exercise.name.toLowerCase()] ?? []}
-            getPrThreshold={(excludeLocalId) =>
-              getEffectiveThreshold(exState.exercise.name, excludeLocalId)
-            }
-            recordHolderId={
-              sessionRecords.get(exState.exercise.name.toLowerCase())?.localId ?? null
-            }
-            libraryTip={initData.libraryByName[exState.exercise.name.toLowerCase()]}
-            sessionId={sessionId}
-            onUpdate={(patch) =>
-              setExercises((prev) => {
-                const next = [...prev];
-                next[exIdx] = { ...next[exIdx], ...patch };
-                return next;
-              })
-            }
-            onValidateSet={(setIdx) => handleValidateSet(exIdx, setIdx)}
-            onUnvalidateSet={(setIdx) => handleUnvalidateSet(exIdx, setIdx)}
-            onRetrySaveSet={(setIdx) => handleRetrySaveSet(exIdx, setIdx)}
-            onRemoveExercise={() => handleRemoveExercise(exIdx)}
-            onRemoveSet={(setIdx) => handleRemoveSet(exIdx, setIdx)}
-            onEnsureSetId={(setIdx) => handleEnsureSetSaved(exIdx, setIdx)}
-            onMoveUp={exIdx > 0 ? () => handleMoveExercise(exIdx, -1) : undefined}
-            onMoveDown={exIdx < exercises.length - 1 ? () => handleMoveExercise(exIdx, 1) : undefined}
-            onNotesChange={(notes) => handleExerciseNotesChange(exIdx, exState.exercise.name, notes)}
-          />
-        ))}
+        {exercises.length === 0 && (
+          <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-2xl px-5 py-8 text-center">
+            <p className="text-sm text-(--ep-ink)/50">{tr("Séance libre, ajoute tes exercices ci-dessous")}</p>
+          </div>
+        )}
 
-        <ExercisePicker onAdd={handleAddExercise} />
-      </div>
+        {blocks.map((bl) => {
+          if (bl.length === 1) return <Fragment key={exercises[bl[0]].key}>{renderBlock(bl[0])}</Fragment>;
+          const letter = (tags[bl[0]] ?? "").replace(/\d+$/, "");
+          return (
+            <div
+              key={`ss-${exercises[bl[0]].key}`}
+              className="rounded-2xl border border-dashed border-(--ep-accent)/35 p-1.5 space-y-1.5"
+            >
+              <p className="px-1.5 pt-0.5 text-[10px] font-black uppercase tracking-widest text-(--ep-accent)">
+                {bl.length > 2 ? tr("Circuit") : tr("Superset")} {letter}
+                <span className="ml-1.5 normal-case tracking-normal font-bold text-(--ep-ink)/45">
+                  {tr("enchaîne sans repos, repos après le dernier")}
+                </span>
+              </p>
+              {bl.map((i) => renderBlock(i))}
+            </div>
+          );
+        })}
 
-      {/* Terminate button (fixed bottom) — décalé au-dessus de la nav mobile
-          (72px + safe-area) avec un z-index supérieur, sinon le bas du
-          bouton se retrouvait caché sous la barre d'onglets. */}
-      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+84px)] md:bottom-4 left-0 right-0 px-4 z-50">
-        <div className="max-w-md mx-auto">
-          <button
-            onClick={() => {
-              // Referme le chrono de repos du dernier set validé — sans set
-              // suivant pour le déclencher, sa durée ne serait sinon jamais
-              // persistée (voir closeRestTimer).
-              if (restTimer) {
-                closeRestTimer(restTimer, Math.floor((Date.now() - restTimer.startedAt) / 1000));
-                setRestTimer(null);
-                clearRestTimer(sessionId);
-              }
-              setStep("recap");
-            }}
-            className="ep-btn-primary w-full"
-            style={{ padding: "14px 24px", fontSize: 12, borderRadius: 12 }}
-          >
-            {tr("Terminer la séance →")}
-          </button>
+        <div className="pt-1">
+          <ExercisePicker onAdd={handleAddExercise} />
         </div>
       </div>
 
+      {notice && (
+        <div className="fixed left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+150px)] md:bottom-24 z-[60] px-4 pointer-events-none">
+          <p
+            role="status"
+            className="max-w-md mx-auto rounded-xl px-3.5 py-2.5 text-xs font-bold text-(--ep-strong) bg-(--ep-s4) border border-(--ep-line)/35 shadow-[0_8px_24px_rgba(var(--ep-shade-rgb),0.4)]"
+          >
+            {notice}
+          </p>
+        </div>
+      )}
+
+      <RestBar
+        rest={rest}
+        sessionStart={sessionStart}
+        doneSets={doneSetsAll}
+        totalSets={totalSetsAll}
+        nextLabel={nextLabel}
+        onAdjust={(delta) => setRest((r) => (r ? { ...r, seconds: Math.max(5, r.seconds + delta) } : r))}
+        onSkip={closeRest}
+        onFinish={goToRecap}
+      />
+
+      {swap && swapEx && (
+        <SwapSheet
+          mode={swap.mode}
+          exerciseName={swapEx.exercise.name}
+          muscleGroup={swapEx.exercise.muscle_group}
+          muscleSubgroup={swapEx.exercise.muscle_subgroup}
+          doneSets={swapEx.sets.filter((s) => s.validated).length}
+          canDefer={swapBlock !== -1 && swapBlock < blocks.length - 1}
+          excludeNames={exercises.map((e) => e.exercise.name)}
+          onDefer={() => handleDefer(swapEx.key)}
+          onPick={(alt) => handleReplace(swapEx.key, alt)}
+          onClose={() => setSwap(null)}
+        />
+      )}
+
+      {videoDraft && (
+        <VideoSheet
+          file={videoDraft.file}
+          url={videoDraft.url}
+          caption={videoDraftCaption}
+          hasCoach={!!initData.hasCoach}
+          onConfirm={confirmVideo}
+          onClose={closeVideoDraft}
+        />
+      )}
     </div>
   );
 }

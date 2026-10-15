@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
-// PATCH — completer un set deja enregistre : duree de repos, et chemin de la
+// PATCH : completer un set deja enregistre, duree de repos, et chemin de la
 // video filmee pendant la serie. La duree de repos n'est connue qu'a la
 // fermeture du chrono, donc APRES l'enregistrement du set. Faute de cette route, la colonne
 // rest_duration_seconds n'a jamais ete remplie une seule fois en base

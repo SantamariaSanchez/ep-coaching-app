@@ -6,6 +6,7 @@ import { getActiveProgram } from "@/utils/programs";
 import type { Session, SessionSet, PersonalRecord } from "@/utils/sessions";
 import type { Exercise } from "@/utils/programs";
 import { loadPreviousForNames } from "@/lib/session-previous";
+import { getProfile } from "@/utils/auth";
 
 interface InitData {
   session: Session;
@@ -36,6 +37,9 @@ interface InitData {
   // "Détail des séries" du récap (video_url en base n'est qu'un chemin de
   // stockage, pas une adresse lisible).
   videoUrlsBySetId: Record<string, string>;
+  // Bouton « Envoyer au coach » des vidéos de série : seulement avec un
+  // coach (autre que soi-même, cas du fondateur en double rôle).
+  hasCoach: boolean;
 }
 
 // Noms des exercices ajoutés ou remplaçants mémorisés dans l'état de séance
@@ -259,6 +263,9 @@ export async function GET(
     }
   }
 
+  const profile = await getProfile(guard.userId);
+  const hasCoach = !!profile?.coach_id && profile.coach_id !== guard.userId;
+
   const result: InitData = {
     session: sess,
     exercises,
@@ -270,6 +277,7 @@ export async function GET(
     accessoriesByName,
     exerciseNotes,
     videoUrlsBySetId,
+    hasCoach,
   };
 
   return NextResponse.json(result);
