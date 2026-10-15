@@ -69,7 +69,9 @@ export async function rewardReferrerForNewPayment(referredUserId: string): Promi
     await applyPendingRewardsFor(referrerId);
 
     const referredName = (referred as { full_name: string | null } | null)?.full_name ?? "Un ami";
-    notifyUser(referrerId, {
+    // Attendu : cette fonction tourne déjà dans un after() (webhook Stripe),
+    // une notif lancée sans attendre y serait coupée à la fin de la tâche.
+    await notifyUser(referrerId, {
       type: "referral_reward",
       title: "💰 Parrainage récompensé",
       body: `${referredName} vient de devenir client payant, tu as gagné un mois offert.`,

@@ -13,6 +13,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { pushFounder } from "@/lib/admin-notify";
 import { notifyUser } from "@/lib/notify";
 import { LEAD_ORIGIN_PLATFORMS, normalizeLeadPlatform, platformFromReferrerHost, UUID_RE, type LeadOriginInput, type LeadOriginPlatform } from "@/lib/lead-origin";
+import { after } from "next/server";
 
 // Origine envoyée par le navigateur (voir lib/lead-origin.ts) : jamais crue
 // telle quelle. Plateforme ramenée à la liste connue, script vérifié en base
@@ -92,7 +93,7 @@ export async function captureLead({
     } else {
       const { data: owner } = await supabase.from("lead_magnets").select("coach_id").eq("slug", slug).maybeSingle();
       if (owner?.coach_id) {
-        notifyUser(owner.coach_id as string, { type: "lead_captured", title: "🧲 Nouveau lead", body: leadBody, url: "/dashboard/coach/ressources" }).catch(() => {});
+        after(() => notifyUser(owner.coach_id as string, { type: "lead_captured", title: "🧲 Nouveau lead", body: leadBody, url: "/dashboard/coach/ressources" }).catch(() => {}));
       }
     }
 
@@ -102,7 +103,7 @@ export async function captureLead({
       // coach tiers est une saisie libre). Le sujet reste du texte brut.
       const safeTitle = escapeHtml(magnet.title);
       const magnetUrl = `${appUrl}/ressources/${encodeURIComponent(slug)}`;
-      sendBrevoEmail({
+      after(() => sendBrevoEmail({
         to: email,
         subject: `${magnet.title} : ton contenu EP Coaching`,
         htmlContent: wrapBrandedEmail(`
@@ -114,14 +115,14 @@ export async function captureLead({
           <p style="margin:16px 0 4px;">Et si tu veux aller plus loin avec un vrai suivi personnalisé, l'appli EP Coaching t'attend :</p>
           <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 0;"><tr><td style="border-radius:10px;border:1px solid #E01E1E;"><a href="${appUrl}/auth/client" style="display:inline-block;padding:12px 28px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#E01E1E;text-decoration:none;border-radius:10px;">Créer mon compte</a></td></tr></table>
         `),
-      }).catch(() => {});
+      }).catch(() => {}));
 
       // Rejoint la newsletter dès qu'un email est laissé (fire-and-forget).
-      addBrevoContactToList(email, NEWSLETTER_LIST_ID).catch(() => {});
+      after(() => addBrevoContactToList(email, NEWSLETTER_LIST_ID).catch(() => {}));
 
       // Suivi commercial par l'agent Setter (lib/lead-qualification.ts).
       if (leadRow) {
-        maybeSendLeadQualification(leadRow.id, email, magnet.title).catch(() => {});
+        after(() => maybeSendLeadQualification(leadRow.id, email, magnet.title).catch(() => {}));
       }
     }
 
