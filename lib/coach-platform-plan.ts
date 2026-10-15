@@ -21,7 +21,7 @@ export const COACH_PLATFORM_PLANS = [
     label: "Premium",
     amount: 200,
     priceLabel: "200€ / mois",
-    sublabel: "Suivi, contenu, ventes et équipe, sans engagement",
+    sublabel: "Suivi, contenu, formations, lives et IA, sans engagement",
     url: "https://buy.stripe.com/4gMbJ19Gb3uj5bK41tfIs0a",
   },
 ] as const;
@@ -44,10 +44,10 @@ export const COACH_TESTER_PLAN = {
 // l'équation de valeur (résultat voulu, probabilité perçue, délai, effort)
 // et formulé en bénéfices. RÈGLE : chaque ligne correspond à une
 // fonctionnalité qui existe vraiment dans l'appli (vérifiée dans le code le
-// 2026-10-14), aucun chiffre ni témoignage inventé. Le découpage Standard
-// (suivi des clients) / Premium (suivi + outils business) est la grille
-// commerciale : aucune fonction n'est encore bridée techniquement selon la
-// formule, un coach Standard a donc aujourd'hui accès à plus que sa carte.
+// 2026-10-14), aucun chiffre ni témoignage inventé. Découpage décidé par le
+// fondateur le 2026-10-15 et appliqué dans l'appli (lib/coach-tier.ts) :
+// Standard = le suivi des clients ; Premium = en plus la création de
+// contenu, les 5 formations, les lives et l'IA.
 export interface CoachPlanFeature {
   title: string;
   detail: string;
@@ -73,8 +73,8 @@ export const COACH_PLAN_DETAILS: Record<"standard" | "premium", CoachPlanDetails
     includesIntro: null,
     includes: [
       {
-        title: "Programmes, diètes et road maps en modèles",
-        detail: "Tu les crées une fois, tu les attribues à chaque client et tu ajustes en quelques minutes.",
+        title: "Programmes, diètes et road maps en quelques minutes",
+        detail: "Une base complète générée depuis la fiche du client, tes modèles réutilisables, et tu ajustes.",
       },
       {
         title: "Les alertes qui te disent qui décroche",
@@ -85,12 +85,8 @@ export const COACH_PLAN_DETAILS: Record<"standard" | "premium", CoachPlanDetails
         detail: "Bilans du jour, check-ins, photos, mensurations, carnet de séances et records.",
       },
       {
-        title: "Messagerie, agenda et coaching live",
-        detail: "Tu échanges avec tes clients, ils reçoivent les notifications sur leur téléphone, tu ouvres tes créneaux d'appel.",
-      },
-      {
-        title: "Un assistant qui relance à ta place",
-        detail: "Chaque jour, il repère les clients à risque et leur envoie une relance.",
+        title: "Messagerie, agenda et check-ins guidés",
+        detail: "Tu échanges avec tes clients, ils reçoivent les notifications sur leur téléphone, tu fais tes retours en vidéo ou en vocal.",
       },
       {
         title: "Documents, notes et bibliothèque",
@@ -107,12 +103,20 @@ export const COACH_PLAN_DETAILS: Record<"standard" | "premium", CoachPlanDetails
     includesIntro: "Tout Standard, plus :",
     includes: [
       {
-        title: "Un Studio pour sortir tes contenus",
-        detail: "Tu écris tes scripts, tu tournes avec le prompteur et tu suis ce qui est publié.",
+        title: "Toute ta création de contenu",
+        detail: "Studio créatif, scripts et prompteur, ta niche et ton avatar, et tes stats Instagram reliées à tes scripts.",
       },
       {
-        title: "Tes stats Instagram, TikTok et YouTube reliées à tes scripts",
-        detail: "Tu vois quel format, quel jour et quelle accroche t'apportent des vues.",
+        title: "Les 5 formations EP",
+        detail: "Bodybuilding, nutrition, entraînement, business et psychologie, à suivre à ton rythme.",
+      },
+      {
+        title: "L'accès aux lives",
+        detail: "Coaching live, ateliers et questions-réponses en direct.",
+      },
+      {
+        title: "L'IA qui travaille pour toi",
+        detail: "Un assistant qui repère chaque jour tes clients à risque et les relance, et Claude relié à ton appli et à Notion.",
       },
       {
         title: "Tes ventes pilotées avec des chiffres",
@@ -127,12 +131,8 @@ export const COACH_PLAN_DETAILS: Record<"standard" | "premium", CoachPlanDetails
         detail: "Formations vidéo avec ton lien de paiement, coachs, setter ou closer invités, paie calculée sur les vraies ventes.",
       },
       {
-        title: "Un premier plan généré en un clic",
-        detail: "Programme, calories et macros, road map : construits depuis le questionnaire de ton client, tu n'as plus qu'à ajuster.",
-      },
-      {
-        title: "Masterclass business et Académie EP",
-        detail: "Des guides pas à pas (Notion, Stripe, Claude, outils) et les formations de l'Académie EP dès leur sortie.",
+        title: "Masterclass business",
+        detail: "Des guides pas à pas (Notion, Stripe, Claude, outils) pour monter ton business.",
       },
     ],
     ctaLabel: "Choisir Premium",
@@ -144,13 +144,13 @@ export const COACH_PLAN_DETAILS: Record<"standard" | "premium", CoachPlanDetails
 export const COACH_PLAN_COMPARISON: { label: string; standard: boolean; premium: boolean }[] = [
   { label: "Suivi complet de tes clients", standard: true, premium: true },
   { label: "Modèles de programmes, diètes et road maps", standard: true, premium: true },
-  { label: "Alertes et relances automatiques", standard: true, premium: true },
-  { label: "Messagerie, agenda et coaching live", standard: true, premium: true },
-  { label: "Plan généré depuis le questionnaire", standard: false, premium: true },
-  { label: "Studio créatif et stats réseaux", standard: false, premium: true },
-  { label: "Ventes, pubs, revenus et mailing", standard: false, premium: true },
-  { label: "Formations à vendre et équipe", standard: false, premium: true },
-  { label: "Masterclass business et Académie EP", standard: false, premium: true },
+  { label: "Alertes sur les clients qui décrochent", standard: true, premium: true },
+  { label: "Messagerie, agenda et check-ins guidés", standard: true, premium: true },
+  { label: "Création de contenu (Studio, stats Instagram, niche)", standard: false, premium: true },
+  { label: "Les 5 formations EP", standard: false, premium: true },
+  { label: "Accès aux lives", standard: false, premium: true },
+  { label: "IA : assistant de relance et Claude", standard: false, premium: true },
+  { label: "Ventes, mailing, formations à vendre et équipe", standard: false, premium: true },
 ];
 
 /** Uniquement des engagements réels (CGV articles 4, 9 et 10, webhook Stripe). */

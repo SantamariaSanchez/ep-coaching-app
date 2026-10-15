@@ -91,14 +91,26 @@ export async function POST(request: Request) {
         .single();
 
       if (profile?.role === "coach") {
+        // Formule payée (Standard 20 € ou Premium 200 €), lue sur le Price :
+        // elle ouvre ou non les rubriques Premium (voir lib/coach-tier.ts).
+        const product = await productForSession(session.id);
+        const plan = product === "saas_premium" ? "premium" : product === "saas_standard" ? "standard" : null;
+        const { data: before } = await admin.from("profiles").select("platform_plan").eq("id", userId).maybeSingle();
         await admin
           .from("profiles")
           .update({
             platform_subscription_status: "active",
             platform_stripe_customer_id: stripeCustomerId,
             platform_stripe_subscription_id: stripeSubscriptionId,
+            ...(plan ? { platform_plan: plan } : {}),
           })
           .eq("id", userId);
+        if (plan === "premium" && (before as { platform_plan?: string | null } | null)?.platform_plan === "standard") {
+          void notifyAdmin("Coach passé de Standard à Premium", [
+            `<strong>${profile.full_name ?? "Coach"}</strong> (${profile.email ?? userId})`,
+            "Pense à résilier son ancien abonnement Standard dans Stripe (son accès suit déjà le nouvel abonnement).",
+          ]);
+        }
         notifyAdmin("Coach tiers : abonnement plateforme activé", [
           `<strong>${profile.full_name ?? "Coach"}</strong> (${profile.email ?? userId})`,
         ]).catch(() => {});
@@ -233,12 +245,31 @@ export async function POST(request: Request) {
         }
       }
 
-      const { data: coachRow } = await admin
+      // Un coach qui passe de Standard à Premium a un nouvel abonnement :
+      // la fin de l'ancien ne doit ni couper son accès ni détacher ses
+      // clients. Seul l'abonnement enregistré sur son profil compte.
+      const { data: coachCurrent } = await admin
         .from("profiles")
-        .update({ platform_subscription_status: isActive ? "active" : "canceled" })
+        .select("id, platform_stripe_subscription_id")
         .eq("platform_stripe_customer_id", customerId)
-        .select("id, full_name, email")
         .maybeSingle();
+      const current = coachCurrent as { id: string; platform_stripe_subscription_id: string | null } | null;
+      const isCurrentSub = !current?.platform_stripe_subscription_id || current.platform_stripe_subscription_id === subscription.id;
+      const subPriceIds = subscription.items.data.map((it) => it.price?.id).filter((id): id is string => !!id);
+      const subPlan = subPriceIds.some((id) => STRIPE_PRICE_TO_PRODUCT[id] === "saas_premium")
+        ? "premium"
+        : subPriceIds.some((id) => STRIPE_PRICE_TO_PRODUCT[id] === "saas_standard")
+          ? "standard"
+          : null;
+
+      const { data: coachRow } = current && isCurrentSub
+        ? await admin
+            .from("profiles")
+            .update({ platform_subscription_status: isActive ? "active" : "canceled", ...(subPlan ? { platform_plan: subPlan } : {}) })
+            .eq("id", current.id)
+            .select("id, full_name, email")
+            .maybeSingle()
+        : { data: null };
 
       if (coachRow?.id) {
         if (isActive) {
