@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { cleanText, LIMITS } from "@/lib/sanitize";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 // Item 45 : un membre rejoint la liste d'attente de SON coach assigné
 // (profile.coach_id) — jamais celle d'un autre coach de la plateforme, pas
@@ -31,13 +32,13 @@ export async function joinWaitlist(note: string): Promise<{ error?: string; succ
   if (error) return { error: "Erreur lors de l'inscription à la liste d'attente." };
 
   const fullName = (profile as { full_name: string | null } | null)?.full_name ?? "Un membre";
-  notifyUser(coachId, {
+  after(() => notifyUser(coachId, {
     type: "waitlist_join",
     title: "📋 Nouvelle demande sur ta liste d'attente",
     body: `${fullName} veut rejoindre ton coaching dès qu'une place se libère.`,
     url: "/dashboard/coach/communaute/membres",
     senderId: guard.userId,
-  }).catch(() => {});
+  }).catch(() => {}));
 
   revalidatePath("/dashboard/client/abonnement");
   return { success: true };

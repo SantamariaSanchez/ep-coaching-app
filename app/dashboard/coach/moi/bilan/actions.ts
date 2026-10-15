@@ -6,6 +6,7 @@ import { requireCoach } from "@/lib/auth-guards";
 import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
 import { isWithinBilanBackfillWindow, BILAN_BACKFILL_DAYS } from "@/lib/dates";
 import { afterBilanSaved } from "@/lib/nutrition-sync";
+import { after } from "next/server";
 
 // Forme du jour (2026-09-30) : bornes identiques aux contraintes SQL
 // (migration 20260930c), une valeur hors bornes est ignorée.
@@ -109,7 +110,7 @@ export async function upsertCoachDailyLog(
     await afterBilanSaved(supabase, guard.userId, log_date, formData.get("diet_followed") === "oui");
 
     if (weightMorning != null) {
-      checkWeightObjectiveAchievements(guard.userId, weightMorning, log_date).catch(() => {});
+      after(() => checkWeightObjectiveAchievements(guard.userId, weightMorning, log_date).catch(() => {}));
     }
 
     revalidatePath("/dashboard/coach/moi/bilan");

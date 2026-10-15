@@ -148,18 +148,18 @@ export async function upsertDailyLog(
         });
     }
 
-    awardPoints(guard.userId, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date);
+    after(() => awardPoints(guard.userId, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date));
 
     // Encouragement immédiat au membre lui-même, uniquement la toute
     // première fois (voir lib/first-action-celebration.ts) — jusqu'ici
     // rien n'était envoyé au membre pour son propre premier bilan.
     if (isFirstBilan) {
-      celebrateFirstAction(guard.userId, {
+      after(() => celebrateFirstAction(guard.userId, {
         type: "first_daily_bilan",
         title: "✅ Premier bilan rempli !",
         body: "Poids, sommeil, ressenti : tu viens de poser ta première base. Reviens demain pour voir l'évolution.",
         url: "/dashboard/client/bilan",
-      }).catch(() => {});
+      }).catch(() => {}));
     }
 
     // Un objectif de road map ("Poids") peut passer "atteint" tout seul dès
@@ -167,7 +167,7 @@ export async function upsertDailyLog(
     // jamais faire échouer la sauvegarde du bilan.
     const weightLogged = payload.weight_morning as number | null | undefined;
     if (weightLogged != null) {
-      checkWeightObjectiveAchievements(guard.userId, weightLogged, log_date).catch(() => {});
+      after(() => checkWeightObjectiveAchievements(guard.userId, weightLogged, log_date).catch(() => {}));
     }
 
     // Coach prévenu (cloche + push) une seule fois par client et par jour :

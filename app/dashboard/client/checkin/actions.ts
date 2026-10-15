@@ -109,7 +109,7 @@ export async function submitCheckin(
 
   if (error) return { error: error.message };
 
-  awardPoints(guard.userId, POINTS.weekly_checkin, "Check-in hebdomadaire envoyé", "weekly_checkin", weekStart);
+  after(() => awardPoints(guard.userId, POINTS.weekly_checkin, "Check-in hebdomadaire envoyé", "weekly_checkin", weekStart));
 
   const clientName = profile.full_name ?? "Un client";
 

@@ -14,6 +14,7 @@ import { getRoleCard, isStaffRoleKey } from "@/lib/staff-roles";
 import { STAFF_TERMS_VERSION, EXTERNAL_CONTRACT_VERSION } from "@/lib/staff-contract";
 import { isFounder } from "@/lib/team-owner";
 import { sendStaffVerificationEmail } from "@/lib/staff";
+import { after } from "next/server";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -203,7 +204,7 @@ export async function signupStaff(input: StaffSignupInput): Promise<{ error: str
   const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
   if (signInError) return { error: "Accès créé, mais la connexion automatique a échoué. Utilise l'onglet Me connecter." };
 
-  sendStaffVerificationEmail(email, fullName, roleKey).catch(() => {});
+  after(() => sendStaffVerificationEmail(email, fullName, roleKey).catch(() => {}));
   notifyAdmin("Nouvelle recrue connectée", [
     `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
     `Poste : ${escapeHtml(getRoleCard(roleKey)?.role.title ?? roleKey)}`,

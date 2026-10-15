@@ -8,6 +8,7 @@ import { formatLiveDateTime } from "@/lib/live-time";
 import { sendLiveScheduledEmail } from "@/lib/live-notify";
 import { notifyUser, notifyUsers } from "@/lib/notify";
 import { getClients } from "@/utils/auth";
+import { after } from "next/server";
 
 export interface CreateLiveEventInput {
   title: string;
@@ -80,24 +81,25 @@ export async function createLiveEvent(
         .eq("id", input.invitedClientId)
         .single();
       if (client?.email) {
-        sendLiveScheduledEmail({
+        after(() => sendLiveScheduledEmail({
           to: client.email,
           clientName: client.full_name ?? "",
           title: input.title.trim(),
           startsAt: input.startsAt,
-        }).catch(() => {});
+        }).catch(() => {}));
       }
-      notifyUser(input.invitedClientId, {
+      const invitedClientId = input.invitedClientId;
+      after(() => notifyUser(invitedClientId, {
         type: "live_scheduled",
         title: "📅 Appel programmé",
         body: `${input.title.trim()} : ${dateLabel}`,
         url: "/dashboard/client/live",
         senderId: guard.userId,
-      }).catch(() => {});
+      }).catch(() => {}));
     } else {
       // webinaire / qna — diffusion à tous les clients abonnés (le live
       // n'est pas visible des membres gratuits, pas la peine de les notifier).
-      getClients(guard.userId)
+      after(() => getClients(guard.userId)
         .then((clients) =>
           notifyUsers(
             clients.map((c) => c.id),
@@ -110,7 +112,7 @@ export async function createLiveEvent(
             }
           )
         )
-        .catch(() => {});
+        .catch(() => {}));
     }
 
     revalidatePath("/dashboard/coach/live");
@@ -200,12 +202,13 @@ export async function updateLiveEvent(
       url: "/dashboard/client/live",
       senderId: guard.userId,
     };
-    if (isOneToOneType(existing.type) && input.invitedClientId) {
-      notifyUser(input.invitedClientId, params).catch(() => {});
+    const invitedClientId = input.invitedClientId;
+    if (isOneToOneType(existing.type) && invitedClientId) {
+      after(() => notifyUser(invitedClientId, params).catch(() => {}));
     } else if (!isOneToOneType(existing.type)) {
-      getClients(guard.userId)
+      after(() => getClients(guard.userId)
         .then((clients) => notifyUsers(clients.map((c) => c.id), params))
-        .catch(() => {});
+        .catch(() => {}));
     }
 
     revalidatePath("/dashboard/coach/live");
@@ -238,12 +241,13 @@ function notifyLiveCancelled(event: CancellableLive, hostId: string) {
     url: "/dashboard/client/live",
     senderId: hostId,
   };
-  if (isOneToOneType(event.type) && event.invited_client_id) {
-    notifyUser(event.invited_client_id, params).catch(() => {});
+  const invitedClientId = event.invited_client_id;
+  if (isOneToOneType(event.type) && invitedClientId) {
+    after(() => notifyUser(invitedClientId, params).catch(() => {}));
   } else if (!isOneToOneType(event.type)) {
-    getClients(hostId)
+    after(() => getClients(hostId)
       .then((clients) => notifyUsers(clients.map((c) => c.id), params))
-      .catch(() => {});
+      .catch(() => {}));
   }
 }
 

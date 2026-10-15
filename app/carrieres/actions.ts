@@ -10,6 +10,7 @@ import { pushFounder } from "@/lib/admin-notify";
 import { POLES } from "@/lib/org-roles";
 import { routeApplicationToHr } from "@/lib/staff-automation";
 import { cleanText, escapeHtml, safeExternalUrl, LIMITS } from "@/lib/sanitize";
+import { after } from "next/server";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -143,7 +144,7 @@ export async function submitApplication(formData: FormData): Promise<{ error?: s
       (q) => `<p style="margin:0 0 10px;"><strong>${escapeHtml(q.label)}</strong><br/>${escapeHtml(cleanAnswers[q.key]!)}</p>`
     ).join("");
 
-    sendBrevoEmail({
+    after(() => sendBrevoEmail({
       to: "peccoux.manu@gmail.com",
       subject: `Nouvelle candidature : ${roleTitle}`,
       htmlContent: `
@@ -161,8 +162,8 @@ export async function submitApplication(formData: FormData): Promise<{ error?: s
           </a>
         </div>
       `,
-    }).catch(() => {});
-    pushFounder({ title: "📨 Nouvelle candidature", body: `${name} · ${roleTitle}`, url: "/dashboard/coach/admin/organisation" }).catch(() => {});
+    }).catch(() => {}));
+    after(() => pushFounder({ title: "📨 Nouvelle candidature", body: `${name} · ${roleTitle}`, url: "/dashboard/coach/admin/organisation" }).catch(() => {}));
 
     return { ok: true };
   } catch (e) {

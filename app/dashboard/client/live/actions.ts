@@ -10,6 +10,7 @@ import {
   parisWallClockToIso,
 } from "@/lib/live-time";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 const SLOT_TAKEN_ERROR = "Ce créneau n'est plus disponible, choisis-en un autre.";
 const DEFAULT_WEEKLY_OCCURRENCES = 8;
@@ -102,13 +103,13 @@ export async function bookAvailabilitySlot(input: {
     .single();
   if (error || !data) return { error: "Erreur lors de la réservation." };
 
-  notifyUser(input.coachId, {
+  after(() => notifyUser(input.coachId, {
     type: "live_booked",
     title: "📅 Nouveau 1:1 réservé",
     body: `${myProfile?.full_name ?? "Un client"} a réservé un créneau : ${formatLiveDateTime(input.startsAt)}.`,
     url: "/dashboard/coach/live",
     senderId: guard.userId,
-  }).catch(() => {});
+  }).catch(() => {}));
 
   revalidatePath("/dashboard/client/live");
   revalidatePath("/dashboard/coach/live");
@@ -201,13 +202,13 @@ export async function bookWeeklyCheckin(input: {
     };
   }
 
-  notifyUser(input.coachId, {
+  after(() => notifyUser(input.coachId, {
     type: "live_booked",
     title: "📅 Suivi hebdomadaire activé",
     body: `${myProfile?.full_name ?? "Un client"} a réservé un suivi hebdo : ${created} séance${created > 1 ? "s" : ""}, chaque ${formatParis(input.startsAt, { weekday: "long" })} à ${formatLiveTime(input.startsAt)}.`,
     url: "/dashboard/coach/live",
     senderId: guard.userId,
-  }).catch(() => {});
+  }).catch(() => {}));
 
   revalidatePath("/dashboard/client/live");
   revalidatePath("/dashboard/coach/live");
@@ -236,13 +237,13 @@ export async function requestFlashCall(reason: string): Promise<{ error?: string
   });
   if (error) return { error: "Erreur lors de la demande." };
 
-  notifyUser(myProfile.coach_id, {
+  after(() => notifyUser(myProfile.coach_id, {
     type: "flash_request",
     title: "⚡ Demande de point flash",
     body: `${myProfile.full_name ?? "Un client"} : ${reason.trim().slice(0, 60)}`,
     url: "/dashboard/coach/live",
     senderId: guard.userId,
-  }).catch(() => {});
+  }).catch(() => {}));
 
   revalidatePath("/dashboard/client/live");
   return { success: true };

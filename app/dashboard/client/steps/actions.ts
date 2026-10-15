@@ -11,6 +11,7 @@ import { todayInParis, isWithinBilanBackfillWindow } from "@/lib/dates";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getStepsSyncStatus, type StepsSyncStatus } from "@/utils/steps";
 import { hashStepsToken, isMissingTable, MAX_STEPS, newStepsToken, tokenHint, upsertStepTotal } from "@/lib/steps-sync";
+import { after } from "next/server";
 
 // Les pas sont suivis côté client (/dashboard/client/steps) comme côté coach
 // pour lui-même (/dashboard/coach/moi/steps), d'où requireAuth() plutôt qu'un
@@ -115,7 +116,7 @@ export async function logSteps(
     // Fire-and-forget — un client qui remonte au-dessus de son objectif (ex.
     // en éditant son chiffre plus tard dans la journée) ne doit pas relancer
     // une notification, d'où le garde-fou "une fois par jour".
-    notifyCoachIfGoalReached(userId, logDate, stepsActual).catch(() => {});
+    after(() => notifyCoachIfGoalReached(userId, logDate, stepsActual).catch(() => {}));
 
     return {};
   } catch (e) {
@@ -277,7 +278,7 @@ export async function setManualStepsTotal(logDate: string, total: number): Promi
     const res = await upsertStepTotal(admin, guard.userId, logDate, Math.round(total), "manuel");
     if (res.error) return { error: "Erreur lors de l'enregistrement." };
     revalidateSteps();
-    notifyCoachIfGoalReached(guard.userId, logDate, Math.round(total)).catch(() => {});
+    after(() => notifyCoachIfGoalReached(guard.userId, logDate, Math.round(total)).catch(() => {}));
     return {};
   } catch (e) {
     console.error("setManualStepsTotal error:", e);

@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getLessonWithContext } from "@/utils/formations";
 import { getProfile } from "@/utils/auth";
 import { isSubscribed } from "@/utils/auth-client";
@@ -71,7 +72,7 @@ export async function markLessonComplete(lessonId: string) {
 
   if (error) return { error: error.message };
 
-  awardPoints(guard.userId, POINTS.formation_lesson, "Leçon terminée", "formation_lesson", lessonId);
+  after(() => awardPoints(guard.userId, POINTS.formation_lesson, "Leçon terminée", "formation_lesson", lessonId));
   revalidateFormations();
 
   return { success: true };

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { pushFounder } from "@/lib/admin-notify";
 import { NEWSLETTER_LIST_ID } from "@/utils/brevo";
 import { enforceRateLimit, clientIp, PRESETS } from "@/lib/rate-limit";
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       }
     }
 
-    pushFounder({ title: "📬 Nouvel inscrit à la newsletter", body: `${email} · depuis ${source === "site" ? "le site vitrine" : source === "ressources" ? "un guide" : "l'appli"}`, url: "/dashboard/coach/mailing" }).catch(() => {});
+    after(() => pushFounder({ title: "📬 Nouvel inscrit à la newsletter", body: `${email} · depuis ${source === "site" ? "le site vitrine" : source === "ressources" ? "un guide" : "l'appli"}`, url: "/dashboard/coach/mailing" }).catch(() => {}));
     return NextResponse.json({ ok: true }, { headers });
   } catch (err) {
     console.error("newsletter/subscribe", err);

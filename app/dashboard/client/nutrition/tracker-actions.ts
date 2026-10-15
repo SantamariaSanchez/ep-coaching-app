@@ -8,6 +8,7 @@ import { awardPoints, POINTS } from "@/lib/gamification";
 import { fillDayFromPlan, syncDailyNutrition, withFoods, LOG_SELECT } from "@/lib/nutrition-sync";
 import type { VariantChoice } from "@/lib/nutrition-engine";
 import type { Food, FoodLogWithFood } from "@/utils/nutrition";
+import { after } from "next/server";
 
 // Actions du tracker nutrition (components/nutrition/NutritionTracker.tsx).
 // Toutes écrivent sur le compte connecté (guard.userId), jamais sur un id
@@ -65,7 +66,7 @@ export async function fillDayFromPlanAction(
     const admin = createAdminClient();
     const res = await fillDayFromPlan(admin, g.userId, date, opts);
     if (res.inserted.length > 0) {
-      awardPoints(g.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", date);
+      after(() => awardPoints(g.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", date));
       await done(g.userId, [date]);
     }
     return { inserted: res.inserted };
@@ -98,7 +99,7 @@ export async function addTrackerItems(
       console.error("addTrackerItems error:", error);
       return { error: "Erreur lors de l'ajout.", logs: [] };
     }
-    awardPoints(g.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", date);
+    after(() => awardPoints(g.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", date));
     await done(g.userId, [date]);
     return { logs: await withFoods(admin, data) };
   } catch (e) {
@@ -254,7 +255,7 @@ export async function logPortion(
     const grams = Math.round(pf.portionG * servings);
     const { data, error } = await admin.from("food_logs").insert(rowFor(g.userId, pf.food, grams, slot, date, null)).select(LOG_SELECT);
     if (error) return { error: "Erreur lors de l'ajout.", logs: [] };
-    awardPoints(g.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", date);
+    after(() => awardPoints(g.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", date));
     await done(g.userId, [date]);
     return { logs: await withFoods(admin, data), food: pf.food };
   } catch (e) {

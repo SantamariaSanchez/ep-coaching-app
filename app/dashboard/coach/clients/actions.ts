@@ -8,6 +8,7 @@ import { notifyUser } from "@/lib/notify";
 import { getClientIntake } from "@/utils/client-intake";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { escapeHtml } from "@/lib/sanitize";
+import { after } from "next/server";
 
 // Activer/désactiver le coaching individuel d'un client manuellement, avec
 // plan/échéance/note optionnels journalisés dans subscription_events. Le
@@ -137,13 +138,13 @@ export async function startCoachingTrial(
     .eq("id", clientId);
   if (error) return { error: error.message };
 
-  notifyUser(clientId, {
+  after(() => notifyUser(clientId, {
     type: "trial_started",
     title: "🎁 Essai coaching activé",
     body: `Tu as accès à tout le coaching pendant ${days} jours, sans engagement.`,
     url: "/dashboard/client",
     senderId: guard.userId,
-  }).catch(() => {});
+  }).catch(() => {}));
 
   revalidatePath(`/dashboard/coach/clients/${clientId}`);
   return { success: true };

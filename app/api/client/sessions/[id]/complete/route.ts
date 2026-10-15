@@ -1,5 +1,5 @@
 import { todayInParis } from "@/lib/dates";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getProfile } from "@/utils/auth";
 import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -210,16 +210,16 @@ export async function POST(
     // première fois (voir lib/first-action-celebration.ts) — jusqu'ici
     // seul le coach était notifié d'une séance terminée, jamais le membre.
     if (isFirstWorkout) {
-      celebrateFirstAction(guard.userId, {
+      after(() => celebrateFirstAction(guard.userId, {
         type: "first_workout_logged",
         title: "🔥 Première séance loguée !",
         body: "C'est noté, et ça restera dans ton historique. Continue, chaque séance compte.",
         url: "/dashboard/client/logbook",
-      }).catch(() => {});
+      }).catch(() => {}));
     }
   }
 
-  awardPoints(guard.userId, POINTS.session_complete, "Séance terminée", "session_complete", sessionId);
+  after(() => awardPoints(guard.userId, POINTS.session_complete, "Séance terminée", "session_complete", sessionId));
 
   // 4. Notification au coach ASSIGNÉ (in-app + push + email) — auparavant
   // l'email partait vers une adresse en dur (peccoux.manu@gmail.com), donc
@@ -240,13 +240,13 @@ export async function POST(
   const coach = await getCoachForClient(guard.userId);
 
   if (coach) {
-    notifyUser(coach.id, {
+    after(() => notifyUser(coach.id, {
       type: "session_complete",
       title: "💪 Séance terminée",
       body: `${clientName} a terminé « ${dayLabel} » (${body.duration_minutes} min).${prSummary}`,
       url: `/dashboard/coach/clients/${guard.userId}/logbook`,
       senderId: guard.userId,
-    }).catch(() => {});
+    }).catch(() => {}));
 
     if (coach.email) {
       try {

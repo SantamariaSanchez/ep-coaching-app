@@ -14,6 +14,7 @@ import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { addBrevoContactToList, NEWSLETTER_LIST_ID } from "@/utils/brevo";
 import { headers } from "next/headers";
+import { after } from "next/server";
 
 // Adresse IP de l'appelant, pour les quotas des actions publiques.
 async function callerIp(): Promise<string> {
@@ -147,7 +148,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
 
   // Email de confirmation en tâche de fond : le coach enchaîne directement sur
   // le paiement Stripe, il ne l'attend pas.
-  sendVerificationEmail(email, fullName).catch(() => {});
+  after(() => sendVerificationEmail(email, fullName).catch(() => {}));
 
   notifyAdmin("Nouvelle inscription coach tiers", [
     `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
@@ -155,7 +156,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   ], { url: "/dashboard/coach/admin" }).catch(() => {});
 
   if (input.wantsNewsletter === true) {
-    addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {});
+    after(() => addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {}));
   }
 
   const checkoutUrl = "url" in plan ? `${plan.url}?client_reference_id=${authData.user.id}` : "/dashboard/coach";

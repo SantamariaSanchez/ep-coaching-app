@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -133,8 +133,8 @@ export async function POST(request: Request) {
         // effort : jamais laissé faire échouer l'accusé de réception du
         // webhook à Stripe.
         if (stripeCustomerId) {
-          rewardReferrerForNewPayment(userId).catch(() => {});
-          applyPendingRewardsFor(userId).catch(() => {});
+          after(() => rewardReferrerForNewPayment(userId).catch(() => {}));
+          after(() => applyPendingRewardsFor(userId).catch(() => {}));
         }
 
         // Compta perso du coach (Axe 4, VISION.md) : le premier paiement
@@ -143,12 +143,12 @@ export async function POST(request: Request) {
         // périmètre exact (premier paiement seulement, pas les
         // renouvellements). Best-effort, jamais bloquant.
         if (profile?.coach_id) {
-          logStripeCoachingPayment({
+          after(() => logStripeCoachingPayment({
             coachId: profile.coach_id,
             clientName: profile.full_name,
             amountTotalCents: session.amount_total,
             stripeSessionId: session.id,
-          }).catch(() => {});
+          }).catch(() => {}));
         }
       }
       break;
@@ -191,12 +191,12 @@ export async function POST(request: Request) {
       // la plateforme EP Coaching n'est pas un revenu pour lui-même, c'est
       // une dépense — hors périmètre de ce chantier, jamais importé ici.
       if (clientProfile?.coach_id && clientProfile.role !== "coach") {
-        logStripeRenewalPayment({
+        after(() => logStripeRenewalPayment({
           coachId: clientProfile.coach_id,
           clientName: clientProfile.full_name,
           amountPaidCents: invoice.amount_paid,
           stripeInvoiceId: invoice.id,
-        }).catch(() => {});
+        }).catch(() => {}));
       }
       break;
     }
@@ -227,21 +227,21 @@ export async function POST(request: Request) {
         // Item 46 : avant ce fix, seul le fondateur était prévenu (ligne
         // ci-dessus) — ni le client (accès premium perdu sans explication)
         // ni son coach (aucune relance possible) ne le voyaient nulle part.
-        notifyUser(clientRow.id, {
+        after(() => notifyUser(clientRow.id, {
           type: "subscription_canceled",
           title: "Ton coaching payant s'est arrêté",
           body: "Tu gardes l'accès aux outils gratuits. Contacte ton coach si c'est une erreur, ou réactive quand tu veux.",
           url: "/dashboard/client/abonnement",
-        }).catch(() => {});
+        }).catch(() => {}));
 
         if (clientRow.coach_id) {
-          notifyUser(clientRow.coach_id, {
+          after(() => notifyUser(clientRow.coach_id, {
             type: "client_subscription_canceled",
             title: "⚠️ Abonnement client résilié",
             body: `${clientRow.full_name ?? "Un client"} n'est plus abonné au coaching payant.`,
             url: `/dashboard/coach/clients/${clientRow.id}`,
             senderId: clientRow.id,
-          }).catch(() => {});
+          }).catch(() => {}));
         }
       }
 

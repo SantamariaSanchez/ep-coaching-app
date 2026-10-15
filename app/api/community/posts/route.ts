@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityPostsPage, type CommunityPostType } from "@/utils/community";
@@ -102,13 +102,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Erreur lors de la publication." }, { status: 500 });
   }
 
-  awardPoints(
+  after(() => awardPoints(
     guard.userId,
     type === "victory" ? POINTS.community_victory : POINTS.community_question,
     type === "victory" ? "Victoire partagée" : "Question posée",
     `community_${type}`,
     data.id
-  );
+  ));
 
   // Rien ne prévenait le coach qu'un client venait de publier — un fil
   // "Victoires" ne prend vie que si quelqu'un réagit vite, et le coach ne

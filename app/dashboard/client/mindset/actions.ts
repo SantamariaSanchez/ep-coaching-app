@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
 import { HABITS, type QuizResult } from "@/lib/mindset-content";
+import { after } from "next/server";
 
 export async function saveMindsetQuiz(result: QuizResult): Promise<{ error?: string }> {
   const guard = await requireAuth();
@@ -57,8 +58,9 @@ export async function saveMindsetQuiz(result: QuizResult): Promise<{ error?: str
 
     // Le coach n'avait aujourd'hui aucune visibilité sur le profil mindset
     // de son client — ce complète/refait le quiz devient le déclencheur
-    // naturel pour aller y jeter un œil. Fire-and-forget, jamais bloquant.
-    (async () => {
+    // naturel pour aller y jeter un œil. Fire-and-forget via after() (sinon
+    // coupé à la fin de la requête sur Vercel), jamais bloquant.
+    after(() => (async () => {
       const coach = await getCoachForClient(guard.userId);
       if (!coach) return;
       const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", guard.userId).maybeSingle();
@@ -70,7 +72,7 @@ export async function saveMindsetQuiz(result: QuizResult): Promise<{ error?: str
         url: `/dashboard/coach/clients/${guard.userId}`,
         senderId: guard.userId,
       });
-    })().catch(() => {});
+    })().catch(() => {}));
 
     return {};
   } catch (e) {
@@ -96,7 +98,7 @@ export async function toggleHabitLog(
       if (error) return { error: "Erreur lors de l'enregistrement." };
       // Fire-and-forget — une série qui franchit un palier (7/30/100 jours)
       // mérite un petit coup de pouce, jamais bloquant pour la coche elle-même.
-      checkHabitStreakMilestone(guard.userId, habitKey, date).catch(() => {});
+      after(() => checkHabitStreakMilestone(guard.userId, habitKey, date).catch(() => {}));
     } else {
       const { error } = await supabase
         .from("mindset_habit_logs")

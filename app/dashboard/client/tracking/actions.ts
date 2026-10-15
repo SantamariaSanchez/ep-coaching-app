@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { generateInsightsForLatest, type BiometricLogInput } from "@/lib/biometric-rules";
 import { sendPushToUser } from "@/lib/push";
 import { requireAuth } from "@/lib/auth-guards";
+import { after } from "next/server";
 
 // Le suivi biométrique existe côté client (/dashboard/client/tracking) comme
 // côté coach pour lui-même (/dashboard/coach/moi/tracking), d'où requireAuth()
@@ -117,12 +118,12 @@ export async function logBiometrics(input: LogBiometricsInput): Promise<{ error?
       // A unique-constraint conflict means this exact insight already exists
       // for today — that's expected on repeat saves, not a real failure.
       if (!insightError && inserted) {
-        sendPushToUser(
+        after(() => sendPushToUser(
           guard.userId,
           insight.severity === "critical" ? "⚠ Alerte récupération" : "Suggestion d'ajustement",
           `${insight.message} ${insight.suggestion}`,
           "/dashboard/client/tracking"
-        ).catch(() => {});
+        ).catch(() => {}));
       }
     }
 

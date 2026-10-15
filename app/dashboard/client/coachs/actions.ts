@@ -6,6 +6,7 @@ import { requireClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { maybeSendAICoachWelcome } from "@/lib/ai-coach-welcome";
+import { after } from "next/server";
 
 // Un membre sans coach (orphelin après désactivation de son coach, ou ayant
 // volontairement quitté le sien) peut en choisir un nouveau parmi les coachs
@@ -41,7 +42,7 @@ export async function chooseNewCoach(coachId: string): Promise<{ error?: string;
   if (error) return { error: "Erreur lors du rattachement." };
 
   // Fire-and-forget : un coach IA se présente vraiment, jamais bloquant.
-  maybeSendAICoachWelcome(guard.userId, target.id).catch(() => {});
+  after(() => maybeSendAICoachWelcome(guard.userId, target.id).catch(() => {}));
 
   // Le fondateur voit en direct qui rejoint quel coach.
   const { data: people } = await admin.from("profiles").select("id, full_name, email, is_ai_coach").in("id", [guard.userId, target.id]);

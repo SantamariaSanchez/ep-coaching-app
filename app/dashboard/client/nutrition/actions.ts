@@ -11,6 +11,7 @@ import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutri
 import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
 import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
+import { after } from "next/server";
 
 // Self-serve nutrition targets — only available to free-tier community
 // members. They set and adjust their own targets, no coach review.
@@ -236,25 +237,25 @@ export async function addFoodLog(params: {
     }
     if (!data) return { error: "Erreur lors de l'ajout (pas de data)." };
 
-    awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", params.loggedAt);
+    after(() => awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", params.loggedAt));
 
     // Encouragement immédiat au membre lui-même, uniquement la toute
     // première fois (voir lib/first-action-celebration.ts) — jusqu'ici
     // rien n'était envoyé au membre pour son propre premier repas loggé.
     if (isFirstMeal) {
-      celebrateFirstAction(guard.userId, {
+      after(() => celebrateFirstAction(guard.userId, {
         type: "first_meal_logged",
         title: "🥗 Premier repas loggé !",
         body: "Deux minutes par repas, et tu sais exactement où tu en es. Continue comme ça.",
         url: "/dashboard/client/nutrition",
-      }).catch(() => {});
+      }).catch(() => {}));
     }
 
     // Notifie le coach une fois que la journée est bien remplie plutôt qu'à
     // chaque aliment ajouté (sinon un client qui logue 6 fois par jour
     // enverrait 6 notifications) — fire-and-forget, ne doit jamais faire
     // échouer l'ajout.
-    notifyCoachIfDayWellLogged(guard.userId, params.loggedAt).catch(() => {});
+    after(() => notifyCoachIfDayWellLogged(guard.userId, params.loggedAt).catch(() => {}));
 
     // Bug remonté : cocher un aliment fonctionnait (l'insert réussissait)
     // mais revenait "décoché" après avoir navigué ailleurs puis être
@@ -894,7 +895,7 @@ export async function logMealItems(
       ),
     ];
 
-    awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt);
+    after(() => awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt));
     // MASTERCLASS.md Axe W : contrairement à addFoodLog/removeFoodLog (voir
     // plus haut, corrigé le 2026-08-15), cette fonction ne revalidait que la
     // route client, jamais /dashboard/coach/moi/nutrition qui réutilise le

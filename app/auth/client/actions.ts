@@ -18,6 +18,7 @@ import { maybeSendAICoachWelcome } from "@/lib/ai-coach-welcome";
 import { CGU_VERSION } from "@/lib/legal";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 // Adresse IP de l'appelant, pour les quotas des actions publiques.
 async function callerIp(): Promise<string> {
@@ -250,7 +251,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
 
   // Email de confirmation en tâche de fond : l'écran d'inscription ne l'attend
   // pas, le membre enchaîne directement sur son espace.
-  sendVerificationEmail(email, fullName).catch(() => {});
+  after(() => sendVerificationEmail(email, fullName).catch(() => {}));
 
   if (coach?.email) {
     try {
@@ -272,12 +273,12 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   // donc rien n'apparaissait dans sa cloche de notifications à l'inscription
   // d'un nouveau membre.
   if (coach) {
-    notifyUser(coach.id, {
+    after(() => notifyUser(coach.id, {
       type: "new_member_signup",
       title: "👋 Nouveau membre inscrit",
       body: `${fullName} vient de rejoindre la communauté.`,
       url: "/dashboard/coach/communaute/membres",
-    }).catch(() => {});
+    }).catch(() => {}));
   }
 
   // Un nouveau membre d'EP Coaching (rattaché au fondateur ou à un coach IA)
@@ -307,19 +308,19 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   // Fire-and-forget : si le coach rattaché (lien d'invitation) est un coach
   // IA, il se présente vraiment au nouveau membre — voir lib/ai-coach-welcome.ts.
   if (coach) {
-    maybeSendAICoachWelcome(authData.user.id, coach.id).catch(() => {});
+    after(() => maybeSendAICoachWelcome(authData.user.id, coach.id).catch(() => {}));
   }
 
   // Item 41 : récompense le parrain une fois l'inscription bien passée,
   // jamais avant (pas de points sur un compte qui échoue à se créer).
   if (referrer) {
-    awardPoints(referrer.id, POINTS.referral, `Parrainage de ${fullName}`, "referral", authData.user.id).catch(() => {});
-    notifyUser(referrer.id, {
+    after(() => awardPoints(referrer.id, POINTS.referral, `Parrainage de ${fullName}`, "referral", authData.user.id).catch(() => {}));
+    after(() => notifyUser(referrer.id, {
       type: "referral_signup",
       title: "🎉 Ton parrainage a fonctionné",
       body: `${fullName} vient de rejoindre grâce à toi, +${POINTS.referral} points.`,
       url: "/dashboard/client/profile",
-    }).catch(() => {});
+    }).catch(() => {}));
   }
 
   // Newsletter (2026-09-10) : consentement séparé et explicite, coché par
@@ -329,7 +330,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   // de cette fonction : un échec Brevo ne doit jamais faire échouer la
   // création de compte.
   if (input.wantsNewsletter === true) {
-    addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {});
+    after(() => addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {}));
   }
 
   return { success: true, userId: authData.user.id };

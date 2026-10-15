@@ -7,6 +7,7 @@ import type { NutritionProfileInput } from "@/utils/nutrition";
 import { notifyUser } from "@/lib/notify";
 import { alreadyNotifiedToday } from "@/utils/insert-notification";
 import { rescaleActiveDietPlanToTargets } from "./diet-plan-actions";
+import { after } from "next/server";
 
 export async function saveNutritionProfile(
   clientId: string,
@@ -112,7 +113,7 @@ export async function saveNutritionProfile(
     // un coach qui affine ses réglages en plusieurs sauvegardes successives
     // ne doit pas déclencher une notification à chaque clic.
     if (guard.userId !== clientId) {
-      notifyClientTargetsUpdated(clientId, guard.userId).catch(() => {});
+      after(() => notifyClientTargetsUpdated(clientId, guard.userId).catch(() => {}));
     }
 
     return {};
@@ -161,13 +162,13 @@ export async function suggestSupplement(
     // cette action pour son propre suivi (guard.userId === clientId dans ce
     // cas), pas besoin de se notifier soi-même.
     if (guard.userId !== clientId) {
-      notifyUser(clientId, {
+      after(() => notifyUser(clientId, {
         type: "supplement_suggested",
         title: "💊 Nouveau complément suggéré",
         body: `Ton coach te suggère : ${input.name.trim()}${input.dosage ? ` (${input.dosage.trim()})` : ""}.`,
         url: "/dashboard/client/nutrition",
         senderId: guard.userId,
-      }).catch(() => {});
+      }).catch(() => {}));
     }
 
     return {};

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { endCoachingPhaseTracking } from "@/lib/coaching-phase";
 import { notifyUser } from "@/lib/notify";
@@ -49,14 +49,15 @@ export async function GET(req: Request) {
 
     // Best-effort : une phase de calibrage laissée ouverte n'empêche rien
     // de fonctionner, pas la peine de bloquer le reste du lot pour ça.
-    endCoachingPhaseTracking(client.id, client.id).catch(() => {});
+    after(() => endCoachingPhaseTracking(client.id, client.id).catch(() => {}));
 
     const title = "Ton essai coaching est terminé";
     const body = "Tu es repassé en accès gratuit. Active un vrai coaching pour continuer avec un suivi personnalisé.";
     await notifyUser(client.id, { type: "trial_ended", title, body, url: "/dashboard/client/abonnement" }).catch(() => {});
-    if (client.email) {
-      sendBrevoEmail({
-        to: client.email,
+    const email = client.email;
+    if (email) {
+      after(() => sendBrevoEmail({
+        to: email,
         subject: title,
         // Même habillage de marque que les autres emails de l'appli : ce
         // message partait en <div> brut, sans logo ni cadre.
@@ -69,7 +70,7 @@ export async function GET(req: Request) {
             Activer le coaching
           </a>
         `),
-      }).catch(() => {});
+      }).catch(() => {}));
     }
   }
 
