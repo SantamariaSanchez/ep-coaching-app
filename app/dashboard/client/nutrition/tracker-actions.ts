@@ -270,6 +270,7 @@ export async function getTrackerDay(date: string): Promise<Result<{ logs: FoodLo
   if (!guard.ok) return { error: guard.error, logs: [] };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Date invalide.", logs: [] };
   const admin = createAdminClient();
-  const { data } = await admin.from("food_logs").select(LOG_SELECT).eq("client_id", guard.userId).eq("logged_at", date).order("created_at");
+  const { data, error } = await admin.from("food_logs").select(LOG_SELECT).eq("client_id", guard.userId).eq("logged_at", date).order("created_at");
+  if (error) return { error: "Chargement du jour impossible, réessaie.", logs: [] };
   return { logs: await withFoods(admin, data) };
 }

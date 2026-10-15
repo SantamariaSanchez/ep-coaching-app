@@ -222,16 +222,30 @@ export default function NutritionTracker({
   // Changer de jour : préférences de ce jour, et son journal s'il n'est pas
   // déjà chargé (au-delà des 30 derniers jours, ou jour vide).
   function goTo(d: string) {
+    const from = date;
     setDate(d);
     setError(null);
     setChoices((prev) => (prev[d] ? prev : { ...prev, [d]: readLS(`ep-variants:${planKey}:${d}`, {}) }));
     setOverrides((prev) => (prev[d] ? prev : { ...prev, [d]: readLS(`ep-flex:${planKey}:${d}`, {}) }));
     if (logsByDate[d]) return;
     setLoadingDay(true);
-    getTrackerDay(d).then((res) => {
+    // Jour en erreur jamais affiché ni mis en cache comme « vide » : sinon
+    // la journée apparaissait sans ses repas, sans moyen de recharger, et
+    // « Remplir avec mon plan » y ajoutait des doublons. On reste sur le jour
+    // d'avant avec le message d'erreur ; retaper le jour relance le
+    // chargement. Réseau coupé : le chargement ne reste plus bloqué.
+    const fail = (message: string) => {
       setLoadingDay(false);
-      setLogsByDate((prev) => (prev[d] ? prev : { ...prev, [d]: res.logs }));
-    });
+      setDate((cur) => (cur === d ? from : cur));
+      setError(message);
+    };
+    getTrackerDay(d)
+      .then((res) => {
+        if (res.error) return fail(res.error);
+        setLoadingDay(false);
+        setLogsByDate((prev) => (prev[d] ? prev : { ...prev, [d]: res.logs }));
+      })
+      .catch(() => fail("Connexion perdue, réessaie."));
   }
 
   // ── Plan du jour ───────────────────────────────────────────────────────
