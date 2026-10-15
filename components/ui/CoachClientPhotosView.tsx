@@ -2,10 +2,10 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useActionState, useState } from "react";
-import { ExternalLink, CheckCircle2, Camera, Pencil, Eraser } from "lucide-react";
+import { ExternalLink, CheckCircle2, Camera } from "lucide-react";
 import { CATEGORIES_BY_GENDER, TYPE_LABELS } from "@/lib/posing-data";
-import { driveImageUrl } from "@/lib/drive-utils";
-import DrawableImage from "@/components/ui/DrawableImage";
+import PhotoCompareLauncher from "@/components/photos/PhotoCompareLauncher";
+import { mergePhotoSets, photoUpdateSets, type PhotoSet } from "@/lib/photo-sets";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 import { safeExternalUrl } from "@/lib/sanitize";
@@ -283,131 +283,6 @@ function PhotoCard({
   );
 }
 
-// ── Comparison section ────────────────────────────────────────────────────────
-// Real in-app side-by-side viewer (not just opening two Drive tabs), with a
-// telestrator-style draw tool: strokes fade out ~5s after being drawn — handy
-// for pointing things out live while recording a feedback video for the client.
-
-function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
-  const t = useT();
-  const [leftId, setLeftId] = useState<string>(photos[0]?.id ?? "");
-  const [rightId, setRightId] = useState<string>(photos[1]?.id ?? "");
-  const [drawMode, setDrawMode] = useState(false);
-  const [clearKey, setClearKey] = useState(0);
-
-  const leftPhoto = photos.find((p) => p.id === leftId);
-  const rightPhoto = photos.find((p) => p.id === rightId);
-
-  if (photos.length < 2) return null;
-
-  return (
-    <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35">
-          {t("Comparaison")}
-        </p>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setDrawMode((v) => !v)}
-            className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border transition-colors ${
-              drawMode
-                ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
-                : "border-(--ep-line)/25 text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
-            }`}
-          >
-            <Pencil size={11} />
-            {drawMode ? t("Dessin actif") : t("Mode dessin")}
-          </button>
-          {drawMode && (
-            <button
-              onClick={() => setClearKey((k) => k + 1)}
-              title={t("Effacer les traits")} aria-label={t("Effacer les traits")}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-(--ep-line)/25 text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
-            >
-              <Eraser size={12} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {drawMode && (
-        <p className="text-[10px] text-(--ep-ink)/30 italic">
-          {t("Trace directement sur les photos pour pointer un détail à l'oral, chaque trait s'efface automatiquement au bout de 5 secondes.")}
-        </p>
-      )}
-
-      <div className="grid grid-cols-2 gap-4">
-        {[
-          { id: leftId, setId: setLeftId, photo: leftPhoto, label: t("Avant") },
-          { id: rightId, setId: setRightId, photo: rightPhoto, label: t("Après") },
-        ].map(({ id, setId, photo, label }) => {
-          const imgUrl = photo
-            ? photo.photo_urls[0] ?? (photo.drive_link ? driveImageUrl(photo.drive_link) : null)
-            : null;
-          return (
-            <div key={label} className="space-y-2">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30">
-                {label}
-              </p>
-              <select value={id} onChange={(e) => setId(e.target.value)} aria-label={label} className={inputCls}>
-                {photos.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {formatDate(p.submitted_at)} : {TYPE_LABELS[p.type] ?? p.type}
-                  </option>
-                ))}
-              </select>
-
-              {photo && imgUrl && (
-                <DrawableImage key={`${id}-${clearKey}`} src={imgUrl} alt={label} drawMode={drawMode} />
-              )}
-              {photo && !imgUrl && (
-                <div className="aspect-[3/4] flex items-center justify-center bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg text-center px-4">
-                  <p className="text-[10px] text-(--ep-ink)/30">
-                    {photo.video_url || photo.video_link || photo.drive_link
-                      ? t("Pas de photo pour cette mise à jour (vidéo).")
-                      : t("Aperçu indisponible. Le lien Drive doit être partagé en «Tous les utilisateurs disposant du lien».")}
-                  </p>
-                </div>
-              )}
-
-              {photo && (
-                <div className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg p-3 space-y-1.5">
-                  <p className="text-xs text-(--ep-strong) font-bold">{TYPE_LABELS[photo.type] ?? photo.type}</p>
-                  <p className="text-[10px] text-(--ep-ink)/40">{formatDate(photo.submitted_at)}</p>
-                  {photo.notes && <p className="text-[10px] text-(--ep-ink)/40 italic">{photo.notes}</p>}
-                  {photo.video_url && (
-                    <a
-                      href={safeExternalUrl(photo.video_url) ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
-                    >
-                      <ExternalLink size={10} />
-                      {t("Voir la vidéo")}
-                    </a>
-                  )}
-                  {!photo.video_url && photo.video_link && <EmbeddedVideo url={photo.video_link} maxWidth={280} />}
-                  {!photo.video_url && !photo.video_link && photo.drive_link && (
-                    <a
-                      href={safeExternalUrl(photo.drive_link) ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-(--ep-accent)/80 hover:text-(--ep-accent) transition-colors"
-                    >
-                      <ExternalLink size={10} />
-                      {t("Ouvrir Drive")}
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ── Main view ─────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -415,6 +290,8 @@ interface Props {
   photos: PhotoUpdate[];
   saveCompetitionSettings: (clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
   sendPhotoFeedback: (photoId: string, clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
+  /** Séances photo (bilans + envois) ; à défaut, seulement les envois de cette page. */
+  compareSets?: PhotoSet[];
 }
 
 export default function CoachClientPhotosView({
@@ -422,14 +299,22 @@ export default function CoachClientPhotosView({
   photos,
   saveCompetitionSettings,
   sendPhotoFeedback,
+  compareSets,
 }: Props) {
   const t = useT();
+  // Comparateur plein écran (2026-10-14) : remplace l'ancienne comparaison
+  // à deux listes déroulantes. Bascule, semaine vs S-6, dessin qui s'efface
+  // après 5 s, post preuve sociale.
+  const sets = compareSets ?? mergePhotoSets(photoUpdateSets(photos));
+  const firstName = (client.full_name ?? "").split(" ")[0] || null;
   const pendingPhotos = photos.filter((p) => !p.coach_replied_at);
   const donePhotos = photos.filter((p) => !!p.coach_replied_at);
   const [showDone, setShowDone] = useState(false);
 
   return (
     <div className="space-y-8">
+      <PhotoCompareLauncher sets={sets} audience="coach" subjectName={firstName} />
+
       {/* Paramètres */}
       <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-4">
@@ -437,9 +322,6 @@ export default function CoachClientPhotosView({
         </p>
         <CompetitionSettings client={client} save={saveCompetitionSettings} />
       </div>
-
-      {/* Comparaison */}
-      {photos.length >= 2 && <ComparisonSection photos={photos} />}
 
       {/* Toutes les photos — en attente */}
       <div>
@@ -501,7 +383,7 @@ export default function CoachClientPhotosView({
         </div>
       )}
 
-      {photos.length === 0 && (
+      {photos.length === 0 && sets.length < 2 && (
         <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-8 text-center">
           <p className="text-xs text-(--ep-ink)/25 italic">
             {t("Aucune photo soumise pour ce client.")}

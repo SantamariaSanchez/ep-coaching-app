@@ -14,6 +14,8 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import VoiceNoteRecorder from "@/components/coach/VoiceNoteRecorder";
 import { resolveVideoEmbed } from "@/lib/video-embed-utils";
 import { CHECKIN_RETURN_KEY } from "@/components/coach/CheckinReturnBar";
+import PhotoCompareLauncher from "@/components/photos/PhotoCompareLauncher";
+import { checkinSetId, type PhotoSet } from "@/lib/photo-sets";
 
 export interface ReviewProgram {
   name: string;
@@ -82,7 +84,7 @@ const btnGhost: React.CSSProperties = {
 };
 
 export default function CheckinReview({
-  clientId, clientName, checkin, previous, program, diet, initialStep,
+  clientId, clientName, checkin, previous, program, diet, initialStep, compareSets = [],
 }: {
   clientId: string;
   clientName: string;
@@ -91,6 +93,8 @@ export default function CheckinReview({
   program: ReviewProgram | null;
   diet: ReviewDiet | null;
   initialStep: number;
+  /** Séances photo des bilans, pour le comparateur plein écran. */
+  compareSets?: PhotoSet[];
 }) {
   const t = useT();
   const router = useRouter();
@@ -320,6 +324,16 @@ export default function CheckinReview({
       {/* 2. Photos */}
       {step === 2 && (
         <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Bascule, semaine vs S-6, dessin qui s'efface, post preuve sociale. */}
+          {checkin.photo_urls.length > 0 && (
+            <PhotoCompareLauncher
+              sets={compareSets}
+              audience="coach"
+              subjectName={firstName}
+              variant="button"
+              initialAfterId={checkinSetId(checkin.id)}
+            />
+          )}
           {checkin.photo_urls.length === 0 ? (
             <div style={card}><p style={{ margin: 0, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.6)" }}>{t("Pas de photo cette semaine.")}</p></div>
           ) : (

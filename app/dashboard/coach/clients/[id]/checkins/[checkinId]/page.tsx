@@ -4,6 +4,7 @@ import { getClientCheckins } from "@/utils/checkins";
 import { getActiveProgram } from "@/utils/programs";
 import { getActiveDietPlan } from "@/utils/nutrition";
 import CheckinReview, { type ReviewProgram, type ReviewDiet } from "@/components/coach/CheckinReview";
+import { setsFromCheckins, mergePhotoSets } from "@/lib/photo-sets";
 
 // Check-in guidé : le coach lance son enregistrement (Loom, ScreenPal ou
 // vocal), puis l'appli l'emmène écran par écran : vidéos d'exécution,
@@ -78,6 +79,9 @@ export default async function CheckinReviewPage({
     : null;
 
   const initialStep = Math.max(0, Math.min(6, Number(etape) || 0));
+  // Comparateur plein écran de l'étape Photos : tout l'historique photo des
+  // bilans, déjà chargé ci-dessus (aucune requête de plus).
+  const compareSets = mergePhotoSets(setsFromCheckins(checkins));
 
   return (
     <CheckinReview
@@ -88,6 +92,7 @@ export default async function CheckinReviewPage({
       program={reviewProgram}
       diet={reviewDiet}
       initialStep={initialStep}
+      compareSets={compareSets}
     />
   );
 }

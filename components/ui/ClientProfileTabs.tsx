@@ -47,6 +47,7 @@ import ClientBilanView from "./ClientBilanView";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
 import CoachClientMindsetView from "@/components/coach/CoachClientMindsetView";
 import CoachClientPhotosView from "./CoachClientPhotosView";
+import { mergePhotoSets, photoUpdateSets, setsFromCheckins } from "@/lib/photo-sets";
 import CheckinDaySettings from "./CheckinDaySettings";
 import CheckinCard from "./CheckinCard";
 import CoachClientTasksView from "./CoachClientTasksView";
@@ -99,7 +100,10 @@ type TabKey = (typeof TABS)[number]["key"];
 // onglets du quotidien d'un coach restent en vue, le reste se range sous
 // « Plus » (toujours à un tap, et ouvert d'office si un de ces onglets a une
 // alerte ou est ouvert par un lien).
-const PRIMARY_TABS: readonly TabKey[] = ["profil", "intake", "programme", "nutrition", "roadmap", "checkins", "bilans", "logbook"];
+// « Photos » rejoint les onglets en vue (2026-10-14) : le comparateur photo
+// est un outil du quotidien du coach (revue de la semaine, post preuve
+// sociale). L'onglet reste masqué tant qu'il n'y a rien à y montrer.
+const PRIMARY_TABS: readonly TabKey[] = ["profil", "intake", "programme", "nutrition", "roadmap", "checkins", "bilans", "photos", "logbook"];
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "Non renseigné";
@@ -406,6 +410,12 @@ export default function ClientProfileTabs({
 
   const pendingCheckins = checkinsWithAverages.filter(({ checkin }) => !checkin.coach_replied_at).length;
 
+  // Comparateur photo : photos physique des bilans + envois de la page Photos.
+  const photoSets = useMemo(
+    () => mergePhotoSets(setsFromCheckins(checkinsWithAverages.map(({ checkin }) => checkin)), photoUpdateSets(photos)),
+    [checkinsWithAverages, photos]
+  );
+
   const suggestions = useMemo(() => {
     const base = generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program);
     const fatigue = generateFatigueTrendSuggestion(logbookSessions);
@@ -438,10 +448,11 @@ export default function ClientProfileTabs({
           défiler sur le côté pour juste choisir un onglet. */}
       {(() => {
         const visibleTabs = TABS.filter(({ key }) => (key !== "cycle" || intake?.gender === "Femme") && (key !== "performances" || (performance && (performance.disciplines.length > 0 || performance.entries.length > 0))))
-          // Onglet "Photos" = suivi de pose de préparation compétition, pas
-          // les photos de check-in (gérées ailleurs). Masqué sauf pour un
-          // client réellement en préparation, pour ne pas paraître cassé/vide.
-          .filter(({ key }) => key !== "photos" || !!client.competition_category);
+          // Onglet "Photos" : comparateur (photos des bilans et des envois)
+          // et suivi de pose compétition. Masqué s'il n'y a ni deux séances
+          // photo à comparer ni préparation compétition, pour ne pas
+          // paraître cassé/vide.
+          .filter(({ key }) => key !== "photos" || !!client.competition_category || photoSets.length >= 2);
         const secondary = visibleTabs.filter(({ key }) => !PRIMARY_TABS.includes(key));
         const secondaryAlert = secondary.some(({ key }) => suggestionsByTab[key]);
         const moreOpen = showMoreTabs || secondaryAlert || !PRIMARY_TABS.includes(activeTab);
@@ -971,6 +982,7 @@ export default function ClientProfileTabs({
         <CoachClientPhotosView
           client={client}
           photos={photos}
+          compareSets={photoSets}
           saveCompetitionSettings={saveCompetitionSettings}
           sendPhotoFeedback={sendPhotoFeedback}
         />

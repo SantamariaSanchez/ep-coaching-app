@@ -5,6 +5,8 @@ import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getAllClientPhotoUpdates } from "@/utils/photos";
 import { saveCompetitionSettings, sendPhotoFeedback } from "./actions";
 import CoachClientPhotosView from "@/components/ui/CoachClientPhotosView";
+import { getClientCheckinPhotos } from "@/utils/checkins";
+import { mergePhotoSets, photoUpdateSets, setsFromCheckins } from "@/lib/photo-sets";
 import { ChevronLeft } from "lucide-react";
 
 export default async function CoachClientPhotosPage({
@@ -26,7 +28,8 @@ export default async function CoachClientPhotosPage({
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
 
-  const photos = await getAllClientPhotoUpdates(id);
+  const [photos, checkinPhotos] = await Promise.all([getAllClientPhotoUpdates(id), getClientCheckinPhotos(id)]);
+  const compareSets = mergePhotoSets(setsFromCheckins(checkinPhotos), photoUpdateSets(photos));
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
@@ -52,6 +55,7 @@ export default async function CoachClientPhotosPage({
         photos={photos}
         saveCompetitionSettings={saveCompetitionSettings}
         sendPhotoFeedback={sendPhotoFeedback}
+        compareSets={compareSets}
       />
     </div>
   );
