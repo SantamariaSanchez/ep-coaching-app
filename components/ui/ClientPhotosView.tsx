@@ -8,7 +8,8 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 import { safeExternalUrl } from "@/lib/sanitize";
-import PhotoCompareSlider from "./PhotoCompareSlider";
+import PhotoCompareLauncher from "@/components/photos/PhotoCompareLauncher";
+import type { PhotoSet } from "@/lib/photo-sets";
 import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 const MAX_PHOTOS = 4;
@@ -305,7 +306,8 @@ function SubmissionForm({
             ))}
           </div>
           <p className="mt-3 text-[10px] text-(--ep-ink)/35 border-t border-(--ep-line)/15 pt-2">
-            {tr("Même endroit, même lumière, même heure (idéalement le matin à jeun) : c'est ce qui rend la comparaison fiable.")}
+            {tr("Même endroit, même lumière, même heure (idéalement le matin à jeun) : c'est ce qui rend la comparaison fiable.")}{" "}
+            {tr("Envoie-les dans cet ordre, le comparateur aligne tout seul les mêmes angles.")}
           </p>
           {isSelfTracking && saveCompetitionSettings && (
             <div className="mt-3 pt-3 border-t border-(--ep-line)/15">
@@ -638,6 +640,8 @@ interface Props {
   // choisir lui-même sa catégorie de compétition, personne d'autre ne peut
   // le faire à sa place.
   saveCompetitionSettings?: (clientId: string, _prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean } | null>;
+  /** Séances photo (bilans + envois) pour le comparateur ; null si le suivi photo est coupé dans « Mon appli ». */
+  compareSets?: PhotoSet[] | null;
 }
 
 export default function ClientPhotosView({
@@ -646,6 +650,7 @@ export default function ClientPhotosView({
   alreadySubmitted,
   saveCompetitionSettings,
   submitPhotoUpdate,
+  compareSets = null,
 }: Props) {
   const tr = useT();
   // Guard: profile not yet available (Supabase fetch failed or slow)
@@ -669,14 +674,6 @@ export default function ClientPhotosView({
   // Photos) — personne ne "donne un retour" là-dessus, donc tout ce qui
   // évoque un coach qui répond n'a pas sa place dans ce contexte.
   const isSelfTracking = profile.role === "coach";
-
-  // Item 35 : mêmes deux extrémités que le comparateur côté coach
-  // (BeforeAfterComparator), mais ici pour le client lui-même — historique
-  // déjà trié du plus récent au plus ancien (getClientPhotoUpdates).
-  const withPhotos = photoHistory.filter((p) => p.photo_urls.length > 0);
-  const newestPhoto = withPhotos[0]?.photo_urls[0] ?? null;
-  const oldestPhoto = withPhotos[withPhotos.length - 1]?.photo_urls[0] ?? null;
-  const showCompare = !!oldestPhoto && !!newestPhoto && oldestPhoto !== newestPhoto;
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -722,6 +719,11 @@ export default function ClientPhotosView({
         )}
       </div>
 
+      {/* Comparateur photo (remplace l'ancien curseur premier/dernier envoi) */}
+      {compareSets && compareSets.length >= 2 && (
+        <PhotoCompareLauncher sets={compareSets} audience="self" className="mb-6" />
+      )}
+
       {/* Submission section */}
       <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5 mb-8">
         <div className="mb-4">
@@ -749,21 +751,6 @@ export default function ClientPhotosView({
           />
         )}
       </div>
-
-      {/* Comparaison avant/après (item 35) */}
-      {showCompare && (
-        <section className="mb-8">
-          <div className="mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-              {tr("Progression")}
-            </p>
-            <h2 className="text-xl font-black uppercase tracking-tight">
-              {tr("Avant / Après")}
-            </h2>
-          </div>
-          <PhotoCompareSlider beforeUrl={oldestPhoto as string} afterUrl={newestPhoto as string} />
-        </section>
-      )}
 
       {/* History */}
       {(photoHistory ?? []).length > 0 && (

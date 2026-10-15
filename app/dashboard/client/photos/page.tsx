@@ -15,6 +15,8 @@ import { getClientMeasurements } from "@/utils/measurements";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { isOn } from "@/lib/app-setup";
 import MeasurementsSection from "@/components/ui/MeasurementsSection";
+import { getClientCheckinPhotos } from "@/utils/checkins";
+import { mergePhotoSets, photoUpdateSets, setsFromCheckins } from "@/lib/photo-sets";
 
 export default async function ClientPhotosPage() {
   const user = await getUser();
@@ -36,6 +38,9 @@ export default async function ClientPhotosPage() {
   const showCircumferences = isOn(appSetup, "mensurations");
   const showBodyFat = isOn(appSetup, "masse_grasse");
   const showMeasures = showCircumferences || showBodyFat;
+  // Comparateur photo : jamais mis en avant chez quelqu'un qui a coupé le
+  // suivi photo dans « Mon appli ».
+  const showComparator = isOn(appSetup, "photos");
 
   if (!isSubscribed(profile)) {
     const photos = await getPersonalPhotos(user.id).catch(() => []);
@@ -48,6 +53,7 @@ export default async function ClientPhotosPage() {
         logMeasurement={showMeasures ? logClientMeasurement : undefined}
         showCircumferences={showCircumferences}
         showBodyFat={showBodyFat}
+        showComparator={showComparator}
       />
     );
   }
@@ -59,11 +65,15 @@ export default async function ClientPhotosPage() {
   let photoHistory: Awaited<ReturnType<typeof getClientPhotoUpdates>> = [];
   let weekUpdate = null;
   let dayUpdate = null;
+  let checkinPhotos: Awaited<ReturnType<typeof getClientCheckinPhotos>> = [];
   try {
-    [photoHistory, weekUpdate, dayUpdate] = await Promise.all([
+    [photoHistory, weekUpdate, dayUpdate, checkinPhotos] = await Promise.all([
       getClientPhotoUpdates(user.id, 20),
       frequency === "weekly" ? getThisWeekPhotoUpdate(user.id) : Promise.resolve(null),
       frequency === "daily" ? getTodayPhotoUpdate(user.id) : Promise.resolve(null),
+      // Photos physique des bilans : la source principale d'une semaine à
+      // l'autre, comparées avec les envois de cette page.
+      showComparator ? getClientCheckinPhotos(user.id) : Promise.resolve([]),
     ]);
   } catch (e) {
     console.error("Photos fetch error:", e);
@@ -71,6 +81,9 @@ export default async function ClientPhotosPage() {
   }
 
   const alreadySubmitted = frequency === "weekly" ? !!weekUpdate : !!dayUpdate;
+  const compareSets = showComparator
+    ? mergePhotoSets(setsFromCheckins(checkinPhotos), photoUpdateSets(photoHistory))
+    : null;
 
   return (
     <>
@@ -80,6 +93,7 @@ export default async function ClientPhotosPage() {
       photoHistory={photoHistory}
       alreadySubmitted={alreadySubmitted}
       submitPhotoUpdate={submitPhotoUpdate}
+      compareSets={compareSets}
     />
     {showMeasures && (
       <div className="px-6 max-w-2xl mx-auto pb-24 md:pb-8">

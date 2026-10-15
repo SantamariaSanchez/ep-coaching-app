@@ -234,6 +234,10 @@ export default function CheckinForm({
         </div>
 
         <label className={lbl}>{t("Photos (")}{photos.length}/{MAX_PHOTOS})</label>
+        {/* Comparateur photo : c'est l'ordre d'envoi qui donne l'angle. */}
+        <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "-2px 0 8px", lineHeight: 1.45 }}>
+          {t("Dans l'ordre : face, profil, dos. Le comparateur aligne tout seul les mêmes angles d'une semaine à l'autre.")}
+        </p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {photos.map((p) => (
             <div key={p.localId} style={{ position: "relative", width: 64, height: 64, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(var(--ep-line-rgb),0.3)" }}>

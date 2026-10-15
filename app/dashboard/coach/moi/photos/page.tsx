@@ -58,6 +58,7 @@ export default async function CoachMonPhotosPage() {
       logMeasurement={logPersonalMeasurement}
       showCircumferences={isOn(appSetup, "mensurations")}
       showBodyFat={isOn(appSetup, "masse_grasse")}
+      showComparator={isOn(appSetup, "photos")}
     />
   );
 }
