@@ -1,5 +1,6 @@
 "use server";
 
+import { todayInParis } from "@/lib/dates";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
@@ -67,7 +68,9 @@ export async function submitPhotoUpdate(
     if (type !== "mandatory_poses" && !videoPath && !videoLink) return { error: "Vidéo requise (upload ou lien)." };
 
     const today = new Date();
-    const submitted_at = today.toISOString().split("T")[0];
+    // Date du jour à Paris : en UTC, une photo envoyée entre minuit et 2 h
+    // était datée de la veille.
+    const submitted_at = todayInParis();
     const week_number = getISOWeekNumber(today);
 
     // Use admin client to bypass RLS — user identity verified above
