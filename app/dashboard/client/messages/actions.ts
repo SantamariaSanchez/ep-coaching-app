@@ -51,19 +51,31 @@ export async function triggerAICoachReply(aiCoachId: string): Promise<{ error?: 
     const limited = await checkRateLimit(`ai-coach-reply:${guard.userId}`, PRESETS.ai.limit, PRESETS.ai.windowSeconds);
     if (!limited.allowed) return {};
 
+    // Les 30 DERNIERS messages, remis dans l'ordre : trier par ordre
+    // croissant avant la limite renvoyait les 30 premiers de la
+    // conversation, sans le message que le client vient d'envoyer. Passé 30
+    // messages, le coach IA ne répondait donc plus jamais.
     const { data: history } = await admin
       .from("messages")
       .select("sender_id, content, type")
       .eq("conversation_id", guard.userId)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(30);
 
     const textHistory = ((history as { sender_id: string; content: string | null; type: string }[]) ?? [])
+      .reverse()
       .filter((m) => m.type === "text" && m.content)
       .map((m) => ({
         role: (m.sender_id === aiCoachId ? "assistant" : "user") as "assistant" | "user",
         content: m.content as string,
       }));
+
+    // L'API exige que la conversation commence par un message « user » : or
+    // elle s'ouvre sur le message de bienvenue du coach IA
+    // (lib/ai-coach-welcome.ts), et la fenêtre des 30 derniers peut aussi
+    // démarrer sur une réponse du coach. Ces messages de tête sont retirés,
+    // sinon l'appel était refusé et le coach IA ne répondait pas.
+    while (textHistory.length > 0 && textHistory[0].role === "assistant") textHistory.shift();
 
     // Rien à répondre (dernier message déjà du coach, ou historique vide) —
     // évite qu'une double invocation ou un ordre inattendu ne fasse

@@ -61,13 +61,20 @@ export async function sendAgentMessage(
       .select("role, content")
       .eq("owner_id", guard.userId)
       .eq("agent_key", agentKey)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(40);
 
-    const messages = ((history as { role: string; content: string }[] | null) ?? []).map((m) => ({
+    // Les 40 DERNIERS messages, remis dans l'ordre : trié en croissant avant
+    // la limite, l'historique s'arrêtait aux 40 premiers échanges et l'agent
+    // ne voyait plus la question qu'on venait de lui poser.
+    const messages = ((history as { role: string; content: string }[] | null) ?? []).reverse().map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     }));
+
+    // L'API exige un premier message « user » : la fenêtre des 40 derniers
+    // peut commencer par une réponse de l'agent, retirée dans ce cas.
+    while (messages.length > 0 && messages[0].role === "assistant") messages.shift();
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const response = await client.messages.create({
