@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { todayInParis } from "@/lib/dates";
 import { availableFields, clearFieldCache, explainError, pickFields, queryConnector, windsorConfigured, WindsorError, type WindsorRow } from "@/lib/social/windsor";
-import { PLATFORM_LABELS, configFor, type DailyColumn, type Mapping, type Platform, type PlatformConfig, type PostColumn } from "@/lib/social/platforms";
+import { WINDSOR_AUTO_PLATFORMS, PLATFORM_LABELS, configFor, type DailyColumn, type Mapping, type Platform, type PlatformConfig, type PostColumn } from "@/lib/social/platforms";
 import { linkPostsToScripts } from "@/lib/social/script-link";
 
 // Moteur de synchro des stats réseaux (Windsor -> Supabase). Chaque
@@ -453,7 +453,7 @@ export async function runSocialSync(opts: {
   const from = shift(to, -Math.max(30, opts.days ?? 30));
   clearFieldCache();
 
-  let q = admin.from("social_accounts").select("*").eq("active", true).eq("source", "windsor");
+  let q = admin.from("social_accounts").select("*").eq("active", true).eq("source", "windsor").in("platform", WINDSOR_AUTO_PLATFORMS);
   if (opts.platform) q = q.eq("platform", opts.platform);
   const { data: accounts, error } = await q;
   if (error) throw new Error(`social_accounts : ${error.message}`);

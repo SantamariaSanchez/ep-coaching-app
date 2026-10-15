@@ -10,6 +10,12 @@
 
 export type Platform = "tiktok" | "linkedin" | "youtube" | "facebook" | "instagram" | "threads";
 
+// Windsor.ai : l'essai est fini et la formule payante ne garde qu'un seul
+// accès (décision du fondateur 2026-10-15) : seul Instagram est synchronisé
+// automatiquement. Les autres réseaux gardent leur historique et passent en
+// saisie manuelle dans Mes stats réseaux.
+export const WINDSOR_AUTO_PLATFORMS: Platform[] = ["instagram"];
+
 export const PLATFORM_LABELS: Record<Platform, string> = {
   tiktok: "TikTok",
   linkedin: "LinkedIn",

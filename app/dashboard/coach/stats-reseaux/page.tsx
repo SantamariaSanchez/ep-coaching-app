@@ -5,7 +5,7 @@ import { ExternalLink, Zap, RefreshCw, Target, Trophy } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { todayInParis } from "@/lib/dates";
 import { getSocialDashboard } from "@/lib/social/queries";
-import { PLATFORM_LABELS, type Platform } from "@/lib/social/platforms";
+import { PLATFORM_LABELS, type Platform, WINDSOR_AUTO_PLATFORMS } from "@/lib/social/platforms";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { COACH_PLATFORMS } from "@/lib/app-setup";
 import SocialCharts from "@/components/social/SocialCharts";
@@ -187,7 +187,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                   <p style={{ fontSize: 26, fontWeight: 900, color: "var(--ep-ink)", margin: 0, lineHeight: 1.1 }}>{fmt(a.followers)}</p>
                   <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 8px" }}>
                     {tr("abonnés")}{a.followersDate ? ` au ${new Date(`${a.followersDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}
-                    {a.source === "windsor" ? tr(" · synchro auto") : ""}
+                    {a.source === "windsor" && WINDSOR_AUTO_PLATFORMS.includes(a.platform) ? tr(" · synchro auto") : ""}
                   </p>
                   <div style={{ display: "flex", gap: 10, fontSize: 11.5, marginBottom: 8 }}>
                     {(["d7", "d30", "d90"] as const).filter((k) => a.growth[k] !== null).map((k) => (
