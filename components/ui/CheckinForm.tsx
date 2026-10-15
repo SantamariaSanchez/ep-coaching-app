@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useActionState, useRef, useState } from "react";
+import { startTransition, useActionState, useRef, useState } from "react";
 import { submitCheckin } from "@/app/dashboard/client/checkin/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { CheckCircle2, Camera, Video, X, Loader2, Sparkles, AlertCircle } from "lucide-react";
@@ -176,7 +176,18 @@ export default function CheckinForm({
   }
 
   return (
-    <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+    // Envoi par onSubmit plutôt que <form action> : React 19 vide les champs
+    // non contrôlés après chaque form action, même quand le serveur renvoie
+    // une erreur. Un check-in refusé (déjà envoyé depuis un autre onglet,
+    // échec d'enregistrement) effaçait toutes les réponses écrites.
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        startTransition(() => formAction(fd));
+      }}
+      style={{ display: "flex", flexDirection: "column", gap: 28 }}
+    >
 
       {/* ── Poids ───────────────────────────────────────────────────────────── */}
       <div>
