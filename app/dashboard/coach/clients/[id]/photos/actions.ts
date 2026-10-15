@@ -3,7 +3,8 @@ import { requireOwnClient, requireOwnClientOrSelf } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
-import { notifyClientPhotoFeedback } from "@/app/actions/notifications";
+import { after } from "next/server";
+import { notifyClientPhotoFeedback } from "@/lib/coach-client-notify";
 
 type ActionState = { error?: string; success?: boolean } | null;
 
@@ -79,7 +80,9 @@ export async function sendPhotoFeedback(
     .single();
 
   if (profile?.email && profile?.full_name) {
-    notifyClientPhotoFeedback(profile.email, profile.full_name, clientId, guard.userId).catch(() => {});
+    // after() : l'envoi n'est pas coupé par la fin de la requête (Vercel).
+    const { email, full_name } = profile;
+    after(() => notifyClientPhotoFeedback(email, full_name, clientId, guard.userId).catch(() => {}));
   }
 
   revalidatePath(`/dashboard/coach/clients/${clientId}/photos`);

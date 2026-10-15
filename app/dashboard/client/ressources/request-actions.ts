@@ -4,10 +4,11 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
+import { after } from "next/server";
 import {
   notifyCoachNewResourceRequest,
   notifyClientRequestAnswered,
-} from "@/app/actions/notifications";
+} from "@/lib/coach-client-notify";
 
 export async function createResourceRequest(
   title: string,
@@ -32,7 +33,9 @@ export async function createResourceRequest(
       .select("full_name")
       .eq("id", guard.userId)
       .single();
-    notifyCoachNewResourceRequest(profile?.full_name ?? "Un membre", title.trim(), guard.userId).catch(() => {});
+    // after() : l'envoi n'est pas coupé par la fin de la requête (Vercel).
+    const authorName = profile?.full_name ?? "Un membre";
+    after(() => notifyCoachNewResourceRequest(authorName, title.trim(), guard.userId).catch(() => {}));
 
     revalidatePath("/dashboard/client/ressources");
     revalidatePath("/dashboard/coach/ressources");
@@ -89,13 +92,10 @@ export async function respondToResourceRequest(
         .eq("id", request.author_id)
         .single();
       if (authorProfile?.email) {
-        notifyClientRequestAnswered(
-          authorProfile.email,
-          authorProfile.full_name ?? "",
-          request.title,
-          request.author_id,
-          guard.userId
-        ).catch(() => {});
+        const { email, full_name } = authorProfile;
+        after(() =>
+          notifyClientRequestAnswered(email, full_name ?? "", request.title, request.author_id, guard.userId).catch(() => {})
+        );
       }
     }
 

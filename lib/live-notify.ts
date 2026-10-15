@@ -4,7 +4,7 @@
 // createLiveEvent (qui a déjà vérifié le coach et son client) l'appelle.
 //
 // Pourquoi il ne passe plus par notifyClientNewLiveEvent
-// (app/actions/notifications.ts) : ce dernier formatait l'horaire sans
+// (ancien app/actions/notifications.ts, supprimé depuis) : ce dernier formatait l'horaire sans
 // fuseau, donc en UTC sur Vercel, et l'email annonçait 16:00 pour un live
 // à 18:00. L'horaire est désormais formaté ici, côté appelant, en heure de
 // Paris (voir lib/live-time.ts).

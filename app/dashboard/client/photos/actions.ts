@@ -3,7 +3,8 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
-import { notifyCoachNewPhotoUpdate } from "@/app/actions/notifications";
+import { after } from "next/server";
+import { notifyCoachNewPhotoUpdate } from "@/lib/coach-client-notify";
 import { requireClient } from "@/lib/auth-guards";
 import type { SubmissionType } from "@/lib/posing-data";
 import { TYPE_LABELS } from "@/lib/posing-data";
@@ -85,12 +86,11 @@ export async function submitPhotoUpdate(
 
     if (error) return { error: `Erreur lors de l'envoi : ${error.message}` };
 
-    notifyCoachNewPhotoUpdate(
-      profile.full_name ?? "Un client",
-      TYPE_LABELS[type],
-      category,
-      guard.userId
-    ).catch(() => {});
+    // after() : l'envoi n'est pas coupé par la fin de la requête (Vercel).
+    const clientName = profile.full_name ?? "Un client";
+    after(() =>
+      notifyCoachNewPhotoUpdate(clientName, TYPE_LABELS[type], category, guard.userId).catch(() => {})
+    );
 
     revalidatePath("/dashboard/client/photos");
     return { success: true };

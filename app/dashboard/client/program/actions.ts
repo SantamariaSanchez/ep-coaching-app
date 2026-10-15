@@ -2,7 +2,8 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
-import { notifyCoachNewCorrection } from "@/app/actions/notifications";
+import { after } from "next/server";
+import { notifyCoachNewCorrection } from "@/lib/coach-client-notify";
 import { requireClient } from "@/lib/auth-guards";
 import { saveProgramForClient } from "@/utils/programs";
 import type { ProgramInput } from "@/utils/programs";
@@ -60,11 +61,15 @@ export async function submitCorrection(
     .eq("id", guard.userId)
     .single();
 
-  notifyCoachNewCorrection(
-    profile?.full_name ?? "Un client",
-    exercise_name,
-    guard.userId
-  ).catch(() => {});
+  // after() : sans lui, Vercel coupe la fonction dès la réponse envoyée et
+  // l'email / la notif au coach partaient rarement.
+  after(() =>
+    notifyCoachNewCorrection(
+      profile?.full_name ?? "Un client",
+      exercise_name,
+      guard.userId
+    ).catch(() => {})
+  );
 
   revalidatePath("/dashboard/client/program");
   return { success: true };
