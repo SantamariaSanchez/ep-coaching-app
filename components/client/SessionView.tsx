@@ -17,6 +17,9 @@ import {
   ExternalLink,
   RotateCcw,
   ChevronDown,
+  Flag,
+  MoreVertical,
+  Trash2,
 } from "lucide-react";
 import {
   BarChart,
@@ -70,6 +73,8 @@ import { uploadSetVideo, normalizeVideoType, videoExtension, isProbablyVideo } f
 import { useWakeLock } from "@/hooks/useWakeLock";
 import ExerciseBlock from "@/components/client/session/ExerciseBlock";
 import RestBar from "@/components/client/session/RestBar";
+import SessionClock from "@/components/client/session/SessionClock";
+import { useTypingInSession } from "@/components/client/session/useTypingInSession";
 import SwapSheet from "@/components/client/session/SwapSheet";
 import VideoSheet, { MAX_VIDEO_BYTES, formatBytes } from "@/components/client/session/VideoSheet";
 import type { ExerciseState, LibraryTip, PrevWeight, SetState, VideoState } from "@/components/client/session/types";
@@ -618,32 +623,32 @@ function WarmupStep({
         </div>
         <div className="flex justify-between mt-1">
           <span className="text-[8px] text-(--ep-ink)/25">{tr("0 min")}</span>
-          <span className="text-[8px] text-green-400">{tr("5 min ✓")}</span>
+          <span className="text-[8px] text-(--ep-ok)">{tr("5 min ✓")}</span>
           <span className="text-[8px] text-(--ep-ink)/25">{tr("15 min")}</span>
         </div>
       </div>
 
       {/* Status message */}
       {!canValidate && (
-        <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-5">
-          <AlertCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-red-400">
+        <div className="flex items-start gap-2.5 bg-(--ep-bad)/10 border border-(--ep-bad)/25 rounded-xl px-4 py-3 mb-5">
+          <AlertCircle size={14} className="text-(--ep-bad) flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-(--ep-bad)">
             {tr("Minimum 5 minutes d'échauffement requis pour préparer tes articulations")}
           </p>
         </div>
       )}
       {isOptimal && (
-        <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-2.5 mb-5">
-          <CheckCircle2 size={14} className="text-green-400" />
-          <p className="text-xs font-bold text-green-400">
+        <div className="flex items-center gap-2 bg-(--ep-ok)/10 border border-(--ep-ok)/25 rounded-xl px-4 py-2.5 mb-5">
+          <CheckCircle2 size={14} className="text-(--ep-ok)" />
+          <p className="text-xs font-bold text-(--ep-ok)">
             {tr("Durée recommandée atteinte ✓")}
           </p>
         </div>
       )}
       {isLate && (
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5 mb-5">
-          <AlertCircle size={14} className="text-amber-400" />
-          <p className="text-xs font-bold text-amber-400">
+        <div className="flex items-center gap-2 bg-(--ep-warn)/10 border border-(--ep-warn)/25 rounded-xl px-4 py-2.5 mb-5">
+          <AlertCircle size={14} className="text-(--ep-warn)" />
+          <p className="text-xs font-bold text-(--ep-warn)">
             {tr("Tu peux commencer, n'attends pas trop")}
           </p>
         </div>
@@ -723,7 +728,7 @@ function WarmupStep({
             <button
               onClick={() => removeExercise(i)}
               aria-label={tr("Retirer")}
-              className="text-(--ep-ink)/25 hover:text-red-400 transition-colors flex-shrink-0"
+              className="-mr-2 h-11 w-11 flex items-center justify-center text-(--ep-ink)/35 hover:text-(--ep-bad) transition-colors flex-shrink-0"
             >
               <X size={14} />
             </button>
@@ -770,7 +775,7 @@ function WarmupStep({
 
       <button
         onClick={onCancel}
-        className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/25 hover:text-red-400 transition-colors"
+        className="w-full mt-3 min-h-11 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-bad) transition-colors"
       >
         {tr("Annuler la séance")}
       </button>
@@ -865,6 +870,12 @@ export default function SessionView({
   const [videoDraft, setVideoDraft] = useState<{ key: string; localId: string; file: File; url: string } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessoriesOpen, setAccessoriesOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  // Clavier ouvert sur un champ de la séance (note, charge, reps) : avec
+  // l'appli native (Keyboard resize "body"), la barre de repos et la nav du
+  // bas remontaient au-dessus du clavier et recouvraient le champ en cours
+  // de saisie — la note d'exercice passait sous le bouton de fin de séance.
+  const typing = useTypingInSession(step === "session");
 
   // Recap state
   const [feeling, setFeeling] = useState(3);
@@ -1925,10 +1936,10 @@ export default function SessionView({
 
         {/* PRs */}
         {sessionPRs.length > 0 && (
-          <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-4 mb-6">
+          <div className="bg-(--ep-gold)/10 border border-(--ep-gold)/30 rounded-xl p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
-              <Trophy size={14} className="text-amber-400" />
-              <p className="text-xs font-black uppercase tracking-widest text-amber-400">
+              <Trophy size={14} className="text-(--ep-gold)" />
+              <p className="text-xs font-black uppercase tracking-widest text-(--ep-gold)">
                 {sessionPRs.length}{" "}{tr("nouveau")}{sessionPRs.length > 1 ? "x" : ""}{" "}{tr("PR")}
               </p>
             </div>
@@ -1936,7 +1947,7 @@ export default function SessionView({
               {sessionPRs.map((pr, i) => (
                 <span
                   key={i}
-                  className="text-xs font-bold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20"
+                  className="text-xs font-bold text-(--ep-gold) bg-(--ep-gold)/10 px-2.5 py-1 rounded-full border border-(--ep-gold)/25"
                 >
                   {pr.exerciseName} : {pr.weightKg}{" "}{tr("kg")}
                 </span>
@@ -1948,7 +1959,7 @@ export default function SessionView({
                 publier à sa place : partager reste son choix. */}
             <a
               href={`${communityBasePath}/communaute/victoires?share=${encodeURIComponent(buildPRShareText(sessionPRs))}`}
-              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/30 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-(--ep-gold)/15 hover:bg-(--ep-gold)/25 text-(--ep-gold) px-3 min-h-11 rounded-lg border border-(--ep-gold)/35 transition-colors"
             >
               <Trophy size={11} />{" "}{tr("Partager en Victoire")}
             </a>
@@ -2115,9 +2126,9 @@ export default function SessionView({
         {!session.is_completed && (
           <>
             {completeError && (
-              <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 mb-3">
-                <AlertCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-red-300">{completeError}</p>
+              <div className="flex items-start gap-2 bg-(--ep-bad)/10 border border-(--ep-bad)/25 rounded-xl px-4 py-3 mb-3">
+                <AlertCircle size={14} className="text-(--ep-bad) flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-(--ep-bad)">{completeError}</p>
               </div>
             )}
             <button
@@ -2126,18 +2137,18 @@ export default function SessionView({
               className="w-full py-4 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-sm font-black uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {saving ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
                   <CheckCircle2 size={16} />
-                  {tr("Valider et sauvegarder la séance")}
+                  {tr("Enregistrer la séance")}
                 </>
               )}
             </button>
             <button
               onClick={handleCancelSession}
               disabled={saving || canceling}
-              className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/25 hover:text-red-400 transition-colors disabled:opacity-50"
+              className="w-full mt-3 min-h-11 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-bad) transition-colors disabled:opacity-50"
             >
               {canceling ? tr("Annulation…") : tr("Annuler la séance (rien ne sera enregistré)")}
             </button>
@@ -2152,12 +2163,12 @@ export default function SessionView({
         {session.is_completed && session.session_date === todayInParis() && (
           <div className="mt-2">
             {reopenError && (
-              <p className="text-[11px] text-red-400 text-center mb-2">{reopenError}</p>
+              <p className="text-[11px] text-(--ep-bad) text-center mb-2">{reopenError}</p>
             )}
             <button
               onClick={handleReopenSession}
               disabled={reopening}
-              className="w-full py-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-amber-400 border border-(--ep-line)/25 hover:border-amber-500/40 rounded-xl transition-colors disabled:opacity-50"
+              className="w-full py-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-warn) border border-(--ep-line)/25 hover:border-(--ep-warn)/40 rounded-xl transition-colors disabled:opacity-50"
             >
               {reopening ? (
                 <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -2176,6 +2187,7 @@ export default function SessionView({
   // ── SESSION ──────────────────────────────────────────────────────────────────
   const totalSetsAll = exercises.reduce((n, e) => n + e.sets.length, 0);
   const doneSetsAll = exercises.reduce((n, e) => n + e.sets.filter((s) => s.validated).length, 0);
+  const allSetsDone = totalSetsAll > 0 && doneSetsAll >= totalSetsAll;
   const groups = exercises.map((e) => e.exercise.superset_group ?? null);
   const tags = supersetLabels(groups);
   const blocks = blocksOf(exercises);
@@ -2247,32 +2259,76 @@ export default function SessionView({
   };
 
   return (
-    <div className="pb-48">
-      {/* En-tête : la séance, la progression, rien d'autre. */}
-      <div className="sticky top-0 z-30 bg-(--ep-s2) border-b border-(--ep-line)/25 px-3 pt-2 pb-2">
+    <div className="pb-40">
+      {/* En-tête : la séance, le chrono (toujours visible), la progression.
+          Terminer / annuler passent dans le menu « ⋯ » : plus de bouton de
+          fin planté en permanence (retour direct 2026-10-20). */}
+      <div className="sticky top-0 z-30 bg-(--ep-s2) border-b border-(--ep-line)/25 px-3 pt-[max(8px,env(safe-area-inset-top))] pb-2">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-black uppercase tracking-tight text-(--ep-strong) truncate">{session.day_label}</p>
-              <p className="text-[11px] text-(--ep-ink)/50 tabular-nums">
+              <p className="text-sm font-black uppercase tracking-tight text-(--ep-strong) truncate leading-5">{session.day_label}</p>
+              <p className="text-[11px] text-(--ep-ink)/55 tabular-nums leading-4 truncate">
                 {doneSetsAll}/{totalSetsAll} {tr("séries")}
                 {avgRIR != null ? ` · ${tr("RIR moy.")} ${Math.round(avgRIR * 10) / 10}` : ""}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={handleCancelSession}
-              disabled={canceling}
-              className="h-11 px-2 text-[10px] font-bold uppercase tracking-wider text-(--ep-ink)/40 disabled:opacity-50"
-            >
-              {canceling ? tr("Annulation…") : tr("Annuler")}
-            </button>
-
+            <SessionClock sessionStart={sessionStart} rest={rest} showRest={typing} />
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label={tr("Options de la séance")}
+                className="h-11 w-11 -mr-1.5 flex items-center justify-center rounded-xl text-(--ep-ink)/60 active:bg-(--ep-line)/15"
+              >
+                <MoreVertical size={18} />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" aria-hidden onClick={() => setMenuOpen(false)} />
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-1 z-50 w-60 rounded-xl border border-(--ep-line)/35 bg-(--ep-s4) p-1 shadow-[0_12px_32px_rgba(var(--ep-shade-rgb),0.45)]"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        goToRecap();
+                      }}
+                      className="w-full min-h-11 px-3 flex items-center gap-2 rounded-lg text-left text-[13px] font-bold text-(--ep-strong) active:bg-(--ep-line)/15"
+                    >
+                      <Flag size={15} className="text-(--ep-accent)" />
+                      {tr("Terminer la séance")}
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={canceling}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        void handleCancelSession();
+                      }}
+                      className="w-full min-h-11 px-3 flex items-center gap-2 rounded-lg text-left text-[13px] font-bold text-(--ep-bad) active:bg-(--ep-bad)/10 disabled:opacity-50"
+                    >
+                      <Trash2 size={15} />
+                      {canceling ? tr("Annulation…") : tr("Annuler la séance")}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           <div className="mt-1.5 h-1 rounded-full bg-(--ep-line)/20 overflow-hidden">
             <div
-              className="h-full rounded-full bg-(--ep-accent) transition-[width] duration-300"
-              style={{ width: `${totalSetsAll > 0 ? (doneSetsAll / totalSetsAll) * 100 : 0}%` }}
+              className="h-full rounded-full transition-[width] duration-300"
+              style={{
+                width: `${totalSetsAll > 0 ? (doneSetsAll / totalSetsAll) * 100 : 0}%`,
+                background: allSetsDone ? "var(--ep-ok)" : "var(--ep-accent)",
+              }}
             />
           </div>
         </div>
@@ -2342,6 +2398,31 @@ export default function SessionView({
         <div className="pt-1">
           <ExercisePicker onAdd={handleAddExercise} />
         </div>
+
+        {/* Fin de liste : finir la séance, même avant la dernière série
+            (le bouton de la barre du bas n'apparaît qu'une fois tout fait). */}
+        {exercises.length > 0 && (
+          <div className="pt-3 pb-2 space-y-1">
+            <button
+              type="button"
+              onClick={goToRecap}
+              className={`w-full min-h-12 rounded-xl flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-wider transition-colors ${
+                allSetsDone
+                  ? "bg-(--ep-accent) text-(--ep-strong)"
+                  : "border border-(--ep-line)/35 bg-(--ep-s1) text-(--ep-ink)/75"
+              }`}
+            >
+              <Flag size={14} />
+              {allSetsDone ? tr("Terminer la séance") : tr("Terminer la séance maintenant")}
+            </button>
+            {!allSetsDone && totalSetsAll > 0 && (
+              <p className="text-center text-[11px] text-(--ep-ink)/45">
+                {totalSetsAll - doneSetsAll}{" "}
+                {totalSetsAll - doneSetsAll > 1 ? tr("séries pas encore faites") : tr("série pas encore faite")}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {notice && (
@@ -2357,10 +2438,10 @@ export default function SessionView({
 
       <RestBar
         rest={rest}
-        sessionStart={sessionStart}
         doneSets={doneSetsAll}
         totalSets={totalSetsAll}
         nextLabel={nextLabel}
+        hidden={typing}
         onAdjust={(delta) => setRest((r) => (r ? { ...r, seconds: Math.max(5, r.seconds + delta) } : r))}
         onSkip={closeRest}
         onFinish={goToRecap}

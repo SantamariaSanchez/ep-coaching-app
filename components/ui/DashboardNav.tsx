@@ -534,6 +534,7 @@ export default function DashboardNav({
     [tabs, sidebar, base, t]
   );
   const pathname = usePathname();
+  const onSessionPage = pathname.includes("/logbook/session/");
   const [isDesktop, setIsDesktop] = useState(false);
 
   // Retour direct 2026-09-10 ("ça a rien à faire là tout le temps sur
@@ -1117,7 +1118,9 @@ export default function DashboardNav({
             room for the top-level sections. Plus rien de fixed en haut
             (menu/profil/cloche sont descendus dans la barre du bas) donc
             plus besoin de marge pour les éviter — la bande colle en haut. */}
-        {!isDesktop && mobileSubItems.length > 1 && (
+        {/* Séance en cours : la bande collait en haut au même endroit que
+            l'en-tête de séance (chrono, progression) et passait dessous. */}
+        {!isDesktop && !onSessionPage && mobileSubItems.length > 1 && (
           <nav
             style={{
               position: "sticky",
@@ -1219,7 +1222,12 @@ export default function DashboardNav({
       <div
         style={{
           // Page Plus : la recherche est déjà en tête, pas de bouton en double.
-          display: isDesktop || pathname.endsWith("/plus") || pathname.includes("/messages") ? "none" : "flex",
+          // Séance en cours : ces deux boutons se posaient pile sur
+          // « Terminer » de la barre de séance (même ancrage bas-droite, et
+          // <main> en z-index 1 les faisait passer devant elle) — retour
+          // direct 2026-10-20, « les notes et le bouton de fin de séance se
+          // chevauchent ». La séance a ses propres notes par exercice.
+          display: isDesktop || onSessionPage || pathname.endsWith("/plus") || pathname.includes("/messages") ? "none" : "flex",
           position: "fixed",
           bottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
           right: 14,

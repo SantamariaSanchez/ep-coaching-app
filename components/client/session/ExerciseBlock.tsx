@@ -480,7 +480,7 @@ function SetEditor({
           <button
             type="button"
             onClick={() => setShowScore((v) => !v)}
-            className="text-[10px] font-bold text-(--ep-ink)/45 -my-3 py-3 px-1"
+            className="min-h-11 -my-3.5 px-1 inline-flex items-center text-[10px] font-bold text-(--ep-ink)/45"
           >
             {showScore ? t("Masquer l'exécution") : t("+ Exécution")}
           </button>
@@ -677,9 +677,9 @@ export default function ExerciseBlock({
   const last = prevSets[0] ?? prevWeight;
   const lastText =
     last && last.weight != null
-      ? `${formatKg(last.weight)} kg${last.reps ? ` × ${last.reps}` : ""}`
+      ? `${formatKg(last.weight)}\u00a0kg${last.reps ? `\u00a0×\u00a0${last.reps}` : ""}`
       : last?.reps
-        ? `${last.reps} ${unit}`
+        ? `${last.reps}\u00a0${unit}`
         : null;
 
   const togglePanel = (p: Panel) => setPanel((cur) => (cur === p ? null : p));
@@ -727,15 +727,15 @@ export default function ExerciseBlock({
                 {supersetTag}
               </span>
             )}
-            <span className={`truncate text-sm font-black ${complete && !focused ? "text-(--ep-ink)/55" : "text-(--ep-strong)"}`}>
+            <span className={`min-w-0 line-clamp-2 break-words text-sm leading-[18px] font-black ${complete && !focused ? "text-(--ep-ink)/55" : "text-(--ep-strong)"}`}>
               {exercise.name}
             </span>
             {hasPR && <span className="shrink-0 text-xs" aria-label={t("Record")}>🏆</span>}
           </span>
           <span className="flex items-center gap-1.5 text-[11px] text-(--ep-ink)/55 leading-4 mt-0.5 min-w-0">
-            <span className="truncate">
+            <span className="line-clamp-2">
               {prescription}
-              {lastText ? ` · ${t("Dern.")} ${lastText}` : ""}
+              {lastText ? ` · ${t("Dern.")}\u00a0${lastText}` : ""}
             </span>
           </span>
           {(deferred || (technique && !focused) || exercise.replaces) && (

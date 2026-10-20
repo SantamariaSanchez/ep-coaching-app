@@ -2,16 +2,23 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
-import { Timer, SkipForward, Flag } from "lucide-react";
+import { SkipForward, Flag, CheckCircle2 } from "lucide-react";
 import { getDeviceSettings } from "@/lib/device-settings";
 import { formatClockSeconds, type LiveRest } from "@/lib/live-session";
 
-// Barre fixe en bas de la séance, visible en permanence (retour direct du
-// fondateur 2026-10-14 : « je veux savoir l'exo, combien de sets, mon
-// repos »). Pendant un repos : décompte calculé depuis l'heure de départ
-// (Date.now), donc juste même si l'appli est passée en arrière-plan ou que
-// l'écran s'est éteint, bip et vibration à la fin. Sinon : chrono de séance,
-// progression et prochaine série.
+// Barre fixe en bas de la séance (retour direct du fondateur 2026-10-14 :
+// « je veux savoir l'exo, combien de sets, mon repos »). Pendant un repos :
+// décompte calculé depuis l'heure de départ (Date.now), donc juste même si
+// l'appli est passée en arrière-plan ou que l'écran s'est éteint, bip et
+// vibration à la fin.
+//
+// Retour direct 2026-10-20 (« c'est chiant que le bouton terminer la séance
+// soit tout le temps là ») : hors repos, la barre ne s'affiche plus que
+// quand toutes les séries sont faites, avec « Terminer la séance ». Le chrono
+// de séance est monté dans l'en-tête (SessionClock), toujours visible ; finir
+// plus tôt reste possible depuis le menu de l'en-tête ou la fin de la liste.
+// `hidden` : clavier ouvert (note, charge), la barre ne flotte plus par-dessus
+// le champ en cours de saisie.
 
 function playBeep() {
   try {
@@ -41,19 +48,19 @@ const LATE_ALERT_MS = 10_000;
 
 export default function RestBar({
   rest,
-  sessionStart,
   doneSets,
   totalSets,
   nextLabel,
+  hidden = false,
   onAdjust,
   onSkip,
   onFinish,
 }: {
   rest: LiveRest | null;
-  sessionStart: number;
   doneSets: number;
   totalSets: number;
   nextLabel: string | null;
+  hidden?: boolean;
   onAdjust: (deltaSeconds: number) => void;
   onSkip: () => void;
   onFinish: () => void;
@@ -95,8 +102,10 @@ export default function RestBar({
     }
   }, [rest, finished, endsAt]);
 
-  const progress = rest ? Math.min(1, Math.max(0, 1 - remainingMs / (rest.seconds * 1000))) : totalSets > 0 ? doneSets / totalSets : 0;
-  const elapsed = sessionStart > 0 ? Math.floor((now - sessionStart) / 1000) : 0;
+  const allDone = totalSets > 0 && doneSets >= totalSets;
+  if (hidden || (!rest && !allDone)) return null;
+
+  const progress = rest ? Math.min(1, Math.max(0, 1 - remainingMs / (rest.seconds * 1000))) : 1;
 
   return (
     <div className="fixed left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-4 z-50 px-3 pointer-events-none">
@@ -105,12 +114,8 @@ export default function RestBar({
         aria-live="polite"
         className="pointer-events-auto max-w-md mx-auto rounded-2xl border overflow-hidden shadow-[0_8px_30px_rgba(var(--ep-shade-rgb),0.45)]"
         style={{
-          background: finished ? "var(--ep-okbg)" : "var(--ep-s1)",
-          borderColor: finished
-            ? "rgba(var(--ep-ok-rgb),0.45)"
-            : rest
-              ? "rgba(var(--ep-yellow-rgb),0.45)"
-              : "rgba(var(--ep-line-rgb),0.35)",
+          background: finished || !rest ? "var(--ep-okbg)" : "var(--ep-s1)",
+          borderColor: finished || !rest ? "rgba(var(--ep-ok-rgb),0.45)" : "rgba(var(--ep-yellow-rgb),0.45)",
         }}
       >
         <div className="h-1 w-full bg-(--ep-line)/15">
@@ -118,7 +123,7 @@ export default function RestBar({
             className="h-full transition-[width] duration-300"
             style={{
               width: `${progress * 100}%`,
-              background: finished ? "var(--ep-ok)" : rest ? "var(--ep-yellow)" : "var(--ep-accent)",
+              background: finished || !rest ? "var(--ep-ok)" : "var(--ep-yellow)",
             }}
           />
         </div>
@@ -175,23 +180,20 @@ export default function RestBar({
           </div>
         ) : (
           <div className="flex items-center gap-2 pl-3 pr-1.5 py-1.5">
-            <Timer size={16} className="text-(--ep-accent) shrink-0" />
+            <CheckCircle2 size={18} className="text-(--ep-ok) shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-black tabular-nums text-(--ep-strong) leading-5">
-                {formatClockSeconds(elapsed)}
-                <span className="ml-2 text-[11px] font-bold text-(--ep-ink)/50">
-                  {doneSets}/{totalSets} {t("séries")}
-                </span>
+              <p className="text-[13px] font-black text-(--ep-strong) leading-5 truncate">{t("Tout est fait")}</p>
+              <p className="text-[11px] text-(--ep-ink)/55 leading-4 tabular-nums">
+                {doneSets}/{totalSets} {t("séries")}
               </p>
-              {nextLabel && <p className="text-[11px] text-(--ep-ink)/55 truncate leading-4">{nextLabel}</p>}
             </div>
             <button
               type="button"
               onClick={onFinish}
-              className="h-11 px-3.5 rounded-xl flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-(--ep-strong) bg-(--ep-accent)"
+              className="h-11 px-3.5 rounded-xl flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-(--ep-strong) bg-(--ep-accent) shrink-0"
             >
               <Flag size={13} />
-              {t("Terminer")}
+              {t("Terminer la séance")}
             </button>
           </div>
         )}

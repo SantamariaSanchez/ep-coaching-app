@@ -1181,6 +1181,12 @@ html:is([data-theme="claire"], [data-theme="douce"]) {
       0 -12px 40px rgba(var(--ep-shade-rgb), 0.70);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  /* Séance en cours, clavier ouvert (components/client/session/
+     useTypingInSession.ts) : dans l'appli native la nav remontait au-dessus
+     du clavier et recouvrait le champ en cours de saisie. */
+  html[data-ep-typing] .ep-bottom-nav {
+    display: none !important;
+  }
 
   /* Barre d'onglets mobile : point de navigation le plus tapé de toute
      l'appli, sans le moindre retour tactile jusqu'ici. */
