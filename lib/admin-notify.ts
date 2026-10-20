@@ -1,4 +1,4 @@
-import { after } from "next/server";
+import { runAfterResponse } from "@/lib/after-response";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { escapeHtml } from "@/lib/sanitize";
 import { notifyUsers } from "@/lib/notify";
@@ -27,20 +27,6 @@ export function notifyAdmin(
   opts?: { push?: boolean; url?: string }
 ): Promise<void> {
   return runAfterResponse(() => sendAdminNotification(subject, bodyLines, opts));
-}
-
-// Beaucoup d'appelants lancent la notif sans l'attendre : sur Vercel, la
-// fonction s'arrête dès la réponse envoyée et la notif partait rarement
-// (retour direct 2026-10-14 : « je suis censé recevoir des notifs quand un
-// coach ajoute son client »). after() garde la fonction en vie jusqu'à la
-// fin de l'envoi ; hors requête (script), on envoie tout de suite.
-function runAfterResponse(task: () => Promise<void>): Promise<void> {
-  try {
-    after(task);
-    return Promise.resolve();
-  } catch {
-    return task();
-  }
 }
 
 async function sendAdminNotification(

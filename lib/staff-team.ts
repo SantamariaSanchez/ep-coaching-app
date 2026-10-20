@@ -5,6 +5,7 @@
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
+import { runAfterResponse } from "@/lib/after-response";
 import { getRoleCard } from "@/lib/staff-roles";
 
 export interface TeamPerson {
@@ -109,7 +110,7 @@ export async function sendTeamMessage(
     const { error } = await admin.from("team_messages").insert({ owner_id: ownerId, sender_id: senderId, recipient_id: target.recipientId, body: text });
     if (error) return { error: "Envoi impossible (messagerie pas encore activée ?)." };
     const url = target.recipientId === ownerId ? `/dashboard/coach/admin/equipe/${senderId}` : `/equipe/messages?avec=${senderId}`;
-    notifyUser(target.recipientId, { type: "staff", title: `Message de ${senderName}`, body: text.slice(0, 140), url, senderId }).catch(() => {});
+    void runAfterResponse(() => notifyUser(target.recipientId, { type: "staff", title: `Message de ${senderName}`, body: text.slice(0, 140), url, senderId }));
     return { ok: true };
   }
 
@@ -118,13 +119,13 @@ export async function sendTeamMessage(
   const people = await getTeamDirectory(ownerId);
   for (const p of people) {
     if (p.id === senderId) continue;
-    notifyUser(p.id, {
+    void runAfterResponse(() => notifyUser(p.id, {
       type: "staff",
       title: `${senderName} sur le canal équipe`,
       body: text.slice(0, 140),
       url: p.isFounder ? "/dashboard/coach/admin/equipe/messages" : "/equipe/messages?avec=general",
       senderId,
-    }).catch(() => {});
+    }));
   }
   return { ok: true };
 }
@@ -219,12 +220,12 @@ export async function assignTask(
     },
   });
   if (error) return { error: "Assignation impossible." };
-  notifyUser(memberId, {
+  void runAfterResponse(() => notifyUser(memberId, {
     type: "staff",
     title: `Nouvelle tâche de ${ownerName}`,
     body: `${task.title}${task.due ? `, pour le ${new Date(`${task.due}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}` : ""}`,
     url: "/equipe/taches",
     senderId: ownerId,
-  }).catch(() => {});
+  }));
   return { ok: true };
 }

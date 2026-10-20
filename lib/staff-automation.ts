@@ -15,6 +15,7 @@
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
+import { runAfterResponse } from "@/lib/after-response";
 import { applyStageHistory, funnelRank, parisToday } from "@/lib/staff-stages";
 import { getRoleCard, type RecordKind } from "@/lib/staff-roles";
 import { PRODUCT_LABELS, isCoachingProduct, type ProductKey } from "@/lib/stripe-products";
@@ -162,7 +163,7 @@ function appendNote(existing: unknown, line: string): string {
 }
 
 function notify(userId: string, title: string, body: string, url: string) {
-  notifyUser(userId, { type: "staff", title, body, url }).catch(() => {});
+  void runAfterResponse(() => notifyUser(userId, { type: "staff", title, body, url }));
 }
 
 // ── 1. Leads entrants ───────────────────────────────────────────────────
@@ -644,7 +645,9 @@ export async function syncCatchUp(): Promise<number> {
     .from("leads")
     .select("id, email, phone, lead_magnet_slug, created_at")
     .gte("created_at", since)
-    .order("created_at", { ascending: true })
+    // Les plus récents d'abord : avec plus de 100 leads dans la fenêtre,
+    // l'ordre croissant laissait les derniers arrivés hors du rattrapage.
+    .order("created_at", { ascending: false })
     .limit(100);
   for (const l of (magnets as { id: string; email: string | null; phone: string | null; lead_magnet_slug: string | null }[]) ?? []) {
     const result = await routeInboundLead({
@@ -669,7 +672,7 @@ export async function syncCatchUp(): Promise<number> {
       .neq("subscription_status", "active")
       .in("coach_id", epCoachIds)
       .gte("start_date", since.slice(0, 10))
-      .order("start_date", { ascending: true })
+      .order("start_date", { ascending: false })
       .limit(100);
     for (const m of (members as { id: string; full_name: string | null; email: string | null; phone: string | null }[]) ?? []) {
       const result = await routeInboundLead({
