@@ -1,12 +1,12 @@
 "use client";
 
+import { requestPasswordReset } from "@/app/auth/password-reset-action";
 import { useT } from "@/components/i18n/I18nProvider";
 import { Suspense, useActionState, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Heart } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import PasswordInput from "@/components/ui/PasswordInput";
-import { createClientSupabase } from "@/lib/supabase-client";
 import { loginClient } from "./actions";
 import SignupFlow from "./SignupFlow";
 
@@ -44,10 +44,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
   async function send() {
     if (!email.trim()) return;
     setSending(true);
-    const supabase = createClientSupabase();
-    await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
-    });
+    await requestPasswordReset(email.trim()).catch(() => {});
     setSending(false);
     setSent(true);
   }

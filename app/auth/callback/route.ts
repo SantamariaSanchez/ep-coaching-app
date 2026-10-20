@@ -13,7 +13,11 @@ export async function GET(request: NextRequest) {
   // rejouer un code d'auth ailleurs.
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
-  if (code) {
+  // Lien de réinitialisation envoyé par Brevo (app/auth/password-reset-action.ts).
+  const tokenHash = searchParams.get("token_hash");
+  const type = searchParams.get("type");
+
+  if (code || (tokenHash && type === "recovery")) {
     const cookieStore = await cookies();
 
     const supabase = createServerClient(
@@ -34,7 +38,9 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error } = code
+      ? await supabase.auth.exchangeCodeForSession(code)
+      : await supabase.auth.verifyOtp({ type: "recovery", token_hash: tokenHash! });
 
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`);

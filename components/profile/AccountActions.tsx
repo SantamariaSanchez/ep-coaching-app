@@ -1,5 +1,6 @@
 "use client";
 
+import { requestPasswordReset } from "@/app/auth/password-reset-action";
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -84,9 +85,7 @@ export default function AccountActions({
     // atterrit sur la page qui permet réellement de saisir un nouveau mot de
     // passe — avant ça le lien reconnectait l'utilisateur sans rien lui
     // proposer pour changer son mot de passe.
-    await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
-    });
+    await requestPasswordReset(email).catch(() => {});
     setResetSent(true);
   }
 
