@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Crown, CheckCircle2, ChevronDown, ChevronUp, History } from "lucide-react";
 import { setClientSubscriptionStatus, getSubscriptionHistory, startCoachingTrial } from "@/app/dashboard/coach/clients/actions";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
+import { safeAction } from "@/lib/safe-action";
 
 interface HistoryEntry {
   id: string;
@@ -71,7 +72,7 @@ export default function SubscriptionToggle({
     setError(null);
     setTrialPending(true);
     startTransition(async () => {
-      const result = await startCoachingTrial(clientId, days);
+      const result = await safeAction(() => startCoachingTrial(clientId, days));
       setTrialPending(false);
       if (result.error) {
         setError(result.error);
@@ -93,11 +94,11 @@ export default function SubscriptionToggle({
     setError(null);
     const nextStatus = isActive ? "free" : "active";
     startTransition(async () => {
-      const result = await setClientSubscriptionStatus(clientId, nextStatus, {
+      const result = await safeAction(() => setClientSubscriptionStatus(clientId, nextStatus, {
         plan: plan || null,
         nextBillingDate: nextBillingDate || null,
         note: note || null,
-      });
+      }));
       if (result.error) {
         setError(result.error);
         return;

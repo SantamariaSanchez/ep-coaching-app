@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Apple, Check, ChevronDown, Copy, ExternalLink, KeyRound, RefreshCw, Smartphone, Trash2, Watch, AlertTriangle } from "lucide-react";
 import type { StepsSyncStatus } from "@/utils/steps";
+import { safeAction } from "@/lib/safe-action";
 
 // Installation guidée de la synchro automatique des pas (2026-10-14).
 // iPhone : un Raccourci lit Santé et envoie le total du jour sur
@@ -107,7 +108,7 @@ export default function StepsSyncSetup({
   function create() {
     setError(null);
     startTransition(async () => {
-      const res = await createToken();
+      const res = await safeAction(() => createToken());
       if (res.error || !res.token) {
         setError(res.error ?? "Impossible de créer ta clé.");
         return;
@@ -120,7 +121,7 @@ export default function StepsSyncSetup({
   function revoke() {
     setError(null);
     startTransition(async () => {
-      const res = await revokeToken();
+      const res = await safeAction(() => revokeToken());
       if (res.error) {
         setError(res.error);
         return;

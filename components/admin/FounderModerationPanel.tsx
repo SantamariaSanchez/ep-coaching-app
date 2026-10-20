@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle, LogOut, Trash2, ShieldAlert } from "lucide-react";
 import { disconnectUser, deleteUserAccountAdmin } from "@/app/dashboard/coach/profile/[id]/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function FounderModerationPanel({
   targetUserId,
@@ -26,7 +27,7 @@ export default function FounderModerationPanel({
     setError("");
     setConfirmingDisconnect(false);
     startTransition(async () => {
-      const result = await disconnectUser(targetUserId);
+      const result = await safeAction(() => disconnectUser(targetUserId));
       if (result.error) setError(result.error);
       else setStatus("disconnected");
     });
@@ -35,7 +36,7 @@ export default function FounderModerationPanel({
   function handleDelete() {
     setError("");
     startTransition(async () => {
-      const result = await deleteUserAccountAdmin(targetUserId);
+      const result = await safeAction(() => deleteUserAccountAdmin(targetUserId));
       if (result.error) setError(result.error);
       else {
         setStatus("deleted");

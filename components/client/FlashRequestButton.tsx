@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Zap } from "lucide-react";
 import { requestFlashCall } from "@/app/dashboard/client/live/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function FlashRequestButton() {
   const t = useT();
@@ -16,7 +17,7 @@ export default function FlashRequestButton() {
   function handleSend() {
     setError("");
     startTransition(async () => {
-      const result = await requestFlashCall(reason);
+      const result = await safeAction(() => requestFlashCall(reason));
       if (result.error) setError(result.error);
       else {
         setSent(true);

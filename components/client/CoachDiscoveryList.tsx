@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { UserRound, Check, Bot } from "lucide-react";
 import { chooseNewCoach } from "@/app/dashboard/client/coachs/actions";
 import type { CoachDiscoveryEntry } from "@/utils/auth";
+import { safeAction } from "@/lib/safe-action";
 
 export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscoveryEntry[] }) {
   const t = useT();
@@ -18,7 +19,7 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
     setError("");
     setPendingId(coachId);
     startTransition(async () => {
-      const result = await chooseNewCoach(coachId);
+      const result = await safeAction(() => chooseNewCoach(coachId));
       if (result.error) setError(result.error);
       else router.push("/dashboard/client");
     });

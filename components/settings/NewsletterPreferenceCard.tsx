@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Mail, Check } from "lucide-react";
 import { subscribeToNewsletter } from "@/app/actions/newsletter";
+import { safeAction } from "@/lib/safe-action";
 
 // Newsletter (2026-09-10) — jusqu'ici on ne pouvait s'inscrire qu'au moment
 // du signup (case à cocher, jamais pré-cochée) ou en laissant son email sur
@@ -21,7 +22,7 @@ export default function NewsletterPreferenceCard({ initialSubscribed }: { initia
   function subscribe() {
     setError(null);
     startTransition(async () => {
-      const result = await subscribeToNewsletter();
+      const result = await safeAction(() => subscribeToNewsletter());
       if (result.error) setError(result.error);
       else setSubscribed(true);
     });

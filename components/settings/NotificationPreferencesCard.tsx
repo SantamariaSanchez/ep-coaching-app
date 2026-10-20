@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { BellRing, ShieldCheck } from "lucide-react";
 import { MUTABLE_CATEGORIES, CATEGORY_META, type NotificationCategory } from "@/lib/notification-preferences";
 import { setNotificationCategoryMuted } from "@/app/actions/notification-preferences";
+import { safeAction } from "@/lib/safe-action";
 
 // Card séparée de PermissionsCard : celle-là gère l'autorisation OS (le
 // canal existe ou non), celle-ci gère QUOI passer dans ce canal une fois
@@ -27,7 +28,7 @@ export default function NotificationPreferencesCard({
     else next.add(category);
     setMuted(next);
     startTransition(async () => {
-      const result = await setNotificationCategoryMuted(category, !wasMuted);
+      const result = await safeAction(() => setNotificationCategoryMuted(category, !wasMuted));
       if (result.error) {
         // Retour arrière si le serveur refuse plutôt qu'un état optimiste
         // jamais confirmé (même principe que BusinessChecklist).

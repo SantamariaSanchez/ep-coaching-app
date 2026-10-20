@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Dumbbell, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { PRESET_PROGRAMS, type PresetRecommendation } from "@/lib/preset-programs";
 import type { ProgramInput } from "@/utils/programs";
+import { safeAction } from "@/lib/safe-action";
 
 export default function ProgramPresetSelector({
   clientId,
@@ -44,7 +45,7 @@ export default function ProgramPresetSelector({
     if (!preset) return;
     setError(null);
     startTransition(async () => {
-      const result = await saveProgram(clientId, preset.input);
+      const result = await safeAction(() => saveProgram(clientId, preset.input));
       if (result.error) {
         setError(result.error);
       } else {

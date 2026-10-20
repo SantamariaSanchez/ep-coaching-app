@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { SlidersHorizontal, Check } from "lucide-react";
 import { PREFERENCE_QUESTIONS, type MemberPreferences } from "@/lib/personalization";
 import { saveMemberPreferences } from "@/app/onboarding/actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Priorité 1 du mandat permanent (rétention/activation) : le quiz de
 // personnalisation (objectif, niveau, obstacle...) ne se répondait qu'une
@@ -33,7 +34,7 @@ export default function PreferencesCard({
     setAnswers((prev) => ({ ...prev, [key]: value }));
     setSavedKey(null);
     startTransition(async () => {
-      const result = await saveMemberPreferences({ [key]: value } as Partial<MemberPreferences>);
+      const result = await safeAction(() => saveMemberPreferences({ [key]: value } as Partial<MemberPreferences>));
       if (result.error) {
         setAnswers((prev) => ({ ...prev, [key]: previous }));
       } else {

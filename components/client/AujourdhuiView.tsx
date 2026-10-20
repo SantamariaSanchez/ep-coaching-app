@@ -20,6 +20,7 @@ import type { MindsetHabitLog } from "@/utils/mindset";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { ClientSupplement } from "@/utils/supplements";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 // Item 34 : réutilise le même mécanisme que les habitudes mindset
 // (mindset_habit_logs, habit_key en texte libre) plutôt qu'une nouvelle
@@ -160,7 +161,7 @@ export default function AujourdhuiView({
     setHabitError(null);
     setPendingKeys((current) => new Set(current).add(key));
     startTransition(async () => {
-      const res = await toggleHabitLog(key, todayStr, !wasChecked);
+      const res = await safeAction(() => toggleHabitLog(key, todayStr, !wasChecked));
       setPendingKeys((current) => {
         const cleared = new Set(current);
         cleared.delete(key);

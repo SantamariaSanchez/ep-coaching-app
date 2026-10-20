@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Check, AlertCircle, Globe } from "lucide-react";
 import { updateMyProfile, uploadAvatar } from "@/utils/profile-actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function ProfileEditor({
   fullName,
@@ -35,13 +36,13 @@ export default function ProfileEditor({
   function handleSave() {
     setStatus("idle");
     startTransition(async () => {
-      const result = await updateMyProfile({
+      const result = await safeAction(() => updateMyProfile({
         full_name: name,
         phone: phoneVal.trim() || null,
         bio: bioVal,
         instagram_handle: instagramVal.trim() || null,
         website: websiteVal.trim() || null,
-      });
+      }));
       if (result.error) {
         setStatus("error");
         setErrorMsg(result.error);

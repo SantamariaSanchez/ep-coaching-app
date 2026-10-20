@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toggleDirectoryVisible } from "@/app/dashboard/coach/profile/actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Axe FP (MASTERCLASS.md, audit Paramètres 2026-09-23) : aucune rubrique
 // Confidentialité n'existait — un coach ne pouvait se retirer de
@@ -24,7 +25,7 @@ export default function PrivacyCard({ initialVisible }: { initialVisible: boolea
     const previous = visible;
     setVisible(next);
     startTransition(async () => {
-      const result = await toggleDirectoryVisible(next);
+      const result = await safeAction(() => toggleDirectoryVisible(next));
       if (result.error) setVisible(previous);
     });
   }

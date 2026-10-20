@@ -14,6 +14,7 @@ import {
   type CoachingPhaseHistoryEntry,
 } from "@/lib/coaching-phase-helpers";
 import { initCoachingPhase, advanceCoachingPhase, getCoachingPhaseHistoryAction } from "@/app/dashboard/coach/clients/[id]/coaching-phase/actions";
+import { safeAction } from "@/lib/safe-action";
 
 const PHASE_ICON: Record<CoachingPhase, typeof Target> = {
   calibrage: Target,
@@ -56,7 +57,7 @@ export default function CoachingPhasePanel({
   function handleInit() {
     setError(null);
     startTransition(async () => {
-      const result = await initCoachingPhase(clientId);
+      const result = await safeAction(() => initCoachingPhase(clientId));
       if (result.error) setError(result.error);
     });
   }
@@ -64,8 +65,12 @@ export default function CoachingPhasePanel({
   function handleAdvance(toPhase: CoachingPhase) {
     setError(null);
     startTransition(async () => {
-      const result = await advanceCoachingPhase(clientId, toPhase, note || undefined);
-      if (result.error) setError(result.error);
+      const result = await safeAction(() => advanceCoachingPhase(clientId, toPhase, note || undefined));
+      if (result.error) {
+        // La note reste saisie : on peut réessayer sans la retaper.
+        setError(result.error);
+        return;
+      }
       setNote("");
       setShowNote(false);
     });

@@ -12,6 +12,7 @@ import {
 } from "@/lib/job-applications-shared";
 import { onKeyActivate } from "@/lib/a11y";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 const STATUS_META: Record<RoleStatus, { label: string; color: string }> = {
   a_pourvoir: { label: "Poste ouvert", color: "var(--ep-ok)" },
@@ -62,7 +63,7 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
     form.set("answers", JSON.stringify(answers));
     form.set("cv", cv);
     startTransition(async () => {
-      const result = await submitApplication(form);
+      const result = await safeAction(() => submitApplication(form));
       if (result.error) {
         setError(result.error);
         return;

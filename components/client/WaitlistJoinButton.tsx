@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import { Clock3, CheckCircle2 } from "lucide-react";
 import { joinWaitlist } from "@/app/dashboard/client/abonnement/actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Item 45 : le coach est à capacité — remplace le CTA de réservation par
 // une inscription à sa liste d'attente.
@@ -22,7 +23,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
   function submit() {
     setError(null);
     startTransition(async () => {
-      const result = await joinWaitlist(note);
+      const result = await safeAction(() => joinWaitlist(note));
       if (result.error) {
         setError(result.error);
         return;

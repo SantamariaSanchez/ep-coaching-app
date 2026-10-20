@@ -9,6 +9,7 @@ import { useLocale, useT } from "@/components/i18n/I18nProvider";
 import { setLocaleAction } from "@/app/actions/user-settings";
 import { setDeviceSetting, useDeviceSettings } from "@/lib/device-settings";
 import { CardShell, ChoiceChips, Divider, SettingRow, Toggle } from "@/components/settings/SettingsKit";
+import { safeAction } from "@/lib/safe-action";
 
 const START_PAGES: Record<"coach" | "client", { value: string; label: string }[]> = {
   client: [
@@ -41,9 +42,13 @@ export default function LanguageDisplayCard({ space }: { space: "coach" | "clien
   const base = `/dashboard/${space}`;
 
   function changeLocale(next: Locale) {
+    const previous = lang;
     setLang(next);
     startTransition(async () => {
-      await setLocaleAction(next);
+      const result = await safeAction(() => setLocaleAction(next));
+      // Échec (refus ou coupure) : la puce revient sur la langue réellement
+      // enregistrée au lieu d'afficher un choix jamais pris en compte.
+      if (result.error) setLang(previous);
       router.refresh();
     });
   }

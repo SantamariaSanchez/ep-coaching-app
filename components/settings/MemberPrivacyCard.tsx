@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Trophy, EyeOff } from "lucide-react";
 import { setLeaderboardVisible } from "@/app/actions/privacy";
+import { safeAction } from "@/lib/safe-action";
 
 // Rubrique Confidentialité côté membre, pendant de PrivacyCard (coach) :
 // le classement communautaire affichait d'office nom, photo et points de
@@ -22,7 +23,7 @@ export default function MemberPrivacyCard({ initialVisible }: { initialVisible: 
     setVisible(next);
     setError(null);
     startTransition(async () => {
-      const result = await setLeaderboardVisible(next);
+      const result = await safeAction(() => setLeaderboardVisible(next));
       if (result.error) {
         setVisible(previous);
         setError(result.error);

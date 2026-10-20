@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Bot, Check } from "lucide-react";
 import { triggerAgentCheckin } from "@/app/dashboard/coach/messages/[clientId]/actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Bouton "Relance agent IA" (demande directe 2026-08-19 : "les agents IA
 // doivent... s'occuper des clients"). Déclenche lib/coach-agent-checkin.ts :
@@ -19,7 +20,7 @@ export default function AgentCheckinButton({ clientId }: { clientId: string }) {
   function handleClick() {
     setState("idle");
     startTransition(async () => {
-      const result = await triggerAgentCheckin(clientId);
+      const result = await safeAction(() => triggerAgentCheckin(clientId));
       setState(result.error ? "error" : "sent");
       if (!result.error) setTimeout(() => setState("idle"), 4000);
     });

@@ -11,6 +11,7 @@ import {
   type ReflectionAnswers,
   type WeeklyReflection,
 } from "@/lib/weekly-review-helpers";
+import { safeAction } from "@/lib/safe-action";
 
 // Les 3 questions de recul de la revue de la semaine. Champs CONTRÔLÉS
 // (pas de <form action>) : React 19 réinitialise les champs non contrôlés
@@ -107,7 +108,7 @@ export default function WeeklyReviewReflection({
       return;
     }
     startTransition(async () => {
-      const res = await saveWeeklyReflection({ weekStart, answers, mood });
+      const res = await safeAction(() => saveWeeklyReflection({ weekStart, answers, mood }));
       if (res.error) {
         setError(res.error);
         return;

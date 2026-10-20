@@ -11,6 +11,7 @@ import { Plus, Trash2, Trophy, X } from "lucide-react";
 import { addPerformanceEntryAction, deletePerformanceEntryAction } from "@/app/actions/performance";
 import { updatePracticeAction } from "@/app/actions/app-setup";
 import { bestRecords, DISCIPLINE_BY_KEY, DISCIPLINES, type DisciplineKey, type EntryKind, type FieldDef, type PerformanceEntry } from "@/lib/disciplines";
+import { safeAction } from "@/lib/safe-action";
 
 function todayIso(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
@@ -51,7 +52,7 @@ export default function PerformanceHub({
         current={currentPractices}
         onSave={(list) =>
           startTransition(async () => {
-            const res = await updatePracticeAction(list);
+            const res = await safeAction(() => updatePracticeAction(list));
             if (res.error) setError(res.error);
             else router.refresh();
           })
@@ -136,7 +137,7 @@ export default function PerformanceHub({
                   {!readOnly && (
                     <button
                       aria-label={t("Supprimer cette saisie")}
-                      onClick={() => startTransition(async () => { const r = await deletePerformanceEntryAction(e.id); if (r.error) setError(r.error); else router.refresh(); })}
+                      onClick={() => startTransition(async () => { const r = await safeAction(() => deletePerformanceEntryAction(e.id)); if (r.error) setError(r.error); else router.refresh(); })}
                       className="w-10 h-10 flex items-center justify-center text-(--ep-ink)/30 hover:text-red-400"
                     >
                       <Trash2 size={15} />
@@ -159,7 +160,7 @@ export default function PerformanceHub({
           onClose={() => setAdding(false)}
           onSubmit={(kind, date, data) =>
             startTransition(async () => {
-              const res = await addPerformanceEntryAction({ discipline: discipline.key, kind, performedOn: date, data });
+              const res = await safeAction(() => addPerformanceEntryAction({ discipline: discipline.key, kind, performedOn: date, data }));
               if (res.error) setError(res.error);
               else {
                 setError(null);

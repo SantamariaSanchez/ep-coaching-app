@@ -16,6 +16,7 @@ import { buildBuyList, formatQuantity, guessPieceWeight, statusOf, stepFor, sugg
 import { fuzzyFilter } from "@/lib/fuzzy-search";
 import type { DietPlanWithMeals, Food } from "@/utils/nutrition";
 import ShoppingList from "@/components/nutrition/ShoppingList";
+import { safeAction } from "@/lib/safe-action";
 
 type View = "liste" | "racheter" | "stock";
 
@@ -60,9 +61,10 @@ export default function GroceryHub({ needs, source, foods, plan = null, today }:
   function run(fn: () => Promise<{ error?: string }>) {
     setError(null);
     startTransition(async () => {
-      const res = await fn();
+      const res = await safeAction(() => fn());
       if (res.error) setError(res.error);
-      await reload();
+      const reloaded = await safeAction(() => reload());
+      if (reloaded) setError(reloaded.error);
     });
   }
 
