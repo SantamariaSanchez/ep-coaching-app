@@ -1,7 +1,8 @@
 import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser } from "@/utils/auth";
-import { getScheduleBlocks, getScheduleBlockTaskLog } from "@/utils/agenda";
+import { getScheduleBlocks, getScheduleBlockTaskLog, getAgendaSettings } from "@/utils/agenda";
+import { getAgendaContext } from "@/utils/agenda-context";
 import { getDailyHabitScore, getWeeklyHabitScores, currentStreak } from "@/lib/habit-score";
 import { todayInParis } from "@/lib/dates";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
@@ -17,6 +18,12 @@ import {
   clearDayBlocks,
   saveScheduleBlockTaskCompletion,
   shiftDayFromBlock,
+  saveAgendaWindow,
+  saveAgendaPrefs,
+  saveDayTemplates,
+  setScheduleBlockTimes,
+  setScheduleBlockTasks,
+  placeColumnBlocks,
 } from "./actions";
 import { CalendarDays } from "lucide-react";
 
@@ -26,11 +33,13 @@ export default async function ClientAgendaPage() {
   if (!user) redirect("/");
 
   const today = todayInParis();
-  const [blocks, completedTaskKeys, habitScore, weeklyScores] = await Promise.all([
+  const [blocks, completedTaskKeys, habitScore, weeklyScores, agendaSettings, agendaContext] = await Promise.all([
     getScheduleBlocks(user.id),
     getScheduleBlockTaskLog(user.id, today),
     getDailyHabitScore(user.id, today),
     getWeeklyHabitScores(user.id, today),
+    getAgendaSettings(user.id),
+    getAgendaContext(user.id),
   ]);
   const streak = currentStreak(weeklyScores);
 
@@ -42,7 +51,7 @@ export default async function ClientAgendaPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon agenda")}</h1>
         <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Ton emploi du temps type, semaine après semaine. Ajoute tes créneaux (travail, salle, repas, rendez-vous...), renomme-les et ajuste les horaires comme tu veux. Un modèle par jour peut se répéter sur plusieurs jours d'un coup, et se transformer en rappel push.")}
+          {t("Ta semaine type, sans trou. Tape un créneau libre pour poser un bloc en deux gestes, ou laisse « Construire ma semaine » la remplir avec tes séances, tes repas et ton travail.")}
         </p>
       </div>
 
@@ -66,6 +75,14 @@ export default async function ClientAgendaPage() {
         initialCompletedTaskKeys={completedTaskKeys}
         saveTaskCompletion={saveScheduleBlockTaskCompletion}
         shiftDayFromBlock={shiftDayFromBlock}
+        saveAgendaWindow={saveAgendaWindow}
+        saveAgendaPrefs={saveAgendaPrefs}
+        saveDayTemplates={saveDayTemplates}
+        setScheduleBlockTimes={setScheduleBlockTimes}
+        setScheduleBlockTasks={setScheduleBlockTasks}
+        placeColumnBlocks={placeColumnBlocks}
+        settings={agendaSettings}
+        context={agendaContext}
       />
     </div>
   );

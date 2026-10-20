@@ -1,7 +1,8 @@
 import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getScheduleBlocks, getScheduleBlockTaskLog } from "@/utils/agenda";
+import { getScheduleBlocks, getScheduleBlockTaskLog, getAgendaSettings } from "@/utils/agenda";
+import { getAgendaContext } from "@/utils/agenda-context";
 import { getDailyHabitScore, getWeeklyHabitScores, currentStreak } from "@/lib/habit-score";
 import { todayInParis } from "@/lib/dates";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
@@ -17,6 +18,12 @@ import {
   clearDayBlocks,
   saveScheduleBlockTaskCompletion,
   shiftDayFromBlock,
+  saveAgendaWindow,
+  saveAgendaPrefs,
+  saveDayTemplates,
+  setScheduleBlockTimes,
+  setScheduleBlockTasks,
+  placeColumnBlocks,
 } from "@/app/dashboard/client/agenda/actions";
 import { CalendarDays } from "lucide-react";
 
@@ -29,11 +36,13 @@ export default async function CoachMoiAgendaPage() {
   if (profile?.role === "client") redirect("/dashboard/client");
 
   const today = todayInParis();
-  const [blocks, completedTaskKeys, habitScore, weeklyScores] = await Promise.all([
+  const [blocks, completedTaskKeys, habitScore, weeklyScores, agendaSettings, agendaContext] = await Promise.all([
     getScheduleBlocks(user.id),
     getScheduleBlockTaskLog(user.id, today),
     getDailyHabitScore(user.id, today),
     getWeeklyHabitScores(user.id, today),
+    getAgendaSettings(user.id),
+    getAgendaContext(user.id),
   ]);
   const streak = currentStreak(weeklyScores);
 
@@ -45,7 +54,7 @@ export default async function CoachMoiAgendaPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon agenda")}</h1>
         <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Ton propre emploi du temps, exactement comme celui de tes clients. Ajoute tes créneaux et ajuste les horaires comme tu veux.")}
+          {t("Ta semaine type, sans trou. Tape un créneau libre pour poser un bloc en deux gestes, ou laisse « Construire ma semaine » la remplir avec tes séances, tes repas et ton travail.")}
         </p>
       </div>
 
@@ -69,6 +78,14 @@ export default async function CoachMoiAgendaPage() {
         initialCompletedTaskKeys={completedTaskKeys}
         saveTaskCompletion={saveScheduleBlockTaskCompletion}
         shiftDayFromBlock={shiftDayFromBlock}
+        saveAgendaWindow={saveAgendaWindow}
+        saveAgendaPrefs={saveAgendaPrefs}
+        saveDayTemplates={saveDayTemplates}
+        setScheduleBlockTimes={setScheduleBlockTimes}
+        setScheduleBlockTasks={setScheduleBlockTasks}
+        placeColumnBlocks={placeColumnBlocks}
+        settings={agendaSettings}
+        context={agendaContext}
         space="coach"
       />
     </div>
