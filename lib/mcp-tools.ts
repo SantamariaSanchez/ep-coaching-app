@@ -99,7 +99,7 @@ export const EXTRA_TOOLS: ToolDef[] = [
         accroche: { type: "string", description: "La première phrase dite face caméra" },
         contenu: { type: "string", description: "Le script complet" },
         cta: { type: "string", description: "L'appel à l'action de fin" },
-        plateforme: { type: "string", enum: ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads"] },
+        plateforme: { type: "string", enum: ["reel", "youtube", "linkedin", "threads"], description: "reel = format court (Instagram, TikTok, Facebook), par défaut" },
         pilier: { type: "string" },
       },
       required: ["titre", "contenu"],
@@ -379,7 +379,7 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
     }
 
     case "mes_scripts": {
-      const limit = numArg(args.nombre, 1, 50) ?? 20;
+      const limit = numArg(args.nombre, 1, 200) ?? 50;
       let q = admin.from("coach_scripts").select("id, title, hook, status, platform, pillar, updated_at").eq("coach_id", ownerId).order("updated_at", { ascending: false }).limit(limit);
       if (typeof args.statut === "string" && ["a_tourner", "tourne", "publie"].includes(args.statut)) q = q.eq("status", args.statut);
       const { data } = await q;
@@ -391,9 +391,12 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const title = String(args.titre ?? "").trim().slice(0, 200);
       const content = String(args.contenu ?? "").trim().slice(0, 20000);
       if (!title || !content) return text("Titre et contenu obligatoires.");
-      const platform = ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads"].includes(String(args.plateforme)) ? String(args.plateforme) : "instagram";
+      // Mêmes plateformes que le Studio (IdeationScripts) : un seul « reel »
+      // pour tout le format court, quel que soit le réseau.
+      const asked = String(args.plateforme ?? "");
+      const platform = ["youtube", "linkedin", "threads"].includes(asked) ? asked : "reel";
       const { error } = await admin.from("coach_scripts").insert({
-        coach_id: ownerId, title, content, status: "a_tourner", platform, format: "reel",
+        coach_id: ownerId, title, content, status: platform === "linkedin" || platform === "threads" ? "publie" : "a_tourner", platform, format: platform === "youtube" ? "long" : "court",
         hook: typeof args.accroche === "string" ? args.accroche.slice(0, 500) : null,
         cta: typeof args.cta === "string" ? args.cta.slice(0, 500) : null,
         pillar: typeof args.pilier === "string" ? args.pilier.slice(0, 100) : null,
