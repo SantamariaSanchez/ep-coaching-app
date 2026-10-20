@@ -91,7 +91,10 @@ export default function DietToday({
   onSkip,
   onSelectDay,
   onMarkPast,
+  openSlot,
 }: {
+  /** Repas à ouvrir d'emblée (lien « ?repas=lunch » depuis un bloc de l'agenda). */
+  openSlot?: string | null;
   isToday: boolean;
   dayLabel: string;
   meals: DayMeal[];
@@ -117,7 +120,7 @@ export default function DietToday({
     const id = setInterval(() => setHhmm(nowHHMM()), 60000);
     return () => clearInterval(id);
   }, []);
-  const [sheetSlot, setSheetSlot] = useState<string | null>(null);
+  const [sheetSlot, setSheetSlot] = useState<string | null>(() => (openSlot && meals.some((m) => m.slot === openSlot) ? openSlot : null));
   const [replacing, setReplacing] = useState(false);
 
   const focus = isToday ? pickFocusMeal(meals.map((m) => m.slot), status, hhmm) : null;

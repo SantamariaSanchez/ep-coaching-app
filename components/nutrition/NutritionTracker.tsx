@@ -8,6 +8,7 @@ import DietToday, { type DayMeal, type WeekDay } from "@/components/nutrition/Di
 import CookMode, { readCookSession, type CookItem, type CookSession } from "@/components/nutrition/CookMode";
 import { dayAdherence, slotTime, type MealStatus } from "@/lib/diet-day";
 import { getMealChecks, setMealCheck, type MealChecks } from "@/app/dashboard/client/nutrition/meal-check-actions";
+import { getAgendaMealTimes } from "@/app/dashboard/client/agenda/actions";
 import AddFoodSheet, { type PlanMealOption, type TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
 import ItemSheet from "@/components/nutrition/ItemSheet";
 import { notifyGateRefresh } from "@/lib/gate-events";
@@ -170,7 +171,10 @@ export default function NutritionTracker({
   const tr = useT();
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   // ?jour=AAAA-MM-JJ : ouvert depuis le bilan d'un jour passé.
-  const jour = useSearchParams().get("jour");
+  const searchParams = useSearchParams();
+  const jour = searchParams.get("jour");
+  // ?repas=lunch : ouvert depuis un bloc repas de l'agenda.
+  const repas = searchParams.get("repas");
   const startDate = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && jour <= today && jour >= shiftDate(today, -30) ? jour : today;
   const [date, setDate] = useState(startDate);
   const [mode, setMode] = useState<DietMode>(plan ? initialMode : "flexible");
@@ -517,6 +521,22 @@ export default function NutritionTracker({
     };
   }, [today, weekDates]);
 
+  // Heures des repas posées dans l'agenda (2026-10-20) : la diète affiche le
+  // même « quand » que l'agenda, sinon ses heures habituelles.
+  const [agendaTimes, setAgendaTimes] = useState<Record<string, Record<string, string>>>({});
+  useEffect(() => {
+    if (agendaTimes[date]) return;
+    let alive = true;
+    getAgendaMealTimes(date)
+      .then((times) => {
+        if (alive) setAgendaTimes((prev) => ({ ...prev, [date]: times }));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [date, agendaTimes]);
+
   useEffect(() => {
     const min = shiftDate(today, -21);
     const pruned: MealChecks = {};
@@ -555,9 +575,9 @@ export default function NutritionTracker({
     () =>
       planSlots.map((slot) => {
         const items = displayItems(slot);
-        return { slot, label: slotLabel(slot), time: slotTime(slot), items, macros: sumMacros(items.map((i) => macrosFor(i.food, i.grams))) };
+        return { slot, label: slotLabel(slot), time: agendaTimes[date]?.[slot] ?? slotTime(slot), items, macros: sumMacros(items.map((i) => macrosFor(i.food, i.grams))) };
       }),
-    [planSlots, displayItems]
+    [planSlots, displayItems, agendaTimes, date]
   );
 
   const adherence = useMemo(
@@ -783,6 +803,7 @@ export default function NutritionTracker({
           onAteOther={ateOther}
           onSkip={skipMeal}
           onSelectDay={goTo}
+          openSlot={repas}
           onMarkPast={async (slots) => {
             for (const slot of slots) await markMeal(slot, "mange");
           }}
