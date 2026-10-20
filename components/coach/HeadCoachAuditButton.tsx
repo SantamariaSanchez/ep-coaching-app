@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { ShieldCheck } from "lucide-react";
 import { triggerHeadCoachAudit } from "@/app/dashboard/coach/admin/organisation/agents/actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Rend réelle la mission déclarée de Valentina (Head Coach, lib/ai-agents.ts :
 // "Audit de qualité sur un échantillon de bilans/programmes") — voir
@@ -18,7 +19,7 @@ export default function HeadCoachAuditButton() {
   function handleClick() {
     setResult(null);
     startTransition(async () => {
-      const res = await triggerHeadCoachAudit();
+      const res = await safeAction(() => triggerHeadCoachAudit());
       if (res.error) setResult(res.error);
       else if (res.created === 0) setResult(`${res.scanned} client${res.scanned !== 1 ? "s" : ""} passé${res.scanned !== 1 ? "s" : ""} en revue, rien à signaler.`);
       else setResult(`${res.created} tâche${res.created !== 1 ? "s" : ""} créée${res.created !== 1 ? "s" : ""} sur ${res.scanned} client${res.scanned !== 1 ? "s" : ""} passé${res.scanned !== 1 ? "s" : ""} en revue.`);

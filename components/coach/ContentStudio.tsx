@@ -6,6 +6,7 @@ import { Plus, Camera, Video, Briefcase, Sparkles, Trash2, MessageCircleQuestion
 import { createContentIdea, updateContentIdea, deleteContentIdea } from "@/app/dashboard/coach/studio/actions";
 import type { ContentIdea, ContentPlatform, ContentStatus } from "@/lib/content-ideas";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 // Pas de logos de marque (Instagram/YouTube/LinkedIn) : lucide-react ne les
 // exporte plus (retirés pour raisons de droits), même convention déjà en
@@ -92,7 +93,7 @@ export default function ContentStudio({
       return;
     }
     startTransition(async () => {
-      const result = await createContentIdea({ title: t, platform, notes: notes || undefined });
+      const result = await safeAction(() => createContentIdea({ title: t, platform, notes: notes || undefined }));
       if (result.error) {
         setError(result.error);
         return;
@@ -130,7 +131,7 @@ export default function ContentStudio({
     const backup = ideas.find((i) => i.id === id)?.status;
     setIdeas((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)));
     startTransition(async () => {
-      const result = await updateContentIdea(id, { status });
+      const result = await safeAction(() => updateContentIdea(id, { status }));
       if (result.error && backup) {
         setIdeas((prev) => prev.map((i) => (i.id === id ? { ...i, status: backup } : i)));
         setError(result.error);
@@ -143,7 +144,7 @@ export default function ContentStudio({
     const backup = ideas[idx];
     setIdeas((prev) => prev.filter((i) => i.id !== id));
     startTransition(async () => {
-      const result = await deleteContentIdea(id);
+      const result = await safeAction(() => deleteContentIdea(id));
       if (result.error && backup) {
         setIdeas((prev) => {
           const next = [...prev];

@@ -6,6 +6,7 @@ import { Plus, Pin, PinOff, Trash2, StickyNote, Search } from "lucide-react";
 import { createIdeationNote, updateIdeationNote, deleteIdeationNote } from "@/app/dashboard/coach/studio/actions";
 import type { IdeationNote } from "@/lib/coach-ideation";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import { safeAction } from "@/lib/safe-action";
 
 // Prise de notes libre du coach (Idéation, 2026-08-15) — tout ce qui ne
 // rentre pas dans le pipeline idée/brouillon/prêt/publié de ContentStudio :
@@ -44,7 +45,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
       return;
     }
     startTransition(async () => {
-      const result = await createIdeationNote({ title: t, body: body || undefined });
+      const result = await safeAction(() => createIdeationNote({ title: t, body: body || undefined }));
       if (result.error) {
         setError(result.error);
         return;
@@ -79,7 +80,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
         .sort((a, b) => Number(b.pinned) - Number(a.pinned))
     );
     startTransition(async () => {
-      const result = await updateIdeationNote(note.id, { pinned: !note.pinned });
+      const result = await safeAction(() => updateIdeationNote(note.id, { pinned: !note.pinned }));
       if (result.error) {
         setNotes(backup);
         setError(result.error);
@@ -92,7 +93,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
     setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, body: editBody || null } : n)));
     setEditingId(null);
     startTransition(async () => {
-      const result = await updateIdeationNote(id, { body: editBody });
+      const result = await safeAction(() => updateIdeationNote(id, { body: editBody }));
       if (result.error) {
         setNotes(backup);
         setError(result.error);
@@ -105,7 +106,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
     const backup = notes[idx];
     setNotes((prev) => prev.filter((n) => n.id !== id));
     startTransition(async () => {
-      const result = await deleteIdeationNote(id);
+      const result = await safeAction(() => deleteIdeationNote(id));
       if (result.error && backup) {
         setNotes((prev) => {
           const next = [...prev];

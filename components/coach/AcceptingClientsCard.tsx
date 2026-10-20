@@ -5,6 +5,7 @@ import { useState, useTransition, useEffect } from "react";
 import { UserPlus, UserX, Check, Clock } from "lucide-react";
 import { toggleAcceptingNewClients, markWaitlistContacted } from "@/app/dashboard/coach/profile/actions";
 import type { WaitlistEntry } from "@/utils/waitlist";
+import { safeAction } from "@/lib/safe-action";
 
 // Item 45 : bascule "j'accepte de nouveaux clients" + liste d'attente de
 // ceux qui veulent rejoindre dès qu'une place se libère.
@@ -38,7 +39,7 @@ export default function AcceptingClientsCard({
     startTransition(async () => {
       // MASTERCLASS.md Axe B : le résultat n'était jamais vérifié, un échec
       // serveur laissait la bascule affichée sur le mauvais état.
-      const result = await toggleAcceptingNewClients(next);
+      const result = await safeAction(() => toggleAcceptingNewClients(next));
       if (result.error) setAccepting(previous);
     });
   }
@@ -46,7 +47,7 @@ export default function AcceptingClientsCard({
   function markContacted(id: string) {
     setContactedIds((prev) => new Set(prev).add(id));
     startTransition(async () => {
-      const result = await markWaitlistContacted(id);
+      const result = await safeAction(() => markWaitlistContacted(id));
       if (result.error) {
         setContactedIds((prev) => {
           const next = new Set(prev);

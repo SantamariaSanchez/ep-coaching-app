@@ -7,6 +7,7 @@ import { createFinanceEntry, deleteFinanceEntry } from "@/app/dashboard/coach/co
 import { categoriesFor } from "@/lib/coach-finance-categories";
 import type { FinanceEntry } from "@/lib/coach-finance";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 function eur(n: number): string {
   return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -70,7 +71,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
       return;
     }
     startTransition(async () => {
-      const result = await createFinanceEntry({ kind, category, label, amount: amountNum, entryDate, note: undefined });
+      const result = await safeAction(() => createFinanceEntry({ kind, category, label, amount: amountNum, entryDate, note: undefined }));
       if (result.error) {
         setError(result.error);
         return;
@@ -105,7 +106,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
     const backup = entries[idx];
     setEntries((prev) => prev.filter((e) => e.id !== id));
     startTransition(async () => {
-      const result = await deleteFinanceEntry(id);
+      const result = await safeAction(() => deleteFinanceEntry(id));
       if (result.error && backup) {
         setEntries((prev) => {
           const next = [...prev];

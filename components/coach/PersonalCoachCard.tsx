@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LogOut } from "lucide-react";
 import { joinPersonalCoach, leavePersonalCoach } from "@/app/dashboard/coach/profile/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function PersonalCoachCard({
   linkedCoachName,
@@ -20,7 +21,7 @@ export default function PersonalCoachCard({
   function handleJoin() {
     setError("");
     startTransition(async () => {
-      const result = await joinPersonalCoach(code);
+      const result = await safeAction(() => joinPersonalCoach(code));
       if (result.error) {
         setError(result.error);
       } else {
@@ -33,7 +34,7 @@ export default function PersonalCoachCard({
   function handleLeave() {
     setError("");
     startTransition(async () => {
-      const result = await leavePersonalCoach();
+      const result = await safeAction(() => leavePersonalCoach());
       if (result.error) setError(result.error);
       else router.refresh();
     });

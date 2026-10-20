@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { BUSINESS_CHECKLIST } from "@/lib/coach-business";
 import { toggleBusinessChecklistItem } from "@/app/dashboard/coach/business/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function BusinessChecklist({ initialDone }: { initialDone: string[] }) {
   const t = useT();
@@ -20,7 +21,7 @@ export default function BusinessChecklist({ initialDone }: { initialDone: string
     startTransition(async () => {
       // Axe B (MASTERCLASS.md) : résultat vérifié, retour en arrière si le
       // serveur refuse plutôt qu'un état optimiste jamais confirmé.
-      const result = await toggleBusinessChecklistItem(key, !wasDone);
+      const result = await safeAction(() => toggleBusinessChecklistItem(key, !wasDone));
       if (result.error) {
         setDone((prev) => {
           const rollback = new Set(prev);

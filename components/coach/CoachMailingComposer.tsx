@@ -28,6 +28,7 @@ import {
 } from "@/lib/mailing-audience";
 import { getMailTemplatesByCategory, MAIL_TEMPLATES, type MailTemplate } from "@/lib/mail-templates";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import { safeAction } from "@/lib/safe-action";
 
 // Axe 2 (VISION.md) : mailing par coach — segmentation par tag/liste sous
 // le compte Brevo unique (décision prise avec l'utilisateur, 2026-08-14).
@@ -265,7 +266,7 @@ export default function CoachMailingComposer({
     setError(null);
     setSuccess(null);
     startTransition(async () => {
-      const result = await sendTestMailing(subject, body);
+      const result = await safeAction(() => sendTestMailing(subject, body));
       if (result.error) {
         setError(result.error);
         return;
@@ -283,7 +284,7 @@ export default function CoachMailingComposer({
     if (audienceType === "contact_specifique") {
       if (!selectedContact) return;
       startTransition(async () => {
-        const result = await sendSingleMailing(subject, body, selectedContact.id);
+        const result = await safeAction(() => sendSingleMailing(subject, body, selectedContact.id));
         if (result.error) {
           setError(result.error);
           setConfirming(false);
@@ -315,7 +316,7 @@ export default function CoachMailingComposer({
 
     const scheduledIso = scheduleLater && scheduledAtLocal ? new Date(scheduledAtLocal).toISOString() : undefined;
     startTransition(async () => {
-      const result = await sendMailingToClients(subject, body, audienceKey, scheduledIso);
+      const result = await safeAction(() => sendMailingToClients(subject, body, audienceKey, scheduledIso));
       if (result.error) {
         setError(result.error);
         setConfirming(false);

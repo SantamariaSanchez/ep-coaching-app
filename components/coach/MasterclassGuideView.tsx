@@ -5,6 +5,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Check, Clock, ChevronDown, Target, AlertTriangle, Lightbulb } from "lucide-react";
 import type { MasterclassGuide, MasterclassBlock } from "@/lib/masterclass-guides";
 import { toggleMasterclassStep } from "@/app/dashboard/coach/masterclass/actions";
+import { safeAction } from "@/lib/safe-action";
 
 function Block({ block }: { block: MasterclassBlock }) {
   switch (block.type) {
@@ -79,7 +80,7 @@ export default function MasterclassGuideView({
       return next;
     });
     startTransition(async () => {
-      const result = await toggleMasterclassStep(guide.slug, stepIndex, !wasCompleted);
+      const result = await safeAction(() => toggleMasterclassStep(guide.slug, stepIndex, !wasCompleted));
       if (result.error) {
         setError(result.error);
         setCompleted((prev) => {

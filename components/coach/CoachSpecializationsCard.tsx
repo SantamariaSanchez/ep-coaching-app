@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Tags, Check } from "lucide-react";
 import { updateSpecializations } from "@/app/dashboard/coach/profile/actions";
 import { COACH_SPECIALIZATIONS } from "@/lib/coach-specializations";
+import { safeAction } from "@/lib/safe-action";
 
 // Axe 5 (VISION.md) : étiquettes affichées dans l'annuaire public /coachs,
 // pour qu'un membre trouve le bon coach pour SON profil (objectif,
@@ -21,16 +22,26 @@ export default function CoachSpecializationsCard({
   const [saved, setSaved] = useState(false);
 
   function toggle(tag: string) {
+    const wasSelected = selected.has(tag);
     const next = new Set(selected);
-    if (next.has(tag)) next.delete(tag);
+    if (wasSelected) next.delete(tag);
     else next.add(tag);
     setSelected(next);
     setSaved(false);
     startTransition(async () => {
-      const result = await updateSpecializations([...next]);
+      const result = await safeAction(() => updateSpecializations([...next]));
       if (result.success) {
         setSaved(true);
         setTimeout(() => setSaved(false), 1800);
+      } else {
+        // Refus serveur ou coupure : l'étiquette reprend son état d'avant
+        // plutôt que d'afficher une sélection jamais enregistrée.
+        setSelected((prev) => {
+          const rollback = new Set(prev);
+          if (wasSelected) rollback.add(tag);
+          else rollback.delete(tag);
+          return rollback;
+        });
       }
     });
   }

@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Zap, Check, X, Clock } from "lucide-react";
 import { scheduleFlashCall, declineFlashCall, type FlashRequest } from "@/app/dashboard/coach/live/actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Retour direct 2026-09-09 ("ajoute des choses auxquelles on n'a pas encore
 // pensé", section Live) : le point flash promet une "réponse rapide sur une
@@ -48,7 +49,7 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
     setError("");
     startTransition(async () => {
       const startsAt = new Date(`${date}T${time}:00`).toISOString();
-      const result = await scheduleFlashCall(requestId, startsAt);
+      const result = await safeAction(() => scheduleFlashCall(requestId, startsAt));
       if (result.error) setError(result.error);
       else {
         setSchedulingId(null);
@@ -59,7 +60,7 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
 
   function handleDecline(requestId: string) {
     startTransition(async () => {
-      await declineFlashCall(requestId);
+      await safeAction(() => declineFlashCall(requestId));
       router.refresh();
     });
   }

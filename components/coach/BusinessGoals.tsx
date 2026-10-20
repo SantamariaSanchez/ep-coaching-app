@@ -10,6 +10,7 @@ import {
   setGoalStatus,
   deleteBusinessGoal,
 } from "@/app/dashboard/coach/business/goals-actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Objectifs business chiffrés (Axe 6, passe "masterclass" 2026-09-09) : le
 // coach fixe un objectif avec une date, la progression se lit d'un coup
@@ -56,7 +57,7 @@ function GoalCard({
     const next = Math.max(0, value + delta);
     setValue(next);
     startTransition(async () => {
-      const res = await updateManualGoalValue(goal.id, next);
+      const res = await safeAction(() => updateManualGoalValue(goal.id, next));
       if (res.error) setValue(value); // revert
     });
   }
@@ -64,7 +65,7 @@ function GoalCard({
   function complete() {
     setBusy(true);
     startTransition(async () => {
-      await setGoalStatus(goal.id, "done");
+      await safeAction(() => setGoalStatus(goal.id, "done"));
       setBusy(false);
     });
   }
@@ -72,7 +73,7 @@ function GoalCard({
   function abandon() {
     setBusy(true);
     startTransition(async () => {
-      await setGoalStatus(goal.id, "abandoned");
+      await safeAction(() => setGoalStatus(goal.id, "abandoned"));
       setBusy(false);
     });
   }
@@ -86,7 +87,7 @@ function GoalCard({
       // à moitié supprimée sans jamais l'être vraiment). En cas de succès,
       // le parent démonte de toute façon la carte via la revalidation, donc
       // ce reset n'a d'effet visible que sur l'échec.
-      const res = await deleteBusinessGoal(goal.id);
+      const res = await safeAction(() => deleteBusinessGoal(goal.id));
       if (res.error) setBusy(false);
     });
   }

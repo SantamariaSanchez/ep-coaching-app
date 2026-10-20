@@ -17,6 +17,7 @@ import { CHECKIN_RETURN_KEY } from "@/components/coach/CheckinReturnBar";
 import PhotoCompareLauncher from "@/components/photos/PhotoCompareLauncher";
 import { checkinSetId, type PhotoSet } from "@/lib/photo-sets";
 import { safeExternalUrl } from "@/lib/sanitize";
+import { safeAction } from "@/lib/safe-action";
 
 export interface ReviewProgram {
   name: string;
@@ -182,7 +183,7 @@ export default function CheckinReview({
     }
     startTransition(async () => {
       if (cleanLink && cleanLink !== checkin.coach_video_link) {
-        const res = await attachCoachVideoLink(checkin.id, clientId, cleanLink);
+        const res = await safeAction(() => attachCoachVideoLink(checkin.id, clientId, cleanLink));
         if (res.error) {
           setError(res.error);
           return;
@@ -193,7 +194,7 @@ export default function CheckinReview({
       fd.set("client_id", clientId);
       fd.set("coach_notes", message.trim());
       if (rating) fd.set("coach_rating", rating);
-      const res = await replyToCheckin(null, fd);
+      const res = await safeAction(() => replyToCheckin(null, fd));
       if (res && "error" in res) {
         setError(res.error);
         return;

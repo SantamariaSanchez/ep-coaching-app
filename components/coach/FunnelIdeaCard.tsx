@@ -12,6 +12,7 @@ import { useState, useTransition } from "react";
 import { Plus, Check } from "lucide-react";
 import { createContentIdeaFromFunnel } from "@/app/dashboard/coach/studio/actions";
 import type { FunnelStage } from "@/lib/coach-business";
+import { safeAction } from "@/lib/safe-action";
 
 export default function FunnelIdeaCard({
   stage,
@@ -32,7 +33,7 @@ export default function FunnelIdeaCard({
   function add() {
     setError(null);
     startTransition(async () => {
-      const result = await createContentIdeaFromFunnel({ stage, platformLabel: platform, format, idea });
+      const result = await safeAction(() => createContentIdeaFromFunnel({ stage, platformLabel: platform, format, idea }));
       if (result.error) {
         setError(result.error);
         return;

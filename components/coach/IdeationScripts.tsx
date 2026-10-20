@@ -13,6 +13,7 @@ import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
 import Link from "next/link";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
   a_tourner: { label: "À tourner", color: "var(--ep-yellow)" },
@@ -394,7 +395,7 @@ function MyScripts({
     setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, views, likes, comments_count: commentsCount, shares, saves } : s)));
     setPerfEditId(null);
     startTransition(async () => {
-      const result = await updateScript(id, { views, likes, commentsCount, shares, saves });
+      const result = await safeAction(() => updateScript(id, { views, likes, commentsCount, shares, saves }));
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -524,7 +525,7 @@ function MyScripts({
       const backup = scripts;
       setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, status: "tourne" } : s)));
       startTransition(async () => {
-        const result = await updateScript(id, { status: "tourne" });
+        const result = await safeAction(() => updateScript(id, { status: "tourne" }));
         if (result.error) {
           setScripts(backup);
           setError(result.error);
@@ -558,7 +559,7 @@ function MyScripts({
     startTransition(async () => {
       // Écrit (LinkedIn/Threads) : direct en publié, jamais à_tourner.
       const initialStatus: ScriptStatus = WRITTEN_PLATFORMS.has(newPlatform) ? "publie" : "a_tourner";
-      const result = await createScript({ title: t, format, platform: newPlatform, status: initialStatus });
+      const result = await safeAction(() => createScript({ title: t, format, platform: newPlatform, status: initialStatus }));
       if (result.error) {
         setError(result.error);
         return;
@@ -601,7 +602,7 @@ function MyScripts({
     setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, content: draft || null } : s)));
     setOpenId(null);
     startTransition(async () => {
-      const result = await updateScript(id, { content: draft });
+      const result = await safeAction(() => updateScript(id, { content: draft }));
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -614,7 +615,7 @@ function MyScripts({
     setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, instagram_caption: captionDraft || null } : s)));
     setCaptionOpenId(null);
     startTransition(async () => {
-      const result = await updateScript(id, { caption: captionDraft });
+      const result = await safeAction(() => updateScript(id, { caption: captionDraft }));
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -632,7 +633,7 @@ function MyScripts({
       if (!window.confirm(tr("Posté ? Le script sort du Studio (son sujet reste mémorisé pour ne pas le refaire)."))) return;
       setScripts((prev) => prev.filter((s) => s.id !== id));
       startTransition(async () => {
-        const result = await publishScript(id);
+        const result = await safeAction(() => publishScript(id));
         if (result.error) {
           setScripts(backup);
           setError(result.error);
@@ -642,7 +643,7 @@ function MyScripts({
     }
     setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, status: next } : s)));
     startTransition(async () => {
-      const result = await updateScript(id, { status: next });
+      const result = await safeAction(() => updateScript(id, { status: next }));
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -658,7 +659,7 @@ function MyScripts({
     setDeleteTarget(null);
     setDeleteDetail("");
     startTransition(async () => {
-      const result = await deleteScript(id, reason, detail);
+      const result = await safeAction(() => deleteScript(id, reason, detail));
       if (result.error && backup) {
         setScripts((prev) => {
           const next = [...prev];

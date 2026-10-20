@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Plus, CalendarClock } from "lucide-react";
 import { addAvailabilityRules, deleteAvailabilityRule, type AvailabilityRule } from "@/app/dashboard/coach/live/actions";
+import { safeAction } from "@/lib/safe-action";
 
 const DAYS = [
   { value: 1, label: "Lundi", short: "Lun" },
@@ -69,12 +70,12 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
   function handleAdd() {
     setError("");
     startTransition(async () => {
-      const result = await addAvailabilityRules({
+      const result = await safeAction(() => addAvailabilityRules({
         daysOfWeek: selectedDays,
         startTime,
         endTime,
         slotDurationMinutes: slotDuration,
-      });
+      }));
       if (result.error) setError(result.error);
       else router.refresh();
     });
@@ -83,7 +84,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
   function handleDelete(id: string) {
     setError("");
     startTransition(async () => {
-      const result = await deleteAvailabilityRule(id);
+      const result = await safeAction(() => deleteAvailabilityRule(id));
       if (result.error) setError(result.error);
       else router.refresh();
     });

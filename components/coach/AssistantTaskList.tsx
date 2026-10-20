@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import type { AgentTask } from "@/utils/ai-agents";
 import { markAssistantTaskDone } from "@/app/dashboard/coach/assistant/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function AssistantTaskList({ initialTasks }: { initialTasks: AgentTask[] }) {
   const tr = useT();
@@ -15,7 +16,7 @@ export default function AssistantTaskList({ initialTasks }: { initialTasks: Agen
     const backup = tasks;
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
     startTransition(async () => {
-      const result = await markAssistantTaskDone(taskId);
+      const result = await safeAction(() => markAssistantTaskDone(taskId));
       if (result.error) setTasks(backup);
     });
   }

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Trash2, Plus } from "lucide-react";
 import type { SalesCall } from "@/lib/sales-calls";
 import { addSalesCall, updateSalesCall, deleteSalesCall } from "@/app/dashboard/coach/admin/ventes/actions";
+import { safeAction } from "@/lib/safe-action";
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -49,7 +50,7 @@ function CallRow({ call }: { call: SalesCall }) {
 
   function patch(p: Partial<{ show_up: boolean | null; closed: boolean | null; revenue_amount: number | null }>) {
     startTransition(async () => {
-      await updateSalesCall(call.id, p);
+      await safeAction(() => updateSalesCall(call.id, p));
     });
   }
 
@@ -73,7 +74,7 @@ function CallRow({ call }: { call: SalesCall }) {
       />
       <button
         type="button"
-        onClick={() => startTransition(async () => { await deleteSalesCall(call.id); })}
+        onClick={() => startTransition(async () => { await safeAction(() => deleteSalesCall(call.id)); })}
         style={{ color: "rgba(var(--ep-ink-rgb),0.25)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
         aria-label={t("Supprimer")}
       >
@@ -94,7 +95,7 @@ export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
     e.preventDefault();
     if (!leadName.trim()) return;
     startTransition(async () => {
-      const result = await addSalesCall({ leadName, callDate });
+      const result = await safeAction(() => addSalesCall({ leadName, callDate }));
       if (result.error) {
         setError(result.error);
       } else {

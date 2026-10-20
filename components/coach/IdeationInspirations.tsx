@@ -7,6 +7,7 @@ import { createInspiration, deleteInspiration } from "@/app/dashboard/coach/stud
 import { safeExternalUrl } from "@/lib/sanitize";
 import type { Inspiration, InspirationPlatform } from "@/lib/coach-ideation";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 const PLATFORM_META: Record<InspirationPlatform, { label: string; icon: React.ElementType; color: string }> = {
   instagram: { label: "Instagram", icon: Camera, color: "#E1306C" },
@@ -42,7 +43,7 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
       return;
     }
     startTransition(async () => {
-      const result = await createInspiration({ url: u, platform, note: note || undefined });
+      const result = await safeAction(() => createInspiration({ url: u, platform, note: note || undefined }));
       if (result.error) {
         setError(result.error);
         return;
@@ -72,7 +73,7 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
     const backup = items[idx];
     setItems((prev) => prev.filter((i) => i.id !== id));
     startTransition(async () => {
-      const result = await deleteInspiration(id);
+      const result = await safeAction(() => deleteInspiration(id));
       if (result.error && backup) {
         setItems((prev) => {
           const next = [...prev];

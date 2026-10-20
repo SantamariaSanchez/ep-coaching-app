@@ -14,6 +14,7 @@ import {
   ctrSeverity, costPerLeadSeverity, roasSeverity,
   type AdCampaign, type AdStatus, type MetricSeverity,
 } from "@/lib/ad-campaigns";
+import { safeAction } from "@/lib/safe-action";
 
 // Outil de pilotage MANUEL de la pub payante (Google/Meta/TikTok...) — pas
 // d'intégration API régie. Le coach saisit/copie ses chiffres depuis les
@@ -117,7 +118,7 @@ function NewCampaignForm({
       return;
     }
     startTransition(async () => {
-      const result = await createAdCampaign({
+      const result = await safeAction(() => createAdCampaign({
         name,
         platform,
         objective,
@@ -125,7 +126,7 @@ function NewCampaignForm({
         budgetTotal: budgetTotal.trim() ? Number(budgetTotal.replace(",", ".")) : null,
         startDate,
         notes: notes || undefined,
-      });
+      }));
       if (result.error) {
         setError(result.error);
         return;
@@ -256,7 +257,7 @@ function MetricsEditForm({
     }
     setError(null);
     startTransition(async () => {
-      const result = await updateAdCampaign(campaign.id, parsed);
+      const result = await safeAction(() => updateAdCampaign(campaign.id, parsed));
       if (result.error) {
         setError(result.error);
         return;

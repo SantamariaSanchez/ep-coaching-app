@@ -14,6 +14,7 @@ import {
   toggleNoteDone,
   deletePersonalNote,
 } from "@/app/dashboard/coach/documents/actions";
+import { safeAction } from "@/lib/safe-action";
 
 type Tab = "modeles" | "fichiers" | "notes";
 
@@ -187,7 +188,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
     const backup = files[idx];
     setFiles((prev) => prev.filter((f) => f.id !== id));
     startTransition(async () => {
-      const result = await deletePersonalFile(id, storagePath);
+      const result = await safeAction(() => deletePersonalFile(id, storagePath));
       if (result.error && backup) {
         setFiles((prev) => {
           const next = [...prev];
@@ -280,7 +281,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
     if (!trimmed) return;
     setError(null);
     startTransition(async () => {
-      const result = await createPersonalNote(trimmed);
+      const result = await safeAction(() => createPersonalNote(trimmed));
       if (result.error) {
         setError(result.error);
         return;
@@ -296,7 +297,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
   function toggle(id: string, wasDone: boolean) {
     setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, done: !wasDone } : n)));
     startTransition(async () => {
-      const result = await toggleNoteDone(id, !wasDone);
+      const result = await safeAction(() => toggleNoteDone(id, !wasDone));
       if (result.error) {
         setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, done: wasDone } : n)));
       }
@@ -308,7 +309,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
     const backup = notes[idx];
     setNotes((prev) => prev.filter((n) => n.id !== id));
     startTransition(async () => {
-      const result = await deletePersonalNote(id);
+      const result = await safeAction(() => deletePersonalNote(id));
       if (result.error && backup) {
         setNotes((prev) => {
           const next = [...prev];

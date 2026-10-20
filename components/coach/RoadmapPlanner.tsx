@@ -10,6 +10,7 @@ import {
   toggleRoadmapMilestone,
   deleteRoadmapMilestone,
 } from "@/app/dashboard/coach/business/roadmap-actions";
+import { safeAction } from "@/lib/safe-action";
 
 export interface RoadmapMilestone {
   id: string;
@@ -39,7 +40,7 @@ export default function RoadmapPlanner({
 
   function saveVision() {
     startTransition(async () => {
-      const result = await saveRoadmapVision(horizon, visions[horizon] ?? "");
+      const result = await safeAction(() => saveRoadmapVision(horizon, visions[horizon] ?? ""));
       if (!result.error) {
         setVisionSaved(true);
         setTimeout(() => setVisionSaved(false), 2000);
@@ -52,9 +53,12 @@ export default function RoadmapPlanner({
     if (!label) return;
     setNewMilestone("");
     startTransition(async () => {
-      const result = await addRoadmapMilestone(horizon, label);
+      const result = await safeAction(() => addRoadmapMilestone(horizon, label));
       if (result.success && result.id) {
         setMilestones((prev) => [...prev, { id: result.id!, horizon, label, done: false }]);
+      } else {
+        // Échec (refus ou coupure) : on rend le texte saisi au lieu de le perdre.
+        setNewMilestone((current) => current || label);
       }
     });
   }
@@ -65,7 +69,7 @@ export default function RoadmapPlanner({
     const nextDone = !target.done;
     setMilestones((prev) => prev.map((m) => (m.id === id ? { ...m, done: nextDone } : m)));
     startTransition(async () => {
-      const result = await toggleRoadmapMilestone(id, nextDone);
+      const result = await safeAction(() => toggleRoadmapMilestone(id, nextDone));
       if (result.error) {
         setMilestones((prev) => prev.map((m) => (m.id === id ? { ...m, done: !nextDone } : m)));
       }
@@ -76,7 +80,7 @@ export default function RoadmapPlanner({
     const previous = milestones;
     setMilestones((prev) => prev.filter((m) => m.id !== id));
     startTransition(async () => {
-      const result = await deleteRoadmapMilestone(id);
+      const result = await safeAction(() => deleteRoadmapMilestone(id));
       if (result.error) setMilestones(previous);
     });
   }

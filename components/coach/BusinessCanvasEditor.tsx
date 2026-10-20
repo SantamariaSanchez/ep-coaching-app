@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
 import { CANVAS_BLOCKS, type BusinessCanvas } from "@/lib/coach-business-canvas";
 import { saveCanvasBlock } from "@/app/dashboard/coach/business/canvas-actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Modèle économique (Business Model Canvas, 9 blocs classiques) — Axe 6,
 // passe "masterclass" 2026-09-09. Chaque bloc s'enregistre indépendamment
@@ -30,7 +31,7 @@ function CanvasBlockField({
   function handleBlur() {
     if (value === initialValue) return;
     startTransition(async () => {
-      const res = await onSave(value);
+      const res = await safeAction(() => onSave(value));
       if (!res.error) {
         setSaved(true);
         setTimeout(() => setSaved(false), 1800);

@@ -3,6 +3,7 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import { setCoachPlatformStatus } from "@/app/dashboard/coach/admin/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function CoachStatusToggle({
   coachId,
@@ -25,7 +26,7 @@ export default function CoachStatusToggle({
 
   function apply(next: "inactive" | "active" | "canceled") {
     startTransition(async () => {
-      const result = await setCoachPlatformStatus(coachId, next);
+      const result = await safeAction(() => setCoachPlatformStatus(coachId, next));
       if (result.success) setCurrent(next);
       setConfirming(false);
     });

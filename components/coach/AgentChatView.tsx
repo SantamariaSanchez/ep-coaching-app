@@ -14,6 +14,7 @@ import {
   type AgentTaskStatus,
 } from "@/app/dashboard/coach/admin/organisation/agents/actions";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 const TASK_STATUS_META: Record<AgentTaskStatus, { label: string; color: string; icon: React.ElementType }> = {
   a_faire: { label: "À faire", color: "rgba(var(--ep-ink-rgb),0.4)", icon: Circle },
@@ -108,7 +109,7 @@ export default function AgentChatView({
     setMessages((prev) => [...prev, optimisticUser]);
     setInput("");
     startTransition(async () => {
-      const result = await sendAgentMessage(agent.key, text);
+      const result = await safeAction(() => sendAgentMessage(agent.key, text));
       if (result.error) {
         setError(result.error);
         return;

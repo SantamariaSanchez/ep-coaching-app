@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Link as LinkIcon } from "lucide-react";
 import { updateExternalPaymentLink } from "@/app/dashboard/coach/profile/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function PaymentLinkCard({ initialLink }: { initialLink: string | null }) {
   const t = useT();
@@ -18,7 +19,7 @@ export default function PaymentLinkCard({ initialLink }: { initialLink: string |
     setError("");
     setSaved(false);
     startTransition(async () => {
-      const result = await updateExternalPaymentLink(url);
+      const result = await safeAction(() => updateExternalPaymentLink(url));
       if (result.error) {
         setError(result.error);
       } else {

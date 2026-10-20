@@ -12,6 +12,7 @@ import type {
   MonthlyObjectives,
   WeeklyBusinessStats,
 } from "@/lib/business-non-negotiables";
+import { safeAction } from "@/lib/safe-action";
 
 // UI du pilotage business — voir lib/business-non-negotiables.ts pour
 // toute la logique (agrégation, calcul du streak). Palette identité rouge
@@ -112,7 +113,7 @@ export default function NonNegotiablesTracker({
     setError(null);
     setSaved(false);
     startTransition(async () => {
-      const result = await upsertNonNegotiablesDay({
+      const result = await safeAction(() => upsertNonNegotiablesDay({
         logDate: today,
         readingPages: next.readingPages,
         mindfulnessMinutes: next.mindfulnessMinutes,
@@ -122,7 +123,7 @@ export default function NonNegotiablesTracker({
         contentMinutes: next.contentMinutes,
         contentPosts: next.contentPosts,
         outreachConversations: next.outreachConversations,
-      });
+      }));
       if (result.error) setError(result.error);
       else setSaved(true);
     });
@@ -178,7 +179,7 @@ export default function NonNegotiablesTracker({
     setObjectives(next);
     setObjectivesSaved(false);
     startTransition(async () => {
-      const result = await saveMonthlyObjectives(next);
+      const result = await safeAction(() => saveMonthlyObjectives(next));
       if (!result.error) setObjectivesSaved(true);
     });
   }

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { RefreshCw, AlertTriangle, TrendingDown } from "lucide-react";
 import { refreshMailingStatsAction } from "@/app/dashboard/coach/mailing/actions";
 import type { CampaignStats } from "@/lib/coach-mailings";
+import { safeAction } from "@/lib/safe-action";
 
 // Suivi de performance mailing (2026-09-16, retour direct : "travaille
 // encore plus sur le mailing et derrière le tracking des données : taux
@@ -58,7 +59,7 @@ export default function MailingStatsCard({
   function refresh() {
     setError(null);
     startTransition(async () => {
-      const result = await refreshMailingStatsAction(mailingId);
+      const result = await safeAction(() => refreshMailingStatsAction(mailingId));
       if (result.error) {
         setError(result.error);
         return;
