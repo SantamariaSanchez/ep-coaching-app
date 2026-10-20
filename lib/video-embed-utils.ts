@@ -5,11 +5,13 @@ export interface EmbeddableVideo {
 
 export function resolveVideoEmbed(url: string): EmbeddableVideo | null {
   if (!url) return null;
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{6,})/);
-  if (yt) return { type: "youtube", src: `https://www.youtube.com/embed/${yt[1]}` };
+  // Lecteurs sans cookie de suivi (youtube-nocookie, Vimeo dnt=1) : l'appli
+  // ne dépose que des cookies techniques, donc pas de bandeau cookies requis.
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/|youtube(?:-nocookie)?\.com\/embed\/)([a-zA-Z0-9_-]{6,})/);
+  if (yt) return { type: "youtube", src: `https://www.youtube-nocookie.com/embed/${yt[1]}` };
 
-  const vimeo = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeo) return { type: "vimeo", src: `https://player.vimeo.com/video/${vimeo[1]}` };
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeo) return { type: "vimeo", src: `https://player.vimeo.com/video/${vimeo[1]}?dnt=1` };
 
   // ScreenPal (retours vidéo check-in/correction/comparaison physique,
   // demande du 2026-08-15) : le lien copié par le coach ressemble à
