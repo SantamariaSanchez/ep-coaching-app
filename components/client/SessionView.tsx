@@ -1094,6 +1094,10 @@ export default function SessionView({
   // Envois en vol, par set : un double-tap sur « Valider » partait en deux
   // requêtes et enregistrait deux fois la même série.
   const savingSetsRef = useRef<Set<string>>(new Set());
+  // Séries supprimées pendant leur enregistrement : la ligne créée par le
+  // POST en cours est effacée dès que le serveur répond, sinon elle
+  // réapparaissait au rechargement.
+  const removedWhileSavingRef = useRef<Set<string>>(new Set());
   const noteSaveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const prevSetsFor = useCallback(
@@ -1161,6 +1165,12 @@ export default function SessionView({
         failed = true;
       }
       savingSetsRef.current.delete(set.localId);
+
+      if (removedWhileSavingRef.current.has(set.localId)) {
+        removedWhileSavingRef.current.delete(set.localId);
+        if (dbId) fetch(`/api/client/sessions/${sessionId}/sets/${dbId}`, { method: "DELETE" }).catch(() => {});
+        return null;
+      }
 
       setExercises((prev) =>
         patchSetIn(prev, set.localId, {
@@ -1290,6 +1300,7 @@ export default function SessionView({
       if (removedSet?.dbId) {
         fetch(`/api/client/sessions/${sessionId}/sets/${removedSet.dbId}`, { method: "DELETE" }).catch(() => {});
       }
+      if (savingSetsRef.current.has(localId)) removedWhileSavingRef.current.add(localId);
       setExercises((prev) =>
         prev.map((e) => (e.key === key ? { ...e, sets: e.sets.filter((s) => s.localId !== localId) } : e))
       );
