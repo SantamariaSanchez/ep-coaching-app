@@ -7,7 +7,7 @@ import { Rocket, User, Tags, Users, Link2, ChevronRight, ChevronLeft, Target } f
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import CoachSpecializationsCard from "@/components/coach/CoachSpecializationsCard";
 import AcceptingClientsCard from "@/components/coach/AcceptingClientsCard";
-import InviteLinkCard from "@/components/coach/InviteLinkCard";
+import InviteFirstClientCard from "@/components/coach/InviteFirstClientCard";
 import BusinessCanvasEditor from "@/components/coach/BusinessCanvasEditor";
 import type { WaitlistEntry } from "@/utils/waitlist";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
@@ -15,7 +15,7 @@ import { completeOnboarding } from "@/app/onboarding/actions";
 
 // Onboarding coach (Axe 9, VISION.md) — étapes courtes, chacune réutilisant
 // un composant déjà existant et déjà auto-sauvegardant (ProfileEditor,
-// CoachSpecializationsCard, AcceptingClientsCard, InviteLinkCard,
+// CoachSpecializationsCard, AcceptingClientsCard, InviteFirstClientCard,
 // BusinessCanvasEditor vivent normalement dans /dashboard/coach/parametres
 // ou /business) : pas de nouvelle logique de sauvegarde à écrire, juste un
 // fil qui les présente dans le bon ordre au premier lancement, pour qu'un
@@ -107,7 +107,7 @@ export default function CoachOnboardingFlow({
             {t("Bienvenue")}{fullName ? `, ${fullName.split(" ")[0]}` : ""}
           </h1>
           <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6, maxWidth: 440, margin: "0 auto" }}>
-            {t("Ton abonnement plateforme est actif. Avant ton premier client, 3 minutes pour que ta fiche soit prête : ton profil, tes spécialités, ta capacité, et ton lien d'inscription personnel. Tout reste modifiable ensuite depuis Paramètres.")}
+            {t("Ton abonnement plateforme est actif. Avant ton premier client, 3 minutes pour que ta fiche soit prête : ton profil, tes spécialités, ta capacité, et surtout ton lien d'invitation, à envoyer à chaque client pour qu'il te rejoigne. Tout reste modifiable ensuite depuis Paramètres.")}
           </p>
         </div>
       )}
@@ -149,8 +149,10 @@ export default function CoachOnboardingFlow({
 
       {step === "invite" && (
         <div>
-          <StepHeader icon={Link2} title={t("Ton lien")} subtitle={t("Chaque inscription via ce lien te rattache automatiquement le client.")} />
-          <InviteLinkCard inviteCode={inviteCode} />
+          <StepHeader icon={Link2} title={t("Invite ton premier client")} subtitle={t("Étape indispensable : tes clients ne te trouvent pas tout seuls, envoie-leur ton lien.")} />
+          <div style={{ marginTop: 16 }}>
+            <InviteFirstClientCard inviteCode={inviteCode} coachFirstName={fullName ? fullName.split(" ")[0] : null} />
+          </div>
         </div>
       )}
 

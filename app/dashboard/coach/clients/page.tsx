@@ -8,6 +8,7 @@ import { getClientsLastActivity, getClientsWeeklyConsistency } from "@/lib/clien
 import { getClientsIntakeCompletion } from "@/utils/client-intake";
 import { relaunchMember } from "@/app/dashboard/coach/communaute/membres/actions";
 import ClientsSection from "@/components/ui/ClientsSection";
+import InviteFirstClientCard from "@/components/coach/InviteFirstClientCard";
 
 export default async function ClientsPage() {
   const t = await getT();
@@ -46,6 +47,12 @@ export default async function ClientsPage() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Gestion")}</p>
         <h1 className="ep-h1">{t("Mes clients")}</h1>
       </div>
+
+      {/* Peu de clients : le lien d'invitation en tête de page, avec ce que
+          le client verra en l'ouvrant (retour direct 2026-10-20). */}
+      {clients.length < 3 && (
+        <InviteFirstClientCard inviteCode={profile?.invite_code ?? null} coachFirstName={profile?.full_name?.split(" ")[0] ?? null} clientCount={clients.length} />
+      )}
 
       <ClientsSection
         hideTitle

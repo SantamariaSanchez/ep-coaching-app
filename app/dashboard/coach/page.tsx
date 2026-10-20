@@ -25,6 +25,7 @@ import DashboardStats from "@/components/coach/DashboardStats";
 import UrgentAlertsSection from "@/components/coach/UrgentAlertsSection";
 import MyDayCard, { timeAwareGreeting } from "@/components/coach/MyDayCard";
 import CoachShortcuts from "@/components/coach/CoachShortcuts";
+import InviteFirstClientCard from "@/components/coach/InviteFirstClientCard";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { messagePreview } from "@/components/messaging/message-format";
 import { getAllMessageableMembers } from "@/utils/auth";
@@ -209,6 +210,12 @@ export default async function CoachDashboard() {
           peu de temps — elle ne doit pas attendre après ses propres infos
           personnelles (nutrition, sommeil) pour apparaître. */}
       {hasClients && <UrgentAlertsSection />}
+
+      {/* Tant que le coach a peu de clients, l'étape qui compte le plus est
+          d'envoyer son lien d'invitation (retour direct 2026-10-20). */}
+      {clients.length < 3 && (
+        <InviteFirstClientCard inviteCode={profile?.invite_code ?? null} coachFirstName={profile?.full_name?.split(" ")[0] ?? null} clientCount={clients.length} />
+      )}
 
       {/* Raccourcis selon les objectifs du coach (Mon appli). */}
       <CoachShortcuts

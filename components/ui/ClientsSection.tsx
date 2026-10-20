@@ -317,7 +317,7 @@ export default function ClientsSection({
             {t("Aucun client pour l'instant")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0 }}>
-            {t("Les clients s'inscrivent eux-mêmes depuis l'appli, ils apparaîtront ici. Il ne te reste plus qu'à activer leur coaching.")}
+            {t("Envoie ton lien d'invitation (carte ci-dessus) : chaque client qui s'inscrit avec apparaît ici. Il ne te reste plus qu'à activer son coaching depuis sa fiche.")}
           </p>
         </div>
       ) : visible.length === 0 ? (
