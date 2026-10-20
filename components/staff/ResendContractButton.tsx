@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Mail } from "lucide-react";
 import { resendContractEmail } from "@/app/equipe/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function ResendContractButton() {
   const t = useT();
@@ -17,7 +18,7 @@ export default function ResendContractButton() {
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
-            const r = await resendContractEmail();
+            const r = await safeAction(() => resendContractEmail());
             setMessage("error" in r ? { text: r.error, ok: false } : { text: "Copie envoyée par email.", ok: true });
           })
         }

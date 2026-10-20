@@ -8,6 +8,7 @@ import { Send, Hash, Crown } from "lucide-react";
 import type { TeamMessage, TeamPerson } from "@/lib/staff-team";
 import { sendTeamMessageAction } from "@/app/equipe/team-actions";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -67,7 +68,7 @@ export default function TeamChat({
     setError(null);
     const body = text;
     startTransition(async () => {
-      const r = await sendTeamMessageAction(active, body);
+      const r = await safeAction(() => sendTeamMessageAction(active, body));
       if ("error" in r) setError(r.error);
       else {
         setText("");

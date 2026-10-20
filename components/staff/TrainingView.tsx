@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, Circle, Clock, GraduationCap } from "lucide-react";
 import { PHASES, type Lesson } from "@/lib/staff-training";
 import { toggleLessonAction } from "@/app/equipe/team-actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function TrainingView({ lessons, done }: { lessons: Lesson[]; done: string[] }) {
   const t = useT();
@@ -25,7 +26,7 @@ export default function TrainingView({ lessons, done }: { lessons: Lesson[]; don
       return n;
     });
     startTransition(async () => {
-      const r = await toggleLessonAction(key, value);
+      const r = await safeAction(() => toggleLessonAction(key, value));
       if ("error" in r) {
         setError(r.error);
         setDoneSet((s) => {

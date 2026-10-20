@@ -3,6 +3,7 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { resendStaffVerification } from "@/app/equipe/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function ResendVerificationButton() {
   const t = useT();
@@ -18,7 +19,7 @@ export default function ResendVerificationButton() {
         style={{ height: 44, padding: "0 22px", fontSize: 12 }}
         onClick={() =>
           startTransition(async () => {
-            const r = await resendStaffVerification();
+            const r = await safeAction(() => resendStaffVerification());
             setMessage("error" in r ? { text: r.error, ok: false } : { text: "Email renvoyé.", ok: true });
           })
         }

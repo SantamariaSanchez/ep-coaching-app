@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PenLine } from "lucide-react";
 import { signStaffContract } from "@/app/equipe/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function ContractSignForm({ expectedName }: { expectedName: string }) {
   const t = useT();
@@ -21,7 +22,7 @@ export default function ContractSignForm({ expectedName }: { expectedName: strin
   function sign() {
     setError(null);
     startTransition(async () => {
-      const result = await signStaffContract(signature, acceptedContract, acceptedTerms);
+      const result = await safeAction(() => signStaffContract(signature, acceptedContract, acceptedTerms));
       if ("error" in result) {
         setError(result.error);
         return;

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Check, ChevronDown, Link2, UserPlus, X, KeyRound, Send } from "lucide-react";
 import { addStaffInvite, revokeStaffInvite, setStaffMemberStatus, sendStaffInviteEmail } from "@/app/dashboard/coach/admin/organisation/actions";
+import { safeAction } from "@/lib/safe-action";
 
 export interface StaffAccessRole {
   key: string;
@@ -81,7 +82,7 @@ function RoleRow({
   function run(fn: () => Promise<{ error?: string }>, after?: () => void) {
     setError(null);
     startTransition(async () => {
-      const r = await fn();
+      const r = await safeAction(() => fn());
       if (r.error) setError(r.error);
       else {
         after?.();
@@ -159,7 +160,7 @@ function RoleRow({
                     onClick={() =>
                       startTransition(async () => {
                         setError(null);
-                        const r = await sendStaffInviteEmail(i.id);
+                        const r = await safeAction(() => sendStaffInviteEmail(i.id));
                         if (r.error) setError(r.error);
                         else setSentIds((ids) => [...ids, i.id]);
                       })

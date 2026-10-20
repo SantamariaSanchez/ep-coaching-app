@@ -7,6 +7,7 @@ import { Save, Check } from "lucide-react";
 import type { ReportMetric } from "@/lib/staff-roles";
 import type { StaffRecord } from "@/lib/staff-kpis";
 import { saveDailyReport } from "@/app/equipe/actions";
+import { safeAction } from "@/lib/safe-action";
 
 function lastDays(today: string, count: number): string[] {
   const base = new Date(`${today}T12:00:00`);
@@ -53,7 +54,7 @@ export default function DailyReport({
   function save() {
     setMessage(null);
     startTransition(async () => {
-      const r = await saveDailyReport(date, values, win, blocker);
+      const r = await safeAction(() => saveDailyReport(date, values, win, blocker));
       if ("error" in r) setMessage({ text: r.error, ok: false });
       else {
         setMessage({ text: "Rapport enregistré.", ok: true });

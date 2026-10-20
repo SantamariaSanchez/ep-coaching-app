@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Target, Pencil, Save } from "lucide-react";
 import type { TargetDef } from "@/lib/staff-playbooks";
 import { setMyTargets } from "@/app/equipe/actions";
+import { safeAction } from "@/lib/safe-action";
 
 const fmt = (t: TargetDef, v: number) => (t.unit === "eur" ? `${Math.round(v).toLocaleString("fr-FR")} €` : Math.round(v).toLocaleString("fr-FR"));
 
@@ -30,7 +31,7 @@ export default function TargetsCard({
   function save() {
     setError(null);
     startTransition(async () => {
-      const r = await setMyTargets(values);
+      const r = await safeAction(() => setMyTargets(values));
       if ("error" in r) setError(r.error);
       else {
         setEditing(false);

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FileText, Link2, Trash2, Upload, ExternalLink } from "lucide-react";
 import type { TeamDocument } from "@/lib/staff-team";
 import { addDocumentAction, deleteDocumentAction } from "@/app/equipe/team-actions";
+import { safeAction } from "@/lib/safe-action";
 
 export default function DocumentsPanel({
   documents,
@@ -43,7 +44,7 @@ export default function DocumentsPanel({
     const file = fileRef.current?.files?.[0];
     if (file) form.set("file", file);
     startTransition(async () => {
-      const r = await addDocumentAction(form);
+      const r = await safeAction(() => addDocumentAction(form));
       if ("error" in r) setMessage({ text: r.error, ok: false });
       else {
         setTitle("");
@@ -60,7 +61,7 @@ export default function DocumentsPanel({
   function remove(id: string, name: string) {
     if (!window.confirm(`Supprimer "${name}" ?`)) return;
     startTransition(async () => {
-      const r = await deleteDocumentAction(id);
+      const r = await safeAction(() => deleteDocumentAction(id));
       if ("error" in r) setMessage({ text: r.error, ok: false });
       else router.refresh();
     });

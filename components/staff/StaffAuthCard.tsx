@@ -8,6 +8,7 @@ import { EPLogo } from "@/components/ui/EPLogo";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { loginStaff, signupStaff } from "@/app/auth/equipe/actions";
+import { safeAction } from "@/lib/safe-action";
 
 const labelStyle: React.CSSProperties = {
   display: "block",
@@ -116,7 +117,7 @@ function SignupForm({ roleKey }: { roleKey: string }) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await signupStaff({ roleKey, fullName, email, password, acceptedTerms: accepted });
+      const result = await safeAction(() => signupStaff({ roleKey, fullName, email, password, acceptedTerms: accepted }));
       if (result && "error" in result) setError(result.error);
     });
   }

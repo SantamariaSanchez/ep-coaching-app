@@ -9,6 +9,7 @@ import { isoToParisLocal, parisDate, type StaffRecord } from "@/lib/staff-kpis";
 import { createStaffRecord, updateStaffRecord, setStaffRecordStatus, deleteStaffRecord } from "@/app/equipe/actions";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { withAlpha } from "@/lib/theme-color";
+import { safeAction } from "@/lib/safe-action";
 
 type EditableKind = Exclude<RecordKind, "report">;
 type Values = Record<string, string>;
@@ -227,7 +228,7 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
 
   function changeStatus(value: string) {
     startTransition(async () => {
-      const r = await setStaffRecordStatus(record.id, value);
+      const r = await safeAction(() => setStaffRecordStatus(record.id, value));
       if ("error" in r) setError(r.error);
       else router.refresh();
     });
@@ -289,7 +290,7 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
             onSubmit={(status, values) =>
               startTransition(async () => {
                 setError(null);
-                const r = await updateStaffRecord(record.id, status, values);
+                const r = await safeAction(() => updateStaffRecord(record.id, status, values));
                 if ("error" in r) setError(r.error);
                 else {
                   setOpen(false);
@@ -300,7 +301,7 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
             onDelete={() => {
               if (!window.confirm(`Supprimer "${record.title}" ? Cette action est définitive.`)) return;
               startTransition(async () => {
-                const r = await deleteStaffRecord(record.id);
+                const r = await safeAction(() => deleteStaffRecord(record.id));
                 if ("error" in r) setError(r.error);
                 else router.refresh();
               });
@@ -409,7 +410,7 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
             onSubmit={(status, values) =>
               startTransition(async () => {
                 setError(null);
-                const r = await createStaffRecord(kind, status, values);
+                const r = await safeAction(() => createStaffRecord(kind, status, values));
                 if ("error" in r) setError(r.error);
                 else {
                   setFormKey((k) => k + 1);

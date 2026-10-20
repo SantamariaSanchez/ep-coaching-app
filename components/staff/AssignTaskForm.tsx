@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { assignTaskAction } from "@/app/equipe/team-actions";
+import { safeAction } from "@/lib/safe-action";
 
 // Côté fondateur : assigner une tâche à un membre de l'équipe. Elle apparaît
 // dans ses Tâches avec "Assignée par", il est notifié, et le fondateur est
@@ -23,7 +24,7 @@ export default function AssignTaskForm({ memberId, memberName }: { memberId: str
     e.preventDefault();
     setMessage(null);
     startTransition(async () => {
-      const r = await assignTaskAction(memberId, title, due, priority, notes);
+      const r = await safeAction(() => assignTaskAction(memberId, title, due, priority, notes));
       if ("error" in r) setMessage({ text: r.error, ok: false });
       else {
         setTitle("");
