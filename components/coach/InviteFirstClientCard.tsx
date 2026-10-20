@@ -213,7 +213,7 @@ export default function InviteFirstClientCard({
           <p style={{ margin: "0 0 8px", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
             {t("Ce que voit ton client en ouvrant le lien")}
           </p>
-          <ol style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6, fontSize: 12, lineHeight: 1.55, color: "rgba(var(--ep-ink-rgb),0.65)" }}>
+          <ol style={{ margin: 0, paddingLeft: 18, listStyle: "decimal", display: "grid", gap: 6, fontSize: 12, lineHeight: 1.55, color: "rgba(var(--ep-ink-rgb),0.65)" }}>
             <li>{t("Une page d'inscription EP Coaching : prénom, e-mail, téléphone, mot de passe. 30 secondes.")}</li>
             <li>{t("Son compte est créé et rattaché à toi, il apparaît aussitôt dans ta page Clients.")}</li>
             <li>{t("Toi : ouvre sa fiche et clique « Activer le coaching ».")}</li>

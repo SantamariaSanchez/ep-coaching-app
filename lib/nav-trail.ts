@@ -110,8 +110,10 @@ export function goBack(router: Pusher, fallbackHref: string, expect?: string | s
   }
   // Première page de l'onglet : on vient d'ailleurs (site vitrine, lien
   // partagé) ou la page a été ouverte directement.
+  // history.back() dès qu'il y a une page derrière dans l'onglet, même sans
+  // referrer (certains sites ou navigateurs ne le transmettent pas).
   const ext = externalReferrer();
-  if (ext && window.history.length > 1) return backWithSafetyNet(router, fallbackHref, ext);
+  if (window.history.length > 1) return backWithSafetyNet(router, fallbackHref, ext ?? undefined);
   if (ext) {
     window.location.href = ext;
     return;
