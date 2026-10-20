@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { Db } from "@/lib/db-types";
 
 export interface ClientSupplement {
   id: string;
@@ -14,10 +15,10 @@ export interface ClientSupplement {
 }
 
 export async function getClientSupplements(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<ClientSupplement[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("client_supplements")
       .select("*, coach:suggested_by(full_name)")

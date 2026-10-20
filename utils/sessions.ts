@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { todayInParis } from "@/lib/dates";
+import type { Db } from "@/lib/db-types";
 
 export interface Session {
   id: string;
@@ -96,9 +97,9 @@ export async function getClientSessions(
 
 // Used by the Programme pages to show live "X/Y séances cette semaine"
 // adherence as sessions get logged, instead of only the static plan.
-export async function getSessionsThisWeekCount(clientId: string): Promise<number> {
+export async function getSessionsThisWeekCount(clientId: string, db?: Db): Promise<number> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     // MASTERCLASS.md Axe L : new Date().toISOString()/.getDay() reflètent le
     // calendrier UTC du serveur, pas celui de Paris — pile au passage
     // dimanche -> lundi heure de Paris, ça retombait encore sur le lundi de

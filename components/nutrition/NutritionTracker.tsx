@@ -146,7 +146,15 @@ export default function NutritionTracker({
   isOwnPlan,
   onChangeMode,
   createCustomFood,
+  readOnly,
 }: {
+  /**
+   * Aperçu « Voir comme mon client » : cases « mangé » du client lues côté
+   * serveur, et aucune lecture/écriture propre à la personne connectée
+   * (pas de remplissage automatique de la journée, pas de cases relues pour
+   * le compte connecté, rien gardé sur l'appareil du coach).
+   */
+  readOnly?: { checks: MealChecks };
   today: string;
   initialLogs: FoodLogWithFood[];
   historyLogs: FoodLogWithFood[];
@@ -201,9 +209,9 @@ export default function NutritionTracker({
   // Cases « mangé » (2026-10-14) : gardées sur l'appareil pour un affichage
   // immédiat, puis relues en base (table meal_checks, voir
   // meal-check-actions.ts) qui fait foi dès qu'elle existe.
-  const [checks, setChecks] = useState<MealChecks>(() => readLS(CHECKS_KEY, {}));
+  const [checks, setChecks] = useState<MealChecks>(() => readOnly?.checks ?? readLS(CHECKS_KEY, {}));
   const [cook, setCook] = useState<{ slot: string; initial: CookSession | null } | null>(() => {
-    const s = typeof window === "undefined" ? null : readCookSession(today);
+    const s = typeof window === "undefined" || readOnly ? null : readCookSession(today);
     return s ? { slot: s.slot, initial: s } : null;
   });
   const [replaceTarget, setReplaceTarget] = useState<{ slot: string; key: string } | null>(null);
@@ -274,7 +282,7 @@ export default function NutritionTracker({
   const prefillTried = useRef<Set<string>>(new Set());
   const [prefilledToday, setPrefilledToday] = useState(() => readLS(`ep-prefilled:${planKey}:${today}`, false));
   useEffect(() => {
-    if (!plan || !isFixedLike || date !== today || !logsByDate[date] || logs.length > 0) return;
+    if (readOnly || !plan || !isFixedLike || date !== today || !logsByDate[date] || logs.length > 0) return;
     const flag = `ep-prefilled:${planKey}:${date}`;
     if (prefillTried.current.has(flag) || readLS(flag, false)) return;
     prefillTried.current.add(flag);
@@ -287,7 +295,7 @@ export default function NutritionTracker({
         notifyGateRefresh();
       }
     });
-  }, [plan, isFixedLike, date, today, logs.length, logsByDate, planKey, choice, setDayLogs]);
+  }, [readOnly, plan, isFixedLike, date, today, logs.length, logsByDate, planKey, choice, setDayLogs]);
 
   // ── Flexible : suggestions du plan, ré-équilibrées en direct ──────────
   const foodById = useMemo(() => new Map(foods.map((f) => [f.id, f])), [foods]);
@@ -504,6 +512,7 @@ export default function NutritionTracker({
   const weekDates = useMemo(() => weekOf(today), [today]);
 
   useEffect(() => {
+    if (readOnly) return;
     let alive = true;
     const from = [weekDates[0], shiftDate(today, -13)].sort()[0];
     getMealChecks(from, today)
@@ -519,7 +528,7 @@ export default function NutritionTracker({
     return () => {
       alive = false;
     };
-  }, [today, weekDates]);
+  }, [readOnly, today, weekDates]);
 
   // Heures des repas posées dans l'agenda (2026-10-20) : la diète affiche le
   // même « quand » que l'agenda, sinon ses heures habituelles.
@@ -538,11 +547,12 @@ export default function NutritionTracker({
   }, [date, agendaTimes]);
 
   useEffect(() => {
+    if (readOnly) return;
     const min = shiftDate(today, -21);
     const pruned: MealChecks = {};
     for (const [d, v] of Object.entries(checks)) if (d >= min) pruned[d] = v;
     writeLS(CHECKS_KEY, pruned);
-  }, [checks, today]);
+  }, [readOnly, checks, today]);
 
   /** Statut de chaque repas d'un jour : case cochée, sinon « mangé » si le repas est noté en flexible. */
   const statusFor = useCallback(

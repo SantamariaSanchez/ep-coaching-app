@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { withAlpha } from "@/lib/theme-color";
 
-interface Stats {
+export interface Stats {
   consumedCals: number;
   targetCals:   number;
   adherence:    number;
@@ -110,22 +110,28 @@ function DailyTaskRow({ task }: { task: DailyTask }) {
 // "show" : personnalisation Mon appli, seuls les suivis choisis apparaissent.
 // "coached" : false pour un membre gratuit, le check-in hebdo est réservé aux
 // clients accompagnés (CoachOnlyGate), on ne le propose donc pas.
+// "initialStats" : chiffres déjà calculés côté serveur (aperçu « Voir comme
+// mon client ») — aucun appel réseau, qui renverrait ceux de la personne
+// connectée et non ceux du client regardé.
 export default function ClientDashboardStats({
   show = { poids: true, nutrition: true, entrainement: true, sommeil: true },
   coached = true,
+  initialStats,
 }: {
   show?: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean };
   coached?: boolean;
+  initialStats?: Stats;
 }) {
   const tr = useT();
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<Stats | null>(initialStats ?? null);
 
   useEffect(() => {
+    if (initialStats) return;
     fetch("/api/client/dashboard-stats")
       .then((r) => r.json())
       .then((d) => setStats(d))
       .catch(() => {});
-  }, []);
+  }, [initialStats]);
 
   if (!stats) {
     return (

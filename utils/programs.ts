@@ -1,6 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { foldSheetFieldsIntoNotes } from "@/lib/program-sheet";
+import type { Db } from "@/lib/db-types";
 
 // Décisions du coach propres à CET exercice DANS CETTE séance — distinctes
 // des attributs de classification de exercise_library (partagés par tous les
@@ -135,10 +136,10 @@ function isUnknownColumnError(error: { code?: string; message?: string } | null)
 
 export async function getActiveProgram(
   clientId: string,
-  opts?: { includeCoachNotes?: boolean }
+  opts?: { includeCoachNotes?: boolean }, db?: Db
 ): Promise<ProgramWithDays | null> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
 
     const { data: programRow } = await supabase
       .from("programs")

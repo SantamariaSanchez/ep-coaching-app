@@ -55,7 +55,8 @@ import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhas
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import ClientSetupCard from "@/components/coach/ClientSetupCard";
 import { loadPerformance } from "@/lib/performance-server";
-import { ChevronLeft, FileText, LayoutTemplate } from "lucide-react";
+import { Eye, FileText, LayoutTemplate } from "lucide-react";
+import BackButton from "@/components/ui/BackButton";
 
 const STATUS_BADGE = {
   active: {
@@ -202,13 +203,13 @@ export default async function ClientDetailPage({
 
   return (
     <div className="px-6 py-8 ep-page-wide page-transition">
-      <Link
-        href="/dashboard/coach/clients"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {t("Tous les clients")}
-      </Link>
+      {/* Venant de la liste : vrai retour (filtre, tri, recherche et position
+          gardés). Sinon (accueil, notification...) : la liste complète. */}
+      <BackButton
+        fallbackHref="/dashboard/coach/clients"
+        expect="/dashboard/coach/clients"
+        label={t("Tous les clients")}
+      />
 
       <div className="flex items-center gap-3 mb-8 flex-wrap">
         <div>
@@ -224,9 +225,19 @@ export default async function ClientDetailPage({
         {/* La bibliothèque de modèles reste à un clic pendant qu'on travaille
             sur un client : les modèles sont aussi proposés en point de départ
             directement dans l'éditeur de programme et de diète de sa fiche. */}
+        {/* « Voir comme mon client » (demande d'une coach, 2026-10-20) : aperçu
+            en lecture seule de l'appli telle que le client la voit (ses
+            onglets, son accueil, son programme, sa diète, son agenda). */}
+        <Link
+          href={`/dashboard/coach/clients/${id}/apercu`}
+          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:bg-(--ep-accent)/10 transition-colors border border-(--ep-accent)/40 rounded-lg px-3 py-2"
+        >
+          <Eye size={12} />
+          {t("Voir comme mon client")}
+        </Link>
         <Link
           href="/dashboard/coach/programmation"
-          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-accent) transition-colors border border-(--ep-line)/25 rounded-lg px-3 py-2"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-accent) transition-colors border border-(--ep-line)/25 rounded-lg px-3 py-2"
         >
           <LayoutTemplate size={12} />
           {t("Modèles")}

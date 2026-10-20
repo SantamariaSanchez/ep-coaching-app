@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { Db } from "@/lib/db-types";
 
 export interface PeriodLog {
   id: string;
@@ -18,9 +19,9 @@ export interface CycleStats {
   nextEstimated: string | null;
 }
 
-export async function getPeriodLogs(clientId: string): Promise<PeriodLog[]> {
+export async function getPeriodLogs(clientId: string, db?: Db): Promise<PeriodLog[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("period_logs")
       .select("*")

@@ -27,7 +27,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 
 type BadgeKey = "pending" | "messages" | "questions" | "clientsGroup";
 
-type TabItem = {
+export type TabItem = {
   label: string;
   icon: React.ElementType;
   href: string;
@@ -380,7 +380,14 @@ export const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
 // ── Hook ────────────────────────────────────────────────────────────────────
 
 function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: boolean, hidden: Set<string> = new Set()) {
-  const pathname = usePathname();
+  return computeNav(usePathname(), isFreeTier, showCycle, isPlatformOwner, hidden);
+}
+
+// Calcul pur de la navigation pour une adresse donnée : utilisé par la vraie
+// barre de navigation et par l'aperçu « Voir comme mon client », qui
+// reconstruit ainsi les onglets réels d'un client (personnalisation Mon
+// appli, gratuit ou coaché, cycle) sans en dupliquer les règles.
+export function computeNav(pathname: string, isFreeTier: boolean, showCycle: boolean, isPlatformOwner: boolean, hidden: Set<string> = new Set()) {
   const isCoach = pathname.startsWith("/dashboard/coach");
   const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
   // Même jeu d'onglets pour tout le monde côté client, gratuit ou coaché :

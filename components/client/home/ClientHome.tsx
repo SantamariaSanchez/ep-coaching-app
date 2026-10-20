@@ -1,0 +1,971 @@
+import { getT } from "@/lib/i18n-server";
+import { intlLocale, type Locale } from "@/lib/i18n";
+import { INSTAGRAM_URL } from "@/lib/brand-links";
+import { timeAwareGreeting, nowInParis } from "@/lib/dates";
+import { isOn, type AppSetup } from "@/lib/app-setup";
+import Link from "next/link";
+import type { Profile } from "@/utils/auth";
+import { getISOWeek, type CheckIn } from "@/utils/checkins";
+import type { CoachNote } from "@/utils/notes";
+import type { ClientIntake } from "@/utils/client-intake";
+import { reorderByPriority, type derivePersonalization } from "@/lib/personalization";
+import type { OnboardingChecklistItem } from "@/lib/onboarding-checklist";
+import type { ClientDashboardStatsData } from "@/lib/client-dashboard-stats";
+import ClientDashboardStats from "@/components/client/DashboardStats";
+import StagnationBanner from "@/components/client/StagnationBanner";
+import RegularityCard from "@/components/ui/RegularityCard";
+import {
+  TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
+  Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
+  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise, CheckCircle2, Circle,
+  Droplet,
+  Gift,
+  Award,
+} from "lucide-react";
+
+// Accueil de l'espace client (gratuit et coaché), sorti de
+// app/dashboard/client/page.tsx (2026-10-20) pour être rendu à l'identique
+// dans l'aperçu « Voir comme mon client » de la fiche coach : la page charge
+// les données de la personne connectée, l'aperçu celles du client regardé,
+// et les deux affichent exactement ces composants. `previewStats` remplace
+// l'appel réseau des anneaux du jour (qui renverrait les chiffres du coach).
+
+const ENGAGEMENT_ITEMS = [
+  {
+    href: "/dashboard/client/communaute/classement",
+    icon: Award,
+    title: "Le classement",
+    desc: "Vois où tu te situes parmi les membres les plus actifs.",
+  },
+  {
+    href: "/dashboard/client/communaute/victoires",
+    icon: Trophy,
+    title: "Partage une victoire",
+    desc: "Même petite, elle compte. La régularité se fête aussi.",
+  },
+  {
+    href: "/dashboard/client/communaute/questions",
+    icon: HelpCircle,
+    title: "Pose ta question",
+    desc: "N'hésite pas à détailler, plus c'est précis, mieux c'est répondu.",
+  },
+  {
+    href: "/dashboard/client/live",
+    icon: Video,
+    title: "Prochain live",
+    desc: "Rejoins les sessions en direct avec le coach et le groupe.",
+  },
+];
+
+// ── Free-tier welcome guide ──────────────────────────────────────────────────
+
+const GUIDE_ITEMS = [
+  {
+    href: "/dashboard/client/aujourdhui",
+    icon: Sunrise,
+    title: "Aujourd'hui",
+    desc: "Ton programme du jour, tes habitudes et ton journal, au même endroit.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/program",
+    icon: Dumbbell,
+    title: "Mon programme",
+    desc: "Crée et gère ton programme d'entraînement, en autonomie.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/logbook",
+    icon: BookOpen,
+    title: "Logbook",
+    desc: "Enregistre tes séances, séries et records personnels.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/roadmap",
+    icon: Map,
+    title: "Road Map",
+    desc: "Construis tes phases et tes objectifs court/moyen/long terme.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/nutrition",
+    icon: Apple,
+    title: "Ma nutrition",
+    desc: "Calcule tes besoins et suis tes repas au quotidien.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/recettes",
+    icon: UtensilsCrossed,
+    title: "Recettes",
+    desc: "Des idées de repas triées par régime, phase et macros.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/bilan",
+    icon: ClipboardCheck,
+    title: "Bilan quotidien",
+    desc: "Note ton poids, ton sommeil et ton ressenti chaque jour.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/photos",
+    icon: ImageIcon,
+    title: "Photos",
+    desc: "Suis ta progression physique en photos.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/communaute/victoires",
+    icon: Trophy,
+    title: "Victoires",
+    desc: "Partage tes réussites (texte ou photo) avec la communauté.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/communaute/classement",
+    icon: Award,
+    title: "Classement",
+    desc: "Vois où tu te situes parmi les membres les plus actifs.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/communaute/questions",
+    icon: HelpCircle,
+    title: "Questions",
+    desc: "Pose tes questions et échange avec la communauté.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/ressources",
+    icon: BookOpen,
+    title: "Ressources",
+    desc: "Guides et lead magnets gratuits, ajoutés régulièrement.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/abonnement",
+    icon: GraduationCap,
+    title: "Formations",
+    desc: "5 formations à venir (~25h). Réservé aux clients coachés (optionnel).",
+    locked: true,
+  },
+];
+
+// Item 32 : le suivi de cycle existe déjà (onglet Cycle, réservé aux
+// clientes) mais rien ne le signale tant qu'on n'a pas ouvert cet onglet
+// soi-même — la seule relance existante vivait côté coach (fiche client),
+// invisible pour la cliente elle-même. Discret, ne s'affiche que si le
+// genre déclaré est "Femme" et qu'aucun cycle n'a encore été loggé.
+async function CycleTrackingNudge() {
+  const t = await getT();
+  return (
+    <section className="animate-fade-up stagger-2" style={{ marginBottom: 16 }}>
+      <Link
+        href="/dashboard/client/cycle"
+        style={{
+          display: "flex", alignItems: "center", gap: 12,
+          padding: "14px 18px", borderRadius: 14, textDecoration: "none",
+          background: "rgba(var(--ep-s1-rgb),0.7)", border: "1px solid rgba(var(--ep-line-rgb),0.22)",
+        }}
+      >
+        <Droplet size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
+            {t("Active le suivi de ton cycle")}
+          </p>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
+            {t("Utile pour comprendre tes fluctuations d'énergie, de poids d'eau et de performance.")}
+          </p>
+        </div>
+        <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
+      </Link>
+    </section>
+  );
+}
+
+async function NoCoachBanner() {
+  const t = await getT();
+  return (
+    <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+      <div
+        className="ep-card-highlighted"
+        style={{ padding: "20px 20px", display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <div>
+          <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
+            {t("Tu n'as plus de coach attitré")}
+          </p>
+          <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>
+            {t("Envie que Santamaria devienne ton coach ? Écris-lui directement sur Instagram. Tu peux aussi choisir un autre coach actif sur la plateforme.")}
+          </p>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ep-btn-primary"
+            style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
+          >
+            {t("Contacter Santamaria")}
+          </a>
+          <Link
+            href="/dashboard/client/coachs"
+            className="ep-btn-secondary"
+            style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
+          >
+            {t("Voir les coachs actifs")}
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
+  const t = await getT();
+  if (items.length === 0) return null;
+  const doneCount = items.filter((i) => i.done).length;
+  const allDone = doneCount === items.length;
+
+  if (allDone) {
+    return (
+      <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+        <div
+          className="ep-card"
+          style={{
+            padding: "16px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            border: "1px solid rgba(var(--ep-ok-rgb),0.25)",
+            background: "rgba(var(--ep-ok-rgb),0.06)",
+          }}
+        >
+          <CheckCircle2 size={20} style={{ color: "var(--ep-ok)", flexShrink: 0 }} strokeWidth={1.8} />
+          <div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
+              {t("Bien joué, tu as pris en main l'appli")}
+            </p>
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+              {t("Programme, calories, bilan, communauté : tout est lancé.")}
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
+        <p className="ep-section-title" style={{ marginBottom: 0 }}>{t("Pour bien démarrer")}</p>
+        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
+          {doneCount}/{items.length}
+        </p>
+      </div>
+      <div
+        style={{
+          height: 4, borderRadius: 999, background: "rgba(var(--ep-line-rgb),0.2)",
+          overflow: "hidden", marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            height: "100%", borderRadius: 999, background: "var(--ep-accent)",
+            width: `${(doneCount / items.length) * 100}%`,
+            transition: "width 0.4s ease",
+          }}
+        />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {items.map(({ key, href, title, description, done }) => (
+          <Link
+            key={key}
+            href={href}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "13px 16px", borderRadius: 12,
+              background: done ? "rgba(var(--ep-ok-rgb),0.05)" : "rgba(var(--ep-s1-rgb),0.7)",
+              border: done ? "1px solid rgba(var(--ep-ok-rgb),0.2)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
+              textDecoration: "none",
+            }}
+          >
+            {done ? (
+              <CheckCircle2 size={18} style={{ color: "var(--ep-ok)", flexShrink: 0 }} strokeWidth={1.8} />
+            ) : (
+              <Circle size={18} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} strokeWidth={1.8} />
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{
+                margin: 0, fontSize: 13, fontWeight: 800,
+                color: done ? "rgba(var(--ep-ink-rgb),0.5)" : "var(--ep-ink)",
+                textDecoration: done ? "line-through" : "none",
+              }}>
+                {t(title)}
+              </p>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{description}</p>
+            </div>
+            {!done && <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// Item 42 : le CTA premium était un texte générique identique pour tout le
+// monde, tout le temps. Ici la relance s'appuie sur un signal comportemental
+// concret plutôt qu'un calendrier — priorité à ce qui est le plus parlant
+// pour CE membre à CET instant.
+function upsellPitch(
+  checklist: OnboardingChecklistItem[],
+  streakDays: number
+): { title: string; subtitle: string } {
+  const allDone = checklist.length > 0 && checklist.every((i) => i.done);
+  if (allDone) {
+    return {
+      title: "Tu as fait le tour de l'appli gratuite",
+      subtitle: "Un coach peut aller plus loin avec toi : programme et suivi sur mesure, pas juste des outils en libre-service.",
+    };
+  }
+  if (streakDays >= 7) {
+    return {
+      title: `${streakDays} jours d'affilée, une vraie régularité`,
+      subtitle: "Un coach peut transformer cette constance en résultats concrets, avec un vrai suivi derrière.",
+    };
+  }
+  return {
+    title: "Envie d'un vrai coach, en plus ? (optionnel)",
+    subtitle: "Un appel de 30 min, sans engagement, pour voir si ça peut t'aider.",
+  };
+}
+
+export async function WelcomeGuide({
+  firstName,
+  goal,
+  level,
+  hasCoach,
+  personalization,
+  checklist,
+  activityStreak,
+  totalPoints,
+  show,
+  previewStats,
+}: {
+  previewStats?: ClientDashboardStatsData;
+  firstName: string;
+  goal: string | null;
+  level: string | null;
+  hasCoach: boolean;
+  personalization: ReturnType<typeof derivePersonalization>;
+  checklist: OnboardingChecklistItem[];
+  activityStreak: number;
+  totalPoints: number;
+  show: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean };
+}) {
+  const t = await getT();
+  const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
+  const pitch = upsellPitch(checklist, activityStreak);
+  // Dès la première vraie action, l'accueil devient une routine du jour
+  // (régularité, actions du jour, anneaux) comme pour un client accompagné :
+  // sans ça, un membre qui revient le lendemain retrouvait le même catalogue
+  // statique et rien qui l'invite à refaire son bilan ou noter ses repas.
+  // Avant toute action, seule la checklist de démarrage s'affiche, pour ne
+  // pas lui proposer deux fois les mêmes premières actions.
+  const hasStarted = checklist.some((i) => i.done);
+  return (
+    <div
+      className="page-transition ep-page-medium"
+      style={{ padding: "32px 20px 100px" }}
+    >
+      {/* Header */}
+      <div className="animate-fade-up" style={{ marginBottom: 24 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Bienvenue")}</p>
+        <h1 className="ep-h1">{t("Salut")}{" "}{firstName} 👋</h1>
+        <p style={{ marginTop: 8, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6 }}>
+          {personalization.welcomeSubtitle}
+        </p>
+      </div>
+
+      {!hasCoach && <NoCoachBanner />}
+      {hasCoach && !previewStats && <StagnationBanner />}
+
+      {hasStarted && (
+        <>
+          <RegularityCard streakDays={activityStreak} points={totalPoints} />
+          <ClientDashboardStats show={show} coached={false} initialStats={previewStats} />
+        </>
+      )}
+
+      <StartChecklist items={checklist} />
+
+      {/* État des lieux */}
+      {(goal || level) && (
+        <section className="animate-fade-up stagger-2" style={{ marginBottom: 24 }}>
+          <p className="ep-section-title">{t("Ton profil")}</p>
+          <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 20 }}>
+            {goal && (
+              <div>
+                <p className="ep-label" style={{ marginBottom: 4 }}>{t("Objectif")}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{goal}</p>
+              </div>
+            )}
+            {level && (
+              <div>
+                <p className="ep-label" style={{ marginBottom: 4 }}>{t("Niveau")}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-ink)", margin: 0 }}>{level}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Idées reçues, adressées direct pour les profils qui en ont besoin */}
+      {personalization.mythBusters.length > 0 && (
+        <section className="animate-fade-up stagger-2" style={{ marginBottom: 24 }}>
+          <p className="ep-section-title">{t("On répond direct")}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {personalization.mythBusters.map((m) => (
+              <div
+                key={m.id}
+                className="ep-card"
+                style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "flex-start" }}
+              >
+                <Lightbulb size={16} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 2 }} strokeWidth={1.8} />
+                <div>
+                  <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{m.title}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>{m.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Mini-guide */}
+      <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
+        <p className="ep-section-title">{t("Ce qui est disponible")}</p>
+        <div className="ep-cols-2" style={{ gap: 8 }}>
+          {items.map(({ href, icon: Icon, title, desc, locked }) => (
+            <Link
+              key={href}
+              href={href}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "14px 16px", borderRadius: 12,
+                background: locked ? "rgba(var(--ep-accent-rgb),0.06)" : "rgba(var(--ep-s1-rgb),0.7)",
+                border: locked ? "1px solid rgba(var(--ep-accent-rgb),0.25)" : "1px solid rgba(var(--ep-line-rgb),0.25)",
+                textDecoration: "none",
+              }}
+            >
+              <div style={{
+                width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Icon size={17} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{t(title)}</p>
+                  {locked ? (
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 3,
+                      fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
+                      color: "rgba(var(--ep-ink-rgb),0.4)", border: "1px solid rgba(var(--ep-ink-rgb),0.2)",
+                      borderRadius: 999, padding: "1px 7px",
+                    }}>
+                      <Lock size={9} strokeWidth={2} />{" "}{t("Coaching")}
+                    </span>
+                  ) : (
+                    <span style={{
+                      fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
+                      color: "var(--ep-ok)", border: "1px solid rgba(var(--ep-ok-rgb),0.35)",
+                      borderRadius: 999, padding: "1px 7px",
+                    }}>
+                      {t("Gratuit")}
+                    </span>
+                  )}
+                </div>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{t(desc)}</p>
+              </div>
+              <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Premium CTA */}
+      <Link
+        href="/dashboard/client/abonnement"
+        className="animate-fade-up stagger-4"
+        style={{
+          display: "flex", alignItems: "center", gap: 14,
+          padding: "18px 20px", borderRadius: 14,
+          background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.14) 0%, rgba(var(--ep-line-rgb),0.08) 100%)",
+          border: "1px solid rgba(var(--ep-accent-rgb),0.3)", textDecoration: "none",
+        }}
+      >
+        <Crown size={22} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
+            {pitch.title}
+          </p>
+          <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+            {pitch.subtitle}
+          </p>
+        </div>
+        <ArrowRight size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+      </Link>
+    </div>
+  );
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+async function WeightDelta({ delta, good }: { delta: number; good: boolean | null }) {
+  const t = await getT();
+  const Icon = delta === 0 ? Minus : delta < 0 ? TrendingDown : TrendingUp;
+  const color =
+    good === true ? "var(--ep-ok)"
+    : good === false ? "var(--ep-accent)"
+    : "rgba(var(--ep-ink-rgb),0.45)";
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <Icon size={13} style={{ color }} strokeWidth={2} />
+      <span style={{ fontSize: 12, fontWeight: 700, color }}>
+        {delta > 0 ? "+" : ""}{delta}{" "}{t("kg depuis le départ")}
+      </span>
+    </div>
+  );
+}
+
+
+export async function CoachedHome({
+  profile,
+  intake,
+  thisWeekCheckin,
+  latestNote,
+  showVictoryNudge,
+  activityStreak,
+  totalPoints,
+  periodLogsCount,
+  trialDaysLeft,
+  appSetup,
+  locale,
+  previewStats,
+}: {
+  profile: Profile | null;
+  intake: ClientIntake;
+  thisWeekCheckin: CheckIn | null;
+  latestNote: CoachNote | null;
+  showVictoryNudge: boolean;
+  activityStreak: number;
+  totalPoints: number;
+  periodLogsCount: number;
+  trialDaysLeft: number | null;
+  appSetup: AppSetup;
+  locale: Locale;
+  previewStats?: ClientDashboardStatsData;
+}) {
+  const t = await getT();
+  // Même salutation que l'accueil coach : selon l'heure, prénom normal.
+  const rawFirst = profile?.full_name?.split(" ")[0] ?? "";
+  const firstName = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1).toLowerCase() : "";
+  const greeting = t(timeAwareGreeting(Number(nowInParis().hhmm.split(":")[0])));
+  const today = new Date();
+  const formattedDate = (() => {
+    const s = new Intl.DateTimeFormat(intlLocale(locale), {
+      weekday: "long", day: "numeric", month: "long",
+    }).format(today);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  })();
+  const weekNumber = getISOWeek(today);
+
+  const currentWeight = thisWeekCheckin?.weight ?? null;
+  const startWeight   = profile?.weight_start ?? null;
+  const weightDelta   = currentWeight != null && startWeight != null
+    ? parseFloat((currentWeight - startWeight).toFixed(1))
+    : null;
+  const weeksSinceStart = profile?.start_date
+    ? Math.floor(
+        (today.getTime() - new Date(profile.start_date + "T12:00:00").getTime()) /
+        (7 * 24 * 60 * 60 * 1000)
+      )
+    : null;
+
+  return (
+    <div
+      className="page-transition ep-page-wide"
+      style={{
+        padding: "32px 20px 100px",
+        position: "relative",
+      }}
+    >
+      {/* ── Essai coaching en cours (item 43) ─────────────────────────────────── */}
+      {trialDaysLeft != null && (
+        <div
+          className="animate-fade-up"
+          style={{
+            display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
+            padding: "14px 18px", borderRadius: 14,
+            background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.14) 0%, rgba(var(--ep-line-rgb),0.08) 100%)",
+            border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
+          }}
+        >
+          <Gift size={20} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--ep-ink)", flex: 1 }}>
+            {t("Essai coaching gratuit, se termine dans")}{" "}{trialDaysLeft}{" "}{t("jour")}{trialDaysLeft > 1 ? "s" : ""}
+          </p>
+        </div>
+      )}
+
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>
+          {formattedDate}
+        </p>
+        <h1 className="ep-h1">{greeting}{firstName ? `, ${firstName}` : ""}</h1>
+        <p className="ep-tagline">{t("Ta journée, en un coup d'œil.")}</p>
+        {weeksSinceStart != null && (
+          <p style={{
+            marginTop: 6,
+            fontSize: 12,
+            color: "rgba(var(--ep-ink-rgb),0.3)",
+            fontWeight: 500,
+          }}>
+            {t("Sem.")}{" "}{weekNumber} &nbsp;·&nbsp; {weeksSinceStart}{" "}{t("sem. de coaching")}
+          </p>
+        )}
+      </div>
+
+      {/* ── Régularité + rang (item 20) ──────────────────────────────────────── */}
+      <RegularityCard streakDays={activityStreak} points={totalPoints} />
+
+      {/* ── Relance suivi de cycle (item 32) ─────────────────────────────────── */}
+      {intake.gender === "Femme" && periodLogsCount === 0 && isOn(appSetup, "cycle") && <CycleTrackingNudge />}
+
+      {/* ── Today stats rings (client-side fetch) ───────────────────────────── */}
+      <ClientDashboardStats show={{ poids: isOn(appSetup, "poids"), nutrition: isOn(appSetup, "nutrition"), entrainement: isOn(appSetup, "entrainement"), sommeil: isOn(appSetup, "sommeil") }} initialStats={previewStats} />
+
+      {/* ── Aujourd'hui ─────────────────────────────────────────────────────── */}
+      <Link
+        href="/dashboard/client/aujourdhui"
+        className="ep-card animate-fade-up stagger-2"
+        style={{
+          display: "flex", alignItems: "center", gap: 12, padding: "14px 18px",
+          marginBottom: 16, textDecoration: "none",
+        }}
+      >
+        <Sunrise size={18} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>{t("Aujourd'hui")}</p>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
+            {t("Programme, habitudes, sommeil et journal du jour")}
+          </p>
+        </div>
+        <ChevronRight size={16} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />
+      </Link>
+
+      {/* Sur grand écran le retour du coach (colonne principale) et le suivi
+          personnel (colonne latérale) se lisent côte à côte plutôt que l'un
+          sous l'autre dans une colonne étroite. Empilé sur mobile. */}
+      <div className="ep-cols-main">
+      <div>
+      {/* ── Mon coach ───────────────────────────────────────────────────────── */}
+      <section className="animate-fade-up stagger-3" style={{ marginBottom: 16 }}>
+        <p className="ep-section-title">{t("Mon coach")}</p>
+
+        {latestNote ? (
+          <div className="ep-card" style={{ padding: "20px 20px 16px" }}>
+            {/* Header row */}
+            <div style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              marginBottom: 16,
+              gap: 12,
+            }}>
+              <div>
+                <p style={{
+                  margin: 0,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "var(--ep-ink)",
+                  letterSpacing: "-0.01em",
+                }}>
+                  {t("Bilan · Semaine")}{" "}{latestNote.week_number ?? "·"}
+                </p>
+              </div>
+              {latestNote.rating != null && (
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "rgba(var(--ep-warn-rgb),0.08)",
+                  border: "1px solid rgba(var(--ep-warn-rgb),0.2)",
+                  borderRadius: 8,
+                  padding: "4px 10px",
+                  flexShrink: 0,
+                }}>
+                  <Star size={11} fill="var(--ep-warn)" style={{ color: "var(--ep-warn)" }} />
+                  <span style={{ fontSize: 14, fontWeight: 900, color: "var(--ep-warn)", letterSpacing: "-0.02em" }}>
+                    {latestNote.rating}
+                    <span style={{ fontSize: 10, fontWeight: 400, color: "rgba(var(--ep-warn-rgb),0.4)" }}>/10</span>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {latestNote.observations && (
+              <div style={{ marginBottom: latestNote.next_actions ? 14 : 0 }}>
+                <p className="ep-label" style={{ marginBottom: 6 }}>{t("Observations")}</p>
+                <p style={{
+                  fontSize: 13,
+                  color: "rgba(var(--ep-ink-rgb),0.7)",
+                  lineHeight: 1.6,
+                  margin: 0,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}>
+                  {latestNote.observations}
+                </p>
+              </div>
+            )}
+
+            {latestNote.next_actions && (
+              <div>
+                <div className="ep-divider-subtle" style={{ margin: "12px 0" }} />
+                <p className="ep-label" style={{ marginBottom: 6 }}>{t("Actions prévues")}</p>
+                <p style={{
+                  fontSize: 13,
+                  color: "rgba(var(--ep-ink-rgb),0.7)",
+                  lineHeight: 1.6,
+                  margin: 0,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}>
+                  {latestNote.next_actions}
+                </p>
+              </div>
+            )}
+
+            {/* Link to messages */}
+            <Link
+              href="/dashboard/client/messages"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 16,
+                padding: "9px 14px",
+                background: "rgba(var(--ep-accent-rgb),0.07)",
+                border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
+                borderRadius: 10,
+                textDecoration: "none",
+              }}
+            >
+              <MessageCircle size={14} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.7)", flex: 1 }}>
+                {t("Ouvrir les messages")}
+              </span>
+              <ChevronRight size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} />
+            </Link>
+          </div>
+        ) : (
+          <div className="ep-card" style={{ padding: "28px 20px" }}>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              gap: 10,
+            }}>
+              <div style={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: "rgba(var(--ep-line-rgb),0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <Star size={18} style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }} strokeWidth={1.5} />
+              </div>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
+                {t("Ton coach prépare ton bilan")}
+              </p>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.22)" }}>
+                {t("Les retours apparaîtront ici chaque semaine")}
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      </div>
+
+      <div>
+      {/* ── Objectifs & poids ───────────────────────────────────────────────── */}
+      {(startWeight != null || currentWeight != null || profile?.goal) && (
+        <section className="animate-fade-up stagger-4" style={{ marginBottom: 16 }}>
+          <p className="ep-section-title">{t("Mes objectifs")}</p>
+          <div className="ep-card" style={{ padding: "20px" }}>
+
+            {/* Weight row */}
+            {(startWeight != null || currentWeight != null) && (
+              <>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 12,
+                  marginBottom: weightDelta != null ? 12 : 0,
+                }}>
+                  {[
+                    { label: t("Départ"), val: startWeight },
+                    { label: t("Actuel"), val: currentWeight },
+                  ].map(({ label, val }) => (
+                    <div key={label}>
+                      <p className="ep-label" style={{ marginBottom: 4 }}>{label}</p>
+                      <p style={{
+                        fontSize: 28,
+                        fontWeight: 900,
+                        letterSpacing: "-0.04em",
+                        color: "var(--ep-ink)",
+                        margin: 0,
+                        lineHeight: 1,
+                      }}>
+                        {val != null ? (
+                          <>
+                            {val}
+                            <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(var(--ep-ink-rgb),0.3)", marginLeft: 3 }}>
+                              {t("kg")}
+                            </span>
+                          </>
+                        ) : (
+                          <span style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }}>···</span>
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {weightDelta != null && (
+                  <WeightDelta
+                    delta={weightDelta}
+                    good={
+                      weightDelta === 0 || !profile?.goal
+                        ? null
+                        : profile.goal === "Perte de poids"
+                        ? weightDelta < 0
+                        : profile.goal === "Prise de muscle"
+                        ? weightDelta > 0
+                        : null // "Muscle sec" et autres : sens ambigu, pas de couleur plutôt qu'une couleur fausse
+                    }
+                  />
+                )}
+
+                {(profile?.goal || weeksSinceStart != null) && (
+                  <div className="ep-divider-subtle" style={{ margin: "14px 0" }} />
+                )}
+              </>
+            )}
+
+            {/* Info grid */}
+            {weeksSinceStart != null && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: profile?.goal ? 12 : 0 }}>
+                <span className="ep-label">{t("Coaching")}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.65)" }}>
+                  {weeksSinceStart}{" "}{t("semaine")}{weeksSinceStart !== 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
+
+            {profile?.goal && (
+              <div>
+                <p className="ep-label" style={{ marginBottom: 6 }}>{t("Mon objectif")}</p>
+                <p style={{
+                  fontSize: 13,
+                  color: "rgba(var(--ep-ink-rgb),0.65)",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}>
+                  {profile.goal}
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ── Relance victoire — bilan envoyé cette semaine, rien partagé ──────── */}
+      {showVictoryNudge && (
+        <section className="animate-fade-up stagger-5" style={{ marginBottom: 16 }}>
+          <Link
+            href="/dashboard/client/communaute/victoires"
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "16px 18px", borderRadius: 14, textDecoration: "none",
+              background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.14) 0%, rgba(var(--ep-line-rgb),0.08) 100%)",
+              border: "1px solid rgba(var(--ep-accent-rgb),0.3)",
+            }}
+          >
+            <Trophy size={20} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)" }}>
+                {t("Bilan envoyé, et ta victoire de la semaine ?")}
+              </p>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
+                {t("Partage la avec la communauté, ça motive tout le monde (et ça rapporte des points).")}
+              </p>
+            </div>
+            <ArrowRight size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+          </Link>
+        </section>
+      )}
+
+      {/* ── Partage & échange ───────────────────────────────────────────────── */}
+      <section className="animate-fade-up stagger-5">
+        <p className="ep-section-title">{t("Partage & échange")}</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {ENGAGEMENT_ITEMS.map(({ href, icon: Icon, title, desc }) => (
+            <Link
+              key={href}
+              href={href}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "13px 16px", borderRadius: 12,
+                background: "rgba(var(--ep-s1-rgb),0.7)",
+                border: "1px solid rgba(var(--ep-line-rgb),0.22)",
+                textDecoration: "none",
+              }}
+            >
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: "rgba(var(--ep-accent-rgb),0.1)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Icon size={16} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "var(--ep-ink)" }}>{t(title)}</p>
+                <p style={{ margin: 0, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{t(desc)}</p>
+              </div>
+              <ChevronRight size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.2)", flexShrink: 0 }} />
+            </Link>
+          ))}
+        </div>
+      </section>
+      </div>
+      </div>
+    </div>
+  );
+}

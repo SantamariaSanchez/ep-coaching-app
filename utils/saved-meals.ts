@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { Food } from "@/utils/nutrition";
+import type { Db } from "@/lib/db-types";
 
 export interface SavedMealItem {
   id: string;
@@ -16,9 +17,9 @@ export interface SavedMeal {
   saved_meal_items: SavedMealItem[];
 }
 
-export async function getSavedMeals(ownerId: string): Promise<SavedMeal[]> {
+export async function getSavedMeals(ownerId: string, db?: Db): Promise<SavedMeal[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("saved_meals")
       .select("*, saved_meal_items(*, foods(*))")

@@ -1,6 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { DailyLog } from "@/lib/daily-logs-helpers";
 import { todayInParis } from "@/lib/dates";
+import type { Db } from "@/lib/db-types";
 
 export type { DailyLog, WeeklyAverages } from "@/lib/daily-logs-helpers";
 export { computeWeeklyAverages, groupLogsByWeek } from "@/lib/daily-logs-helpers";
@@ -23,10 +24,10 @@ export async function getTodayLog(clientId: string): Promise<DailyLog | null> {
 
 export async function getClientDailyLogs(
   clientId: string,
-  days = 35
+  days = 35, db?: Db
 ): Promise<DailyLog[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const since = new Date();
     since.setDate(since.getDate() - days);
     const { data } = await supabase
@@ -45,9 +46,9 @@ export async function getClientDailyLogs(
 // TDEE se pré-remplissait avec le poids de départ (weight_start, saisi une
 // fois à l'onboarding) même des mois plus tard, ce qui faussait le calcul
 // dès que le client avait pris ou perdu du poids depuis.
-export async function getLatestWeight(clientId: string): Promise<number | null> {
+export async function getLatestWeight(clientId: string, db?: Db): Promise<number | null> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("daily_logs")
       .select("weight_morning")

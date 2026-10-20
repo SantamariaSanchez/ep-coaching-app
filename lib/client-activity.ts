@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { Db } from "@/lib/db-types";
 
 export interface ClientActivity {
   lastActivityAt: string | null;
@@ -67,9 +68,9 @@ export async function getClientsLastActivity(
 // "Aujourd'hui pas encore loggé" ne casse pas le streak (la journée n'est
 // pas finie) : le calcul démarre d'hier dans ce cas, comme les streaks
 // habituels (Duolingo etc).
-export async function getClientActivityStreak(clientId: string): Promise<number> {
+export async function getClientActivityStreak(clientId: string, db?: Db): Promise<number> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const since = new Date();
     since.setDate(since.getDate() - 60);
     const sinceIso = since.toISOString();

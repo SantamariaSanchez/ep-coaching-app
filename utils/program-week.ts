@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { Db } from "@/lib/db-types";
 import { todayInParis } from "@/lib/dates";
 import { getClientIntake } from "@/utils/client-intake";
 import { getScheduleBlocks } from "@/utils/agenda";
@@ -27,9 +28,9 @@ export interface ProgramWeekContext {
   openSessionLabel: string | null;
 }
 
-async function getWeekSessions(userId: string, weekStart: string, today: string) {
+async function getWeekSessions(userId: string, weekStart: string, today: string, db?: Db) {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("sessions")
       .select("day_label, session_date, is_completed")
@@ -46,14 +47,14 @@ async function getWeekSessions(userId: string, weekStart: string, today: string)
   }
 }
 
-export async function getProgramWeekContext(userId: string, program: ProgramWithDays | null): Promise<ProgramWeekContext> {
+export async function getProgramWeekContext(userId: string, program: ProgramWithDays | null, db?: Db): Promise<ProgramWeekContext> {
   const today = todayInParis();
   const weekStart = weekStartOf(today);
   const [intake, blocks, library, week] = await Promise.all([
     getClientIntake(userId),
     getScheduleBlocks(userId),
     getExerciseLibrary(),
-    getWeekSessions(userId, weekStart, today),
+    getWeekSessions(userId, weekStart, today, db),
   ]);
 
   const names = new Set((program?.days ?? []).flatMap((d) => d.exercises.map((e) => e.name)));

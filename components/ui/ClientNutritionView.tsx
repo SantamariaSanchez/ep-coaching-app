@@ -10,6 +10,7 @@ import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import GroceryHub from "@/components/nutrition/GroceryHub";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionTracker from "@/components/nutrition/NutritionTracker";
+import type { MealChecks } from "@/app/dashboard/client/nutrition/meal-check-actions";
 import type { TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
 import type {
@@ -279,6 +280,8 @@ interface Props {
   // Membre gratuit gérant lui-même son plan (pas de coach) — adapte les
   // libellés qui supposent normalement un coach ("Plan de ton coach", etc.).
   isOwnPlan?: boolean;
+  /** Aperçu « Voir comme mon client » (voir NutritionTracker.readOnly). */
+  readOnly?: { checks: MealChecks };
   // Fiche client — sert uniquement à signaler (jamais filtrer) les aliments
   // à vérifier pendant la recherche (allergies, aliments détestés connus).
   intake?: ClientIntake | null;
@@ -342,6 +345,7 @@ export default function ClientNutritionView({
   activePlan,
   seasonMode,
   isOwnPlan = false,
+  readOnly,
   intake = null,
   savedMeals: initialSavedMeals = [],
   mostUsedGlobal = [],
@@ -1712,6 +1716,7 @@ export default function ClientNutritionView({
           isOwnPlan={isOwnPlan}
           onChangeMode={activePlan && updatePlanMode ? (m) => updatePlanMode(activePlan.id, m) : undefined}
           createCustomFood={createCustomFood}
+          readOnly={readOnly}
         />
       )}
 

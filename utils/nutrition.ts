@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { unstable_cache } from "next/cache";
 import type { MicroKey } from "@/lib/micro-references";
+import type { Db } from "@/lib/db-types";
 export { calculateNutrients, getMicroDeficiencyOrder } from "@/utils/nutrition-utils";
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
@@ -221,10 +222,10 @@ export interface MicroStat {
 // ── DB queries ────────────────────────────────────────────────────────────────
 
 export async function getNutritionProfile(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<NutritionProfile | null> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     // .order + .limit(1) instead of .maybeSingle(): if a stray duplicate row
     // ever exists for this client, always return the most recently saved one
     // instead of erroring out (maybeSingle throws on >1 rows).
@@ -261,10 +262,10 @@ export async function attachFoods<T extends { food_id: string | null }>(client: 
 
 export async function getTodayLogs(
   clientId: string,
-  date?: string
+  date?: string, db?: Db
 ): Promise<FoodLogWithFood[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const day = date ?? todayInParis();
     const { data, error } = await supabase
       .from("food_logs")
@@ -280,10 +281,10 @@ export async function getTodayLogs(
 }
 
 export async function getLast30DaysLogs(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<FoodLogWithFood[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 29);
@@ -302,10 +303,10 @@ export async function getLast30DaysLogs(
 }
 
 export async function getLast7DaysLogs(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<FoodLogWithFood[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const today = new Date();
     const sixDaysAgo = new Date(today);
     sixDaysAgo.setDate(today.getDate() - 6);
@@ -372,10 +373,10 @@ export async function getMostLoggedFoodsGlobal(limit = 10): Promise<Food[]> {
 // ── Diet plan queries ─────────────────────────────────────────────────────────
 
 export async function getActiveDietPlan(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<DietPlanWithMeals | null> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("diet_plans")
       .select("*, diet_plan_meals(*, foods(*))")
@@ -405,10 +406,10 @@ export async function getAllDietPlans(
 }
 
 export async function getAllDietPlansWithMeals(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<DietPlanWithMeals[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("diet_plans")
       .select("*, diet_plan_meals(*, foods(*))")

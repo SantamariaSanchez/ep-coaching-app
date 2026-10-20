@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { Db } from "@/lib/db-types";
 
 export interface WorkoutLog {
   id: string;
@@ -19,10 +20,10 @@ export interface WorkoutLog {
 
 /** Returns the last 14 days of workout logs for a client (most recent first). */
 export async function getRecentWorkoutLogs(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<WorkoutLog[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const since = new Date();
     since.setDate(since.getDate() - 14);
     const sinceStr = since.toISOString().split("T")[0];

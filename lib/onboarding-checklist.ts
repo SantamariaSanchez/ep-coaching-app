@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { Db } from "@/lib/db-types";
 
 export interface OnboardingChecklistItem {
   key: string;
@@ -23,10 +24,10 @@ export interface OnboardingChecklistItem {
 // page Nutrition) — les deux ne peuvent arriver que si la personne revient
 // réellement utiliser l'appli, pas juste la configurer une fois.
 export async function getOnboardingChecklist(
-  userId: string
+  userId: string, db?: Db
 ): Promise<OnboardingChecklistItem[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const [{ count: workoutLogCount }, { count: foodLogCount }, { count: bilanCount }, { count: postCount }] =
       await Promise.all([
         supabase.from("workout_logs").select("id", { count: "exact", head: true }).eq("client_id", userId),

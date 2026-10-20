@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { Db } from "@/lib/db-types";
 
 export interface VideoAnnotation {
   timestamp_seconds: number;
@@ -58,10 +59,10 @@ async function attachCorrectionVideoUrls<T extends { video_path: string | null; 
 }
 
 export async function getClientCorrections(
-  clientId: string
+  clientId: string, db?: Db
 ): Promise<ExerciseCorrectionResolved[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("exercise_corrections")
       .select("*")

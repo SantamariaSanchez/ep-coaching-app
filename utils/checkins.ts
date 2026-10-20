@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCachedOrCreateSignedUrl } from "@/utils/signed-url-cache";
+import type { Db } from "@/lib/db-types";
 
 const CHECKIN_MEDIA_BUCKET = "checkin-media";
 const COACH_VIDEOS_BUCKET = "coach-videos";
@@ -168,9 +169,9 @@ export function getISOWeek(date: Date = new Date()): number {
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 }
 
-export async function getThisWeekCheckin(clientId: string): Promise<CheckIn | null> {
+export async function getThisWeekCheckin(clientId: string, db?: Db): Promise<CheckIn | null> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = db ?? (await createServerSupabase());
     const { data } = await supabase
       .from("check_ins")
       .select("*")
