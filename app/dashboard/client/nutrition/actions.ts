@@ -2,6 +2,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { canEditSharedEntry, SHARED_EDIT_DENIED } from "@/lib/shared-library-guard";
 import { getProfile, isSubscribed } from "@/utils/auth";
 import { requireClient, requireCoach, requireAuth } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
@@ -383,14 +384,15 @@ export async function createCustomFood(params: {
 
 // Note de préparation partagée sur un aliment (cuisson, association, astuce
 // de conservation) — référence commune entre coachs, comme setup_notes sur
-// exercise_library. N'importe quel coach peut l'enrichir, pas seulement
-// celui qui a créé l'aliment (même logique que la bibliothèque d'exercices).
+// exercise_library. Seul l'auteur de l'aliment ou le fondateur peut la
+// modifier (lib/shared-library-guard.ts).
 export async function updateFoodPrepNotes(
   foodId: string,
   prepNotes: string
 ): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
+  if (!(await canEditSharedEntry(guard.userId, "foods", foodId))) return { error: SHARED_EDIT_DENIED };
 
   try {
     const supabase = createAdminClient();

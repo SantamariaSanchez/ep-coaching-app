@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
+import { canEditSharedEntry, SHARED_EDIT_DENIED } from "@/lib/shared-library-guard";
 import { requireAuth, requireCoach, requireOwnClientOrSelf } from "@/lib/auth-guards";
 import { revalidatePath, updateTag } from "next/cache";
 import { GYMS_SEED, type GymType } from "@/lib/gyms-seed";
@@ -62,6 +63,7 @@ export async function createGym(input: CreateGymInput): Promise<{ error?: string
 export async function updateGym(id: string, input: CreateGymInput): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
+  if (!(await canEditSharedEntry(guard.userId, "gyms", id))) return { error: SHARED_EDIT_DENIED };
 
   try {
     const supabase = createAdminClient();
@@ -145,6 +147,7 @@ export async function seedOfficialGyms(): Promise<{ error?: string; inserted?: n
 export async function deleteGym(id: string): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
+  if (!(await canEditSharedEntry(guard.userId, "gyms", id))) return { error: SHARED_EDIT_DENIED };
 
   try {
     const supabase = createAdminClient();
