@@ -19,8 +19,8 @@ export default function MesocycleStatusBanner({
     <div
       className="flex items-center gap-2 rounded-lg px-3 py-2 mb-4"
       style={{
-        background: status.isOverdue || status.isDeloadWeek ? "rgba(245,158,11,0.08)" : "rgba(var(--ep-line-rgb),0.08)",
-        border: `1px solid ${status.isOverdue || status.isDeloadWeek ? "rgba(245,158,11,0.25)" : "rgba(var(--ep-line-rgb),0.2)"}`,
+        background: status.isOverdue || status.isDeloadWeek ? "rgba(var(--ep-warn-rgb),0.08)" : "rgba(var(--ep-line-rgb),0.08)",
+        border: `1px solid ${status.isOverdue || status.isDeloadWeek ? "rgba(var(--ep-warn-rgb),0.25)" : "rgba(var(--ep-line-rgb),0.2)"}`,
       }}
     >
       <p

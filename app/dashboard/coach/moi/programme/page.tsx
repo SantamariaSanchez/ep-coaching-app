@@ -11,10 +11,9 @@ import { getScheduleBlocks } from "@/utils/agenda";
 import { saveCurrentProgramAsTemplate } from "@/app/dashboard/coach/clients/[id]/program/actions";
 import ProgramBuilder from "@/components/program-builder/ProgramBuilder";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
-import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
-import MesocycleStatusBanner from "@/components/ui/MesocycleStatusBanner";
+import ProgramWeekView from "@/components/ui/ProgramWeekView";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
-import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
+import { getProgramWeekContext } from "@/utils/program-week";
 import { saveOwnCoachProgram } from "./actions";
 
 export default async function CoachMonProgrammePage() {
@@ -26,7 +25,7 @@ export default async function CoachMonProgrammePage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [program, workoutLogs, sessionsThisWeek, templates, scheduleBlocks, accessoriesByName] = await Promise.all([
+  const [program, workoutLogs, sessionsThisWeek, templates, scheduleBlocks] = await Promise.all([
     // Le coach est ici sur son propre programme : ses notes de conception
     // sont les siennes, aucune raison de les masquer.
     getActiveProgram(user.id, { includeCoachNotes: true }),
@@ -34,35 +33,36 @@ export default async function CoachMonProgrammePage() {
     getSessionsThisWeekCount(user.id),
     getCoachProgramTemplates(user.id),
     getScheduleBlocks(user.id),
-    getAccessoriesByExerciseName(),
   ]);
+  const weekCtx = program && program.days.length > 0 ? await getProgramWeekContext(user.id, program) : null;
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-          {t("Mon entraînement")}
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon programme")}</h1>
-      </div>
-
-      {/* Retour direct 2026-09-02 : "en bas ya encore le truc pour créer la
-          prog, or ma prog est déjà créée, donc direct ma prog bien visible
-          en premier" — même schéma que app/dashboard/client/program/page.tsx
-          (déjà corrigé le 2026-09-01) : programme réel d'abord, formulaire
-          d'édition replié en dessous, ouvert par défaut seulement s'il n'y a
-          encore rien à montrer. */}
-      {/* Retour direct 2026-09-09 : "dans programme je veux les séances en
-          haut et le reste en bas" — séances réelles d'abord (repliées par
-          défaut, voir ProgramDaysGrid), stats volume/intensité après. */}
-      {program && program.days.length > 0 && (
+    <div className="px-4 pt-5 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      {/* Refonte 2026-10-20 (retour direct : « qu'on voie bien le jour,
+          l'heure, les accessoires, quelle salle et quels exos ») : même vue
+          que le client, voir components/ui/ProgramWeekView. Séances d'abord,
+          stats volume/intensité après, édition repliée en bas. */}
+      {program && weekCtx ? (
         <>
-          <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
-          <div style={{ marginBottom: 24 }}>
-            <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} sessionBasePath="/dashboard/coach/moi/logbook" />
+          <ProgramWeekView
+            program={program}
+            ctx={weekCtx}
+            sessionBasePath="/dashboard/coach/moi/logbook"
+            gymsHref="/dashboard/coach/gyms"
+            agendaHref="/dashboard/coach/moi/agenda"
+            eyebrow={t("Mon entraînement")}
+          />
+          <div className="mt-4">
+            <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
           </div>
-          <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
         </>
+      ) : (
+        <div className="mb-6">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
+            {t("Mon entraînement")}
+          </p>
+          <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon programme")}</h1>
+        </div>
       )}
 
       <div style={{ marginTop: program && program.days.length > 0 ? 24 : 0 }}>

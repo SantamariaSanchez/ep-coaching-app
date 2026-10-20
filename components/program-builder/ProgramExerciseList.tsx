@@ -12,11 +12,11 @@ import { withAlpha } from "@/lib/theme-color";
 // cadre, la cible s'affiche dans la bonne unité (reps, secondes, mètres) et
 // chaque technique s'explique en un tap.
 
-const COLORS = ["var(--ep-accent)", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#14b8a6"];
+export const SUPERSET_COLORS = ["var(--ep-accent)", "var(--ep-warn)", "var(--ep-ok)", "var(--ep-info)", "var(--ep-violet)", "var(--ep-orange)"];
 
-type Block = { label: string | null; color: string | null; items: { ex: Exercise; tag: string | null }[] };
+export type Block = { label: string | null; color: string | null; items: { ex: Exercise; tag: string | null }[] };
 
-function toBlocks(exercises: Exercise[]): Block[] {
+export function toBlocks(exercises: Exercise[]): Block[] {
   const groups = exercises.map((e) => e.superset_group ?? null);
   const labels = supersetLabels(groups);
   const blocks: Block[] = [];
@@ -32,7 +32,7 @@ function toBlocks(exercises: Exercise[]): Block[] {
       const size = supersetSize(groups, i);
       blocks.push({
         label: size >= 3 ? "Circuit" : "Superset",
-        color: COLORS[colorIdx++ % COLORS.length],
+        color: SUPERSET_COLORS[colorIdx++ % SUPERSET_COLORS.length],
         items: [{ ex, tag }],
       });
       return;
@@ -93,7 +93,7 @@ export default function ProgramExerciseList({ exercises, dayNotes }: { exercises
                       <button
                         type="button"
                         onClick={() => setHintFor(hintFor === ex.id ? null : ex.id)}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-(--ep-gold)/15 text-(--ep-gold)"
                         aria-expanded={hintFor === ex.id}
                       >
                         {tech} <Info size={10} />
@@ -101,7 +101,7 @@ export default function ProgramExerciseList({ exercises, dayNotes }: { exercises
                     )}
                   </div>
                   {tech && hintFor === ex.id && (
-                    <p className="mt-1.5 text-[11px] text-amber-100/80 leading-relaxed">{t(techniqueHint(ex.technique) ?? "")}</p>
+                    <p className="mt-1.5 text-[11px] text-(--ep-ink)/70 leading-relaxed">{t(techniqueHint(ex.technique) ?? "")}</p>
                   )}
                   {ex.notes && <p className="text-[11px] text-(--ep-ink)/40 mt-1.5 italic leading-snug">{ex.notes}</p>}
                 </div>

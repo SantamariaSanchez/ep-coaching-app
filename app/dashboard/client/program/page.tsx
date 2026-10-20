@@ -10,10 +10,9 @@ import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
 import ProgramFromScratchSection from "@/components/ui/ProgramFromScratchSection";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
-import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
-import MesocycleStatusBanner from "@/components/ui/MesocycleStatusBanner";
+import ProgramWeekView from "@/components/ui/ProgramWeekView";
+import { getProgramWeekContext } from "@/utils/program-week";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
-import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { recommendPreset } from "@/lib/preset-programs";
 import { saveOwnProgram } from "./actions";
@@ -27,19 +26,22 @@ export default async function ClientProgramPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, program, corrections, workoutLogs, sessionsThisWeek, accessoriesByName] = await Promise.all([
+  const [profile, program, corrections, workoutLogs, sessionsThisWeek] = await Promise.all([
     getProfile(user.id),
     getActiveProgram(user.id),
     getClientCorrections(user.id),
     getRecentWorkoutLogs(user.id),
     getSessionsThisWeekCount(user.id),
-    getAccessoriesByExerciseName(),
   ]);
 
   // Retombait sur le dashboard générique au lieu de son propre programme
   // (app/dashboard/coach/moi/programme existe déjà) — même trou trouvé sur
   // plusieurs pages client en auditant public/manifest.json.
   if (profile?.role === "coach") redirect("/dashboard/coach/moi/programme");
+
+  const hasProgram = !!program && program.days.length > 0;
+  // Salle, créneaux d'agenda, matériel, séances faites cette semaine.
+  const weekCtx = hasProgram ? await getProgramWeekContext(user.id, program) : null;
 
   // Espace gratuit — programmes prédéfinis au choix, ou création d'un
   // programme sur mesure de zéro via ProgramFromScratchSection.
@@ -50,28 +52,31 @@ export default async function ClientProgramPage() {
     // présélectionné dans la liste (voir recommendPreset).
     const recommendation = recommendPreset(await getMemberPreferences(user.id));
     return (
-      <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-        <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-            {t("Training")}
-          </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon programme")}</h1>
-        </div>
-
-        {/* Retour direct 2026-09-09 : "dans programme je veux les séances en
-            haut et le reste en bas" — les jours réels d'abord (repliés par
-            défaut, voir ProgramDaysGrid), les stats volume/intensité après.
-            ProgramDaysGrid (déjà utilisé ailleurs) remplace la grille
-            dupliquée à la main ici, qui n'affichait jamais les accessoires
-            "à prévoir" contrairement aux autres pages de programme. */}
-        {program && program.days.length > 0 && (
+      <div className="px-4 pt-5 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+        {/* Refonte 2026-10-20 (retour direct : jour, heure, salle, matériel,
+            exos, sans longueur inutile) : voir components/ui/ProgramWeekView.
+            Les séances d'abord, les stats volume/intensité après. */}
+        {program && weekCtx ? (
           <>
-            <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
-            <div className="mb-6">
-              <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} sessionBasePath={SESSION_BASE_PATH} />
+            <ProgramWeekView
+              program={program}
+              ctx={weekCtx}
+              sessionBasePath={SESSION_BASE_PATH}
+              gymsHref="/dashboard/client/gyms"
+              agendaHref="/dashboard/client/agenda"
+              eyebrow={t("Training")}
+            />
+            <div className="mt-4">
+              <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
             </div>
-            <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
           </>
+        ) : (
+          <div className="mb-6">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
+              {t("Training")}
+            </p>
+            <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon programme")}</h1>
+          </div>
         )}
 
         {/* Retour direct 2026-09-01 : "dans programme c'est encore tout la
@@ -81,8 +86,8 @@ export default async function ClientProgramPage() {
             d'office seulement s'il n'y a encore rien à montrer. */}
         <div className="border-t border-(--ep-line)/15 pt-6">
           <CollapsibleSection
-            title={program && program.days.length > 0 ? t("Changer de programme") : t("Créer mon programme")}
-            defaultOpen={!program || program.days.length === 0}
+            title={hasProgram ? t("Changer de programme") : t("Créer mon programme")}
+            defaultOpen={!hasProgram}
           >
             <ProgramPresetSelector
               clientId={user.id}
@@ -102,29 +107,15 @@ export default async function ClientProgramPage() {
   }
 
   return (
-    <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 900, margin: "0 auto" }}>
+    <div className="page-transition px-4 pt-5 pb-24 md:pb-8 max-w-2xl mx-auto">
+      {(!program || !weekCtx) && (
+        <div className="animate-fade-up" style={{ marginBottom: 28 }}>
+          <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Entraînement")}</p>
+          <h1 className="ep-h1">{t("Mon programme")}</h1>
+        </div>
+      )}
 
-      {/* Header */}
-      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Entraînement")}</p>
-        <h1 className="ep-h1">
-          {t("Mon programme")}
-        </h1>
-        {program && (
-          <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.3)", fontWeight: 500 }}>
-            {program.name}
-            {program.frequency ? ` · ${program.frequency}×/semaine` : ""}
-            {program.type ? ` · ${program.type}` : ""}
-          </p>
-        )}
-      </div>
-
-      {/* Retour direct 2026-09-09 : "dans programme je veux les séances en
-          haut et le reste en bas" — séances réelles d'abord (repliées par
-          défaut, voir ProgramDaysGrid), stats volume/intensité après.
-          ProgramDaysGrid remplace la grille dupliquée à la main ici, qui
-          n'affichait jamais les accessoires "à prévoir". */}
-      {!program || program.days.length === 0 ? (
+      {!program || !weekCtx ? (
         <div style={{
           display: "flex",
           flexDirection: "column",
@@ -170,11 +161,20 @@ export default async function ClientProgramPage() {
         </div>
       ) : (
         <>
-          <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
-          <div style={{ marginBottom: 24 }}>
-            <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} sessionBasePath={SESSION_BASE_PATH} />
+          {/* Refonte 2026-10-20 : semaine en un coup d'œil, séance du jour en
+              avant (jour, heure, salle, matériel, exos), voir
+              components/ui/ProgramWeekView. */}
+          <ProgramWeekView
+            program={program}
+            ctx={weekCtx}
+            sessionBasePath={SESSION_BASE_PATH}
+            gymsHref="/dashboard/client/gyms"
+            agendaHref="/dashboard/client/agenda"
+            eyebrow={t("Entraînement")}
+          />
+          <div className="mt-4">
+            <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
           </div>
-          <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
         </>
       )}
 
