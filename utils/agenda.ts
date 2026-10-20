@@ -1,4 +1,13 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import {
+  DEFAULT_WINDOW,
+  sanitizePrefs,
+  sanitizeTemplates,
+  sanitizeWindow,
+  type AgendaPrefs,
+  type DayTemplate,
+  type DayWindow,
+} from "@/lib/agenda-engine";
 
 export interface ScheduleBlock {
   id: string;
@@ -29,6 +38,12 @@ export interface ScheduleBlock {
   specific_date: string | null;
   /** Dates où ce bloc récurrent est remplacé par une copie décalée. */
   skipped_dates?: string[] | null;
+  /**
+   * Lien vers ce que le bloc représente (migration 20261020) : créneau de
+   * diète pour un repas (« lunch »), nom de séance du programme, mode de
+   * trajet (« marche »). Absent tant que la migration n'est pas passée.
+   */
+  link_ref?: string | null;
 }
 
 export const DAY_LABELS = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -73,5 +88,48 @@ export async function getScheduleBlockTaskLog(ownerId: string, date: string): Pr
     return (data as { completed_keys: string[] } | null)?.completed_keys ?? [];
   } catch {
     return [];
+  }
+}
+
+export interface AgendaSettings {
+  window: DayWindow;
+  prefs: AgendaPrefs;
+  templates: DayTemplate[];
+  /** false tant que la migration 20261020 n'est pas passée : les réglages ne s'enregistrent pas encore. */
+  ready: boolean;
+}
+
+/**
+ * Réglages d'agenda (user_settings, migration 20261020) : heures de la
+ * journée, préférences du générateur, journées types. Valeurs par défaut
+ * (6h-22h) si rien n'est enregistré ou si la migration n'est pas passée.
+ */
+export async function getAgendaSettings(ownerId: string): Promise<AgendaSettings> {
+  const fallback: AgendaSettings = { window: DEFAULT_WINDOW, prefs: sanitizePrefs({}), templates: [], ready: false };
+  try {
+    const { data, error } = await createAdminClient().from("user_settings").select("*").eq("user_id", ownerId).maybeSingle();
+    if (error) return fallback;
+    const row = (data ?? {}) as Record<string, unknown>;
+    const ready = !data || "agenda_day_start" in row;
+    if (!data) return { ...fallback, ready: await agendaColumnsExist() };
+    return {
+      window: "agenda_day_start" in row ? sanitizeWindow(row.agenda_day_start, row.agenda_day_end) : DEFAULT_WINDOW,
+      prefs: sanitizePrefs(row.agenda_prefs),
+      templates: sanitizeTemplates(row.agenda_templates),
+      ready,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+// Personne sans ligne user_settings : on ne sait pas encore si les colonnes
+// existent. Une lecture d'une seule colonne tranche (erreur = migration à passer).
+async function agendaColumnsExist(): Promise<boolean> {
+  try {
+    const { error } = await createAdminClient().from("user_settings").select("agenda_day_start").limit(1);
+    return !error;
+  } catch {
+    return false;
   }
 }

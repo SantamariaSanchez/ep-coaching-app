@@ -3,8 +3,23 @@
 import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
-import type { ScheduleBlock } from "@/utils/agenda";
+import { getAgendaSettings, type ScheduleBlock } from "@/utils/agenda";
 import { isBlockTimeAlreadyPastToday } from "@/lib/schedule-time";
+import { isBlockOnDate } from "@/lib/agenda-day";
+import {
+  blockKind,
+  mealSlotOf,
+  overlaps,
+  placeAll,
+  sanitizePrefs,
+  sanitizeTemplateBlock,
+  sanitizeTemplates,
+  sanitizeWindow,
+  toCalendar,
+  type AgendaPrefs,
+  type DayTemplate,
+  type TemplateBlock,
+} from "@/lib/agenda-engine";
 
 // Chacun (client ou coach pour lui-même) gère uniquement son propre agenda —
 // pas de paramètre clientId, l'utilisateur connecté est toujours le
@@ -26,6 +41,39 @@ interface BlockData {
   notes: string | null;
   tasks: string[];
   notify: boolean;
+  /** Lien séance / repas / trajet (migration 20261020), optionnel. */
+  link_ref?: string | null;
+}
+
+// ── Colonne link_ref (migration 20261020) ──────────────────────────────────
+// Le code doit tourner que la migration soit passée ou non (elle s'exécute à
+// la main dans le SQL Editor) : si la colonne n'existe pas encore, on
+// réessaie sans elle, le bloc est enregistré sans son lien (déduit alors du
+// nom et de l'icône, voir lib/agenda-engine.ts).
+function isUnknownColumnError(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  if (error.code === "42703" || error.code === "PGRST204") return true;
+  return /does not exist|could not find the .* column/i.test(error.message ?? "");
+}
+
+function withoutLink<T extends Record<string, unknown>>(row: T): Omit<T, "link_ref"> {
+  const copy = { ...row };
+  delete copy.link_ref;
+  return copy;
+}
+
+type Admin = ReturnType<typeof createAdminClient>;
+
+async function insertRows(supabase: Admin, rows: Record<string, unknown>[]): Promise<{ data: ScheduleBlock[] | null; error: string | null }> {
+  if (rows.length === 0) return { data: [], error: null };
+  let res = await supabase.from("schedule_blocks").insert(rows).select();
+  if (isUnknownColumnError(res.error)) res = await supabase.from("schedule_blocks").insert(rows.map(withoutLink)).select();
+  if (res.error || !res.data) return { data: null, error: res.error?.message ?? "Erreur." };
+  return { data: res.data as ScheduleBlock[], error: null };
+}
+
+function cleanLinkRef(v: unknown): string | null {
+  return typeof v === "string" && v.trim() ? v.trim().slice(0, 120) : null;
 }
 
 // Un bloc dont le jour est aujourd'hui et l'heure déjà passée doit être
@@ -52,20 +100,19 @@ export async function addScheduleBlock(
   if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
-  const { data: row, error } = await supabase
-    .from("schedule_blocks")
-    .insert({
+  const { data: rows, error } = await insertRows(supabase, [
+    {
       owner_id: guard.userId,
       ...data,
+      link_ref: cleanLinkRef(data.link_ref),
       last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
-    })
-    .select()
-    .single();
+    },
+  ]);
 
-  if (error || !row) return { error: error?.message ?? "Erreur." };
+  if (error || !rows?.[0]) return { error: error ?? "Erreur." };
 
   revalidateAgendaPaths();
-  return { block: row as ScheduleBlock };
+  return { block: rows[0] };
 }
 
 // Même bloc posé sur plusieurs jours d'un coup ("répéter aussi le lun/mer/ven")
@@ -82,26 +129,25 @@ export async function addScheduleBlocksBulk(
   if (uniqueDays.length === 0) return { error: "Aucun jour sélectionné." };
 
   const supabase = createAdminClient();
-  const { data: rows, error } = await supabase
-    .from("schedule_blocks")
-    .insert(
-      uniqueDays.map((day_of_week) => ({
-        owner_id: guard.userId,
-        day_of_week,
-        start_time: data.start_time,
-        end_time: data.end_time,
-        label: data.label,
-        color: data.color,
-        icon: data.icon,
-        notes: data.notes,
-        tasks: data.tasks,
-        notify: data.notify,
-        last_notified_at: initialLastNotifiedAt(day_of_week, data.start_time),
-      }))
-    )
-    .select();
+  const { data: rows, error } = await insertRows(
+    supabase,
+    uniqueDays.map((day_of_week) => ({
+      owner_id: guard.userId,
+      day_of_week,
+      start_time: data.start_time,
+      end_time: data.end_time,
+      label: data.label,
+      color: data.color,
+      icon: data.icon,
+      notes: data.notes,
+      tasks: data.tasks,
+      notify: data.notify,
+      link_ref: cleanLinkRef(data.link_ref),
+      last_notified_at: initialLastNotifiedAt(day_of_week, data.start_time),
+    }))
+  );
 
-  if (error || !rows) return { error: error?.message ?? "Erreur." };
+  if (error || !rows) return { error: error ?? "Erreur." };
 
   revalidateAgendaPaths();
   return { blocks: rows as ScheduleBlock[] };
@@ -115,18 +161,19 @@ export async function updateScheduleBlock(
   if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("schedule_blocks")
-    .update({
-      ...data,
-      // Recalculé à chaque modification (nouveau jour/heure ou juste un
-      // autre champ) : voir initialLastNotifiedAt plus haut. Idempotent et
-      // sans risque de double envoi — au pire ça avance l'horodatage
-      // "déjà géré aujourd'hui" sans jamais renvoyer de notif au passage.
-      last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
-    })
-    .eq("id", blockId)
-    .eq("owner_id", guard.userId);
+  const patch: Record<string, unknown> = {
+    ...data,
+    // Recalculé à chaque modification (nouveau jour/heure ou juste un
+    // autre champ) : voir initialLastNotifiedAt plus haut. Idempotent et
+    // sans risque de double envoi — au pire ça avance l'horodatage
+    // "déjà géré aujourd'hui" sans jamais renvoyer de notif au passage.
+    last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
+  };
+  if ("link_ref" in data) patch.link_ref = cleanLinkRef(data.link_ref);
+  let { error } = await supabase.from("schedule_blocks").update(patch).eq("id", blockId).eq("owner_id", guard.userId);
+  if (isUnknownColumnError(error)) {
+    ({ error } = await supabase.from("schedule_blocks").update(withoutLink(patch)).eq("id", blockId).eq("owner_id", guard.userId));
+  }
 
   if (error) return { error: error.message };
 
@@ -165,26 +212,37 @@ export async function duplicateDayBlocks(
   if (targets.length === 0) return { error: "Aucun jour cible sélectionné." };
 
   const supabase = createAdminClient();
-  const { data: source, error: fetchError } = await supabase
+  // Uniquement la semaine type (pas les rendez-vous ponctuels d'une date).
+  const { data: sourceRows, error: fetchError } = await supabase
     .from("schedule_blocks")
-    .select("start_time, end_time, label, color, icon, notes, tasks, notify")
+    .select("*")
     .eq("owner_id", guard.userId)
-    .eq("day_of_week", fromDay);
+    .eq("day_of_week", fromDay)
+    .is("specific_date", null);
 
   if (fetchError) return { error: fetchError.message };
-  if (!source || source.length === 0) return { error: "Ce jour n'a aucun bloc à copier." };
+  const source = (sourceRows ?? []) as ScheduleBlock[];
+  if (source.length === 0) return { error: "Ce jour n'a aucun bloc à copier." };
 
   const toInsert = targets.flatMap((day_of_week) =>
     source.map((b) => ({
       owner_id: guard.userId,
       day_of_week,
-      ...b,
+      start_time: b.start_time,
+      end_time: b.end_time,
+      label: b.label,
+      color: b.color,
+      icon: b.icon,
+      notes: b.notes,
+      tasks: b.tasks ?? [],
+      notify: b.notify,
+      link_ref: b.link_ref ?? null,
       last_notified_at: initialLastNotifiedAt(day_of_week, b.start_time),
     }))
   );
 
-  const { data: rows, error } = await supabase.from("schedule_blocks").insert(toInsert).select();
-  if (error || !rows) return { error: error?.message ?? "Erreur." };
+  const { data: rows, error } = await insertRows(supabase, toInsert);
+  if (error || !rows) return { error: error ?? "Erreur." };
 
   revalidateAgendaPaths();
   return { blocks: rows as ScheduleBlock[] };
@@ -327,6 +385,7 @@ export async function shiftDayFromBlock(input: {
       notes: b.notes,
       tasks: b.tasks ?? [],
       notify: b.notify,
+      ...(b.link_ref ? { link_ref: b.link_ref } : {}),
       specific_date: input.date,
       last_notified_at: initialLastNotifiedAt(b.day_of_week, start),
     }).select("id").single();
@@ -348,4 +407,187 @@ export async function shiftDayFromBlock(input: {
   revalidateAgendaPaths();
   revalidatePath("/dashboard/coach");
   return { moved };
+}
+
+// ── Agenda productivité (2026-10-20) ────────────────────────────────────────
+// Réglages (heures de la journée), journées types, « Construire ma semaine »,
+// glisser/étirer un bloc, sous-tâches. Réglages et journées types vivent dans
+// user_settings (migration 20261020_agenda_reglages_et_liens.sql).
+
+const MIGRATION_MSG = "Réglages d'agenda pas encore disponibles : la mise à jour de la base (migration du 20/10) doit être passée.";
+
+async function upsertSettings(userId: string, patch: Record<string, unknown>): Promise<{ error?: string }> {
+  const { error } = await createAdminClient()
+    .from("user_settings")
+    .upsert({ user_id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  if (isUnknownColumnError(error)) return { error: MIGRATION_MSG };
+  if (error) {
+    console.error("agenda settings upsert:", error);
+    return { error: "Enregistrement impossible, réessaie." };
+  }
+  return {};
+}
+
+/** Heures de début et de fin de journée (minutes depuis minuit ; fin <= début = journée de nuit). */
+export async function saveAgendaWindow(start: number, end: number): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const w = sanitizeWindow(start, end);
+  const res = await upsertSettings(guard.userId, { agenda_day_start: w.start, agenda_day_end: w.end });
+  if (!res.error) revalidateAgendaPaths();
+  return res;
+}
+
+export async function saveAgendaPrefs(prefs: AgendaPrefs): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  return upsertSettings(guard.userId, { agenda_prefs: sanitizePrefs(prefs) });
+}
+
+/** Liste complète des journées types (le client gère l'ajout/la suppression). */
+export async function saveDayTemplates(templates: DayTemplate[]): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const res = await upsertSettings(guard.userId, { agenda_templates: sanitizeTemplates(templates) });
+  if (!res.error) revalidateAgendaPaths();
+  return res;
+}
+
+/** Les heures d'un bloc (glisser / étirer dans la grille). */
+export async function setScheduleBlockTimes(
+  blockId: string,
+  dayOfWeek: number,
+  startTime: string,
+  endTime: string
+): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const re = /^([01]\d|2[0-3]):[0-5]\d(:00)?$|^24:00(:00)?$/;
+  if (!re.test(startTime) || !re.test(endTime) || startTime.startsWith("24")) return { error: "Heure invalide." };
+  if (!(dayOfWeek >= 1 && dayOfWeek <= 7)) return { error: "Jour invalide." };
+  const s = startTime.slice(0, 5) + ":00";
+  const e = endTime.slice(0, 5) + ":00";
+  if (e <= s) return { error: "L'heure de fin doit être après l'heure de début." };
+  const { error } = await createAdminClient()
+    .from("schedule_blocks")
+    .update({ day_of_week: dayOfWeek, start_time: s, end_time: e, last_notified_at: initialLastNotifiedAt(dayOfWeek, s) })
+    .eq("id", blockId)
+    .eq("owner_id", guard.userId);
+  if (error) return { error: error.message };
+  revalidateAgendaPaths();
+  return {};
+}
+
+/** Sous-tâches d'un bloc (ajout / retrait depuis la fiche du bloc). */
+export async function setScheduleBlockTasks(blockId: string, tasks: string[]): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const clean = (Array.isArray(tasks) ? tasks : []).map((t) => String(t).trim().slice(0, 300)).filter(Boolean).slice(0, 30);
+  const { error } = await createAdminClient().from("schedule_blocks").update({ tasks: clean }).eq("id", blockId).eq("owner_id", guard.userId);
+  if (error) return { error: error.message };
+  revalidateAgendaPaths();
+  return {};
+}
+
+const isAlarmLabel = (label: string) => /r[ée]veil/i.test(label);
+
+/** Bloc à créer exprimé dans une colonne (journée de la personne) en minutes absolues. */
+export interface ColumnBlockInput extends TemplateBlock {
+  col: number;
+}
+
+/**
+ * Pose une liste de blocs (journée type appliquée, semaine construite).
+ *   mode "completer" : rien n'est supprimé, les blocs qui chevauchent un
+ *                      bloc déjà là sont laissés de côté ;
+ *   mode "remplacer" : la semaine type des colonnes concernées est d'abord
+ *                      vidée (jamais les rendez-vous datés ni le réveil),
+ *                      demandé uniquement après confirmation à l'écran.
+ */
+export async function placeColumnBlocks(
+  input: ColumnBlockInput[],
+  mode: "completer" | "remplacer"
+): Promise<{ error?: string; blocks?: ScheduleBlock[]; removedIds?: string[]; skipped?: number }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  if (!Array.isArray(input) || input.length === 0) return { error: "Rien à ajouter." };
+  if (input.length > 300) return { error: "Trop de blocs d'un coup." };
+
+  const items = input
+    .map((raw) => {
+      const b = sanitizeTemplateBlock(raw);
+      const col = Number((raw as { col?: unknown }).col);
+      return b && col >= 1 && col <= 7 ? { ...b, col } : null;
+    })
+    .filter((b): b is ColumnBlockInput => !!b);
+  if (items.length === 0) return { error: "Blocs invalides." };
+
+  const supabase = createAdminClient();
+  const settings = await getAgendaSettings(guard.userId);
+  const w = settings.window;
+  const { data: current, error: readErr } = await supabase.from("schedule_blocks").select("*").eq("owner_id", guard.userId);
+  if (readErr) return { error: readErr.message };
+  const recurring = ((current ?? []) as ScheduleBlock[]).filter((b) => !b.specific_date && !isAlarmLabel(b.label));
+  const placed = placeAll(recurring, w);
+  const cols = new Set(items.map((i) => i.col));
+
+  let removedIds: string[] = [];
+  let toPlace = items;
+  let skipped = 0;
+  if (mode === "remplacer") {
+    removedIds = placed.filter((p) => cols.has(p.col)).map((p) => p.block.id);
+    if (removedIds.length) {
+      const { error } = await supabase.from("schedule_blocks").delete().eq("owner_id", guard.userId).in("id", removedIds);
+      if (error) return { error: error.message };
+    }
+  } else {
+    toPlace = items.filter((i) => isAlarmLabel(i.label) || !placed.some((p) => p.col === i.col && overlaps(p, i)));
+    skipped = items.length - toPlace.length;
+  }
+
+  const rows = toPlace.flatMap((i) =>
+    toCalendar(i.col, i.s, i.e).map((c) => ({
+      owner_id: guard.userId,
+      day_of_week: c.day_of_week,
+      start_time: c.start_time,
+      end_time: c.end_time,
+      label: i.label,
+      color: i.color,
+      icon: i.icon,
+      notes: i.notes,
+      tasks: i.tasks,
+      notify: i.notify,
+      link_ref: i.link_ref,
+      last_notified_at: initialLastNotifiedAt(c.day_of_week, c.start_time),
+    }))
+  );
+  const { data, error } = await insertRows(supabase, rows);
+  if (error || !data) return { error: error ?? "Erreur.", removedIds };
+
+  revalidateAgendaPaths();
+  return { blocks: data, removedIds, skipped };
+}
+
+/**
+ * Heures des repas posées dans l'agenda tel jour (créneau de diète -> "HH:MM"),
+ * pour que la nutrition affiche le même « quand » que l'agenda. Vide si
+ * aucun bloc repas ce jour-là (la nutrition garde alors ses heures habituelles).
+ */
+export async function getAgendaMealTimes(date: string): Promise<Record<string, string>> {
+  const guard = await requireAuth();
+  if (!guard.ok || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return {};
+  const w = new Date(`${date}T12:00:00Z`).getUTCDay();
+  const dow = w === 0 ? 7 : w;
+  try {
+    const { data } = await createAdminClient().from("schedule_blocks").select("*").eq("owner_id", guard.userId).eq("day_of_week", dow);
+    const out: Record<string, string> = {};
+    for (const b of ((data ?? []) as ScheduleBlock[]).filter((x) => isBlockOnDate(x, date, dow)).sort((a, c) => a.start_time.localeCompare(c.start_time))) {
+      if (blockKind(b) !== "repas") continue;
+      const slot = mealSlotOf(b);
+      if (!out[slot]) out[slot] = b.start_time.slice(0, 5);
+    }
+    return out;
+  } catch {
+    return {};
+  }
 }
