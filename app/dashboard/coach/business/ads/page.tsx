@@ -1,10 +1,9 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachAdCampaigns } from "@/lib/ad-campaigns";
 import AdsTracker from "@/components/coach/AdsTracker";
-import { ChevronLeft } from "lucide-react";
 
 // Outil de pilotage MANUEL de la publicité payante (Google Ads, Meta Ads,
 // TikTok Ads...) — demande directe du fondateur : aucun outil de ce type
@@ -30,13 +29,7 @@ export default async function AdsTrackerPage() {
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach/business"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {t("Retour")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/business" label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getAllCoaches, getAllActiveClientsSystemWide } from "@/utils/auth";
@@ -7,7 +8,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { todayInParis } from "@/lib/dates";
-import { ChevronLeft, TrendingUp, Users, Crown, History, ExternalLink, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { TrendingUp, Users, Crown, History, ExternalLink, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { withAlpha } from "@/lib/theme-color";
 
 function formatDate(iso: string | null): string | null {
@@ -115,12 +116,7 @@ export default async function CoachFinancePage() {
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={13} />{" "}{t("Retour")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/plus" label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

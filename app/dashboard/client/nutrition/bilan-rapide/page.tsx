@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { todayInParis } from "@/lib/dates";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -6,7 +7,6 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getNutritionProfile, getLast30DaysLogs, getAllFoods } from "@/utils/nutrition";
 import NutritionBilanQuiz from "@/components/ui/NutritionBilanQuiz";
 import { addFoodLog, createCustomFood } from "../actions";
-import { ChevronLeft } from "lucide-react";
 
 export default async function BilanRapidePage() {
   const t = await getT();
@@ -31,13 +31,12 @@ export default async function BilanRapidePage() {
   return (
     <div className="px-5 py-8 max-w-lg mx-auto pb-24 md:pb-8 page-transition">
       {/* Back link */}
-      <Link
-        href={backHref}
+      <BackButton
+        fallbackHref={backHref}
+        expect={backHref}
+        label={t("Retour nutrition")}
         className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={13} />
-        {t("Retour nutrition")}
-      </Link>
+      />
 
       {/* Header */}
       <div className="mb-6">

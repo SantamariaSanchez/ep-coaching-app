@@ -1,6 +1,6 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientIntake } from "@/utils/client-intake";
@@ -10,7 +10,6 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { saveProgram, saveCurrentProgramAsTemplate } from "../actions";
 import ProgramBuilder from "@/components/program-builder/ProgramBuilder";
 import type { ContextPhotos } from "@/components/program-builder/ClientContextPanel";
-import { ChevronLeft } from "lucide-react";
 
 // Espace de conception de programme (refonte 2026-10-13) : la fiche client à
 // gauche, les séances en tableaux façon Google Sheets à droite, un seul
@@ -67,13 +66,12 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
   return (
     <div className="px-2.5 sm:px-5 py-4 sm:py-5 w-full max-w-[1500px] mx-auto page-transition">
       <div className="flex items-center gap-3 mb-4">
-        <Link
-          href={`/dashboard/coach/clients/${id}/program`}
-          aria-label={t("Retour au programme")}
+        <BackButton
+          fallbackHref={`/dashboard/coach/clients/${id}/program`}
+          label=""
+          iconSize={18}
           className="p-1.5 -ml-1.5 rounded-lg text-(--ep-ink)/45 hover:text-(--ep-strong) hover:bg-(--ep-line)/25"
-        >
-          <ChevronLeft size={18} />
-        </Link>
+        />
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35">
             {program ? t("Modifier le programme") : t("Nouveau programme")}

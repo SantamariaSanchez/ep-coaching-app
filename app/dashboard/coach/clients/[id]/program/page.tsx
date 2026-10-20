@@ -1,13 +1,12 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getSessionsThisWeekCount } from "@/utils/sessions";
 import ClientProgramView from "@/components/ui/ClientProgramView";
 import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
-import { ChevronLeft } from "lucide-react";
 
 export default async function CoachClientProgramPage({
   params,
@@ -34,13 +33,13 @@ export default async function CoachClientProgramPage({
 
   return (
     <div className="px-6 py-8 max-w-6xl mx-auto page-transition">
-      <Link
-        href={`/dashboard/coach/clients/${id}`}
+      {/* Retour réel vers la fiche (même onglet), sinon la fiche sur l'onglet programme. */}
+      <BackButton
+        fallbackHref={`/dashboard/coach/clients/${id}?tab=programme`}
+        expect={`/dashboard/coach/clients/${id}`}
+        label={client.full_name ?? t("Client")}
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {client.full_name}
-      </Link>
+      />
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

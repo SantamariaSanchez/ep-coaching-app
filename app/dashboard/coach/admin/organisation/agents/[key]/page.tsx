@@ -1,7 +1,6 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAgentByKey } from "@/lib/ai-agents";
 import { getAgentMessages, getAgentTasks } from "@/utils/ai-agents";
@@ -34,12 +33,7 @@ export default async function AgentChatPage({
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach/admin/organisation"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={13} />{" "}{t("Organisation")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/admin/organisation" expect="/dashboard/coach/admin/organisation" label={t("Organisation")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

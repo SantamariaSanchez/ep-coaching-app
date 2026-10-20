@@ -1,7 +1,8 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Workflow, CalendarDays, Users, CheckCircle2, CircleDashed, MessagesSquare, FolderOpen, ChevronRight } from "lucide-react";
+import { Workflow, CalendarDays, Users, CheckCircle2, CircleDashed, MessagesSquare, FolderOpen, ChevronRight } from "lucide-react";
 import { getUnreadBySender } from "@/lib/staff-team";
 import { getUser } from "@/utils/auth";
 import { isTeamOwner, isFounder } from "@/lib/team-owner";
@@ -94,9 +95,7 @@ export default async function TeamCockpitPage() {
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href={founder ? "/dashboard/coach" : "/dashboard/coach/mon-equipe"} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6">
-        <ChevronLeft size={13} />{" "}{t("Retour")}
-      </Link>
+      <BackButton fallbackHref={founder ? "/dashboard/coach/plus" : "/dashboard/coach/mon-equipe"} label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
       <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{founder ? t("Administration") : t("Mon équipe")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight">{t("Pilotage de l'équipe")}</h1>
       <div className="flex flex-wrap gap-2 mt-4">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { syncSearchParams } from "@/lib/nav-trail";
 import Link from "next/link";
 import Card from "./Card";
 import type { Profile } from "@/utils/auth";
@@ -382,7 +383,16 @@ export default function ClientProfileTabs({
 }) {
   const t = useT();
   const { rank, next, progressPct } = getRankForPoints(points);
-  const [activeTab, setActiveTab] = useState<TabKey>(() => (TABS.some((x) => x.key === initialTab) ? (initialTab as TabKey) : "profil"));
+  const [activeTab, setActiveTabState] = useState<TabKey>(() => (TABS.some((x) => x.key === initialTab) ? (initialTab as TabKey) : "profil"));
+  // L'onglet ouvert est inscrit dans l'adresse (?tab=) : en revenant d'une
+  // sous-page (programme, check-ins, nutrition...) ou après un
+  // rafraîchissement, on retombe sur le même onglet au lieu de « Profil »
+  // (retour direct 2026-10-20 : « quand on fait retour, ça nous enlève de
+  // l'endroit où on était »).
+  const setActiveTab = useCallback((key: TabKey) => {
+    setActiveTabState(key);
+    syncSearchParams({ tab: key === "profil" ? null : key });
+  }, []);
   const [showMoreTabs, setShowMoreTabs] = useState(() => !!initialTab && !PRIMARY_TABS.includes(initialTab as TabKey));
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [roadmapLoading, setRoadmapLoading] = useState(true);

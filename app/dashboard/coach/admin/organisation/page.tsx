@@ -1,9 +1,10 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { ChevronLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import OrganisationView, { type RoleStatus } from "@/components/ui/OrganisationView";
 import { POLES } from "@/lib/org-roles";
 import { getJobApplications, getOnboardingStepsByApplication, getCvPathsByApplication } from "@/lib/job-applications";
@@ -173,12 +174,7 @@ export default async function OrganisationAdminPage() {
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={13} />{" "}{t("Retour")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/plus" label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

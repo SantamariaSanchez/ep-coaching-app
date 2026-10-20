@@ -1,12 +1,11 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 export const dynamic = "force-dynamic";
 
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getClientDailyLogs, groupLogsByWeek } from "@/utils/daily-logs";
 import ClientBilanView from "@/components/ui/ClientBilanView";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 
 export default async function CoachClientBilanPage({
   params,
@@ -40,12 +39,14 @@ export default async function CoachClientBilanPage({
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <Link
-          href={`/dashboard/coach/clients/${id}`}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.3)", textDecoration: "none", marginBottom: 14, letterSpacing: "0.06em", textTransform: "uppercase" }}
-        >
-          <ArrowLeft size={13} />{" "}{t("Retour")}
-        </Link>
+        {/* Retour réel vers la fiche (même onglet), sinon la fiche sur l'onglet bilans. */}
+        <BackButton
+          fallbackHref={`/dashboard/coach/clients/${id}?tab=bilans`}
+          expect={`/dashboard/coach/clients/${id}`}
+          label={t("Retour")}
+          icon="arrow"
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.3)", marginBottom: 14, letterSpacing: "0.06em", textTransform: "uppercase" }}
+        />
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Bilans quotidiens")}</p>
         <h1 className="ep-h1">{clientProfile.full_name ?? t("Membre")}</h1>
       </div>

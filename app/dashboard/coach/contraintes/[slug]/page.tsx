@@ -1,9 +1,9 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getMedicalConstraintBySlug, MEDICAL_CONSTRAINTS } from "@/lib/medical-constraints";
-import { ChevronLeft, ShieldAlert, ListChecks, BookOpen } from "lucide-react";
+import { ShieldAlert, ListChecks, BookOpen } from "lucide-react";
 
 export function generateStaticParams() {
   return MEDICAL_CONSTRAINTS.map((c) => ({ slug: c.slug }));
@@ -28,12 +28,7 @@ export default async function CoachContraintePage({
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach/contraintes"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={13} />{" "}{t("Contraintes & populations")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/contraintes" expect="/dashboard/coach/contraintes" label={t("Contraintes & populations")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <h1 className="text-2xl font-black uppercase tracking-tight mb-3">{constraint.title}</h1>
       <p className="text-sm text-(--ep-ink)/50 leading-relaxed mb-8">{constraint.overview}</p>

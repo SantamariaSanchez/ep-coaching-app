@@ -1,7 +1,8 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ListChecks, MessagesSquare, GraduationCap, FileBarChart, FolderOpen, AlertCircle, Table } from "lucide-react";
+import { ListChecks, MessagesSquare, GraduationCap, FileBarChart, FolderOpen, AlertCircle, Table } from "lucide-react";
 import { getUser } from "@/utils/auth";
 import { isTeamOwner } from "@/lib/team-owner";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -96,9 +97,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
 
   return (
     <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href="/dashboard/coach/admin/equipe" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6">
-        <ChevronLeft size={13} />{" "}{tr("Pilotage de l'équipe")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/admin/equipe" expect="/dashboard/coach/admin/equipe" label={tr("Pilotage de l'équipe")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
       <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: card?.pole.color }}>{card?.pole.name}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight">{member.full_name}</h1>
       <p className="text-sm text-(--ep-ink)/55 mt-1 mb-2">

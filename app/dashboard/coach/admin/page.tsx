@@ -1,11 +1,11 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getUser, getProfile, getAllCoaches, getClients } from "@/utils/auth";
 import { getCoachBillingInfo } from "@/lib/coach-billing";
 import CoachStatusToggle from "@/components/coach/CoachStatusToggle";
 import CoachClientsToggle from "@/components/coach/CoachClientsToggle";
-import { ExternalLink, ChevronLeft } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { withAlpha } from "@/lib/theme-color";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -49,12 +49,7 @@ export default async function CoachAdminPage() {
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={13} />{" "}{t("Retour")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/plus" label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           {t("Administration")}

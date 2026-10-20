@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowLeft, Trophy } from "lucide-react";
+import BackButton from "@/components/ui/BackButton";
+import { Trophy } from "lucide-react";
 import { getPublicVictories } from "@/utils/community";
 
 export const dynamic = "force-dynamic";
@@ -32,12 +32,7 @@ export default async function ReussitesPage() {
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 640, margin: "0 auto" }}>
       <div style={{ marginBottom: 24 }}>
-        <Link
-          href="/ressources"
-          className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors mb-4"
-        >
-          <ArrowLeft size={11} /> Ressources
-        </Link>
+        <BackButton fallbackHref="/ressources" label="Retour" siteLabel="Retour au site" icon="arrow" className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors mb-4" />
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
           EP Coaching
         </p>

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import BackButton from "@/components/ui/BackButton";
 import { EPLogo } from "@/components/ui/EPLogo";
 
 export interface LegalSection {
@@ -48,22 +47,17 @@ export function LegalPage({
   return (
     <div style={{ minHeight: "100vh", padding: "32px 18px 64px", position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
-        <Link
-          href="/"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            color: "rgba(var(--ep-ink-rgb),0.45)",
-            textDecoration: "none",
-            fontSize: 12,
-            fontWeight: 600,
-            marginBottom: 24,
-          }}
-        >
-          <ArrowLeft size={14} />
-          Retour à l&apos;accueil
-        </Link>
+        {/* Retour réel (history.back) : depuis le site vitrine on y revient,
+            depuis l'appli on retrouve l'écran d'où l'on vient. L'accueil de
+            l'appli ne sert que s'il n'y a rien derrière. */}
+        <BackButton
+          fallbackHref="/"
+          label="Retour"
+          siteLabel="Retour au site"
+          variant="plain"
+          icon="arrow"
+          style={{ fontSize: 12, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.45)", marginBottom: 24 }}
+        />
 
         <div style={{ marginBottom: 10 }}>
           <EPLogo size="sm" />

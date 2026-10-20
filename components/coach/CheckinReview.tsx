@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import BackButton from "@/components/ui/BackButton";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft, ArrowRight, Check, ChevronLeft, ExternalLink, Mic, PenLine, Video, Image as ImageIcon,
-  MessageSquareText, Dumbbell, Apple, Send, Loader2, X,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ExternalLink, Mic, PenLine, Video, Image as ImageIcon, MessageSquareText, Dumbbell, Apple, Send, Loader2, X } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CheckIn } from "@/utils/checkins";
 import { replyToCheckin, attachCoachVideoLink, attachCoachAudio } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
@@ -229,9 +226,8 @@ export default function CheckinReview({
     <div className="page-transition" style={{ maxWidth: 980, margin: "0 auto", padding: "20px 16px 140px" }}>
       {/* En-tête */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <Link href={`/dashboard/coach/clients/${clientId}/checkins`} aria-label={t("Retour aux check-ins")} style={{ ...btnGhost, minHeight: 40, width: 40, padding: 0 }}>
-          <ChevronLeft size={18} />
-        </Link>
+        {/* Vrai retour (accueil, priorités ou liste des check-ins selon d'où l'on vient). */}
+        <BackButton fallbackHref={`/dashboard/coach/clients/${clientId}/checkins`} label="" iconSize={18} className="" style={{ ...btnGhost, minHeight: 40, width: 40, padding: 0, justifyContent: "center" }} />
         <div style={{ minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.45)" }}>
             {t("Check-in de la semaine du")} {formatDate(checkin.week_start)}

@@ -1,9 +1,9 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById, isSubscribed } from "@/utils/auth";
 import { getClientTasks } from "@/utils/tasks";
-import { ChevronLeft, AlertTriangle } from "lucide-react";
-import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 import CoachClientTasksView from "@/components/ui/CoachClientTasksView";
 import { createClientTask, deleteClientTask, sendMotivationMessage } from "./actions";
 
@@ -29,13 +29,13 @@ export default async function CoachClientTasksPage({
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto page-transition">
-      <Link
-        href={`/dashboard/coach/clients/${id}`}
+      {/* Retour réel vers la fiche (même onglet), sinon la fiche sur l'onglet rappels. */}
+      <BackButton
+        fallbackHref={`/dashboard/coach/clients/${id}?tab=rappels`}
+        expect={`/dashboard/coach/clients/${id}`}
+        label={client.full_name ?? t("Client")}
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {client.full_name ?? t("Client")}
-      </Link>
+      />
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

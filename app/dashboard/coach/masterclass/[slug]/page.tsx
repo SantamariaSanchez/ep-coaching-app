@@ -1,7 +1,6 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { getMasterclassGuide } from "@/lib/masterclass-guides";
 import { getCoachMasterclassProgress } from "@/lib/coach-masterclass-progress";
@@ -30,13 +29,7 @@ export default async function MasterclassGuidePage({
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach/masterclass"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {t("Masterclass")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/masterclass" expect="/dashboard/coach/masterclass" label={t("Masterclass")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <MasterclassGuideView guide={guide} initialCompletedSteps={completedSteps} />
     </div>

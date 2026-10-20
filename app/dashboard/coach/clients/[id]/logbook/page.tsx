@@ -1,10 +1,9 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 ﻿import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getAllClientSessions, getClientPersonalRecords } from "@/utils/sessions";
 import { getClientIntake } from "@/utils/client-intake";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
 
 export default async function CoachClientLogbookPage({
@@ -31,13 +30,13 @@ export default async function CoachClientLogbookPage({
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
-      <Link
-        href={`/dashboard/coach/clients/${id}`}
+      {/* Retour réel vers la fiche (même onglet), sinon la fiche sur l'onglet logbook. */}
+      <BackButton
+        fallbackHref={`/dashboard/coach/clients/${id}?tab=logbook`}
+        expect={`/dashboard/coach/clients/${id}`}
+        label={client.full_name ?? t("Client")}
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {client.full_name ?? t("Client")}
-      </Link>
+      />
 
       <div className="flex items-center justify-between mb-8">
         <div>

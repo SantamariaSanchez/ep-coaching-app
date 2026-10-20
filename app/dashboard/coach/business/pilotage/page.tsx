@@ -1,6 +1,6 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { todayInParis } from "@/lib/dates";
 import {
@@ -11,7 +11,6 @@ import {
   currentNonNegotiablesStreak,
 } from "@/lib/business-non-negotiables";
 import NonNegotiablesTracker from "@/components/coach/NonNegotiablesTracker";
-import { ChevronLeft } from "lucide-react";
 
 // Pilotage business du coach (non-négociables quotidiens + les 5
 // catégories de données hebdo du Mastermind ThePrepDad) — demande directe
@@ -48,13 +47,7 @@ export default async function BusinessPilotagePage() {
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach/business"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {t("Retour")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/business" label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

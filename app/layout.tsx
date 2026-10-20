@@ -4,6 +4,7 @@ import AccessibilityMotionConfig from "@/components/ui/AccessibilityMotionConfig
 import { ACCESSIBILITY_INIT_SCRIPT } from "@/lib/accessibility";
 import { AMBIANCE_INIT_SCRIPT } from "@/lib/theme-color";
 import ConfirmDialogProvider from "@/components/ui/ConfirmDialogProvider";
+import NavTrailTracker from "@/components/ui/NavTrailTracker";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -103,6 +104,8 @@ export default function RootLayout({
             d'opacité, exactement la même doctrine que le bloc CSS existant.
             AccessibilityMotionConfig force en plus le mode réduit quand il
             est activé dans Paramètres > Accessibilité. */}
+        {/* Fil des pages vues dans l'onglet, pour les boutons « Retour » (lib/nav-trail.ts). */}
+        <NavTrailTracker />
         <AccessibilityMotionConfig>
           <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
         </AccessibilityMotionConfig>

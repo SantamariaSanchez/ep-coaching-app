@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -10,7 +11,7 @@ import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import { updateLeadStatus, updateLeadNote } from "./actions";
 import { todayInParis } from "@/lib/dates";
-import { ChevronLeft, ArrowUp, ArrowDown, Minus, Link2 } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus, Link2 } from "lucide-react";
 
 // Réservé au propriétaire de la plateforme, même garde que
 // app/dashboard/coach/admin — les leads captés sur /ressources sont une
@@ -57,13 +58,7 @@ export default async function LeadsAdminPage() {
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link
-        href="/dashboard/coach"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6"
-      >
-        <ChevronLeft size={14} />
-        {t("Retour")}
-      </Link>
+      <BackButton fallbackHref="/dashboard/coach/plus" label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
 
       <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
         <div>

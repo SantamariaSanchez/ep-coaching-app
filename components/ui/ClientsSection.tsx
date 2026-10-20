@@ -2,7 +2,8 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { syncSearchParams } from "@/lib/nav-trail";
 import { Users, Search, X } from "lucide-react";
 import type { Profile } from "@/utils/auth";
 // Import "type" uniquement : purement effacé à la compilation, donc sans
@@ -96,9 +97,32 @@ export default function ClientsSection({
 }) {
   const t = useT();
   const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<FilterKey>("all");
-  const [sort, setSort] = useState<SortKey>("name");
+  // Recherche, filtre et tri inscrits dans l'adresse (?q=&filtre=&tri=) :
+  // en revenant d'une fiche client, la liste est retrouvée telle qu'on l'a
+  // laissée (retour direct 2026-10-20, « ça nous enlève de l'endroit où on
+  // était »).
+  const searchParams = useSearchParams();
+  const [query, setQueryState] = useState(() => searchParams.get("q") ?? "");
+  const [filter, setFilterState] = useState<FilterKey>(() => {
+    const f = searchParams.get("filtre");
+    return FILTERS.some((x) => x.key === f) ? (f as FilterKey) : "all";
+  });
+  const [sort, setSortState] = useState<SortKey>(() => {
+    const v = searchParams.get("tri");
+    return SORTS.some((x) => x.key === v) ? (v as SortKey) : "name";
+  });
+  const setQuery = (v: string) => {
+    setQueryState(v);
+    syncSearchParams({ q: v.trim() ? v : null });
+  };
+  const setFilter = (v: FilterKey) => {
+    setFilterState(v);
+    syncSearchParams({ filtre: v === "all" ? null : v });
+  };
+  const setSort = (v: SortKey) => {
+    setSortState(v);
+    syncSearchParams({ tri: v === "name" ? null : v });
+  };
 
   const alertCount = (id: string) => phaseOverview[id]?.suggestionCount ?? 0;
 

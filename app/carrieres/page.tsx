@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, Check, Users, MessageCircle, ShieldCheck, ArrowRight } from "lucide-react";
+import BackButton from "@/components/ui/BackButton";
+import { Check, Users, MessageCircle, ShieldCheck, ArrowRight } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import { POLES } from "@/lib/org-roles";
 import { getPlatformOwnerId } from "@/lib/job-applications";
@@ -53,12 +54,12 @@ export default async function CarrieresPage() {
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 640, margin: "0 auto" }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
-      <Link
-        href="/"
+      <BackButton
+        fallbackHref="/"
+        label="Retour"
+        siteLabel="Retour au site"
         className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/60 transition-colors mb-6"
-      >
-        <ChevronLeft size={11} /> Accueil
-      </Link>
+      />
 
       <div className="flex justify-center mb-5">
         <EPLogo size="md" showCoaching />

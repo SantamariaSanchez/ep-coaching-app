@@ -1,12 +1,11 @@
 import { getT } from "@/lib/i18n-server";
+import BackButton from "@/components/ui/BackButton";
 ﻿import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById, roleBadge } from "@/utils/auth";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
 import RoleBadge from "@/components/ui/RoleBadge";
 import AgentCheckinButton from "@/components/messaging/AgentCheckinButton";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 
 export default async function CoachClientMessagesPage({
   params,
@@ -44,12 +43,7 @@ export default async function CoachClientMessagesPage({
 
       {/* Header */}
       <div className="px-5 py-4 border-b border-(--ep-line)/20 flex items-center gap-3">
-        <Link
-          href="/dashboard/coach/messages"
-          className="p-1.5 text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors"
-        >
-          <ChevronLeft size={18} />
-        </Link>
+        <BackButton fallbackHref="/dashboard/coach/messages" label="" iconSize={18} className="p-1.5 text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors" />
         <div className="w-8 h-8 rounded-full bg-(--ep-line)/20 border border-(--ep-line)/30 flex items-center justify-center flex-shrink-0">
           <span className="text-[10px] font-black text-(--ep-accent) uppercase">
             {(client.full_name ?? "?")
