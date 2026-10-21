@@ -32,6 +32,8 @@ import { getCommunityRecipes } from "@/utils/community-recipes";
 import { getSavedMeals } from "@/utils/saved-meals";
 import { getClientSupplements } from "@/utils/supplements";
 import { readMealChecks } from "@/lib/meal-checks";
+import { mealTimesForDate } from "@/lib/meal-times";
+import { getTrainingDays } from "@/utils/training-days";
 import { getScheduleBlocks, getScheduleBlockTaskLog } from "@/utils/agenda";
 import { getDailyHabitScore, getWeeklyHabitScores, currentStreak } from "@/lib/habit-score";
 import ClientPreviewFrame, { type PreviewVue } from "@/components/coach/ClientPreviewFrame";
@@ -227,7 +229,7 @@ export default async function ClientPreviewPage({
       return shiftDate(today, 1 - dow);
     })();
     const from = [weekStart, shiftDate(today, -13)].sort()[0];
-    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, recipes, savedMeals, mostUsedGlobal, supplements, mealChecks] = await Promise.all([
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, recipes, savedMeals, mostUsedGlobal, supplements, mealChecks, agendaMealTimes, trainingDays] = await Promise.all([
       getNutritionProfile(id, db),
       getTodayLogs(id, today, db),
       getLast30DaysLogs(id, db),
@@ -238,6 +240,9 @@ export default async function ClientPreviewPage({
       getMostLoggedFoodsGlobal(),
       getClientSupplements(id, db),
       readMealChecks(id, from, today),
+      // Agenda du client (jamais celui du coach connecté) pour l'heure des repas.
+      getScheduleBlocks(id).then((blocks) => mealTimesForDate(blocks, today)),
+      getTrainingDays(id, db),
     ]);
     content = (
       <div style={{ paddingBottom: 32 }}>
@@ -272,6 +277,8 @@ export default async function ClientPreviewPage({
           importPlanMealsAsSavedMeals={previewReadOnlyAction}
           logMealItems={previewReadOnlyAction}
           readOnly={{ checks: mealChecks.checks }}
+          agendaMealTimes={agendaMealTimes}
+          trainingDays={trainingDays}
         />
         <div className="px-6 mt-6">
           <SupplementsSection

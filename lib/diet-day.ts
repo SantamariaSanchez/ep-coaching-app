@@ -9,7 +9,7 @@
 // - liste de courses agrégée sur N jours, groupée par rayon.
 
 import { MEAL_SLOT_TIMES, timeToMinutes } from "@/lib/meal-slots";
-import { SLOT_END, foodFamily, normalize, planItemsFor, slotRank, type VariantChoice } from "@/lib/nutrition-engine";
+import { SLOT_END, dowOf, foodFamily, normalize, planItemsFor, planTotals, slotRank, type VariantChoice } from "@/lib/nutrition-engine";
 import type { DietPlanWithMeals, Food } from "@/utils/nutrition";
 
 // ── Équivalents simples ──────────────────────────────────────────────────
@@ -198,6 +198,74 @@ export function pickFocusMeal(slots: string[], status: Record<string, MealStatus
     return { slot: upcoming, when: now >= timeToMinutes(slotTime(upcoming)) - 45 ? "now" : "next" };
   }
   return { slot: open[0], when: "late" };
+}
+
+// ── Jour d'entraînement ou de repos ─────────────────────────────────────
+
+export type DayKind = "training" | "rest" | "high";
+
+export const DAY_KIND_LABEL: Record<DayKind, string> = {
+  training: "Jour entraînement",
+  rest: "Jour repos",
+  high: "Jour haut",
+};
+
+/** Séance du programme posée sur un jour de semaine (1 = lundi ... 7 = dimanche). */
+export interface TrainingDay {
+  weekday: number;
+  label: string;
+}
+
+export interface DayKindInfo {
+  kind: DayKind;
+  /** Calories prévues ce jour-là par la diète. */
+  kcal: number;
+  /** Séance du programme ce jour-là, s'il y en a une. */
+  session: string | null;
+}
+
+const ISO_DOW: Record<string, number> = { lun: 1, mar: 2, mer: 3, jeu: 4, ven: 5, sam: 6, dim: 7 };
+
+/**
+ * Type de journée d'une diète hebdo dont les jours diffèrent vraiment (sinon
+ * null : inutile d'afficher « jour repos » si on mange pareil tous les jours).
+ * Ordre de confiance : la note du coach sur ce jour, puis les séances du
+ * programme, puis les calories (les jours les plus hauts sont les jours
+ * d'entraînement).
+ */
+export function dayKindOf(
+  plan: DietPlanWithMeals | null,
+  date: string,
+  trainingDays: TrainingDay[] = [],
+  choice: VariantChoice = {}
+): DayKindInfo | null {
+  if (!plan || plan.structure !== "weekly") return null;
+  // Une semaine type quelconque : un plan hebdo dépend du jour de semaine.
+  const ref = new Date(`${date}T12:00:00`);
+  const monday = new Date(ref);
+  monday.setDate(ref.getDate() - ((ref.getDay() + 6) % 7));
+  const kcals: number[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    kcals.push(planTotals(planItemsFor(plan, iso, iso === date ? choice : {})).calories);
+  }
+  const max = Math.max(...kcals);
+  const min = Math.min(...kcals);
+  if (max <= 0 || max - min < Math.max(150, max * 0.06)) return null;
+  const dow = dowOf(date);
+  const kcal = planTotals(planItemsFor(plan, date, choice)).calories;
+  const weekday = ISO_DOW[dow] ?? 1;
+  const session = trainingDays.find((t) => t.weekday === weekday)?.label ?? null;
+  const note = normalize(plan.day_notes?.[dow] ?? "");
+  let kind: DayKind;
+  if (/\b(repos|off|rest|recup)/.test(note)) kind = "rest";
+  else if (/\b(high|recharge|refeed)/.test(note)) kind = "high";
+  else if (/entrain|training|seance|jambe|push|pull|legs|upper|lower|full ?body|haut du corps|bas du corps/.test(note)) kind = "training";
+  else if (trainingDays.length > 0) kind = session ? "training" : "rest";
+  else kind = kcal >= (max + min) / 2 ? "training" : "rest";
+  return { kind, kcal, session };
 }
 
 // ── Taux de suivi ────────────────────────────────────────────────────────

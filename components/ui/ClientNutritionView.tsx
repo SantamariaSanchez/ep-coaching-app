@@ -13,6 +13,7 @@ import NutritionTracker from "@/components/nutrition/NutritionTracker";
 import type { MealChecks } from "@/app/dashboard/client/nutrition/meal-check-actions";
 import type { TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
+import type { TrainingDay } from "@/lib/diet-day";
 import type {
   NutritionProfile,
   Food,
@@ -332,6 +333,12 @@ interface Props {
   // absent pour un client suivi par un coach (lui seul peut changer le mode
   // de son plan).
   updatePlanMode?: (planId: string, mode: DietMode) => Promise<{ error?: string }>;
+  /** Heures des blocs repas de l'agenda aujourd'hui (rendu serveur). */
+  agendaMealTimes?: Record<string, string>;
+  /** Séances du programme par jour de semaine, pour « jour entraînement / repos ». */
+  trainingDays?: TrainingDay[];
+  /** Ancre de création de plan (membre gratuit sans diète). */
+  planHref?: string;
 }
 
 export default function ClientNutritionView({
@@ -357,6 +364,9 @@ export default function ClientNutritionView({
   importPlanMealsAsSavedMeals,
   logMealItems,
   updatePlanMode,
+  agendaMealTimes,
+  trainingDays,
+  planHref,
 }: Props) {
   const tr = useT();
   // ── State ──────────────────────────────────────────────────────────────────
@@ -562,12 +572,9 @@ export default function ClientNutritionView({
   // changement de jour) reste géré par le rendu serveur normal au
   // prochain vrai rechargement de page.
 
-  // Arrivée depuis une notif de rappel de repas (cron meal-reminders) :
-  // ?meal=<slot> — on saute direct au repas concerné dans le plan, en
-  // évidence quelques secondes, plutôt que de laisser chercher dans la
-  // page. Lu une seule fois au montage : la valeur ne doit pas réapparaître
-  // si le client navigue ensuite dans la page (changement d'onglet, etc.).
-  const searchParams = useSearchParams();
+  // Arrivée depuis une notif de rappel de repas (cron meal-reminders,
+  // ?meal=<slot>) ou un bloc repas de l'agenda (?repas=<slot>) : géré par le
+  // tracker du jour (NutritionTracker), qui déplie et met en avant ce repas.
   // Retour direct répété : "j'ai validé mon repas, j'ai changé d'onglet, ce
   // n'était plus validé" — le "Deuxième filet" (router.refresh() sur
   // visibilitychange) avait été retiré plus haut car il causait une course
@@ -582,15 +589,6 @@ export default function ClientNutritionView({
   // découplé de l'action elle-même) n'a pas cette race : l'écriture est
   // déjà terminée à ce moment précis.
   const router = useRouter();
-  const [highlightSlot, setHighlightSlot] = useState<string | null>(() => searchParams.get("meal"));
-  useEffect(() => {
-    if (!highlightSlot) return;
-    const el = document.getElementById(`diet-plan-slot-${highlightSlot}`);
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    const t = setTimeout(() => setHighlightSlot(null), 3000);
-    return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Liste de courses : besoins de la semaine (plan ou habitudes), confrontés
   // au stock réel dans GroceryHub.
@@ -1658,44 +1656,45 @@ export default function ClientNutritionView({
   const isFreeTracking = planMode === "flexible";
 
   return (
-    <div className="px-6 py-8 ep-page-medium">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-6">
+    <div className="px-4 pt-5 pb-8 ep-page-medium">
+      {/* En-tête : même typographie que l'onglet Programme */}
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0">
-          <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Nutrition")}</h1>
-          <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-            <p className="text-xs text-(--ep-ink)/40 first-letter:uppercase">
-              {new Intl.DateTimeFormat("fr-FR", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              }).format(new Date(today + "T12:00:00"))}
-            </p>
-            {seasonMode && <SeasonModeBadge mode={seasonMode} />}
-          </div>
+          <p className="ep-section-title first-letter:uppercase" style={{ marginBottom: 2 }}>
+            {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(today + "T12:00:00"))}
+          </p>
+          <h1 className="ep-h1 uppercase" style={{ fontSize: 30 }}>
+            {tr("Nutrition")}
+          </h1>
+          {seasonMode && (
+            <div className="mt-1.5">
+              <SeasonModeBadge mode={seasonMode} />
+            </div>
+          )}
         </div>
         <button
           onClick={() => openCreateFood("", null)}
           aria-label={tr("Créer un aliment")}
-          className="flex-shrink-0 inline-flex items-center gap-1.5 bg-(--ep-accent)/10 border border-(--ep-accent)/30 hover:bg-(--ep-accent)/20 text-(--ep-accent) text-[11px] font-bold px-3 py-2.5 rounded-xl transition-colors"
+          className="flex-shrink-0 mt-1 inline-flex items-center gap-1 min-h-[36px] border border-(--ep-line)/35 text-(--ep-ink)/65 hover:text-(--ep-strong) text-[11px] font-bold px-2.5 rounded-xl transition-colors"
         >
           <Plus size={13} />
           {tr("Aliment")}
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20">
+      {/* Onglets */}
+      <div role="tablist" aria-label={tr("Nutrition")} className="flex gap-1 mb-3 rounded-xl border border-(--ep-line)/25 bg-(--ep-s1) p-1">
         {(["today", "history", "courses"] as const).map((tab) => (
           <button
             key={tab}
+            role="tab"
+            aria-selected={activeTab === tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 px-2 py-3 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-              activeTab === tab
-                ? "text-(--ep-accent) border-b-2 border-(--ep-accent)"
-                : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
+            className={`flex-1 min-h-[38px] px-2 inline-flex items-center justify-center gap-1.5 text-[11px] font-black uppercase tracking-wider rounded-lg transition-colors whitespace-nowrap ${
+              activeTab === tab ? "bg-(--ep-accent)/15 text-(--ep-accent-hi2)" : "text-(--ep-ink)/45 hover:text-(--ep-ink)/75"
             }`}
           >
+            {tab === "courses" && <ShoppingCart size={13} aria-hidden />}
             {tab === "today" ? tr("Aujourd'hui") : tab === "history" ? tr("Historique") : tr("Courses")}
           </button>
         ))}
@@ -1717,6 +1716,9 @@ export default function ClientNutritionView({
           onChangeMode={activePlan && updatePlanMode ? (m) => updatePlanMode(activePlan.id, m) : undefined}
           createCustomFood={createCustomFood}
           readOnly={readOnly}
+          agendaMealTimes={agendaMealTimes}
+          trainingDays={trainingDays}
+          planHref={planHref}
         />
       )}
 

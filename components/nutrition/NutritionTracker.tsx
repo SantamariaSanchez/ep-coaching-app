@@ -3,10 +3,10 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Lock, Plus, RotateCcw, Shuffle, SlidersHorizontal, Sparkles } from "lucide-react";
-import DietToday, { type DayMeal, type WeekDay } from "@/components/nutrition/DietToday";
+import { Check, ChevronDown, Lock, SlidersHorizontal, UtensilsCrossed } from "lucide-react";
+import DietToday, { type DayMeal, type DayMealItem, type WeekDay } from "@/components/nutrition/DietToday";
 import CookMode, { readCookSession, type CookItem, type CookSession } from "@/components/nutrition/CookMode";
-import { dayAdherence, slotTime, type MealStatus } from "@/lib/diet-day";
+import { dayAdherence, dayKindOf, slotTime, type MealStatus, type TrainingDay } from "@/lib/diet-day";
 import { getMealChecks, setMealCheck, type MealChecks } from "@/app/dashboard/client/nutrition/meal-check-actions";
 import { getAgendaMealTimes } from "@/app/dashboard/client/agenda/actions";
 import AddFoodSheet, { type PlanMealOption, type TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
@@ -99,28 +99,6 @@ function shiftDate(date: string, delta: number): string {
 
 const logMacros = (l: FoodLogWithFood): Macros => ({ calories: l.calories ?? 0, proteins: l.proteins ?? 0, carbs: l.carbs ?? 0, fats: l.fats ?? 0 });
 
-function Ring({ label, value, target, color }: { label: string; value: number; target: number; color: string }) {
-  const r = 27;
-  const c = 2 * Math.PI * r;
-  const pct = target > 0 ? Math.min(value / target, 1) : 0;
-  const over = target > 0 && value > target * 1.05;
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="relative w-[68px] h-[68px]">
-        <svg width="68" height="68" className="block -rotate-90">
-          <circle cx="34" cy="34" r={r} fill="none" stroke="rgba(var(--ep-ink-rgb),0.07)" strokeWidth="6" />
-          <circle cx="34" cy="34" r={r} fill="none" stroke={over ? "#f59e0b" : color} strokeWidth="6" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round" style={{ transition: "stroke-dashoffset .4s ease" }} />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-          <span className="text-[13px] font-black text-(--ep-strong)">{Math.round(value)}</span>
-          <span className="text-[9px] text-(--ep-ink)/35">/{Math.round(target)}</span>
-        </div>
-      </div>
-      <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/45">{label}</span>
-    </div>
-  );
-}
-
 // Heure actuelle (HH:MM), pour savoir quels repas sont encore à venir.
 function nowHHMM(): string {
   const d = new Date();
@@ -147,7 +125,16 @@ export default function NutritionTracker({
   onChangeMode,
   createCustomFood,
   readOnly,
+  agendaMealTimes,
+  trainingDays = [],
+  planHref,
 }: {
+  /** Heures des blocs repas de l'agenda pour aujourd'hui, lues au rendu serveur. */
+  agendaMealTimes?: Record<string, string>;
+  /** Séances du programme par jour de semaine (jour entraînement ou repos). */
+  trainingDays?: TrainingDay[];
+  /** Lien vers la création d'un plan (membre gratuit sans diète). */
+  planHref?: string;
   /**
    * Aperçu « Voir comme mon client » : cases « mangé » du client lues côté
    * serveur, et aucune lecture/écriture propre à la personne connectée
@@ -181,8 +168,9 @@ export default function NutritionTracker({
   // ?jour=AAAA-MM-JJ : ouvert depuis le bilan d'un jour passé.
   const searchParams = useSearchParams();
   const jour = searchParams.get("jour");
-  // ?repas=lunch : ouvert depuis un bloc repas de l'agenda.
-  const repas = searchParams.get("repas");
+  // ?repas=lunch : ouvert depuis un bloc repas de l'agenda ; ?meal=lunch :
+  // ouvert depuis un rappel de repas (cron meal-reminders).
+  const repas = searchParams.get("repas") ?? searchParams.get("meal");
   const startDate = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && jour <= today && jour >= shiftDate(today, -30) ? jour : today;
   const [date, setDate] = useState(startDate);
   const [mode, setMode] = useState<DietMode>(plan ? initialMode : "flexible");
@@ -240,6 +228,12 @@ export default function NutritionTracker({
     setChoices((prev) => (prev[d] ? prev : { ...prev, [d]: readLS(`ep-variants:${planKey}:${d}`, {}) }));
     setOverrides((prev) => (prev[d] ? prev : { ...prev, [d]: readLS(`ep-flex:${planKey}:${d}`, {}) }));
     if (logsByDate[d]) return;
+    // Aperçu coach : le journal du client est déjà chargé (30 jours), une
+    // lecture ici serait celle du compte connecté, jamais celle du client.
+    if (readOnly) {
+      setLogsByDate((prev) => ({ ...prev, [d]: [] }));
+      return;
+    }
     setLoadingDay(true);
     // Jour en erreur jamais affiché ni mis en cache comme « vide » : sinon
     // la journée apparaissait sans ses repas, sans moyen de recharger, et
@@ -331,7 +325,6 @@ export default function NutritionTracker({
     });
     return [...pinned.map((p) => ({ ...p, adjusted: false })), ...adjusted].sort((a, b) => slotRank(a.slot) - slotRank(b.slot));
   }, [mode, hasPlanToday, planItems, slotsWithLogs, dayOverrides, foodById, consumed, planTarget, date, today]);
-  const projected = useMemo(() => addMacros(consumed, sumMacros(suggestions.map((s) => macrosFor(s.food, s.grams)))), [consumed, suggestions]);
 
   // ── Contexte de recherche : plan, récents, habitudes ──────────────────
   const ctxBase = useMemo(() => {
@@ -509,7 +502,10 @@ export default function NutritionTracker({
   }
 
   // ── Ma diète du jour : cases « mangé », écarts, semaine (2026-10-14) ───
-  const weekDates = useMemo(() => weekOf(today), [today]);
+  // La semaine affichée est celle du jour choisi (arrivée depuis le bilan
+  // d'un jour passé, ou flèches de semaine), pas toujours la semaine en cours.
+  const weekStart = weekOf(date)[0];
+  const weekDates = useMemo(() => weekOf(weekStart), [weekStart]);
 
   useEffect(() => {
     if (readOnly) return;
@@ -531,10 +527,13 @@ export default function NutritionTracker({
   }, [readOnly, today, weekDates]);
 
   // Heures des repas posées dans l'agenda (2026-10-20) : la diète affiche le
-  // même « quand » que l'agenda, sinon ses heures habituelles.
-  const [agendaTimes, setAgendaTimes] = useState<Record<string, Record<string, string>>>({});
+  // même « quand » que l'agenda, sinon ses heures habituelles. Aujourd'hui,
+  // elles arrivent déjà avec la page (rendu serveur) ; les autres jours sont
+  // lus à la demande. Aperçu coach : jamais de lecture, ce serait l'agenda du
+  // coach connecté et pas celui du client.
+  const [agendaTimes, setAgendaTimes] = useState<Record<string, Record<string, string>>>(() => (agendaMealTimes ? { [today]: agendaMealTimes } : {}));
   useEffect(() => {
-    if (agendaTimes[date]) return;
+    if (agendaTimes[date] || readOnly) return;
     let alive = true;
     getAgendaMealTimes(date)
       .then((times) => {
@@ -544,7 +543,7 @@ export default function NutritionTracker({
     return () => {
       alive = false;
     };
-  }, [date, agendaTimes]);
+  }, [date, agendaTimes, readOnly]);
 
   useEffect(() => {
     if (readOnly) return;
@@ -568,38 +567,99 @@ export default function NutritionTracker({
   const dayStatus = useMemo(() => statusFor(date, logs), [statusFor, date, logs]);
 
   const displayItems = useCallback(
-    (slot: string): (CookItem & { logId?: string; planMealId?: string })[] => {
+    (slot: string): (CookItem & DayMealItem)[] => {
       const slotLogs = logs.filter((l) => (l.meal_slot ?? "breakfast") === slot && l.foods);
       const noteOf = (id: string | null | undefined) => (id ? plan?.diet_plan_meals.find((m) => m.id === id)?.notes ?? null : null);
       if (slotLogs.length) return slotLogs.map((l) => ({ key: `log:${l.id}`, food: l.foods!, grams: Number(l.quantity_g), logId: l.id, planMealId: l.diet_plan_meal_id ?? undefined, note: noteOf(l.diet_plan_meal_id) }));
       if (mode === "flexible") {
         const sug = suggestions.filter((x) => x.slot === slot && x.grams > 0);
-        if (sug.length) return sug.map((x) => ({ key: `plan:${x.planMealId}`, food: x.food, grams: x.grams, planMealId: x.planMealId, note: noteOf(x.planMealId) }));
+        if (sug.length)
+          return sug.map((x) => ({ key: `plan:${x.planMealId}`, food: x.food, grams: x.grams, planMealId: x.planMealId, note: noteOf(x.planMealId), planGrams: x.planGrams, adjusted: x.adjusted, overridden: x.overridden }));
       }
       return planItems.filter((i) => i.slot === slot).map((i) => ({ key: `plan:${i.planMealId}`, food: i.food, grams: i.grams, planMealId: i.planMealId, note: noteOf(i.planMealId) }));
     },
     [logs, mode, suggestions, planItems, plan]
   );
 
+  // Repas affichés : ceux du plan, ceux notés hors plan, et ceux ajoutés à la
+  // main ; sans plan ni rien de noté, les 4 repas classiques pour démarrer.
+  const slotKeys = useMemo(() => {
+    const keys = new Set<string>([...planItems.map((i) => i.slot), ...logs.map((l) => l.meal_slot ?? "breakfast")]);
+    if (keys.size === 0) ["breakfast", "lunch", "afternoon", "dinner"].forEach((k) => keys.add(k));
+    return [...keys].sort((a, b) => slotRank(a) - slotRank(b));
+  }, [planItems, logs]);
+  const [extraSlots, setExtraSlots] = useState<string[]>([]);
+  const shownSlots = useMemo(() => [...new Set([...slotKeys, ...extraSlots])].sort((a, b) => slotRank(a) - slotRank(b)), [slotKeys, extraSlots]);
+  const otherSlots = MEAL_SLOTS.filter((s) => !shownSlots.includes(s.key));
+
+  const canRestoreBase = isFixedLike && !readOnly && (date !== today || prefilledToday);
   const dayMeals: DayMeal[] = useMemo(
     () =>
-      planSlots.map((slot) => {
+      shownSlots.map((slot) => {
+        const planned = planSlots.includes(slot);
         const items = displayItems(slot);
-        return { slot, label: slotLabel(slot), time: agendaTimes[date]?.[slot] ?? slotTime(slot), items, macros: sumMacros(items.map((i) => macrosFor(i.food, i.grams))) };
+        const hasLogs = logs.some((l) => (l.meal_slot ?? "breakfast") === slot);
+        const agenda = agendaTimes[date]?.[slot];
+        const variants = variantsFor(plan, date, slot);
+        return {
+          slot,
+          label: slotLabel(slot),
+          time: agenda ?? slotTime(slot),
+          fromAgenda: !!agenda,
+          items,
+          macros: sumMacros(items.map((i) => macrosFor(i.food, i.grams))),
+          planned,
+          variants: variants.length > 1 && (mode === "flexible" ? !hasLogs : true) ? variants : undefined,
+          variant: choice[slot] ?? 1,
+          canRestore: canRestoreBase && planned && !hasLogs,
+          editable: (i: DayMealItem) => !!i.logId || (mode === "flexible" && !!i.planMealId),
+        };
       }),
-    [planSlots, displayItems, agendaTimes, date]
+    [shownSlots, planSlots, displayItems, logs, agendaTimes, date, plan, mode, choice, canRestoreBase]
   );
+
+  // Statut affiché : un repas noté hors plan compte comme mangé.
+  const viewStatus = useMemo(() => {
+    const out = { ...dayStatus };
+    for (const l of logs) {
+      const slot = l.meal_slot ?? "breakfast";
+      if (!planSlots.includes(slot)) out[slot] ??= "mange";
+    }
+    return out;
+  }, [dayStatus, logs, planSlots]);
+
+  // Mangé contre prévu : la journée fixe est pré-remplie dès le matin, seuls
+  // les repas cochés (ou notés hors plan) comptent comme mangés aujourd'hui ;
+  // le reste du plan pas encore coché s'affiche en « encore prévu ». Un jour
+  // passé compte tout ce qui est noté.
+  const { eaten, toCome } = useMemo(() => {
+    if (date !== today || !hasPlanToday) return { eaten: consumed, toCome: sumMacros([]) };
+    const eatenLogs = logs.filter((l) => {
+      const slot = l.meal_slot ?? "breakfast";
+      const st = dayStatus[slot];
+      return !planSlots.includes(slot) || (!!st && st !== "saute");
+    });
+    const open = dayMeals.filter((m) => m.planned && !dayStatus[m.slot]);
+    return { eaten: sumMacros(eatenLogs.map(logMacros)), toCome: sumMacros(open.map((m) => m.macros)) };
+  }, [date, today, hasPlanToday, consumed, logs, dayStatus, planSlots, dayMeals]);
 
   const adherence = useMemo(
     () => dayAdherence({ slots: planSlots, status: dayStatus, consumedKcal: date === today ? 0 : consumed.calories, targetKcal: planTarget.calories }),
     [planSlots, dayStatus, consumed.calories, planTarget.calories, date, today]
   );
 
+  // Jour entraînement / repos, seulement quand la diète change selon le jour.
+  const dayKind = useMemo(() => dayKindOf(plan, date, trainingDays, choice), [plan, date, trainingDays, choice]);
+  const nextKind = useMemo(() => (date === today ? dayKindOf(plan, shiftDate(today, 1), trainingDays) : null), [plan, date, today, trainingDays]);
+
+  const minDate = shiftDate(today, -30);
   const week: WeekDay[] = useMemo(
     () =>
       weekDates.map((d, i) => {
         const future = d > today;
-        if (future || !plan) return { date: d, letter: WEEK_LETTERS[i], pct: null, basis: null, isToday: d === today, isSelected: d === date, future };
+        const kind = dayKindOf(plan, d, trainingDays)?.kind ?? null;
+        const base = { date: d, letter: WEEK_LETTERS[i], isToday: d === today, isSelected: d === date, future, disabled: d < minDate, kind };
+        if (future || !plan) return { ...base, pct: null, basis: null };
         const items = planItemsFor(plan, d, choices[d] ?? readLS(`ep-variants:${planKey}:${d}`, {}));
         const slots = [...new Set(items.map((x) => x.slot))];
         const dayLogs = logsByDate[d] ?? [];
@@ -610,14 +670,24 @@ export default function NutritionTracker({
           consumedKcal: d === today ? 0 : sumMacros(dayLogs.map(logMacros)).calories,
           targetKcal: planTotals(items).calories,
         });
-        return { date: d, letter: WEEK_LETTERS[i], pct: a.pct, basis: a.basis, isToday: d === today, isSelected: d === date, future };
+        return { ...base, pct: a.pct, basis: a.basis };
       }),
-    [weekDates, today, plan, choices, planKey, logsByDate, statusFor, date]
+    [weekDates, today, plan, choices, planKey, logsByDate, statusFor, date, minDate, trainingDays]
   );
   const weekAvg = useMemo(() => {
     const vals = week.filter((d) => d.pct != null).map((d) => d.pct!);
     return vals.length ? Math.round(vals.reduce((x, y) => x + y, 0) / vals.length) : null;
   }, [week]);
+  const weekTitle = weekDates.includes(today)
+    ? tr("Cette semaine")
+    : `${tr("Semaine du")} ${new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(`${weekDates[0]}T12:00:00`))}`;
+
+  function shiftWeek(delta: number) {
+    let d = shiftDate(date, delta);
+    if (d > today) d = today;
+    if (d < minDate) d = minDate;
+    if (d !== date) goTo(d);
+  }
 
   async function saveCheck(d: string, slot: string, st: MealStatus | null) {
     const prev = checks[d]?.[slot];
@@ -643,6 +713,7 @@ export default function NutritionTracker({
 
   /** Coche un repas ; s'il n'est pas encore dans le journal, il y est ajouté tel que prévu. */
   async function markMeal(slot: string, st: MealStatus | null) {
+    if (readOnly) return;
     if (st === "mange" && !logs.some((l) => (l.meal_slot ?? "breakfast") === slot)) {
       if (mode === "flexible" && suggestions.some((x) => x.slot === slot && x.grams > 0)) await eatSuggestions(slot);
       else if (planItems.some((i) => i.slot === slot)) await fillSlots([slot]);
@@ -651,6 +722,7 @@ export default function NutritionTracker({
   }
 
   async function toggleMeal(slot: string) {
+    if (readOnly) return;
     if (!dayStatus[slot]) return markMeal(slot, "mange");
     // Décocher en flexible retire ce que la case avait ajouté (aliments du plan).
     if (mode === "flexible") {
@@ -707,20 +779,15 @@ export default function NutritionTracker({
     await saveCheck(date, slot, "remplace");
   }
 
+  function editItem(_slot: string, item: DayMealItem) {
+    if (item.logId) setSheet({ kind: "log", logId: item.logId });
+    else if (mode === "flexible" && item.planMealId) setSheet({ kind: "suggest", planMealId: item.planMealId });
+  }
+
   const replaceItemData = replaceTarget ? displayItems(replaceTarget.slot).find((i) => i.key === replaceTarget.key) : undefined;
   const cookMeal = cook ? dayMeals.find((m) => m.slot === cook.slot) ?? null : null;
 
   // ── Affichage ──────────────────────────────────────────────────────────
-  const slotKeys = useMemo(() => {
-    const keys = new Set<string>([...planItems.map((i) => i.slot), ...logs.map((l) => l.meal_slot ?? "breakfast")]);
-    if (keys.size === 0) ["breakfast", "lunch", "afternoon", "dinner"].forEach((k) => keys.add(k));
-    return [...keys].sort((a, b) => slotRank(a) - slotRank(b));
-  }, [planItems, logs]);
-  const otherSlots = MEAL_SLOTS.filter((s) => !slotKeys.includes(s.key));
-  const [extraSlots, setExtraSlots] = useState<string[]>([]);
-  const shownSlots = [...new Set([...slotKeys, ...extraSlots])].sort((a, b) => slotRank(a) - slotRank(b));
-
-  const minDate = shiftDate(today, -30);
   const dayLabel = date === today ? "Aujourd'hui" : date === shiftDate(today, -1) ? "Hier" : new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "short" }).format(new Date(`${date}T12:00:00`));
   const modeInfo = MODES.find((m) => m.key === mode) ?? MODES[2];
 
@@ -772,239 +839,146 @@ export default function NutritionTracker({
     return <div className="h-64 rounded-2xl border border-(--ep-line)/20 bg-(--ep-s5)/60 animate-pulse" aria-busy="true" />;
   }
 
-  return (
-    <div className="space-y-4">
-      {/* Jour */}
-      <div className="flex items-center gap-2">
-        <button type="button" aria-label={tr("Jour précédent")} disabled={date <= minDate} onClick={() => goTo(shiftDate(date, -1))} className="w-9 h-9 rounded-lg border border-(--ep-line)/30 flex items-center justify-center text-(--ep-ink)/70 disabled:opacity-30">
-          <ChevronLeft size={16} />
-        </button>
-        <div className="flex-1 text-center">
-          <p className="text-sm font-black uppercase tracking-tight text-(--ep-strong) first-letter:uppercase">{dayLabel}</p>
-          {date !== today && (
-            <button type="button" onClick={() => goTo(today)} className="text-[10px] font-bold uppercase tracking-widest text-(--ep-accent-hi2)">
-              {tr("Revenir à aujourd'hui")}
-            </button>
-          )}
-        </div>
-        <button type="button" aria-label={tr("Jour suivant")} disabled={date >= today} onClick={() => goTo(shiftDate(date, 1))} className="w-9 h-9 rounded-lg border border-(--ep-line)/30 flex items-center justify-center text-(--ep-ink)/70 disabled:opacity-30">
-          <ChevronRight size={16} />
-        </button>
-      </div>
-
-      {notice && <p role="status" className="text-xs text-(--ep-ok) text-center">{tr(notice)}</p>}
-      {error && <p role="alert" className="text-xs text-(--ep-bad) text-center">{tr(error)}</p>}
-
-      {/* Ma diète du jour : repas du moment, cases « mangé », semaine */}
-      {hasPlanToday && (
-        <DietToday
-          isToday={date === today}
-          dayLabel={dayLabel}
-          meals={dayMeals}
-          status={dayStatus}
-          adherence={adherence}
-          week={week}
-          weekAvg={weekAvg}
-          busy={busy}
-          onToggle={toggleMeal}
-          onSetStatus={(slot, st) => (st ? markMeal(slot, st) : toggleMeal(slot))}
-          onCook={(slot) => setCook({ slot, initial: null })}
-          onReplace={(slot, key) => setReplaceTarget({ slot, key })}
-          onAteOther={ateOther}
-          onSkip={skipMeal}
-          onSelectDay={goTo}
-          openSlot={repas}
-          onMarkPast={async (slots) => {
-            for (const slot of slots) await markMeal(slot, "mange");
-          }}
-        />
-      )}
-
-      {hasPlanToday && (
-        <button
-          type="button"
-          aria-expanded={showDetail}
-          onClick={() => {
-            setShowDetail((v) => {
-              writeLS(DETAIL_KEY, !v);
-              return !v;
-            });
-          }}
-          className="w-full min-h-[48px] rounded-2xl border border-(--ep-line)/25 px-4 flex items-center gap-2 text-sm font-bold text-(--ep-ink)/70"
-        >
-          <SlidersHorizontal size={15} className="text-(--ep-ink)/40" />
-          <span className="flex-1 text-left">{tr("Macros, ajouts et options")}</span>
-          <ChevronDown size={16} className={`text-(--ep-ink)/40 transition-transform ${showDetail ? "rotate-180" : ""}`} />
-        </button>
-      )}
-
-      {(showDetail || !hasPlanToday) && (
-      <div className="space-y-4">
-      {/* Mode */}
-      {plan && (
-        <div className="rounded-xl border border-(--ep-line)/25 bg-(--ep-shade)/25 p-3">
-          <div className="flex items-center gap-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 flex-1 truncate">
-              {isOwnPlan ? tr("Mon plan") : tr("Plan de ton coach")} · {plan.name}
-            </p>
-            {!onChangeMode && <Lock size={11} className="text-(--ep-ink)/30" />}
+  const showFollowedPlan = !readOnly && isFixedLike && hasPlanToday && logs.length === 0 && !loadingDay && (date !== today || prefilledToday);
+  const intro = (
+    <>
+      {!plan && (
+        <section className="rounded-2xl border border-dashed border-(--ep-line)/40 bg-(--ep-s1)/60 p-4">
+          <div className="flex items-start gap-3">
+            <span className="w-10 h-10 rounded-xl bg-(--ep-accent)/12 text-(--ep-accent-hi2) flex items-center justify-center flex-shrink-0">
+              <UtensilsCrossed size={18} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[15px] font-black uppercase tracking-tight text-(--ep-strong)">{tr("Pas encore de diète")}</p>
+              <p className="mt-1 text-[12.5px] leading-snug text-(--ep-ink)/60">
+                {isOwnPlan
+                  ? tr("Crée ton plan : tes repas, leurs grammages et leurs heures s'afficheront ici. En attendant, note ce que tu manges repas par repas.")
+                  : tr("Ton coach prépare ton plan alimentaire : tes repas, leurs grammages et leurs heures s'afficheront ici. En attendant, note ce que tu manges, ça l'aide à le construire.")}
+              </p>
+              {isOwnPlan && planHref && (
+                <a href={planHref} className="mt-2.5 inline-flex items-center min-h-[40px] px-3.5 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-[12px] font-black uppercase tracking-wider">
+                  {tr("Créer mon plan")}
+                </a>
+              )}
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-1.5 mt-2">
+        </section>
+      )}
+      {showFollowedPlan && (
+        <button type="button" disabled={busy} onClick={() => fillSlots()} className="w-full min-h-[48px] rounded-xl border border-(--ep-ok)/35 bg-(--ep-ok)/[0.08] px-4 text-sm font-bold text-(--ep-ok) disabled:opacity-50">
+          <Check size={14} className="inline -mt-0.5 mr-1.5" />
+          {tr("J'ai suivi mon plan ce jour-là")}
+        </button>
+      )}
+      {loadingDay && <p className="text-xs text-(--ep-ink)/45 text-center">{tr("Chargement…")}</p>}
+    </>
+  );
+
+  const footer = plan ? (
+    <section className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-s1) overflow-hidden">
+      <button
+        type="button"
+        aria-expanded={showDetail}
+        onClick={() => {
+          setShowDetail((v) => {
+            writeLS(DETAIL_KEY, !v);
+            return !v;
+          });
+        }}
+        className="w-full min-h-[52px] px-3.5 flex items-center gap-2.5 text-left"
+      >
+        <SlidersHorizontal size={15} className="text-(--ep-ink)/40 flex-shrink-0" />
+        <span className="flex-1 min-w-0">
+          <span className="block text-[10px] font-black uppercase tracking-widest text-(--ep-ink)/45">{isOwnPlan ? tr("Mon plan") : tr("Plan de ton coach")}</span>
+          <span className="block text-[13px] font-bold text-(--ep-strong) truncate">{plan.name}</span>
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-wider text-(--ep-ink)/55 whitespace-nowrap">
+          {tr("Suivi")} {tr(modeInfo.label).toLowerCase()}
+        </span>
+        {!onChangeMode && <Lock size={11} className="text-(--ep-ink)/30 flex-shrink-0" />}
+        <ChevronDown size={16} className={`text-(--ep-ink)/40 flex-shrink-0 transition-transform ${showDetail ? "rotate-180" : ""}`} />
+      </button>
+      {showDetail && (
+        <div className="px-3.5 pb-3.5">
+          <div className="grid grid-cols-3 gap-1.5">
             {MODES.map((m) => (
               <button
                 key={m.key}
                 type="button"
-                disabled={!onChangeMode || busy}
+                disabled={!onChangeMode || busy || !!readOnly}
                 onClick={() => changeMode(m.key)}
                 className={`py-2 rounded-lg border text-[10.5px] font-black uppercase tracking-wider transition-colors ${
                   mode === m.key ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-accent-hi2)" : "border-(--ep-line)/25 text-(--ep-ink)/35"
                 } ${onChangeMode ? "" : "cursor-default"}`}
               >
-                {m.label}
+                {tr(m.label)}
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-(--ep-ink)/50 mt-2 leading-snug">{modeInfo.help}</p>
+          <p className="text-[11px] text-(--ep-ink)/50 mt-2 leading-snug">{tr(modeInfo.help)}</p>
+          {!onChangeMode && <p className="text-[10.5px] text-(--ep-ink)/40 mt-1">{tr("Ton coach choisit le mode de suivi de ton plan.")}</p>}
+          {mode === "flexible" && Object.keys(dayOverrides).length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setOverrides((p) => ({ ...p, [date]: {} }));
+                writeLS(`ep-flex:${planKey}:${date}`, {});
+              }}
+              className="mt-2 w-full min-h-[44px] text-[11px] font-bold text-(--ep-ink)/50 underline"
+            >
+              {tr("Revenir aux repas du plan pour")} {date === today ? tr("aujourd'hui") : tr("ce jour")}
+            </button>
+          )}
         </div>
       )}
+    </section>
+  ) : null;
 
-      {/* Anneaux */}
-      <div className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-s5)/80 p-4">
-        <div className="flex justify-between">
-          <Ring label={tr("Calories")} value={consumed.calories} target={target.calories} color="var(--ep-accent)" />
-          <Ring label={tr("Protéines")} value={consumed.proteins} target={target.proteins} color="var(--ep-info)" />
-          <Ring label={tr("Glucides")} value={consumed.carbs} target={target.carbs} color="var(--ep-yellow)" />
-          <Ring label={tr("Lipides")} value={consumed.fats} target={target.fats} color="var(--ep-violet)" />
-        </div>
-        {mode === "flexible" && suggestions.length > 0 && (
-          <p className="text-[11px] text-(--ep-ink)/55 mt-3 text-center">
-            <Sparkles size={11} className="inline -mt-0.5 mr-1 text-(--ep-accent-hi2)" />
-            {tr("Avec les repas prévus :")}{" "}<b className="text-(--ep-strong)">{Math.round(projected.calories)}{" "}{tr("kcal")}</b> · P {Math.round(projected.proteins)} · G {Math.round(projected.carbs)} · L {Math.round(projected.fats)}
-          </p>
-        )}
-        {!hasPlanToday && target.calories === 0 && (
-          <p className="text-[11px] text-(--ep-ink)/45 mt-3 text-center">{tr("Pas encore d'objectifs : ils s'affichent dès que ton plan ou tes besoins sont définis.")}</p>
-        )}
-      </div>
+  return (
+    <div className="space-y-3">
+      {notice && <p role="status" className="text-xs text-(--ep-ok) text-center">{tr(notice)}</p>}
+      {error && <p role="alert" className="text-xs text-(--ep-bad) text-center">{tr(error)}</p>}
 
-      {/* Jour passé vide en fixe : un tap pour dire "j'ai suivi le plan" */}
-      {isFixedLike && hasPlanToday && logs.length === 0 && !loadingDay && (date !== today || prefilledToday) && (
-        <button type="button" disabled={busy} onClick={() => fillSlots()} className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 disabled:opacity-50">
-          <Check size={14} className="inline -mt-0.5 mr-1.5" />
-          {tr("J'ai suivi mon plan ce jour-là")}
-        </button>
-      )}
-
-      {/* Repas */}
-      {shownSlots.map((slot) => {
-        const slotLogs = logs.filter((l) => (l.meal_slot ?? "breakfast") === slot);
-        const slotSuggest = suggestions.filter((s) => s.slot === slot);
-        const variants = variantsFor(plan, date, slot);
-        const current = choice[slot] ?? 1;
-        const kcal = slotLogs.length ? sumMacros(slotLogs.map(logMacros)).calories : sumMacros(slotSuggest.map((s) => macrosFor(s.food, s.grams))).calories;
-        const planForSlot = planItems.filter((i) => i.slot === slot);
-        return (
-          <section key={slot} className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-s5)/70 overflow-hidden">
-            <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-              <p className="flex-1 text-[11px] font-black uppercase tracking-widest text-(--ep-ink)/70">{slotLabel(slot)}</p>
-              {slotLogs.length > 0 ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                  <Check size={11} /> {Math.round(kcal)}{" "}{tr("kcal")}
-                </span>
-              ) : slotSuggest.length > 0 ? (
-                <span className="text-[10px] font-bold text-(--ep-ink)/40">{tr("Prévu ·")}{" "}{Math.round(kcal)}{" "}{tr("kcal")}</span>
-              ) : null}
-            </div>
-
-            {variants.length > 1 && (mode === "flexible" ? slotLogs.length === 0 : true) && (
-              <div className="flex gap-1.5 px-4 pb-2">
-                {variants.map((v) => (
-                  <button key={v} type="button" disabled={busy} onClick={() => current !== v && chooseVariant(slot, v)} className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${current === v ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-accent-hi2)" : "border-(--ep-line)/30 text-(--ep-ink)/45"}`}>
-                    {v === 1 ? tr("Choix habituel") : `Option ${v}`}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <div className="px-2">
-              {slotLogs.map((l) => (
-                <button key={l.id} type="button" onClick={() => setSheet({ kind: "log", logId: l.id })} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-(--ep-hi)/[0.03] text-left">
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm text-(--ep-strong) truncate">{l.foods?.name ?? tr("Aliment")}</span>
-                    <span className="block text-[10.5px] text-(--ep-ink)/40">
-                      {Math.round(l.calories ?? 0)} kcal · P {Math.round(l.proteins ?? 0)} · G {Math.round(l.carbs ?? 0)} · L {Math.round(l.fats ?? 0)}
-                    </span>
-                  </span>
-                  {/* Les grammes en gros (2026-10-08) : avant, le chiffre en gras
-                      à droite était les kcal sans unité, lu comme des grammes
-                      (« 15 » pour 100 g de légumes verts). */}
-                  <span className="text-sm font-black text-(--ep-strong) tabular-nums whitespace-nowrap">{Math.round(Number(l.quantity_g) * 10) / 10} g</span>
-                </button>
-              ))}
-
-              {slotLogs.length === 0 &&
-                slotSuggest.map((s) => (
-                  <button key={s.planMealId} type="button" onClick={() => setSheet({ kind: "suggest", planMealId: s.planMealId })} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-(--ep-hi)/[0.03] text-left opacity-80">
-                    <span className="w-1.5 h-1.5 rounded-full bg-(--ep-ink)/25 shrink-0" />
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-sm text-(--ep-ink)/80 truncate">
-                        {s.food.name}
-                        {s.overridden && <Shuffle size={11} className="inline ml-1.5 -mt-0.5 text-(--ep-accent-hi2)" />}
-                      </span>
-                      <span className="block text-[10.5px] text-(--ep-ink)/40">
-                        {Math.round(macrosFor(s.food, s.grams).calories)} kcal
-                        {s.adjusted && <span className="text-amber-300/80">{" "}{tr("· ajusté (plan")}{" "}{s.planGrams} g)</span>}
-                      </span>
-                    </span>
-                    <span className="text-sm font-black text-(--ep-ink)/80 tabular-nums whitespace-nowrap">{s.grams} g</span>
-                  </button>
-                ))}
-
-              {slotLogs.length === 0 && slotSuggest.length === 0 && (
-                <p className="px-2 py-2 text-xs text-(--ep-ink)/35">
-                  {isFixedLike && planForSlot.length > 0 ? tr("Repas retiré de ta journée.") : tr("Rien de logué pour l'instant.")}
-                </p>
-              )}
-            </div>
-
-            <div className="flex gap-2 px-4 pb-3 pt-1.5">
-              {mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 && (
-                <button type="button" disabled={busy} onClick={() => eatSuggestions(slot)} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-(--ep-accent) text-(--ep-strong) text-[11px] font-black uppercase tracking-widest disabled:opacity-50">
-                  <Check size={13} />{" "}{tr("J'ai mangé ça")}
-                </button>
-              )}
-              {isFixedLike && slotLogs.length === 0 && planForSlot.length > 0 && (
-                <button type="button" disabled={busy} onClick={() => fillSlots([slot])} className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/75 text-[11px] font-bold uppercase tracking-widest disabled:opacity-50">
-                  <RotateCcw size={12} />{" "}{tr("Remettre le repas du plan")}
-                </button>
-              )}
-              <button type="button" onClick={() => setSheet({ kind: "add", slot })} className={`${mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? "" : "flex-1"} inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/75 text-[11px] font-bold uppercase tracking-widest`}>
-                <Plus size={13} /> {mode === "flexible" && slotLogs.length === 0 && slotSuggest.length > 0 ? tr("Autre") : tr("Ajouter")}
-              </button>
-            </div>
-          </section>
-        );
-      })}
-
-      {otherSlots.filter((s) => !extraSlots.includes(s.key)).length > 0 && (
-        <div className="flex flex-wrap gap-1.5 justify-center">
-          {otherSlots
-            .filter((s) => !extraSlots.includes(s.key))
-            .map((s) => (
-              <button key={s.key} type="button" onClick={() => setExtraSlots((p) => [...p, s.key])} className="px-3 py-1.5 rounded-full border border-dashed border-(--ep-line)/40 text-[11px] font-bold text-(--ep-ink)/50">
-                + {s.label}
-              </button>
-            ))}
-        </div>
-      )}
-
-      {mode === "flexible" && Object.keys(dayOverrides).length > 0 && (
-        <button type="button" onClick={() => { setOverrides((p) => ({ ...p, [date]: {} })); writeLS(`ep-flex:${planKey}:${date}`, {}); }} className="w-full min-h-[44px] text-[11px] font-bold text-(--ep-ink)/45 underline">
-          {tr("Revenir aux repas du plan pour")}{" "}{date === today ? tr("aujourd'hui") : tr("ce jour")}
-        </button>
-      )}
-      </div>
-      )}
+      <DietToday
+        isToday={date === today}
+        dayLabel={dayLabel}
+        meals={dayMeals}
+        status={viewStatus}
+        adherence={adherence}
+        eaten={eaten}
+        toCome={toCome}
+        target={target}
+        dayKind={dayKind}
+        nextKind={nextKind}
+        week={week}
+        weekAvg={weekAvg}
+        weekTitle={weekTitle}
+        canPrevWeek={weekDates[0] > minDate}
+        canNextWeek={weekDates[6] < today}
+        onShiftWeek={shiftWeek}
+        onBackToday={() => goTo(today)}
+        busy={busy}
+        readOnly={!!readOnly}
+        extraSlots={otherSlots}
+        onAddSlot={(key) => setExtraSlots((p) => [...p, key])}
+        onToggle={toggleMeal}
+        onSetStatus={(slot, st) => (st ? markMeal(slot, st) : toggleMeal(slot))}
+        onCook={(slot) => setCook({ slot, initial: null })}
+        onReplace={(slot, key) => setReplaceTarget({ slot, key })}
+        onAteOther={ateOther}
+        onSkip={skipMeal}
+        onSelectDay={goTo}
+        onEditItem={editItem}
+        onAdd={(slot) => setSheet({ kind: "add", slot })}
+        onChooseVariant={chooseVariant}
+        onRestore={(slot) => fillSlots([slot])}
+        openSlot={repas}
+        onMarkPast={async (slots) => {
+          for (const slot of slots) await markMeal(slot, "mange");
+        }}
+        intro={intro}
+        footer={footer}
+      />
 
       {/* Panneaux */}
       {sheet?.kind === "add" && (
