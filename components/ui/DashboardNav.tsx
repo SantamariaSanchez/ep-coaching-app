@@ -22,6 +22,7 @@ import { EPLogo } from "@/components/ui/EPLogo";
 import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
 import CommandPalette from "@/components/ui/CommandPalette";
 import { useT } from "@/components/i18n/I18nProvider";
+import { useTypingInSession } from "@/components/client/session/useTypingInSession";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -544,29 +545,12 @@ export default function DashboardNav({
   const onSessionPage = pathname.includes("/logbook/session/");
   const [isDesktop, setIsDesktop] = useState(false);
 
-  // Retour direct 2026-09-10 ("ça a rien à faire là tout le temps sur
-  // l'écran, instagram y'a pas de bouton comme ça qui reste tout le
-  // temps") : le cluster flottant recherche+notifications (mobile) restait
-  // figé en permanence par-dessus le contenu, même en pleine lecture/
-  // défilement — jamais le cas dans une appli soignée (Instagram, entre
-  // autres, masque sa propre barre du haut au scroll vers le bas et ne la
-  // réaffiche qu'au scroll vers le haut ou à l'arrêt). Même principe ici :
-  // visible au repos et en scrollant vers le haut (on veut y accéder), masqué
-  // en scrollant vers le bas (on lit, on n'a pas besoin qu'il traîne dessus).
-  const [floatingClusterVisible, setFloatingClusterVisible] = useState(true);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let lastY = window.scrollY;
-    function handleScroll() {
-      const y = window.scrollY;
-      const delta = y - lastY;
-      if (y < 40 || delta < -4) setFloatingClusterVisible(true);
-      else if (delta > 4) setFloatingClusterVisible(false);
-      lastY = y;
-    }
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Clavier ouvert (téléphone, appli native) : la nav du bas remontait
+  // au-dessus du clavier et recouvrait le champ en cours de saisie. Même
+  // mécanisme que la séance, qui gère déjà le sien (voir useTypingInSession).
+  // Messagerie exclue : la conversation cale déjà sa hauteur sur la nav
+  // (components/messaging/ConversationView.tsx).
+  useTypingInSession(!onSessionPage && !pathname.includes("/messages"));
 
   // Reprise automatique d'une séance active après relance à froid de l'app —
   // sur mobile, verrouiller l'écran pendant une séance peut faire évincer le
@@ -801,6 +785,27 @@ export default function DashboardNav({
     ? userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "EP";
 
+  // Recherche + note rapide, téléphone. La page Plus a déjà sa recherche,
+  // la page Notes sa saisie : pas de bouton en double.
+  const showSearchTool = !pathname.endsWith("/plus");
+  const showNoteTool = !pathname.endsWith("/notes");
+  const toolStyle: React.CSSProperties = { width: 36, height: 36, flexShrink: 0 };
+  const mobileTools =
+    showSearchTool || showNoteTool ? (
+      <>
+        {showNoteTool && (
+          <Link prefetch={false} href={`${base}/notes?capture=1`} aria-label={t("Note rapide")} title={t("Note rapide")} className="ep-btn-icon" style={toolStyle}>
+            <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.6)" }} />
+          </Link>
+        )}
+        {showSearchTool && (
+          <button type="button" onClick={() => window.dispatchEvent(new Event("ep:open-search"))} aria-label={t("Rechercher")} title={t("Rechercher")} className="ep-btn-icon" style={toolStyle}>
+            <Search size={17} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.6)" }} />
+          </button>
+        )}
+      </>
+    ) : null;
+
   // ── Desktop sidebar ─────────────────────────────────────────────────────────
   return (
     <>
@@ -830,12 +835,14 @@ export default function DashboardNav({
             n'avait jamais de point d'entrée visible, seulement Ctrl/Cmd+K —
             personne ne peut découvrir un raccourci qui ne s'affiche nulle
             part. */}
+        <div style={{ display: "flex", gap: 6, margin: "0 16px 12px" }}>
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event("ep:open-search"))}
           style={{
+            flex: 1, minWidth: 0,
             display: "flex", alignItems: "center", gap: 8,
-            margin: "0 16px 12px", padding: "8px 10px",
+            padding: "8px 10px",
             background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
             borderRadius: 10, color: "rgba(var(--ep-ink-rgb),0.35)", cursor: "pointer",
             fontSize: 12, fontWeight: 600, textAlign: "left",
@@ -850,6 +857,21 @@ export default function DashboardNav({
             ⌘K
           </span>
         </button>
+        {/* Note rapide : le même geste qu'au téléphone, sans bouton flottant. */}
+        <Link
+          prefetch={false}
+          href={`${base}/notes?capture=1`}
+          aria-label={t("Note rapide")}
+          title={t("Note rapide")}
+          style={{
+            width: 34, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
+            borderRadius: 10, color: "rgba(var(--ep-ink-rgb),0.45)",
+          }}
+        >
+          <NotebookPen size={14} strokeWidth={1.8} />
+        </Link>
+        </div>
 
         <div className="ep-divider-subtle" style={{ margin: "0 16px 8px" }} />
 
@@ -1127,12 +1149,30 @@ export default function DashboardNav({
             plus besoin de marge pour les éviter — la bande colle en haut. */}
         {/* Séance en cours : la bande collait en haut au même endroit que
             l'en-tête de séance (chrono, progression) et passait dessous. */}
+        {/* Recherche et note rapide (2026-10-21, « le truc note et loupe ça
+            chevauche tout ») : plus de boutons flottants au-dessus du
+            contenu. Ils vivent dans l'en-tête de la page : au bout de la
+            bande des sous-onglets quand elle existe, sinon sur une petite
+            ligne en tête de page qui défile avec elle. Un tap, jamais rien
+            de recouvert, clavier ouvert compris. */}
         {!isDesktop && !onSessionPage && mobileSubItems.length > 1 && (
-          <nav
+          <div
             style={{
               position: "sticky",
               top: 0,
               zIndex: 30,
+              display: "flex",
+              alignItems: "center",
+              background: "rgba(var(--ep-bg-rgb),0.92)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.1)",
+            }}
+          >
+          <nav
+            style={{
+              flex: 1,
+              minWidth: 0,
               display: "flex",
               gap: 6,
               overflowX: "auto",
@@ -1143,11 +1183,7 @@ export default function DashboardNav({
               // de faire défiler seulement les onglets.
               touchAction: "pan-x",
               overscrollBehavior: "contain",
-              padding: "10px 12px",
-              background: "rgba(var(--ep-bg-rgb),0.92)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              borderBottom: "1px solid rgba(var(--ep-accent-rgb),0.1)",
+              padding: "10px 8px 10px 12px",
             }}
           >
             {mobileSubItems.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
@@ -1203,68 +1239,18 @@ export default function DashboardNav({
               );
             })}
           </nav>
+          {mobileTools && (
+            <div style={{ flexShrink: 0, display: "flex", gap: 6, padding: "0 10px 0 8px", borderLeft: "1px solid rgba(var(--ep-line-rgb),0.14)" }}>{mobileTools}</div>
+          )}
+          </div>
+        )}
+        {!isDesktop && !onSessionPage && mobileSubItems.length <= 1 && mobileTools && (
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "10px 12px 0", position: "relative", zIndex: 2 }}>{mobileTools}</div>
         )}
 
         {appSetup && !appSetup.completed && !pathname.includes("/mon-appli") && <AppSetupPrompt href={`${base}/mon-appli`} />}
         {children}
       </main>
-
-      {/* ── Recherche, mobile (2026-09-08, cloche retirée le 2026-09-10) ─────
-          La recherche n'avait que Ctrl/Cmd+K comme point d'entrée jusqu'ici
-          — inexistant au toucher. Sans bouton flottant, il n'y avait
-          tout simplement aucun moyen de chercher quoi que ce soit depuis un
-          téléphone.
-          Ancré en BAS, pas en haut (comme ActiveSessionBanner juste
-          au-dessus de la nav) : un ancrage en haut chevaucherait la bande de
-          sous-onglets sticky et les bandeaux (vérification email, compte
-          gratuit) qui vivent tout en haut du contenu — voir le commentaire
-          plus bas sur mobileSubItems, "plus rien de fixed en haut", déjà
-          un choix assumé qu'il ne fallait pas défaire.
-          Retour direct 2026-09-10 ("enleve la cloche de notif qui sert a
-          rien") : la cloche flottante mobile (NotificationBell variant
-          "mobile") est retirée — la cloche reste disponible dans la
-          sidebar desktop uniquement. Les notifications continuent
-          d'arriver en push (voir Paramètres) même sans cloche in-app
-          mobile. */}
-      <div
-        style={{
-          // Page Plus : la recherche est déjà en tête, pas de bouton en double.
-          // Séance en cours : ces deux boutons se posaient pile sur
-          // « Terminer » de la barre de séance (même ancrage bas-droite, et
-          // <main> en z-index 1 les faisait passer devant elle) — retour
-          // direct 2026-10-20, « les notes et le bouton de fin de séance se
-          // chevauchent ». La séance a ses propres notes par exercice.
-          display: isDesktop || onSessionPage || pathname.endsWith("/plus") || pathname.includes("/messages") ? "none" : "flex",
-          position: "fixed",
-          bottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
-          right: 14,
-          zIndex: 45,
-          gap: 8,
-          // Masqué en scrollant vers le bas, réaffiché au repos ou en
-          // scrollant vers le haut (voir floatingClusterVisible) — jamais
-          // planté en permanence par-dessus le contenu qu'on est en train
-          // de lire.
-          opacity: floatingClusterVisible ? 1 : 0,
-          transform: floatingClusterVisible ? "translateY(0)" : "translateY(12px)",
-          pointerEvents: floatingClusterVisible ? "auto" : "none",
-          transition: "opacity 200ms ease, transform 200ms ease",
-        }}
-      >
-        {!pathname.endsWith("/notes") && (
-          <Link prefetch={false} href={`${base}/notes?capture=1`} aria-label={t("Note rapide")} className="ep-btn-icon" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }} />
-          </Link>
-        )}
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event("ep:open-search"))}
-          aria-label={t("Rechercher")}
-          className="ep-btn-icon"
-          style={{ width: 36, height: 36 }}
-        >
-          <Search size={17} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }} />
-        </button>
-      </div>
 
       {/* ── Mobile bottom nav — Oura style ─────────────────────────────────── */}
       <nav
