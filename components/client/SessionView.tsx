@@ -69,6 +69,8 @@ import {
   type LiveRest,
   type SetDraft,
 } from "@/lib/live-session";
+import { inferLoadMode, isBodyweightMode } from "@/lib/training-styles";
+import { setExtra } from "@/components/client/session/strength";
 import { uploadSetVideo, normalizeVideoType, videoExtension, isProbablyVideo } from "@/lib/set-video-upload";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import ExerciseBlock from "@/components/client/session/ExerciseBlock";
@@ -241,6 +243,11 @@ function applyDraft(base: SetState, d: SetDraft): SetState {
     standardizationScore: d.score,
     segs: d.segs ?? base.segs,
     partials: d.partials ?? base.partials,
+    mode: d.mode ?? base.mode,
+    assistKg: d.assistKg ?? base.assistKg,
+    step: d.step ?? base.step,
+    rpe: d.rpe ?? base.rpe,
+    made: d.made ?? base.made,
     validated: !!d.pending,
     // Validée hors ligne : renvoyée automatiquement après la reprise.
     saveFailed: !!d.pending,
@@ -284,6 +291,11 @@ function buildOne(ex: LiveExercise, existingSets: DbSet[], notes: Record<string,
         standardizationScore: str(db.standardization_score),
         segs: det.segs,
         partials: det.partials,
+        mode: det.mode,
+        assistKg: det.assistKg,
+        step: det.step,
+        rpe: det.rpe,
+        made: det.made,
         validated: true,
         isPR: db.is_pr,
         dbId: db.id,
@@ -348,7 +360,7 @@ function snapshotPlan(
     const drafts: Record<string, SetDraft> = {};
     for (const s of ex.sets) {
       const pending = s.validated && (s.saveFailed || !s.dbId);
-      const hasValues = !!(s.weightKg || s.repsActual || s.rirActual || s.standardizationScore || s.segs?.length || s.partials);
+      const hasValues = !!(s.weightKg || s.repsActual || s.rirActual || s.standardizationScore || s.segs?.length || s.partials || s.mode || s.assistKg || s.step || s.rpe || s.made != null);
       if (pending || (!s.validated && (hasValues || s.dbId))) {
         drafts[String(s.setNumber)] = {
           w: s.weightKg,
@@ -357,6 +369,11 @@ function snapshotPlan(
           score: s.standardizationScore,
           ...(s.segs ? { segs: s.segs } : {}),
           ...(s.partials ? { partials: s.partials } : {}),
+          ...(s.mode ? { mode: s.mode } : {}),
+          ...(s.assistKg ? { assistKg: s.assistKg } : {}),
+          ...(s.step ? { step: s.step } : {}),
+          ...(s.rpe ? { rpe: s.rpe } : {}),
+          ...(s.made != null ? { made: s.made } : {}),
           ...(pending ? { pending: true } : {}),
         };
       }
@@ -1134,8 +1151,11 @@ export default function SessionView({
       const ex = exState.exercise;
       const setIdx = Math.max(0, exState.sets.findIndex((s) => s.localId === set.localId));
       const form = techniqueForm(ex.technique, setIdx, exState.sets.length);
-      const details = buildDetails(ex.technique, form, set.segs, set.partials);
-      const weight = parseFloat(set.weightKg.replace(",", ".")) || null;
+      const mode = set.mode ?? inferLoadMode(ex.name);
+      const bodyweight = isBodyweightMode(mode);
+      const details = buildDetails(ex.technique, form, set.segs, set.partials, setExtra(ex, set));
+      // Poids du corps et assistance : pas de charge ajoutée (jamais de PR au kilo).
+      const weight = bodyweight && mode !== "lest" ? null : parseFloat(set.weightKg.replace(",", ".")) || null;
       const threshold = computeThreshold(exercisesRef.current, initData?.prMap ?? {}, ex.name, set.localId);
       const isPR = markValidated && weight != null && (threshold == null || weight > threshold);
 

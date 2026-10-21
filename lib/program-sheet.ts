@@ -29,7 +29,9 @@ export type Technique =
   | "amrap"
   | "cluster"
   | "tempo"
-  | "isometric";
+  | "isometric"
+  | "top_backoff"
+  | "attempts";
 
 // `hint` est ce que le client lit en séance : une phrase concrète, pas un
 // cours de méthodologie.
@@ -42,6 +44,8 @@ export const TECHNIQUES: { key: Technique; label: string; hint: string }[] = [
   { key: "cluster", label: "Cluster", hint: "Série coupée en blocs de quelques reps avec 15-20 s de pause entre chaque." },
   { key: "tempo", label: "Tempo", hint: "Respecte le tempo indiqué (descente - pause - montée - pause)." },
   { key: "isometric", label: "Isométrie", hint: "Tiens la position sans bouger pendant le temps indiqué." },
+  { key: "top_backoff", label: "Top set + back-off", hint: "1re série lourde à l'intensité indiquée (top set), puis les suivantes à environ -10 % de la charge." },
+  { key: "attempts", label: "Tentatives (1re, 2e, 3e barre)", hint: "Comme en compétition : 3 barres, de plus en plus lourdes. Note si la barre est validée ou ratée." },
 ];
 
 export function techniqueLabel(key: string | null | undefined): string | null {
@@ -74,7 +78,7 @@ export function parseRepsInput(raw: string): { reps: string; unit: RepsUnit } | 
 
 // Exercices de bibliothèque qui se font naturellement au temps : l'unité
 // passe en secondes dès qu'on en choisit un (le coach peut toujours changer).
-const TIME_BASED = /(gainage|planche|plank|chaise|wall sit|hollow|isom|dead hang|suspension|farmer|portage|l-sit|superman hold|pont fessier tenu|side plank|gainage latéral|copenhague)/i;
+const TIME_BASED = /(gainage|planche|plank|chaise|wall sit|hollow|isom|dead hang|suspension|farmer|portage|l-sit|v-sit|front lever|back lever|planche(?! latérale)|handstand|human flag|drapeau|superman hold|pont fessier tenu|side plank|gainage latéral|copenhague)/i;
 const DISTANCE_BASED = /(sled|traîneau|prowler|farmer walk|marche du fermier|sandbag carry)/i;
 
 export function defaultUnitForExercise(name: string): RepsUnit | null {
@@ -143,13 +147,15 @@ export function formatPrescription(ex: {
   rir?: number | null;
   rest_seconds?: number | null;
   tempo?: string | null;
+  intensity?: string | null;
 }): string {
   const parts: string[] = [];
   const target = ex.reps ? `${ex.reps} ${unitShort(ex.reps_unit)}` : null;
   if (ex.sets && target) parts.push(`${ex.sets} × ${target}`);
   else if (ex.sets) parts.push(`${ex.sets} séries`);
   else if (target) parts.push(target);
-  if (ex.rir != null) parts.push(`RIR ${ex.rir}`);
+  if (ex.intensity) parts.push(ex.intensity);
+  else if (ex.rir != null) parts.push(`RIR ${ex.rir}`);
   if (ex.tempo) parts.push(`tempo ${ex.tempo}`);
   const rest = formatRest(ex.rest_seconds);
   if (rest) parts.push(`repos ${rest}`);
@@ -164,8 +170,10 @@ export function foldSheetFieldsIntoNotes(ex: {
   reps_unit?: string | null;
   technique?: string | null;
   tempo?: string | null;
+  intensity?: string | null;
 }): string | null {
   const extra: string[] = [];
+  if (ex.intensity) extra.push(ex.intensity);
   if (ex.superset_group) extra.push(`Superset ${ex.superset_group}`);
   if (ex.reps_unit === "sec") extra.push("en secondes");
   if (ex.reps_unit === "m") extra.push("en mètres");

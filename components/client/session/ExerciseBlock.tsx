@@ -39,6 +39,21 @@ import { parseRepScheme, rangeForSet, formatRange, suggestSet, formatKg, type Re
 import { techniqueLabel, techniqueHint, unitShort, formatRest } from "@/lib/program-sheet";
 import { TENSION_FOCUS_LABELS } from "@/lib/exercise-library-content";
 import { getTips } from "@/lib/execution-tips";
+import {
+  BODYWEIGHT_MODES,
+  RPE_CHOICES,
+  estimateE1rm,
+  formatIntensity,
+  loadForPercent,
+  mainLiftFor,
+  parseIntensity,
+  rpeToRir,
+  skillFor,
+  stepFromName,
+  stepIndex,
+  isBodyweightMode,
+} from "@/lib/training-styles";
+import { loadModeOf, setExtra } from "./strength";
 import { safeExternalUrl } from "@/lib/sanitize";
 
 // Un exercice de la séance en cours (retour direct du fondateur 2026-10-14 :
@@ -58,6 +73,17 @@ function num(v: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Meilleur 1RM estimé des séries de la dernière séance. */
+function bestE1rm(prevSets: PrevWeight[]): number | null {
+  let best: number | null = null;
+  for (const s of prevSets) {
+    const reps = s.reps != null ? parseInt(s.reps, 10) : null;
+    const e = estimateE1rm(s.weight, reps, parseDetails(s.details)?.rpe ?? null);
+    if (e != null && (best == null || e > best)) best = e;
+  }
+  return best;
+}
+
 /** Valeurs proposées d'office pour une série : la dernière perf ou la cible. */
 export function prefillFor(
   ex: ExerciseState,
@@ -72,7 +98,14 @@ export function prefillFor(
   const suggestion = range ? suggestSet({ range, prev, targetRir: ex.exercise.rir ?? null }) : null;
 
   let w = "";
-  if (before && before.weightKg) w = before.weightKg;
+  const first = ex.sets.slice(0, setIdx).find((s) => s.validated && s.weightKg);
+  const intensity = parseIntensity(ex.exercise.intensity);
+  const e1rm = bestE1rm(prevSets);
+  if (ex.exercise.technique === "top_backoff" && setIdx > 0 && first) {
+    // Back-off : environ -10 % du top set.
+    w = String(loadForPercent(parseFloat(first.weightKg.replace(",", ".")), 90, weightStep(parseFloat(first.weightKg))));
+  } else if (before && before.weightKg) w = before.weightKg;
+  else if (intensity?.kind === "pct" && e1rm) w = String(loadForPercent(e1rm, (intensity.min + intensity.max) / 2));
   else if (suggestion) w = String(suggestion.weightKg);
   else if (prev?.weight != null) w = String(prev.weight);
 
@@ -287,7 +320,21 @@ function SetEditor({
   const w = set.weightKg !== "" ? set.weightKg : prefill.w;
   const r = set.repsActual !== "" ? set.repsActual : prefill.r;
   const weightNum = num(w);
-  const showPR = isPRCandidate(weightNum);
+
+  // Force et calisthenics : champs selon le type d'exercice (poids du corps,
+  // lest, assistance), étape de skill, RPE, tentative de compétition.
+  const loadMode = loadModeOf(ex.exercise, set);
+  const bodyweight = isBodyweightMode(loadMode);
+  const showCharge = !bodyweight || loadMode === "lest";
+  const skill = skillFor(ex.exercise.name);
+  const lastStep = parseDetails(prevSet?.details)?.step ?? null;
+  const step = set.step ?? lastStep ?? (skill ? stepFromName(skill, ex.exercise.name) : null);
+  const intensity = parseIntensity(ex.exercise.intensity);
+  const mainLift = mainLiftFor(ex.exercise.name);
+  const showRpe = intensity?.kind === "rpe" || !!form.attempt || !!form.backoff || form.mainLabel === "Top set" || (!!mainLift && ex.exercise.rir == null);
+  const rpeNum = num(set.rpe ?? "");
+  const e1rm = mainLift || intensity ? estimateE1rm(weightNum, r ? parseInt(r, 10) : null, rpeNum) : null;
+  const showPR = showCharge && isPRCandidate(weightNum);
 
   // Sous-séries : lignes proposées d'office (vides) tant que rien n'est saisi.
   const segs: SegmentDraft[] =
@@ -337,7 +384,7 @@ function SetEditor({
         </span>
         <span className="text-[11px] text-(--ep-ink)/55 truncate">
           {form.amrap ? t("AMRAP : max de reps propres") : range ? `${t("cible")} ${targetText(range, unit, false, null)}` : ex.exercise.reps ? `${t("cible")} ${ex.exercise.reps} ${unit}` : ""}
-          {ex.exercise.rir != null ? ` · RIR ${ex.exercise.rir}` : ""}
+          {ex.exercise.intensity ? ` · ${ex.exercise.intensity}` : ex.exercise.rir != null ? ` · RIR ${ex.exercise.rir}` : ""}
         </span>
         {showPR && (
           <span className="ml-auto shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-(--ep-gold)/20 text-(--ep-gold) border border-(--ep-gold)/35">
@@ -362,16 +409,76 @@ function SetEditor({
         </p>
       )}
 
+      {(skill || (bodyweight && !mainLift) || set.mode) && (
+        <div className="flex gap-1.5" role="group" aria-label={t("Type de charge")}>
+          {BODYWEIGHT_MODES.map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              aria-pressed={loadMode === m.key}
+              onClick={() => onChange({ mode: m.key })}
+              className={`flex-1 min-h-11 rounded-xl border text-[11px] font-black uppercase tracking-wide ${
+                loadMode === m.key
+                  ? "bg-(--ep-accent)/15 border-(--ep-accent)/50 text-(--ep-accent)"
+                  : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/60"
+              }`}
+            >
+              {t(m.label)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {skill && (
+        <div>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40">
+            {t("Étape")} · {t(skill.label)}
+          </span>
+          <div className="flex gap-1.5 mt-1 overflow-x-auto pb-0.5" role="group" aria-label={t("Étape de la progression")}>
+            {skill.steps.map((st) => (
+              <button
+                key={st}
+                type="button"
+                aria-pressed={step === st}
+                onClick={() => onChange({ step: st })}
+                className={`shrink-0 min-h-11 px-3 rounded-xl border text-xs font-black whitespace-nowrap ${
+                  step === st
+                    ? "bg-(--ep-gold)/20 border-(--ep-gold)/60 text-(--ep-gold)"
+                    : stepIndex(skill, step) > skill.steps.indexOf(st)
+                      ? "bg-(--ep-okbg) border-(--ep-ok)/25 text-(--ep-ink)/70"
+                      : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/60"
+                }`}
+              >
+                {t(st)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
-        <Stepper
-          label={t("Charge")}
-          unit="kg"
-          decimal
-          value={set.weightKg}
-          placeholder={prefill.w || undefined}
-          step={weightStep(weightNum)}
-          onChange={(v) => onChange({ weightKg: v })}
-        />
+        {showCharge && (
+          <Stepper
+            label={loadMode === "lest" ? t("Lest") : t("Charge")}
+            unit={loadMode === "lest" ? t("+ kg") : "kg"}
+            decimal
+            value={set.weightKg}
+            placeholder={prefill.w || undefined}
+            step={weightStep(weightNum)}
+            onChange={(v) => onChange({ weightKg: v })}
+          />
+        )}
+        {loadMode === "assistance" && (
+          <Stepper
+            label={t("Aide")}
+            unit={t("− kg")}
+            decimal
+            value={set.assistKg ?? ""}
+            placeholder={parseDetails(prevSet?.details)?.assist_kg ? String(parseDetails(prevSet?.details)?.assist_kg) : undefined}
+            step={2.5}
+            onChange={(v) => onChange({ assistKg: v })}
+          />
+        )}
         <Stepper
           label={unitKey === "sec" ? t("Secondes") : unitKey === "m" ? t("Mètres") : t("Reps")}
           unit={unitKey === "sec" ? t("secondes") : unitKey === "m" ? t("mètres") : t("reps")}
@@ -384,6 +491,42 @@ function SetEditor({
 
       {(unitKey === "sec" || ex.exercise.technique === "isometric") && (
         <HoldTimer onDone={(s) => onChange({ repsActual: String(s) })} />
+      )}
+
+      {(e1rm != null || intensity?.kind === "pct") && (
+        <p className="text-[11px] text-(--ep-ink)/55 -mt-1">
+          {e1rm != null && (
+            <>
+              {t("1RM estimé")} <span className="font-black text-(--ep-strong)">≈ {formatKg(e1rm)}{"\u00a0"}kg</span>
+            </>
+          )}
+          {intensity?.kind === "pct" && ex.exercise.intensity ? ` · ${formatIntensity(ex.exercise.intensity)}` : ""}
+        </p>
+      )}
+
+      {form.attempt && (
+        <div className="flex gap-1.5" role="group" aria-label={t("Résultat de la barre")}>
+          {[
+            { v: true, label: t("Barre validée") },
+            { v: false, label: t("Barre ratée") },
+          ].map((o) => (
+            <button
+              key={String(o.v)}
+              type="button"
+              aria-pressed={set.made === o.v}
+              onClick={() => onChange({ made: set.made === o.v ? undefined : o.v })}
+              className={`flex-1 min-h-11 rounded-xl border text-xs font-black uppercase tracking-wide ${
+                set.made === o.v
+                  ? o.v
+                    ? "bg-(--ep-okbg) border-(--ep-ok)/60 text-(--ep-ok)"
+                    : "bg-(--ep-warn)/15 border-(--ep-warn)/60 text-(--ep-warn)"
+                  : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/60"
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
       )}
 
       {form.segments && (
@@ -476,7 +619,7 @@ function SetEditor({
 
       <div>
         <div className="flex items-baseline justify-between mb-1">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40">{t("RIR réel")}</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40">{showRpe ? t("RPE réel") : t("RIR réel")}</span>
           <button
             type="button"
             onClick={() => setShowScore((v) => !v)}
@@ -485,7 +628,30 @@ function SetEditor({
             {showScore ? t("Masquer l'exécution") : t("+ Exécution")}
           </button>
         </div>
-        <div className="grid grid-cols-6 gap-1" role="group" aria-label={t("RIR réel")}>
+        {showRpe ? (
+          <div className="grid grid-cols-8 gap-1" role="group" aria-label={t("RPE réel")}>
+            {RPE_CHOICES.map((v) => {
+              const selected = set.rpe === String(v);
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={selected}
+                  aria-label={`RPE ${v}`}
+                  onClick={() => onChange(selected ? { rpe: "", rirActual: "" } : { rpe: String(v), rirActual: String(rpeToRir(v)) })}
+                  className={`h-11 rounded-lg border text-[12px] font-black tabular-nums ${
+                    selected
+                      ? "bg-(--ep-accent) border-(--ep-accent) text-(--ep-strong)"
+                      : "bg-(--ep-s2) border-(--ep-line)/25 text-(--ep-ink)/60"
+                  }`}
+                >
+                  {String(v).replace(".", ",")}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="grid grid-cols-6 gap-1" role="group" aria-label={t("RIR réel")}>
           {RIR_CHOICES.map((v) => {
             const selected = set.rirActual === String(v);
             return (
@@ -505,7 +671,8 @@ function SetEditor({
               </button>
             );
           })}
-        </div>
+          </div>
+        )}
         {showScore && (
           <div className="grid grid-cols-5 gap-1 mt-1.5" role="group" aria-label={t("Exécution")}>
             {SCORE_CHOICES.map((v) => {
@@ -540,8 +707,9 @@ function SetEditor({
           disabled={set.saving}
           onClick={() =>
             onValidate({
-              weightKg: w,
+              weightKg: showCharge ? w : "",
               repsActual: r,
+              ...(skill && step ? { step } : {}),
               // Sous-séries non retouchées : la valeur proposée est retenue,
               // comme pour la charge et les reps de la série principale.
               ...(form.segments
@@ -559,9 +727,14 @@ function SetEditor({
         >
           {set.saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={18} strokeWidth={3} />}
           {editing ? t("Mettre à jour") : t("Valider")}
-          {!editing && (w || r) ? (
+          {!editing && (w || r || bodyweight) ? (
             <span className="font-bold normal-case tracking-normal opacity-85 truncate">
-              {formatSetLine({ weight: num(w), reps: r ? parseInt(r, 10) : null, unit: unitKey })}
+              {formatSetLine({
+                weight: showCharge ? num(w) : null,
+                reps: r ? parseInt(r, 10) : null,
+                unit: unitKey,
+                details: buildDetails(null, form, undefined, undefined, setExtra(ex.exercise, { ...set, step: skill ? step ?? undefined : undefined })),
+              })}
             </span>
           ) : null}
         </button>
@@ -917,10 +1090,10 @@ export default function ExerciseBlock({
                           weight: num(s.weightKg),
                           reps: s.repsActual ? parseInt(s.repsActual, 10) : null,
                           unit: unitKey,
-                          details: buildDetails(exercise.technique, form, s.segs, s.partials),
+                          details: buildDetails(exercise.technique, form, s.segs, s.partials, setExtra(exercise, s)),
                         })}
                       </span>
-                      {s.rirActual !== "" && (
+                      {s.rirActual !== "" && !s.rpe && (
                         <span className="shrink-0 text-[11px] font-bold text-(--ep-ink)/50">RIR {s.rirActual}</span>
                       )}
                       {isRecord && <span className="shrink-0 text-xs">🏆</span>}

@@ -76,6 +76,7 @@ export default function ProgramExerciseList({ exercises, dayNotes }: { exercises
                 // Dans un superset, le repos ne s'affiche que sur le dernier.
                 rest_seconds: ex.rest_seconds,
                 tempo: ex.tempo,
+                intensity: ex.intensity,
               });
               return (
                 <div key={ex.id} className="bg-(--ep-shade)/35 border border-(--ep-line)/20 rounded-xl px-3.5 py-2.5">

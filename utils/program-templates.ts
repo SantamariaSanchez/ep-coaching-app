@@ -33,6 +33,7 @@ export interface ProgramTemplateExercise {
   reps_unit?: string | null;
   technique?: string | null;
   tempo?: string | null;
+  intensity?: string | null;
 }
 
 export interface ProgramTemplateDay {
@@ -202,6 +203,7 @@ export async function saveProgramTemplate(
           reps_unit: ex.reps_unit && ex.reps_unit !== "reps" ? ex.reps_unit : null,
           technique: ex.technique || null,
           tempo: ex.tempo?.trim() || null,
+          intensity: ex.intensity?.trim() || null,
           day_id: sortedDayRows[i].id,
           name: ex.name,
           sets: ex.sets,
@@ -220,9 +222,9 @@ export async function saveProgramTemplate(
         let { error: exError } = await supabase.from("program_template_exercises").insert(exerciseRows);
         if (exError && isUnknownColumnError(exError)) {
           ({ error: exError } = await supabase.from("program_template_exercises").insert(
-            exerciseRows.map(({ superset_group, reps_unit, technique, tempo, ...row }) => ({
+            exerciseRows.map(({ superset_group, reps_unit, technique, tempo, intensity, ...row }) => ({
               ...row,
-              notes: foldSheetFieldsIntoNotes({ notes: row.notes, superset_group, reps_unit, technique, tempo }),
+              notes: foldSheetFieldsIntoNotes({ notes: row.notes, superset_group, reps_unit, technique, tempo, intensity }),
             }))
           ));
         }
@@ -273,6 +275,7 @@ export function programTemplateToInput(template: ProgramTemplateWithDays, nameOv
         reps_unit: e.reps_unit ?? null,
         technique: e.technique ?? null,
         tempo: e.tempo ?? null,
+        intensity: e.intensity ?? null,
         name: e.name,
         sets: e.sets,
         reps: e.reps,

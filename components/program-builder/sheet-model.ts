@@ -5,6 +5,7 @@
 import type { ProgramWithDays, DayInput, ExerciseInput, TensionFocus } from "@/utils/programs";
 import type { ProgramTemplateWithDays } from "@/utils/program-templates";
 import { parseRepsInput, type RepsUnit } from "@/lib/program-sheet";
+import { splitEffortCell } from "@/lib/training-styles";
 
 export interface SheetRow {
   id: string;
@@ -192,6 +193,7 @@ function rowFromExercise(id: string, e: {
   reps_unit?: string | null;
   technique?: string | null;
   tempo?: string | null;
+  intensity?: string | null;
   tension_focus?: string | null;
   resistance_notes?: string | null;
   rom_notes?: string | null;
@@ -205,7 +207,7 @@ function rowFromExercise(id: string, e: {
     sets: e.sets != null ? String(e.sets) : "",
     reps: e.reps ?? "",
     unit,
-    rir: e.rir != null ? String(e.rir) : "",
+    rir: e.intensity ? e.intensity : e.rir != null ? String(e.rir) : "",
     rest: formatRestCell(e.rest_seconds),
     tempo: e.tempo ?? "",
     technique: e.technique ?? "",
@@ -273,12 +275,15 @@ export function daysToInput(days: SheetDay[]): DayInput[] {
     }
     const exercises: ExerciseInput[] = filled.map((r) => {
       const sets = parseInt(r.sets, 10);
-      const rir = parseInt(r.rir, 10);
+      // Case « RIR » : un chiffre = RIR, « @8 » ou « 75 % » = intensité (force).
+      const effort = splitEffortCell(r.rir);
+      const rir = effort.rir ?? NaN;
       return {
         name: r.name.trim(),
         sets: Number.isFinite(sets) && sets > 0 ? sets : null,
         reps: r.reps.trim() || null,
         rir: Number.isFinite(rir) ? rir : null,
+        intensity: effort.intensity,
         rest_seconds: parseRest(r.rest),
         notes: r.notes.trim() || null,
         muscle_group: r.muscle_group || null,

@@ -32,6 +32,8 @@ export interface Exercise {
   reps_unit?: string | null;
   technique?: string | null;
   tempo?: string | null;
+  /** Intensité prescrite : « RPE 8 », « 75 % » (force), voir lib/training-styles.ts. */
+  intensity?: string | null;
 }
 
 export interface ProgramDay {
@@ -102,6 +104,8 @@ export interface ExerciseInput {
   reps_unit?: string | null;
   technique?: string | null;
   tempo?: string | null;
+  /** Intensité prescrite : « RPE 8 », « 75 % » (force), voir lib/training-styles.ts. */
+  intensity?: string | null;
 }
 
 export interface DayInput {
@@ -325,6 +329,7 @@ export async function saveProgramForClient(
           reps_unit: ex.reps_unit && ex.reps_unit !== "reps" ? ex.reps_unit : null,
           technique: ex.technique || null,
           tempo: ex.tempo?.trim() || null,
+          intensity: ex.intensity?.trim() || null,
         },
       }))
     );

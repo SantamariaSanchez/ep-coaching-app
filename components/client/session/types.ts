@@ -1,4 +1,5 @@
 import type { LiveExercise, SegmentDraft, SetDetails } from "@/lib/live-session";
+import type { StrengthExtra } from "@/lib/training-styles";
 
 // Types partagés de la séance en cours (components/client/SessionView.tsx et
 // les briques de components/client/session/).
@@ -27,6 +28,16 @@ export interface SetState {
   segs?: SegmentDraft[];
   /** Reps partielles après l'échec (technique « partielles »). */
   partials?: string;
+  /** Poids du corps / lest / assistance choisi en séance (sinon déduit du nom). */
+  mode?: StrengthExtra["mode"];
+  /** Assistance (élastique, machine) en kg retirés. */
+  assistKg?: string;
+  /** Étape de skill (« Advanced tuck »). */
+  step?: string;
+  /** RPE de la série (6 à 10). */
+  rpe?: string;
+  /** Tentative de compétition : barre validée (true) ou ratée (false). */
+  made?: boolean;
   validated: boolean;
   isPR: boolean;
   dbId: string | null;

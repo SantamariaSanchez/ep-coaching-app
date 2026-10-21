@@ -12,6 +12,7 @@
 // Module pur, sans import serveur : il tourne côté client.
 
 import type { Exercise } from "@/utils/programs";
+import { hasStrengthExtra, type StrengthExtra } from "@/lib/training-styles";
 
 // ── Techniques d'intensification ───────────────────────────────────────────
 
@@ -31,6 +32,10 @@ export interface TechniqueForm {
   amrap: boolean;
   /** Libellé de la série principale (« Activation » pour les myo-reps). */
   mainLabel: string | null;
+  /** Série de back-off après un top set : charge proposée à -10 %. */
+  backoff?: boolean;
+  /** Tentative de compétition : barre validée ou ratée à cocher. */
+  attempt?: boolean;
 }
 
 const NO_TECHNIQUE: TechniqueForm = {
@@ -65,10 +70,16 @@ export function techniqueForm(technique: string | null | undefined, setIndex: nu
       return isLast ? { ...NO_TECHNIQUE, partials: true } : NO_TECHNIQUE;
     case "amrap":
       return isLast ? { ...NO_TECHNIQUE, amrap: true } : NO_TECHNIQUE;
+    case "top_backoff":
+      return setIndex === 0 ? { ...NO_TECHNIQUE, mainLabel: "Top set" } : { ...NO_TECHNIQUE, mainLabel: "Back-off", backoff: true };
+    case "attempts":
+      return { ...NO_TECHNIQUE, mainLabel: setIndex < 3 ? ATTEMPT_LABELS[setIndex] : `Barre ${setIndex + 1}`, attempt: true };
     default:
       return NO_TECHNIQUE;
   }
 }
+
+const ATTEMPT_LABELS = ["1re barre", "2e barre", "3e barre"];
 
 export function segmentLabel(mode: SegmentMode, index: number): string {
   switch (mode) {
@@ -90,8 +101,12 @@ export interface SegmentDraft {
   r: string;
 }
 
-/** Détail enregistré en base (session_sets.details). */
-export interface SetDetails {
+/**
+ * Détail enregistré en base (session_sets.details). technique vaut "" quand
+ * la série n'a qu'un détail de force (poids du corps, lest, assistance,
+ * étape de skill, RPE, tentative), voir lib/training-styles.ts.
+ */
+export interface SetDetails extends StrengthExtra {
   technique: string;
   segments?: { weight_kg?: number | null; reps: number | null }[];
   partials?: number | null;
@@ -108,11 +123,13 @@ export function buildDetails(
   technique: string | null | undefined,
   form: TechniqueForm,
   segs: SegmentDraft[] | undefined,
-  partials: string | undefined
+  partials: string | undefined,
+  extra?: StrengthExtra | null
 ): SetDetails | null {
-  if (!technique) return null;
-  const out: SetDetails = { technique };
-  let hasContent = false;
+  const strength = hasStrengthExtra(extra) ? cleanExtra(extra as StrengthExtra) : null;
+  if (!technique && !strength) return null;
+  const out: SetDetails = { technique: technique ?? "", ...(strength ?? {}) };
+  let hasContent = !!strength;
   if (form.segments && segs && segs.length > 0) {
     const rows = segs
       .map((s) => ({
@@ -135,12 +152,23 @@ export function buildDetails(
   return hasContent ? out : null;
 }
 
+function cleanExtra(e: StrengthExtra): StrengthExtra {
+  const out: StrengthExtra = {};
+  if (e.mode === "pdc" || e.mode === "lest" || e.mode === "assistance") out.mode = e.mode;
+  if (typeof e.assist_kg === "number" && Number.isFinite(e.assist_kg) && e.assist_kg > 0) out.assist_kg = Math.round(e.assist_kg * 10) / 10;
+  if (typeof e.step === "string" && e.step.trim()) out.step = e.step.trim().slice(0, 60);
+  if (typeof e.rpe === "number" && e.rpe >= 5 && e.rpe <= 10) out.rpe = e.rpe;
+  if (typeof e.made === "boolean") out.made = e.made;
+  return out;
+}
+
 /** Lecture tolérante d'un détail venu de la base (colonne jsonb libre). */
 export function parseDetails(raw: unknown): SetDetails | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
-  if (typeof r.technique !== "string") return null;
-  const out: SetDetails = { technique: r.technique };
+  const extra = cleanExtra(r as StrengthExtra);
+  if (typeof r.technique !== "string" && !hasStrengthExtra(extra)) return null;
+  const out: SetDetails = { technique: typeof r.technique === "string" ? r.technique : "", ...extra };
   if (Array.isArray(r.segments)) {
     out.segments = r.segments
       .filter((s): s is Record<string, unknown> => !!s && typeof s === "object")
@@ -153,9 +181,22 @@ export function parseDetails(raw: unknown): SetDetails | null {
   return out;
 }
 
-export function detailsToDrafts(details: SetDetails | null): { segs?: SegmentDraft[]; partials?: string } {
+export function detailsToDrafts(details: SetDetails | null): {
+  segs?: SegmentDraft[];
+  partials?: string;
+  mode?: StrengthExtra["mode"];
+  assistKg?: string;
+  step?: string;
+  rpe?: string;
+  made?: boolean;
+} {
   if (!details) return {};
   return {
+    ...(details.mode ? { mode: details.mode } : {}),
+    ...(details.assist_kg != null ? { assistKg: String(details.assist_kg) } : {}),
+    ...(details.step ? { step: details.step } : {}),
+    ...(details.rpe != null ? { rpe: String(details.rpe) } : {}),
+    ...(details.made != null ? { made: details.made } : {}),
     segs: details.segments?.map((s) => ({
       ...(s.weight_kg != null ? { w: String(s.weight_kg) } : {}),
       r: s.reps != null ? String(s.reps) : "",
@@ -180,9 +221,14 @@ export function formatSetLine(input: {
 }): string {
   const unit = input.unit === "sec" ? " s" : input.unit === "m" ? " m" : "";
   const parts: string[] = [];
-  const reps = input.reps != null ? `${input.reps}${unit}` : "···";
-  parts.push(input.weight != null && input.weight > 0 ? `${kg(input.weight)} kg × ${reps}` : unit ? reps : `${reps} reps`);
   const d = input.details;
+  const reps = input.reps != null ? `${input.reps}${unit}` : "···";
+  if (d?.step) parts.push(`${d.step} ·`);
+  if (d?.mode === "lest" && input.weight != null && input.weight > 0) parts.push(`+${kg(input.weight)} kg × ${reps}`);
+  else if (d?.mode === "assistance" || d?.mode === "pdc") parts.push(unit ? reps : `${reps} reps`);
+  else parts.push(input.weight != null && input.weight > 0 ? `${kg(input.weight)} kg × ${reps}` : unit ? reps : `${reps} reps`);
+  if (d?.mode === "assistance" && d.assist_kg) parts.push(`(aide ${kg(d.assist_kg)} kg)`);
+  if (d?.rpe != null) parts.push(`@${kg(d.rpe)}`);
   if (d?.segments && d.segments.length > 0) {
     if (d.technique === "drop_set") {
       for (const s of d.segments) {
@@ -193,12 +239,24 @@ export function formatSetLine(input: {
     }
   }
   if (d?.partials) parts.push(`+ ${d.partials} part.`);
+  if (d?.made === true) parts.push("✓");
+  if (d?.made === false) parts.push("✗");
   return parts.join(" ");
 }
 
 /** Texte de repli quand la colonne details n'existe pas encore en base. */
 export function detailsAsNote(details: SetDetails | null): string | null {
   if (!details) return null;
+  if (!details.technique) {
+    // Détail de force seul : étape, lest/assistance, RPE, barre validée.
+    const bits = [
+      details.step,
+      details.mode === "lest" ? "lesté" : details.mode === "assistance" ? `assisté${details.assist_kg ? ` ${kg(details.assist_kg)} kg` : ""}` : details.mode === "pdc" ? "poids du corps" : null,
+      details.rpe != null ? `RPE ${kg(details.rpe)}` : null,
+      details.made === true ? "barre validée" : details.made === false ? "barre ratée" : null,
+    ].filter(Boolean);
+    return bits.length ? `[${bits.join(", ")}]` : null;
+  }
   const segs = details.segments ?? [];
   const label =
     details.technique === "myo_reps"
@@ -273,6 +331,12 @@ export interface SetDraft {
   score: string;
   segs?: SegmentDraft[];
   partials?: string;
+  /** Poids du corps / lest / assistance, étape de skill, RPE, tentative. */
+  mode?: StrengthExtra["mode"];
+  assistKg?: string;
+  step?: string;
+  rpe?: string;
+  made?: boolean;
   /** Validée à l'écran mais pas encore enregistrée (réseau coupé). */
   pending?: boolean;
 }
@@ -358,6 +422,11 @@ function parseDraft(v: unknown): SetDraft | null {
       .map((x) => ({ ...(x.w != null ? { w: s(x.w) } : {}), r: s(x.r) }));
   }
   if (d.partials != null) out.partials = s(d.partials);
+  if (d.mode === "pdc" || d.mode === "lest" || d.mode === "assistance") out.mode = d.mode;
+  if (d.assistKg != null) out.assistKg = s(d.assistKg);
+  if (d.step != null) out.step = s(d.step);
+  if (d.rpe != null) out.rpe = s(d.rpe);
+  if (typeof d.made === "boolean") out.made = d.made;
   if (d.pending === true) out.pending = true;
   return out;
 }

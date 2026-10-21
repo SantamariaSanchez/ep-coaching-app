@@ -378,7 +378,7 @@ export default function SessionSheet({
                       </label>
                       <label>
                         <span className={lab}>{tr("RIR")}</span>
-                        <input data-cell={`${day.id}:${rowIdx}:3`} value={row.rir} inputMode="numeric" onChange={(e) => updateRow(row.id, { rir: e.target.value.replace(/[^\d]/g, "").slice(0, 1) })} onKeyDown={(e) => navKey(e, rowIdx, 3)} placeholder="2" className={cell} />
+                        <input data-cell={`${day.id}:${rowIdx}:3`} value={row.rir} inputMode="numeric" onChange={(e) => updateRow(row.id, { rir: e.target.value.replace(/[^\d@.,%\sRPErpe-]/g, "").slice(0, 8) })} onKeyDown={(e) => navKey(e, rowIdx, 3)} placeholder="2" className={cell} />
                       </label>
                       <label>
                         <span className={lab}>{tr("Repos")}</span>
@@ -440,7 +440,7 @@ export default function SessionSheet({
             <col style={{ width: 240 }} />
             <col style={{ width: 62 }} />
             <col style={{ width: 104 }} />
-            <col style={{ width: 54 }} />
+            <col style={{ width: 66 }} />
             <col style={{ width: 70 }} />
             <col style={{ width: 70 }} />
             <col style={{ width: 118 }} />
@@ -453,7 +453,7 @@ export default function SessionSheet({
               <th className="py-1.5 text-left px-2 sticky left-10 bg-(--ep-bg) z-[1]">{tr("Exercice")}</th>
               <th className="py-1.5" title={tr("Nombre de séries")}>{tr("Séries")}</th>
               <th className="py-1.5" title={tr("Reps, ou secondes / mètres : tape « 30s » ou « 20m »")}>{tr("Reps / temps")}</th>
-              <th className="py-1.5" title={tr("Reps en réserve")}>{tr("RIR")}</th>
+              <th className="py-1.5" title={tr("Reps en réserve (2), ou intensité : @8 pour RPE 8, 75% pour 75 % du 1RM")}>{tr("RIR / RPE")}</th>
               <th className="py-1.5" title={tr("« 90 », « 1:30 » ou « 2 » (minutes)")}>{tr("Repos")}</th>
               <th className="py-1.5" title={tr("Descente - pause - montée - pause, ex. 3110")}>{tr("Tempo")}</th>
               <th className="py-1.5">{tr("Technique")}</th>
@@ -546,7 +546,7 @@ export default function SessionSheet({
                       onChange={(e) => updateRow(row.id, { rir: e.target.value.replace(/[^\d]/g, "").slice(0, 1) })}
                       onKeyDown={(e) => navKey(e, rowIdx, 3)}
                       placeholder={filledRow && row.unit === "reps" ? "2" : ""}
-                      aria-label={tr("RIR")}
+                      aria-label={tr("RIR ou RPE")}
                       className={inputBase}
                     />
                   </td>
