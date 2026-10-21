@@ -57,7 +57,7 @@ export default function BlockFormSheet({
 
   return (
     <Sheet
-      title={editing ? t("Modifier le bloc") : `${t("Nouveau bloc")} · ${DAY_LABELS[form.day_of_week]}`}
+      title={editing ? t("Modifier le bloc") : `${t("Nouveau bloc")} · ${t(DAY_LABELS[form.day_of_week])}${form.specific_date ? ` · ${t("ce jour seulement")}` : ""}`}
       onClose={onClose}
       footer={
         <div className="flex gap-2">
@@ -105,7 +105,8 @@ export default function BlockFormSheet({
           <input value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} placeholder={t("Ex. Montage vidéo, Séance, Déjeuner...")} aria-label={t("Nom")} className={inputClass} />
         </section>
 
-        <section>
+        {/* Bloc ponctuel : sa date est fixée, son jour ne se change pas ici. */}
+        {!form.specific_date && <section>
           <SectionLabel>{t("Jour")}</SectionLabel>
           <div className="grid grid-cols-7 gap-1">
             {ALL_DAYS.map((d) => (
@@ -120,7 +121,7 @@ export default function BlockFormSheet({
               </button>
             ))}
           </div>
-        </section>
+        </section>}
 
         {allowRepeat && (
           <section>

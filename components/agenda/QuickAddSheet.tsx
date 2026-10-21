@@ -3,6 +3,9 @@
 // Création ultra rapide (2026-10-20) : on tape un créneau vide, on choisit
 // le type, on tape la durée — le bloc est posé. Les blocs déjà utilisés
 // (« Montage vidéo 1h30 ») se reposent en un seul tap depuis « Récents ».
+// Rendez-vous et imprévus (2026-10-21) : le même panneau pose un bloc
+// ponctuel (ce jour seulement) ou remplace un bloc ce jour-là, sans toucher à
+// la semaine type.
 
 import { useState } from "react";
 import { useT } from "@/components/i18n/I18nProvider";
@@ -80,7 +83,19 @@ export default function QuickAddSheet({
   onCreate,
   onMore,
   onClose,
+  title,
+  onceLabel,
+  defaultOnce = false,
+  lockOnce = false,
 }: {
+  /** Titre du panneau (« Remplacer … aujourd'hui »). */
+  title?: string;
+  /** Libellé du choix ponctuel (« Aujourd'hui seulement ») ; absent = pas de choix. */
+  onceLabel?: string;
+  /** Choix ponctuel coché à l'ouverture. */
+  defaultOnce?: boolean;
+  /** Ponctuel imposé (remplacement d'un bloc ce jour-là). */
+  lockOnce?: boolean;
   col: number;
   start: number;
   gapEnd: number | null;
@@ -88,8 +103,8 @@ export default function QuickAddSheet({
   prefs: AgendaPrefs;
   ctx: AgendaContext;
   recents: RecentBlock[];
-  onCreate: (b: TemplateBlock) => void;
-  onMore: (prefill: Partial<TemplateBlock> & { s: number; e: number }) => void;
+  onCreate: (b: TemplateBlock, once: boolean) => void;
+  onMore: (prefill: Partial<TemplateBlock> & { s: number; e: number }, once: boolean) => void;
   onClose: () => void;
 }) {
   const t = useT();
@@ -105,6 +120,7 @@ export default function QuickAddSheet({
   const workChoices = [...prefs.work, ...WORK_SUGGESTIONS.filter((s) => !prefs.work.some((p) => p.label === s.label))].slice(0, 8);
   const [work, setWork] = useState(0);
   const [mode, setMode] = useState<TravelMode>("marche");
+  const [once, setOnce] = useState(lockOnce || defaultOnce);
 
   const free = gapEnd !== null && gapEnd > start ? gapEnd - start : null;
 
@@ -138,7 +154,7 @@ export default function QuickAddSheet({
   const defaultDuration = type === "seance" ? prefs.sessionMinutes : type === "repas" ? prefs.mealMinutes : null;
 
   return (
-    <Sheet title={t("Ajouter un bloc")} subtitle={free ? `${t("Libre jusqu'à")} ${clockLabel(gapEnd!)} · ${durationLabel(free)}` : undefined} onClose={onClose}>
+    <Sheet title={title ?? t("Ajouter un bloc")} subtitle={free ? `${t("Libre jusqu'à")} ${clockLabel(gapEnd!)} · ${durationLabel(free)}` : undefined} onClose={onClose}>
       <div className="space-y-4 pb-2">
         {/* Heure de début, ajustable au pouce */}
         <div className="flex items-center justify-center gap-3">
@@ -153,6 +169,17 @@ export default function QuickAddSheet({
           </button>
         </div>
 
+        {onceLabel && !lockOnce && (
+          <div className="grid grid-cols-2 gap-1.5" role="group" aria-label={t("Quand")}>
+            <Chip active={once} onClick={() => setOnce(true)}>
+              <span className="w-full text-center">{onceLabel}</span>
+            </Chip>
+            <Chip active={!once} onClick={() => setOnce(false)}>
+              <span className="w-full text-center">{t("Toutes les semaines")}</span>
+            </Chip>
+          </div>
+        )}
+
         {recents.length > 0 && !type && (
           <div>
             <SectionLabel>{t("Récents, en un tap")}</SectionLabel>
@@ -163,7 +190,7 @@ export default function QuickAddSheet({
                   <button
                     key={`${r.label}-${r.minutes}`}
                     type="button"
-                    onClick={() => onCreate({ s: start, e: start + r.minutes, label: r.label, icon: r.icon, color: r.color, tasks: r.tasks, notes: null, notify: r.notify, link_ref: r.link_ref })}
+                    onClick={() => onCreate({ s: start, e: start + r.minutes, label: r.label, icon: r.icon, color: r.color, tasks: r.tasks, notes: null, notify: r.notify, link_ref: r.link_ref }, once)}
                     className="inline-flex items-center gap-1.5 min-h-9 px-3 rounded-lg border text-xs font-bold text-(--ep-strong)"
                     style={{ borderColor: "rgba(var(--ep-line-rgb),0.35)" }}
                   >
@@ -189,7 +216,7 @@ export default function QuickAddSheet({
                   type="button"
                   aria-pressed={active}
                   onClick={() => {
-                    if (ty.key === "autre") return onMore({ s: start, e: start + (free && free <= 120 ? free : 60) });
+                    if (ty.key === "autre") return onMore({ s: start, e: start + (free && free <= 120 ? free : 60) }, once);
                     setType(active ? null : ty.key);
                   }}
                   className="flex flex-col items-center justify-center gap-1 h-16 rounded-xl border text-[10.5px] font-bold leading-tight text-center px-1 transition-colors"
@@ -261,7 +288,7 @@ export default function QuickAddSheet({
               {free !== null && free >= 5 && free <= 6 * 60 && !durations.includes(free) && (
                 <button
                   type="button"
-                  onClick={() => onCreate(blockFor(type, free))}
+                  onClick={() => onCreate(blockFor(type, free), once)}
                   className="col-span-3 h-11 rounded-xl text-xs font-black uppercase tracking-widest"
                   style={{ background: "var(--ep-accent)", color: "var(--ep-strong)" }}
                 >
@@ -274,7 +301,7 @@ export default function QuickAddSheet({
                   <button
                     key={m}
                     type="button"
-                    onClick={() => onCreate(blockFor(type, m))}
+                    onClick={() => onCreate(blockFor(type, m), once)}
                     className="h-11 rounded-xl border text-sm font-black tabular-nums"
                     style={{
                       borderColor: highlight ? "rgba(var(--ep-accent-rgb),0.65)" : "rgba(var(--ep-line-rgb),0.35)",
@@ -290,7 +317,7 @@ export default function QuickAddSheet({
                 );
               })}
             </div>
-            <button type="button" onClick={() => { const b = blockFor(type, defaultDuration ?? 60); onMore(b); }} className="mt-3 text-[11px] font-bold text-(--ep-ink)/45 underline underline-offset-2">
+            <button type="button" onClick={() => { const b = blockFor(type, defaultDuration ?? 60); onMore(b, once); }} className="mt-3 text-[11px] font-bold text-(--ep-ink)/45 underline underline-offset-2">
               {t("Plus d'options (nom, notes, tâches, rappel)")}
             </button>
           </div>

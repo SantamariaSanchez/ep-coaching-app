@@ -43,6 +43,8 @@ interface BlockData {
   notify: boolean;
   /** Lien séance / repas / trajet (migration 20261020), optionnel. */
   link_ref?: string | null;
+  /** Renseigné = bloc ponctuel (rendez-vous, imprévu) valable ce jour-là seulement. */
+  specific_date?: string | null;
 }
 
 // ── Colonne link_ref (migration 20261020) ──────────────────────────────────
@@ -76,6 +78,12 @@ function cleanLinkRef(v: unknown): string | null {
   return typeof v === "string" && v.trim() ? v.trim().slice(0, 120) : null;
 }
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function cleanDate(v: unknown): string | null {
+  return typeof v === "string" && DATE_RE.test(v) ? v : null;
+}
+
 // Un bloc dont le jour est aujourd'hui et l'heure déjà passée doit être
 // marqué "déjà notifié aujourd'hui" dès sa création/modification, sinon le
 // cron (toutes les 5 min, voir app/api/cron/schedule-block-notify) le trouve
@@ -105,6 +113,7 @@ export async function addScheduleBlock(
       owner_id: guard.userId,
       ...data,
       link_ref: cleanLinkRef(data.link_ref),
+      specific_date: cleanDate(data.specific_date),
       last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
     },
   ]);
@@ -170,6 +179,8 @@ export async function updateScheduleBlock(
     last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
   };
   if ("link_ref" in data) patch.link_ref = cleanLinkRef(data.link_ref);
+  // Ponctuel ou récurrent : fixé à la création, jamais changé par une modification.
+  delete patch.specific_date;
   let { error } = await supabase.from("schedule_blocks").update(patch).eq("id", blockId).eq("owner_id", guard.userId);
   if (isUnknownColumnError(error)) {
     ({ error } = await supabase.from("schedule_blocks").update(withoutLink(patch)).eq("id", blockId).eq("owner_id", guard.userId));
@@ -342,6 +353,8 @@ export async function shiftDayFromBlock(input: {
   scope: "jour" | "toujours";
   /** Date concernée (YYYY-MM-DD, heure de Paris) pour le scope "jour". */
   date: string;
+  /** Faux : seul ce bloc bouge, la suite de la journée reste où elle est. */
+  withFollowing?: boolean;
 }): Promise<{ error?: string; moved?: number }> {
   const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
@@ -360,7 +373,9 @@ export async function shiftDayFromBlock(input: {
       ? !b.specific_date
       : b.specific_date ? b.specific_date === input.date : !(b.skipped_dates ?? []).includes(input.date)
   );
-  const following = sameDay.filter((b) => b.start_time >= a.start_time).sort((x, y) => x.start_time.localeCompare(y.start_time));
+  const following = sameDay
+    .filter((b) => (input.withFollowing === false ? b.id === a.id : b.start_time >= a.start_time))
+    .sort((x, y) => x.start_time.localeCompare(y.start_time));
   if (!following.length) return { moved: 0 };
 
   let moved = 0;
@@ -407,6 +422,75 @@ export async function shiftDayFromBlock(input: {
   revalidateAgendaPaths();
   revalidatePath("/dashboard/coach");
   return { moved };
+}
+
+// ── Imprévus du jour (2026-10-21) ──────────────────────────────────────────
+// « Quand y a des switch, des rdv, des imprévus, que ce soit simple de
+// modifier » : un bloc récurrent peut être retiré d'une date précise (« Pas
+// aujourd'hui ») ou remplacé ce jour-là par un bloc ponctuel. La semaine type
+// ne bouge jamais : seule la colonne skipped_dates du modèle change.
+
+/** Retire (skip = true) ou remet (skip = false) un bloc récurrent à une date. */
+export async function setBlockSkippedOnDate(blockId: string, date: string, skip: boolean): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  if (!DATE_RE.test(date)) return { error: "Date invalide." };
+  const supabase = createAdminClient();
+  const { data: row } = await supabase.from("schedule_blocks").select("id, specific_date, skipped_dates").eq("id", blockId).eq("owner_id", guard.userId).maybeSingle();
+  if (!row) return { error: "Bloc introuvable." };
+  const b = row as Pick<ScheduleBlock, "id" | "specific_date" | "skipped_dates">;
+  if (b.specific_date) return { error: "Ce bloc est déjà ponctuel : supprime-le plutôt." };
+  const current = b.skipped_dates ?? [];
+  const next = skip ? [...new Set([...current, date])] : current.filter((d) => d !== date);
+  const { error } = await supabase.from("schedule_blocks").update({ skipped_dates: next }).eq("id", blockId).eq("owner_id", guard.userId);
+  if (error) return { error: error.message };
+  revalidateAgendaPaths();
+  return {};
+}
+
+/**
+ * « Remplacer aujourd'hui par… » : le bloc d'origine disparaît de cette date
+ * (masqué s'il est récurrent, supprimé s'il était déjà ponctuel) et un bloc
+ * ponctuel prend sa place. La semaine type n'est pas touchée.
+ */
+export async function replaceBlockOnDate(
+  blockId: string,
+  date: string,
+  data: BlockData
+): Promise<{ error?: string; block?: ScheduleBlock; removed?: boolean }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  if (!DATE_RE.test(date)) return { error: "Date invalide." };
+  const supabase = createAdminClient();
+  const { data: row } = await supabase.from("schedule_blocks").select("*").eq("id", blockId).eq("owner_id", guard.userId).maybeSingle();
+  if (!row) return { error: "Bloc introuvable." };
+  const original = row as ScheduleBlock;
+
+  const { data: rows, error: insErr } = await insertRows(supabase, [
+    {
+      owner_id: guard.userId,
+      ...data,
+      link_ref: cleanLinkRef(data.link_ref),
+      specific_date: date,
+      last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
+    },
+  ]);
+  if (insErr || !rows?.[0]) return { error: insErr ?? "Erreur." };
+
+  const { error } = original.specific_date
+    ? await supabase.from("schedule_blocks").delete().eq("id", original.id).eq("owner_id", guard.userId)
+    : await supabase
+        .from("schedule_blocks")
+        .update({ skipped_dates: [...new Set([...(original.skipped_dates ?? []), date])] })
+        .eq("id", original.id)
+        .eq("owner_id", guard.userId);
+  if (error) {
+    // Sans ça, les deux blocs s'afficheraient (et notifieraient) ce jour-là.
+    await supabase.from("schedule_blocks").delete().eq("id", rows[0].id).eq("owner_id", guard.userId);
+    return { error: error.message };
+  }
+  revalidateAgendaPaths();
+  return { block: rows[0], removed: !!original.specific_date };
 }
 
 // ── Agenda productivité (2026-10-20) ────────────────────────────────────────

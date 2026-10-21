@@ -11,6 +11,13 @@
 //    jours en un geste ;
 //  - les journées types et « Construire ma semaine » remplissent plusieurs
 //    jours d'un coup, avec aperçu, sans rien détruire sans confirmation ;
+//  - lecture d'abord (2026-10-21, « c'est beaucoup trop sensible au toucher,
+//    ça bouge les blocs ») : par défaut rien ne se glisse ni ne s'étire, on
+//    défile et on tape. Le glisser / étirer ne vit que dans le mode
+//    « Modifier » (poignées visibles, se referme seul après 1 min sans
+//    action). Les imprévus du jour (décaler, pas aujourd'hui, remplacer,
+//    rdv ponctuel) passent par la fiche du bloc et ne touchent jamais la
+//    semaine type ;
 //  - trajets / pas : une fine ligne avec une pastille, pas un gros bloc ;
 //  - un bloc séance ouvre la séance du programme, un bloc repas ouvre le
 //    repas de la diète (lien résolu à l'affichage, jamais figé).
@@ -21,7 +28,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  AlarmClock, Check, ChevronLeft, ChevronRight, Clock, Copy, Footprints, Layers, Minus, MoreHorizontal, Plus, Timer, Trash2, Wand2,
+  AlarmClock, Check, ChevronLeft, ChevronRight, Clock, Copy, Footprints, GripVertical, Layers, Minus, MoreHorizontal, Pencil, Plus, Timer, Trash2, Wand2,
   Car, Bike, TramFront, CircleCheck,
 } from "lucide-react";
 import type { ScheduleBlock } from "@/utils/agenda";
@@ -115,6 +122,11 @@ function dateOfDow(weekStart: string, dow: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Au-delà de ce déplacement du doigt (px), c'est un défilement, pas un tap. */
+const TAP_SLOP = 8;
+/** Le mode « Modifier » se referme seul après ce délai sans action (ms). */
+const EDIT_IDLE_MS = 60_000;
+
 // Un bloc ponctuel (specific_date) ne s'affiche que la semaine où il tombe ;
 // un bloc récurrent remplacé ce jour-là par une copie décalée est masqué.
 function isRelevantThisWeek(block: ScheduleBlock, weekBounds: { start: string; end: string } | null): boolean {
@@ -150,6 +162,7 @@ function formOf(b: ScheduleBlock): BlockFormData {
     tasks: b.tasks ?? [],
     notify: b.notify ?? false,
     link_ref: b.link_ref ?? null,
+    specific_date: b.specific_date ?? null,
   };
 }
 
@@ -241,12 +254,15 @@ export default function WeeklyAgenda({
   }, [initialCompletedTaskKeys]);
 
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  // Mode « Modifier » : seul moment où les blocs se glissent et s'étirent.
+  const [editing, setEditing] = useState(false);
+  const editSeenRef = useRef(0);
   const [now, setNow] = useState<Date | null>(null);
   const [selectedCol, setSelectedCol] = useState(1);
 
-  const [quickAdd, setQuickAdd] = useState<{ col: number; start: number; gapEnd: number | null } | null>(null);
+  const [quickAdd, setQuickAdd] = useState<{ col: number; start: number; gapEnd: number | null; once: boolean; replace?: Placed<ScheduleBlock> } | null>(null);
   const [sheetId, setSheetId] = useState<string | null>(null);
-  const [form, setForm] = useState<{ initial: BlockFormData; editingId: string | null } | null>(null);
+  const [form, setForm] = useState<{ initial: BlockFormData; editingId: string | null; replace?: Placed<ScheduleBlock> | null } | null>(null);
   const [builder, setBuilder] = useState<{ scopeCol: number | null } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [templatesFor, setTemplatesFor] = useState<number | null>(null);
@@ -350,15 +366,27 @@ export default function WeeklyAgenda({
 
   const tmpSeq = useRef(0);
   /** Pose un bloc exprimé dans une colonne (coupé en deux s'il passe minuit). */
-  async function createInColumn(col: number, tb: TemplateBlock, opts: { toast?: boolean } = {}): Promise<boolean> {
+  /** Date réelle (cette semaine) d'un morceau de bloc posé dans la colonne `col`. */
+  function onceDateFor(col: number, day: number): string | null {
+    if (!weekBounds) return null;
+    const base = dateOfDow(weekBounds.start, col);
+    if (day === col) return base;
+    // Morceau d'après minuit d'une journée de nuit : le lendemain.
+    const d = new Date(`${base}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function createInColumn(col: number, tb: TemplateBlock, opts: { toast?: boolean; once?: boolean } = {}): Promise<boolean> {
     if (!actions.addScheduleBlock) return false;
     const pieces = toCalendar(col, tb.s, tb.e);
     const created: ScheduleBlock[] = [];
     for (const piece of pieces) {
       tmpSeq.current += 1;
       const tmpId = `tmp-${tmpSeq.current}`;
-      const data: BlockFormData = { ...piece, start_time: piece.start_time.slice(0, 5), end_time: piece.end_time.slice(0, 5), label: tb.label, color: tb.color, icon: tb.icon, notes: tb.notes, tasks: tb.tasks, notify: tb.notify, link_ref: tb.link_ref };
-      const temp = { id: tmpId, owner_id: "", created_at: "", last_notified_at: null, specific_date: null, ...data, start_time: piece.start_time, end_time: piece.end_time } as ScheduleBlock;
+      const specific = opts.once ? onceDateFor(col, piece.day_of_week) : null;
+      const data: BlockFormData = { ...piece, start_time: piece.start_time.slice(0, 5), end_time: piece.end_time.slice(0, 5), label: tb.label, color: tb.color, icon: tb.icon, notes: tb.notes, tasks: tb.tasks, notify: tb.notify, link_ref: tb.link_ref, ...(specific ? { specific_date: specific } : {}) };
+      const temp = { id: tmpId, owner_id: "", created_at: "", last_notified_at: null, ...data, specific_date: specific, start_time: piece.start_time, end_time: piece.end_time } as ScheduleBlock;
       setBlocks((prev) => [...prev, temp]);
       const res = await actions.addScheduleBlock(data).catch(() => ({ error: "Connexion perdue, réessaie." }) as { error?: string; block?: ScheduleBlock });
       if (res.error || !res.block) {
@@ -370,7 +398,7 @@ export default function WeeklyAgenda({
       setBlocks((prev) => prev.map((b) => (b.id === tmpId ? res.block! : b)));
     }
     if (opts.toast !== false) {
-      notify(`${tb.label} · ${clockLabel(tb.s)}`, () => {
+      notify(`${tb.label} · ${clockLabel(tb.s)}${opts.once ? ` · ${t("ce jour seulement")}` : ""}`, () => {
         for (const c of created) {
           setBlocks((prev) => prev.filter((b) => b.id !== c.id));
           actions.deleteScheduleBlock?.(c.id);
@@ -420,6 +448,61 @@ export default function WeeklyAgenda({
     notify(`${b.label} ${t("supprimé")}`, async () => {
       const again = await actions.addScheduleBlock?.(formOf(b));
       if (again?.block) setBlocks((prev) => [...prev, again.block!]);
+    });
+  }
+
+  /** Libellé du jour d'un bloc : « aujourd'hui » ou « ce mardi ». */
+  function dayNameOf(day: number): string {
+    return day === todayDow ? t("aujourd'hui") : `${t("ce")} ${t(DAY_LABELS[day]).toLowerCase()}`;
+  }
+
+  /** « Pas aujourd'hui » : le bloc récurrent disparaît de cette date seulement. */
+  async function skipOnDay(b: ScheduleBlock) {
+    if (!actions.setBlockSkippedOnDate || !weekBounds) return;
+    const date = dateOfDow(weekBounds.start, b.day_of_week);
+    const withDate = (x: ScheduleBlock) => ({ ...x, skipped_dates: [...new Set([...(x.skipped_dates ?? []), date])] });
+    const withoutDate = (x: ScheduleBlock) => ({ ...x, skipped_dates: (x.skipped_dates ?? []).filter((d) => d !== date) });
+    setSheetId(null);
+    setBlocks((prev) => prev.map((x) => (x.id === b.id ? withDate(x) : x)));
+    const res = await actions.setBlockSkippedOnDate(b.id, date, true).catch(() => ({ error: "Connexion perdue, réessaie." }));
+    if (res.error) {
+      setBlocks((prev) => prev.map((x) => (x.id === b.id ? withoutDate(x) : x)));
+      return notify(res.error, undefined, "bad");
+    }
+    notify(`${b.label} : ${t("pas")} ${dayNameOf(b.day_of_week)}`, () => {
+      setBlocks((prev) => prev.map((x) => (x.id === b.id ? withoutDate(x) : x)));
+      void actions.setBlockSkippedOnDate?.(b.id, date, false);
+    });
+  }
+
+  /** « Remplacer par… » : un bloc ponctuel prend la place de celui-ci ce jour-là. */
+  async function replaceOnDay(p: Placed<ScheduleBlock>, tb: TemplateBlock) {
+    if (!actions.replaceBlockOnDate || !weekBounds) return;
+    const before = p.block;
+    const piece = toCalendar(p.col, tb.s, tb.e)[0];
+    if (!piece) return;
+    if (piece.day_of_week !== before.day_of_week) return notify(t("Garde le remplacement sur le même jour."), undefined, "bad");
+    const date = dateOfDow(weekBounds.start, before.day_of_week);
+    const data: BlockFormData = { day_of_week: piece.day_of_week, start_time: piece.start_time.slice(0, 5), end_time: piece.end_time.slice(0, 5), label: tb.label, color: tb.color, icon: tb.icon, notes: tb.notes, tasks: tb.tasks, notify: tb.notify, link_ref: tb.link_ref, specific_date: date };
+    tmpSeq.current += 1;
+    const tmpId = `tmp-${tmpSeq.current}`;
+    const temp = { id: tmpId, owner_id: "", created_at: "", last_notified_at: null, ...data, start_time: piece.start_time, end_time: piece.end_time } as ScheduleBlock;
+    const hide = (x: ScheduleBlock) => ({ ...x, skipped_dates: [...new Set([...(x.skipped_dates ?? []), date])] });
+    setBlocks((prev) => [...(before.specific_date ? prev.filter((x) => x.id !== before.id) : prev.map((x) => (x.id === before.id ? hide(x) : x))), temp]);
+    const res = await actions.replaceBlockOnDate(before.id, date, data).catch(() => ({ error: "Connexion perdue, réessaie." }) as { error?: string; block?: ScheduleBlock; removed?: boolean });
+    if (res.error || !res.block) {
+      setBlocks((prev) => [...prev.filter((x) => x.id !== tmpId && x.id !== before.id), before]);
+      return notify(res.error ?? "Erreur.", undefined, "bad");
+    }
+    const created = res.block;
+    setBlocks((prev) => prev.map((x) => (x.id === tmpId ? created : x)));
+    notify(`${before.label} → ${tb.label} · ${dayNameOf(before.day_of_week)}`, async () => {
+      setBlocks((prev) => [...prev.filter((x) => x.id !== created.id && x.id !== before.id), before]);
+      await actions.deleteScheduleBlock?.(created.id);
+      if (res.removed) {
+        const again = await actions.addScheduleBlock?.(formOf(before));
+        if (again?.block) setBlocks((prev) => [...prev.filter((x) => x.id !== before.id), again.block!]);
+      } else void actions.setBlockSkippedOnDate?.(before.id, date, false);
     });
   }
 
@@ -547,15 +630,20 @@ export default function WeeklyAgenda({
     zoomTo(dir === 0 ? ZOOM_DEFAULT[live.view] : stepRow(live.view, live.row, dir), clientY);
   }
 
-  function startDrag(e: React.PointerEvent, p: Placed<ScheduleBlock>, mode: "move" | "resize", row: number) {
-    if (!editable || !actions.setScheduleBlockTimes || p.block.id.startsWith("tmp-")) return;
+  /**
+   * Glisser / étirer, uniquement en mode « Modifier ». `immediate` : prise
+   * par une poignée (le geste démarre tout de suite) ; sinon appui long.
+   */
+  function startDrag(e: React.PointerEvent, p: Placed<ScheduleBlock>, mode: "move" | "resize", row: number, immediate = false) {
+    if (!editable || !editing || !actions.setScheduleBlockTimes || p.block.id.startsWith("tmp-")) return;
     if (e.button !== undefined && e.button !== 0) return;
     // Deuxième doigt posé : c'est un pincement (zoom), pas un glisser.
     if (pinchRef.current || dragRef.current) return;
-    if (mode === "resize") e.stopPropagation();
-    const st: DragState = { id: p.block.id, col: p.col, mode, startY: e.clientY, origS: p.s, origE: p.e, row, pointerType: e.pointerType, active: mode === "resize", timer: null, last: null };
-    if (mode === "resize") e.preventDefault();
-    if (mode === "move" && e.pointerType !== "mouse") {
+    const grabbed = mode === "resize" || immediate;
+    if (grabbed) e.stopPropagation();
+    const st: DragState = { id: p.block.id, col: p.col, mode, startY: e.clientY, origS: p.s, origE: p.e, row, pointerType: e.pointerType, active: grabbed, timer: null, last: null };
+    if (grabbed) e.preventDefault();
+    if (!grabbed && e.pointerType !== "mouse") {
       st.timer = setTimeout(() => {
         st.active = true;
         navigator.vibrate?.(12);
@@ -594,6 +682,7 @@ export default function WeeklyAgenda({
       const d = dragRef.current;
       if (d?.active) {
         suppressClickRef.current = true;
+        editSeenRef.current = Date.now();
         setDragPreview(null);
         // Hors d'un updater de state : commitTimes met à jour d'autres états.
         const last = d.last;
@@ -637,13 +726,32 @@ export default function WeeklyAgenda({
     return { from: Math.floor(from / 60) * 60, to: Math.ceil(to / 60) * 60 };
   }
 
+  /**
+   * Créneau libre tapé : en lecture, c'est le plus souvent un rdv ou un
+   * imprévu (ce jour seulement par défaut) ; en mode « Modifier », on
+   * construit la semaine type. Le choix reste visible dans le panneau.
+   */
   function openAddAt(col: number, abs: number) {
     if (!editable || !actions.addScheduleBlock) return;
+    const once = !editing && !!weekBounds;
     const gaps = findGaps(colPlaced(col), win, 5);
     const gap = gaps.find((g) => abs >= g.s && abs < g.e) ?? null;
-    if (gap && gap.e - gap.s <= 180) return setQuickAdd({ col, start: gap.s, gapEnd: gap.e });
+    if (gap && gap.e - gap.s <= 180) return setQuickAdd({ col, start: gap.s, gapEnd: gap.e, once });
     const start = Math.max(gap?.s ?? 0, Math.floor(abs / 15) * 15);
-    setQuickAdd({ col, start, gapEnd: gap?.e ?? null });
+    setQuickAdd({ col, start, gapEnd: gap?.e ?? null, once });
+  }
+
+  // Tap ou défilement : position du doigt à l'appui, comparée au relâché.
+  const downRef = useRef<{ x: number; y: number } | null>(null);
+  const onZonePointerDown = (e: React.PointerEvent) => {
+    downRef.current = { x: e.clientX, y: e.clientY };
+  };
+  /** Vrai pour un vrai tap (doigt quasi immobile), faux après un défilement. */
+  function isTap(e: React.MouseEvent): boolean {
+    if (e.detail === 0) return true; // clavier
+    const d = downRef.current;
+    if (!d) return true;
+    return Math.hypot(e.clientX - d.x, e.clientY - d.y) <= TAP_SLOP;
   }
 
   function renderColumn(col: number, row: number, range: { from: number; to: number }, compact: boolean, reveil: Placed | null) {
@@ -689,17 +797,18 @@ export default function WeeklyAgenda({
       return w > 0 ? `min(${Math.round(w)}px, 60%)` : undefined;
     };
     const hitExpand = (hgt: number) => ({ top: -Math.max(0, (28 - hgt) / 2), bottom: -Math.max(0, (28 - hgt) / 2) });
+    const canDrag = editable && editing && !!actions.setScheduleBlockTimes;
 
     return (
       <div
         className="relative"
-        style={{ height, background: isNowCol ? "rgba(var(--ep-accent-rgb),0.03)" : "transparent", borderLeft: "1px solid rgba(var(--ep-line-rgb),0.12)", cursor: editable ? "copy" : "default" }}
+        style={{ height, background: isNowCol ? "rgba(var(--ep-accent-rgb),0.03)" : "transparent", borderLeft: "1px solid rgba(var(--ep-line-rgb),0.12)", cursor: editable ? (editing ? "copy" : "pointer") : "default" }}
         onClick={(e) => {
           if (suppressClickRef.current) {
             suppressClickRef.current = false;
             return;
           }
-          if (performance.now() < pinchUntilRef.current) return;
+          if (performance.now() < pinchUntilRef.current || !isTap(e)) return;
           const rect = e.currentTarget.getBoundingClientRect();
           openAddAt(col, range.from + ((e.clientY - rect.top) / row) * 60);
         }}
@@ -720,10 +829,11 @@ export default function WeeklyAgenda({
             <div
               key={`gap-${g.s}`}
               className="absolute left-0.5 right-0.5 rounded-md flex items-center justify-center gap-1 pointer-events-none"
-              style={{ top: top + 1, height: Math.max(3, h - 2), border: "1.5px dashed rgba(var(--ep-accent-rgb),0.35)", background: "rgba(var(--ep-accent-rgb),0.04)" }}
+              // Lecture : un créneau libre reste discret, les blocs passent devant.
+              style={{ top: top + 1, height: Math.max(3, h - 2), border: editing ? "1.5px dashed rgba(var(--ep-accent-rgb),0.35)" : "1px dashed rgba(var(--ep-line-rgb),0.22)", background: editing ? "rgba(var(--ep-accent-rgb),0.04)" : "transparent" }}
             >
               {h >= 18 && (
-                <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: "rgba(var(--ep-accent-rgb),0.85)" }}>
+                <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: editing ? "rgba(var(--ep-accent-rgb),0.85)" : "rgba(var(--ep-ink-rgb),0.32)" }}>
                   <Plus size={11} />
                   {!compact && <>{t("Libre")} · {clockLabel(g.s)} · {durationLabel(g.e - g.s)}</>}
                   {compact && h >= 26 && durationLabel(g.e - g.s)}
@@ -740,14 +850,15 @@ export default function WeeklyAgenda({
           const leftPct = lane.lane * widthPct;
           const spot = spots.get(b.id) ?? null;
           const common = {
-            onPointerDown: (ev: React.PointerEvent) => startDrag(ev, p, "move", row),
+            // Lecture : aucun geste ne déplace un bloc. Modifier : appui long.
+            onPointerDown: canDrag ? (ev: React.PointerEvent) => startDrag(ev, p, "move", row) : undefined,
             onClick: (ev: React.MouseEvent) => {
               ev.stopPropagation();
               if (suppressClickRef.current) {
                 suppressClickRef.current = false;
                 return;
               }
-              if (performance.now() < pinchUntilRef.current) return;
+              if (performance.now() < pinchUntilRef.current || !isTap(ev)) return;
               setSheetId(b.id);
             },
             onContextMenu: (ev: React.MouseEvent) => ev.preventDefault(),
@@ -794,7 +905,10 @@ export default function WeeklyAgenda({
           }
 
           const Icon = b.icon ? AGENDA_ICON_MAP[b.icon] : null;
-          const cursor = editable ? "grab" : "pointer";
+          const cursor = canDrag ? "grab" : "pointer";
+          // Ce qui se passe maintenant ressort ; ce qui est fini aujourd'hui s'efface.
+          const isCurrent = currentPlaced?.block.id === b.id && !dragging;
+          const isPast = isNowCol && nowAbs !== null && e <= nowAbs && !dragging;
 
           // Bloc trop court pour son nom : un trait de sa couleur (repère visible
           // même à 1 min), une zone de tap d'au moins 28 px prise sur la place
@@ -809,7 +923,7 @@ export default function WeeklyAgenda({
                   {...common}
                   onKeyDown={(ev) => ev.key === "Enter" && setSheetId(b.id)}
                   className="absolute select-none"
-                  style={{ top, height: Math.max(2, h), left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)`, zIndex: dragging ? 30 : 7, touchAction, WebkitUserSelect: "none", cursor }}
+                  style={{ top, height: Math.max(2, h), left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)`, zIndex: dragging ? 30 : 7, touchAction, WebkitUserSelect: "none", cursor, opacity: isPast ? 0.5 : 1 }}
                 >
                   <span
                     aria-hidden
@@ -838,6 +952,7 @@ export default function WeeklyAgenda({
                       ? { right: `calc(${100 - leftPct - widthPct}% + 4px)`, maxWidth: `calc(${widthPct * (compact ? 0.85 : 0.62)}% - 4px)` }
                       : { left: `calc(${leftPct}% + 6px)`, maxWidth: `calc(${widthPct}% - 10px)` }),
                     zIndex: dragging ? 31 : 22,
+                    opacity: isPast ? 0.6 : 1,
                     padding: compact ? "0 4px" : "0 7px",
                     fontSize: compact ? 9 : 10.5,
                     background: "var(--ep-s2)",
@@ -877,10 +992,11 @@ export default function WeeklyAgenda({
                 height: Math.max(3, h - 1),
                 left: `calc(${leftPct}% + 2px)`,
                 width: `calc(${widthPct}% - 4px)`,
-                background: withAlpha(b.color, dragging ? "40" : "24"),
+                background: withAlpha(b.color, dragging ? "40" : isCurrent ? "3d" : "24"),
                 borderLeft: `3px solid ${b.color}`,
-                boxShadow: dragging ? "0 8px 24px rgba(var(--ep-shade-rgb),0.55)" : "none",
-                zIndex: dragging ? 30 : 5,
+                boxShadow: dragging ? "0 8px 24px rgba(var(--ep-shade-rgb),0.55)" : isCurrent ? `inset 0 0 0 1.5px ${b.color}` : "none",
+                opacity: isPast ? 0.5 : 1,
+                zIndex: dragging ? 30 : isCurrent ? 8 : 5,
                 padding: oneLine ? (compact ? "0 4px" : "0 6px") : compact ? "2px 4px" : "4px 8px",
                 touchAction,
                 WebkitUserSelect: "none",
@@ -889,12 +1005,15 @@ export default function WeeklyAgenda({
             >
               <p
                 className="flex items-center gap-1 font-bold text-(--ep-strong) leading-tight"
-                style={{ fontSize: compact ? 9.5 : oneLine && h < 14 ? 10 : oneLine && h < 17 ? 11 : 12, lineHeight: oneLine ? `${Math.max(3, h - 1)}px` : undefined, paddingRight: padFor(top, h) }}
+                style={{ fontSize: compact ? 9.5 : oneLine && h < 14 ? 10 : oneLine && h < 17 ? 11 : 12, lineHeight: oneLine ? `${Math.max(3, h - 1)}px` : undefined, paddingRight: padFor(top, h) ?? (canDrag && h >= 22 ? (compact ? 14 : 24) : undefined) }}
               >
                 {Icon && !compact && h >= 11 && <Icon size={oneLine && h < 14 ? 10 : oneLine && h < 17 ? 11 : 12} style={{ color: b.color, flexShrink: 0 }} strokeWidth={2.2} />}
                 <span className="truncate">{b.label}</span>
                 {!compact && h < 40 && <span className="text-(--ep-ink)/45 font-semibold flex-shrink-0 tabular-nums">{clockLabel(s)}</span>}
-                {linked && !compact && <ChevronRight size={12} className="text-(--ep-ink)/35 flex-shrink-0 ml-auto" />}
+                {isCurrent && !compact && h >= 14 && (
+                  <span className="flex-shrink-0 rounded-full px-1.5 text-[9px] font-black uppercase tracking-wider" style={{ background: b.color, color: "var(--ep-bg)", lineHeight: "15px" }}>{t("En cours")}</span>
+                )}
+                {linked && !compact && !canDrag && <ChevronRight size={12} className="text-(--ep-ink)/35 flex-shrink-0 ml-auto" />}
               </p>
               {h >= 40 && (
                 <p className="flex items-center gap-1.5 tabular-nums text-(--ep-ink)/55" style={{ fontSize: compact ? 8.5 : 10.5 }}>
@@ -909,15 +1028,27 @@ export default function WeeklyAgenda({
               {dragging && h < 40 && (
                 <span className="absolute right-1 top-0 text-[10px] font-black tabular-nums text-(--ep-strong)" style={{ lineHeight: oneLine ? `${Math.max(3, h - 1)}px` : undefined, background: withAlpha(b.color, "40") }}>{clockLabel(s)} – {clockLabel(e)}</span>
               )}
-              {editable && actions.setScheduleBlockTimes && h >= 22 && (
+              {/* Poignées, en mode « Modifier » seulement : déplacer (en haut à droite) et allonger (en bas). */}
+              {canDrag && h >= 22 && (
+                <div
+                  aria-hidden
+                  onPointerDown={(ev) => startDrag(ev, p, "move", row, true)}
+                  onClick={(ev) => ev.stopPropagation()}
+                  className="absolute right-0 top-0 flex items-center justify-center"
+                  style={{ width: compact ? 20 : 30, height: Math.min(30, h - 10), cursor: "grab", touchAction: "none", color: b.color }}
+                >
+                  <GripVertical size={compact ? 12 : 15} strokeWidth={2.4} />
+                </div>
+              )}
+              {canDrag && h >= 22 && (
                 <div
                   aria-hidden
                   onPointerDown={(ev) => startDrag(ev, p, "resize", row)}
                   onClick={(ev) => ev.stopPropagation()}
                   className="absolute left-0 right-0 bottom-0 flex justify-center items-end"
-                  style={{ height: Math.min(12, Math.round(h / 3)), cursor: "ns-resize", touchAction: "none" }}
+                  style={{ height: Math.min(14, Math.round(h / 3)), cursor: "ns-resize", touchAction: "none" }}
                 >
-                  <span className="mb-[3px] rounded-full" style={{ width: 22, height: 3, background: "rgba(var(--ep-ink-rgb),0.28)" }} />
+                  <span className="mb-[3px] rounded-full" style={{ width: 28, height: 4, background: b.color }} />
                 </div>
               )}
             </div>
@@ -973,7 +1104,7 @@ export default function WeeklyAgenda({
         })()}
 
         {isNowCol && nowAbs !== null && nowAbs >= range.from && nowAbs <= range.to && (
-          <div className="absolute left-0 right-0 pointer-events-none" style={{ top: y(nowAbs), zIndex: 20 }}>
+          <div data-now-line className="absolute left-0 right-0 pointer-events-none" style={{ top: y(nowAbs), zIndex: 20 }}>
             <div style={{ height: 2, background: "var(--ep-accent)", boxShadow: "0 0 6px rgba(var(--ep-accent-rgb),0.7)" }} />
             <div style={{ position: "absolute", left: -3, top: -3, width: 8, height: 8, borderRadius: "50%", background: "var(--ep-accent)" }} />
           </div>
@@ -1147,12 +1278,104 @@ export default function WeeklyAgenda({
     </div>
   );
 
+  // ── Mode « Modifier » : se referme seul ─────────────────────────────────
+  // Après 1 min sans toucher l'agenda, ou dès qu'on quitte l'appli / l'onglet
+  // (quitter la page le démonte de toute façon) : jamais de blocs qui
+  // bougent « en permanence ».
+  useEffect(() => {
+    if (!editing) return;
+    editSeenRef.current = Date.now();
+    const close = () => {
+      cancelDragRef.current?.();
+      setEditing(false);
+    };
+    const id = setInterval(() => {
+      if (!dragRef.current && Date.now() - editSeenRef.current > EDIT_IDLE_MS) close();
+    }, 5000);
+    const onVis = () => {
+      if (document.visibilityState === "hidden") close();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [editing]);
+
+  function toggleEditing() {
+    if (editing) cancelDragRef.current?.();
+    setEditing((v) => !v);
+  }
+
+  // ── Ce qui vient ensuite ────────────────────────────────────────────────
+  const nextPlaced =
+    nowCol !== null && nowAbs !== null
+      ? placed.filter((p) => p.col === nowCol && p.s > nowAbs && blockKind(p.block) !== "trajet").sort((a, b) => a.s - b.s)[0] ?? null
+      : null;
+
+  // ── À l'ouverture : l'heure actuelle à l'écran ──────────────────────────
+  const autoScrolledRef = useRef(false);
+  useEffect(() => {
+    if (autoScrolledRef.current || !now) return;
+    autoScrolledRef.current = true;
+    const raf = requestAnimationFrame(() => {
+      const line = zoneRef.current?.querySelector<HTMLElement>("[data-now-line]");
+      if (!line) return;
+      const top = line.getBoundingClientRect().top;
+      const vh = window.innerHeight;
+      // Déjà bien visible : on ne touche à rien.
+      if (top > vh * 0.25 && top < vh * 0.75) return;
+      scrollParentOf(line).scrollBy({ top: top - vh * 0.4, behavior: "instant" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [now]);
+
+  const canEditGrid = editable && !!(actions.setScheduleBlockTimes || actions.placeColumnBlocks || actions.addScheduleBlock);
+  const editToggle = canEditGrid ? (
+    <button
+      type="button"
+      onClick={toggleEditing}
+      aria-pressed={editing}
+      className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-[11px] font-black uppercase tracking-wider whitespace-nowrap"
+      style={{ border: "1px solid rgba(var(--ep-line-rgb),0.3)", color: "rgba(var(--ep-ink-rgb),0.7)" }}
+    >
+      <Pencil size={12} /> {t("Modifier")}
+    </button>
+  ) : null;
+
+  const editBand = editing ? (
+    <div className="flex items-center gap-2.5 rounded-xl px-3 py-2" style={{ background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px dashed rgba(var(--ep-accent-rgb),0.55)" }} role="status">
+      <Pencil size={14} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+      <p className="flex-1 min-w-0 text-[11.5px] leading-snug text-(--ep-strong)">
+        <b>{t("Modification de ta semaine type")}</b>
+        <span className="block text-(--ep-ink)/60">{t("Poignée pour déplacer, bas du bloc pour allonger. Se ferme seul après 1 min sans action.")}</span>
+      </p>
+      <button type="button" onClick={toggleEditing} className="flex-shrink-0 h-8 px-3 rounded-lg text-[11px] font-black uppercase tracking-wider" style={{ background: "var(--ep-accent)", color: "var(--ep-strong)" }}>
+        {t("Terminé")}
+      </button>
+    </div>
+  ) : null;
+  const zoneEditStyle: React.CSSProperties = editing ? { outline: "2px dashed rgba(var(--ep-accent-rgb),0.45)", outlineOffset: 3, borderRadius: 10 } : {};
+
   function shiftCol(delta: number) {
     setSelectedCol((prev) => (((prev - 1 + delta) % 7) + 7) % 7 + 1);
   }
 
+  const nextLine = nextPlaced && nowAbs !== null ? (
+    <button type="button" onClick={() => setSheetId(nextPlaced.block.id)} className="flex items-center gap-1.5 w-full min-w-0 text-left text-[12px]">
+      <span className="flex-shrink-0 text-[9px] font-black uppercase tracking-widest text-(--ep-ink)/40">{currentPlaced ? t("Ensuite") : t("À suivre")}</span>
+      <span className="rounded-full flex-shrink-0" style={{ width: 6, height: 6, background: nextPlaced.block.color }} />
+      <span className="font-bold text-(--ep-strong) truncate">{nextPlaced.block.label}</span>
+      <span className="flex-shrink-0 tabular-nums text-(--ep-ink)/50">
+        {clockLabel(nextPlaced.s)}
+        {!currentPlaced && ` · ${t("dans")} ${durationLabel(nextPlaced.s - nowAbs)}`}
+      </span>
+      <ChevronRight size={13} className="ml-auto flex-shrink-0 text-(--ep-ink)/30" />
+    </button>
+  ) : null;
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" onPointerDownCapture={editing ? () => { editSeenRef.current = Date.now(); } : undefined}>
       {/* Bloc en cours : ce que je suis censé faire là, avec ses cases. */}
       {currentPlaced && (() => {
         const b = currentPlaced.block;
@@ -1205,9 +1428,13 @@ export default function WeeklyAgenda({
                 })}
               </ul>
             )}
+            {nextLine && <div className="mt-2 pt-2 border-t border-(--ep-line)/15">{nextLine}</div>}
           </div>
         );
       })()}
+      {!currentPlaced && nextLine && (
+        <div className="ep-card" style={{ padding: "10px 14px", borderLeft: `3px solid ${nextPlaced!.block.color}` }}>{nextLine}</div>
+      )}
 
       {/* Barre d'outils */}
       <div className="flex items-center gap-2">
@@ -1225,13 +1452,19 @@ export default function WeeklyAgenda({
             </button>
           ))}
         </div>
-        {editable && (
-          <button type="button" onClick={() => setSettingsOpen(true)} className="ml-auto flex items-center gap-1.5 h-9 px-3 rounded-lg border border-(--ep-line)/30 text-[11px] font-bold text-(--ep-ink)/70" aria-label={t("Mes heures")}>
-            <Clock size={13} /> {clockLabel(ws)} – {clockLabel(we)}
-          </button>
-        )}
+        <div className="ml-auto flex items-center gap-1.5">
+          {editable && editing && (
+            <button type="button" onClick={() => setSettingsOpen(true)} className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-(--ep-line)/30 text-[11px] font-bold text-(--ep-ink)/70 whitespace-nowrap" aria-label={t("Mes heures")}>
+              <Clock size={13} /> {clockLabel(ws)} – {clockLabel(we)}
+            </button>
+          )}
+          {/* En modification, « Terminé » est dans la bande juste dessous. */}
+          {!editing && editToggle}
+        </div>
       </div>
-      {editable && actions.placeColumnBlocks && (
+      {editBand}
+      {/* Construire : en mode « Modifier », ou d'office tant que l'agenda est vide. */}
+      {editable && actions.placeColumnBlocks && (editing || placed.length === 0) && (
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <button type="button" onClick={() => setBuilder({ scopeCol: null })} className="flex items-center justify-center gap-2 h-11 px-2 rounded-xl text-[11px] font-black uppercase tracking-wider whitespace-nowrap" style={{ background: "var(--ep-accent)", color: "var(--ep-strong)" }}>
             <Wand2 size={15} /> {t("Construire ma semaine")}
@@ -1245,7 +1478,7 @@ export default function WeeklyAgenda({
       {viewMode === "week" ? (
         <div className="space-y-1.5">
         {zoomBar}
-        <div ref={zoneRef} className="overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}>
+        <div ref={zoneRef} onPointerDownCapture={onZonePointerDown} className="overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y", ...zoneEditStyle }}>
           <div className="flex" style={{ minWidth: 760 }}>
             <div style={{ width: 34, flexShrink: 0 }}>
               <div style={{ height: 28 }} />
@@ -1260,7 +1493,7 @@ export default function WeeklyAgenda({
                       {DAY_SHORT[col]}
                     </button>
                     {r && <span className="flex items-center gap-0.5 text-[9px] font-bold text-(--ep-violet)"><AlarmClock size={9} />{clockLabel(r.s)}</span>}
-                    {editable && (
+                    {editable && editing && (
                       <button onClick={() => setDayOptionsFor(col)} className="text-(--ep-ink)/30 hover:text-(--ep-accent)" aria-label={`${t("Options du")} ${DAY_LABELS[col]}`}>
                         <MoreHorizontal size={12} />
                       </button>
@@ -1272,6 +1505,7 @@ export default function WeeklyAgenda({
             })}
           </div>
         </div>
+        {editing && editBand}
         </div>
       ) : (
         <div className="space-y-2">
@@ -1329,7 +1563,7 @@ export default function WeeklyAgenda({
               </p>
             </div>
             <div className="flex items-center">
-              {editable && (
+              {editable && editing && (
                 <button onClick={() => setDayOptionsFor(sel)} className="w-9 h-9 flex items-center justify-center text-(--ep-ink)/40" aria-label={t("Options du jour")}>
                   <MoreHorizontal size={18} />
                 </button>
@@ -1340,7 +1574,7 @@ export default function WeeklyAgenda({
             </div>
           </div>
 
-          {editable && (missing.length > 0 || (selGaps.length > 0 && actions.placeColumnBlocks)) && (
+          {editable && editing && (missing.length > 0 || (selGaps.length > 0 && actions.placeColumnBlocks)) && (
             <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
               {missing.map((m) => (
                 <button
@@ -1366,13 +1600,16 @@ export default function WeeklyAgenda({
           )}
 
           {zoomBar}
-          <div ref={zoneRef} className="flex" style={{ touchAction: "pan-y" }}>
+          <div ref={zoneRef} onPointerDownCapture={onZonePointerDown} className="flex" style={{ touchAction: "pan-y", ...zoneEditStyle }}>
             <div style={{ width: 34, flexShrink: 0 }}>{renderHourLabels(row, dayRange)}</div>
             <div style={{ flex: 1, minWidth: 0 }}>{renderColumn(sel, row, dayRange, false, reveilSel)}</div>
           </div>
+          {editing && editBand}
           {editable && (
             <p className="text-[10.5px] text-(--ep-ink)/35 text-center leading-relaxed">
-              {t("Tape un créneau pour ajouter · appui long pour déplacer · tire le bas d'un bloc pour l'allonger · pince ou Ctrl + molette pour zoomer")}
+              {editing
+                ? t("Poignée ou appui long pour déplacer · tire le bas d'un bloc pour l'allonger · tape un créneau libre pour l'ajouter à ta semaine type")
+                : t("Tape un bloc pour le voir ou le changer ce jour-là · tape un créneau libre pour ajouter un rdv · pince pour zoomer")}
             </p>
           )}
         </div>
@@ -1420,17 +1657,24 @@ export default function WeeklyAgenda({
           prefs={prefs}
           ctx={ctx}
           recents={recents}
+          title={quickAdd.replace ? `${t("Remplacer")} ${quickAdd.replace.block.label} ${dayNameOf(quickAdd.replace.block.day_of_week)}` : quickAdd.once ? t("Ajouter un rdv") : undefined}
+          onceLabel={weekBounds && actions.addScheduleBlock ? (quickAdd.col === nowCol ? t("Aujourd'hui seulement") : `${t(DAY_LABELS[quickAdd.col])} ${t("seulement")}`) : undefined}
+          defaultOnce={quickAdd.once}
+          lockOnce={!!quickAdd.replace}
           onClose={() => setQuickAdd(null)}
-          onCreate={(tb) => {
-            const col = quickAdd.col;
+          onCreate={(tb, once) => {
+            const { col, replace } = quickAdd;
             setQuickAdd(null);
-            void createInColumn(col, tb);
+            if (replace) void replaceOnDay(replace, tb);
+            else void createInColumn(col, tb, { once });
           }}
-          onMore={(prefill) => {
-            const col = quickAdd.col;
+          onMore={(prefill, once) => {
+            const { col, replace } = quickAdd;
             setQuickAdd(null);
             const piece = toCalendar(col, prefill.s, prefill.e)[0];
+            const specific = once || replace ? onceDateFor(col, piece?.day_of_week ?? col) : null;
             setForm({
+              replace: replace ?? null,
               initial: {
                 day_of_week: piece?.day_of_week ?? col,
                 start_time: (piece?.start_time ?? "09:00").slice(0, 5),
@@ -1442,6 +1686,7 @@ export default function WeeklyAgenda({
                 tasks: prefill.tasks ?? [],
                 notify: prefill.notify ?? false,
                 link_ref: prefill.link_ref ?? null,
+                ...(specific ? { specific_date: specific } : {}),
               },
               editingId: null,
             });
@@ -1495,15 +1740,19 @@ export default function WeeklyAgenda({
                   onCopy: actions.placeColumnBlocks ? (cols) => copyBlockTo(sheetPlaced, cols) : undefined,
                   onShift:
                     actions.shiftDayFromBlock && weekBounds
-                      ? async (delta, scope) => {
-                          const res = await actions.shiftDayFromBlock!({ blockId: sheetPlaced.block.id, deltaMinutes: delta, scope, date: dateOfDow(weekBounds.start, sheetPlaced.block.day_of_week) }).catch(() => ({ error: "Connexion perdue, réessaie." }));
+                      ? async (delta, scope, withFollowing) => {
+                          const res = await actions.shiftDayFromBlock!({ blockId: sheetPlaced.block.id, deltaMinutes: delta, scope, withFollowing, date: dateOfDow(weekBounds.start, sheetPlaced.block.day_of_week) }).catch(() => ({ error: "Connexion perdue, réessaie." }));
                           if (res.error) return res.error;
                           setSheetId(null);
-                          notify(t("Journée décalée."));
+                          const what = withFollowing ? t("Journée décalée") : `${sheetPlaced.block.label} ${t("décalé")}`;
+                          notify(`${what} (${delta > 0 ? "+" : "−"}${Math.abs(delta)} min${scope === "toujours" ? `, ${t("toutes les semaines")}` : ""}).`);
                           router.refresh();
                           return null;
                         }
                       : undefined,
+                  onSkipDay: actions.setBlockSkippedOnDate && weekBounds && !sheetPlaced.block.specific_date ? () => void skipOnDay(sheetPlaced.block) : undefined,
+                  onReplaceDay: actions.replaceBlockOnDate && weekBounds ? () => { const p = sheetPlaced; setSheetId(null); setQuickAdd({ col: p.col, start: p.s, gapEnd: p.e, once: true, replace: p }); } : undefined,
+                  onAddOnce: actions.addScheduleBlock && weekBounds ? () => { const p = sheetPlaced; setSheetId(null); setQuickAdd({ col: p.col, start: p.s, gapEnd: null, once: true }); } : undefined,
                   onResize: actions.setScheduleBlockTimes ? (d) => void commitTimes(sheetPlaced, sheetPlaced.s, sheetPlaced.e + d) : undefined,
                   onSetLink: actions.updateScheduleBlock
                     ? (patch) => {
@@ -1527,7 +1776,7 @@ export default function WeeklyAgenda({
         <BlockFormSheet
           initial={form.initial}
           editing={!!form.editingId}
-          allowRepeat={!form.editingId && !!actions.addScheduleBlocksBulk}
+          allowRepeat={!form.editingId && !form.initial.specific_date && !!actions.addScheduleBlocksBulk}
           overlapsFor={(f) => {
             const s = toMin(f.start_time);
             const e = f.end_time === "00:00" ? 1440 : toMin(f.end_time);
@@ -1543,6 +1792,11 @@ export default function WeeklyAgenda({
               if (!b) return "Bloc introuvable.";
               const e = await updateBlock(b, data);
               if (e) return e;
+            } else if (form.replace) {
+              const r = form.replace;
+              setForm(null);
+              void replaceOnDay(r, { s: r.s + (toMin(data.start_time) - toMin(r.block.start_time)), e: r.s + ((data.end_time === "24:00" ? 1440 : toMin(data.end_time)) - toMin(r.block.start_time)), label: data.label, icon: data.icon, color: data.color, tasks: data.tasks, notes: data.notes, notify: data.notify, link_ref: data.link_ref ?? null });
+              return null;
             } else {
               const days = [...new Set([data.day_of_week, ...repeat])];
               if (days.length > 1 && actions.addScheduleBlocksBulk) {

@@ -18,6 +18,8 @@ import {
   clearDayBlocks,
   saveScheduleBlockTaskCompletion,
   shiftDayFromBlock,
+  setBlockSkippedOnDate,
+  replaceBlockOnDate,
   saveAgendaWindow,
   saveAgendaPrefs,
   saveDayTemplates,
@@ -54,7 +56,7 @@ export default async function CoachMoiAgendaPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon agenda")}</h1>
         <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Ta semaine type, sans trou. Tape un créneau libre pour poser un bloc en deux gestes, ou laisse « Construire ma semaine » la remplir avec tes séances, tes repas et ton travail.")}
+          {t("Ce que tu fais, et quand. Tape un bloc pour le voir ou le changer juste ce jour-là (décaler, pas aujourd'hui, remplacer). « Modifier » sert à construire ta semaine type.")}
         </p>
       </div>
 
@@ -78,6 +80,8 @@ export default async function CoachMoiAgendaPage() {
         initialCompletedTaskKeys={completedTaskKeys}
         saveTaskCompletion={saveScheduleBlockTaskCompletion}
         shiftDayFromBlock={shiftDayFromBlock}
+        setBlockSkippedOnDate={setBlockSkippedOnDate}
+        replaceBlockOnDate={replaceBlockOnDate}
         saveAgendaWindow={saveAgendaWindow}
         saveAgendaPrefs={saveAgendaPrefs}
         saveDayTemplates={saveDayTemplates}

@@ -12,6 +12,8 @@ export interface BlockFormData {
   tasks: string[];
   notify: boolean;
   link_ref?: string | null;
+  /** Renseigné = bloc ponctuel (ce jour-là seulement), la semaine type ne change pas. */
+  specific_date?: string | null;
 }
 
 export interface ColumnBlockInput extends TemplateBlock {
@@ -29,7 +31,9 @@ export interface AgendaActions {
   duplicateDayBlocks?: (fromDay: number, toDays: number[]) => Promise<{ error?: string; blocks?: ScheduleBlock[] }>;
   clearDayBlocks?: (day: number) => Promise<{ error?: string }>;
   saveTaskCompletion?: (date: string, completedKeys: string[]) => Promise<{ error?: string }>;
-  shiftDayFromBlock?: (input: { blockId: string; deltaMinutes: number; scope: "jour" | "toujours"; date: string }) => Promise<{ error?: string; moved?: number }>;
+  shiftDayFromBlock?: (input: { blockId: string; deltaMinutes: number; scope: "jour" | "toujours"; date: string; withFollowing?: boolean }) => Promise<{ error?: string; moved?: number }>;
+  setBlockSkippedOnDate?: (blockId: string, date: string, skip: boolean) => Promise<{ error?: string }>;
+  replaceBlockOnDate?: (blockId: string, date: string, data: BlockFormData) => Promise<{ error?: string; block?: ScheduleBlock; removed?: boolean }>;
   saveAgendaWindow?: (start: number, end: number) => Promise<{ error?: string }>;
   saveAgendaPrefs?: (prefs: AgendaPrefs) => Promise<{ error?: string }>;
   saveDayTemplates?: (templates: DayTemplate[]) => Promise<{ error?: string }>;

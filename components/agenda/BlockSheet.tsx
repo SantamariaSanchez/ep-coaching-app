@@ -6,15 +6,17 @@
 //  - repas : les aliments et grammages du repas de la diète, avec le lien
 //    direct vers ce repas dans la nutrition ;
 //  - trajet : mode de déplacement et pas estimés ;
-//  - tous : sous-tâches cochables, copie sur d'autres jours, décalage de la
-//    suite, durée, modification.
+//  - tous : sous-tâches cochables ; imprévus du jour (décaler, pas
+//    aujourd'hui, remplacer, ajouter un rdv) qui ne touchent jamais la
+//    semaine type ; et, repliés, les changements de la semaine type (durée,
+//    copie sur d'autres jours, modification, suppression).
 
 import { useState } from "react";
 import Link from "next/link";
 import { useT } from "@/components/i18n/I18nProvider";
 import Sheet from "@/components/nutrition/Sheet";
 import {
-  AlertTriangle, Check, ChevronRight, Copy, Dumbbell, Footprints, MapPin, Pencil, Play, Plus, Trash2, UtensilsCrossed, X,
+  AlertTriangle, CalendarPlus, CalendarX, Check, ChevronDown, ChevronRight, Copy, Dumbbell, Footprints, MapPin, Pencil, Play, Plus, Replace, Trash2, UtensilsCrossed, X,
 } from "lucide-react";
 import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
 import {
@@ -41,7 +43,13 @@ export interface BlockSheetHandlers {
   onSetTasks?: (tasks: string[], removedIndex?: number) => Promise<string | null>;
   onToggleTask?: (key: string) => void;
   onCopy?: (days: number[]) => Promise<string>;
-  onShift?: (delta: number, scope: "jour" | "toujours") => Promise<string | null>;
+  onShift?: (delta: number, scope: "jour" | "toujours", withFollowing: boolean) => Promise<string | null>;
+  /** « Pas aujourd'hui » : retire ce bloc récurrent de cette date seulement. */
+  onSkipDay?: () => void;
+  /** « Remplacer par… » : bloc ponctuel à la place de celui-ci, ce jour-là. */
+  onReplaceDay?: () => void;
+  /** « Ajouter un rdv » ponctuel ce jour-là. */
+  onAddOnce?: () => void;
   onResize?: (deltaEnd: number) => void;
   onSetLink?: (patch: { link_ref: string | null; label?: string; icon?: string }) => void;
   onMoveToDay?: (day: number) => void;
@@ -106,6 +114,10 @@ export default function BlockSheet({
   const [showCopy, setShowCopy] = useState(false);
   const [scope, setScope] = useState<"jour" | "toujours">("jour");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [withFollowing, setWithFollowing] = useState(false);
+  const [showWeek, setShowWeek] = useState(false);
+  const oneOff = !!b.specific_date;
+  const dayName = isToday ? t("aujourd'hui") : `${t("ce")} ${t(DAY_LABELS[placed.col]).toLowerCase()}`;
 
   const tasks = b.tasks ?? [];
   const done = tasks.filter((_, i) => completedKeys.has(`${b.id}:${i}`)).length;
@@ -373,72 +385,69 @@ export default function BlockSheet({
 
         {editable && (
           <>
-            {/* Durée : étirer au pouce sans viser la poignée */}
-            {handlers.onResize && (
-              <section>
-                <SectionLabel>{t("Fin du bloc")} · {clockLabel(placed.e)}</SectionLabel>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[-15, -5, 5, 15].map((d) => (
-                    <button key={d} type="button" onClick={() => handlers.onResize!(d)} disabled={placed.e + d - placed.s < 5} className="h-10 rounded-lg border border-(--ep-line)/35 text-xs font-bold text-(--ep-strong) disabled:opacity-35">
-                      {d > 0 ? "+" : "−"}{Math.abs(d)} min
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
+            {/* Imprévu ce jour-là : rien ici ne touche la semaine type, sauf
+                « Toutes les semaines » choisi explicitement pour le décalage. */}
+            {(handlers.onShift || handlers.onSkipDay || handlers.onReplaceDay || handlers.onAddOnce) && (
+              <section className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-s1) p-3.5 space-y-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-(--ep-ink)/45">
+                  {oneOff ? t("Rendez-vous de ce jour") : `${t("Imprévu")} ${dayName}`}
+                </p>
 
-            {/* Copier sur d'autres jours, en un geste */}
-            {handlers.onCopy && (
-              <section>
-                <SectionLabel>{t("Copier sur d'autres jours")}</SectionLabel>
-                {!showCopy ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    <Chip onClick={() => run(() => handlers.onCopy!([1, 2, 3, 4, 5].filter((d) => d !== placed.col))).then((m) => setMsg(m ?? null))} disabled={busy}>
-                      <Copy size={12} /> {t("Lun → Ven")}
-                    </Chip>
-                    <Chip onClick={() => run(() => handlers.onCopy!([1, 2, 3, 4, 5, 6, 7].filter((d) => d !== placed.col))).then((m) => setMsg(m ?? null))} disabled={busy}>
-                      <Copy size={12} /> {t("Toute la semaine")}
-                    </Chip>
-                    <Chip onClick={() => setShowCopy(true)}>{t("Choisir les jours…")}</Chip>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <DayPicker value={copyDays} onChange={setCopyDays} exclude={placed.col} shortcuts={false} />
-                    <button
-                      type="button"
-                      disabled={busy || copyDays.length === 0}
-                      onClick={() => run(() => handlers.onCopy!(copyDays)).then((m) => { setMsg(m ?? null); setShowCopy(false); setCopyDays([]); })}
-                      className="w-full h-10 rounded-lg text-xs font-black uppercase tracking-widest disabled:opacity-40"
-                      style={{ background: "rgba(var(--ep-accent-rgb),0.16)", border: "1px solid rgba(var(--ep-accent-rgb),0.55)", color: "var(--ep-strong)" }}
-                    >
-                      {t("Copier")} ({copyDays.length})
-                    </button>
+                {handlers.onShift && (
+                  <div>
+                    <p className="text-[12px] font-bold text-(--ep-strong) mb-1.5">{t("Décaler")}</p>
+                    <div className="grid grid-cols-6 gap-1">
+                      {[-30, -15, -5, 5, 15, 30].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => run(() => handlers.onShift!(d, oneOff ? "jour" : scope, withFollowing)).then((e) => e && setErr(e))}
+                          className="h-10 rounded-lg border border-(--ep-line)/35 text-[11.5px] font-bold tabular-nums text-(--ep-strong) disabled:opacity-40"
+                        >
+                          {d > 0 ? "+" : "−"}{Math.abs(d)}
+                        </button>
+                      ))}
+                    </div>
+                    <label className="flex items-center gap-2 mt-2 min-h-9 text-[12px] text-(--ep-ink)/75 cursor-pointer select-none">
+                      <input type="checkbox" checked={withFollowing} onChange={(e) => setWithFollowing(e.target.checked)} className="w-4 h-4 accent-(--ep-accent)" />
+                      {t("Décaler aussi la suite de la journée")}
+                    </label>
+                    {!oneOff && (
+                      <div className="grid grid-cols-2 gap-1.5 mt-1">
+                        <Chip active={scope === "jour"} onClick={() => setScope("jour")}><span className="w-full text-center">{isToday ? t("Aujourd'hui") : t("Ce jour-là")}</span></Chip>
+                        <Chip active={scope === "toujours"} onClick={() => setScope("toujours")}><span className="w-full text-center">{t("Toutes les semaines")}</span></Chip>
+                      </div>
+                    )}
+                    {isToday && startNowDelta !== 0 && Math.abs(startNowDelta) <= 3 * 60 && (
+                      <button type="button" disabled={busy} onClick={() => run(() => handlers.onShift!(startNowDelta, oneOff ? "jour" : scope, withFollowing)).then((e) => e && setErr(e))} className="w-full rounded-lg border text-xs font-bold py-2.5 mt-2" style={{ borderColor: "rgba(var(--ep-accent-rgb),0.6)", background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-strong)" }}>
+                        {t("Commencer maintenant")} ({startNowDelta > 0 ? "+" : "−"}{Math.abs(startNowDelta)} min)
+                      </button>
+                    )}
                   </div>
                 )}
-              </section>
-            )}
 
-            {/* Décaler ce bloc et toute la suite */}
-            {handlers.onShift && (
-              <section>
-                <SectionLabel>{t("Décaler ce bloc et toute la suite")}</SectionLabel>
-                {isToday && startNowDelta !== 0 && Math.abs(startNowDelta) <= 3 * 60 && (
-                  <button type="button" disabled={busy} onClick={() => run(() => handlers.onShift!(startNowDelta, scope)).then((e) => e && setErr(e))} className="w-full rounded-lg border text-xs font-bold py-2.5 mb-2" style={{ borderColor: "rgba(var(--ep-accent-rgb),0.6)", background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-strong)" }}>
-                    {t("Commencer maintenant")} ({startNowDelta > 0 ? "+" : ""}{startNowDelta} min {t("pour la suite")})
+                {(handlers.onSkipDay || handlers.onReplaceDay) && (
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {handlers.onSkipDay && (
+                      <button type="button" disabled={busy} onClick={handlers.onSkipDay} className="flex items-center justify-center gap-1.5 h-11 rounded-xl border border-(--ep-line)/35 text-[12px] font-bold text-(--ep-strong) disabled:opacity-40">
+                        <CalendarX size={14} /> {isToday ? t("Pas aujourd'hui") : t("Pas ce jour-là")}
+                      </button>
+                    )}
+                    {handlers.onReplaceDay && (
+                      <button type="button" disabled={busy} onClick={handlers.onReplaceDay} className="flex items-center justify-center gap-1.5 h-11 rounded-xl border border-(--ep-line)/35 text-[12px] font-bold text-(--ep-strong) disabled:opacity-40">
+                        <Replace size={14} /> {t("Remplacer par…")}
+                      </button>
+                    )}
+                  </div>
+                )}
+                {handlers.onAddOnce && (
+                  <button type="button" onClick={handlers.onAddOnce} className="w-full flex items-center justify-center gap-1.5 h-10 rounded-xl text-[12px] font-bold" style={{ border: "1px dashed rgba(var(--ep-accent-rgb),0.5)", color: "var(--ep-strong)" }}>
+                    <CalendarPlus size={14} /> {t("Ajouter un rdv")} {dayName}
                   </button>
                 )}
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[-15, 15, 30, 60].map((d) => (
-                    <button key={d} type="button" disabled={busy} onClick={() => run(() => handlers.onShift!(d, isToday ? scope : "toujours")).then((e) => e && setErr(e))} className="h-10 rounded-lg border border-(--ep-line)/35 text-xs font-bold text-(--ep-strong)">
-                      {d > 0 ? "+" : "−"}{Math.abs(d)} min
-                    </button>
-                  ))}
-                </div>
-                {isToday && (
-                  <div className="flex gap-1.5 mt-2">
-                    <Chip active={scope === "jour"} onClick={() => setScope("jour")}>{t("Aujourd'hui seulement")}</Chip>
-                    <Chip active={scope === "toujours"} onClick={() => setScope("toujours")}>{t("Toutes les semaines")}</Chip>
-                  </div>
+                {oneOff && (
+                  <p className="text-[11px] text-(--ep-ink)/45">{t("Bloc ponctuel : il ne revient pas les autres semaines.")}</p>
                 )}
               </section>
             )}
@@ -446,26 +455,107 @@ export default function BlockSheet({
             {msg && <p role="status" className="text-xs" style={{ color: "var(--ep-ok)" }}>{msg}</p>}
             <ErrorText>{err}</ErrorText>
 
-            <div className="flex gap-2">
-              {handlers.onEdit && (
-                <button type="button" onClick={handlers.onEdit} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/80 text-xs font-bold uppercase tracking-widest py-3">
-                  <Pencil size={13} /> {t("Modifier")}
+            {/* Semaine type : replié, pour ne pas la changer sans le vouloir. */}
+            {!oneOff && (handlers.onResize || handlers.onCopy || handlers.onEdit || handlers.onDelete) && (
+              <section className="border-t border-(--ep-line)/15 pt-3">
+                <button type="button" onClick={() => setShowWeek((v) => !v)} aria-expanded={showWeek} className="w-full flex items-center justify-between min-h-10 text-left">
+                  <span>
+                    <span className="block text-[12px] font-bold text-(--ep-strong)">{t("Changer toutes les semaines")}</span>
+                    <span className="block text-[11px] text-(--ep-ink)/45">{t("Heure, durée, copie sur d'autres jours, suppression")}</span>
+                  </span>
+                  <ChevronDown size={16} className="text-(--ep-ink)/45 transition-transform" style={{ transform: showWeek ? "rotate(180deg)" : undefined }} />
                 </button>
-              )}
-              {handlers.onDelete && (
-                <button
-                  type="button"
-                  onClick={() => (confirmDelete ? handlers.onDelete!() : setConfirmDelete(true))}
-                  className="flex items-center justify-center gap-1.5 rounded-xl text-xs font-bold uppercase tracking-widest py-3 px-4"
-                  style={{ border: "1px solid rgba(var(--ep-bad-rgb),0.4)", color: "var(--ep-bad)", background: confirmDelete ? "rgba(var(--ep-bad-rgb),0.1)" : "transparent" }}
-                >
-                  <Trash2 size={13} /> {confirmDelete ? t("Confirmer") : ""}
-                </button>
-              )}
-            </div>
+                {showWeek && (
+                  <div className="space-y-4 mt-3">
+                    {handlers.onResize && (
+                      <div>
+                        <SectionLabel>{t("Fin du bloc")} · {clockLabel(placed.e)}</SectionLabel>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {[-15, -5, 5, 15].map((d) => (
+                            <button key={d} type="button" onClick={() => handlers.onResize!(d)} disabled={placed.e + d - placed.s < 5} className="h-10 rounded-lg border border-(--ep-line)/35 text-xs font-bold text-(--ep-strong) disabled:opacity-35">
+                              {d > 0 ? "+" : "−"}{Math.abs(d)} min
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {handlers.onCopy && (
+                      <div>
+                        <SectionLabel>{t("Copier sur d'autres jours")}</SectionLabel>
+                        {!showCopy ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            <Chip onClick={() => run(() => handlers.onCopy!([1, 2, 3, 4, 5].filter((d) => d !== placed.col))).then((m) => setMsg(m ?? null))} disabled={busy}>
+                              <Copy size={12} /> {t("Lun → Ven")}
+                            </Chip>
+                            <Chip onClick={() => run(() => handlers.onCopy!([1, 2, 3, 4, 5, 6, 7].filter((d) => d !== placed.col))).then((m) => setMsg(m ?? null))} disabled={busy}>
+                              <Copy size={12} /> {t("Toute la semaine")}
+                            </Chip>
+                            <Chip onClick={() => setShowCopy(true)}>{t("Choisir les jours…")}</Chip>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <DayPicker value={copyDays} onChange={setCopyDays} exclude={placed.col} shortcuts={false} />
+                            <button
+                              type="button"
+                              disabled={busy || copyDays.length === 0}
+                              onClick={() => run(() => handlers.onCopy!(copyDays)).then((m) => { setMsg(m ?? null); setShowCopy(false); setCopyDays([]); })}
+                              className="w-full h-10 rounded-lg text-xs font-black uppercase tracking-widest disabled:opacity-40"
+                              style={{ background: "rgba(var(--ep-accent-rgb),0.16)", border: "1px solid rgba(var(--ep-accent-rgb),0.55)", color: "var(--ep-strong)" }}
+                            >
+                              {t("Copier")} ({copyDays.length})
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <EditDeleteRow onEdit={handlers.onEdit} onDelete={handlers.onDelete} confirmDelete={confirmDelete} setConfirmDelete={setConfirmDelete} deleteLabel={t("Supprimer")} />
+                  </div>
+                )}
+              </section>
+            )}
+
+            {oneOff && <EditDeleteRow onEdit={handlers.onEdit} onDelete={handlers.onDelete} confirmDelete={confirmDelete} setConfirmDelete={setConfirmDelete} deleteLabel={t("Supprimer ce rdv")} />}
           </>
         )}
       </div>
     </Sheet>
+  );
+}
+
+function EditDeleteRow({
+  onEdit,
+  onDelete,
+  confirmDelete,
+  setConfirmDelete,
+  deleteLabel,
+}: {
+  onEdit?: () => void;
+  onDelete?: () => void;
+  confirmDelete: boolean;
+  setConfirmDelete: (v: boolean) => void;
+  deleteLabel: string;
+}) {
+  const t = useT();
+  if (!onEdit && !onDelete) return null;
+  return (
+    <div className="flex gap-2">
+      {onEdit && (
+        <button type="button" onClick={onEdit} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/80 text-xs font-bold uppercase tracking-widest py-3">
+          <Pencil size={13} /> {t("Modifier")}
+        </button>
+      )}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={() => (confirmDelete ? onDelete() : setConfirmDelete(true))}
+          className="flex items-center justify-center gap-1.5 rounded-xl text-xs font-bold uppercase tracking-widest py-3 px-4"
+          style={{ border: "1px solid rgba(var(--ep-bad-rgb),0.4)", color: "var(--ep-bad)", background: confirmDelete ? "rgba(var(--ep-bad-rgb),0.1)" : "transparent" }}
+        >
+          <Trash2 size={13} /> {confirmDelete ? t("Confirmer") : deleteLabel}
+        </button>
+      )}
+    </div>
   );
 }
