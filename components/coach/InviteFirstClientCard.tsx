@@ -112,114 +112,95 @@ export default function InviteFirstClientCard({
   }
 
   const encoded = encodeURIComponent(message);
-  const title = clientCount === 0 ? t("Invite ton premier client") : t("Invite un nouveau client");
+  const title = clientCount === 0 ? t("Invite ton 1er client") : t("Inviter un client");
 
+  // Discret (retour fondateur 2026-10-21 : « enlève le gros lien avec le
+  // pavé long, ça doit être discret ») : une seule ligne avec Partager et
+  // Copier ; le lien, les autres canaux et le mode d'emploi restent repliés.
   return (
     <section
       className="ep-card animate-fade-up"
       aria-labelledby="invite-first-client-title"
-      style={{ padding: "18px 18px 16px", marginBottom: 20, border: "1px solid rgba(var(--ep-accent-rgb),0.3)" }}
+      style={{ padding: "12px 14px", marginBottom: 16 }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
-        <div
-          style={{
-            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-            background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px solid rgba(var(--ep-accent-rgb),0.25)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          <UserPlus size={18} style={{ color: "var(--ep-accent)" }} strokeWidth={1.8} />
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <h2 id="invite-first-client-title" style={{ margin: 0, fontSize: 15, fontWeight: 900, color: "var(--ep-ink)", letterSpacing: "-0.01em" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <UserPlus size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.9} />
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <h2 id="invite-first-client-title" style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--ep-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {title}
           </h2>
-          <p style={{ margin: "4px 0 0", fontSize: 12.5, lineHeight: 1.55, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
-            {t("Ton client ne te trouve pas tout seul : envoie-lui ton lien personnel. En s'inscrivant avec, il est rattaché à toi automatiquement.")}
+          <p style={{ margin: "1px 0 0", fontSize: 11, lineHeight: 1.4, color: "rgba(var(--ep-ink-rgb),0.5)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {t("Il sera rattaché à toi")}
           </p>
         </div>
-      </div>
-
-      {link ? (
-        <>
-          <div
-            style={{
-              display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, marginBottom: 10,
-              background: "rgba(var(--ep-shade-rgb),0.3)", border: "1px solid rgba(var(--ep-accent-rgb),0.15)", minWidth: 0,
-            }}
-          >
-            <Link2 size={14} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: "var(--ep-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
-              {link}
-            </span>
-          </div>
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-            <button type="button" onClick={share} style={primary}>
-              <Share2 size={14} />
+        {link ? (
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            <button type="button" onClick={share} style={{ ...primary, minHeight: 34, padding: "0 12px" }}>
+              <Share2 size={13} />
               {t("Partager")}
             </button>
-            <button type="button" onClick={() => copy("link")} style={ghost}>
+            <button
+              type="button"
+              onClick={() => copy("link")}
+              aria-label={copied === "link" ? t("Lien copié") : t("Copier le lien")}
+              title={copied === "link" ? t("Lien copié") : t("Copier le lien")}
+              style={{ ...ghost, minHeight: 34, width: 34, padding: 0 }}
+            >
               {copied === "link" ? <Check size={14} style={{ color: "var(--ep-ok)" }} /> : <Copy size={14} />}
-              {copied === "link" ? t("Lien copié") : t("Copier le lien")}
             </button>
           </div>
-
-          <details style={{ marginBottom: showSteps ? 12 : 0 }}>
-            <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--ep-accent)" }}>
-              {t("Message tout prêt à envoyer")}
-            </summary>
-            <p
-              style={{
-                whiteSpace: "pre-wrap", fontSize: 12, lineHeight: 1.6, margin: "10px 0", padding: "10px 12px", borderRadius: 10,
-                background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-line-rgb),0.25)", color: "rgba(var(--ep-ink-rgb),0.75)",
-                overflowWrap: "anywhere",
-              }}
-            >
-              {message}
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              <a href={`https://wa.me/?text=${encoded}`} target="_blank" rel="noopener noreferrer" style={ghost}>
-                <MessageCircle size={14} /> WhatsApp
-              </a>
-              <a href={`sms:?&body=${encoded}`} style={ghost}>
-                <Smartphone size={14} /> SMS
-              </a>
-              <a href={`mailto:?subject=${encodeURIComponent(t("Ton coaching sur EP Coaching"))}&body=${encoded}`} style={ghost}>
-                <Mail size={14} /> {t("E-mail")}
-              </a>
-              <button type="button" onClick={() => copy("message")} style={ghost}>
-                {copied === "message" ? <Check size={14} style={{ color: "var(--ep-ok)" }} /> : <Copy size={14} />}
-                {copied === "message" ? t("Message copié") : t("Copier le message")}
-              </button>
-            </div>
-          </details>
-        </>
-      ) : (
-        <button type="button" onClick={generate} disabled={loading} style={{ ...primary, marginBottom: showSteps ? 12 : 0 }}>
-          <Send size={14} />
-          {loading ? t("Génération...") : t("Créer mon lien d'invitation")}
-        </button>
-      )}
+        ) : (
+          <button type="button" onClick={generate} disabled={loading} style={{ ...primary, minHeight: 34, padding: "0 12px", flexShrink: 0 }}>
+            <Send size={13} />
+            {loading ? t("Génération...") : t("Créer mon lien")}
+          </button>
+        )}
+      </div>
 
       {error && (
-        <p role="alert" style={{ margin: "0 0 10px", fontSize: 12, color: "var(--ep-bad)" }}>
+        <p role="alert" style={{ margin: "8px 0 0", fontSize: 12, color: "var(--ep-bad)" }}>
           {error}
         </p>
       )}
 
-      {showSteps && (
-        <div style={{ borderTop: "1px solid rgba(var(--ep-line-rgb),0.2)", paddingTop: 12 }}>
-          <p style={{ margin: "0 0 8px", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
-            {t("Ce que voit ton client en ouvrant le lien")}
-          </p>
-          <ol style={{ margin: 0, paddingLeft: 18, listStyle: "decimal", display: "grid", gap: 6, fontSize: 12, lineHeight: 1.55, color: "rgba(var(--ep-ink-rgb),0.65)" }}>
-            <li>{t("Une page d'inscription EP Coaching : prénom, e-mail, téléphone, mot de passe. 30 secondes.")}</li>
-            <li>{t("Son compte est créé et rattaché à toi, il apparaît aussitôt dans ta page Clients.")}</li>
-            <li>{t("Toi : ouvre sa fiche et clique « Activer le coaching ».")}</li>
-            <li>{t("Lui : il remplit sa fiche de départ (objectifs, santé, disponibilités), puis retrouve son programme, sa diète, ses bilans et tes messages. Le bouton « Voir comme mon client » de sa fiche te montre exactement son écran.")}</li>
-          </ol>
-        </div>
+      {(link || showSteps) && (
+        <details style={{ marginTop: 8 }}>
+          <summary style={{ cursor: "pointer", fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)", listStylePosition: "inside" }}>
+            {t("Autres options")}
+          </summary>
+          {link && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "10px 0 8px", minWidth: 0 }}>
+                <Link2 size={12} style={{ color: "rgba(var(--ep-ink-rgb),0.4)", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                  {link}
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                <a href={`https://wa.me/?text=${encoded}`} target="_blank" rel="noopener noreferrer" style={{ ...ghost, minHeight: 32, fontSize: 11 }}>
+                  <MessageCircle size={13} /> WhatsApp
+                </a>
+                <a href={`sms:?&body=${encoded}`} style={{ ...ghost, minHeight: 32, fontSize: 11 }}>
+                  <Smartphone size={13} /> SMS
+                </a>
+                <a href={`mailto:?subject=${encodeURIComponent(t("Ton coaching sur EP Coaching"))}&body=${encoded}`} style={{ ...ghost, minHeight: 32, fontSize: 11 }}>
+                  <Mail size={13} /> {t("E-mail")}
+                </a>
+                <button type="button" onClick={() => copy("message")} style={{ ...ghost, minHeight: 32, fontSize: 11 }}>
+                  {copied === "message" ? <Check size={13} style={{ color: "var(--ep-ok)" }} /> : <Copy size={13} />}
+                  {copied === "message" ? t("Message copié") : t("Copier un message tout prêt")}
+                </button>
+              </div>
+            </>
+          )}
+          {showSteps && (
+            <ol style={{ margin: "10px 0 0", paddingLeft: 18, listStyle: "decimal", display: "grid", gap: 4, fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
+              <li>{t("Il crée son compte avec ton lien (30 secondes) et apparaît dans tes Clients.")}</li>
+              <li>{t("Tu ouvres sa fiche et cliques « Activer le coaching ».")}</li>
+              <li>{t("Il remplit sa fiche de départ, puis retrouve programme, diète, bilans et messages.")}</li>
+            </ol>
+          )}
+        </details>
       )}
     </section>
   );
