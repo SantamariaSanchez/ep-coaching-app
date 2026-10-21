@@ -18,10 +18,10 @@
 // components/agenda/.
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  AlarmClock, Check, ChevronLeft, ChevronRight, Clock, Copy, Footprints, Layers, MoreHorizontal, Plus, Timer, Trash2, Wand2,
+  AlarmClock, Check, ChevronLeft, ChevronRight, Clock, Copy, Footprints, Layers, Minus, MoreHorizontal, Plus, Timer, Trash2, Wand2,
   Car, Bike, TramFront, CircleCheck,
 } from "lucide-react";
 import type { ScheduleBlock } from "@/utils/agenda";
@@ -60,6 +60,21 @@ import {
   type Placed,
   type TemplateBlock,
 } from "@/lib/agenda-engine";
+import {
+  ZOOM_DEFAULT,
+  ZOOM_LEVELS,
+  clampRow,
+  labelStep,
+  layoutLabels,
+  lineStep,
+  readStoredRow,
+  scrollParentOf,
+  stepRow,
+  storeRow,
+  tickLabel,
+  type LabelRequest,
+  type ZoomView,
+} from "@/lib/agenda-zoom";
 import { EMPTY_CONTEXT, dietSlotsForDay, sessionForDay, type AgendaContext } from "@/lib/agenda-links";
 import QuickAddSheet, { type RecentBlock } from "@/components/agenda/QuickAddSheet";
 import BlockSheet from "@/components/agenda/BlockSheet";
@@ -73,8 +88,6 @@ import type { AgendaActions, AgendaSettingsProp, BlockFormData, ColumnBlockInput
 
 export type { BlockFormData } from "@/components/agenda/types";
 
-const ROW_DAY = 56;
-const ROW_WEEK = 40;
 const TRAVEL_ICON = { marche: Footprints, transports: TramFront, velo: Bike, voiture: Car } as const;
 
 // ── Semaine courante ─────────────────────────────────────────────────────
@@ -178,6 +191,8 @@ interface DragState {
   pointerType: string;
   active: boolean;
   timer: ReturnType<typeof setTimeout> | null;
+  /** Dernière position proposée pendant le glisser. */
+  last: { s: number; e: number } | null;
 }
 
 export default function WeeklyAgenda({
@@ -480,12 +495,65 @@ export default function WeeklyAgenda({
   const dragRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
   const [dragPreview, setDragPreview] = useState<{ id: string; s: number; e: number } | null>(null);
+  const cancelDragRef = useRef<(() => void) | null>(null);
+
+  // ── Zoom vertical (pincement, Ctrl/⌘ + molette, boutons) ───────────────
+  // Hauteur d'une heure en px, retenue par appareil pour chaque vue.
+  const [rows, setRows] = useState<Record<ZoomView, number>>(ZOOM_DEFAULT);
+  useEffect(() => {
+    // localStorage n'existe qu'au navigateur : lu après montage pour ne pas casser l'hydratation.
+    const d = readStoredRow("day");
+    const w = readStoredRow("week");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (d !== null || w !== null) setRows({ day: d ?? ZOOM_DEFAULT.day, week: w ?? ZOOM_DEFAULT.week });
+  }, []);
+  const [zoomSeq, setZoomSeq] = useState(0);
+  /** Zone qui reçoit le pincement et la molette. */
+  const zoneRef = useRef<HTMLDivElement | null>(null);
+  /** Colonne des heures : son haut correspond au début de la grille. */
+  const originRef = useRef<HTMLDivElement | null>(null);
+  /** Instant (minutes) à garder sous les doigts ou la souris pendant le zoom. */
+  const anchorRef = useRef<{ abs: number; clientY: number } | null>(null);
+  const liveRef = useRef<{ view: ZoomView; row: number; from: number }>({ view: "day", row: ZOOM_DEFAULT.day, from: 0 });
+  const pinchRef = useRef<{ d0: number; r0: number; abs: number } | null>(null);
+  const pinchUntilRef = useRef(0);
+
+  const absAt = useCallback((clientY: number): number => {
+    const live = liveRef.current;
+    const o = originRef.current;
+    if (!o) return live.from;
+    return live.from + ((clientY - o.getBoundingClientRect().top) / live.row) * 60;
+  }, []);
+
+  const zoomTo = useCallback((next: number, clientY: number, abs?: number) => {
+    const live = liveRef.current;
+    const r = Math.round(clampRow(live.view, next) * 10) / 10;
+    anchorRef.current = { abs: abs ?? anchorRef.current?.abs ?? absAt(clientY), clientY };
+    liveRef.current = { ...live, row: r };
+    setRows((prev) => (prev[live.view] === r ? prev : { ...prev, [live.view]: r }));
+    setZoomSeq((n) => n + 1);
+    storeRow(live.view, r);
+  }, [absAt]);
+
+  /** Zoom par les boutons : garde le milieu de la partie visible de la grille. */
+  function zoomStep(dir: 1 | -1 | 0) {
+    const o = originRef.current;
+    let clientY = window.innerHeight / 2;
+    if (o) {
+      const rect = o.getBoundingClientRect();
+      clientY = (Math.max(rect.top, 0) + Math.min(rect.bottom, window.innerHeight)) / 2;
+    }
+    const live = liveRef.current;
+    zoomTo(dir === 0 ? ZOOM_DEFAULT[live.view] : stepRow(live.view, live.row, dir), clientY);
+  }
 
   function startDrag(e: React.PointerEvent, p: Placed<ScheduleBlock>, mode: "move" | "resize", row: number) {
     if (!editable || !actions.setScheduleBlockTimes || p.block.id.startsWith("tmp-")) return;
     if (e.button !== undefined && e.button !== 0) return;
+    // Deuxième doigt posé : c'est un pincement (zoom), pas un glisser.
+    if (pinchRef.current || dragRef.current) return;
     if (mode === "resize") e.stopPropagation();
-    const st: DragState = { id: p.block.id, col: p.col, mode, startY: e.clientY, origS: p.s, origE: p.e, row, pointerType: e.pointerType, active: mode === "resize", timer: null };
+    const st: DragState = { id: p.block.id, col: p.col, mode, startY: e.clientY, origS: p.s, origE: p.e, row, pointerType: e.pointerType, active: mode === "resize", timer: null, last: null };
     if (mode === "resize") e.preventDefault();
     if (mode === "move" && e.pointerType !== "mouse") {
       st.timer = setTimeout(() => {
@@ -516,6 +584,7 @@ export default function WeeklyAgenda({
         s = Math.max(0, d.origS + delta);
         en = s + (d.origE - d.origS);
       } else en = Math.max(d.origS + 5, d.origE + delta);
+      d.last = { s, e: en };
       setDragPreview({ id: d.id, s, e: en });
     };
     const onTouchMove = (ev: TouchEvent) => {
@@ -525,13 +594,13 @@ export default function WeeklyAgenda({
       const d = dragRef.current;
       if (d?.active) {
         suppressClickRef.current = true;
-        setDragPreview((prev) => {
-          if (prev && (prev.s !== d.origS || prev.e !== d.origE)) {
-            const target = placedById.get(d.id);
-            if (target) void commitTimes(target, prev.s, prev.e);
-          }
-          return null;
-        });
+        setDragPreview(null);
+        // Hors d'un updater de state : commitTimes met à jour d'autres états.
+        const last = d.last;
+        if (last && (last.s !== d.origS || last.e !== d.origE)) {
+          const target = placedById.get(d.id);
+          if (target) void commitTimes(target, last.s, last.e);
+        }
       }
       cleanup();
     };
@@ -539,6 +608,7 @@ export default function WeeklyAgenda({
       const d = dragRef.current;
       if (d?.timer) clearTimeout(d.timer);
       dragRef.current = null;
+      cancelDragRef.current = null;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onCancel);
@@ -549,6 +619,7 @@ export default function WeeklyAgenda({
       setDragPreview(null);
       cleanup();
     };
+    cancelDragRef.current = onCancel;
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onCancel);
@@ -556,7 +627,7 @@ export default function WeeklyAgenda({
   }
 
   // ── Rendu d'une colonne ───────────────────────────────────────────────
-  function rangeOf(list: Placed[]): { from: number; to: number } {
+  function rangeOf(list: { s: number; e: number }[]): { from: number; to: number } {
     let from = ws;
     let to = we;
     for (const p of list) {
@@ -575,15 +646,49 @@ export default function WeeklyAgenda({
     setQuickAdd({ col, start, gapEnd: gap?.e ?? null });
   }
 
-  function renderColumn(col: number, row: number, range: { from: number; to: number }, compact: boolean) {
+  function renderColumn(col: number, row: number, range: { from: number; to: number }, compact: boolean, reveil: Placed | null) {
     const list = colPlaced(col);
     const height = ((range.to - range.from) / 60) * row;
     const y = (abs: number) => ((abs - range.from) / 60) * row;
     const gaps = editable ? findGaps(list, win, 5) : [];
     const lanes = assignLanes(list);
     const isNowCol = nowCol === col;
-    const hours: number[] = [];
-    for (let h = range.from; h < range.to; h += 60) hours.push(h);
+    const step = lineStep(row);
+    const lines: number[] = [];
+    for (let m = range.from; m < range.to; m += step) lines.push(m);
+    // Sous cette hauteur, le nom ne tient pas dans le bloc : étiquette à côté.
+    const inlineMin = 11;
+    const labelH = compact ? 14 : 18;
+    const pillH = compact ? 16 : 20;
+
+    const geo = list.map((p) => {
+      const preview = dragPreview?.id === p.block.id ? dragPreview : null;
+      const s = preview?.s ?? p.s;
+      const e = preview?.e ?? p.e;
+      const top = y(s);
+      return { p, s, e, top, h: Math.max(0, y(e) - top), kind: blockKind(p.block), dragging: !!preview };
+    });
+    const obstacles = geo.filter((g) => g.kind !== "trajet" && g.h >= inlineMin).map((g) => ({ top: g.top, bottom: g.top + g.h }));
+    const requests: LabelRequest[] = [];
+    for (const g of geo) {
+      if (g.kind === "trajet" ? g.h < pillH : g.h < inlineMin) requests.push({ id: g.p.block.id, top: g.top, bottom: g.top + g.h, need: g.kind === "trajet" ? pillH : labelH });
+    }
+    if (reveil) requests.push({ id: "__reveil", top: y(reveil.s), bottom: y(reveil.e), need: labelH });
+    const spots = layoutLabels(requests, obstacles, height);
+    // Une étiquette posée à droite au-dessus d'un voisin lui réserve la place sur sa ligne de titre.
+    const rightLabels: { top: number; bottom: number; width: number }[] = [];
+    for (const g of geo) {
+      const spot = spots.get(g.p.block.id);
+      if (!spot || (!spot.lateral && g.kind !== "trajet")) continue;
+      const width = g.kind === "trajet" ? (compact ? 44 : 64) : (compact ? 22 : 54) + g.p.block.label.length * (compact ? 5 : 6.2);
+      rightLabels.push({ top: spot.top, bottom: spot.top + (g.kind === "trajet" ? pillH : labelH), width });
+    }
+    const padFor = (top: number, h: number): string | undefined => {
+      const rowBottom = top + Math.min(h, 24);
+      const w = rightLabels.filter((r) => r.top < rowBottom && r.bottom > top).reduce((m, r) => Math.max(m, r.width), 0);
+      return w > 0 ? `min(${Math.round(w)}px, 60%)` : undefined;
+    };
+    const hitExpand = (hgt: number) => ({ top: -Math.max(0, (28 - hgt) / 2), bottom: -Math.max(0, (28 - hgt) / 2) });
 
     return (
       <div
@@ -594,13 +699,16 @@ export default function WeeklyAgenda({
             suppressClickRef.current = false;
             return;
           }
+          if (performance.now() < pinchUntilRef.current) return;
           const rect = e.currentTarget.getBoundingClientRect();
           openAddAt(col, range.from + ((e.clientY - rect.top) / row) * 60);
         }}
       >
-        {hours.map((h) => (
-          <div key={h} className="absolute left-0 right-0 pointer-events-none" style={{ top: y(h), height: row, borderTop: "1px solid rgba(var(--ep-line-rgb),0.09)" }} />
-        ))}
+        {lines.map((m) => {
+          const major = m % 60 === 0;
+          const alpha = major ? 0.09 : m % 30 === 0 ? 0.06 : m % 15 === 0 ? 0.045 : 0.03;
+          return <div key={m} className="absolute left-0 right-0 pointer-events-none" style={{ top: y(m), borderTop: `1px ${major || m % 30 === 0 ? "solid" : "dashed"} rgba(var(--ep-line-rgb),${alpha})` }} />;
+        })}
         {/* Hors de la journée réglée (affiché seulement si un bloc y est) */}
         {range.from < ws && <div className="absolute left-0 right-0 pointer-events-none" style={{ top: 0, height: y(ws), background: "rgba(var(--ep-ink-rgb),0.035)" }} />}
         {range.to > we && <div className="absolute left-0 right-0 pointer-events-none" style={{ top: y(we), bottom: 0, background: "rgba(var(--ep-ink-rgb),0.035)" }} />}
@@ -625,17 +733,12 @@ export default function WeeklyAgenda({
           );
         })}
 
-        {list.map((p) => {
+        {geo.map(({ p, s, e, top, h, kind, dragging }) => {
           const b = p.block;
-          const preview = dragPreview?.id === b.id ? dragPreview : null;
-          const s = preview?.s ?? p.s;
-          const e = preview?.e ?? p.e;
-          const top = y(s);
-          const h = Math.max(4, y(e) - top);
           const lane = lanes.get(p) ?? { lane: 0, lanes: 1 };
           const widthPct = 100 / Math.max(1, lane.lanes);
           const leftPct = lane.lane * widthPct;
-          const kind = blockKind(b);
+          const spot = spots.get(b.id) ?? null;
           const common = {
             onPointerDown: (ev: React.PointerEvent) => startDrag(ev, p, "move", row),
             onClick: (ev: React.MouseEvent) => {
@@ -644,11 +747,12 @@ export default function WeeklyAgenda({
                 suppressClickRef.current = false;
                 return;
               }
+              if (performance.now() < pinchUntilRef.current) return;
               setSheetId(b.id);
             },
             onContextMenu: (ev: React.MouseEvent) => ev.preventDefault(),
           };
-          const dragging = !!preview;
+          const touchAction = compact ? "pan-x pan-y" : "pan-y";
 
           if (kind === "trajet") {
             const mode = travelModeOf(b);
@@ -661,38 +765,104 @@ export default function WeeklyAgenda({
                 tabIndex={0}
                 aria-label={`${b.label}, ${clockLabel(s)}, ${durationLabel(e - s)}`}
                 {...common}
+                onKeyDown={(ev) => ev.key === "Enter" && setSheetId(b.id)}
                 className="absolute select-none"
-                style={{ top, height: h, left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)`, zIndex: dragging ? 30 : 6, touchAction: "pan-y", WebkitUserSelect: "none" }}
+                style={{ top, height: Math.max(2, h), left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)`, zIndex: dragging ? 30 : spot ? 21 : 6, touchAction, WebkitUserSelect: "none" }}
               >
                 <div className="absolute top-0 bottom-0" style={{ left: 10, borderLeft: "2px dashed rgba(var(--ep-ok-rgb),0.7)" }} />
                 <span
                   className="absolute flex items-center gap-1 rounded-full whitespace-nowrap font-bold"
                   style={{
-                    top: "50%",
-                    transform: "translateY(-50%)",
+                    ...(spot ? { top: spot.top - top } : { top: "50%", transform: "translateY(-50%)" }),
                     right: 2,
-                    height: compact ? 16 : 20,
+                    height: pillH,
                     padding: compact ? "0 5px" : "0 8px",
                     fontSize: compact ? 9 : 10.5,
                     background: "var(--ep-s2)",
                     border: "1px solid rgba(var(--ep-ok-rgb),0.5)",
                     color: "var(--ep-ink)",
-                    boxShadow: dragging ? "0 4px 16px rgba(var(--ep-shade-rgb),0.5)" : "none",
+                    boxShadow: dragging ? "0 4px 16px rgba(var(--ep-shade-rgb),0.5)" : spot ? "0 1px 4px rgba(var(--ep-shade-rgb),0.3)" : "none",
                   }}
                 >
+                  <span aria-hidden className="absolute left-0 right-0" style={hitExpand(pillH)} />
                   <TIcon size={compact ? 9 : 11} style={{ color: "var(--ep-ok)" }} />
-                  {durationLabel(e - s)}
-                  {!compact && steps > 0 && <span style={{ color: "rgba(var(--ep-ink-rgb),0.55)" }}>· ~{formatSteps(steps)} {t("pas")}</span>}
+                  {dragging ? <span className="tabular-nums">{clockLabel(s)} – {clockLabel(e)}</span> : durationLabel(e - s)}
+                  {!compact && !dragging && steps > 0 && <span style={{ color: "rgba(var(--ep-ink-rgb),0.55)" }}>· ~{formatSteps(steps)} {t("pas")}</span>}
                 </span>
               </div>
             );
           }
 
           const Icon = b.icon ? AGENDA_ICON_MAP[b.icon] : null;
+          const cursor = editable ? "grab" : "pointer";
+
+          // Bloc trop court pour son nom : un trait de sa couleur (repère visible
+          // même à 1 min), une zone de tap d'au moins 28 px prise sur la place
+          // libre, et une étiquette compacte posée à côté.
+          if (spot) {
+            return (
+              <div key={b.id} className="contents">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${b.label}, ${clockLabel(s)} à ${clockLabel(e)}`}
+                  {...common}
+                  onKeyDown={(ev) => ev.key === "Enter" && setSheetId(b.id)}
+                  className="absolute select-none"
+                  style={{ top, height: Math.max(2, h), left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)`, zIndex: dragging ? 30 : 7, touchAction, WebkitUserSelect: "none", cursor }}
+                >
+                  <span
+                    aria-hidden
+                    className="absolute left-0 right-0"
+                    style={{
+                      top: 0,
+                      bottom: 0,
+                      minHeight: 2,
+                      borderRadius: 3,
+                      // Très court (1 à 3 min) : un trait plein, repère net ; sinon un mini bloc teinté.
+                      background: h < 4 ? b.color : withAlpha(b.color, dragging ? "66" : "40"),
+                      borderLeft: h < 4 ? undefined : `3px solid ${b.color}`,
+                      boxShadow: dragging ? "0 4px 16px rgba(var(--ep-shade-rgb),0.5)" : "none",
+                    }}
+                  />
+                  <span aria-hidden className="absolute left-0 right-0" style={{ top: spot.hitTop - top, height: spot.hitBottom - spot.hitTop }} />
+                </div>
+                <div
+                  aria-hidden
+                  {...common}
+                  className="absolute flex items-center gap-1 rounded-full whitespace-nowrap font-bold select-none"
+                  style={{
+                    top: spot.top,
+                    height: labelH,
+                    ...(spot.lateral
+                      ? { right: `calc(${100 - leftPct - widthPct}% + 4px)`, maxWidth: `calc(${widthPct * (compact ? 0.85 : 0.62)}% - 4px)` }
+                      : { left: `calc(${leftPct}% + 6px)`, maxWidth: `calc(${widthPct}% - 10px)` }),
+                    zIndex: dragging ? 31 : 22,
+                    padding: compact ? "0 4px" : "0 7px",
+                    fontSize: compact ? 9 : 10.5,
+                    background: "var(--ep-s2)",
+                    border: `1px solid ${withAlpha(b.color, "99")}`,
+                    color: "var(--ep-strong)",
+                    boxShadow: dragging ? "0 4px 16px rgba(var(--ep-shade-rgb),0.5)" : "0 1px 4px rgba(var(--ep-shade-rgb),0.3)",
+                    touchAction,
+                    WebkitUserSelect: "none",
+                    cursor,
+                  }}
+                >
+                  <span className="absolute left-0 right-0" style={hitExpand(labelH)} />
+                  {Icon && <Icon size={compact ? 9 : 11} style={{ color: b.color, flexShrink: 0 }} strokeWidth={2.4} />}
+                  <span className="truncate min-w-0">{b.label}</span>
+                  {(!compact || dragging) && <span className="flex-shrink-0 tabular-nums font-semibold" style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }}>{clockLabel(s)}{dragging && ` – ${clockLabel(e)}`}</span>}
+                </div>
+              </div>
+            );
+          }
+
           const tasks = b.tasks ?? [];
           const isTodayBlock = todayDow === b.day_of_week;
           const done = isTodayBlock ? tasks.filter((_, i) => completedKeys.has(`${b.id}:${i}`)).length : 0;
           const linked = kind === "seance" || kind === "repas";
+          const oneLine = h < 26;
           return (
             <div
               key={b.id}
@@ -711,14 +881,17 @@ export default function WeeklyAgenda({
                 borderLeft: `3px solid ${b.color}`,
                 boxShadow: dragging ? "0 8px 24px rgba(var(--ep-shade-rgb),0.55)" : "none",
                 zIndex: dragging ? 30 : 5,
-                padding: h >= 26 ? (compact ? "2px 4px" : "4px 8px") : "0 6px",
-                touchAction: "pan-y",
+                padding: oneLine ? (compact ? "0 4px" : "0 6px") : compact ? "2px 4px" : "4px 8px",
+                touchAction,
                 WebkitUserSelect: "none",
-                cursor: editable ? "grab" : "pointer",
+                cursor,
               }}
             >
-              <p className="flex items-center gap-1 font-bold text-(--ep-strong) leading-tight" style={{ fontSize: compact ? 9.5 : 12, lineHeight: h < 26 ? `${Math.max(3, h - 1)}px` : undefined }}>
-                {Icon && !compact && h >= 22 && <Icon size={12} style={{ color: b.color, flexShrink: 0 }} strokeWidth={2.2} />}
+              <p
+                className="flex items-center gap-1 font-bold text-(--ep-strong) leading-tight"
+                style={{ fontSize: compact ? 9.5 : oneLine && h < 14 ? 10 : oneLine && h < 17 ? 11 : 12, lineHeight: oneLine ? `${Math.max(3, h - 1)}px` : undefined, paddingRight: padFor(top, h) }}
+              >
+                {Icon && !compact && h >= 11 && <Icon size={oneLine && h < 14 ? 10 : oneLine && h < 17 ? 11 : 12} style={{ color: b.color, flexShrink: 0 }} strokeWidth={2.2} />}
                 <span className="truncate">{b.label}</span>
                 {!compact && h < 40 && <span className="text-(--ep-ink)/45 font-semibold flex-shrink-0 tabular-nums">{clockLabel(s)}</span>}
                 {linked && !compact && <ChevronRight size={12} className="text-(--ep-ink)/35 flex-shrink-0 ml-auto" />}
@@ -734,7 +907,7 @@ export default function WeeklyAgenda({
                 </p>
               )}
               {dragging && h < 40 && (
-                <span className="absolute right-1 top-0 text-[10px] font-black tabular-nums text-(--ep-strong)">{clockLabel(s)} – {clockLabel(e)}</span>
+                <span className="absolute right-1 top-0 text-[10px] font-black tabular-nums text-(--ep-strong)" style={{ lineHeight: oneLine ? `${Math.max(3, h - 1)}px` : undefined, background: withAlpha(b.color, "40") }}>{clockLabel(s)} – {clockLabel(e)}</span>
               )}
               {editable && actions.setScheduleBlockTimes && h >= 22 && (
                 <div
@@ -742,7 +915,7 @@ export default function WeeklyAgenda({
                   onPointerDown={(ev) => startDrag(ev, p, "resize", row)}
                   onClick={(ev) => ev.stopPropagation()}
                   className="absolute left-0 right-0 bottom-0 flex justify-center items-end"
-                  style={{ height: 12, cursor: "ns-resize", touchAction: "none" }}
+                  style={{ height: Math.min(12, Math.round(h / 3)), cursor: "ns-resize", touchAction: "none" }}
                 >
                   <span className="mb-[3px] rounded-full" style={{ width: 22, height: 3, background: "rgba(var(--ep-ink-rgb),0.28)" }} />
                 </div>
@@ -750,6 +923,54 @@ export default function WeeklyAgenda({
             </div>
           );
         })}
+
+        {/* Réveil : un repère d'une minute, toujours visible (l'alarme réelle). */}
+        {reveil && (() => {
+          const spot = spots.get("__reveil");
+          if (!spot) return null;
+          const label = `${reveil.block.label} ${clockLabel(reveil.s)}`;
+          const style: React.CSSProperties = {
+            top: spot.top,
+            left: spot.lateral ? undefined : 6,
+            right: spot.lateral ? 4 : undefined,
+            height: labelH,
+            zIndex: 22,
+            padding: compact ? "0 4px" : "0 7px",
+            fontSize: compact ? 9 : 10.5,
+            background: "var(--ep-s2)",
+            border: "1px solid rgba(var(--ep-violet-rgb),0.55)",
+            color: "var(--ep-violet)",
+          };
+          const inner = (
+            <>
+              <span aria-hidden className="absolute left-0 right-0" style={hitExpand(labelH)} />
+              <AlarmClock size={compact ? 9 : 11} style={{ flexShrink: 0 }} />
+              <span className="truncate min-w-0">{compact ? clockLabel(reveil.s) : label}</span>
+            </>
+          );
+          return (
+            <>
+              <div aria-hidden className="absolute left-0 right-0 pointer-events-none" style={{ top: y(reveil.s), height: 2, background: "rgba(var(--ep-violet-rgb),0.75)", zIndex: 6 }} />
+              {editable ? (
+                <button
+                  type="button"
+                  aria-label={`${label}, ${t("modifier")}`}
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    if (performance.now() < pinchUntilRef.current) return;
+                    setForm({ initial: formOf(reveil.block as ScheduleBlock), editingId: reveil.block.id });
+                  }}
+                  className="absolute flex items-center gap-1 rounded-full whitespace-nowrap font-bold"
+                  style={style}
+                >
+                  {inner}
+                </button>
+              ) : (
+                <span className="absolute flex items-center gap-1 rounded-full whitespace-nowrap font-bold pointer-events-none" style={style}>{inner}</span>
+              )}
+            </>
+          );
+        })()}
 
         {isNowCol && nowAbs !== null && nowAbs >= range.from && nowAbs <= range.to && (
           <div className="absolute left-0 right-0 pointer-events-none" style={{ top: y(nowAbs), zIndex: 20 }}>
@@ -762,15 +983,29 @@ export default function WeeklyAgenda({
   }
 
   function renderHourLabels(row: number, range: { from: number; to: number }) {
-    const hours: number[] = [];
-    for (let h = range.from; h <= range.to; h += 60) hours.push(h);
+    const step = labelStep(row);
+    const ticks: number[] = [];
+    for (let m = range.from; m <= range.to; m += step) ticks.push(m);
     return (
-      <div className="relative" style={{ height: ((range.to - range.from) / 60) * row }}>
-        {hours.map((h) => (
-          <p key={h} className="absolute right-1.5 text-[10px] font-semibold tabular-nums" style={{ top: ((h - range.from) / 60) * row - 7, color: h >= ws && h <= we ? "rgba(var(--ep-ink-rgb),0.35)" : "rgba(var(--ep-ink-rgb),0.18)" }}>
-            {(h / 60) % 24}h
-          </p>
-        ))}
+      <div ref={originRef} className="relative" style={{ height: ((range.to - range.from) / 60) * row }}>
+        {ticks.map((m) => {
+          const major = m % 60 === 0;
+          const inside = m >= ws && m <= we;
+          return (
+            <p
+              key={m}
+              className="absolute right-1.5 tabular-nums whitespace-nowrap"
+              style={{
+                top: ((m - range.from) / 60) * row - (major ? 7 : 6),
+                fontSize: major ? 10 : 8.5,
+                fontWeight: major ? 600 : 500,
+                color: `rgba(var(--ep-ink-rgb),${(inside ? 0.35 : 0.18) * (major ? 1 : 0.8)})`,
+              }}
+            >
+              {tickLabel(m)}
+            </p>
+          );
+        })}
       </div>
     );
   }
@@ -798,8 +1033,119 @@ export default function WeeklyAgenda({
   const missing = editable ? missingFor(sel) : [];
   const reveilSel = reveilFor(sel);
   const sheetPlaced = sheetId ? placedById.get(sheetId) ?? null : null;
-  const weekRange = rangeOf(placed);
-  const dayRange = rangeOf(selList);
+  const weekReveils = ALL_DAYS.map((c) => reveilFor(c));
+  const weekRange = rangeOf([...placed, ...weekReveils.filter((r): r is Placed<ScheduleBlock> => !!r)]);
+  const dayRange = rangeOf(reveilSel ? [...selList, reveilSel] : selList);
+
+  const zoomView: ZoomView = viewMode;
+  const row = rows[zoomView];
+  const activeFrom = viewMode === "week" ? weekRange.from : dayRange.from;
+  useLayoutEffect(() => {
+    liveRef.current = { view: zoomView, row, from: activeFrom };
+  });
+  // Après un zoom : on fait défiler pour que l'instant visé reste sous les doigts / la souris.
+  useLayoutEffect(() => {
+    const a = anchorRef.current;
+    const o = originRef.current;
+    anchorRef.current = null;
+    if (!a || !o) return;
+    const yNow = o.getBoundingClientRect().top + ((a.abs - activeFrom) / 60) * row;
+    const diff = yNow - a.clientY;
+    if (Math.abs(diff) >= 0.5) scrollParentOf(o).scrollBy({ top: diff, behavior: "instant" });
+  }, [zoomSeq]); // eslint-disable-line react-hooks/exhaustive-deps -- ne se recale qu'après un zoom demandé
+
+  // Pincement à deux doigts et Ctrl/⌘ + molette (ou pincement du trackpad).
+  // Écouteurs natifs non passifs : il faut empêcher le zoom de la page.
+  useEffect(() => {
+    const el = zoneRef.current;
+    if (!el) return;
+    let raf = 0;
+    let pending: { row: number; y: number } | null = null;
+    const dist = (t: TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    const mid = (t: TouchList) => (t[0].clientY + t[1].clientY) / 2;
+    const onStart = (ev: TouchEvent) => {
+      if (ev.touches.length !== 2) return;
+      // Un deuxième doigt annule le glisser / l'étirement en cours : c'est un pincement.
+      cancelDragRef.current?.();
+      pinchRef.current = { d0: Math.max(10, dist(ev.touches)), r0: liveRef.current.row, abs: absAt(mid(ev.touches)) };
+      ev.preventDefault();
+    };
+    const onMove = (ev: TouchEvent) => {
+      const pinch = pinchRef.current;
+      if (!pinch || ev.touches.length < 2) return;
+      ev.preventDefault();
+      pending = { row: (pinch.r0 * dist(ev.touches)) / pinch.d0, y: mid(ev.touches) };
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const pz = pinchRef.current;
+          if (pending && pz) zoomTo(pending.row, pending.y, pz.abs);
+          pending = null;
+        });
+      }
+    };
+    const onEnd = (ev: TouchEvent) => {
+      if (pinchRef.current && ev.touches.length < 2) {
+        pinchRef.current = null;
+        pinchUntilRef.current = performance.now() + 400;
+      }
+    };
+    const onWheel = (ev: WheelEvent) => {
+      if (!ev.ctrlKey && !ev.metaKey) return;
+      ev.preventDefault();
+      const dy = Math.max(-40, Math.min(40, ev.deltaMode === 1 ? ev.deltaY * 16 : ev.deltaY));
+      zoomTo(liveRef.current.row * Math.exp(-dy * 0.01), ev.clientY);
+    };
+    // Safari iOS : son propre geste de zoom de page.
+    const onGesture = (ev: Event) => ev.preventDefault();
+    el.addEventListener("touchstart", onStart, { passive: false });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd);
+    el.addEventListener("touchcancel", onEnd);
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("gesturestart", onGesture);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+      el.removeEventListener("touchcancel", onEnd);
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("gesturestart", onGesture);
+    };
+  }, [viewMode, absAt, zoomTo]);
+
+  const levels = ZOOM_LEVELS[zoomView];
+  const zoomBar = (
+    <div className="flex items-center justify-end gap-1">
+      <button
+        type="button"
+        onClick={() => zoomStep(-1)}
+        disabled={row <= levels[0] + 0.5}
+        aria-label={t("Dézoomer")}
+        className="w-7 h-7 flex items-center justify-center rounded-md border border-(--ep-line)/25 text-(--ep-ink)/55 disabled:opacity-30"
+      >
+        <Minus size={13} />
+      </button>
+      <button
+        type="button"
+        onClick={() => zoomStep(0)}
+        title={t("Zoom par défaut")}
+        className="h-7 px-1.5 rounded-md text-[10px] font-bold tabular-nums text-(--ep-ink)/45 whitespace-nowrap"
+      >
+        1 h = {Math.round(row)} px
+      </button>
+      <button
+        type="button"
+        onClick={() => zoomStep(1)}
+        disabled={row >= levels[levels.length - 1] - 0.5}
+        aria-label={t("Zoomer")}
+        className="w-7 h-7 flex items-center justify-center rounded-md border border-(--ep-line)/25 text-(--ep-ink)/55 disabled:opacity-30"
+      >
+        <Plus size={13} />
+      </button>
+    </div>
+  );
 
   function shiftCol(delta: number) {
     setSelectedCol((prev) => (((prev - 1 + delta) % 7) + 7) % 7 + 1);
@@ -897,11 +1243,13 @@ export default function WeeklyAgenda({
       )}
 
       {viewMode === "week" ? (
-        <div className="overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch" }}>
+        <div className="space-y-1.5">
+        {zoomBar}
+        <div ref={zoneRef} className="overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}>
           <div className="flex" style={{ minWidth: 760 }}>
             <div style={{ width: 34, flexShrink: 0 }}>
               <div style={{ height: 28 }} />
-              {renderHourLabels(ROW_WEEK, weekRange)}
+              {renderHourLabels(row, weekRange)}
             </div>
             {ALL_DAYS.map((col) => {
               const r = reveilFor(col);
@@ -918,11 +1266,12 @@ export default function WeeklyAgenda({
                       </button>
                     )}
                   </div>
-                  {renderColumn(col, ROW_WEEK, weekRange, true)}
+                  {renderColumn(col, row, weekRange, true, weekReveils[col - 1])}
                 </div>
               );
             })}
           </div>
+        </div>
         </div>
       ) : (
         <div className="space-y-2">
@@ -1016,13 +1365,14 @@ export default function WeeklyAgenda({
             </div>
           )}
 
-          <div className="flex">
-            <div style={{ width: 34, flexShrink: 0 }}>{renderHourLabels(ROW_DAY, dayRange)}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>{renderColumn(sel, ROW_DAY, dayRange, false)}</div>
+          {zoomBar}
+          <div ref={zoneRef} className="flex" style={{ touchAction: "pan-y" }}>
+            <div style={{ width: 34, flexShrink: 0 }}>{renderHourLabels(row, dayRange)}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>{renderColumn(sel, row, dayRange, false, reveilSel)}</div>
           </div>
           {editable && (
             <p className="text-[10.5px] text-(--ep-ink)/35 text-center leading-relaxed">
-              {t("Tape un créneau pour ajouter · appui long pour déplacer · tire le bas d'un bloc pour l'allonger")}
+              {t("Tape un créneau pour ajouter · appui long pour déplacer · tire le bas d'un bloc pour l'allonger · pince ou Ctrl + molette pour zoomer")}
             </p>
           )}
         </div>
