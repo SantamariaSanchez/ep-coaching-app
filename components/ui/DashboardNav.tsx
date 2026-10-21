@@ -67,7 +67,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Training",
     icon: Dumbbell,
     href: "/dashboard/client/program",
-    matchSegments: ["program", "logbook", "exercises", "gyms"],
+    matchSegments: ["program", "logbook", "performances", "exercises", "gyms"],
   },
   {
     label: "Suivi",
@@ -86,7 +86,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Plus",
     icon: LayoutGrid,
     href: "/dashboard/client/plus",
-    matchSegments: ["plus", "formations", "ressources", "recettes", "science", "communaute", "abonnement", "profile", "parametres", "mon-appli", "notes", "aide"],
+    matchSegments: ["plus", "formations", "ressources", "recettes", "science", "communaute", "abonnement", "profile", "parametres", "mon-appli", "notes", "aide", "claude"],
   },
 ];
 
@@ -109,7 +109,7 @@ const COACH_TABS: TabItem[] = [
     label: "Business",
     icon: Rocket,
     href: "/dashboard/coach/studio",
-    matchSegments: ["studio", "stats-reseaux", "formations", "admin/ventes", "admin/equipe", "business", "mon-equipe", "compta", "documents", "masterclass"],
+    matchSegments: ["positionnement", "studio", "stats-reseaux", "formations", "admin/ventes", "admin/equipe", "business", "mon-equipe", "compta", "documents", "masterclass"],
   },
   {
     label: "Moi",
@@ -121,7 +121,7 @@ const COACH_TABS: TabItem[] = [
     label: "Plus",
     icon: LayoutGrid,
     href: "/dashboard/coach/plus",
-    matchSegments: ["plus", "ressources", "recettes", "exercises", "gyms", "science", "contraintes", "communaute", "profile", "parametres", "mon-appli", "finance", "admin", "notes", "aide"],
+    matchSegments: ["plus", "ressources", "recettes", "exercises", "gyms", "science", "contraintes", "communaute", "profile", "parametres", "mon-appli", "finance", "admin", "notes", "aide", "claude"],
     badge: "questions",
   },
 ];
