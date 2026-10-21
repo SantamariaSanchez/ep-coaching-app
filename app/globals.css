@@ -1376,6 +1376,12 @@ html:is([data-theme="claire"], [data-theme="douce"]) {
 }
 @media (min-width: 900px) { .ep-cols-2 { grid-template-columns: 1fr 1fr; gap: 20px; } }
 
+/* Section repliable de l'accueil (catalogue de l'appli) : pas de triangle
+   natif, le chevron tourne à l'ouverture. */
+.ep-home-details > summary::-webkit-details-marker { display: none; }
+.ep-home-details > summary svg { transition: transform 0.2s ease; }
+.ep-home-details[open] > summary svg { transform: rotate(180deg); }
+
 /* Colonne principale plus large que la colonne latérale. */
 .ep-cols-main {
   display: grid;

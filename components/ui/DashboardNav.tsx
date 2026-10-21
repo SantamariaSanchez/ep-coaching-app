@@ -503,6 +503,11 @@ export function computeNav(pathname: string, isFreeTier: boolean, showCycle: boo
   };
 }
 
+// Pages qui posent elles-mêmes note rapide et recherche dans la ligne de
+// leur titre (accueil client, components/client/home/HomeClient.tsx) : la
+// nav n'ajoute pas sa petite ligne d'icônes au-dessus (~46 px de perdus).
+const PAGES_WITH_OWN_TOOLS = new Set(["/dashboard/client"]);
+
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function DashboardNav({
@@ -1244,7 +1249,7 @@ export default function DashboardNav({
           )}
           </div>
         )}
-        {!isDesktop && !onSessionPage && mobileSubItems.length <= 1 && mobileTools && (
+        {!isDesktop && !onSessionPage && mobileSubItems.length <= 1 && mobileTools && !PAGES_WITH_OWN_TOOLS.has(pathname) && (
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "10px 12px 0", position: "relative", zIndex: 2 }}>{mobileTools}</div>
         )}
 

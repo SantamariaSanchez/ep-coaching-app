@@ -15,8 +15,8 @@ import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization } from "@/lib/personalization";
 import { getOnboardingChecklist } from "@/lib/onboarding-checklist";
 import { getClientActivityStreak } from "@/lib/client-activity";
-import { getTotalPoints } from "@/lib/gamification";
-import { computeClientDashboardStats } from "@/lib/client-dashboard-stats";
+import { getClientHomeDay } from "@/utils/client-home";
+import { weeksSince } from "@/lib/client-home";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
 import { recommendPreset } from "@/lib/preset-programs";
@@ -99,25 +99,23 @@ export default async function ClientPreviewPage({
 
   if (vue === "accueil") {
     if (isFree) {
-      const [preferences, checklist, activityStreak, totalPoints, stats] = await Promise.all([
+      const [preferences, checklist, activityStreak, day] = await Promise.all([
         getMemberPreferences(id),
         getOnboardingChecklist(id, db),
         getClientActivityStreak(id, db),
-        getTotalPoints(id),
-        computeClientDashboardStats(id, db),
+        getClientHomeDay(id, { coached: false, checkinDone: true }, db),
       ]);
       content = (
         <WelcomeGuide
           firstName={rawFirst}
-          goal={client.goal ?? null}
-          level={client.level ?? null}
           hasCoach={!!client.coach_id}
           personalization={derivePersonalization(preferences)}
           checklist={checklist}
           activityStreak={activityStreak}
-          totalPoints={totalPoints}
-          show={{ poids: isOn(appSetup, "poids"), nutrition: isOn(appSetup, "nutrition"), entrainement: isOn(appSetup, "entrainement"), sommeil: isOn(appSetup, "sommeil") }}
-          previewStats={stats}
+          show={{ nutrition: isOn(appSetup, "nutrition"), entrainement: isOn(appSetup, "entrainement") }}
+          day={day}
+          locale={locale}
+          preview
         />
       );
     } else if (!intake) {
@@ -128,7 +126,7 @@ export default async function ClientPreviewPage({
         </div>
       );
     } else {
-      const [thisWeekCheckin, latestNote, victoryRes, activityStreak, totalPoints, periodLogs, trialDaysLeft, stats] = await Promise.all([
+      const [thisWeekCheckin, latestNote, victoryRes, activityStreak, periodLogs, trialDaysLeft] = await Promise.all([
         getThisWeekCheckin(id, db),
         getLatestCoachNote(id, db),
         db
@@ -138,25 +136,36 @@ export default async function ClientPreviewPage({
           .eq("type", "victory")
           .gte("created_at", `${getWeekStart()}T00:00:00`),
         getClientActivityStreak(id, db),
-        getTotalPoints(id),
         getPeriodLogs(id, db),
         getTrialDaysLeft(id),
-        computeClientDashboardStats(id, db),
+      ]);
+      const weeks = weeksSince(client.start_date, today);
+      const [day, checklist] = await Promise.all([
+        getClientHomeDay(
+          id,
+          {
+            coached: true,
+            checkinDone: !!thisWeekCheckin,
+            checkinDay: (client as { checkin_day?: number | null }).checkin_day ?? null,
+            showVictory: !!thisWeekCheckin && (victoryRes.count ?? 0) === 0,
+            showCycle: intake.gender === "Femme" && periodLogs.length === 0 && isOn(appSetup, "cycle"),
+          },
+          db
+        ),
+        weeks < 4 ? getOnboardingChecklist(id, db) : Promise.resolve([]),
       ]);
       content = (
         <CoachedHome
           profile={client}
-          intake={intake}
           thisWeekCheckin={thisWeekCheckin}
           latestNote={latestNote}
-          showVictoryNudge={!!thisWeekCheckin && (victoryRes.count ?? 0) === 0}
           activityStreak={activityStreak}
-          totalPoints={totalPoints}
-          periodLogsCount={periodLogs.length}
           trialDaysLeft={trialDaysLeft}
           appSetup={appSetup}
           locale={locale}
-          previewStats={stats}
+          day={day}
+          checklist={checklist}
+          preview
         />
       );
     }
