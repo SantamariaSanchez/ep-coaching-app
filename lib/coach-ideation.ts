@@ -105,17 +105,27 @@ export interface CoachScript {
   // même logique de friction minimale au logging.
   shares: number | null;
   saves: number | null;
+  // Format de contenu (2026-10-21, voir lib/content-formats.ts) : face
+  // caméra, B-roll + voix off, clone, tier list... Distinct de `platform`
+  // et de `format` (court/long). Absent tant que la migration
+  // 20261021_coach_scripts_content_format n'est pas passée : face caméra.
+  content_format?: string | null;
+}
+
+/** Colonne absente (migration pas encore passée) : on relit sans elle. */
+export function isMissingColumnError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  return error.code === "PGRST204" || error.code === "42703" || /column .* does not exist|could not find the .* column/i.test(error.message ?? "");
 }
 
 export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
   try {
     const admin = createAdminClient();
-    const { data } = await admin
-      .from("coach_scripts")
-      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status, views, likes, comments_count, shares, saves")
-      .eq("coach_id", coachId)
-      .order("updated_at", { ascending: false });
-    return (data as CoachScript[]) ?? [];
+    const base = "id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status, views, likes, comments_count, shares, saves";
+    const query = (cols: string) => admin.from("coach_scripts").select(cols).eq("coach_id", coachId).order("updated_at", { ascending: false });
+    let { data, error } = await query(`${base}, content_format`);
+    if (isMissingColumnError(error)) ({ data, error } = await query(base));
+    return (data as unknown as CoachScript[]) ?? [];
   } catch {
     return [];
   }

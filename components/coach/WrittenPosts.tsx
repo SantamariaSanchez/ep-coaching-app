@@ -5,6 +5,8 @@ import { Copy, Check, Send, Trash2 } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { publishScript, deleteScript } from "@/app/dashboard/coach/studio/actions";
 import type { CoachScript } from "@/lib/coach-ideation";
+import { getContentFormat } from "@/lib/content-formats";
+import { ContentFormatBadge, ScriptBody } from "@/components/coach/ScriptFormatView";
 
 const LABELS: Record<string, string> = { linkedin: "LinkedIn", threads: "Threads" };
 
@@ -72,9 +74,16 @@ export default function WrittenPosts({ initialPosts }: { initialPosts: CoachScri
         <article key={p.id} className="ep-card" style={{ padding: "14px 14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", padding: "3px 8px", borderRadius: 999, background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-accent-hi2)" }}>{LABELS[p.platform] ?? p.platform}</span>
+            {getContentFormat(p.content_format).id !== "face_cam" && <ContentFormatBadge formatId={p.content_format} />}
             <span style={{ flex: 1, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</span>
           </div>
-          <p className="ep-selectable" style={{ margin: 0, fontSize: 13.5, color: "var(--ep-ink)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{p.content}</p>
+          {/* Carrousel LinkedIn (ou autre format structuré) : slides visibles ;
+              un post texte classique reste affiché tel quel. */}
+          {getContentFormat(p.content_format).shape !== "texte" ? (
+            <div className="ep-selectable"><ScriptBody formatId={p.content_format} content={p.content} /></div>
+          ) : (
+            <p className="ep-selectable" style={{ margin: 0, fontSize: 13.5, color: "var(--ep-ink)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{p.content}</p>
+          )}
           <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
             <button type="button" onClick={() => copy(p)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.14)", background: "rgba(var(--ep-ink-rgb),0.05)", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 800, cursor: "pointer", minHeight: 40 }}>
               {copied === p.id ? <Check size={14} /> : <Copy size={14} />} {copied === p.id ? t("Copié") : t("Copier")}

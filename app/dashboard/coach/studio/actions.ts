@@ -5,7 +5,8 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
-import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus } from "@/lib/coach-ideation";
+import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus, isMissingColumnError } from "@/lib/coach-ideation";
+import { isContentFormatId } from "@/lib/content-formats";
 import { safeExternalUrl } from "@/lib/sanitize";
 import { getAllGuidesWithContent, type GuideMagnet } from "@/lib/lead-magnets";
 
@@ -16,6 +17,8 @@ export async function createContentIdea(input: {
   platform: ContentPlatform;
   notes?: string;
   sourceQuestionId?: string;
+  /** Format de contenu suggéré (lib/content-formats.ts), optionnel. */
+  contentFormat?: string | null;
 }): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -27,15 +30,20 @@ export async function createContentIdea(input: {
     return { error: "Plateforme invalide." };
   }
 
+  if (input.contentFormat && !isContentFormatId(input.contentFormat)) return { error: "Format invalide." };
+
   const admin = createAdminClient();
-  const { error } = await admin.from("content_ideas").insert({
+  const row: Record<string, unknown> = {
     coach_id: guard.userId,
     title,
     platform: input.platform,
     notes: input.notes?.trim() || null,
     source: input.sourceQuestionId ? "question" : "manuel",
     source_question_id: input.sourceQuestionId ?? null,
-  });
+  };
+  let { error } = await admin.from("content_ideas").insert(input.contentFormat ? { ...row, content_format: input.contentFormat } : row);
+  // Migration 20261021 pas encore passée : l'idée s'enregistre sans son format.
+  if (input.contentFormat && isMissingColumnError(error)) ({ error } = await admin.from("content_ideas").insert(row));
   if (error) return { error: error.message };
 
   revalidatePath("/dashboard/coach/studio");
@@ -44,7 +52,7 @@ export async function createContentIdea(input: {
 
 export async function updateContentIdea(
   id: string,
-  updates: { title?: string; notes?: string; platform?: ContentPlatform; status?: ContentStatus }
+  updates: { title?: string; notes?: string; platform?: ContentPlatform; status?: ContentStatus; contentFormat?: string | null }
 ): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -64,6 +72,10 @@ export async function updateContentIdea(
   if (updates.status !== undefined) {
     if (!(CONTENT_STATUSES as readonly string[]).includes(updates.status)) return { error: "Statut invalide." };
     patch.status = updates.status;
+  }
+  if (updates.contentFormat !== undefined) {
+    if (updates.contentFormat !== null && !isContentFormatId(updates.contentFormat)) return { error: "Format invalide." };
+    patch.content_format = updates.contentFormat;
   }
 
   const admin = createAdminClient();
@@ -276,6 +288,8 @@ export async function createScript(input: {
   // lieu de forcer un passage par à_tourner/tourné qui n'a pas de sens
   // pour ce format.
   status?: ScriptStatus;
+  /** Format de contenu (face_cam, clone, tier_list...), lib/content-formats.ts. */
+  contentFormat?: string;
 }): Promise<{ error?: string; success?: boolean; id?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -292,20 +306,21 @@ export async function createScript(input: {
   if (input.status !== undefined && !(SCRIPT_STATUSES as readonly string[]).includes(input.status)) {
     return { error: "Statut invalide." };
   }
+  if (input.contentFormat !== undefined && !isContentFormatId(input.contentFormat)) return { error: "Format invalide." };
 
   const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("coach_scripts")
-    .insert({
-      coach_id: guard.userId,
-      title,
-      format: input.format,
-      content: input.content?.trim() || null,
-      ...(platform ? { platform } : {}),
-      ...(input.status ? { status: input.status } : {}),
-    })
-    .select("id")
-    .single();
+  const row = {
+    coach_id: guard.userId,
+    title,
+    format: input.format,
+    content: input.content?.trim() || null,
+    ...(platform ? { platform } : {}),
+    ...(input.status ? { status: input.status } : {}),
+  };
+  const insert = (r: Record<string, unknown>) => admin.from("coach_scripts").insert(r).select("id").single();
+  let { data, error } = await insert(input.contentFormat ? { ...row, content_format: input.contentFormat } : row);
+  // Migration 20261021 pas encore passée : le script s'enregistre quand même.
+  if (input.contentFormat && isMissingColumnError(error)) ({ data, error } = await insert(row));
   if (error) return { error: error.message };
 
   revalidatePath("/dashboard/coach/studio");
@@ -338,6 +353,8 @@ export async function updateScript(
     // ici pour rester tolérant si une nouvelle plateforme apparaît avant
     // d'y penser côté serveur (même choix que `pillar`/`source_reference`).
     platform?: string;
+    /** Format de contenu (2026-10-21), voir lib/content-formats.ts. */
+    contentFormat?: string;
   }
 ): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
@@ -366,6 +383,10 @@ export async function updateScript(
     if (!(SCRIPT_STATUSES as readonly string[]).includes(updates.status)) return { error: "Statut invalide." };
     patch.status = updates.status;
   }
+  if (updates.contentFormat !== undefined) {
+    if (!isContentFormatId(updates.contentFormat)) return { error: "Format invalide." };
+    patch.content_format = updates.contentFormat;
+  }
   for (const [key, col] of [["views", "views"], ["likes", "likes"], ["commentsCount", "comments_count"], ["shares", "shares"], ["saves", "saves"]] as const) {
     const val = updates[key];
     if (val === undefined) continue;
@@ -375,6 +396,9 @@ export async function updateScript(
 
   const admin = createAdminClient();
   const { error } = await admin.from("coach_scripts").update(patch).eq("id", id).eq("coach_id", guard.userId);
+  if (error && "content_format" in patch && isMissingColumnError(error)) {
+    return { error: "Les formats de contenu arrivent bientôt : la mise à jour de la base n'est pas encore faite." };
+  }
   if (error) return { error: error.message };
 
   revalidatePath("/dashboard/coach/studio");

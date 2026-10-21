@@ -17,6 +17,8 @@ import { getActivePlan } from "@/lib/nutrition-sync";
 import { MEAL_SLOTS, planItemsFor, slotLabel } from "@/lib/nutrition-engine";
 import { searchLeadMagnets, getCoachLeadMagnets } from "@/lib/lead-magnets";
 import { isRealAccount } from "@/lib/internal-accounts";
+import { CONTENT_FORMAT_IDS, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
+import { isMissingColumnError } from "@/lib/coach-ideation";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -77,7 +79,7 @@ export const DAILY_TOOLS: ToolDef[] = [
   {
     name: "modifier_script",
     roles: ["coach"],
-    description: "Met à jour un script du Studio créatif : titre, accroche, contenu, appel à l'action, description (légende du post) ou statut (a_tourner, tourne). Seuls les champs donnés changent.",
+    description: "Met à jour un script du Studio créatif : titre, accroche, contenu, appel à l'action, description (légende du post), format de contenu (format_contenu) ou statut (a_tourner, tourne). Seuls les champs donnés changent. Si tu changes de format, réécris aussi le contenu dans la forme du nouveau format : " + contentFormatsToolHint() + ".",
     inputSchema: {
       type: "object",
       properties: {
@@ -87,6 +89,7 @@ export const DAILY_TOOLS: ToolDef[] = [
         contenu: { type: "string" },
         cta: { type: "string" },
         description: { type: "string", description: "Légende / description du post" },
+        format_contenu: { type: "string", enum: CONTENT_FORMAT_IDS, description: "Format de contenu (face_cam, clone, tier_list...)" },
         statut: { type: "string", enum: ["a_tourner", "tourne"] },
       },
       required: ["script"],
@@ -366,9 +369,15 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
         if (!["a_tourner", "tourne"].includes(args.statut)) return text("Statut invalide : a_tourner ou tourne (pour publier, utilise publier_script).");
         patch.status = args.statut;
       }
+      if (args.format_contenu !== undefined && args.format_contenu !== null && args.format_contenu !== "") {
+        if (!isContentFormatId(args.format_contenu)) return text(`Format de contenu inconnu. Valeurs possibles : ${CONTENT_FORMAT_IDS.join(", ")}.`);
+        patch.content_format = args.format_contenu;
+      }
       if (Object.keys(patch).length === 1) return text("Aucun champ à modifier.");
       const { error } = await admin.from("coach_scripts").update(patch).eq("id", script.id).eq("coach_id", ownerId);
+      if (error && patch.content_format && isMissingColumnError(error)) return text("Les formats de contenu ne sont pas encore activés dans la base EP Coaching. Réessaie sans format_contenu.");
       if (error) return text("Modification impossible, réessaie.");
+      if (patch.content_format) return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)), format ${getContentFormat(patch.content_format).label}.`);
       return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)).`);
     }
 

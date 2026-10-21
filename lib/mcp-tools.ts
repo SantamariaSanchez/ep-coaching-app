@@ -10,6 +10,8 @@ import { MEAL_SLOTS } from "@/lib/nutrition-engine";
 import { DISCIPLINE_BY_KEY, bestRecords, type PerformanceEntry } from "@/lib/disciplines";
 import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioning } from "@/lib/positioning";
 import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
+import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
+import { isMissingColumnError } from "@/lib/coach-ideation";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -85,19 +87,20 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "mes_scripts",
     roles: ["coach"],
-    description: "Scripts du Studio créatif du coach (identifiant court, titre, accroche, statut). L'identifiant sert à modifier_script et publier_script.",
+    description: "Scripts du Studio créatif du coach (identifiant court, statut, titre, plateforme, format de contenu, accroche). L'identifiant sert à modifier_script et publier_script.",
     inputSchema: { type: "object", properties: { statut: { type: "string", enum: ["a_tourner", "tourne", "publie"] }, nombre: { type: "number" } } },
   },
   {
     name: "ajouter_script",
     roles: ["coach"],
-    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ».",
+    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach.",
     inputSchema: {
       type: "object",
       properties: {
         titre: { type: "string" },
-        accroche: { type: "string", description: "La première phrase dite face caméra" },
-        contenu: { type: "string", description: "Le script complet" },
+        accroche: { type: "string", description: "La première phrase dite (ou le premier texte à l'écran)" },
+        contenu: { type: "string", description: "Le script complet, dans la forme du format choisi" },
+        format_contenu: { type: "string", enum: CONTENT_FORMAT_IDS, description: "Format de contenu, face_cam par défaut" },
         cta: { type: "string", description: "L'appel à l'action de fin" },
         plateforme: { type: "string", enum: ["reel", "youtube", "linkedin", "threads"], description: "reel = format court (Instagram, TikTok, Facebook), par défaut" },
         pilier: { type: "string" },
@@ -108,10 +111,15 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "ajouter_idee_contenu",
     roles: ["coach"],
-    description: "Ajoute une idée de contenu dans le Studio du coach.",
+    description: "Ajoute une idée de contenu dans le Studio du coach, avec si besoin le format de contenu suggéré (tier list, clone, B-roll...).",
     inputSchema: {
       type: "object",
-      properties: { titre: { type: "string" }, notes: { type: "string" }, plateforme: { type: "string", enum: ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads", "general"] } },
+      properties: {
+        titre: { type: "string" },
+        notes: { type: "string" },
+        plateforme: { type: "string", enum: ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads", "general"] },
+        format_contenu: { type: "string", enum: CONTENT_FORMAT_IDS, description: "Format de contenu suggéré (optionnel)" },
+      },
       required: ["titre"],
     },
   },
@@ -380,11 +388,17 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
 
     case "mes_scripts": {
       const limit = numArg(args.nombre, 1, 200) ?? 50;
-      let q = admin.from("coach_scripts").select("id, title, hook, status, platform, pillar, updated_at").eq("coach_id", ownerId).order("updated_at", { ascending: false }).limit(limit);
-      if (typeof args.statut === "string" && ["a_tourner", "tourne", "publie"].includes(args.statut)) q = q.eq("status", args.statut);
-      const { data } = await q;
-      const rows = (data ?? []) as { id: string; title: string; hook: string | null; status: string; platform: string | null; pillar: string | null }[];
-      return text(rows.length ? rows.map((r) => `- ${r.id.slice(0, 8)} [${r.status}] ${r.title}${r.platform ? ` (${r.platform})` : ""}${r.hook ? ` : « ${r.hook} »` : ""}`).join("\n") : "Aucun script.");
+      const base = "id, title, hook, status, platform, pillar, updated_at";
+      const query = (cols: string) => {
+        let q = admin.from("coach_scripts").select(cols).eq("coach_id", ownerId).order("updated_at", { ascending: false }).limit(limit);
+        if (typeof args.statut === "string" && ["a_tourner", "tourne", "publie"].includes(args.statut)) q = q.eq("status", args.statut);
+        return q;
+      };
+      // content_format arrive avec la migration 20261021 : sans elle, on relit sans.
+      let { data, error } = await query(`${base}, content_format`);
+      if (isMissingColumnError(error)) ({ data, error } = await query(base));
+      const rows = (data ?? []) as unknown as { id: string; title: string; hook: string | null; status: string; platform: string | null; pillar: string | null; content_format?: string | null }[];
+      return text(rows.length ? rows.map((r) => `- ${r.id.slice(0, 8)} [${r.status}] ${r.title}${r.platform ? ` (${r.platform}, ${getContentFormat(r.content_format).label})` : ` (${getContentFormat(r.content_format).label})`}${r.hook ? ` : « ${r.hook} »` : ""}`).join("\n") : "Aucun script.");
     }
 
     case "ajouter_script": {
@@ -395,22 +409,32 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       // pour tout le format court, quel que soit le réseau.
       const asked = String(args.plateforme ?? "");
       const platform = ["youtube", "linkedin", "threads"].includes(asked) ? asked : "reel";
-      const { error } = await admin.from("coach_scripts").insert({
+      if (args.format_contenu !== undefined && args.format_contenu !== null && args.format_contenu !== "" && !isContentFormatId(args.format_contenu)) {
+        return text(`Format de contenu inconnu. Valeurs possibles : ${CONTENT_FORMAT_IDS.join(", ")}.`);
+      }
+      const contentFormat = isContentFormatId(args.format_contenu) ? args.format_contenu : DEFAULT_CONTENT_FORMAT;
+      const row = {
         coach_id: ownerId, title, content, status: platform === "linkedin" || platform === "threads" ? "publie" : "a_tourner", platform, format: platform === "youtube" ? "long" : "court",
         hook: typeof args.accroche === "string" ? args.accroche.slice(0, 500) : null,
         cta: typeof args.cta === "string" ? args.cta.slice(0, 500) : null,
         pillar: typeof args.pilier === "string" ? args.pilier.slice(0, 100) : null,
         source_reference: "Claude",
-      });
+      };
+      let { error } = await admin.from("coach_scripts").insert({ ...row, content_format: contentFormat });
+      // Migration 20261021 pas encore passée : le script s'ajoute sans son format.
+      if (isMissingColumnError(error)) ({ error } = await admin.from("coach_scripts").insert(row));
       if (error) return text("Ajout impossible, réessaie.");
-      return text(`Script « ${title} » ajouté dans ton Studio, à tourner.`);
+      return text(`Script « ${title} » (${getContentFormat(contentFormat).label}) ajouté dans ton Studio, à tourner.`);
     }
 
     case "ajouter_idee_contenu": {
       const title = String(args.titre ?? "").trim().slice(0, 200);
       if (!title) return text("Titre obligatoire.");
       const platform = ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads", "general"].includes(String(args.plateforme)) ? String(args.plateforme) : "general";
-      const { error } = await admin.from("content_ideas").insert({ coach_id: ownerId, title, notes: typeof args.notes === "string" ? args.notes.slice(0, 5000) : null, platform, status: "idee", source: "manuel" });
+      const row: Record<string, unknown> = { coach_id: ownerId, title, notes: typeof args.notes === "string" ? args.notes.slice(0, 5000) : null, platform, status: "idee", source: "manuel" };
+      const contentFormat = isContentFormatId(args.format_contenu) ? args.format_contenu : null;
+      let { error } = await admin.from("content_ideas").insert(contentFormat ? { ...row, content_format: contentFormat } : row);
+      if (contentFormat && isMissingColumnError(error)) ({ error } = await admin.from("content_ideas").insert(row));
       if (error) return text("Ajout impossible, réessaie.");
       return text(`Idée « ${title} » ajoutée dans ton Studio.`);
     }

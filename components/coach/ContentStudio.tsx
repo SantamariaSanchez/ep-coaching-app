@@ -7,6 +7,8 @@ import { createContentIdea, updateContentIdea, deleteContentIdea } from "@/app/d
 import type { ContentIdea, ContentPlatform, ContentStatus } from "@/lib/content-ideas";
 import { withAlpha } from "@/lib/theme-color";
 import { safeAction } from "@/lib/safe-action";
+import { CONTENT_FORMATS } from "@/lib/content-formats";
+import { ContentFormatBadge } from "@/components/coach/ScriptFormatView";
 
 // Pas de logos de marque (Instagram/YouTube/LinkedIn) : lucide-react ne les
 // exporte plus (retirés pour raisons de droits), même convention déjà en
@@ -77,6 +79,8 @@ export default function ContentStudio({
   const [title, setTitle] = useState("");
   const [platform, setPlatform] = useState<ContentPlatform>(CONTENT_PLATFORM_ORDER[0] ?? "general");
   const [notes, setNotes] = useState("");
+  // Format de contenu suggéré (2026-10-21), optionnel : "" = pas décidé.
+  const [contentFormat, setContentFormat] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -93,7 +97,7 @@ export default function ContentStudio({
       return;
     }
     startTransition(async () => {
-      const result = await safeAction(() => createContentIdea({ title: t, platform, notes: notes || undefined }));
+      const result = await safeAction(() => createContentIdea({ title: t, platform, notes: notes || undefined, contentFormat: contentFormat || null }));
       if (result.error) {
         setError(result.error);
         return;
@@ -112,11 +116,13 @@ export default function ContentStudio({
           source_question_id: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          content_format: contentFormat || null,
         },
         ...prev,
       ]);
       setTitle("");
       setNotes("");
+      setContentFormat("");
       setShowForm(false);
     });
   }
@@ -215,6 +221,17 @@ export default function ContentStudio({
               </button>
             ))}
           </div>
+          <select
+            value={contentFormat}
+            onChange={(e) => setContentFormat(e.target.value)}
+            aria-label={tr("Format suggéré (optionnel)")}
+            style={{ ...inputStyle, marginTop: 10, padding: "9px 12px", width: "auto", maxWidth: "100%", cursor: "pointer" }}
+          >
+            <option value="">{tr("Format suggéré (optionnel)")}</option>
+            {CONTENT_FORMATS.map((f) => (
+              <option key={f.id} value={f.id}>{tr(f.label)}</option>
+            ))}
+          </select>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -279,6 +296,11 @@ export default function ContentStudio({
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)" }}>{idea.title}</p>
+                    {idea.content_format && (
+                      <div style={{ marginTop: 5 }}>
+                        <ContentFormatBadge formatId={idea.content_format} />
+                      </div>
+                    )}
                     {idea.notes && (
                       <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
                         {idea.notes}

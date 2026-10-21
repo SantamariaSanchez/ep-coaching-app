@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw } from "lucide-react";
+import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw, Wand2 } from "lucide-react";
 import { createScript, updateScript, deleteScript, publishScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
 import Teleprompter from "@/components/coach/Teleprompter";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
@@ -14,6 +14,8 @@ import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking"
 import Link from "next/link";
 import { withAlpha } from "@/lib/theme-color";
 import { safeAction } from "@/lib/safe-action";
+import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript, prompterText } from "@/lib/content-formats";
+import { ContentFormatBadge, ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
   a_tourner: { label: "À tourner", color: "var(--ep-yellow)" },
@@ -104,6 +106,27 @@ const WRITTEN_PLATFORMS = new Set(["linkedin", "threads"]);
 // Ce qu'on peut créer : le reel (format court, tous réseaux, Instagram
 // compris), la vidéo YouTube longue, le post LinkedIn et le post Threads.
 const CREATABLE = ["reel", "youtube", "linkedin", "threads"];
+
+// Rien à filmer : post écrit (LinkedIn, Threads) ou format sans vidéo
+// (carrousel, voir lib/content-formats.ts). Une seule étape, « J'ai posté ».
+function isNotFilmed(script: Pick<CoachScript, "platform" | "content_format">): boolean {
+  return WRITTEN_PLATFORMS.has(script.platform) || !getContentFormat(script.content_format).filmed;
+}
+
+// Libellé du bloc de texte selon la forme du format.
+function bodyLabel(script: CoachScript): string {
+  if (WRITTEN_PLATFORMS.has(script.platform) && getContentFormat(script.content_format).shape !== "slides") return "Texte du post";
+  const f = getContentFormat(script.content_format);
+  switch (f.shape) {
+    case "points": return "Accroche et points à aborder";
+    case "broll": return "Plans, texte à l'écran et voix off";
+    case "dialogue": return "Dialogue (A / B)";
+    case "tier": return "Tier list";
+    case "paires": return `${f.pairLabels?.[0] ?? ""} / ${f.pairLabels?.[1] ?? ""}`;
+    case "slides": return "Slides";
+    default: return "Script (mot pour mot)";
+  }
+}
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
 
@@ -300,6 +323,12 @@ function MyScripts({
   // (2026-09-22), Instagram de nouveau depuis le 2026-09-29 : nouveau compte
   // @santamariasanchezep_ (2026-10-13). Elle ne se change plus après la création.
   const [newPlatform, setNewPlatform] = useState("reel");
+  // Format de contenu (2026-10-21) : face caméra, B-roll, clone, tier list...
+  const [newContentFormat, setNewContentFormat] = useState(DEFAULT_CONTENT_FORMAT);
+  // Mode tournage (texte en grand, plans B-roll à cocher) et prompteur lancé
+  // pour un seul script, en plus du tournage automatique en file.
+  const [shootingId, setShootingId] = useState<string | null>(null);
+  const [soloPrompter, setSoloPrompter] = useState<{ id: string; title: string; text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -432,6 +461,7 @@ function MyScripts({
   const [statusFilter, setStatusFilter] = useState<ScriptStatus | "all">("all");
   const [platformFilter, setPlatformFilter] = useState<string | "all">("all");
   const [pillarFilter, setPillarFilter] = useState<string | "all">("all");
+  const [formatFilter, setFormatFilter] = useState<string | "all">("all");
 
   // Lien depuis la recherche globale (?script=) : le script visé doit être
   // visible, donc on lève recherche et filtres en cours, on déplie les
@@ -444,6 +474,7 @@ function MyScripts({
       setStatusFilter("all");
       setPlatformFilter("all");
       setPillarFilter("all");
+      setFormatFilter("all");
       if (scripts.some((s) => s.id === focusScriptId && s.status === "publie")) setShowPublished(true);
     }
   }
@@ -454,6 +485,10 @@ function MyScripts({
     }, 120);
     return () => clearTimeout(t);
   }, [focusScriptId]);
+  const formatOptions = useMemo(
+    () => CONTENT_FORMATS.filter((f) => scripts.some((s) => getContentFormat(s.content_format).id === f.id)),
+    [scripts]
+  );
   const pillarOptions = useMemo(
     () => Array.from(new Set(scripts.map((s) => s.pillar).filter((p): p is string => !!p))).sort(),
     [scripts]
@@ -462,6 +497,7 @@ function MyScripts({
     if (statusFilter !== "all" && script.status !== statusFilter) return false;
     if (platformFilter !== "all" && script.platform !== platformFilter) return false;
     if (pillarFilter !== "all" && script.pillar !== pillarFilter) return false;
+    if (formatFilter !== "all" && getContentFormat(script.content_format).id !== formatFilter) return false;
     return true;
   }
 
@@ -502,7 +538,7 @@ function MyScripts({
   const filmableScripts = useMemo(
     () =>
       scripts
-        .filter((s) => !WRITTEN_PLATFORMS.has(s.platform) && s.status === "a_tourner" && !!s.content)
+        .filter((s) => !isNotFilmed(s) && s.status === "a_tourner" && !!s.content)
         .slice()
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
     [scripts]
@@ -559,7 +595,7 @@ function MyScripts({
     startTransition(async () => {
       // Écrit (LinkedIn/Threads) : direct en publié, jamais à_tourner.
       const initialStatus: ScriptStatus = WRITTEN_PLATFORMS.has(newPlatform) ? "publie" : "a_tourner";
-      const result = await safeAction(() => createScript({ title: t, format, platform: newPlatform, status: initialStatus }));
+      const result = await safeAction(() => createScript({ title: t, format, platform: newPlatform, status: initialStatus, contentFormat: newContentFormat }));
       if (result.error) {
         setError(result.error);
         return;
@@ -585,12 +621,15 @@ function MyScripts({
         comments_count: null,
         shares: null,
         saves: null,
+        content_format: newContentFormat,
       };
       setScripts((prev) => [newScript, ...prev]);
       setTitle("");
       setShowForm(false);
       setOpenId(newScript.id);
-      setDraft("");
+      // Le modèle du format est déjà posé dans l'éditeur : la bonne forme
+      // (répliques A/B, plans B-roll, tiers S/A/B/C...) sans la deviner.
+      setDraft(getContentFormat(newContentFormat).template);
     });
   }
 
@@ -616,6 +655,18 @@ function MyScripts({
     setCaptionOpenId(null);
     startTransition(async () => {
       const result = await safeAction(() => updateScript(id, { caption: captionDraft }));
+      if (result.error) {
+        setScripts(backup);
+        setError(result.error);
+      }
+    });
+  }
+
+  function changeContentFormat(id: string, contentFormat: string) {
+    const backup = scripts;
+    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, content_format: contentFormat } : s)));
+    startTransition(async () => {
+      const result = await safeAction(() => updateScript(id, { contentFormat }));
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -721,7 +772,17 @@ function MyScripts({
             style={inputStyle}
             autoFocus
           />
-          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+          <p style={{ margin: "14px 0 6px", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+            {tr("Format du contenu")}
+          </p>
+          <ContentFormatPicker value={newContentFormat} onChange={setNewContentFormat} />
+          <div style={{ marginTop: 10 }}>
+            <FormatGuide formatId={newContentFormat} />
+          </div>
+          <p style={{ margin: "14px 0 6px", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+            {tr("Durée et plateforme")}
+          </p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {(["court", "long"] as ScriptFormat[]).map((f) => (
               <button
                 key={f}
@@ -734,7 +795,7 @@ function MyScripts({
                   color: format === f ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
                 }}
               >
-                {tr("Format")}{" "}{f}
+                {f === "court" ? tr("Court") : tr("Long")}
               </button>
             ))}
             <select
@@ -851,6 +912,19 @@ function MyScripts({
                 <option key={id} value={id}>{label}</option>
               ))}
             </select>
+            {formatOptions.length > 1 && (
+              <select
+                value={formatFilter}
+                onChange={(e) => setFormatFilter(e.target.value)}
+                aria-label={tr("Filtrer par format")}
+                style={selectStyle}
+              >
+                <option value="all">{tr("Tous les formats")}</option>
+                {formatOptions.map((f) => (
+                  <option key={f.id} value={f.id}>{tr(f.label)}</option>
+                ))}
+              </select>
+            )}
             {pillarOptions.length > 0 && (
               <select
                 value={pillarFilter}
@@ -864,10 +938,10 @@ function MyScripts({
                 ))}
               </select>
             )}
-            {(statusFilter !== "all" || platformFilter !== "all" || pillarFilter !== "all") && (
+            {(statusFilter !== "all" || platformFilter !== "all" || pillarFilter !== "all" || formatFilter !== "all") && (
               <button
                 type="button"
-                onClick={() => { setStatusFilter("all"); setPlatformFilter("all"); setPillarFilter("all"); }}
+                onClick={() => { setStatusFilter("all"); setPlatformFilter("all"); setPillarFilter("all"); setFormatFilter("all"); }}
                 style={{ fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}
               >
                 {tr("Réinitialiser")}
@@ -1007,10 +1081,36 @@ function MyScripts({
         <Teleprompter
           scriptId={currentFilmScript.id}
           title={currentFilmScript.title}
-          content={currentFilmScript.content ?? ""}
+          content={prompterText(currentFilmScript.content_format, currentFilmScript.content)}
           queueProgress={{ index: filmQueueIndex + 1, total: filmQueueIds.length }}
           onClose={() => setFilmQueueIds(null)}
           onFinishedTake={finishCurrentTake}
+        />
+      )}
+      {(() => {
+        const shooting = shootingId ? scripts.find((s) => s.id === shootingId) : null;
+        if (!shooting) return null;
+        return (
+          <ShootingMode
+            scriptId={shooting.id}
+            title={shooting.title}
+            formatId={shooting.content_format}
+            content={shooting.content ?? ""}
+            onClose={() => setShootingId(null)}
+            onOpenPrompter={(text) => {
+              setShootingId(null);
+              setSoloPrompter({ id: shooting.id, title: shooting.title, text });
+            }}
+            onShot={shooting.status === "a_tourner" ? () => { setShootingId(null); cycleStatus(shooting.id, "a_tourner"); } : undefined}
+          />
+        );
+      })()}
+      {soloPrompter && !filmQueueIds && (
+        <Teleprompter
+          scriptId={soloPrompter.id}
+          title={soloPrompter.title}
+          content={soloPrompter.text}
+          onClose={() => setSoloPrompter(null)}
         />
       )}
     </div>
@@ -1058,17 +1158,12 @@ function MyScripts({
                 >
                   {platformInfo?.label ?? script.platform}
                 </span>
-                <span
-                  style={{
-                    fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
-                    padding: "3px 8px", borderRadius: 999, background: "rgba(var(--ep-accent-rgb),0.15)", color: "var(--ep-accent)",
-                  }}
-                >
-                  {script.format}
+                {/* Format de contenu (2026-10-21) : face caméra, clone, tier
+                    list... La durée court/long passe en petit texte à côté. */}
+                <ContentFormatBadge formatId={script.content_format} />
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
+                  {script.format === "long" ? tr("long") : tr("court")}{duration ? ` · ${duration}` : ""}
                 </span>
-                {duration && (
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{duration}</span>
-                )}
                 {script.pillar && (
                   <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", padding: "3px 8px", borderRadius: 999, border: "1px solid rgba(var(--ep-ink-rgb),0.12)" }}>
                     {script.pillar}
@@ -1101,12 +1196,12 @@ function MyScripts({
                     padding: "3px 8px", borderRadius: 999, border: `1px solid ${withAlpha(statusInfo.color, "55")}`, color: statusInfo.color,
                   }}
                 >
-                  {WRITTEN_PLATFORMS.has(script.platform) && script.status === "a_tourner" ? tr("À poster") : statusInfo.label}
+                  {isNotFilmed(script) && script.status === "a_tourner" ? tr("À poster") : statusInfo.label}
                 </span>
                 {(() => {
                   // Un post écrit (LinkedIn, Threads) ne se tourne pas : une
                   // seule étape, « J'ai posté », qui le sort du Studio.
-                  const written = WRITTEN_PLATFORMS.has(script.platform) && script.status === "a_tourner";
+                  const written = isNotFilmed(script) && script.status === "a_tourner";
                   const action = written ? STATUS_ACTIONS.tourne : (STATUS_ACTIONS[script.status] ?? STATUS_ACTIONS.a_tourner);
                   const Icon = written ? Send : script.status === "a_tourner" ? Clapperboard : script.status === "tourne" ? Send : RotateCcw;
                   return (
@@ -1145,6 +1240,36 @@ function MyScripts({
 
               {isExpanded ? (
                 <>
+              {/* Format de contenu modifiable, et mode tournage pour ce
+                  script (texte en grand, plans B-roll à cocher, rôle A/B). */}
+              <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
+                  {tr("Format")}
+                  <select
+                    value={getContentFormat(script.content_format).id}
+                    onChange={(e) => changeContentFormat(script.id, e.target.value)}
+                    aria-label={tr("Format du contenu")}
+                    style={{ ...selectStyle, width: "auto", maxWidth: 200 }}
+                  >
+                    {CONTENT_FORMATS.map((f) => (
+                      <option key={f.id} value={f.id}>{tr(f.label)}</option>
+                    ))}
+                  </select>
+                </label>
+                {!isNotFilmed(script) && script.status !== "publie" && !!script.content && (
+                  <button
+                    type="button"
+                    onClick={() => setShootingId(script.id)}
+                    style={{
+                      marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "7px 12px", borderRadius: 999, fontSize: 11.5, fontWeight: 800, cursor: "pointer",
+                      border: "1px solid rgba(var(--ep-accent-rgb),0.45)", background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-ink)",
+                    }}
+                  >
+                    <Camera size={13} /> {tr("Mode tournage")}
+                  </button>
+                )}
+              </div>
               {/* Script mot pour mot — retour direct 2026-09-02 : "le script
                   que je dois lire mot pour mot y'a pas encore" — c'était déjà
                   là en base, mais noyé sous la description Instagram et
@@ -1155,7 +1280,7 @@ function MyScripts({
                   <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-accent)" }}>
                     {/* Retour direct 2026-09-18 : LinkedIn/Threads sont du
                         texte posté tel quel, jamais lu à voix haute. */}
-                    {WRITTEN_PLATFORMS.has(script.platform) ? tr("Texte du post") : tr("Script (mot pour mot)")}
+                    {tr(bodyLabel(script))}
                   </span>
                   {script.content && (
                     <div style={{ display: "flex", gap: 6 }}>
@@ -1173,6 +1298,27 @@ function MyScripts({
                       style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
                       autoFocus
                     />
+                    {(() => {
+                      const f = getContentFormat(script.content_format);
+                      if (f.shape === "texte") return null;
+                      const recognized = draft.trim() ? parseScript(f.id, draft).shape !== "texte" : false;
+                      return (
+                        <div style={{ marginTop: 6, display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+                          <p style={{ margin: 0, flex: 1, minWidth: 180, fontSize: 11, lineHeight: 1.45, color: recognized ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.5)" }}>
+                            {recognized ? `${tr("Forme reconnue")} : ` : `${tr("Forme attendue")} : `}{tr(f.shapeHint)}
+                          </p>
+                          {!draft.includes(f.template.split("\n")[0]) && (
+                            <button
+                              type="button"
+                              onClick={() => setDraft((d) => (d.trim() ? `${d.trimEnd()}\n\n${f.template}` : f.template))}
+                              style={{ fontSize: 11, fontWeight: 800, color: "var(--ep-accent)", background: "none", border: "1px dashed rgba(var(--ep-accent-rgb),0.4)", borderRadius: 8, padding: "5px 9px", cursor: "pointer" }}
+                            >
+                              {tr("Insérer le modèle")}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                       <button
                         type="button"
@@ -1204,19 +1350,20 @@ function MyScripts({
                   // hauteur plafonnée avec défilement interne au lieu d'un
                   // bloc qui grandissait sans limite et allongeait toute la
                   // page pour un script long.
-                  <p
+                  // Affichage adapté au format (2026-10-21) : bulles A/B,
+                  // tableau B-roll, grille de tier list... texte brut si la
+                  // forme n'est pas suivie. Un clic ouvre toujours l'édition.
+                  <div
                     onClick={() => {
                       setOpenId(script.id);
                       setDraft(script.content ?? "");
                     }}
-                    style={{
-                      margin: 0, fontSize: 13, color: "var(--ep-ink)", lineHeight: 1.6,
-                      whiteSpace: "pre-wrap", cursor: "text",
-                      maxHeight: "33vh", overflowY: "auto",
-                    }}
+                    style={{ cursor: "text", maxHeight: "33vh", overflowY: "auto" }}
                   >
-                    {script.content || <span style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }}>{tr("Vide, clique pour écrire.")}</span>}
-                  </p>
+                    {script.content
+                      ? <ScriptBody formatId={script.content_format} content={script.content} />
+                      : <p style={{ margin: 0, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.25)" }}>{tr("Vide, clique pour écrire.")}</p>}
+                  </div>
                 )}
               </div>
 
@@ -1544,6 +1691,7 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
           </p>
         </div>
       )}
+      <FormatScriptGenerator context={context} />
       <p style={{ margin: "0 0 12px", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
         {tr("Chaque prompt copié emporte aussi les règles d'écriture du dictionnaire (mots à utiliser, mots interdits, appel à l'action selon la plateforme) : Claude écrit avec le vocabulaire des créateurs de ta niche, pas avec le sien.")}
       </p>
@@ -1562,6 +1710,91 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ── Générateur de script par format ─────────────────────────────────────
+
+// Générateur du Studio (2026-10-21) : même paradigme que le reste de
+// l'onglet (zéro appel IA, un prompt bien construit à coller dans Claude),
+// mais qui prend un FORMAT en entrée et exige la forme exacte du script
+// pour ce format (répliques A/B, plans B-roll, tiers S/A/B/C...), lue
+// ensuite par le Studio pour l'afficher et le tourner.
+const GENERATOR_DURATIONS = ["30 s", "45 s", "60 s", "90 s", "8 à 12 min"];
+const GENERATOR_PLATFORMS: { id: string; label: string }[] = [
+  { id: "reel", label: "Reel" },
+  { id: "youtube", label: "YouTube" },
+  { id: "linkedin", label: "LinkedIn" },
+  { id: "threads", label: "Threads" },
+];
+
+function FormatScriptGenerator({ context }: { context: string | null }) {
+  const tr = useT();
+  const [formatId, setFormatId] = useState(DEFAULT_CONTENT_FORMAT);
+  const [sujet, setSujet] = useState("");
+  const [plateforme, setPlateforme] = useState("reel");
+  const [duree, setDuree] = useState("45 s");
+  const [showPrompt, setShowPrompt] = useState(false);
+  const f = getContentFormat(formatId);
+  const prompt = useMemo(
+    () => buildFormatScriptPrompt({ formatId, sujet, plateforme, duree: f.filmed ? duree : undefined, contexte: context }),
+    [formatId, sujet, plateforme, duree, context, f.filmed]
+  );
+  return (
+    <div className="ep-card" style={{ padding: 16, marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <Wand2 size={14} style={{ color: "var(--ep-accent)" }} />
+        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "var(--ep-ink)", flex: 1 }}>{tr("Script par format")}</p>
+        <CopyButton text={prompt} />
+      </div>
+      <p style={{ margin: "0 0 10px", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
+        {tr("Choisis le format, le sujet, copie : Claude écrit le script dans la bonne forme, et le Studio l'affiche et le prépare au tournage tout seul.")}
+      </p>
+      <ContentFormatPicker value={formatId} onChange={setFormatId} />
+      <div style={{ marginTop: 10 }}>
+        <FormatGuide formatId={formatId} />
+      </div>
+      <input
+        value={sujet}
+        onChange={(e) => setSujet(e.target.value)}
+        placeholder={tr("Sujet (ex : les compléments qui servent vraiment en sèche)")}
+        aria-label={tr("Sujet du script")}
+        style={{ ...inputStyle, marginTop: 10 }}
+      />
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
+        <select value={plateforme} onChange={(e) => setPlateforme(e.target.value)} aria-label={tr("Plateforme")} style={selectStyle}>
+          {GENERATOR_PLATFORMS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+        </select>
+        {f.filmed && GENERATOR_DURATIONS.map((d) => (
+          <button
+            key={d}
+            type="button"
+            onClick={() => setDuree(d)}
+            aria-pressed={duree === d}
+            style={{
+              fontSize: 11, fontWeight: 700, padding: "6px 10px", borderRadius: 999, cursor: "pointer",
+              border: duree === d ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
+              background: duree === d ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
+              color: duree === d ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
+            }}
+          >
+            {d}
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => setShowPrompt((v) => !v)}
+        aria-expanded={showPrompt}
+        style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 4, background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 11, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.5)" }}
+      >
+        {showPrompt ? tr("Masquer le prompt") : tr("Voir le prompt")}
+        <ChevronDown size={12} style={{ transform: showPrompt ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
+      </button>
+      {showPrompt && (
+        <p style={{ margin: "8px 0 0", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.55, whiteSpace: "pre-wrap", maxHeight: "40vh", overflowY: "auto" }}>{prompt}</p>
+      )}
     </div>
   );
 }

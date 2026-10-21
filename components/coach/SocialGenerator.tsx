@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, Check, Wand2 } from "lucide-react";
 import type { GuideMagnet } from "@/lib/lead-magnets";
 import { fetchGuidesForGenerator } from "@/app/dashboard/coach/studio/actions";
+import { CONTENT_FORMATS, formatPromptBlock, getContentFormat } from "@/lib/content-formats";
 
 const inputCls =
   "w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/60";
@@ -115,7 +116,7 @@ const PLATFORM_SPECS: PlatformSpec[] = [
 // champs libres à la fin, injectés en direct dans le texte affiché. Le
 // coach copie ce prompt et le colle où il veut (cette conversation, une
 // nouvelle conversation Claude, Claude Code...).
-function buildPrompt(guide: GuideMagnet, sujet: string, angle: string, platformIds: string[]): string {
+function buildPrompt(guide: GuideMagnet, sujet: string, angle: string, platformIds: string[], scriptFormatId: string | null): string {
   const sections = guide.sections
     .map((s, i) => {
       const callout = s.callout ? `\nÀ retenir : ${s.callout}` : "";
@@ -124,8 +125,15 @@ function buildPrompt(guide: GuideMagnet, sujet: string, angle: string, platformI
     .join("\n\n");
 
   const selected = PLATFORM_SPECS.filter((p) => platformIds.includes(p.id));
-  const demandes = selected.length > 0 ? selected : PLATFORM_SPECS.filter((p) => p.defaultOn);
-  const liste = demandes.map((p, i) => `${i + 1}. ${p.instruction}`).join("\n");
+  const demandes = selected.length > 0 || scriptFormatId ? selected : PLATFORM_SPECS.filter((p) => p.defaultOn);
+  // Script vidéo dans un format précis (2026-10-21, lib/content-formats.ts) :
+  // la forme exacte du format (répliques A/B, plans B-roll, tiers...) est
+  // exigée pour que le Studio l'affiche et la prépare au tournage.
+  const instructions = demandes.map((p) => p.instruction);
+  if (scriptFormatId) {
+    instructions.push(`Un script vidéo au format « ${getContentFormat(scriptFormatId).label} » (titre, accroche, script, appel à l'action parlé, description du post), en suivant à la lettre ces consignes :\n${formatPromptBlock(scriptFormatId)}`);
+  }
+  const liste = instructions.map((ins, i) => `${i + 1}. ${ins}`).join("\n");
 
   return `Tu es le community manager d'EP Coaching, coaching bodybuilding et nutrition en ligne. Identité de marque : direct, concret, orienté action, jamais putaclic, jamais de superlatif vide ("incroyable", "révolutionnaire"), jamais de tiret em/en (—) nulle part dans ce que tu écris (virgule ou point à la place). Règle non négociable (retour direct 2026-09-16) : sur Instagram, zéro ton "étude"/jargon, simple au point qu'un enfant de 5 ans comprenne du premier coup, et qui parle/ce qu'il fait doit être clair dans les 3 premières secondes ou en légende, sans exception.
 
@@ -175,6 +183,8 @@ export default function SocialGenerator({ active }: { active: boolean }) {
   const [platformIds, setPlatformIds] = useState<string[]>(
     PLATFORM_SPECS.filter((p) => p.defaultOn).map((p) => p.id)
   );
+  // Script vidéo en plus, dans le format choisi (null = pas de script).
+  const [scriptFormatId, setScriptFormatId] = useState<string | null>(null);
 
   function togglePlatform(id: string) {
     setPlatformIds((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
@@ -183,8 +193,8 @@ export default function SocialGenerator({ active }: { active: boolean }) {
   const effectiveSlug = slug || guides?.[0]?.slug || "";
   const selected = (guides ?? []).find((g) => g.slug === effectiveSlug) ?? guides?.[0] ?? null;
   const prompt = useMemo(
-    () => (selected ? buildPrompt(selected, sujet, angle, platformIds) : ""),
-    [selected, sujet, angle, platformIds]
+    () => (selected ? buildPrompt(selected, sujet, angle, platformIds, scriptFormatId) : ""),
+    [selected, sujet, angle, platformIds, scriptFormatId]
   );
 
   async function copy() {
@@ -269,6 +279,22 @@ export default function SocialGenerator({ active }: { active: boolean }) {
                 </button>
               );
             })}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-2.5">
+            <label className="text-[10.5px] font-bold text-(--ep-ink)/50" htmlFor="generator-script-format">
+              {t("Script vidéo")}
+            </label>
+            <select
+              id="generator-script-format"
+              value={scriptFormatId ?? ""}
+              onChange={(e) => setScriptFormatId(e.target.value || null)}
+              className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-full px-3 py-1.5 text-[11px] font-bold text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/60"
+            >
+              <option value="">{t("Pas de script")}</option>
+              {CONTENT_FORMATS.map((f) => (
+                <option key={f.id} value={f.id}>{t(f.label)}</option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

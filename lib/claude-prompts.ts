@@ -143,6 +143,11 @@ const COACH: PromptGroup[] = [
         prompt: "Lis mon positionnement (outil mon_positionnement) et mes stats réseaux (outil mes_stats_reseaux) dans EP Coaching. Écris 5 scripts de reels de 30 à 45 secondes pour mon avatar, avec ses mots exacts dans l'accroche. Montre-les-moi, puis quand je valide ajoute-les dans mon Studio (outil ajouter_script).",
       },
       {
+        title: "Un script dans un format précis",
+        hint: "Tier list, clone, B-roll, question/réponse... Change le format à la fin.",
+        prompt: "Lis mon positionnement dans EP Coaching (outil mon_positionnement). Écris-moi un script de reel au format tier list (autres formats possibles : clone à deux personnes, B-roll avec voix off, yap, question/réponse, mythe vs réalité, cas client vrai, storytelling, carrousel...), dans la forme exacte que décrit l'outil ajouter_script pour ce format. Montre-le-moi, puis quand je valide ajoute-le dans mon Studio avec ajouter_script et le bon format_contenu. Sujet : ",
+      },
+      {
         title: "Transformer une idée en script",
         hint: "Colle ton idée à la fin.",
         prompt: "Lis mon positionnement dans EP Coaching, puis transforme cette idée en script de reel de 40 secondes (accroche, développement, appel à l'action) et ajoute-le dans mon Studio : ",
