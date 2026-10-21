@@ -49,21 +49,21 @@ function VolumeGaugeRow({
 
   const fillColor =
     total < landmark.mev
-      ? "bg-red-600/70"
+      ? "bg-(--ep-bad)/70"
       : total <= landmark.mav
-      ? "bg-green-500"
+      ? "bg-(--ep-ok)"
       : total <= landmark.mrv
-      ? "bg-orange-500"
-      : "bg-red-900";
+      ? "bg-(--ep-orange)"
+      : "bg-(--ep-bad)";
 
   const badgeCls =
     total < landmark.mev
-      ? "text-red-400 border-red-500/30 bg-red-500/10"
+      ? "text-(--ep-bad) border-(--ep-bad)/30 bg-(--ep-bad)/10"
       : total <= landmark.mav
-      ? "text-green-400 border-green-500/30 bg-green-500/10"
+      ? "text-(--ep-ok) border-(--ep-ok)/30 bg-(--ep-ok)/10"
       : total <= landmark.mrv
-      ? "text-orange-400 border-orange-500/30 bg-orange-500/10"
-      : "text-red-300 border-red-700/40 bg-red-900/20";
+      ? "text-(--ep-orange) border-(--ep-orange)/30 bg-(--ep-orange)/10"
+      : "text-(--ep-bad) border-(--ep-bad)/40 bg-(--ep-bad)/20";
 
   const mevPct = (landmark.mev / scale) * 100;
   const mavPct = (landmark.mav / scale) * 100;
@@ -108,7 +108,7 @@ function VolumeGaugeRow({
         />
         {/* MRV marker */}
         <div
-          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-red-500/50"
+          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-(--ep-bad)/50"
           style={{ left: `${mrvPct}%` }}
         />
       </div>
@@ -128,7 +128,7 @@ function VolumeGaugeRow({
           MAV {landmark.mav}
         </span>
         <span
-          className="absolute text-[8px] text-red-400/50 font-bold -translate-x-1/2"
+          className="absolute text-[8px] text-(--ep-bad)/50 font-bold -translate-x-1/2"
           style={{ left: `${mrvPct}%` }}
         >
           MRV {landmark.mrv}
@@ -184,7 +184,7 @@ function IntensityRow({
     );
   } else {
     badge = (
-      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/25 text-green-400">
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-(--ep-ok)/15 border border-(--ep-ok)/25 text-(--ep-ok)">
         ▲ Données disponibles
       </span>
     );

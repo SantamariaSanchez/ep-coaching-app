@@ -5,18 +5,18 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { submitCorrection } from "@/app/dashboard/client/program/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ExerciseCorrectionResolved } from "@/utils/corrections";
-import { Video, CheckCircle2, Clock, Loader2, X } from "lucide-react";
+import { Video, CheckCircle2, Clock, Loader2, X, ChevronDown } from "lucide-react";
 import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 function StatusBadge({ status }: { status: "pending" | "answered" }) {
   const t = useT();
   return status === "answered" ? (
-    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/25">
+    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-(--ep-ok)/15 text-(--ep-ok) border border-(--ep-ok)/25">
       <CheckCircle2 size={10} />
       {t("Corrigé")}
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">
+    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-(--ep-warn)/15 text-(--ep-warn) border border-(--ep-warn)/25">
       <Clock size={10} />
       {t("En attente")}
     </span>
@@ -67,7 +67,7 @@ function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
 
       {c.status === "answered" && (
         <div className="pt-3 border-t border-(--ep-line)/15 space-y-2">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ok)/80">
             {t("Retour de ton coach")}
           </p>
           <p className="text-xs text-(--ep-ink)/75 leading-relaxed">
@@ -102,17 +102,26 @@ export default function ClientCorrectionsSection({
   const [videoName, setVideoName] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // Formulaire replié par défaut (refonte de la page Programme du
+  // 2026-10-20 : « optimise l'espace ») ; ouvert d'office s'il reste une
+  // erreur à corriger.
+  const [formOpen, setFormOpen] = useState(false);
 
-  // Reset form on success — dans un effet, jamais pendant le render (React
-  // peut rendre plusieurs fois sans committer, la mutation DOM imperative
-  // doit rester hors du corps du composant).
-  useEffect(() => {
+  // Après un envoi réussi : l'état React se remet à zéro pendant le rendu
+  // (motif « ajuster l'état quand une valeur change », sans effet en
+  // cascade) ; le formulaire DOM, lui, dans un effet, jamais pendant le
+  // render (la mutation impérative doit rester hors du corps du composant).
+  const [handledState, setHandledState] = useState(state);
+  if (state !== handledState) {
+    setHandledState(state);
     if (state?.success) {
-      formRef.current?.reset();
       setVideoPath(null);
       setVideoName(null);
       setUploadError(null);
     }
+  }
+  useEffect(() => {
+    if (state?.success) formRef.current?.reset();
   }, [state]);
 
   async function handleVideoSelected(file: File) {
@@ -153,22 +162,31 @@ export default function ClientCorrectionsSection({
     "block text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
   return (
-    <section className="mt-12 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-          {t("Technique")}
-        </p>
-        <h2 className="text-xl font-black uppercase tracking-tight">
-          {t("Corrections & Questions")}
-        </h2>
-        <p className="mt-1 text-xs text-(--ep-ink)/30">
-          {t("Envoie une vidéo de ton exercice, ton coach te donne un retour.")}
-        </p>
-      </div>
-
-      {/* Form */}
-      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-5 mb-6">
+    <section className="mt-6 max-w-2xl mx-auto">
+      <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-2xl mb-4">
+        <button
+          type="button"
+          onClick={() => setFormOpen(!formOpen)}
+          aria-expanded={formOpen || !!state?.error}
+          className="w-full min-h-14 flex items-center gap-3 px-4 py-3 text-left"
+        >
+          <span className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center bg-(--ep-accent)/12 text-(--ep-accent)">
+            <Video size={16} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[13px] font-black uppercase tracking-tight text-(--ep-strong)">{t("Corrections & Questions")}</span>
+            <span className="block mt-0.5 text-[11.5px] leading-snug text-(--ep-ink)/50">
+              {t("Envoie une vidéo de ton exercice, ton coach te donne un retour.")}
+            </span>
+          </span>
+          <ChevronDown
+            size={16}
+            className="shrink-0 text-(--ep-ink)/40 transition-transform"
+            style={{ transform: formOpen || state?.error ? "rotate(180deg)" : undefined }}
+          />
+        </button>
+      {(formOpen || !!state?.error) && (
+      <div className="px-4 pb-4">
         <form ref={formRef} action={formAction} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -215,7 +233,7 @@ export default function ClientCorrectionsSection({
             />
             {videoPath ? (
               <div className="flex items-center gap-2 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5">
-                <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
+                <CheckCircle2 size={14} className="text-(--ep-ok) flex-shrink-0" />
                 <span className="text-sm text-(--ep-strong) truncate flex-1">{videoName}</span>
                 <button
                   type="button"
@@ -263,7 +281,7 @@ export default function ClientCorrectionsSection({
             <p className="text-(--ep-pink) text-xs">{state.error}</p>
           )}
           {state?.success && (
-            <p className="text-green-400 text-xs">
+            <p className="text-(--ep-ok) text-xs">
               {t("✓ Envoyé, ton coach te répondra prochainement.")}
             </p>
           )}
@@ -276,6 +294,8 @@ export default function ClientCorrectionsSection({
             {isPending ? t("Envoi…") : t("Envoyer")}
           </button>
         </form>
+      </div>
+      )}
       </div>
 
       {/* Past submissions */}
