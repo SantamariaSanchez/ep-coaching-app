@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Trash2, Trophy, X } from "lucide-react";
 import { addPerformanceEntryAction, deletePerformanceEntryAction } from "@/app/actions/performance";
 import { updatePracticeAction } from "@/app/actions/app-setup";
+import type { LogbookRecords } from "@/lib/training-styles";
 import { bestRecords, DISCIPLINE_BY_KEY, DISCIPLINES, type DisciplineKey, type EntryKind, type FieldDef, type PerformanceEntry } from "@/lib/disciplines";
 import { safeAction } from "@/lib/safe-action";
 
@@ -28,6 +29,7 @@ export default function PerformanceHub({
   isWoman,
   readOnly = false,
   currentPractices = [],
+  logbook,
 }: {
   disciplines: DisciplineKey[];
   entries: PerformanceEntry[];
@@ -35,6 +37,7 @@ export default function PerformanceHub({
   isWoman: boolean;
   readOnly?: boolean;
   currentPractices?: string[];
+  logbook?: LogbookRecords;
 }) {
   const t = useT();
   const router = useRouter();
@@ -112,6 +115,46 @@ export default function PerformanceHub({
               <li key={r.key} className="flex items-baseline justify-between gap-2 text-sm">
                 <span className="text-(--ep-ink)/70 truncate">{t(r.label)}</span>
                 <span className="font-bold text-(--ep-strong) whitespace-nowrap">{r.display} <span className="text-[10px] font-normal text-(--ep-ink)/35">{frDate(r.date)}</span></span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {logbook && discipline.key === "force" && (logbook.lifts.length > 0 || logbook.total != null) && (
+        <section className="rounded-xl bg-(--ep-s1) border border-(--ep-line)/25 p-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-2">{t("Depuis ton logbook")}</p>
+          <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
+            {logbook.lifts.map((l) => (
+              <li key={l.lift} className="flex items-baseline justify-between gap-2 text-sm">
+                <span className="text-(--ep-ink)/70 truncate">{t("1RM estimé")} · {t(l.lift)}</span>
+                <span className="font-bold text-(--ep-strong) whitespace-nowrap">{Math.round(l.e1rm * 10) / 10} kg</span>
+              </li>
+            ))}
+            {logbook.total != null && (
+              <li className="flex items-baseline justify-between gap-2 text-sm sm:col-span-2 border-t border-(--ep-line)/15 pt-1.5">
+                <span className="text-(--ep-ink)/70">{t("Total estimé (SBD)")}</span>
+                <span className="font-black text-(--ep-strong)">{logbook.total} kg</span>
+              </li>
+            )}
+          </ul>
+        </section>
+      )}
+
+      {logbook && discipline.key === "calisthenics" && (logbook.skills.length > 0 || logbook.maxReps.length > 0) && (
+        <section className="rounded-xl bg-(--ep-s1) border border-(--ep-line)/25 p-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-2">{t("Depuis ton logbook")}</p>
+          <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
+            {logbook.skills.map((s) => (
+              <li key={s.key} className="flex items-baseline justify-between gap-2 text-sm">
+                <span className="text-(--ep-ink)/70 truncate">{t(s.label)}</span>
+                <span className="font-bold text-(--ep-strong) whitespace-nowrap">{t(s.step)}{s.perf ? ` · ${s.perf} ${s.unit === "sec" ? "s" : "reps"}` : ""}</span>
+              </li>
+            ))}
+            {logbook.maxReps.map((m) => (
+              <li key={m.name} className="flex items-baseline justify-between gap-2 text-sm">
+                <span className="text-(--ep-ink)/70 truncate">{t(m.name)}</span>
+                <span className="font-bold text-(--ep-strong) whitespace-nowrap">{m.reps} reps</span>
               </li>
             ))}
           </ul>

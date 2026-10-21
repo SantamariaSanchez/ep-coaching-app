@@ -70,6 +70,7 @@ import {
 } from "lucide-react";
 import PerformanceHub from "@/components/performance/PerformanceHub";
 import type { DisciplineKey, PerformanceEntry } from "@/lib/disciplines";
+import type { LogbookRecords } from "@/lib/training-styles";
 import SubscriptionToggle from "./SubscriptionToggle";
 
 type ActionState = { error?: string; success?: boolean } | null;
@@ -285,7 +286,7 @@ export default function ClientProfileTabs({
   recentDailyLogs: DailyLog[];
   /** Item 13 : comparateur avant/après, voir components/ui/BeforeAfterComparator. */
   measurements: Measurement[];
-  performance?: { disciplines: DisciplineKey[]; entries: PerformanceEntry[]; bodyweightKg: number | null; isWoman: boolean } | null;
+  performance?: { disciplines: DisciplineKey[]; entries: PerformanceEntry[]; bodyweightKg: number | null; isWoman: boolean; logbook?: LogbookRecords } | null;
   points: number;
   program: ProgramWithDays | null;
   workoutLogs: WorkoutLog[];
@@ -908,7 +909,7 @@ export default function ClientProfileTabs({
       )}
 
       {activeTab === "performances" && performance && (
-        <PerformanceHub disciplines={performance.disciplines} entries={performance.entries} bodyweightKg={performance.bodyweightKg} isWoman={performance.isWoman} readOnly />
+        <PerformanceHub disciplines={performance.disciplines} entries={performance.entries} bodyweightKg={performance.bodyweightKg} isWoman={performance.isWoman} logbook={performance.logbook} readOnly />
       )}
 
       {/*

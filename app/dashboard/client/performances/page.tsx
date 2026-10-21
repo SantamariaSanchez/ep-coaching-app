@@ -17,7 +17,7 @@ export default async function ClientPerformancesPage() {
     <div className="page-transition" style={{ maxWidth: 720, margin: "0 auto", padding: "28px 16px 96px" }}>
       <h1 className="ep-h1" style={{ marginBottom: 6 }}>{t("Performances")}</h1>
       <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 18px", lineHeight: 1.6 }}>{t("Tes séances, tes chiffres et tes records, discipline par discipline.")}</p>
-      <PerformanceHub disciplines={perf.disciplines} entries={perf.entries} bodyweightKg={perf.bodyweightKg} isWoman={perf.isWoman} currentPractices={perf.practices} />
+      <PerformanceHub disciplines={perf.disciplines} entries={perf.entries} bodyweightKg={perf.bodyweightKg} isWoman={perf.isWoman} currentPractices={perf.practices} logbook={perf.logbook} />
     </div>
   );
 }

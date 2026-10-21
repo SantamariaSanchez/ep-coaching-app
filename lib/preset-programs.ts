@@ -1,5 +1,6 @@
 import type { ProgramInput } from "@/utils/programs";
 import type { MemberPreferences } from "@/lib/personalization";
+import type { TrainingStyle } from "@/lib/training-styles";
 
 export interface PresetProgram {
   id: string;
@@ -7,6 +8,8 @@ export interface PresetProgram {
   split: string;
   description: string;
   frequency: number;
+  /** Discipline pour laquelle il est pensé (bodybuilding si absent). */
+  style?: TrainingStyle;
   input: ProgramInput;
 }
 
@@ -222,6 +225,172 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
       ],
     },
   },
+  {
+    id: "force4",
+    name: "Force : Squat, développé couché, soulevé de terre (4 jours)",
+    split: "Force",
+    description: "4 séances par semaine, environ 75 min. Un jour par mouvement de compétition avec un top set au RPE puis des séries de back-off, des variantes pause et un jour de volume haut du corps. Pour qui connaît déjà la technique des trois mouvements.",
+    frequency: 4,
+    style: "force",
+    input: {
+      name: "Programme Force : Squat, développé couché, soulevé de terre (4 jours)",
+      type: "Force",
+      frequency: 4,
+      days: [
+        {
+          day_label: "Jour 1 : Squat",
+          notes: "Échauffe-toi avec des séries montantes. Note ton RPE sur le top set : 8 veut dire 2 répétitions en réserve.",
+          exercises: [
+            { name: "Squat barre (back squat)", sets: 4, reps: "5", rir: null, rest_seconds: 240, notes: "Top set de 5 à RPE 8, puis 3 séries à environ 90 % de la charge", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true, technique: "top_backoff", intensity: "RPE 8" },
+            { name: "Squat pause (arrêt 2 s en bas)", sets: 3, reps: "5", rir: null, rest_seconds: 180, notes: "Charge à environ 75 % de ton squat. Garde la tension en bas", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true, intensity: "RPE 7" },
+            { name: "Soulevé de terre roumain", sets: 3, reps: "8", rir: 2, rest_seconds: 150, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Presse à cuisses (leg press)", sets: 3, reps: "10", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Planche (plank)", sets: 3, reps: "45", rir: null, rest_seconds: 60, notes: "Gainage sans cambrer", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+          ],
+        },
+        {
+          day_label: "Jour 2 : Développé couché",
+          notes: "Pas de rebond sur la poitrine : pause d'une seconde, comme en compétition.",
+          exercises: [
+            { name: "Développé couché barre", sets: 4, reps: "5", rir: null, rest_seconds: 240, notes: "Top set de 5 à RPE 8, puis 3 séries à environ 90 % de la charge", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true, technique: "top_backoff", intensity: "RPE 8" },
+            { name: "Développé couché pause (arrêt poitrine)", sets: 3, reps: "5", rir: null, rest_seconds: 180, notes: "Environ 75 % de ton développé couché", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true, intensity: "RPE 7" },
+            { name: "Tirage horizontal barre", sets: 4, reps: "8", rir: 2, rest_seconds: 120, notes: "Pour équilibrer la poussée", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé militaire barre", sets: 3, reps: "6-8", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Barre au front (skull crusher)", sets: 3, reps: "10-12", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Jour 3 : Soulevé de terre",
+          notes: "Barre collée aux jambes, dos plat. Arrête la série dès que la technique se dégrade.",
+          exercises: [
+            { name: "Soulevé de terre", sets: 3, reps: "3", rir: null, rest_seconds: 300, notes: "Top set de 3 à RPE 8, puis 2 séries à environ 90 % de la charge", muscle_group: "Dos", muscle_subgroup: null, is_direct: true, technique: "top_backoff", intensity: "RPE 8" },
+            { name: "Soulevé de terre pause (arrêt sous le genou)", sets: 3, reps: "4", rir: null, rest_seconds: 180, notes: "Environ 70 % de ton soulevé de terre", muscle_group: "Dos", muscle_subgroup: null, is_direct: true, intensity: "RPE 7" },
+            { name: "Tractions pronation", sets: 4, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Ajoute du lest quand 4 x 8 sont propres", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Hyperextensions", sets: 3, reps: "10-12", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Relevé de jambes suspendu", sets: 3, reps: "10-12", rir: 2, rest_seconds: 75, notes: null, muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Jour 4 : Haut du corps volume",
+          notes: "Séance plus légère : tu cherches le volume et la technique, pas le maximum.",
+          exercises: [
+            { name: "Développé couché prise serrée", sets: 4, reps: "6-8", rir: null, rest_seconds: 150, notes: "Environ 70 % de ton développé couché", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true, intensity: "RPE 7" },
+            { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Rowing T-bar", sets: 4, reps: "8-10", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 3, reps: "12-15", rir: 1, rest_seconds: 75, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Curl barre", sets: 3, reps: "10-12", rir: 1, rest_seconds: 75, notes: null, muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "calisthenics_debutant",
+    name: "Calisthenics : Débuter Full Body (3 jours)",
+    split: "Full Body",
+    description: "3 séances par semaine, environ 45 min, aux barres ou à la maison. Tractions négatives, pompes, dips assistés et premiers équilibres : tu construis la force de base avant les skills.",
+    frequency: 3,
+    style: "calisthenics",
+    input: {
+      name: "Programme Calisthenics : Débuter Full Body (3 jours)",
+      type: "Full Body",
+      frequency: 3,
+      days: [
+        {
+          day_label: "Séance A : Tirage et jambes",
+          notes: "Si une série est trop dure, utilise l'élastique ou fais la version négative.",
+          exercises: [
+            { name: "Tractions négatives", sets: 4, reps: "3-5", rir: 2, rest_seconds: 120, notes: "Monte avec un support, descends en 5 secondes", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Traction australienne (bodyweight row)", sets: 3, reps: "8-12", rir: 2, rest_seconds: 90, notes: "Corps gainé, poitrine vers la barre", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Squat gobelet (goblet squat)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 75, notes: "Au poids du corps ou avec un sac à dos chargé", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Suspension active (active hang)", sets: 3, reps: "20-30", rir: null, rest_seconds: 60, notes: "Épaules basses, sans les hausser aux oreilles", muscle_group: "Avant-bras", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+            { name: "Relevé de genoux suspendu", sets: 3, reps: "8-10", rir: 2, rest_seconds: 75, notes: null, muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance B : Poussée et gainage",
+          notes: "Pompes sur les genoux ou mains surélevées si besoin : ce qui compte, c'est la qualité.",
+          exercises: [
+            { name: "Pompes", sets: 4, reps: "6-12", rir: 2, rest_seconds: 90, notes: "Corps gainé, descends jusqu'à effleurer le sol", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Dips négatifs", sets: 3, reps: "3-5", rir: 2, rest_seconds: 120, notes: "Descends en 4 secondes depuis la position haute", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+            { name: "Pompes pike", sets: 3, reps: "5-8", rir: 2, rest_seconds: 90, notes: "Prépare les pompes en équilibre", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Hollow body hold", sets: 3, reps: "20-30", rir: null, rest_seconds: 60, notes: "Bas du dos plaqué au sol", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+            { name: "Planche latérale", sets: 2, reps: "20-30", rir: null, rest_seconds: 45, notes: "Par côté", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+          ],
+        },
+        {
+          day_label: "Séance C : Full body et équilibre",
+          notes: "Termine par le travail d'équilibre : contre le mur, jamais en prenant de risque.",
+          exercises: [
+            { name: "Tractions élastique (assistées)", sets: 4, reps: "5-8", rir: 2, rest_seconds: 120, notes: "Choisis l'élastique qui permet 5 à 8 reps propres", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Dips assistés élastique", sets: 3, reps: "5-8", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+            { name: "Pistol squat assisté", sets: 3, reps: "4-6", rir: 2, rest_seconds: 90, notes: "Par jambe, tiens un poteau si besoin", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Handstand contre le mur (ventre au mur)", sets: 4, reps: "20-30", rir: null, rest_seconds: 75, notes: "Gainé, regard entre les mains", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+            { name: "L-sit tuck", sets: 3, reps: "10-15", rir: null, rest_seconds: 60, notes: "Genoux repliés, fesses décollées", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "calisthenics_skills",
+    name: "Calisthenics : Skills et force (4 jours)",
+    split: "Skills + Force",
+    description: "4 séances par semaine, environ 60 min. Planche, front lever, handstand et muscle-up travaillés étape par étape, avec tractions et dips lestés pour la force. Pour qui fait déjà 10 tractions et 15 dips.",
+    frequency: 4,
+    style: "calisthenics",
+    input: {
+      name: "Programme Calisthenics : Skills et force (4 jours)",
+      type: "Skills + Force",
+      frequency: 4,
+      days: [
+        {
+          day_label: "Séance 1 : Poussée et planche",
+          notes: "Skills en début de séance, quand tu es frais. Arrête la tenue dès que le corps se casse.",
+          exercises: [
+            { name: "Planche lean", sets: 5, reps: "15-20", rir: null, rest_seconds: 120, notes: "Épaules loin devant les mains, bras tendus", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+            { name: "Pompes pseudo planche", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Dips lestés", sets: 4, reps: "5-8", rir: 1, rest_seconds: 150, notes: "Ajoute 2,5 kg quand 4 x 8 sont propres", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+            { name: "Pompes pike pieds surélevés", sets: 3, reps: "6-10", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Handstand contre le mur (ventre au mur)", sets: 4, reps: "30-40", rir: null, rest_seconds: 75, notes: "Gainage complet, fesses serrées", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+          ],
+        },
+        {
+          day_label: "Séance 2 : Tirage et front lever",
+          notes: "Le front lever demande des tendons préparés : monte d'une étape seulement quand la précédente est solide.",
+          exercises: [
+            { name: "Front lever advanced tuck", sets: 5, reps: "8-12", rir: null, rest_seconds: 120, notes: "Dos plat, bras tendus", muscle_group: "Dos", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+            { name: "Tractions lestées", sets: 4, reps: "5-6", rir: 1, rest_seconds: 150, notes: "Ajoute 2,5 kg quand 4 x 6 sont propres", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Muscle-up négatif", sets: 3, reps: "3-5", rir: 2, rest_seconds: 150, notes: "Descends en 4 secondes en passant la transition", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Tractions australiennes pieds surélevés", sets: 3, reps: "8-12", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Suspension active (active hang)", sets: 3, reps: "30", rir: null, rest_seconds: 60, notes: "Pour les épaules et les mains", muscle_group: "Avant-bras", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+          ],
+        },
+        {
+          day_label: "Séance 3 : Jambes et gainage",
+          notes: "Les jambes aussi se travaillent au poids du corps : pistol et nordic ont de quoi te surprendre.",
+          exercises: [
+            { name: "Pistol squat sur box", sets: 4, reps: "4-6", rir: 2, rest_seconds: 120, notes: "Par jambe, baisse la box au fil des semaines", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Nordic ham curl", sets: 3, reps: "4-6", rir: 2, rest_seconds: 120, notes: "Descends le plus lentement possible", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Pont fessier (glute bridge)", sets: 3, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Sur une jambe dès que c'est facile", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "L-sit au sol (parallettes)", sets: 5, reps: "10-15", rir: null, rest_seconds: 75, notes: "Jambes tendues si possible, sinon genou replié", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+            { name: "Dragon flag négatif", sets: 3, reps: "3-5", rir: 2, rest_seconds: 90, notes: "Descends en 4 secondes", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 4 : Full body force",
+          notes: "Séance de force pure, sans skill : recharge les tendons tout en gardant la force.",
+          exercises: [
+            { name: "Tractions prise neutre", sets: 4, reps: "6-8", rir: 1, rest_seconds: 120, notes: null, muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Dips aux barres parallèles (poids du corps)", sets: 4, reps: "8-12", rir: 1, rest_seconds: 120, notes: null, muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+            { name: "Muscle-up avec élastique", sets: 4, reps: "2-4", rir: 2, rest_seconds: 150, notes: "Réduis l'élastique quand 4 x 4 sont propres", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Pompes archer", sets: 3, reps: "5-8", rir: 2, rest_seconds: 90, notes: "Par côté", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Hollow body hold", sets: 3, reps: "30", rir: null, rest_seconds: 60, notes: null, muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true, reps_unit: "sec" },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export interface PresetRecommendation {
@@ -235,12 +404,24 @@ export interface PresetRecommendation {
 // est affichée telle quelle à la personne pour qu'elle sache pourquoi ce
 // programme et pas un autre, et elle peut toujours en changer.
 export function recommendPreset(
-  prefs: Partial<MemberPreferences> | null | undefined
+  prefs: Partial<MemberPreferences> | null | undefined,
+  style?: TrainingStyle | null
 ): PresetRecommendation {
   const byId = (id: string) => PRESET_PROGRAMS.find((p) => p.id === id)!;
   const level = prefs?.experience_level ?? null;
   const goal = prefs?.primary_goal ?? null;
   const freq = prefs?.training_frequency ?? null;
+
+  // Discipline principale (Mon appli) : force et calisthenics ont leurs
+  // propres programmes, sinon on retombe sur les règles ci-dessous.
+  if (style === "calisthenics") {
+    return level === "debutant" || !level
+      ? { preset: byId("calisthenics_debutant"), reason: "Tu fais du street workout ou de la calisthenics : 3 séances au poids du corps pour bâtir la force de base avant les skills." }
+      : { preset: byId("calisthenics_skills"), reason: "Tu fais de la calisthenics : 4 séances qui alternent skills (planche, front lever, handstand, muscle-up) et force lestée." };
+  }
+  if (style === "force" && level !== "debutant") {
+    return { preset: byId("force4"), reason: "Tu fais de la force : 4 séances autour du squat, du développé couché et du soulevé de terre, avec top set au RPE et back-off." };
+  }
 
   // Quiz passé sans réponse : on ne sait rien, donc le départ le plus
   // simple plutôt qu'un programme "Intermédiaire" à barre lourde.

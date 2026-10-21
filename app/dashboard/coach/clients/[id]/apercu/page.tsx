@@ -20,6 +20,7 @@ import { weeksSince } from "@/lib/client-home";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
 import { recommendPreset } from "@/lib/preset-programs";
+import { trainingStyleFromPractices } from "@/lib/training-styles";
 import {
   getNutritionProfile,
   getTodayLogs,
@@ -220,7 +221,7 @@ export default async function ClientPreviewPage({
                 clientId={id}
                 currentProgramName={program?.name ?? null}
                 saveProgram={previewReadOnlyAction}
-                recommendation={recommendPreset(preferences)}
+                recommendation={recommendPreset(preferences, trainingStyleFromPractices(Array.isArray(appSetup.answers?.pratique) ? (appSetup.answers.pratique as string[]) : []))}
               />
             </CollapsibleSection>
           </div>

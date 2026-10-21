@@ -12,6 +12,8 @@ import { getProgramWeekContext } from "@/utils/program-week";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { recommendPreset } from "@/lib/preset-programs";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { trainingStyleFromPractices } from "@/lib/training-styles";
 import { saveOwnProgram } from "./actions";
 import Link from "next/link";
 import { Dumbbell, Play, MessageCircle } from "lucide-react";
@@ -45,7 +47,9 @@ export default async function ClientProgramPage() {
   if (getAccessType(profile) === "membre_gratuit") {
     // Programme conseillé d'après le quiz d'onboarding, mis en avant et
     // présélectionné dans la liste (voir recommendPreset).
-    const recommendation = recommendPreset(await getMemberPreferences(user.id));
+    const setup = await getAppSetup(user.id);
+    const practices = Array.isArray(setup.answers?.pratique) ? (setup.answers.pratique as string[]) : [];
+    const recommendation = recommendPreset(await getMemberPreferences(user.id), trainingStyleFromPractices(practices));
     return (
       <div className="px-4 pt-5 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
         {/* Refonte 2026-10-20 (retour direct : jour, heure, salle, matériel,
