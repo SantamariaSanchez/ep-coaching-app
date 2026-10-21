@@ -4,12 +4,9 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getAccessType } from "@/utils/auth-client";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
-import { getRecentWorkoutLogs } from "@/utils/workout-logs";
-import { getSessionsThisWeekCount } from "@/utils/sessions";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
 import ProgramFromScratchSection from "@/components/ui/ProgramFromScratchSection";
-import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ProgramWeekView from "@/components/ui/ProgramWeekView";
 import { getProgramWeekContext } from "@/utils/program-week";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
@@ -26,12 +23,10 @@ export default async function ClientProgramPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, program, corrections, workoutLogs, sessionsThisWeek] = await Promise.all([
+  const [profile, program, corrections] = await Promise.all([
     getProfile(user.id),
     getActiveProgram(user.id),
     getClientCorrections(user.id),
-    getRecentWorkoutLogs(user.id),
-    getSessionsThisWeekCount(user.id),
   ]);
 
   // Retombait sur le dashboard générique au lieu de son propre programme
@@ -55,7 +50,7 @@ export default async function ClientProgramPage() {
       <div className="px-4 pt-5 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
         {/* Refonte 2026-10-20 (retour direct : jour, heure, salle, matériel,
             exos, sans longueur inutile) : voir components/ui/ProgramWeekView.
-            Les séances d'abord, les stats volume/intensité après. */}
+            Séries par muscle dans la vue, plus de jauges MEV/MRV. */}
         {program && weekCtx ? (
           <>
             <ProgramWeekView
@@ -66,9 +61,6 @@ export default async function ClientProgramPage() {
               agendaHref="/dashboard/client/agenda"
               eyebrow={t("Training")}
             />
-            <div className="mt-4">
-              <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
-            </div>
           </>
         ) : (
           <div className="mb-6">
@@ -162,8 +154,8 @@ export default async function ClientProgramPage() {
       ) : (
         <>
           {/* Refonte 2026-10-20 : semaine en un coup d'œil, séance du jour en
-              avant (jour, heure, salle, matériel, exos), voir
-              components/ui/ProgramWeekView. */}
+              héros (jour, heure, salle, matériel, exos, dernière perf et
+              objectif), séries par muscle, voir components/ui/ProgramWeekView. */}
           <ProgramWeekView
             program={program}
             ctx={weekCtx}
@@ -172,9 +164,6 @@ export default async function ClientProgramPage() {
             agendaHref="/dashboard/client/agenda"
             eyebrow={t("Entraînement")}
           />
-          <div className="mt-4">
-            <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
-          </div>
         </>
       )}
 

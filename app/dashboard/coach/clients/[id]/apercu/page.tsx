@@ -19,8 +19,6 @@ import { getTotalPoints } from "@/lib/gamification";
 import { computeClientDashboardStats } from "@/lib/client-dashboard-stats";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
-import { getRecentWorkoutLogs } from "@/utils/workout-logs";
-import { getSessionsThisWeekCount } from "@/utils/sessions";
 import { recommendPreset } from "@/lib/preset-programs";
 import {
   getNutritionProfile,
@@ -40,7 +38,6 @@ import ClientPreviewFrame, { type PreviewVue } from "@/components/coach/ClientPr
 import { CoachedHome, WelcomeGuide } from "@/components/client/home/ClientHome";
 import ProgramWeekView from "@/components/ui/ProgramWeekView";
 import { getProgramWeekContext } from "@/utils/program-week";
-import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
@@ -164,11 +161,9 @@ export default async function ClientPreviewPage({
   }
 
   if (vue === "programme") {
-    const [program, corrections, workoutLogs, sessionsThisWeek, preferences] = await Promise.all([
+    const [program, corrections, preferences] = await Promise.all([
       getActiveProgram(id, undefined, db),
       getClientCorrections(id, db),
-      getRecentWorkoutLogs(id, db),
-      getSessionsThisWeekCount(id, db),
       isFree ? getMemberPreferences(id) : Promise.resolve(null),
     ]);
     const hasDays = !!program && program.days.length > 0;
@@ -188,18 +183,14 @@ export default async function ClientPreviewPage({
           )}
         </div>}
         {hasDays && weekCtx ? (
-          <>
-            <ProgramWeekView
-              program={program}
-              ctx={weekCtx}
-              sessionBasePath={SESSION_BASE_PATH}
-              gymsHref="/dashboard/client/gyms"
-              agendaHref="/dashboard/client/agenda"
-              eyebrow={isFree ? t("Training") : t("Entraînement")}
-            />
-            <div style={{ height: 16 }} />
-            <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
-          </>
+          <ProgramWeekView
+            program={program}
+            ctx={weekCtx}
+            sessionBasePath={SESSION_BASE_PATH}
+            gymsHref="/dashboard/client/gyms"
+            agendaHref="/dashboard/client/agenda"
+            eyebrow={isFree ? t("Training") : t("Entraînement")}
+          />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 10, padding: "48px 16px" }}>
             <Dumbbell size={22} style={{ color: "rgba(var(--ep-ink-rgb),0.25)" }} strokeWidth={1.5} />

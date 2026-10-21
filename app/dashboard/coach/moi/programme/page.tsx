@@ -5,12 +5,9 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getActiveProgram } from "@/utils/programs";
 import { getCoachProgramTemplates } from "@/utils/program-templates";
-import { getRecentWorkoutLogs } from "@/utils/workout-logs";
-import { getSessionsThisWeekCount } from "@/utils/sessions";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { saveCurrentProgramAsTemplate } from "@/app/dashboard/coach/clients/[id]/program/actions";
 import ProgramBuilder from "@/components/program-builder/ProgramBuilder";
-import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ProgramWeekView from "@/components/ui/ProgramWeekView";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { getProgramWeekContext } from "@/utils/program-week";
@@ -25,12 +22,10 @@ export default async function CoachMonProgrammePage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [program, workoutLogs, sessionsThisWeek, templates, scheduleBlocks] = await Promise.all([
+  const [program, templates, scheduleBlocks] = await Promise.all([
     // Le coach est ici sur son propre programme : ses notes de conception
     // sont les siennes, aucune raison de les masquer.
     getActiveProgram(user.id, { includeCoachNotes: true }),
-    getRecentWorkoutLogs(user.id),
-    getSessionsThisWeekCount(user.id),
     getCoachProgramTemplates(user.id),
     getScheduleBlocks(user.id),
   ]);
@@ -40,22 +35,17 @@ export default async function CoachMonProgrammePage() {
     <div className="px-4 pt-5 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       {/* Refonte 2026-10-20 (retour direct : « qu'on voie bien le jour,
           l'heure, les accessoires, quelle salle et quels exos ») : même vue
-          que le client, voir components/ui/ProgramWeekView. Séances d'abord,
-          stats volume/intensité après, édition repliée en bas. */}
+          que le client, voir components/ui/ProgramWeekView (séries par muscle
+          incluses). Édition repliée en bas. */}
       {program && weekCtx ? (
-        <>
-          <ProgramWeekView
-            program={program}
-            ctx={weekCtx}
-            sessionBasePath="/dashboard/coach/moi/logbook"
-            gymsHref="/dashboard/coach/gyms"
-            agendaHref="/dashboard/coach/moi/agenda"
-            eyebrow={t("Mon entraînement")}
-          />
-          <div className="mt-4">
-            <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
-          </div>
-        </>
+        <ProgramWeekView
+          program={program}
+          ctx={weekCtx}
+          sessionBasePath="/dashboard/coach/moi/logbook"
+          gymsHref="/dashboard/coach/gyms"
+          agendaHref="/dashboard/coach/moi/agenda"
+          eyebrow={t("Mon entraînement")}
+        />
       ) : (
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">

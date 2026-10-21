@@ -122,3 +122,123 @@ export function equipmentForDay(exercises: Exercise[], equipmentByName: Record<s
 export function equipmentKey(name: string): string {
   return norm(name);
 }
+
+// ── Dernière performance et tendance par exercice ────────────────────────────
+// Retour du fondateur (2026-10-20, « ça doit être clairement meilleur ») : sur
+// chaque exercice, ce qui a été fait la dernière fois (poids × reps) et
+// l'objectif du jour, comme la séance guidée (lib/set-targets). Calcul pur à
+// partir des séries enregistrées (session_sets des séances terminées).
+
+export interface LoggedSet {
+  exercise_name: string;
+  session_id: string;
+  session_date: string;
+  set_number: number;
+  weight_kg: number | null;
+  reps_actual: number | null;
+  rir_actual: number | null;
+  created_at: string;
+}
+
+export interface PerfSet {
+  w: number | null;
+  r: number | null;
+  rir: number | null;
+}
+
+/** Évolution de la meilleure série entre la plus ancienne séance de la fenêtre et la dernière. */
+export interface PerfTrend {
+  kind: "kg" | "reps" | "flat";
+  /** kg ou reps gagnés (négatif = en baisse). */
+  delta: number;
+  weeks: number;
+}
+
+export interface ExerciseHistory {
+  lastDate: string;
+  lastSets: PerfSet[];
+  trend: PerfTrend | null;
+}
+
+/** Fenêtre de la tendance : un mésocycle classique. */
+export const TREND_WINDOW_DAYS = 42;
+
+function daysBetween(a: string, b: string): number {
+  return Math.round((Date.parse(`${b}T12:00:00Z`) - Date.parse(`${a}T12:00:00Z`)) / 86400000);
+}
+
+function topSet(sets: PerfSet[]): PerfSet | null {
+  let best: PerfSet | null = null;
+  for (const s of sets) {
+    if (s.w == null && s.r == null) continue;
+    if (!best || (s.w ?? 0) > (best.w ?? 0) || ((s.w ?? 0) === (best.w ?? 0) && (s.r ?? 0) > (best.r ?? 0))) best = s;
+  }
+  return best;
+}
+
+/** Historique par exercice (clé = equipmentKey du nom). Séries vides ignorées. */
+export function buildExerciseHistory(rows: LoggedSet[], today: string): Record<string, ExerciseHistory> {
+  type Sess = { date: string; at: string; sets: Map<number, { at: string; set: PerfSet }> };
+  const byExercise = new Map<string, Map<string, Sess>>();
+  for (const row of rows) {
+    if (row.weight_kg == null && row.reps_actual == null) continue;
+    const key = norm(row.exercise_name);
+    const sessions = byExercise.get(key) ?? new Map<string, Sess>();
+    byExercise.set(key, sessions);
+    const sess = sessions.get(row.session_id) ?? { date: row.session_date, at: row.created_at, sets: new Map() };
+    sessions.set(row.session_id, sess);
+    if (row.created_at > sess.at) sess.at = row.created_at;
+    const prev = sess.sets.get(row.set_number);
+    // Doublon d'enregistrement d'une même série : la version la plus récente gagne.
+    if (!prev || row.created_at > prev.at) {
+      sess.sets.set(row.set_number, { at: row.created_at, set: { w: row.weight_kg, r: row.reps_actual, rir: row.rir_actual } });
+    }
+  }
+
+  const out: Record<string, ExerciseHistory> = {};
+  for (const [key, sessions] of byExercise) {
+    const list = [...sessions.values()]
+      .map((s) => ({ date: s.date, at: s.at, sets: [...s.sets.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v.set) }))
+      .filter((s) => s.sets.length > 0)
+      .sort((a, b) => b.date.localeCompare(a.date) || b.at.localeCompare(a.at));
+    if (list.length === 0) continue;
+    const last = list[0];
+    const inWindow = list.filter((s) => daysBetween(s.date, today) <= TREND_WINDOW_DAYS);
+    const oldest = inWindow[inWindow.length - 1];
+    let trend: PerfTrend | null = null;
+    if (oldest && oldest !== last && daysBetween(oldest.date, last.date) >= 7) {
+      const a = topSet(oldest.sets);
+      const b = topSet(last.sets);
+      if (a && b) {
+        const weeks = Math.max(1, Math.round(daysBetween(oldest.date, last.date) / 7));
+        const dw = Math.round(((b.w ?? 0) - (a.w ?? 0)) * 10) / 10;
+        const dr = (b.r ?? 0) - (a.r ?? 0);
+        trend = dw !== 0 ? { kind: "kg", delta: dw, weeks } : dr !== 0 ? { kind: "reps", delta: dr, weeks } : { kind: "flat", delta: 0, weeks };
+      }
+    }
+    out[key] = { lastDate: last.date, lastSets: last.sets, trend };
+  }
+  return out;
+}
+
+/** Séries prévues par groupe musculaire sur la semaine (exercices directs). */
+export function plannedSetsByMuscle(days: ProgramDay[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const d of days) {
+    for (const ex of d.exercises) {
+      if (!ex.muscle_group || ex.is_direct === false) continue;
+      out[ex.muscle_group] = (out[ex.muscle_group] ?? 0) + (ex.sets ?? 0);
+    }
+  }
+  return out;
+}
+
+/** Groupes musculaires d'une séance avec leurs séries, du plus travaillé au moins travaillé. */
+export function musclesForDay(exercises: Exercise[]): { group: string; sets: number }[] {
+  const map = new Map<string, number>();
+  for (const ex of exercises) {
+    if (!ex.muscle_group) continue;
+    map.set(ex.muscle_group, (map.get(ex.muscle_group) ?? 0) + (ex.sets ?? 0));
+  }
+  return [...map.entries()].map(([group, sets]) => ({ group, sets })).sort((a, b) => b.sets - a.sets);
+}
