@@ -160,6 +160,26 @@ export const NICHE_PRESETS: NichePreset[] = [
     },
   },
   {
+    key: "calisthenics",
+    label: "Street workout et calisthenics",
+    example: {
+      niche: "Calisthenics pour ceux qui veulent leur première traction, leur muscle-up ou leur premier front lever",
+      result: "Réussir ton premier muscle-up ou tenir 10 secondes de front lever",
+      timeframe: "12 semaines",
+      mechanism: "Progressions par étapes (tuck, advanced tuck, straddle), force au poids du corps et lest, suivi de chaque étape",
+      avatarName: "Yanis",
+      avatarAge: "26 ans",
+      avatarSituation: "S'entraîne aux barres du quartier depuis 1 an, bloqué à 8 tractions, ne sait pas comment progresser vers les skills",
+      pains: "Poignets et coudes qui tirent, stagnation, aucune idée de l'ordre des progressions",
+      desires: "Un muscle-up propre, un handstand libre, un corps fort et sec au poids du corps",
+      objections: "Sans salle ni charges, je ne peux pas progresser vite",
+      tried: "Vidéos YouTube sans plan, entraînement au feeling",
+      words: "« muscle-up », « front lever », « planche », « progression », « lest »",
+      where: "Instagram, YouTube street workout, TikTok",
+      pillars: "Force de base (tractions, dips, pompes lestés), progressions de skills, mobilité poignets et épaules, programmation",
+    },
+  },
+  {
     key: "course",
     label: "Course à pied",
     example: {

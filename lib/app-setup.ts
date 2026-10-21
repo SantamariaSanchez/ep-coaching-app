@@ -40,6 +40,7 @@ export type ModuleKey =
   | "perf_hyrox"
   | "perf_crossfit"
   | "perf_force"
+  | "perf_calisthenics"
   | "perf_reeducation"
   | "perf_sante"
   | "perf_prepa"
@@ -66,7 +67,7 @@ export const EMPTY_SETUP: AppSetup = { answers: {}, modules: {}, completed: fals
 /** Modules désactivés par défaut (nouveautés qu'on ne force sur personne). */
 const OFF_BY_DEFAULT: ModuleKey[] = [
   "masse_grasse", "competition", "energie", "humeur", "hydratation", "courbatures", "cardio_repos",
-  "perf_course", "perf_hyrox", "perf_crossfit", "perf_force", "perf_reeducation", "perf_sante", "perf_prepa", "perf_maternite",
+  "perf_course", "perf_hyrox", "perf_crossfit", "perf_force", "perf_calisthenics", "perf_reeducation", "perf_sante", "perf_prepa", "perf_maternite",
 ];
 
 /** Disciplines du moteur Performances, avec leur module. */
@@ -75,6 +76,7 @@ export const PERF_MODULES = {
   hyrox: "perf_hyrox",
   crossfit: "perf_crossfit",
   force: "perf_force",
+  calisthenics: "perf_calisthenics",
   reeducation: "perf_reeducation",
   sante: "perf_sante",
   prepa: "perf_prepa",
@@ -121,7 +123,10 @@ export const PRACTICE_OPTIONS: ChoiceOption[] = [
   { value: "musculation", label: "Musculation", hint: "Prise de muscle, esthétique" },
   { value: "perte_gras", label: "Perte de gras", hint: "Sèche, remise en forme" },
   { value: "bodybuilding_compet", label: "Bodybuilding de compétition", hint: "Prépa, posing, peak week" },
-  { value: "force", label: "Force et powerlifting", hint: "1RM, total, DOTS" },
+  { value: "force", label: "Force et powerlifting", hint: "%1RM, RPE, 1RM estimé, total, DOTS" },
+  { value: "calisthenics", label: "Street workout, calisthenics", hint: "Poids du corps, lest, skills, étapes" },
+  { value: "halterophilie", label: "Haltérophilie", hint: "Arraché, épaulé-jeté, total" },
+  { value: "hybride", label: "Hybride", hint: "Force et endurance dans la même semaine" },
   { value: "course", label: "Course à pied", hint: "Allure, volume, records" },
   { value: "hyrox", label: "Hyrox", hint: "Stations, runs, roxzone" },
   { value: "crossfit", label: "CrossFit", hint: "WOD, benchmarks, haltéro" },
@@ -140,10 +145,11 @@ export const MEMBER_QUESTIONS: SetupQuestion[] = [
     options: PRACTICE_OPTIONS,
     applyLast: true,
     toModules: (a) => ({
-      perf_course: has(a, "course"),
+      perf_course: has(a, "course") || has(a, "hybride"),
       perf_hyrox: has(a, "hyrox"),
       perf_crossfit: has(a, "crossfit"),
-      perf_force: has(a, "force"),
+      perf_force: has(a, "force") || has(a, "halterophilie") || has(a, "hybride"),
+      perf_calisthenics: has(a, "calisthenics"),
       perf_reeducation: has(a, "reeducation"),
       perf_sante: has(a, "sante"),
       perf_prepa: has(a, "bodybuilding_compet"),

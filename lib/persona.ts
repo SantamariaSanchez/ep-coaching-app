@@ -98,7 +98,7 @@ export function derivePersona(input: {
   if (has("reeducation")) {
     return { key: "reeducation", role: "client", guided: true, learn: null, practices, focus: ["douleur", "seance", "bilan", "message_coach", "agenda"] };
   }
-  if (has("force")) {
+  if (has("force") || has("calisthenics") || has("halterophilie")) {
     return { key: "force", role: "client", guided: false, learn: null, practices, focus: ["seance", "records", "manger", "bilan", "agenda", "message_coach"] };
   }
   if (has("course") || has("hyrox") || has("crossfit")) {

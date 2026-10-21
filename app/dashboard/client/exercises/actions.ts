@@ -145,20 +145,27 @@ export async function seedOfficialExercises(): Promise<{ error?: string; inserte
     const missing = EXERCISE_LIBRARY_SEED.filter((e) => !existingNames.has(e.name));
     if (missing.length === 0) return { inserted: 0 };
 
-    const { error } = await supabase.from("exercise_library").insert(
-      missing.map((e) => ({
-        name: e.name,
-        muscle_group: e.muscle_group,
-        muscle_subgroup: e.muscle_subgroup,
-        equipment: e.equipment,
-        brand: e.brand,
-        category: e.category,
-        difficulty: e.difficulty,
-        instructions: e.instructions,
-        created_by: null,
-        is_official: true,
-      }))
-    );
+    const rows = missing.map((e) => ({
+      name: e.name,
+      muscle_group: e.muscle_group,
+      muscle_subgroup: e.muscle_subgroup,
+      equipment: e.equipment,
+      brand: e.brand,
+      category: e.category,
+      difficulty: e.difficulty,
+      instructions: e.instructions,
+      ...(e.skill_key ? { skill_key: e.skill_key, skill_step: e.skill_step ?? null } : {}),
+      created_by: null,
+      is_official: true,
+    }));
+    let { error } = await supabase.from("exercise_library").insert(rows);
+    // Migration 20261021a pas encore passée : on importe sans la progression.
+    if (error) {
+      ({ error } = await supabase
+        .from("exercise_library")
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .insert(rows.map(({ skill_key, skill_step, ...rest }: Record<string, unknown>) => rest)));
+    }
     if (error) return { error: "Erreur lors de l'import." };
 
     revalidatePath("/dashboard/client/exercises");

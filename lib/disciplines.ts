@@ -12,7 +12,9 @@
 //
 // Fichier partagé serveur/client, sans import serveur.
 
-export type DisciplineKey = "course" | "hyrox" | "crossfit" | "force" | "reeducation" | "sante" | "prepa" | "maternite";
+import { SKILLS, estimateE1rm } from "@/lib/training-styles";
+
+export type DisciplineKey = "course" | "hyrox" | "crossfit" | "force" | "calisthenics" | "reeducation" | "sante" | "prepa" | "maternite";
 
 export type FieldType = "number" | "duration" | "text" | "select" | "scale";
 
@@ -326,13 +328,14 @@ const crossfit: Discipline = {
 
 // ── Force / powerlifting ────────────────────────────────────────────────
 
-const FORCE_LIFTS = ["Squat", "Développé couché", "Soulevé de terre", "Développé militaire", "Autre"];
+const FORCE_LIFTS = ["Squat", "Développé couché", "Soulevé de terre", "Développé militaire", "Arraché", "Épaulé-jeté", "Autre"];
+const SBD = ["Squat", "Développé couché", "Soulevé de terre"];
 
 const force: Discipline = {
   key: "force",
   label: "Force et powerlifting",
   menuLabel: "Force",
-  description: "Tes séries lourdes, ton 1RM estimé sur chaque mouvement, ton total et ton score DOTS.",
+  description: "Tes séries lourdes, ton 1RM estimé sur chaque mouvement, tes barres de compétition, ton total et ton score DOTS.",
   kinds: [
     {
       key: "serie",
@@ -345,12 +348,28 @@ const force: Discipline = {
         { key: "notes", label: "Notes", type: "text" },
       ],
       summary: (d) => {
-        const e = estimate1RM(num(d.charge), num(d.reps));
+        const e = estimateE1rm(num(d.charge), num(d.reps), num(d.rpe)) ?? estimate1RM(num(d.charge), num(d.reps));
         return `${d.mouvement} · ${num(d.charge)} kg × ${num(d.reps)}${num(d.rpe) ? ` @${num(d.rpe)}` : ""}${e ? ` · 1RM ≈ ${e} kg` : ""}`;
       },
       records: (d) => {
-        const e = estimate1RM(num(d.charge), num(d.reps));
-        return e && d.mouvement !== "Autre" ? [{ key: `e1rm_${d.mouvement}`, label: `${d.mouvement}`, value: e, display: `${e} kg`, better: "higher" }] : [];
+        const e = estimateE1rm(num(d.charge), num(d.reps), num(d.rpe)) ?? estimate1RM(num(d.charge), num(d.reps));
+        return e && d.mouvement !== "Autre" ? [{ key: `e1rm_${d.mouvement}`, label: `1RM estimé · ${d.mouvement}`, value: e, display: `${e} kg`, better: "higher" }] : [];
+      },
+    },
+    {
+      key: "essai",
+      label: "Barre de compétition",
+      fields: [
+        { key: "mouvement", label: "Mouvement", type: "select", options: SBD, required: true },
+        { key: "barre", label: "Barre", type: "select", options: ["1re barre", "2e barre", "3e barre"], required: true },
+        { key: "charge", label: "Charge", type: "number", unit: "kg", step: 0.5, required: true },
+        { key: "validee", label: "Résultat", type: "select", options: ["Validée", "Ratée"], required: true },
+        { key: "notes", label: "Notes", type: "text", placeholder: "Meeting, fédération, ressenti..." },
+      ],
+      summary: (d) => `${d.mouvement} · ${d.barre} · ${num(d.charge)} kg · ${String(d.validee).toLowerCase()}`,
+      records: (d) => {
+        const c = num(d.charge);
+        return c && d.validee === "Validée" ? [{ key: `comp_${d.mouvement}`, label: `Compétition · ${d.mouvement}`, value: c, display: `${c} kg`, better: "higher" }] : [];
       },
     },
   ],
@@ -358,14 +377,89 @@ const force: Discipline = {
     const best = bestRecords(force, entries);
     const get = (l: string) => best.find((r) => r.key === `e1rm_${l}`)?.value ?? 0;
     const total = get("Squat") + get("Développé couché") + get("Soulevé de terre");
+    const comp = SBD.reduce((sum, l) => sum + (best.find((r) => r.key === `comp_${l}`)?.value ?? 0), 0);
     const score = total && ctx.bodyweightKg ? dots(total, ctx.bodyweightKg, ctx.isWoman) : null;
     return [
       { label: "Total estimé (SBD)", value: total ? `${Math.round(total)} kg` : "à compléter" },
+      ...(comp ? [{ label: "Total compétition", value: `${Math.round(comp)} kg` }] : []),
       { label: "Score DOTS", value: score ? frNum(score) : ctx.bodyweightKg ? "à compléter" : "pèse-toi d'abord" },
       { label: "Séries notées (30 j)", value: String(entries.filter((e) => daysAgo(e.performed_on) < 30).length) },
     ];
   },
   tip: "Le 1RM estimé n'est fiable que sur des séries de 1 à 10 répétitions faites proprement.",
+};
+
+// ── Street workout et calisthenics ──────────────────────────────────────
+
+const SKILL_STEPS = [...new Set(SKILLS.flatMap((s) => s.steps))];
+const MAX_MOVES = ["Tractions", "Dips", "Pompes", "Muscle-up", "Pistol squat", "Tractions australiennes", "L-sit (secondes)"];
+
+const calisthenics: Discipline = {
+  key: "calisthenics",
+  label: "Street workout et calisthenics",
+  menuLabel: "Calisthenics",
+  description: "Tes skills étape par étape (front lever, planche, handstand, muscle-up...), tes maximums de répétitions et tes tractions ou dips lestés.",
+  kinds: [
+    {
+      key: "skill",
+      label: "Skill",
+      fields: [
+        { key: "skill", label: "Skill", type: "select", options: SKILLS.map((s) => s.label), required: true },
+        { key: "etape", label: "Étape atteinte", type: "select", options: SKILL_STEPS, required: true, hint: "Exemple : Advanced tuck pour un front lever" },
+        { key: "tenue", label: "Tenue", type: "number", unit: "s", min: 1, max: 600, hint: "Pour les positions tenues (front lever, planche, handstand, L-sit)" },
+        { key: "reps", label: "Répétitions", type: "number", min: 1, max: 200, hint: "Pour les skills dynamiques (muscle-up, pistol, HSPU)" },
+        { key: "notes", label: "Notes", type: "text" },
+      ],
+      summary: (d) => [d.skill, d.etape, num(d.tenue) ? `${num(d.tenue)} s` : "", num(d.reps) ? `${num(d.reps)} reps` : ""].filter(Boolean).join(" · "),
+      records: (d) => {
+        const sk = SKILLS.find((s) => s.label === d.skill);
+        if (!sk) return [];
+        const rank = sk.steps.findIndex((x) => x === d.etape);
+        if (rank < 0) return [];
+        const perf = num(d.tenue) ?? num(d.reps) ?? 0;
+        return [{
+          key: `skill_${sk.key}`,
+          label: sk.label,
+          value: (rank + 1) * 1000 + perf,
+          display: `${d.etape}${num(d.tenue) ? ` · ${num(d.tenue)} s` : num(d.reps) ? ` · ${num(d.reps)} reps` : ""}`,
+          better: "higher",
+        }];
+      },
+    },
+    {
+      key: "max",
+      label: "Maximum de répétitions",
+      fields: [
+        { key: "mouvement", label: "Mouvement", type: "select", options: MAX_MOVES, required: true },
+        { key: "reps", label: "Répétitions (ou secondes)", type: "number", min: 1, max: 500, required: true },
+        { key: "lest", label: "Lest ajouté", type: "number", unit: "kg", step: 0.5, min: 0, max: 200, hint: "Laisse vide au poids du corps" },
+        { key: "notes", label: "Notes", type: "text" },
+      ],
+      summary: (d) => `${d.mouvement} · ${num(d.reps)}${num(d.lest) ? ` × +${num(d.lest)} kg` : ""}`,
+      records: (d) => {
+        const reps = num(d.reps);
+        const lest = num(d.lest);
+        if (!reps) return [];
+        if (lest && lest > 0) {
+          const e = estimateE1rm(lest, reps);
+          return e ? [{ key: `lest_${d.mouvement}`, label: `${d.mouvement} lesté (1RM estimé du lest)`, value: e, display: `+${e} kg`, better: "higher" }] : [];
+        }
+        return [{ key: `max_${d.mouvement}`, label: `${d.mouvement} (max)`, value: reps, display: `${reps}`, better: "higher" }];
+      },
+    },
+  ],
+  stats: (entries) => {
+    const best = bestRecords(calisthenics, entries);
+    const skills = best.filter((r) => r.key.startsWith("skill_")).length;
+    const pull = best.find((r) => r.key === "max_Tractions")?.value;
+    const dips = best.find((r) => r.key === "max_Dips")?.value;
+    return [
+      { label: "Skills suivis", value: skills ? String(skills) : "à compléter" },
+      { label: "Tractions (max)", value: pull ? String(pull) : "à compléter" },
+      { label: "Dips (max)", value: dips ? String(dips) : "à compléter" },
+    ];
+  },
+  tip: "Monte d'une étape quand tu tiens la précédente 3 séries de 10 secondes, proprement. Les tendons suivent plus lentement que les muscles : sois patient.",
 };
 
 // ── Rééducation et reprise ─────────────────────────────────────────────
@@ -595,7 +689,7 @@ const maternite: Discipline = {
   tip: "Arrête la séance et contacte ta sage-femme ou ton médecin en cas de saignement, douleur, vertige, contractions ou perte de liquide. Après l'accouchement, la course et les sauts reprennent après une rééducation du périnée validée.",
 };
 
-export const DISCIPLINES: Discipline[] = [course, hyrox, crossfit, force, reeducation, sante, prepa, maternite];
+export const DISCIPLINES: Discipline[] = [course, hyrox, crossfit, force, calisthenics, reeducation, sante, prepa, maternite];
 export const DISCIPLINE_BY_KEY = Object.fromEntries(DISCIPLINES.map((d) => [d.key, d])) as Record<DisciplineKey, Discipline>;
 
 export function isDisciplineKey(v: unknown): v is DisciplineKey {
