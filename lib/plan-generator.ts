@@ -2,6 +2,7 @@ import type { ClientIntake } from "@/utils/client-intake";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { getEquipmentType, type EquipmentType } from "@/lib/exercise-library-content";
+import { computeMacroTargets, setsPerSessionFor } from "@/lib/coaching-knowledge";
 
 // ── Accès matériel réel du client ───────────────────────────────────────────
 // Racine du bug remonté : rien dans l'app ne savait si un client s'entraîne
@@ -39,12 +40,6 @@ export function inferPhase(intake: ClientIntake): InferredPhase {
   if (/massif|prise|surplus|gain|muscl/.test(text)) return "surplus";
   return "maintenance";
 }
-
-const PHASE_ADJUSTMENT: Record<InferredPhase, number> = {
-  deficit: -400,
-  maintenance: 0,
-  surplus: 300,
-};
 
 export function ageFromDateOfBirth(dob: string): number {
   const diff = Date.now() - new Date(dob).getTime();
@@ -91,10 +86,9 @@ export function computeNutritionTargets(params: {
   const tef = 0.1 * (bmr + eat + neat);
   const tdee = bmr + eat + neat + tef;
 
-  const calories = Math.round(tdee + PHASE_ADJUSTMENT[params.phase]);
-  const proteins = Math.round(2.0 * w);
-  const fats = Math.round(1.0 * w);
-  const carbs = Math.max(0, Math.round((calories - proteins * 4 - fats * 9) / 4));
+  // Ajustement en % de la maintenance, protéines et lipides au poids de
+  // corps, glucides = le reste (règles partagées : lib/coaching-knowledge.ts).
+  const { calories, proteins, fats, carbs } = computeMacroTargets({ weightKg: w, tdee, phase: params.phase });
 
   return { calories, proteins, carbs, fats, tdee: Math.round(tdee), bmr: Math.round(bmr) };
 }
@@ -401,18 +395,26 @@ export interface GeneratedDay {
   exercises: GeneratedExercise[];
 }
 
-function defaultPrescription(category: "compose" | "isolation" | null): Pick<GeneratedExercise, "sets" | "reps" | "rir" | "rest_seconds"> {
-  if (category === "isolation") return { sets: "3", reps: "10-15", rir: "1", rest_seconds: "75" };
-  return { sets: "4", reps: "6-10", rir: "2", rest_seconds: "120" };
+// Séries : on vise 8 à 12 séries difficiles par groupe et par semaine au
+// départ, réparties selon le nombre de fois où le groupe revient dans la
+// semaine (lib/coaching-knowledge.ts). Reps 5-20, RIR 0-3, repos 2-3 min sur
+// le lourd et 1-2 min sur l'isolation.
+function defaultPrescription(
+  category: "compose" | "isolation" | null,
+  weeklyAppearances = 2
+): Pick<GeneratedExercise, "sets" | "reps" | "rir" | "rest_seconds"> {
+  const sets = String(setsPerSessionFor(weeklyAppearances, category));
+  if (category === "isolation") return { sets, reps: "10-15", rir: "1", rest_seconds: "90" };
+  return { sets, reps: "6-10", rir: "2", rest_seconds: "150" };
 }
 
-function toGeneratedExercise(ex: LibraryExercise): GeneratedExercise {
+function toGeneratedExercise(ex: LibraryExercise, weeklyAppearances = 2): GeneratedExercise {
   return {
     name: ex.name,
     muscle_group: ex.muscle_group,
     muscle_subgroup: ex.muscle_subgroup,
     is_direct: true,
-    ...defaultPrescription(ex.category),
+    ...defaultPrescription(ex.category, weeklyAppearances),
   };
 }
 
@@ -450,13 +452,17 @@ export function generateProgramDraft(
     return usable[idx];
   }
 
+  // Nombre de séances de la semaine où chaque groupe apparaît.
+  const appearances: Record<string, number> = {};
+  for (const day of template) for (const g of day.groups) appearances[g] = (appearances[g] ?? 0) + 1;
+
   return template.map((day) => {
     const exercises: GeneratedExercise[] = [];
     for (const group of day.groups) {
       const compound = pick(group, "compose");
-      if (compound) exercises.push(toGeneratedExercise(compound));
+      if (compound) exercises.push(toGeneratedExercise(compound, appearances[group]));
       const isolation = pick(group, "isolation", compound?.position ?? null);
-      if (isolation) exercises.push(toGeneratedExercise(isolation));
+      if (isolation) exercises.push(toGeneratedExercise(isolation, appearances[group]));
     }
     return { dayLabel: day.label, exercises };
   });

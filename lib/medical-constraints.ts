@@ -192,6 +192,8 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
       "Sécuriser l'apport protéique total avant toute autre chose : viser la même fourchette que pour un régime omnivore (1,6 à 2,2 g/kg/j), en insistant sur la variété des sources végétales (légumineuses, soja, seitan, quinoa) pour couvrir le profil complet en acides aminés sur la journée plutôt que par repas isolé.",
       "Surveiller particulièrement 4 micronutriments à risque documenté en cas de régime végétalien spontané (non supplémenté) : vitamine B12 (quasi absente des sources végétales, supplémentation quasi systématique nécessaire en végétalien strict), fer, zinc, calcium.",
       "La vitamine B12 ne se \"rattrape\" pas par l'alimentation seule en végétalien strict : orienter vers un dosage sanguin et une supplémentation adaptée avec un professionnel de santé plutôt que de laisser une carence s'installer silencieusement.",
+      "Viser plutôt le haut de la fourchette de protéines, avec une source riche en lysine à chaque prise (soja, légumineuses, seitan associé à des légumineuses). Les aliments végétaux sont moins denses en calories et plus riches en fibres : vérifier que l'apport énergétique est réellement atteint, surtout en prise de masse.",
+      "Oméga 3 : la conversion de l'ALA (lin, noix) en EPA et DHA est faible, donc envisager une huile d'algue. Pense aussi à l'iode, à la vitamine D et au calcium. Un suivi précis de l'alimentation est plus important que pour un omnivore.",
       "Ne jamais présenter le régime comme la cause d'une stagnation ou d'une fatigue sans avoir vérifié ces apports concrets en premier : la première hypothèse est presque toujours un déficit de planification, pas le régime lui-même.",
     ],
     redFlags: [

@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
+import { proteinGPerKgFor, fatGPerKgFor } from "@/lib/coaching-knowledge";
 import { useState, useMemo, useEffect } from "react";
 import type { NutritionProfile, NutritionProfileInput } from "@/utils/nutrition";
 import type { DailyLog } from "@/utils/daily-logs";
@@ -225,8 +226,11 @@ export default function NutritionForm({
     const adj = parseFloat(form.adjustment) || 0;
     const caloriesTarget = tdee + adj;
 
-    const proteinsG = 2.0 * w;
-    const fatsG = 1.0 * w;
+    // Protéines plus hautes en déficit, lipides jamais sous 20 % des
+    // calories (règles partagées : lib/coaching-knowledge.ts).
+    const phaseKey = form.phase === "deficit" || form.phase === "surplus" ? form.phase : "maintenance";
+    const proteinsG = proteinGPerKgFor(phaseKey) * w;
+    const fatsG = Math.max(fatGPerKgFor(phaseKey) * w, (0.2 * caloriesTarget) / 9);
     const proteinsKcal = proteinsG * 4;
     const fatsKcal = fatsG * 9;
     const carbsG = Math.max(0, (caloriesTarget - proteinsKcal - fatsKcal) / 4);

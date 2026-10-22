@@ -3651,7 +3651,7 @@ export const EN: Record<string, string> = {
 
   // ── Écrans du quotidien (14) ──────────────────────────────────────────────
   "kcal / jour": "kcal / day",
-  "Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 200 à 400 kcal ; pour perdre du gras, retire environ 300 à 500 kcal.": "Maintenance estimate (basal metabolism × activity level). To build muscle, add about 200 to 400 kcal; to lose fat, remove about 300 to 500 kcal.",
+  "Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 8 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite on ajuste sur ton poids réel, pas sur la formule.": "Maintenance estimate (basal metabolism × activity level). To build muscle, add about 8 to 10%; to lose fat, remove about 10 to 20%. Then we adjust on your real weight, not on the formula.",
   "Charge soulevée (kg)": "Weight lifted (kg)",
   "Répétitions faites": "Reps done",
   "Charge maximale estimée (1RM)": "Estimated max load (1RM)",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
+import { proteinGPerKgFor, fatGPerKgFor } from "@/lib/coaching-knowledge";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Calculator, Dumbbell, ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
@@ -127,8 +128,8 @@ function CaloriesCalculator() {
     const mult = ACTIVITY_MULTIPLIERS.find((m) => m.key === activity)?.value ?? 1.55;
     const tdee = bmr * mult;
 
-    const proteinsG = 2.0 * w;
-    const fatsG = 1.0 * w;
+    const proteinsG = proteinGPerKgFor("maintenance") * w;
+    const fatsG = fatGPerKgFor("maintenance") * w;
     const carbsG = Math.max(0, (tdee - proteinsG * 4 - fatsG * 9) / 4);
 
     return {
@@ -206,7 +207,7 @@ function CaloriesCalculator() {
             ))}
           </div>
           <p className="text-[10.5px] text-(--ep-ink)/30 mt-4 leading-relaxed">
-            {t("Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 200 à 400 kcal ; pour perdre du gras, retire environ 300 à 500 kcal.")}
+            {t("Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 8 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite on ajuste sur ton poids réel, pas sur la formule.")}
           </p>
           <ToolCta guideSlug="guide-macros" guideTitle="Le guide des macros sans prise de tête" />
         </div>

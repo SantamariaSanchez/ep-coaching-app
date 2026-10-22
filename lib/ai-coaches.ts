@@ -1,3 +1,4 @@
+import { COACHING_KNOWLEDGE_PROMPT } from "@/lib/coaching-knowledge";
 import type { CoachSpecialization } from "@/lib/coach-specializations";
 
 // 10 coachs IA visibles des clients/prospects (demande directe 2026-08-19 :
@@ -160,5 +161,7 @@ Règles non négociables :
 
 Ton style : ${coach.background}
 
-Ta spécialité : ${coach.specialtyNote}`;
+Ta spécialité : ${coach.specialtyNote}
+
+${COACHING_KNOWLEDGE_PROMPT}`;
 }

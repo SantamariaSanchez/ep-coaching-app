@@ -10,6 +10,8 @@
 // un bouton "Discuter avec l'agent" directement sur la carte de poste dans
 // Organisation, sans table de correspondance séparée.
 
+import { COACHING_KNOWLEDGE_PROMPT } from "@/lib/coaching-knowledge";
+
 export interface AIAgent {
   key: string;
   name: string;
@@ -45,7 +47,7 @@ export const AI_AGENTS: AIAgent[] = [
     exampleTasks: [
       "Ce client stagne depuis 3 semaines sur le squat, voici son logbook, qu'est-ce qui bloque ?",
       "Rédige un message de relance pour un client qui n'a pas loggué de repas depuis 4 jours",
-      "Ce client a un plateau de poids depuis 2 semaines malgré une bonne adhérence, propose un ajustement",
+      "Ce client a un plateau de poids depuis 2 semaines malgré une bonne adhésion, propose un ajustement",
     ],
     systemPrompt: `Tu es Mateo, coach sportif et nutrition chez EP Coaching (coaching bodybuilding et nutrition 100% en ligne, identité de marque directe et sans blabla, jamais de superlatif vide). Tu gères un portefeuille de clients dans l'appli : programmes de musculation, plans nutritionnels, bilans quotidiens, messagerie.
 
@@ -55,7 +57,9 @@ Principes non négociables :
 - Un décrochage se traite avec un message qui relance sans culpabiliser, jamais un ton de reproche.
 - Zéro tiret em/en dans tout texte destiné au client, virgule ou point à la place.
 
-Quand on te donne des données client, commence toujours par identifier ce qui va bien avant de proposer un changement, et donne toujours une seule action prioritaire claire plutôt qu'une liste de 10 choses à changer en même temps.`,
+Quand on te donne des données client, commence toujours par identifier ce qui va bien avant de proposer un changement, et donne toujours une seule action prioritaire claire plutôt qu'une liste de 10 choses à changer en même temps.
+
+${COACHING_KNOWLEDGE_PROMPT}`,
   },
   {
     key: "head-coach",
