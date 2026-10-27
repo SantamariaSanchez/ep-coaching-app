@@ -1,7 +1,18 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { proteinGPerKgFor, fatGPerKgFor } from "@/lib/coaching-knowledge";
+import { proteinGPerKgFor, fatGPerKgFor, NUTRITION_RULES } from "@/lib/coaching-knowledge";
+import {
+  EATING_RELATION_OPTIONS,
+  EATING_RELATION_QUESTION,
+  EATING_STOP_MESSAGE,
+  EATING_STOP_TITLE,
+  EATING_WATCH_MESSAGE,
+  deficitAllowed,
+  eatingSafetyLevel,
+  type EatingRelation,
+  type EatingSafetyLevel,
+} from "@/lib/eating-safety";
 import { useState, useMemo, useEffect } from "react";
 import type { NutritionProfile, NutritionProfileInput } from "@/utils/nutrition";
 import type { DailyLog } from "@/utils/daily-logs";
@@ -98,9 +109,17 @@ export default function NutritionForm({
   clientWeight,
   recentDailyLogs = [],
   saveNutritionProfile,
+  eatingRelation = null,
+  setEatingRelation,
+  viewerIsCoach = false,
 }: {
   clientId: string;
   existingProfile: NutritionProfile | null;
+  /** Réponse déjà enregistrée sur la relation à l'alimentation (null = jamais posée). */
+  eatingRelation?: EatingRelation | null;
+  /** Si fourni, la question est posée dans le formulaire tant qu'elle n'a pas de réponse. */
+  setEatingRelation?: (value: string) => Promise<{ error?: string; level?: EatingSafetyLevel }>;
+  viewerIsCoach?: boolean;
   clientWeight: number | null;
   /** Bilans des ~21 derniers jours — sert à comparer le TDEE formule vs réel */
   recentDailyLogs?: DailyLog[];
@@ -111,6 +130,25 @@ export default function NutritionForm({
 }) {
   const tr = useT();
   const lsKey = `ep-tdee-${clientId}`;
+
+  // Dépistage avant tout déficit chiffré (lib/eating-safety.ts) : « actuel »
+  // ou « je ne sais pas » bloque le déficit, « passé » prévient seulement.
+  const [relation, setRelation] = useState<EatingRelation | null>(eatingRelation);
+  const [relationSaving, setRelationSaving] = useState(false);
+  const safetyLevel = eatingSafetyLevel(relation);
+  const mustAskRelation = !!setEatingRelation && relation === null;
+  const deficitBlocked = !deficitAllowed(safetyLevel) || mustAskRelation;
+  async function answerRelation(value: EatingRelation) {
+    if (!setEatingRelation) return;
+    setRelationSaving(true);
+    const res = await setEatingRelation(value);
+    setRelationSaving(false);
+    if (res.error) return;
+    setRelation(value);
+    if (!deficitAllowed(eatingSafetyLevel(value))) {
+      setForm((f) => (f.phase === "deficit" ? { ...f, phase: "maintenance", adjustment: "0" } : f));
+    }
+  }
 
   const [form, setForm] = useState(() => {
     return {
@@ -230,7 +268,7 @@ export default function NutritionForm({
     // calories (règles partagées : lib/coaching-knowledge.ts).
     const phaseKey = form.phase === "deficit" || form.phase === "surplus" ? form.phase : "maintenance";
     const proteinsG = proteinGPerKgFor(phaseKey) * w;
-    const fatsG = Math.max(fatGPerKgFor(phaseKey) * w, (0.2 * caloriesTarget) / 9);
+    const fatsG = Math.max(fatGPerKgFor(phaseKey) * w, (NUTRITION_RULES.fatPctKcal.min * caloriesTarget) / 9);
     const proteinsKcal = proteinsG * 4;
     const fatsKcal = fatsG * 9;
     const carbsG = Math.max(0, (caloriesTarget - proteinsKcal - fatsKcal) / 4);
@@ -294,6 +332,10 @@ export default function NutritionForm({
       setError("Remplis tous les champs obligatoires (poids, taille, âge).");
       return;
     }
+    if (form.phase === "deficit" && deficitBlocked) {
+      setError("Aucun déficit chiffré n'est proposé tant que la relation à l'alimentation n'est pas clarifiée avec un professionnel de santé.");
+      return;
+    }
     const caloriesTarget = parseInt(effectiveTargets.calories, 10);
     const proteinsTarget = parseInt(effectiveTargets.proteins, 10);
     const carbsTarget = parseInt(effectiveTargets.carbs, 10);
@@ -335,6 +377,48 @@ export default function NutritionForm({
 
   return (
     <div className="space-y-5">
+      {/* Dépistage de la relation à l'alimentation, avant tout chiffre de déficit. */}
+      {mustAskRelation && (
+        <div className="bg-(--ep-s1) border border-(--ep-warn)/30 rounded-xl p-5">
+          <p className="text-sm font-bold text-(--ep-strong) mb-1">{tr(EATING_RELATION_QUESTION)}</p>
+          <p className="text-[11px] text-(--ep-ink)/45 mb-3 leading-relaxed">
+            {tr("Une seule question, pour te proposer un objectif qui respecte ta santé. Ta réponse reste privée.")}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {EATING_RELATION_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                disabled={relationSaving}
+                onClick={() => answerRelation(o.value)}
+                className="py-2.5 px-3 text-xs font-bold rounded-lg border border-(--ep-line)/30 text-(--ep-ink)/70 hover:border-(--ep-accent)/50 hover:text-(--ep-accent) transition-colors disabled:opacity-50"
+              >
+                {tr(o.label)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {safetyLevel === "stop" && (
+        <div role="note" className="bg-(--ep-warn)/8 border border-(--ep-warn)/30 rounded-xl p-5">
+          <p className="text-sm font-bold text-(--ep-strong) mb-1">
+            {viewerIsCoach ? tr("Aucun déficit chiffré pour ce client") : tr(EATING_STOP_TITLE)}
+          </p>
+          <p className="text-[12px] text-(--ep-ink)/65 leading-relaxed">
+            {viewerIsCoach
+              ? tr("Il a répondu « actuellement » ou « je ne sais pas » à la question sur la relation à l'alimentation. Oriente-le vers un professionnel de santé, ne lui propose pas de déficit, parle du factuel et de la santé, jamais de l'apparence.")
+              : tr(EATING_STOP_MESSAGE)}
+          </p>
+        </div>
+      )}
+      {safetyLevel === "watch" && (
+        <p className="text-[11px] text-(--ep-ink)/55 leading-relaxed bg-(--ep-s1) border border-(--ep-line)/30 rounded-xl px-4 py-3">
+          {viewerIsCoach
+            ? tr("Il a déjà eu un trouble alimentaire : avance sans pression sur les chiffres, privilégie la maintenance et les habitudes.")
+            : tr(EATING_WATCH_MESSAGE)}
+        </p>
+      )}
+
       {/* Current targets banner */}
       {existingProfile && (
         <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
@@ -385,6 +469,9 @@ export default function NutritionForm({
               <p className="text-[11px] text-(--ep-ink)/55 leading-relaxed">
                 {tr("Sur les")}{" "}{observed.days}{" "}{tr("derniers jours,")}{" "}{observed.weightChangeKg >= 0 ? "+" : ""}
                 {observed.weightChangeKg}{tr("kg pour ~")}{observed.avgCalories}{" "}{tr("kcal/jour loggés → TDEE réel estimé à ~")}{observed.tdee}{" "}{tr("kcal, contre")}{" "}{calc?.tdee}{" "}{tr("kcal côté formule (")}{tdeeGap > 0 ? "+" : ""}{tdeeGap}{" "}{tr("kcal).")}
+              </p>
+              <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed mt-1">
+                {tr("Le poids varie avec l'eau et le glycogène : seule la moyenne sur plusieurs semaines compte, jamais une pesée isolée.")}
               </p>
               <button
                 onClick={applySuggestion}
@@ -562,7 +649,8 @@ export default function NutritionForm({
             <button
               key={p}
               onClick={() => set("phase", p)}
-              className={`py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors ${
+              disabled={p === "deficit" && deficitBlocked}
+              className={`py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors disabled:opacity-35 disabled:cursor-not-allowed ${
                 form.phase === p
                   ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)"
                   : "border-(--ep-line)/30 text-(--ep-ink)/40 hover:text-(--ep-ink)/70"

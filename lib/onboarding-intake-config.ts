@@ -84,6 +84,12 @@ export const ONBOARDING_SECTIONS: SectionDef[] = [
     title: "Nutrition",
     kicker: "Section 5",
     fields: {
+      relation_alimentation: {
+        type: "radio",
+        label: "Est-ce que tu as, ou as-tu déjà eu, un trouble du comportement alimentaire (anorexie, boulimie, hyperphagie) ou une relation très compliquée à la nourriture ?",
+        options: ["Non", "Oui, par le passé", "Oui, actuellement", "Je ne sais pas"],
+        required: true,
+      },
       repas_actuel: { type: "number", label: "Combien de repas tu fais actuellement par jour", required: true },
       repas_ideal: { type: "number", label: "Combien de repas tu voudrais idéalement faire par jour", required: true },
       journee_type: { type: "textarea", label: "Décris une journée alimentaire type, le plus précisément possible", required: true },
@@ -97,7 +103,7 @@ export const ONBOARDING_SECTIONS: SectionDef[] = [
       preference_plan: { type: "radio", label: "Tu préfères un plan alimentaire fixe ou des macros flexibles au quotidien ?", options: ["Plan fixe", "Macros flexibles", "Je ne sais pas"], required: true },
       preference_apport: { type: "radio", label: "Tu préfères un apport calorique linéaire chaque jour, ou qui varie selon les jours ?", options: ["Linéaire", "Qui varie selon les jours", "Je ne sais pas"], required: true },
     },
-    groups: [["repas_actuel", "repas_ideal"], ["journee_type"], ["calories_macros"], ["cheatmeals"], ["impact_digestion"], ["budget_complements"], ["aliments_deteste"], ["aliments_adore"], ["restrictions"], ["preference_plan"], ["preference_apport"]],
+    groups: [["relation_alimentation"], ["repas_actuel", "repas_ideal"], ["journee_type"], ["calories_macros"], ["cheatmeals"], ["impact_digestion"], ["budget_complements"], ["aliments_deteste"], ["aliments_adore"], ["restrictions"], ["preference_plan"], ["preference_apport"]],
   },
   {
     key: "secF",

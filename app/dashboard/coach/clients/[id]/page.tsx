@@ -39,6 +39,7 @@ import {
   deleteDietPlan,
 } from "./nutrition/diet-plan-actions";
 import { getClientIntake } from "@/utils/client-intake";
+import { getEatingRelation } from "@/lib/eating-safety-server";
 import { getClientConstraints, getRecoveryLogs } from "@/lib/client-medical-constraints";
 import { toggleClientConstraint, addRecoveryLog, deleteRecoveryLog } from "./medical/actions";
 import { getClientMeasurementsAsCoach } from "@/utils/measurements";
@@ -133,6 +134,7 @@ export default async function ClientDetailPage({
     accessoriesByName,
     performance,
     roadmapRow,
+    eatingRelation,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -176,6 +178,7 @@ export default async function ClientDetailPage({
     // Chargé avec tout le reste (avant : attendu seul, après tout le reste).
     loadPerformance(id),
     createAdminClient().from("roadmaps").select("id").eq("client_id", id).maybeSingle(),
+    getEatingRelation(id),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -299,6 +302,7 @@ export default async function ClientDetailPage({
         activateDietPlan={activateDietPlan}
         deleteDietPlan={deleteDietPlan}
         intake={intake}
+        eatingRelation={eatingRelation}
         saveClientIntake={saveClientIntake}
         sendIntakeReminder={sendIntakeReminder}
         stepGoal={stepSettings.daily_goal}

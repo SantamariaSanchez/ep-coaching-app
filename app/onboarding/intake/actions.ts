@@ -9,6 +9,8 @@ import { getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { escapeHtml } from "@/lib/sanitize";
+import { eatingSafetyLevel, parseEatingRelation, type EatingSafetyLevel } from "@/lib/eating-safety";
+import { recordEatingRelation } from "@/lib/eating-safety-server";
 import {
   ONBOARDING_SECTIONS,
   INTAKE_FIELD_MAP,
@@ -49,7 +51,7 @@ async function uploadPhoto(
 
 export async function submitOnboardingIntake(
   formData: FormData
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; safety?: EatingSafetyLevel }> {
   const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
@@ -133,6 +135,15 @@ export async function submitOnboardingIntake(
   // commence à concevoir le programme, la diète et la road map.
   const clientId = guard.userId;
   const clientName = [prenom, nom].filter(Boolean).join(" ") || "Ton nouveau client";
+
+  // Relation à l'alimentation : stockée sur le profil (pas dans client_intake,
+  // dont la simple existence marque le questionnaire comme terminé). La coach
+  // est prévenue tout de suite si la réponse l'exige (lib/eating-safety.ts).
+  const eating = parseEatingRelation(text("relation_alimentation"));
+  const safety = eatingSafetyLevel(eating);
+  if (eating) {
+    await recordEatingRelation(clientId, eating, clientName).catch(() => undefined);
+  }
   after(async () => {
     const coach = await getCoachForClient(clientId).catch(() => null);
     if (!coach || coach.id === clientId) return;
@@ -157,5 +168,5 @@ export async function submitOnboardingIntake(
 
   revalidatePath("/dashboard/client");
   revalidatePath("/dashboard/coach/clients");
-  return {};
+  return { safety };
 }

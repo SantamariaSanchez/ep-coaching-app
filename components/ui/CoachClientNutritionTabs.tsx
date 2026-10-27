@@ -8,6 +8,7 @@ import MicroBarList from "@/components/ui/MicroBarList";
 import ClientReferenceCard from "@/components/ui/ClientReferenceCard";
 import SupplementsSection from "@/components/ui/SupplementsSection";
 import type { ClientIntake } from "@/utils/client-intake";
+import type { EatingRelation } from "@/lib/eating-safety";
 import type { ClientSupplement } from "@/utils/supplements";
 import type { RoadmapWithData } from "@/utils/roadmap";
 import { PlansListView, MODE_LABELS } from "@/components/ui/DietPlanManager";
@@ -265,6 +266,8 @@ interface Props {
   allPlans: DietPlanWithMeals[];
   today: string;
   intake?: ClientIntake | null;
+  /** Relation à l'alimentation déclarée par le client (null = jamais posée). */
+  eatingRelation?: EatingRelation | null;
   roadmap?: RoadmapWithData | null;
   roadmapHref?: string;
   supplements: ClientSupplement[];
@@ -321,6 +324,7 @@ export default function CoachClientNutritionTabs({
   allPlans,
   today,
   intake = null,
+  eatingRelation = null,
   roadmap = null,
   roadmapHref,
   supplements,
@@ -470,6 +474,8 @@ export default function CoachClientNutritionTabs({
                   clientWeight={clientWeight}
                   recentDailyLogs={recentDailyLogs}
                   saveNutritionProfile={saveNutritionProfile}
+                  eatingRelation={eatingRelation}
+                  viewerIsCoach={!isOwnPlan}
                 />
               </div>
             )}

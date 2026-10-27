@@ -14,6 +14,7 @@ import {
 import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
 import { getClientSupplements } from "@/utils/supplements";
 import { getClientIntake } from "@/utils/client-intake";
+import { getEatingRelation } from "@/lib/eating-safety-server";
 import { getClientRoadmap } from "@/utils/roadmap";
 import { getCoachDietTemplates } from "@/utils/diet-templates";
 import { createDietTemplateAction } from "@/app/dashboard/coach/programmation/diet/actions";
@@ -54,7 +55,7 @@ export default async function CoachClientNutritionPage({
 
   const today = todayInParis();
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements, dietTemplates, intake, roadmap] =
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements, dietTemplates, intake, roadmap, eatingRelation] =
     await Promise.all([
       getNutritionProfile(id),
       getTodayLogs(id, today),
@@ -73,6 +74,7 @@ export default async function CoachClientNutritionPage({
       // sans vérifier le lieu d'entraînement" côté programme.
       getClientIntake(id),
       getClientRoadmap(id),
+      getEatingRelation(id),
     ]);
 
   return (
@@ -111,6 +113,7 @@ export default async function CoachClientNutritionPage({
         saveDietAsTemplate={createDietTemplateAction}
         subjectLabel={client.full_name ?? "ce client"}
         intake={intake}
+        eatingRelation={eatingRelation}
         roadmap={roadmap}
         roadmapHref={`/dashboard/coach/clients/${id}/roadmap`}
         saveNutritionProfile={saveNutritionProfile}

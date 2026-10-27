@@ -52,6 +52,7 @@ import { mergePhotoSets, photoUpdateSets, setsFromCheckins } from "@/lib/photo-s
 import CheckinDaySettings from "./CheckinDaySettings";
 import CheckinCard from "./CheckinCard";
 import CoachClientTasksView from "./CoachClientTasksView";
+import type { EatingRelation } from "@/lib/eating-safety";
 import CoachClientNutritionTabs from "./CoachClientNutritionTabs";
 import ClientIntakeForm from "./ClientIntakeForm";
 import ClientPeriodTracking from "./ClientPeriodTracking";
@@ -246,6 +247,7 @@ export default function ClientProfileTabs({
   activateDietPlan,
   deleteDietPlan,
   intake,
+  eatingRelation = null,
   saveClientIntake,
   sendIntakeReminder,
   stepGoal,
@@ -317,6 +319,7 @@ export default function ClientProfileTabs({
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   intake: ClientIntake | null;
+  eatingRelation?: EatingRelation | null;
   saveClientIntake: (clientId: string, data: ClientIntakeInput) => Promise<{ error?: string }>;
   sendIntakeReminder: (clientId: string) => Promise<{ error?: string }>;
   stepGoal: number;
@@ -428,10 +431,10 @@ export default function ClientProfileTabs({
   );
 
   const suggestions = useMemo(() => {
-    const base = generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program);
+    const base = generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, eatingRelation);
     const fatigue = generateFatigueTrendSuggestion(logbookSessions);
     return fatigue ? [...base, fatigue] : base;
-  }, [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, logbookSessions]);
+  }, [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, logbookSessions, eatingRelation]);
 
   // Regroupe les suggestions par onglet concerné — affiché en pastille sur
   // le bouton pour que la fiche client se répercute directement sur la
@@ -953,6 +956,7 @@ export default function ClientProfileTabs({
           allPlans={allPlans}
           today={today}
           intake={intake}
+          eatingRelation={eatingRelation}
           supplements={supplements}
           dietTemplates={dietTemplates}
           saveDietAsTemplate={saveDietAsTemplate}

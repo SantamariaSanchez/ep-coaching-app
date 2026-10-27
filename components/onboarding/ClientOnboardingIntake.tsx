@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Upload, Check, CheckCircle2, Loader2, X } from "lucide-react";
 import { ONBOARDING_SECTIONS, type FieldDef, type SectionDef } from "@/lib/onboarding-intake-config";
 import { submitOnboardingIntake } from "@/app/onboarding/intake/actions";
+import { EATING_STOP_MESSAGE, EATING_STOP_TITLE, EATING_WATCH_MESSAGE, type EatingSafetyLevel } from "@/lib/eating-safety";
 import { compressImage } from "@/lib/image-compress";
 
 type Step =
@@ -253,6 +254,7 @@ export default function ClientOnboardingIntake() {
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [safety, setSafety] = useState<EatingSafetyLevel>("clear");
   const gymInputRef = useRef<HTMLInputElement>(null);
 
   const steps = useMemo<Step[]>(() => {
@@ -343,6 +345,7 @@ export default function ClientOnboardingIntake() {
       return;
     }
     clearDraft();
+    setSafety(res.safety ?? "clear");
     setStepIndex(steps.length - 1);
   }
 
@@ -516,6 +519,22 @@ export default function ClientOnboardingIntake() {
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "#e3caca", marginBottom: 20 }}>
               {t("J'ai tout ce qu'il me faut pour construire ton programme et ton plan. Direction ton espace.")}
             </p>
+            {!submitError && safety !== "clear" && (
+              <div
+                role="note"
+                style={{
+                  textAlign: "left", padding: "14px 16px", borderRadius: 12, marginBottom: 18,
+                  border: "1px solid rgba(var(--ep-warn-rgb),0.35)", background: "rgba(var(--ep-warn-rgb),0.08)",
+                }}
+              >
+                {safety === "stop" && (
+                  <p style={{ fontSize: 13, fontWeight: 800, color: "var(--ep-strong)", margin: "0 0 6px" }}>{t(EATING_STOP_TITLE)}</p>
+                )}
+                <p style={{ fontSize: 12.5, lineHeight: 1.65, color: "var(--ep-ink)", margin: 0 }}>
+                  {t(safety === "stop" ? EATING_STOP_MESSAGE : EATING_WATCH_MESSAGE)}
+                </p>
+              </div>
+            )}
             {submitError && <p style={{ color: "var(--ep-accent)", fontSize: 12, fontWeight: 700, marginBottom: 14 }}>{submitError}</p>}
             {submitError ? (
               <button onClick={handleFinish} disabled={submitting} className="ep-btn-primary" style={{ width: "100%" }}>

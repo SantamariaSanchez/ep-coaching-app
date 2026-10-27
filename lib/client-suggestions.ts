@@ -3,6 +3,7 @@ import type { NutritionProfile } from "@/utils/nutrition";
 import type { DailyLog } from "@/utils/daily-logs";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { SessionWithSets } from "@/utils/sessions";
+import { eatingSafetyLevel, type EatingRelation } from "@/lib/eating-safety";
 
 // Onglet de ClientProfileTabs le plus concerné par la suggestion — permet
 // d'afficher un petit indicateur directement sur l'onglet (voir badge dans
@@ -40,10 +41,29 @@ export function generateClientSuggestions(
   nutritionProfile: NutritionProfile | null,
   recentDailyLogs: DailyLog[],
   periodLogsCount = 0,
-  program: ProgramWithDays | null = null
+  program: ProgramWithDays | null = null,
+  eatingRelation: EatingRelation | null = null
 ): ClientSuggestion[] {
   if (!intake) return [];
   const s: ClientSuggestion[] = [];
+
+  // ── Sécurité d'abord : relation à l'alimentation (lib/eating-safety.ts) ──
+  const eatingLevel = eatingSafetyLevel(eatingRelation);
+  if (eatingLevel === "stop") {
+    s.push({
+      id: "eating-stop",
+      severity: "warning",
+      text: "Ce client signale un trouble du comportement alimentaire (ou un doute). Aucun déficit chiffré : oriente-le vers un professionnel de santé, parle du factuel et de la santé, jamais de l'apparence.",
+      tab: "nutrition",
+    });
+  } else if (eatingLevel === "watch") {
+    s.push({
+      id: "eating-watch",
+      severity: "warning",
+      text: "Ce client a déjà eu un trouble du comportement alimentaire. Avance sans pression sur les chiffres, privilégie la maintenance et les habitudes, ne culpabilise jamais un écart.",
+      tab: "nutrition",
+    });
+  }
 
   // ── Demande directe du client — toujours visible, pas conditionnelle ──
   if (intake.how_coach_can_help) {

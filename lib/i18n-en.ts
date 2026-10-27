@@ -3651,7 +3651,7 @@ export const EN: Record<string, string> = {
 
   // ── Écrans du quotidien (14) ──────────────────────────────────────────────
   "kcal / jour": "kcal / day",
-  "Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 8 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite on ajuste sur ton poids réel, pas sur la formule.": "Maintenance estimate (basal metabolism × activity level). To build muscle, add about 8 to 10%; to lose fat, remove about 10 to 20%. Then we adjust on your real weight, not on the formula.",
+  "Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 5 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite on ajuste sur ton poids réel, pas sur la formule.": "Maintenance estimate (basal metabolism × activity level). To build muscle, add about 5 to 10%; to lose fat, remove about 10 to 20%. Then we adjust on your real weight, not on the formula.",
   "Charge soulevée (kg)": "Weight lifted (kg)",
   "Répétitions faites": "Reps done",
   "Charge maximale estimée (1RM)": "Estimated max load (1RM)",
@@ -5393,4 +5393,17 @@ export const EN: Record<string, string> = {
   "semaine allégée dans {n} sem.": "lighter week in {n} wk",
   "Revenir à la séance du jour": "Back to today's session",
   "Revenir à la prochaine séance": "Back to the next session",
+  "Est-ce que tu as, ou as-tu déjà eu, un trouble du comportement alimentaire (anorexie, boulimie, hyperphagie) ou une relation très compliquée à la nourriture ?": "Do you have, or have you ever had, an eating disorder (anorexia, bulimia, binge eating) or a very difficult relationship with food?",
+  "Oui, par le passé": "Yes, in the past",
+  "Oui, actuellement": "Yes, currently",
+  "Je ne sais pas": "I don't know",
+  "Une seule question, pour te proposer un objectif qui respecte ta santé. Ta réponse reste privée.": "One question, so we can suggest a goal that respects your health. Your answer stays private.",
+  "On ne te propose pas de chiffres pour l'instant": "We are not giving you numbers for now",
+  "Ta santé passe avant tout objectif. Pour ce sujet, la bonne personne est un professionnel de santé : parles-en à ton médecin traitant, il saura t'orienter. Si tu es en détresse, le 3114 (numéro national de prévention, gratuit, 24 h sur 24) est là pour toi. Je reste là pour l'entraînement et le reste quand ce sera le bon moment pour toi.": "Your health comes before any goal. For this topic, the right person is a health professional: talk to your family doctor, who can point you in the right direction. If you are in distress, 3114 (the free national prevention line, 24/7) is there for you. I'm still here for training and the rest when the time is right for you.",
+  "Merci de ta confiance. On avancera sans pression sur les chiffres, avec une approche simple et sans culpabilité, et ta coach en est informée.": "Thank you for your trust. We will move forward without pressure on the numbers, with a simple, guilt-free approach, and your coach has been informed.",
+  "Aucun déficit chiffré pour ce client": "No numeric deficit for this client",
+  "Il a répondu « actuellement » ou « je ne sais pas » à la question sur la relation à l'alimentation. Oriente-le vers un professionnel de santé, ne lui propose pas de déficit, parle du factuel et de la santé, jamais de l'apparence.": "They answered \"currently\" or \"I don't know\" to the question about their relationship with food. Refer them to a health professional, do not suggest a deficit, talk about facts and health, never appearance.",
+  "Il a déjà eu un trouble alimentaire : avance sans pression sur les chiffres, privilégie la maintenance et les habitudes.": "They have had an eating disorder before: go easy on the numbers, favour maintenance and habits.",
+  "Le poids varie avec l'eau et le glycogène : seule la moyenne sur plusieurs semaines compte, jamais une pesée isolée.": "Weight varies with water and glycogen: only the average over several weeks matters, never a single weigh-in.",
+  "J'ai, ou j'ai déjà eu, un trouble du comportement alimentaire, ou une relation très compliquée à la nourriture.": "I have, or have had, an eating disorder, or a very difficult relationship with food.",
 };

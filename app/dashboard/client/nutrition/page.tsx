@@ -15,6 +15,7 @@ import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
 import { getCommunityRecipes } from "@/utils/community-recipes";
 import { getSavedMeals } from "@/utils/saved-meals";
 import { getClientIntake } from "@/utils/client-intake";
+import { getEatingRelation } from "@/lib/eating-safety-server";
 import { getClientSupplements } from "@/utils/supplements";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getTrainingDays } from "@/utils/training-days";
@@ -36,6 +37,7 @@ import {
   deleteOwnDietPlan,
   updateOwnDietPlanMode,
   setOwnSeasonMode,
+  setOwnEatingRelation,
   createSavedMeal,
   deleteSavedMeal,
   importPlanMealsAsSavedMeals,
@@ -71,7 +73,7 @@ export default async function ClientNutritionPage() {
   // historique) et plans perso, comme les clients coachés : seule la
   // provenance du plan change (auto-géré, pas de coach).
   if (!isSubscribed(profile)) {
-    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes, latestWeight, recentDailyLogs, savedMeals, mostUsedGlobal, intake, supplements, [agendaMealTimes, trainingDays]] =
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes, latestWeight, recentDailyLogs, savedMeals, mostUsedGlobal, intake, supplements, [agendaMealTimes, trainingDays], eatingRelation] =
       await Promise.all([
         getNutritionProfile(user.id),
         getTodayLogs(user.id, today),
@@ -87,6 +89,7 @@ export default async function ClientNutritionPage() {
         getClientIntake(user.id),
         getClientSupplements(user.id),
         agendaAndTraining,
+        getEatingRelation(user.id),
       ]);
 
     // Calculateur : en tête tant qu'aucun besoin n'est enregistré (c'est
@@ -103,6 +106,8 @@ export default async function ClientNutritionPage() {
           clientWeight={latestWeight ?? profile?.weight_start ?? null}
           recentDailyLogs={recentDailyLogs}
           saveNutritionProfile={saveOwnNutritionProfile}
+          eatingRelation={eatingRelation}
+          setEatingRelation={setOwnEatingRelation}
         />
       </>
     );

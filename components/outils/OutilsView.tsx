@@ -2,6 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { proteinGPerKgFor, fatGPerKgFor } from "@/lib/coaching-knowledge";
+import { EATING_STOP_MESSAGE, EATING_STOP_TITLE } from "@/lib/eating-safety";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Calculator, Dumbbell, ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
@@ -117,11 +118,15 @@ function CaloriesCalculator() {
   const [height, setHeight] = useState("");
   const [age, setAge] = useState("");
   const [activity, setActivity] = useState(ACTIVITY_MULTIPLIERS[2].key);
+  // Case de sécurité (lib/eating-safety.ts) : aucun chiffre si la personne
+  // signale un trouble du comportement alimentaire, orientation à la place.
+  const [eatingFlag, setEatingFlag] = useState(false);
 
   const result = useMemo(() => {
     const w = parseFloat(weight);
     const h = parseFloat(height);
     const a = parseFloat(age);
+    if (eatingFlag) return null;
     if (!w || !h || !a || w <= 0 || h <= 0 || a <= 0) return null;
 
     const bmr = gender === "Homme" ? 10 * w + 6.25 * h - 5 * a + 5 : 10 * w + 6.25 * h - 5 * a - 161;
@@ -139,7 +144,7 @@ function CaloriesCalculator() {
       fatsG: Math.round(fatsG),
       carbsG: Math.round(carbsG),
     };
-  }, [gender, weight, height, age, activity]);
+  }, [gender, weight, height, age, activity, eatingFlag]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -186,6 +191,23 @@ function CaloriesCalculator() {
         </select>
       </div>
 
+      <label className="flex items-start gap-2.5 cursor-pointer text-[11.5px] text-(--ep-ink)/55 leading-snug">
+        <input
+          type="checkbox"
+          checked={eatingFlag}
+          onChange={(e) => setEatingFlag(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>{t("J'ai, ou j'ai déjà eu, un trouble du comportement alimentaire, ou une relation très compliquée à la nourriture.")}</span>
+      </label>
+
+      {eatingFlag && (
+        <div role="note" className="ep-card" style={{ padding: 18 }}>
+          <p className="text-sm font-black text-(--ep-strong) mb-1.5">{t(EATING_STOP_TITLE)}</p>
+          <p className="text-[12px] text-(--ep-ink)/60 leading-relaxed">{t(EATING_STOP_MESSAGE)}</p>
+        </div>
+      )}
+
       {result && (
         <div className="ep-card" style={{ padding: 20, marginTop: 4 }}>
           <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1">
@@ -207,7 +229,7 @@ function CaloriesCalculator() {
             ))}
           </div>
           <p className="text-[10.5px] text-(--ep-ink)/30 mt-4 leading-relaxed">
-            {t("Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 8 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite on ajuste sur ton poids réel, pas sur la formule.")}
+            {t("Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 5 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite on ajuste sur ton poids réel, pas sur la formule.")}
           </p>
           <ToolCta guideSlug="guide-macros" guideTitle="Le guide des macros sans prise de tête" />
         </div>

@@ -13,6 +13,21 @@ import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notifica
 import { notifyUser } from "@/lib/notify";
 import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
 import { after } from "next/server";
+import { eatingSafetyLevel, parseEatingRelation, type EatingSafetyLevel } from "@/lib/eating-safety";
+import { recordEatingRelation } from "@/lib/eating-safety-server";
+
+// Relation à l'alimentation, posée avant tout calcul de déficit (voir
+// lib/eating-safety.ts). Prévient la coach si la réponse l'exige.
+export async function setOwnEatingRelation(value: string): Promise<{ error?: string; level?: EatingSafetyLevel }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+  const relation = parseEatingRelation(value);
+  if (!relation) return { error: "Réponse inconnue." };
+  const profile = await getProfile(guard.userId);
+  await recordEatingRelation(guard.userId, relation, profile?.full_name ?? null);
+  revalidatePath("/dashboard/client/nutrition");
+  return { level: eatingSafetyLevel(relation) };
+}
 
 // Self-serve nutrition targets — only available to free-tier community
 // members. They set and adjust their own targets, no coach review.
