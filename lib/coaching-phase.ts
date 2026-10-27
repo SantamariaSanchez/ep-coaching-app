@@ -81,7 +81,7 @@ export async function startCalibrationPhase(clientId: string, changedBy: string)
 // Déclenchée quand un client redevient gratuit/résilié — ferme la phase en
 // cours sans en rouvrir une nouvelle (plus de coaching actif à suivre). Si
 // le client redevient actif plus tard, startCalibrationPhase repart sur un
-// calibrage neuf : mieux vaut re vérifier l'adhérence après une pause que
+// calibrage neuf : mieux vaut re vérifier l'adhésion après une pause que
 // supposer qu'elle a tenu pendant l'interruption.
 export async function endCoachingPhaseTracking(clientId: string, changedBy: string): Promise<void> {
   const admin = createAdminClient();
@@ -119,7 +119,7 @@ export async function transitionCoachingPhase(
   return {};
 }
 
-// ── Signaux d'adhérence (phase calibrage uniquement) ────────────────────────
+// ── Signaux d'adhésion (phase calibrage uniquement) ────────────────────────
 
 function daysAgo(n: number): Date {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
@@ -150,7 +150,7 @@ function adherenceWindowStart(phaseSince: string): Date {
   return since > cutoff ? since : cutoff;
 }
 
-// Calcule les signaux d'adhérence en phase de calibrage à partir des
+// Calcule les signaux d'adhésion en phase de calibrage à partir des
 // données déjà loguées par le client — pas de nouvelle saisie demandée nulle
 // part, tout provient de ce qui existe déjà (sessions, nutrition, bilan
 // quotidien, check-in hebdo). Chaque signal est indépendant et explicable,

@@ -211,7 +211,7 @@ export default function CheckinReview({
       out.push({ label: t("Évolution"), value: `${d > 0 ? "+" : ""}${d} kg` });
     }
     if (checkin.attitude_rating != null) out.push({ label: t("Attitude"), value: `${checkin.attitude_rating}/10` });
-    if (checkin.nutrition_adherence != null) out.push({ label: t("Adhérence diète"), value: `${checkin.nutrition_adherence} %` });
+    if (checkin.nutrition_adherence != null) out.push({ label: t("Adhésion diète"), value: `${checkin.nutrition_adherence} %` });
     if (checkin.steps_per_day != null) out.push({ label: t("Pas / jour"), value: `${checkin.steps_per_day}` });
     if (checkin.sleep_hours != null) out.push({ label: t("Sommeil"), value: `${checkin.sleep_hours} h` });
     return out;

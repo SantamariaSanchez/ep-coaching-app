@@ -304,7 +304,7 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       const lines = [
         `Bilan hebdo de ${client.name}, semaine du ${c.week_start}`,
         c.weight_avg != null ? `Poids moyen : ${fr(Number(c.weight_avg), 1)} kg` : null,
-        c.nutrition_adherence != null ? `Adhérence nutrition : ${c.nutrition_adherence}` : null,
+        c.nutrition_adherence != null ? `Adhésion nutrition : ${c.nutrition_adherence}` : null,
         c.sleep_hours != null ? `Sommeil : ${c.sleep_hours} h` : null,
         c.general_feeling != null ? `Ressenti général : ${c.general_feeling}` : null,
         c.biggest_win ? `Sa plus grande victoire : ${c.biggest_win}` : null,

@@ -31,7 +31,7 @@ function daysSince(iso: string): number {
 }
 
 // Panneau strictement côté coach — jamais rendu sur /dashboard/client/**.
-// Montre la phase de coaching en cours, les signaux d'adhérence (calibrage
+// Montre la phase de coaching en cours, les signaux d'adhésion (calibrage
 // uniquement) et les suggestions de décision, avec un bouton de transition
 // explicite : le coach garde toujours la main, le système ne fait que
 // suggérer (voir lib/coaching-phase-helpers.ts pour le détail des règles).
@@ -131,7 +131,7 @@ export default function CoachingPhasePanel({
         </div>
       </div>
 
-      {/* Signaux d'adhérence — calibrage uniquement, voir computeCalibrationSignals */}
+      {/* Signaux d'adhésion — calibrage uniquement, voir computeCalibrationSignals */}
       {phase.phase === "calibrage" && signals.length > 0 && (
         <div className="mt-3.5 pt-3.5 border-t border-(--ep-line)/15 space-y-2">
           {signals.map((sig) => (

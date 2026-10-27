@@ -333,7 +333,7 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       for (const c of (checks ?? []) as Record<string, string | number | null>[]) {
         const bits = [
           c.weight_avg != null && `poids moyen ${fr(Number(c.weight_avg), 1)} kg`,
-          c.nutrition_adherence != null && `adhérence nutrition ${c.nutrition_adherence}`,
+          c.nutrition_adherence != null && `adhésion nutrition ${c.nutrition_adherence}`,
           c.sleep_hours != null && `sommeil ${c.sleep_hours} h`,
           c.general_feeling != null && `ressenti ${c.general_feeling}`,
           c.biggest_win && `victoire : ${c.biggest_win}`,

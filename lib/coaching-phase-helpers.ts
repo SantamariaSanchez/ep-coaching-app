@@ -17,17 +17,17 @@
 //                     coaché (abonnement actif). Le coach vérifie que le
 //                     client suit vraiment le programme avant d'investir du
 //                     temps à optimiser quoi que ce soit. C'est la seule
-//                     phase où des signaux d'adhérence détaillés sont
+//                     phase où des signaux d'adhésion détaillés sont
 //                     calculés (voir computeCalibrationSignals).
-// - "optimisation" : une fois l'adhérence confirmée en calibrage. Le coach
+// - "optimisation" : une fois l'adhésion confirmée en calibrage. Le coach
 //                     affine programme/nutrition pour maximiser les
 //                     résultats. Aucun nouveau signal détaillé recalculé
 //                     ici : le moteur d'alertes déjà en place
 //                     (lib/coach-analytics.ts, section "Alertes urgentes" du
-//                     dashboard coach) surveille déjà l'adhérence en continu
+//                     dashboard coach) surveille déjà l'adhésion en continu
 //                     pour tous les clients actifs quelle que soit leur
 //                     phase — inutile de dupliquer cette logique.
-// - "performance"  : phase optionnelle, pour un client avec une adhérence
+// - "performance"  : phase optionnelle, pour un client avec une adhésion
 //                     longue et solide en optimisation (typiquement en vue
 //                     d'une échéance ou d'une recherche de résultats
 //                     maximaux). Purement une étiquette de suivi pour
@@ -46,7 +46,7 @@ export const PHASE_LABELS: Record<CoachingPhase, string> = {
 
 export const PHASE_DESCRIPTIONS: Record<CoachingPhase, string> = {
   calibrage: "Vérifie que le client suit vraiment le programme avant d'aller plus loin.",
-  optimisation: "Adhérence confirmée, place à l'ajustement fin du programme et de la nutrition.",
+  optimisation: "Adhésion confirmée, place à l'ajustement fin du programme et de la nutrition.",
   performance: "Phase avancée, orientée résultats maximaux ou échéance proche.",
 };
 
@@ -140,14 +140,14 @@ export function generateCoachingPhaseSuggestions(
       });
     }
 
-    // Calibrage qui traîne en longueur sans adhérence claire (3 semaines et
+    // Calibrage qui traîne en longueur sans adhésion claire (3 semaines et
     // plus, moitié ou moins des signaux applicables au vert) : ça mérite
     // plus qu'un rappel ponctuel, un vrai point avec le client.
     if (ageDays >= 21 && applicable.length > 0 && okCount <= applicable.length / 2) {
       s.push({
         id: "calibrage-prolonge",
         severity: "warning",
-        text: `Calibrage depuis ${ageWeeks} semaines sans adhérence claire, envisage un appel de recadrage ou de vérifier que le format actuel convient vraiment au client.`,
+        text: `Calibrage depuis ${ageWeeks} semaines sans adhésion claire, envisage un appel de recadrage ou de vérifier que le format actuel convient vraiment au client.`,
       });
     }
 
@@ -157,7 +157,7 @@ export function generateCoachingPhaseSuggestions(
       s.push({
         id: "calibrage-pret",
         severity: "info",
-        text: `Adhérence solide depuis le début du calibrage (${ageWeeks} semaines), prêt à passer en phase Optimisation ?`,
+        text: `Adhésion solide depuis le début du calibrage (${ageWeeks} semaines), prêt à passer en phase Optimisation ?`,
       });
     }
   }

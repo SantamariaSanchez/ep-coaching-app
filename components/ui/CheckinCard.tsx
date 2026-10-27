@@ -495,7 +495,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               <p style={sectionLbl}>{t("Données chiffrées")}</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
                 <div>
-                  <NumRow label={t("Adhérence nutri")} value={checkin.nutrition_adherence ? `${checkin.nutrition_adherence}%` : null} />
+                  <NumRow label={t("Adhésion nutri")} value={checkin.nutrition_adherence ? `${checkin.nutrition_adherence}%` : null} />
                   <NumRow label={t("Calories/j")} value={checkin.calories_per_day ? `${checkin.calories_per_day} kcal` : null} />
                   <NumRow label={t("Pas/j")} value={checkin.steps_per_day ? checkin.steps_per_day.toLocaleString("fr-FR") : null} />
                 </div>
