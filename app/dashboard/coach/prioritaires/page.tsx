@@ -3,7 +3,26 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getPrioritizedCoachView } from "@/lib/coach-analytics";
+import { TRAFFIC_LIGHT_LABEL, TRAFFIC_LIGHT_QUESTION, type TrafficLight } from "@/lib/client-traffic-light";
 import { AlertTriangle, AlertCircle, Info, Clock3, ChevronRight, CheckCircle2 } from "lucide-react";
+
+const LIGHT_META: Record<TrafficLight, { color: string; bg: string; border: string }> = {
+  vert: { color: "var(--ep-ok)", bg: "rgba(var(--ep-ok-rgb),0.12)", border: "rgba(var(--ep-ok-rgb),0.3)" },
+  orange: { color: "var(--ep-warn)", bg: "rgba(var(--ep-warn-rgb),0.12)", border: "rgba(var(--ep-warn-rgb),0.3)" },
+  rouge: { color: "var(--ep-bad)", bg: "rgba(var(--ep-bad-rgb),0.12)", border: "rgba(var(--ep-bad-rgb),0.3)" },
+};
+
+function LightChip({ light, label }: { light: TrafficLight; label: string }) {
+  const m = LIGHT_META[light];
+  return (
+    <span
+      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex-shrink-0"
+      style={{ color: m.color, background: m.bg, border: `1px solid ${m.border}` }}
+    >
+      {label}
+    </span>
+  );
+}
 
 const SEVERITY_META = {
   high: { label: "Critique", color: "var(--ep-bad)", bg: "rgba(var(--ep-bad-rgb),0.1)", border: "rgba(var(--ep-bad-rgb),0.25)", Icon: AlertTriangle },
@@ -25,7 +44,7 @@ export default async function CoachPrioritairesPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const { flagged, quiet } = await getPrioritizedCoachView(user.id);
+  const { flagged, quiet, onTrack } = await getPrioritizedCoachView(user.id);
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
@@ -39,7 +58,7 @@ export default async function CoachPrioritairesPage() {
         </p>
       </div>
 
-      {flagged.length === 0 && quiet.length === 0 ? (
+      {flagged.length === 0 && quiet.length === 0 && onTrack.length === 0 ? (
         <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
           <CheckCircle2 size={22} className="text-green-400/40 mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-sm text-(--ep-ink)/35">{t("Rien à signaler. Tous tes clients actifs sont suivis.")}</p>
@@ -65,9 +84,11 @@ export default async function CoachPrioritairesPage() {
                     className="block bg-(--ep-s1) border border-(--ep-line)/20 hover:border-red-500/30 rounded-xl px-4 py-3.5 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <p className="text-sm font-black text-(--ep-strong)">{c.clientName ?? t("Client")}</p>
+                      <p className="text-sm font-black text-(--ep-strong) flex-1 min-w-0 truncate">{c.clientName ?? t("Client")}</p>
+                      <LightChip light={c.light} label={t(TRAFFIC_LIGHT_LABEL[c.light])} />
                       <ChevronRight size={14} className="text-(--ep-ink)/25 flex-shrink-0" />
                     </div>
+                    <p className="text-[11px] font-semibold text-(--ep-ink)/70 mb-2">{t(TRAFFIC_LIGHT_QUESTION[c.light])}</p>
                     <div className="flex flex-col gap-1.5">
                       {c.alerts.map((a, i) => {
                         const meta = SEVERITY_META[a.severity];
@@ -111,6 +132,32 @@ export default async function CoachPrioritairesPage() {
                     <span className="text-[10px] text-(--ep-ink)/35 flex-shrink-0">
                       {c.lastContactDays == null ? t("Jamais eu d'appel") : `Depuis ${c.lastContactDays} jours`}
                     </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {onTrack.length > 0 && (
+            <section className="mt-10">
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle2 size={13} style={{ color: "var(--ep-ok)" }} />
+                <h2 className="text-xs font-black uppercase tracking-widest text-(--ep-ink)/60">
+                  {t("Sur la bonne voie")}
+                </h2>
+                <LightChip light="vert" label={String(onTrack.length)} />
+              </div>
+              <p className="text-[11px] text-(--ep-ink)/45 mb-3 leading-relaxed">
+                {t(TRAFFIC_LIGHT_QUESTION.vert)}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {onTrack.map((c) => (
+                  <Link
+                    key={c.clientId}
+                    href={`/dashboard/coach/clients/${c.clientId}`}
+                    className="bg-(--ep-s1) border border-(--ep-line)/15 hover:border-(--ep-line)/30 rounded-xl px-3 py-2 text-xs font-bold text-(--ep-strong) transition-colors"
+                  >
+                    {c.clientName ?? t("Client")}
                   </Link>
                 ))}
               </div>

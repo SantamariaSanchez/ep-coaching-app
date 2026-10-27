@@ -5406,4 +5406,11 @@ export const EN: Record<string, string> = {
   "Il a déjà eu un trouble alimentaire : avance sans pression sur les chiffres, privilégie la maintenance et les habitudes.": "They have had an eating disorder before: go easy on the numbers, favour maintenance and habits.",
   "Le poids varie avec l'eau et le glycogène : seule la moyenne sur plusieurs semaines compte, jamais une pesée isolée.": "Weight varies with water and glycogen: only the average over several weeks matters, never a single weigh-in.",
   "J'ai, ou j'ai déjà eu, un trouble du comportement alimentaire, ou une relation très compliquée à la nourriture.": "I have, or have had, an eating disorder, or a very difficult relationship with food.",
+  "Sur la bonne voie": "On track",
+  "Vert": "Green",
+  "Orange": "Orange",
+  "Rouge": "Red",
+  "Il avance : célèbre sa victoire de la semaine.": "Making progress: celebrate this week's win.",
+  "Il stagne : demande-lui ce qui a changé.": "Stalling: ask what has changed.",
+  "Il a du mal à suivre : demande-lui comment on simplifie le plan.": "Struggling to follow: ask how we can simplify the plan.",
 };

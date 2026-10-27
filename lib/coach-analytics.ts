@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { classifyClient, type TrafficLight } from "@/lib/client-traffic-light";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -727,6 +728,14 @@ export interface PrioritizedClient {
   clientId: string;
   clientName: string | null;
   alerts: ClientAlert[];
+  /** Feu du suivi : orange (stagne) ou rouge (du mal à suivre), voir lib/client-traffic-light.ts. */
+  light: TrafficLight;
+}
+
+/** Client sans signal et suivi : feu vert, l'occasion de célébrer sa victoire. */
+export interface OnTrackClient {
+  clientId: string;
+  clientName: string | null;
 }
 
 export interface QuietClient {
@@ -737,7 +746,7 @@ export interface QuietClient {
 
 export async function getPrioritizedCoachView(
   coachId: string
-): Promise<{ flagged: PrioritizedClient[]; quiet: QuietClient[] }> {
+): Promise<{ flagged: PrioritizedClient[]; quiet: QuietClient[]; onTrack: OnTrackClient[] }> {
   const supabase = createAdminClient();
   const { data: clients } = await supabase
     .from("profiles")
@@ -747,7 +756,7 @@ export async function getPrioritizedCoachView(
     .eq("subscription_status", "active")
     .eq("coach_id", coachId);
 
-  if (!clients || clients.length === 0) return { flagged: [], quiet: [] };
+  if (!clients || clients.length === 0) return { flagged: [], quiet: [], onTrack: [] };
 
   const rows = clients as {
     id: string;
@@ -790,6 +799,7 @@ export async function getPrioritizedCoachView(
   const order: AlertSeverity[] = ["high", "medium", "low"];
   const flagged: PrioritizedClient[] = [];
   const quiet: QuietClient[] = [];
+  const onTrack: OnTrackClient[] = [];
   const QUIET_THRESHOLD_DAYS = 30;
 
   for (const { client, alerts } of perClientAlerts) {
@@ -798,10 +808,15 @@ export async function getPrioritizedCoachView(
         clientId: client.id,
         clientName: client.full_name,
         alerts: [...alerts].sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)),
+        light: classifyClient(alerts),
       });
       continue;
     }
-    if (hasUpcoming.has(client.id)) continue; // déjà un suivi programmé, rien à signaler
+    if (hasUpcoming.has(client.id)) {
+      // Déjà un suivi programmé, rien à signaler : feu vert.
+      onTrack.push({ clientId: client.id, clientName: client.full_name });
+      continue;
+    }
 
     const last = lastPastCall.get(client.id);
     const lastContactDays = last != null ? Math.floor((now - last) / 86400000) : null;
@@ -816,13 +831,15 @@ export async function getPrioritizedCoachView(
     const neverContactedButTooNew = lastContactDays === null && accountAgeDaysOf(client) < QUIET_THRESHOLD_DAYS;
     if (!neverContactedButTooNew && (lastContactDays === null || lastContactDays >= QUIET_THRESHOLD_DAYS)) {
       quiet.push({ clientId: client.id, clientName: client.full_name, lastContactDays });
+    } else {
+      onTrack.push({ clientId: client.id, clientName: client.full_name });
     }
   }
 
   flagged.sort((a, b) => order.indexOf(a.alerts[0].severity) - order.indexOf(b.alerts[0].severity));
   quiet.sort((a, b) => (b.lastContactDays ?? Infinity) - (a.lastContactDays ?? Infinity));
 
-  return { flagged, quiet };
+  return { flagged, quiet, onTrack };
 }
 
 // Même liste d'alertes pour la tuile « Qui a besoin de moi » et la section

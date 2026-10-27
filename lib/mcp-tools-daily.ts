@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { todayInParis, nowInParis } from "@/lib/dates";
 import { fuzzyScore } from "@/lib/fuzzy-search";
 import { getPrioritizedCoachView } from "@/lib/coach-analytics";
+import { TRAFFIC_LIGHT_QUESTION } from "@/lib/client-traffic-light";
 import { notifyUser } from "@/lib/notify";
 import { sendPushToUser } from "@/lib/push";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
@@ -269,7 +270,7 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
 
   switch (name) {
     case "clients_a_relancer": {
-      const { flagged, quiet } = await getPrioritizedCoachView(ownerId);
+      const { flagged, quiet, onTrack } = await getPrioritizedCoachView(ownerId);
       const { data: clients } = await admin.from("profiles").select("id, full_name").eq("coach_id", ownerId).eq("role", "client").neq("id", ownerId).limit(300);
       const names = new Map(((clients ?? []) as { id: string; full_name: string | null }[]).map((c) => [c.id, c.full_name ?? "Sans nom"]));
       const { data: pending } = names.size
@@ -278,7 +279,7 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       const lines: string[] = [];
       if (flagged.length) {
         lines.push(`${flagged.length} client(s) avec une alerte :`);
-        for (const f of flagged.slice(0, 30)) lines.push(`- ${f.clientName ?? "Sans nom"} : ${f.alerts.map((a) => `${a.label} (${a.severity === "high" ? "urgent" : a.severity === "medium" ? "à surveiller" : "léger"})`).join(" ; ")}. Piste : ${f.alerts[0].suggestion}`);
+        for (const f of flagged.slice(0, 30)) lines.push(`- [${f.light}] ${f.clientName ?? "Sans nom"} : ${f.alerts.map((a) => `${a.label} (${a.severity === "high" ? "urgent" : a.severity === "medium" ? "à surveiller" : "léger"})`).join(" ; ")}. Piste : ${f.alerts[0].suggestion} ${TRAFFIC_LIGHT_QUESTION[f.light]}`);
       }
       const pend = (pending ?? []) as { client_id: string; week_start: string }[];
       if (pend.length) {
@@ -288,6 +289,9 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       if (quiet.length) {
         lines.push(`${quiet.length} client(s) sans appel depuis 30 jours ou plus :`);
         for (const q of quiet.slice(0, 30)) lines.push(`- ${q.clientName ?? "Sans nom"} : ${q.lastContactDays == null ? "jamais eu d'appel" : `dernier appel il y a ${q.lastContactDays} jours`}`);
+      }
+      if (onTrack.length) {
+        lines.push(`${onTrack.length} client(s) au vert, à féliciter : ${onTrack.slice(0, 30).map((o) => o.clientName ?? "Sans nom").join(", ")}`);
       }
       return text(lines.length ? lines.join("\n") : "Personne à relancer : aucun signal sur tes clients actifs.");
     }
