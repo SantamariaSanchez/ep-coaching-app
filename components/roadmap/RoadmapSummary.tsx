@@ -48,10 +48,10 @@ export function RoadmapStatusLine({
   const own = perspective === "self";
   const text =
     today < roadmap.start_date
-      ? `${own ? "Ta" : "La"} road map démarre le ${fmt(roadmap.start_date, true)}`
+      ? `${own ? "Ta" : "La"} Trajectoire démarre le ${fmt(roadmap.start_date, true)}`
       : today > roadmap.end_date
-      ? `Road map terminée le ${fmt(roadmap.end_date, true)}`
-      : `Semaine ${week} sur ${total} de ${own ? "ta" : "sa"} road map`;
+      ? `Trajectoire terminée le ${fmt(roadmap.end_date, true)}`
+      : `Semaine ${week} sur ${total} de ${own ? "ta" : "sa"} Trajectoire`;
 
   const activePhase = phases.find((p) => p.start_date <= today && p.end_date >= today) ?? null;
   const cols = activePhase

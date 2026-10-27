@@ -68,7 +68,7 @@ const GUIDE_ITEMS = [
   {
     href: "/dashboard/client/roadmap",
     icon: Map,
-    title: "Road Map",
+    title: "Trajectoire",
     desc: "Construis tes phases et tes objectifs court/moyen/long terme.",
     locked: false,
   },

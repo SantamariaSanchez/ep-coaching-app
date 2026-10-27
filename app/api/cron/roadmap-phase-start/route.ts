@@ -62,7 +62,7 @@ export async function GET(req: Request) {
     await notifyUser(clientId, {
       type: "roadmap_phase_started",
       title: `${icon} Nouvelle phase : ${phase.label}`,
-      body: `Ta road map entre aujourd'hui dans la phase "${phase.label}".`,
+      body: `Ta Trajectoire entre aujourd'hui dans la phase "${phase.label}".`,
       url,
     });
     sent++;
@@ -77,7 +77,7 @@ export async function GET(req: Request) {
       await notifyUser(owner.coach_id, {
         type: "roadmap_phase_started_coach",
         title: `${icon} ${owner.full_name ?? "Un client"} entre en ${phase.label}`,
-        body: `Sa road map démarre aujourd'hui la phase "${phase.label}".`,
+        body: `Sa Trajectoire démarre aujourd'hui la phase "${phase.label}".`,
         url: `/dashboard/coach/clients/${clientId}`,
       });
     }

@@ -415,21 +415,21 @@ export function computePhasePilot(input: PhasePilotInput): PhasePilot {
     const startsIn = diffDaysIso(today, roadmap.start_date);
     verdict = {
       tone: "info",
-      text: `La road map démarre le ${dateFr(roadmap.start_date, true)} (J-${startsIn}). Le pilote s'allumera avec la première phase.`,
+      text: `La Trajectoire démarre le ${dateFr(roadmap.start_date, true)} (J-${startsIn}). Le pilote s'allumera avec la première phase.`,
     };
   } else if (status === "after") {
     verdict = {
       tone: "info",
       text: self
-        ? `Road map terminée le ${dateFr(roadmap.end_date, true)}. Prolonge-la ou construis la suivante pour garder un cap.`
-        : `Road map terminée le ${dateFr(roadmap.end_date, true)}.`,
+        ? `Trajectoire terminée le ${dateFr(roadmap.end_date, true)}. Prolonge-la ou construis la suivante pour garder un cap.`
+        : `Trajectoire terminée le ${dateFr(roadmap.end_date, true)}.`,
     };
   } else if (status === "gap") {
     verdict = {
       tone: "info",
       text: nextPhase
         ? `Aucune phase en cours : la prochaine (${nextPhase.label}) démarre dans ${plural(nextPhase.startsInDays, "jour", "jours")}.`
-        : "Aucune phase en cours ni à venir sur la road map.",
+        : "Aucune phase en cours ni à venir sur la Trajectoire.",
     };
   } else if (!weightTrend) {
     const count = series.length;
@@ -585,7 +585,7 @@ export function computePhasePilot(input: PhasePilotInput): PhasePilot {
     } else if (weeksWithout >= 6) {
       deloadHint = {
         tone: weeksWithout > 10 ? "warn" : "info",
-        text: `Semaine ${weeksWithout} sans deload sur ${self ? "ta" : "sa"} road map : repère courant, un allègement toutes les 6 à 10 semaines.`,
+        text: `Semaine ${weeksWithout} sans deload sur ${self ? "ta" : "sa"} Trajectoire : repère courant, un allègement toutes les 6 à 10 semaines.`,
       };
     }
   }
@@ -602,9 +602,9 @@ export function computePhasePilot(input: PhasePilotInput): PhasePilot {
   const headline = active
     ? `${phaseName}, semaine ${weekIndex} sur ${totalWeeks}`
     : status === "before"
-    ? "Road map pas encore démarrée"
+    ? "Trajectoire pas encore démarrée"
     : status === "after"
-    ? "Road map terminée"
+    ? "Trajectoire terminée"
     : "Entre deux phases";
 
   // Poids de départ pour la vraie progression des objectifs de poids : même
