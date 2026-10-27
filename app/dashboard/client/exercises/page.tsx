@@ -70,6 +70,7 @@ export default async function ClientExercisesPage({
             createExercise={createExercise}
             updateExercise={updateExercise}
             deleteExercise={deleteExercise}
+            currentUserId={user.id}
           />
         }
         gymView={

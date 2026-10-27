@@ -179,6 +179,8 @@ export function dayStrip(blocks: HomeBlock[], now: string): {
 // ── Séance du jour ──────────────────────────────────────────────────────
 
 export interface HomeSession {
+  /** program_days.id : sert à décaler la séance depuis l'accueil. */
+  dayId: string;
   dayLabel: string;
   programId: string;
   muscleGroups: string[];
@@ -194,6 +196,8 @@ export interface HomeTraining {
   programName: string | null;
   /** Séance prévue aujourd'hui (ou en cours), sinon null : jour de repos. */
   today: HomeSession | null;
+  /** Séances du programme avec leur jour effectif cette semaine (menu « Décaler »). */
+  schedule: { id: string; label: string; weekday: number | null }[];
   /** Programme sans jours fixes : la prochaine séance à faire cette semaine. */
   free: boolean;
   /** Jour de repos : la prochaine séance prévue. */
@@ -216,10 +220,11 @@ export function buildTraining(
   sessions: TrainingSessionRow[],
   today: string
 ): HomeTraining {
-  const empty: HomeTraining = { hasProgram: false, programName: null, today: null, free: false, next: null };
+  const empty: HomeTraining = { hasProgram: false, programName: null, today: null, free: false, next: null, schedule: [] };
   if (!program || program.days.length === 0) return { ...empty, hasProgram: !!program, programName: program?.name ?? null };
   const dow = isoWeekday(today);
   const weekStart = weekStartOf(today);
+  const schedule = program.days.map((d) => ({ id: d.id, label: d.day_label, weekday: d.weekday ?? null }));
   const week = sessions.filter((s) => s.session_date >= weekStart);
   const doneLabels = new Set(week.filter((s) => s.is_completed).map((s) => normLabel(s.day_label)));
   const doneToday = new Set(week.filter((s) => s.is_completed && s.session_date === today).map((s) => normLabel(s.day_label)));
@@ -231,6 +236,7 @@ export function buildTraining(
     const state: HomeSession["state"] =
       openToday && normLabel(openToday.day_label) === key ? "resume" : doneToday.has(key) || (!d.weekday && doneLabels.has(key)) ? "done" : "todo";
     return {
+      dayId: d.id,
       dayLabel: d.day_label,
       programId: program.id,
       muscleGroups: [...new Set(d.exercises.map((e) => e.muscle_group).filter(Boolean) as string[])],
@@ -246,13 +252,13 @@ export function buildTraining(
   const resumeDay = openToday ? program.days.find((d) => normLabel(d.day_label) === normLabel(openToday.day_label)) : null;
   const todayDay = resumeDay ?? program.days.find((d) => d.weekday === dow) ?? null;
   const fixed = program.days.some((d) => !!d.weekday);
-  if (todayDay) return { hasProgram: true, programName: program.name, today: toSession(todayDay), free: false, next: null };
+  if (todayDay) return { hasProgram: true, programName: program.name, today: toSession(todayDay), free: false, next: null, schedule };
 
   if (!fixed) {
     // Sans jours fixes : la première pas encore faite cette semaine.
     const ordered = [...program.days].sort((a, b) => a.position - b.position);
     const pick = ordered.find((d) => !doneLabels.has(normLabel(d.day_label)));
-    return { hasProgram: true, programName: program.name, today: pick ? toSession(pick) : null, free: true, next: null };
+    return { hasProgram: true, programName: program.name, today: pick ? toSession(pick) : null, free: true, next: null, schedule };
   }
 
   // Jour de repos : la prochaine séance, cette semaine ou la suivante.
@@ -262,7 +268,7 @@ export function buildTraining(
   const date = addDaysIso(today, inDays);
   const slot = slotForDay(after, blocks, weekStartOf(date));
   const when = inDays === 1 ? "demain" : WEEKDAY_LONG[after.weekday!].toLowerCase();
-  return { hasProgram: true, programName: program.name, today: null, free: false, next: { label: after.day_label, when, time: slot?.start ?? null } };
+  return { hasProgram: true, programName: program.name, today: null, free: false, next: { label: after.day_label, when, time: slot?.start ?? null }, schedule };
 }
 
 // ── Nutrition du jour ───────────────────────────────────────────────────

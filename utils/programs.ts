@@ -2,6 +2,10 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { foldSheetFieldsIntoNotes } from "@/lib/program-sheet";
 import type { Db } from "@/lib/db-types";
+import { todayInParis } from "@/lib/dates";
+import { weekStartOf } from "@/lib/program-week";
+import { applyWeekMoves } from "@/lib/program-moves";
+import { getWeekMoves } from "@/utils/program-moves";
 
 // Décisions du coach propres à CET exercice DANS CETTE séance — distinctes
 // des attributs de classification de exercise_library (partagés par tous les
@@ -48,6 +52,8 @@ export interface ProgramDay {
   weekday?: number | null;
   /** Consigne de séance (échauffement, cardio de fin...), migration 20261013. */
   notes?: string | null;
+  /** Vrai si la séance est décalée « juste cette semaine » (program_day_moves). */
+  weekMoved?: boolean;
 }
 
 export interface Program {
@@ -140,7 +146,7 @@ function isUnknownColumnError(error: { code?: string; message?: string } | null)
 
 export async function getActiveProgram(
   clientId: string,
-  opts?: { includeCoachNotes?: boolean }, db?: Db
+  opts?: { includeCoachNotes?: boolean; /** Jours du modèle, sans les décalages de la semaine (éditeurs). */ raw?: boolean }, db?: Db
 ): Promise<ProgramWithDays | null> {
   try {
     const supabase = db ?? (await createServerSupabase());
@@ -189,7 +195,11 @@ export async function getActiveProgram(
       })
     );
 
-    return { ...(program as Program), days: daysWithExercises };
+    // Séances décalées « juste cette semaine » : le jour effectif remplace
+    // celui du modèle pour toute l'app (accueil, agenda, programme).
+    if (opts?.raw) return { ...(program as Program), days: daysWithExercises };
+    const moves = await getWeekMoves(program.id, weekStartOf(todayInParis()));
+    return { ...(program as Program), days: applyWeekMoves(daysWithExercises, moves) };
   } catch {
     return null;
   }

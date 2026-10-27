@@ -28,6 +28,8 @@ export interface ExerciseGuide {
   instructions: string | null;
   tips: string[];
   videoUrl: string | null;
+  /** Photo de démonstration de la bibliothèque. */
+  imageUrl?: string | null;
 }
 
 export interface ProgramWeekContext {
@@ -152,7 +154,7 @@ export async function getProgramWeekContext(userId: string, program: ProgramWith
     const key = equipmentKey(ex.name);
     if (keys.has(key)) {
       equipmentByName[key] = ex.equipment;
-      guides[key] = { instructions: ex.instructions?.trim() || null, tips: [], videoUrl: ex.video_url?.trim() || null };
+      guides[key] = { instructions: ex.instructions?.trim() || null, tips: [], videoUrl: ex.video_url?.trim() || null, imageUrl: ex.image_url?.trim() || null };
     }
     if (exactNames.has(ex.name) && ex.accessories?.length) accessoriesByName[ex.name] = ex.accessories;
   }
@@ -163,7 +165,7 @@ export async function getProgramWeekContext(userId: string, program: ProgramWith
     if (guides[key]?.instructions) continue;
     const tips = getTips(name);
     if (tips === EXECUTION_TIPS.default) continue;
-    guides[key] = { instructions: null, videoUrl: guides[key]?.videoUrl ?? null, tips: tips.slice(0, 3) };
+    guides[key] = { instructions: null, videoUrl: guides[key]?.videoUrl ?? null, imageUrl: guides[key]?.imageUrl ?? null, tips: tips.slice(0, 3) };
   }
 
   const slots: Record<string, DaySlot | null> = {};

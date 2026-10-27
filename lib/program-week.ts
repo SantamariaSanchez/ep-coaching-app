@@ -61,25 +61,39 @@ export function slotForDay(
 ): DaySlot | null {
   if (!day.weekday) return null;
   const date = addDaysIso(weekStart, day.weekday - 1);
+  const best = pickSessionBlock(blocks, day.day_label, date, day.weekday, false);
+  if (!best) return null;
+  return { start: best.start_time.slice(0, 5), end: best.end_time ? best.end_time.slice(0, 5) : null, label: best.label };
+}
+
+/**
+ * Bloc d'agenda d'une séance à une date donnée (ponctuel avant récurrent,
+ * puis le plus tôt). `strict` : seulement un bloc dont le libellé reprend le
+ * nom de la séance (utilisé pour déplacer le bon bloc), sans repli sur « un
+ * bloc d'entraînement du jour ».
+ */
+export function pickSessionBlock(
+  blocks: ScheduleBlock[],
+  dayLabel: string,
+  date: string,
+  dow: number,
+  strict: boolean
+): ScheduleBlock | null {
   const candidates = blocks.filter((b) =>
-    b.specific_date
-      ? b.specific_date === date
-      : b.day_of_week === day.weekday && !(b.skipped_dates ?? []).includes(date)
+    b.specific_date ? b.specific_date === date : b.day_of_week === dow && !(b.skipped_dates ?? []).includes(date)
   );
   if (candidates.length === 0) return null;
-  const label = norm(day.day_label);
+  const label = norm(dayLabel);
   const byName = candidates.filter((b) => {
     const bl = norm(b.label);
     return label.length > 1 && (bl.includes(label) || label.includes(bl));
   });
-  const sport = candidates.filter((b) => SPORT_BLOCK.test(b.label));
+  const sport = strict ? [] : candidates.filter((b) => SPORT_BLOCK.test(b.label));
   const pool = byName.length ? byName : sport;
   if (pool.length === 0) return null;
-  // Ponctuel (déplacé cette semaine) avant récurrent, puis le plus tôt.
-  const best = [...pool].sort(
+  return [...pool].sort(
     (a, b) => Number(!!b.specific_date) - Number(!!a.specific_date) || a.start_time.localeCompare(b.start_time)
   )[0];
-  return { start: best.start_time.slice(0, 5), end: best.end_time ? best.end_time.slice(0, 5) : null, label: best.label };
 }
 
 /** Heure lisible « 18h » / « 18h30 ». */

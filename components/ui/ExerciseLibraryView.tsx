@@ -13,6 +13,7 @@ import {
   Dumbbell,
   Lock,
   AlertTriangle,
+  Image as ImageLucide,
 } from "lucide-react";
 import type { MissingVideoExercise } from "@/utils/exercise-library";
 import { hasUnlocked, FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
@@ -52,6 +53,21 @@ async function uploadExerciseVideo(file: File): Promise<string | null> {
   }
 }
 
+async function uploadExerciseImage(file: File): Promise<string | null> {
+  try {
+    const supabase = createClientSupabase();
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("exercise-images")
+      .upload(path, file, { contentType: file.type || "image/jpeg", upsert: false });
+    if (error) return null;
+    return supabase.storage.from("exercise-images").getPublicUrl(path).data.publicUrl;
+  } catch {
+    return null;
+  }
+}
+
 // Ouvre une recherche YouTube pré-remplie pour cet exercice — sur 642
 // exercices sans une seule vidéo, "vidéo à venir" est un mur mort pour le
 // client et une tâche vague pour le coach. Un lien direct raccourcit le
@@ -77,7 +93,7 @@ function ExerciseForm({
   // MASTERCLASS.md Axe B : Promise<void> rendait impossible d'afficher une
   // erreur serveur ici (le formulaire d'exercice a pourtant déjà un état
   // `error`, jamais alimenté faute de retour).
-  onSave: (input: CreateExerciseInput & { video_url?: string }) => Promise<{ error?: string }>;
+  onSave: (input: CreateExerciseInput) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
   const tr = useT();
@@ -91,6 +107,8 @@ function ExerciseForm({
   const [instructions, setInstructions] = useState(initial?.instructions ?? "");
   const [videoUrl, setVideoUrl] = useState(initial?.video_url ?? "");
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,6 +144,17 @@ function ExerciseForm({
     setVideoUrl(url);
   }
 
+  async function handleImageUpload(file: File) {
+    if (!file.type.startsWith("image/")) { setError("Choisis une image (JPG, PNG ou WebP)."); return; }
+    if (file.size > 8 * 1024 * 1024) { setError("Photo trop lourde (8 Mo maximum)."); return; }
+    setUploadingImage(true);
+    setError(null);
+    const url = await uploadExerciseImage(file);
+    setUploadingImage(false);
+    if (!url) { setError("Échec de l'envoi de la photo, réessaie."); return; }
+    setImageUrl(url);
+  }
+
   const subgroups = getSubgroupsFor(muscleGroup);
 
   async function handleSubmit() {
@@ -144,6 +173,7 @@ function ExerciseForm({
       ...(showVideoField
         ? {
             video_url: videoUrl.trim() || undefined,
+            image_url: imageUrl.trim() || null,
             position: position || null,
             freedom_of_movement: freedomOfMovement || null,
             is_unilateral: isUnilateral === "" ? null : isUnilateral === "uni",
@@ -322,6 +352,33 @@ function ExerciseForm({
 
       {showVideoField && (
         <div>
+          <label className={labelCls}>{tr("Photo")}</label>
+          <div className="flex items-center gap-3 mb-3">
+            {imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt="" className="h-16 w-16 rounded-lg object-cover border border-(--ep-line)/30" />
+            )}
+            <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-(--ep-line)/40 bg-(--ep-shade)/20 text-xs text-(--ep-ink)/50 hover:border-(--ep-line)/60 hover:text-(--ep-ink)/75 cursor-pointer transition-colors">
+              <ImageLucide size={13} />
+              {uploadingImage ? tr("Envoi…") : imageUrl ? tr("Changer la photo") : tr("Ajouter une photo")}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImage}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(file);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {imageUrl && (
+              <button type="button" onClick={() => setImageUrl("")} className="min-h-11 px-2 text-[11px] font-bold text-(--ep-ink)/50">
+                {tr("Retirer")}
+              </button>
+            )}
+          </div>
           <label className={labelCls}>{tr("Vidéo d'exemple")}</label>
           <div className="flex items-center gap-2 mb-2">
             <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-(--ep-line)/40 bg-(--ep-shade)/20 text-xs text-(--ep-ink)/50 hover:border-(--ep-line)/60 hover:text-(--ep-ink)/75 cursor-pointer transition-colors">
@@ -378,13 +435,15 @@ function ExerciseCard({
   exercise,
   isCoach,
   videosUnlocked,
+  isMine,
   onUpdate,
   onDelete,
 }: {
   exercise: LibraryExercise;
   isCoach: boolean;
+  isMine: boolean;
   videosUnlocked: boolean;
-  onUpdate: (input: CreateExerciseInput & { video_url?: string }) => Promise<{ error?: string }>;
+  onUpdate: (input: CreateExerciseInput) => Promise<{ error?: string }>;
   onDelete: () => Promise<void>;
 }) {
   const tr = useT();
@@ -408,6 +467,7 @@ function ExerciseCard({
   }
 
   const hasLockedVideo = !!exercise.video_url && !videosUnlocked && !isCoach;
+  const hasDemo = !!(exercise.video_url || exercise.image_url);
 
   // Bandeau d'accent selon le statut vidéo — signal le plus utile de la
   // fiche (voir le bandeau amber "0 vidéo" au-dessus), rendu visible dès le
@@ -449,7 +509,12 @@ function ExerciseCard({
             )}
             {!exercise.is_official && (
               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-300">
-                {tr("Communauté")}
+                {isMine ? tr("Créé par toi") : tr("Communauté")}
+              </span>
+            )}
+            {isCoach && !hasDemo && (
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-warn)/10 border border-(--ep-warn)/30 text-(--ep-warn)">
+                {tr("Sans démo")}
               </span>
             )}
           </div>
@@ -492,6 +557,11 @@ function ExerciseCard({
             )
           )}
 
+          {exercise.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={exercise.image_url} alt={exercise.name} loading="lazy" className="mt-2 w-full max-w-[480px] rounded-lg border border-(--ep-line)/25 object-cover" />
+          )}
+
           {exercise.video_url ? (
             hasLockedVideo ? (
               <div className="flex items-center gap-2.5 bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2.5 mt-2">
@@ -503,7 +573,7 @@ function ExerciseCard({
             ) : (
               <EmbeddedVideo url={exercise.video_url} maxWidth={480} />
             )
-          ) : (
+          ) : exercise.image_url ? null : (
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/25">
                 <Video size={11} />{" "}{tr("Vidéo d'exécution à venir")}
@@ -556,10 +626,12 @@ interface Props {
   points?: number;
   isSubscribed?: boolean;
   createExercise: (input: CreateExerciseInput) => Promise<{ error?: string; id?: string }>;
-  updateExercise: (id: string, fields: Partial<CreateExerciseInput> & { video_url?: string | null }) => Promise<{ error?: string }>;
+  updateExercise: (id: string, fields: Partial<CreateExerciseInput>) => Promise<{ error?: string }>;
   deleteExercise: (id: string) => Promise<{ error?: string }>;
   /** Coach uniquement — top des exercices réellement prescrits sans vidéo (voir getTopExercisesMissingVideo). */
   missingVideoTop?: MissingVideoExercise[];
+  /** Utilisateur connecté : distingue « Mes exercices » (créés par lui) de la bibliothèque. */
+  currentUserId?: string;
 }
 
 export default function ExerciseLibraryView({
@@ -571,6 +643,7 @@ export default function ExerciseLibraryView({
   updateExercise,
   deleteExercise,
   missingVideoTop = [],
+  currentUserId,
 }: Props) {
   const tr = useT();
   const videosUnlocked = hasUnlocked("exercise_videos", points, isSubscribed);
@@ -588,7 +661,14 @@ export default function ExerciseLibraryView({
   const [activeEquipmentType, setActiveEquipmentType] = useState<EquipmentType | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showMissingVideo, setShowMissingVideo] = useState(false);
-  const withVideoCount = useMemo(() => exercises.filter((e) => e.video_url).length, [exercises]);
+  const [scope, setScope] = useState<"all" | "library" | "mine">("all");
+  const [noDemoOnly, setNoDemoOnly] = useState(false);
+  const withVideoCount = useMemo(() => exercises.filter((e) => e.video_url || e.image_url).length, [exercises]);
+  const isMine = (e: LibraryExercise) => !!currentUserId && !e.is_official && e.created_by === currentUserId;
+  const mineCount = useMemo(() => exercises.filter(isMine).length, [exercises, currentUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const libraryCount = exercises.length - mineCount;
+  // Exos fournis par l'app (is_official) sans vidéo ni photo : à compléter côté coach.
+  const noDemoCount = useMemo(() => exercises.filter((e) => e.is_official && !e.video_url && !e.image_url).length, [exercises]);
 
   const groupCounts = useMemo(() => {
     const map: Record<string, number> = {};
@@ -614,6 +694,9 @@ export default function ExerciseLibraryView({
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return exercises.filter((e) => {
+      if (scope === "mine" && !isMine(e)) return false;
+      if (scope === "library" && isMine(e)) return false;
+      if (noDemoOnly && (e.video_url || e.image_url)) return false;
       if (activeGroup && e.muscle_group !== activeGroup) return false;
       if (activeBrand && e.brand !== activeBrand) return false;
       if (activeEquipmentType && getEquipmentType(e.equipment) !== activeEquipmentType) return false;
@@ -622,7 +705,7 @@ export default function ExerciseLibraryView({
         fuzzyMatchAny([e.name, e.muscle_subgroup, e.equipment, e.brand], q)
       );
     });
-  }, [exercises, search, activeGroup, activeBrand, activeEquipmentType]);
+  }, [exercises, search, activeGroup, activeBrand, activeEquipmentType, scope, noDemoOnly]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const byGroup = useMemo(() => {
     const map: Record<string, LibraryExercise[]> = {};
@@ -640,7 +723,7 @@ export default function ExerciseLibraryView({
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <p className="flex items-center gap-2 text-[11.5px] text-amber-300/90 leading-snug">
               <AlertTriangle size={14} className="flex-shrink-0" />
-              0/{exercises.length}{" "}{tr("exercices ont une vidéo de démonstration, le système de déblocage par points n'a encore rien à débloquer.")}
+              0/{exercises.length}{" "}{tr("exercices ont une vidéo ou une photo de démonstration, le système de déblocage par points n'a encore rien à débloquer.")}
             </p>
             {missingVideoTop.length > 0 && (
               <button
@@ -675,6 +758,43 @@ export default function ExerciseLibraryView({
         </div>
       )}
 
+      {(isCoach || mineCount > 0) && currentUserId && (
+        <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label={tr("Source des exercices")}>
+          {(
+            [
+              ["all", tr("Tout"), exercises.length],
+              ["library", tr("Bibliothèque"), libraryCount],
+              ["mine", tr("Mes exercices"), mineCount],
+            ] as const
+          ).map(([key, label, count]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={scope === key}
+              onClick={() => setScope(key)}
+              className={`min-h-11 px-3.5 rounded-full border text-[11px] font-black uppercase tracking-widest transition-colors ${
+                scope === key ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/45"
+              }`}
+            >
+              {label} ({count})
+            </button>
+          ))}
+          {isCoach && noDemoCount > 0 && (
+            <button
+              type="button"
+              aria-pressed={noDemoOnly}
+              onClick={() => setNoDemoOnly((v) => !v)}
+              className={`min-h-11 px-3.5 rounded-full border text-[11px] font-black uppercase tracking-widest transition-colors ${
+                noDemoOnly ? "bg-(--ep-warn)/20 border-(--ep-warn)/50 text-(--ep-warn)" : "border-(--ep-line)/25 text-(--ep-ink)/45"
+              }`}
+            >
+              {tr("Sans démo")} ({noDemoCount})
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/25" />
@@ -705,7 +825,7 @@ export default function ExerciseLibraryView({
             if (!result.error) {
               setExercises((prev) => [
                 ...prev,
-                { ...input, id: result.id ?? `optimistic-${Date.now()}`, video_url: input.video_url ?? null, created_by: null, is_official: false, created_at: new Date().toISOString() } as LibraryExercise,
+                { ...input, id: result.id ?? `optimistic-${Date.now()}`, video_url: input.video_url ?? null, image_url: input.image_url ?? null, created_by: currentUserId ?? null, is_official: false, created_at: new Date().toISOString() } as LibraryExercise,
               ]);
               setShowCreate(false);
             }
@@ -802,6 +922,7 @@ export default function ExerciseLibraryView({
                   exercise={ex}
                   isCoach={isCoach}
                   videosUnlocked={videosUnlocked}
+                  isMine={isMine(ex)}
                   onUpdate={async (input) => {
                     const result = await updateExercise(ex.id, input);
                     if (!result.error) {

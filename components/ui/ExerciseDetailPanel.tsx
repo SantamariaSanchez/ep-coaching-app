@@ -250,6 +250,10 @@ export default function ExerciseDetailPanel({
         </div>
 
         <div className="p-5 space-y-5">
+          {ex.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={ex.image_url} alt={ex.name} loading="lazy" className="w-full rounded-xl border border-(--ep-line)/25 object-cover" />
+          )}
           {ex.video_url && (
             <a
               href={ex.video_url}

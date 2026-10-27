@@ -83,6 +83,7 @@ export default async function CoachExercisesPage({
             updateExercise={updateExercise}
             deleteExercise={deleteExercise}
             missingVideoTop={missingVideoTop}
+            currentUserId={user.id}
           />
         }
         gymView={

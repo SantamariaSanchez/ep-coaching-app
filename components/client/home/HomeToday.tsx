@@ -6,6 +6,8 @@ import { withAlpha } from "@/lib/theme-color";
 import { shortHour } from "@/lib/program-week";
 import { dayStrip, minutesLabel, pickNow, type HomeBlock, type HomeDayData, type HomeTodo } from "@/lib/client-home";
 import { HomeStartSession } from "@/components/client/home/HomeClient";
+import MoveSession from "@/components/ui/MoveSession";
+import { isoWeekday } from "@/lib/program-week";
 import {
   Apple, ArrowRight, CalendarPlus, CheckCircle2, ChevronRight, Circle, ClipboardCheck, ClipboardList, Clock, Droplet,
   Dumbbell, Footprints, ListChecks, MessageCircle, Moon, Sparkles, Trophy, UtensilsCrossed, type LucideIcon,
@@ -87,7 +89,18 @@ export function HomeHeader({
 async function BlockCta({ block, day, primary }: { block: HomeBlock; day: HomeDayData; primary: boolean }) {
   const t = await getT();
   const session = day.training.today;
-  if (block.action === "seance" && session) return <HomeStartSession session={session} />;
+  if (block.action === "seance" && session) {
+    return (
+      <>
+        <HomeStartSession session={session} />
+        {session.state !== "done" && (
+          <div style={{ marginTop: 4, display: "flex", justifyContent: "center" }}>
+            <MoveSession dayId={session.dayId} days={day.training.schedule} todayDow={isoWeekday(day.date)} />
+          </div>
+        )}
+      </>
+    );
+  }
   const label =
     block.action === "seance" ? t("Voir mon programme")
     : block.action === "repas" ? t("Ouvrir le repas")
@@ -378,6 +391,11 @@ export async function TrainingMini({ day, coached }: { day: HomeDayData; coached
         </Link>
         <div style={{ marginTop: "auto", paddingTop: 12 }}>
           {heroIsSession && s.state !== "done" ? secondaryBtn(`${C}/program`, t("Voir les exos")) : <HomeStartSession session={s} compact />}
+          {s.state !== "done" && (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <MoveSession dayId={s.dayId} days={tr.schedule} todayDow={isoWeekday(day.date)} />
+            </div>
+          )}
         </div>
       </>
     );

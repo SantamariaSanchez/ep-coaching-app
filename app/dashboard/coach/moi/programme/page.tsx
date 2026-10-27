@@ -44,6 +44,7 @@ export default async function CoachMonProgrammePage() {
           sessionBasePath="/dashboard/coach/moi/logbook"
           gymsHref="/dashboard/coach/gyms"
           agendaHref="/dashboard/coach/moi/agenda"
+          canMove
           eyebrow={t("Mon entraînement")}
         />
       ) : (

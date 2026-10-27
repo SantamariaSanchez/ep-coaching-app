@@ -51,7 +51,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
     getClientById(id, user.id),
     // includeCoachNotes : page réservée au coach, la note privée de conception
     // du programme n'est chargée que sur ce chemin.
-    getActiveProgram(id, { includeCoachNotes: true }),
+    getActiveProgram(id, { includeCoachNotes: true, raw: true }),
     getClientIntake(id),
     getCoachProgramTemplates(user.id),
     getScheduleBlocks(id),

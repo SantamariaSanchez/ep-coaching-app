@@ -67,6 +67,7 @@ import { withAlpha } from "@/lib/theme-color";
 import { safeExternalUrl } from "@/lib/sanitize";
 import { useStartSession } from "@/hooks/useStartSession";
 import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
+import MoveSession from "@/components/ui/MoveSession";
 import { resolveVideoEmbed } from "@/lib/video-embed-utils";
 
 function norm(v: string): string {
@@ -189,10 +190,11 @@ function ExerciseRow({
   const objective = hist && !done ? objectiveFor(ex, hist, t) : null;
   const tempoText = describeTempo(ex.tempo);
   const video = guide?.videoUrl ? safeExternalUrl(guide.videoUrl) : null;
+  const image = guide?.imageUrl ? safeExternalUrl(guide.imageUrl) : null;
   const embeddable = video ? !!resolveVideoEmbed(video) : false;
   const accessories = ctx.accessoriesByName[ex.name] ?? [];
   const hasAnyHistory = Object.keys(ctx.history ?? {}).length > 0;
-  const hasDetails = !!(guide?.instructions || guide?.tips.length || video || tech || tempoText || accessories.length || objective?.reason);
+  const hasDetails = !!(guide?.instructions || guide?.tips.length || video || image || tech || tempoText || accessories.length || objective?.reason);
   const lastDate = hist
     ? new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${hist.lastDate}T12:00:00Z`))
     : null;
@@ -310,6 +312,10 @@ function ExerciseRow({
               <Backpack size={12} className="shrink-0 text-(--ep-ink)/45" aria-hidden />
               {accessories.join(" · ")}
             </p>
+          )}
+          {image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={image} alt={ex.name} loading="lazy" className="w-full max-w-[420px] rounded-lg border border-(--ep-line)/25 object-cover" />
           )}
           {video &&
             (embeddable ? (
@@ -440,6 +446,7 @@ function SessionCard({
   sessionBasePath,
   gymsHref,
   agendaHref,
+  canMove,
   onSelect,
 }: {
   info: DayInfo;
@@ -451,6 +458,7 @@ function SessionCard({
   sessionBasePath: string;
   gymsHref: string;
   agendaHref: string;
+  canMove: boolean;
   onSelect: (id: string) => void;
 }) {
   const t = useT();
@@ -530,7 +538,17 @@ function SessionCard({
               </span>
             ) : null}
             {relative && <span className="text-(--ep-ink)/50"> · {relative.toLowerCase()}</span>}
+            {day.weekMoved && <span className="text-(--ep-warn)"> · {t("décalée cette semaine")}</span>}
           </span>
+          {canMove && !done && (
+            <span className="ml-auto shrink-0">
+              <MoveSession
+                dayId={day.id}
+                days={program.days.map((d) => ({ id: d.id, label: d.day_label, weekday: d.weekday ?? null }))}
+                todayDow={isoWeekday(ctx.today)}
+              />
+            </span>
+          )}
         </p>
         {!slot && (
           <p className={factRow}>
@@ -870,6 +888,7 @@ export default function ProgramWeekView({
   gymsHref,
   agendaHref,
   eyebrow,
+  canMove = false,
 }: {
   program: ProgramWithDays;
   ctx: ProgramWeekContext;
@@ -877,6 +896,8 @@ export default function ProgramWeekView({
   gymsHref: string;
   agendaHref: string;
   eyebrow: string;
+  /** Propose « Décaler » sur chaque séance (le client ou le coach pour son propre programme). */
+  canMove?: boolean;
 }) {
   const t = useT();
   const todayDow = isoWeekday(ctx.today);
@@ -1034,6 +1055,7 @@ export default function ProgramWeekView({
             sessionBasePath={sessionBasePath}
             gymsHref={gymsHref}
             agendaHref={agendaHref}
+            canMove={canMove}
             onSelect={select}
           />
         </div>

@@ -15,6 +15,8 @@ export interface LibraryExercise {
   difficulty: ExerciseDifficulty | null;
   instructions: string | null;
   video_url: string | null;
+  /** Photo (bucket exercise-images ou lien). Avec video_url : la démonstration montrée au client. */
+  image_url: string | null;
   created_by: string | null;
   is_official: boolean;
   created_at: string;
@@ -91,7 +93,7 @@ export async function getTopExercisesMissingVideo(limit = 20): Promise<MissingVi
   try {
     const supabase = createAdminClient();
     const [{ data: withoutVideo }, { data: prescribed }] = await Promise.all([
-      supabase.from("exercise_library").select("name, muscle_group").is("video_url", null),
+      supabase.from("exercise_library").select("name, muscle_group").is("video_url", null).is("image_url", null),
       supabase.from("exercises").select("name"),
     ]);
     if (!withoutVideo || !prescribed) return [];

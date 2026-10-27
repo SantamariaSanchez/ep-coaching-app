@@ -15,6 +15,8 @@ export interface PrevWeight {
 export interface LibraryTip {
   instructions: string | null;
   video_url: string | null;
+  /** Photo de démonstration de la bibliothèque. */
+  image_url?: string | null;
 }
 
 export interface SetState {

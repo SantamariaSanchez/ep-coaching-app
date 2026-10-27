@@ -12,6 +12,8 @@
     "social:sync": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/social-sync.ts",
     "social:report": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/social-report.ts",
     "demo:accounts": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/demo-accounts.ts",
+    "demos:liste": "node --env-file=.env.local scripts/demos-bibliotheque.mjs liste",
+    "demos:appliquer": "node --env-file=.env.local scripts/demos-bibliotheque.mjs appliquer",
     "screenshots": "tsx scripts/screenshots.ts"
   },
   "dependencies": {

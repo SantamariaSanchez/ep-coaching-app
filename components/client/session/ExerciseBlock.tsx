@@ -1008,6 +1008,10 @@ export default function ExerciseBlock({
                       ))}
                     </ul>
                   )}
+                  {libraryTip?.image_url && safeExternalUrl(libraryTip.image_url) && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={safeExternalUrl(libraryTip.image_url) as string} alt={exercise.name} loading="lazy" className="mt-2 w-full max-w-sm rounded-lg border border-(--ep-line)/25 object-cover" />
+                  )}
                   {libraryTip?.video_url && safeExternalUrl(libraryTip.video_url) && (
                     <a
                       href={safeExternalUrl(libraryTip.video_url) as string}

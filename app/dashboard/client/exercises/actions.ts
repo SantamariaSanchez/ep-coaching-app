@@ -29,6 +29,9 @@ export interface CreateExerciseInput {
   setup_notes?: string | null;
   // Bagage d'accessoires choisi explicitement (voir migration 20260910a).
   accessories?: string[];
+  // Médias (coach uniquement) : vidéo (lien ou fichier) et photo.
+  video_url?: string | null;
+  image_url?: string | null;
 }
 
 // Open to every authenticated member (free or paying client, or coach) —
@@ -62,6 +65,9 @@ export async function createExercise(input: CreateExerciseInput): Promise<{ erro
         learning_difficulty: input.learning_difficulty ?? null,
         stability_demand: input.stability_demand ?? null,
         accessibility: input.accessibility ?? null,
+        ...(guard.role === "coach"
+          ? { video_url: input.video_url?.trim() || null, image_url: input.image_url?.trim() || null }
+          : {}),
         created_by: guard.userId,
         is_official: false,
       })
@@ -84,7 +90,7 @@ export async function createExercise(input: CreateExerciseInput): Promise<{ erro
 // of the shared library simple in a single-coach app.
 export async function updateExercise(
   id: string,
-  fields: Partial<CreateExerciseInput> & { video_url?: string | null }
+  fields: Partial<CreateExerciseInput>
 ): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -102,6 +108,7 @@ export async function updateExercise(
     if (fields.difficulty !== undefined) updateData.difficulty = fields.difficulty;
     if (fields.instructions !== undefined) updateData.instructions = fields.instructions?.trim() || null;
     if (fields.video_url !== undefined) updateData.video_url = fields.video_url?.trim() || null;
+    if (fields.image_url !== undefined) updateData.image_url = fields.image_url?.trim() || null;
     if (fields.position !== undefined) updateData.position = fields.position;
     if (fields.freedom_of_movement !== undefined) updateData.freedom_of_movement = fields.freedom_of_movement;
     if (fields.is_unilateral !== undefined) updateData.is_unilateral = fields.is_unilateral;

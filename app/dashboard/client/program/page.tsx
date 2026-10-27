@@ -63,6 +63,7 @@ export default async function ClientProgramPage() {
               sessionBasePath={SESSION_BASE_PATH}
               gymsHref="/dashboard/client/gyms"
               agendaHref="/dashboard/client/agenda"
+              canMove
               eyebrow={t("Training")}
             />
           </>
@@ -166,6 +167,7 @@ export default async function ClientProgramPage() {
             sessionBasePath={SESSION_BASE_PATH}
             gymsHref="/dashboard/client/gyms"
             agendaHref="/dashboard/client/agenda"
+            canMove
             eyebrow={t("Entraînement")}
           />
         </>
