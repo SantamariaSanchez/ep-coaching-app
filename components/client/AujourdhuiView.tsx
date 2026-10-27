@@ -337,6 +337,14 @@ export default function AujourdhuiView({
           )}
           {weightError && <p style={{ color: "var(--ep-pink)", fontSize: 11, margin: "8px 0 0" }}>{weightError}</p>}
         </div>
+        {/* Attentes calibrées dès le départ (Mastermind) : le poids bouge avec
+            l'eau et le glycogène, c'est la moyenne qui compte, et les premières
+            semaines ne donnent pas le rythme des suivantes. */}
+        <p style={{ margin: "8px 2px 0", fontSize: 10.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+          {weekNum !== null && weekNum <= 3
+            ? tr("Les premières semaines, la balance bouge beaucoup (eau, glycogène), puis le rythme se calme : c'est normal. Regarde la moyenne de la semaine, pas le chiffre du jour.")
+            : tr("Le poids bouge avec l'eau et le glycogène. Regarde la moyenne de la semaine, pas le chiffre du jour.")}
+        </p>
       </section>
 
       {/* Nutrition & pas du jour (brainstorm "onglet Aujourd'hui, version
