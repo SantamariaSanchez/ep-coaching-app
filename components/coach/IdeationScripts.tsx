@@ -14,6 +14,7 @@ import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking"
 import Link from "next/link";
 import { withAlpha } from "@/lib/theme-color";
 import { safeAction } from "@/lib/safe-action";
+import { checkRotation } from "@/lib/studio-rotation";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript, prompterText } from "@/lib/content-formats";
 import { ContentFormatBadge, ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
 
@@ -378,6 +379,9 @@ function MyScripts({
   // colonne `published_at` dédiée) — imprécis si un vieux script publié est
   // retouché plus tard, mais reste le meilleur signal disponible sans
   // migration pour une v1 de ce résumé.
+  // Variété du Studio (règle anti-stagnation, lib/studio-rotation.ts) : pas
+  // toujours le même format ni le même pilier.
+  const rotation = useMemo(() => checkRotation(scripts), [scripts]);
   const [weeklyPerfNow] = useState(() => Date.now());
   const weeklyPerf = useMemo(() => {
     const now = weeklyPerfNow;
@@ -832,6 +836,21 @@ function MyScripts({
         </div>
       ) : (
         <>
+          {rotation.length > 0 && (
+            <div className="ep-card" style={{ padding: 14, marginBottom: 14 }}>
+              <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 8 }}>
+                {tr("Variété")}
+              </p>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+                {rotation.map((c) => (
+                  <li key={c.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12, lineHeight: 1.45, color: c.ok ? "rgba(var(--ep-ink-rgb),0.55)" : "var(--ep-ink)" }}>
+                    <span aria-hidden style={{ color: c.ok ? "var(--ep-ok)" : "var(--ep-warn)", fontWeight: 900, flexShrink: 0 }}>{c.ok ? "✓" : "!"}</span>
+                    <span>{tr(c.text)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {weeklyPerf && (
             <div className="ep-card" style={{ padding: 14, marginBottom: 14 }}>
               <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 10 }}>

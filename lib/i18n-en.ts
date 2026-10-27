@@ -5440,4 +5440,5 @@ export const EN: Record<string, string> = {
   "Prise de muscle · 6 mois": "Muscle gain · 6 months",
   "Les premières semaines, la balance bouge beaucoup (eau, glycogène), puis le rythme se calme : c'est normal. Regarde la moyenne de la semaine, pas le chiffre du jour.": "In the first weeks the scale moves a lot (water, glycogen), then the pace settles: that is normal. Look at the weekly average, not the daily number.",
   "Le poids bouge avec l'eau et le glycogène. Regarde la moyenne de la semaine, pas le chiffre du jour.": "Weight moves with water and glycogen. Look at the weekly average, not the daily number.",
+  "Variété": "Variety",
 };
