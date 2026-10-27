@@ -7,9 +7,9 @@ import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogen
 import type { ExerciseSuggestion } from "@/lib/plan-generator";
 
 const PHASE_LABEL: Record<string, string> = {
-  deficit: "Déficit / Sèche",
+  deficit: "Perte de gras (déficit)",
   maintenance: "Maintenance",
-  surplus: "Prise de masse",
+  surplus: "Prise de muscle",
 };
 
 function ExerciseChip({ ex }: { ex: ExerciseSuggestion }) {

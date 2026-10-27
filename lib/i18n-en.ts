@@ -5435,4 +5435,7 @@ export const EN: Record<string, string> = {
   "C'est ta première victoire. Garde cette habitude, et quand tu es prêt, choisis la suivante.": "That is your first win. Keep this habit, and when you are ready, pick the next one.",
   "Choisir la prochaine habitude": "Pick the next habit",
   "Toutes les habitudes": "All habits",
+  "Perte de gras (déficit)": "Fat loss (deficit)",
+  "Perte de gras · 4 mois": "Fat loss · 4 months",
+  "Prise de muscle · 6 mois": "Muscle gain · 6 months",
 };

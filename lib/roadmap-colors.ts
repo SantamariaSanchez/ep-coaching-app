@@ -3,14 +3,14 @@ export const PHASE_COLORS = {
     bg: "rgba(251, 146, 60, 0.15)",
     border: "rgba(251, 146, 60, 0.4)",
     solid: "#fb923c",
-    label: "Prise de masse",
+    label: "Prise de muscle",
     icon: "📈",
   },
   deficit: {
     bg: "rgba(224, 30, 30, 0.15)",
     border: "rgba(224, 30, 30, 0.4)",
     solid: "#E01E1E",
-    label: "Déficit / Sèche",
+    label: "Perte de gras (déficit)",
     icon: "🔥",
   },
   maintenance: {

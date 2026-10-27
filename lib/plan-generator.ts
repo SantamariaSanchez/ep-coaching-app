@@ -513,8 +513,8 @@ const PHASE_TYPE: Record<InferredPhase, string> = {
 };
 
 const PHASE_LABEL: Record<InferredPhase, string> = {
-  deficit: "Déficit / Sèche",
-  surplus: "Prise de masse",
+  deficit: "Perte de gras (déficit)",
+  surplus: "Prise de muscle",
   maintenance: "Maintenance",
 };
 
