@@ -5452,4 +5452,5 @@ export const EN: Record<string, string> = {
   "Clique sur « Configurer » pour créer la Trajectoire de ce client.": "Click \"Set up\" to create this client's trajectory.",
   "Trajectoire de": "Trajectory of",
   "Construis ta Trajectoire": "Build your trajectory",
+  "Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l'app (programme, logbook, nutrition, bilan, communauté...) reste gratuit pendant tes 2 mois d'accès gratuit, que tu réserves un appel ou non.": "This page is only about that: having a real human coach, on top. Everything you already use in the app (program, logbook, nutrition, check-in, community...) stays free during your 2 months of free access, whether you book a call or not.",
 };

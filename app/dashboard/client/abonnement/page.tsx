@@ -118,7 +118,7 @@ export default async function AbonnementPage() {
             margin: "0 0 14px",
           }}
         >
-          {t("Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l'app (programme, logbook, nutrition, bilan, communauté...) reste gratuit, à vie, que tu réserves un appel ou non.")}
+          {t("Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l'app (programme, logbook, nutrition, bilan, communauté...) reste gratuit pendant tes 2 mois d'accès gratuit, que tu réserves un appel ou non.")}
         </p>
         {/* Item 46 : distinct de "jamais été client" — quelqu'un qui vient de
             perdre l'accès mérite un message qui reconnaît ce qui s'est
