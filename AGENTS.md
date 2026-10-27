@@ -20,3 +20,12 @@ Ne jamais laisser des changements uniquement en local — l'utilisateur teste su
 (`ep-coaching.vercel.app`), pas en local. Si une migration SQL est ajoutée dans `supabase/migrations/`,
 le dire explicitement à l'utilisateur car elle doit être exécutée manuellement dans le Supabase SQL Editor
 (ce n'est pas automatisé par le déploiement Vercel).
+
+# Mastermind ThePrepDad : règles obligatoires
+
+Avant toute modification de nutrition, entraînement, santé, personnalisation, prompts IA ou automatisations :
+1. Lire dans Notion l'Index Mastermind (navigation et fiabilité), la Base de connaissances Mastermind et le cahier des charges « Mastermind, cahier des charges Claude Code », puis les sources originales du thème concerné.
+2. Inspecter le code réel et tous les consommateurs. La source de vérité des règles est `lib/coaching-knowledge.ts` (valeurs, prompt IA partagé) ; ne jamais dupliquer un chiffre ailleurs.
+3. Distinguer : fait scientifique vérifié, enseignement du mentor, décision produit d'Emmanuel, hypothèse. Le Mastermind dit ce qui a été enseigné, pas ce qui est prouvé. Aucune source n'est jamais affichée à un client.
+4. Ajouter ou mettre à jour les tests (`npm test`, dossier `lib/__tests__`) et rapporter les résultats réels.
+5. TCA, RED-S, pathologies, blessures : ne pas diagnostiquer, orienter vers un professionnel de santé (voir `lib/eating-safety.ts` : aucun déficit chiffré quand la relation à l'alimentation est signalée).

@@ -14,7 +14,8 @@
     "demo:accounts": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/demo-accounts.ts",
     "demos:liste": "node --env-file=.env.local scripts/demos-bibliotheque.mjs liste",
     "demos:appliquer": "node --env-file=.env.local scripts/demos-bibliotheque.mjs appliquer",
-    "screenshots": "tsx scripts/screenshots.ts"
+    "screenshots": "tsx scripts/screenshots.ts",
+    "test": "tsx --tsconfig ./tsconfig.json --test \"lib/__tests__/*.test.ts\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.0",

@@ -1,4 +1,5 @@
 import type { DailyLog } from "@/utils/daily-logs";
+import { MAINTENANCE_TREND_RULES } from "@/lib/coaching-knowledge";
 
 export interface ObservedTdee {
   tdee: number;
@@ -18,9 +19,10 @@ export function computeObservedTdee(dailyLogs: DailyLog[]): ObservedTdee | null 
     .filter((l) => l.weight_morning != null && l.calories_kcal != null)
     .sort((a, b) => a.log_date.localeCompare(b.log_date));
 
-  // Sous ce seuil, la tendance de poids est trop bruitée (rétention d'eau,
-  // etc.) pour en tirer une estimation fiable.
-  if (usable.length < 7) return null;
+  // Sous ce seuil, la tendance de poids est trop bruitée (eau, glycogène,
+  // contenu digestif) pour en tirer une estimation fiable : une semaine ne
+  // suffit pas, il faut plusieurs semaines (voir MAINTENANCE_TREND_RULES).
+  if (usable.length < MAINTENANCE_TREND_RULES.minLoggedDays) return null;
 
   const third = Math.max(2, Math.floor(usable.length / 3));
   const firstChunk = usable.slice(0, third);
@@ -35,7 +37,7 @@ export function computeObservedTdee(dailyLogs: DailyLog[]): ObservedTdee | null 
   const lastMid = new Date(lastChunk[Math.floor(lastChunk.length / 2)].log_date).getTime();
   const days = Math.round((lastMid - firstMid) / 86400000);
 
-  if (days < 5) return null;
+  if (days < MAINTENANCE_TREND_RULES.minSpanDays) return null;
 
   const weightChangeKg = lastWeight - firstWeight;
   const dailyImbalance = (weightChangeKg * KCAL_PER_KG_FAT) / days;

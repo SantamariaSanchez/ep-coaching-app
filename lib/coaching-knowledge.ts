@@ -7,6 +7,14 @@
 // interne Notion « Base de connaissances Mastermind (interne, pour Claude) ».
 // Les chiffres sont des repères de départ, jamais une fin en soi : on
 // ajuste toujours sur l'évolution réelle de la personne.
+//
+// Statut des règles (traçabilité interne, jamais montrée à un client) :
+//   enseignement : ce que le Mastermind enseigne, repère de départ
+//   decision     : choix produit d'Emmanuel
+//   a-verifier   : ne pas durcir en règle automatique
+// Le détail source par source vit dans la base interne Notion (page
+// « Mastermind, cahier des charges Claude Code »). Les tests de
+// lib/__tests__/coaching-knowledge.test.ts verrouillent les valeurs.
 
 export type NutritionPhase = "deficit" | "maintenance" | "surplus";
 export type TrainingLevel = "debutant" | "intermediaire" | "avance";
@@ -17,8 +25,20 @@ export const NUTRITION_RULES = {
   deficitPct: { min: 0.1, max: 0.3 },
   /** Déficit conseillé par défaut pour un débutant ou un intermédiaire. */
   deficitPctDefault: 0.2,
-  /** Surplus : part au-dessus de la maintenance. */
-  surplusPct: { min: 0.08, max: 0.1 },
+  /**
+   * Déficit retenu pour un profil avancé : 15 %, donc au bas de la zone
+   * prudente 15 à 20 %. Décision produit (le cours ne chiffre pas ce cas) :
+   * un profil avancé a moins de marge, on ne pousse pas plus fort. Un
+   * déficit plus agressif (préparation) se décide à la main, hors de ce
+   * calcul automatique.
+   */
+  deficitPctAdvanced: 0.15,
+  /**
+   * Surplus : part au-dessus de la maintenance. Départ modéré à 8 %
+   * (start), la fourchette utile va de 5 à 10 % selon le niveau et la
+   * vitesse de prise ; jamais un nombre de calories fixe pour tous.
+   */
+  surplusPct: { min: 0.05, max: 0.1, start: 0.08 },
   /** Vitesse de perte, en % du poids de corps par semaine. */
   lossRatePctPerWeek: { min: 0.5, max: 1 },
   /** Au-delà, réservé aux profils avec beaucoup de gras à perdre. */
@@ -27,7 +47,11 @@ export const NUTRITION_RULES = {
   gainRatePctPerMonth: { min: 1, max: 2 },
   /** Protéines, g par kg de poids de corps. */
   proteinGPerKg: { min: 1.6, max: 2.2 },
-  /** Au-delà de 2,5 g/kg, aucun bénéfice démontré. */
+  /**
+   * Repère haut, pas un plafond biologique universel : au-delà, l'intérêt
+   * dépend du profil (déficit, définition) et n'est pas démontré pour la
+   * plupart des pratiquants. Ne jamais l'afficher comme une limite.
+   */
   proteinGPerKgCeiling: 2.5,
   /** Protéines par repas, g par kg de poids de corps. */
   proteinPerMealGPerKg: { min: 0.25, max: 0.4 },
@@ -68,13 +92,21 @@ export const NUTRITION_PRIORITIES = [
   "Compléments",
 ] as const;
 
-/** Compléments à faible risque et bien établis (doses indicatives). */
+/**
+ * Compléments : seule la créatine est un repère évident (3 à 5 g en
+ * pratique). La caféine et la vitamine D ne sont PAS des prescriptions
+ * automatiques : la caféine dépend de la sensibilité, de l'âge, du sommeil
+ * et de l'heure du coucher (aucune heure limite fixe) ; les 4000 UI de
+ * vitamine D sont une limite haute de référence, pas une dose de départ, et
+ * une dose personnalisée relève d'un professionnel de santé.
+ */
 export const SUPPLEMENT_RULES = {
   creatineGPerKgPerDay: 0.1,
   creatineForm: "monohydrate",
-  caffeineMgPerKg: { min: 3, max: 6 },
-  caffeineAvoidAfterHour: 15,
-  vitaminDIuPerDay: { min: 1000, max: 4000 },
+  /** Plage d'étude chez l'adulte en bonne santé, avant l'effort. Jamais systématique. */
+  caffeineMgPerKgStudied: { min: 2, max: 6 },
+  /** Limite haute de référence, pas une dose conseillée. */
+  vitaminDIuUpperLimit: 4000,
 } as const;
 
 export interface MacroTargets {
@@ -89,14 +121,15 @@ export interface MacroTargets {
 export function phaseAdjustmentKcal(tdee: number, phase: NutritionPhase, level: TrainingLevel = "intermediaire"): number {
   if (phase === "maintenance") return 0;
   if (phase === "deficit") {
-    // Débutant ou intermédiaire : on reste prudent, 15 à 20 %. Avancé et
-    // déjà sec : 10 %. Le plafond de 30 % n'est pas un objectif.
-    const pct = level === "avance" ? NUTRITION_RULES.deficitPct.min + 0.05 : NUTRITION_RULES.deficitPctDefault;
+    // Débutant ou intermédiaire : 20 %. Avancé : 15 %. Le plafond de 30 %
+    // n'est pas un objectif, et jamais de déficit chiffré en cas de signal
+    // de trouble alimentaire (voir lib/eating-safety.ts, en amont).
+    const pct = level === "avance" ? NUTRITION_RULES.deficitPctAdvanced : NUTRITION_RULES.deficitPctDefault;
     return -Math.round(tdee * pct);
   }
   // Surplus : départ conservateur à 8 %, on monte seulement si la
   // composition corporelle et les performances le justifient.
-  return Math.round(tdee * NUTRITION_RULES.surplusPct.min);
+  return Math.round(tdee * NUTRITION_RULES.surplusPct.start);
 }
 
 /** Protéines en g/kg selon la phase : plus haut en déficit pour protéger le muscle. */
@@ -132,9 +165,24 @@ export function proteinPerMealRange(weightKg: number): { min: number; max: numbe
   };
 }
 
+/**
+ * Maintenance observée : elle se lit sur la tendance du poids, pas sur une
+ * semaine. Le poids bouge avec l'eau, le glycogène et le contenu digestif :
+ * une seule semaine, ou une seule pesée, ne prouve rien. Il faut plusieurs
+ * semaines d'apport suivi à peu près stable. La fenêtre de bilans lue par
+ * l'appli fait environ 21 jours, d'où ces seuils (utilisés par
+ * lib/tdee-suggestion.ts).
+ */
+export const MAINTENANCE_TREND_RULES = {
+  /** Jours avec poids ET calories renseignés, au minimum. */
+  minLoggedDays: 12,
+  /** Écart minimum, en jours, entre le début et la fin de la période lue. */
+  minSpanDays: 12,
+} as const;
+
 /** Phrase de repère pour un calculateur grand public (sans source). */
 export const ENERGY_GUIDANCE_FR =
-  "Ce chiffre est une estimation de départ. Pour prendre du muscle, ajoute environ 8 à 10 % de ta maintenance. Pour perdre du gras, retire 10 à 20 % (jusqu'à 30 % si tu as beaucoup à perdre). Ensuite on ajuste sur ton poids réel, pas sur la formule.";
+  "Ce chiffre est une estimation de départ. Pour prendre du muscle, ajoute environ 5 à 10 % de ta maintenance. Pour perdre du gras, retire 10 à 20 % (jusqu'à 30 % si tu as beaucoup à perdre). Ensuite on ajuste sur ton poids réel, pas sur la formule.";
 
 /** Entraînement (hypertrophie). */
 export const TRAINING_RULES = {
@@ -173,15 +221,17 @@ export function setsPerSessionFor(weeklyAppearances: number, category: "compose"
 /** Modules de consignes pour les assistants IA (aucune source citée). */
 export const COACHING_KNOWLEDGE_PROMPT = `Repères de coaching à appliquer (valeurs de départ, toujours ajustées sur l'évolution réelle du client, jamais une fin en soi) :
 - Priorités nutrition dans l'ordre : adhésion, calories, protéines, lipides et fibres, glucides, qualité des aliments, timing, compléments. Dis adhésion, jamais adhérence.
-- Déficit : 10 à 30 % sous la maintenance, prudent à 15 à 20 % pour un débutant ou un intermédiaire, perte de 0,5 à 1 % du poids de corps par semaine (jusqu'à 2 % seulement avec beaucoup de gras à perdre). Surplus : 8 à 10 % au-dessus, prise d'environ 1 à 2 % du poids par mois, départ conservateur. On ajuste par paliers de 150 à 300 kcal.
-- La maintenance se mesure : si le poids reste stable une semaine à 3000 kcal, c'est la maintenance. Les formules ne servent qu'à estimer au départ.
-- Protéines : 1,6 à 2,2 g/kg/jour, plus haut en déficit, aucun bénéfice démontré au-delà de 2,5 g/kg. Réparties sur 3 à 5 prises (idéal 4), environ 0,25 à 0,4 g/kg par repas.
+- Déficit : 10 à 30 % sous la maintenance, prudent à 15 à 20 % pour un débutant ou un intermédiaire, perte de 0,5 à 1 % du poids de corps par semaine (jusqu'à 2 % seulement avec beaucoup de gras à perdre). Surplus : environ 5 à 10 % au-dessus (départ à 8 %), prise d'environ 1 à 2 % du poids par mois, départ conservateur, jamais un nombre de calories fixe pour tous. On ajuste par paliers de 150 à 300 kcal.
+- La maintenance se mesure sur la durée : si la moyenne du poids reste globalement stable sur plusieurs semaines avec un apport à peu près constant, cet apport est une bonne estimation de la maintenance. Une seule semaine ou une seule pesée ne suffit pas : le poids varie avec l'eau, le glycogène et le contenu digestif, rassure le client avant toute panique. Les formules ne servent qu'à estimer au départ, on regarde la moyenne de la semaine, jamais une pesée isolée.
+- Début d'accompagnement : calibre les attentes (la première semaine descend souvent vite, la troisième ralentit), donne 3 à 5 choses à la fois, pas tout, et une première habitude simple pour une victoire rapide en deux semaines.
+- Protéines : 1,6 à 2,2 g/kg/jour, plus haut en déficit ; monter au-delà de 2,5 g/kg n'a pas d'intérêt démontré pour la plupart des pratiquants. Réparties sur 3 à 5 prises (idéal 4), environ 0,25 à 0,4 g/kg par repas.
 - Lipides : 0,8 à 1,5 g/kg (20 à 35 % des calories). Glucides : le reste, selon les préférences (1 à 3 g/kg en sèche, 3 à 5 g/kg en prise). Fibres : 14 g pour 1000 kcal. Graisses saturées et sucres ajoutés sous 10 % des calories.
 - Timing et fréquence des repas pèsent peu sur la composition corporelle : 3 à 5 repas, sans fenêtre anabolique de 30 minutes (l'effet dure plus de 24 h). Glucides avant ou après la séance : confort, pas obligation. Après la séance, ce sont les protéines qui comptent.
-- Micronutriments : d'abord l'alimentation (fruits et légumes variés, 2 à 3 portions de chaque), puis compléments ciblés. Créatine monohydrate (environ 0,1 g/kg/jour), vitamine D, oméga 3 sont les plus utiles. Caféine 3 à 6 mg/kg, pas après 15 h.
+- Micronutriments : d'abord l'alimentation (fruits et légumes variés, 2 à 3 portions de chaque), puis compléments seulement si un besoin est identifié, idéalement après une prise de sang. La créatine monohydrate (3 à 5 g par jour, environ 0,1 g/kg) est le seul complément vraiment évident. Vitamine D, magnésium, fer, caféine : jamais de dose personnalisée de ta part, oriente vers un professionnel de santé ; la caféine dépend de la sensibilité, de l'âge et du sommeil, et se déconseille en fin de journée selon l'heure du coucher.
 - Entraînement hypertrophie : 8 à 12 séries difficiles par groupe musculaire et par semaine au départ, jusqu'à 10 à 25 selon la récupération, 2 à 3 séances par semaine par groupe, 5 à 20 répétitions, 0 à 3 répétitions en réserve (2 à 3 pour un débutant), repos de 2 à 3 minutes sur les exercices lourds et 1 à 2 minutes sur l'isolation, excentrique contrôlé.
 - On ajoute des séries seulement si le client récupère en avance. Si la récupération ou les performances baissent, on gère la fatigue (volume, proximité de l'échec) avant d'ajouter quoi que ce soit. Décharge : réduction du volume ou des charges d'environ la moitié, une semaine ou quelques séances, pas de règle fixe.
-- Une femme peut souvent tolérer plus de fréquence et de volume, avec un effort moyen un peu plus haut, mais les moyennes ne décrivent jamais un individu.
+- Les moyennes ne décrivent jamais un individu : ne déduis pas un volume ou une fréquence du sexe de la personne, pars de sa récupération et de sa progression réelles.
 - Végétarien ou végan : même fourchette de protéines, haut de fourchette, sources variées et lysine, B12 en complément, vigilance sur le zinc, le fer, le calcium, l'iode et les oméga 3 (algue, car la conversion de l'ALA est faible).
-- Troubles du comportement alimentaire (signes : carence énergétique, aménorrhée, restriction, sport à catégorie de poids) : aucun coaching de ce sujet par toi, orientation vers un professionnel de santé et alerte à la coach humaine. Parle du factuel et de la santé, jamais de l'apparence.
+- Troubles du comportement alimentaire (signes : carence énergétique, aménorrhée, restriction, sport à catégorie de poids) : aucun coaching de ce sujet par toi, jamais de déficit ni de chiffre de calories proposé, orientation vers un professionnel de santé (médecin traitant) et alerte à la coach humaine. Parle du factuel et de la santé, jamais de l'apparence, ne culpabilise jamais un écart.
+- Suivi client : classe mentalement chaque client en vert (il avance, on célèbre), orange (il stagne, demande ce qui a changé) ou rouge (il a du mal à suivre, demande comment simplifier le plan). Si la stagnation s'installe, propose un appel plutôt qu'un message de plus.
 - N'affirme jamais qu'une étude prouve quelque chose et ne cite jamais de source, d'auteur ou de « selon… » : dis simplement ce qui marche, en une phrase simple, avec l'action concrète.`;
