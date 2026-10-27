@@ -3,6 +3,7 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Quote, Calendar, Moon, Smartphone, Target, Utensils, Sparkles, EyeOff,
   ClipboardList, Wind, GlassWater, Activity, Backpack, Flag, Check,
@@ -10,6 +11,7 @@ import {
   Pill, Footprints, TrendingUp,
 } from "lucide-react";
 import { HABITS, type JournalPrompt } from "@/lib/mindset-content";
+import { FOCUS_HABIT_CANDIDATES, FOCUS_HABIT_DAYS, type FocusHabitProgress } from "@/lib/focus-habit";
 import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
 import { timeAwareGreeting } from "@/lib/dates";
 // Module sans aucun import (voir son en-tête) — jamais lib/weekly-recap.ts,
@@ -62,6 +64,8 @@ export default function AujourdhuiView({
   promptOfDay,
   todayStr,
   toggleHabitLog,
+  focusHabit,
+  setFocusHabit,
   addJournalEntry,
   todayWeight,
   logWeight,
@@ -84,6 +88,9 @@ export default function AujourdhuiView({
   promptOfDay: JournalPrompt;
   todayStr: string;
   toggleHabitLog: (habitKey: string, date: string, checked: boolean) => Promise<{ error?: string }>;
+  /** Habitude du moment (une seule à la fois, 14 jours), null tant qu'aucune n'est choisie. */
+  focusHabit: { key: string; progress: FocusHabitProgress } | null;
+  setFocusHabit: (habitKey: string | null) => Promise<{ error?: string }>;
   addJournalEntry: (params: { promptKey: string | null; content: string; mood: number | null }) => Promise<{ error?: string; id?: string }>;
   todayWeight: number | null;
   logWeight: (prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean }>;
@@ -132,6 +139,16 @@ export default function AujourdhuiView({
   const [weightSaving, setWeightSaving] = useState(false);
   const [weightError, setWeightError] = useState<string | null>(null);
   const [habitError, setHabitError] = useState<string | null>(null);
+  const router = useRouter();
+  const [focusPending, setFocusPending] = useState(false);
+  async function chooseFocusHabit(key: string | null) {
+    setFocusPending(true);
+    setHabitError(null);
+    const res = await safeAction(() => setFocusHabit(key));
+    setFocusPending(false);
+    if (res.error) setHabitError(res.error);
+    else router.refresh();
+  }
 
   async function handleSaveWeight() {
     if (!weightValue.trim()) return;
@@ -500,6 +517,119 @@ export default function AujourdhuiView({
             {tr("Cette semaine :")}{" "}{weeklyConsistency}{tr("% de jours actifs")}
           </p>
         )}
+        {/* Une seule chose à la fois : l'habitude du moment, 14 jours pour une
+            première victoire. Les autres habitudes restent à un clic. */}
+        {(() => {
+          const focusDef = focusHabit ? HABITS.find((h) => h.key === focusHabit.key) : null;
+          if (!focusHabit || !focusDef) {
+            return (
+              <div className="ep-card" style={{ padding: 16, marginBottom: 12 }}>
+                <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "var(--ep-strong)" }}>
+                  {tr("Commence par une seule habitude")}
+                </p>
+                <p style={{ margin: "0 0 12px", fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
+                  {tr("Une seule, pendant 14 jours. C'est comme ça qu'on obtient une première victoire rapide, sans se disperser.")}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {FOCUS_HABIT_CANDIDATES.map((key) => {
+                    const def = HABITS.find((h) => h.key === key);
+                    if (!def) return null;
+                    const Icon = ICONS[def.icon] ?? Check;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        disabled={focusPending}
+                        onClick={() => chooseFocusHabit(key)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 10, textAlign: "left", cursor: "pointer",
+                          padding: "10px 12px", borderRadius: 10, background: "rgba(var(--ep-accent-rgb),0.06)",
+                          border: "1px solid rgba(var(--ep-accent-rgb),0.2)", color: "var(--ep-ink)",
+                        }}
+                      >
+                        <Icon size={15} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+                        <span style={{ flex: 1 }}>
+                          <span style={{ display: "block", fontSize: 12.5, fontWeight: 700 }}>{tr(def.label)}</span>
+                          <span style={{ display: "block", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)" }}>{tr(def.description)}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+          const checked = loggedKeys.has(focusHabit.key);
+          const p = focusHabit.progress;
+          const todayIdx = p.dayIndex - 1;
+          const cells = p.cells.map((c, i) => (!p.finished && i === todayIdx ? (checked ? "done" : c === "done" ? "future" : c) : c));
+          const doneNow = cells.filter((c) => c === "done").length;
+          const Icon = ICONS[focusDef.icon] ?? Check;
+          return (
+            <div className="ep-card" style={{ padding: 16, marginBottom: 12 }}>
+              <p className="ep-section-title" style={{ margin: "0 0 8px" }}>{tr("Ton habitude du moment")}</p>
+              {p.finished ? (
+                <>
+                  <p style={{ margin: "0 0 4px", fontSize: 13.5, fontWeight: 800, color: "var(--ep-strong)" }}>
+                    {tr("Deux semaines tenues.")}{" "}{doneNow}/{FOCUS_HABIT_DAYS} {tr("jours cochés")}
+                  </p>
+                  <p style={{ margin: "0 0 12px", fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
+                    {tr("C'est ta première victoire. Garde cette habitude, et quand tu es prêt, choisis la suivante.")}
+                  </p>
+                  <button type="button" disabled={focusPending} onClick={() => chooseFocusHabit(null)} className="ep-btn-primary" style={{ width: "100%" }}>
+                    {tr("Choisir la prochaine habitude")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleHabit(focusHabit.key)}
+                    disabled={pendingKeys.has(focusHabit.key)}
+                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}
+                  >
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 9, flexShrink: 0,
+                      border: `1.5px solid ${checked ? "var(--ep-ok)" : "rgba(var(--ep-accent-rgb),0.4)"}`,
+                      background: checked ? "rgba(var(--ep-ok-rgb),0.15)" : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {checked && <Check size={16} style={{ color: "var(--ep-ok)" }} strokeWidth={3} />}
+                    </div>
+                    <span style={{ flex: 1 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 800, color: "var(--ep-strong)" }}>
+                        <Icon size={14} style={{ color: "var(--ep-accent)" }} />{tr(focusDef.label)}
+                      </span>
+                      <span style={{ display: "block", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", marginTop: 2 }}>{tr(focusDef.description)}</span>
+                    </span>
+                  </button>
+                  <div style={{ display: "flex", gap: 4, marginTop: 12 }} aria-label={`${tr("Jour")} ${p.dayIndex} / ${FOCUS_HABIT_DAYS}`}>
+                    {cells.map((c, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          flex: 1, height: 6, borderRadius: 3,
+                          background: c === "done" ? "var(--ep-ok)" : c === "missed" ? "rgba(var(--ep-ink-rgb),0.18)" : "rgba(var(--ep-ink-rgb),0.07)",
+                          outline: i === todayIdx ? "1.5px solid var(--ep-accent)" : "none", outlineOffset: 1,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <p style={{ margin: "8px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+                    {tr("Jour")} {p.dayIndex} / {FOCUS_HABIT_DAYS} · {doneNow} {tr("jours cochés")}
+                  </p>
+                </>
+              )}
+            </div>
+          );
+        })()}
+
+        <details open={!focusHabit} style={{ marginBottom: 4 }}>
+          {focusHabit && (
+            <summary style={{ cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)", padding: "4px 0 10px" }}>
+              {tr("Toutes les habitudes")} ({doneCount}/{HABITS.length})
+            </summary>
+          )}
         <div className="ep-card" style={{ padding: "8px 16px" }}>
           {HABITS.map((h, i) => {
             const Icon = ICONS[h.icon] ?? Check;
@@ -532,6 +662,7 @@ export default function AujourdhuiView({
             );
           })}
         </div>
+        </details>
         {habitError && <p style={{ color: "var(--ep-pink)", fontSize: 11, margin: "8px 0 0" }}>{habitError}</p>}
       </section>
 

@@ -7,6 +7,8 @@ import { getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
 import { HABITS, type QuizResult } from "@/lib/mindset-content";
 import { after } from "next/server";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { todayInParis } from "@/lib/dates";
 
 export async function saveMindsetQuiz(result: QuizResult): Promise<{ error?: string }> {
   const guard = await requireAuth();
@@ -208,6 +210,26 @@ export async function deleteJournalEntry(entryId: string): Promise<{ error?: str
     return {};
   } catch (e) {
     console.error("deleteJournalEntry error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Habitude du moment : une seule à la fois, 14 jours (lib/focus-habit.ts).
+// null = la retirer pour en choisir une autre.
+export async function setFocusHabit(habitKey: string | null): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  if (habitKey !== null && !HABITS.some((h) => h.key === habitKey)) return { error: "Habitude inconnue." };
+  try {
+    const { error } = await createAdminClient()
+      .from("profiles")
+      .update({ focus_habit_key: habitKey, focus_habit_since: habitKey ? todayInParis() : null })
+      .eq("id", guard.userId);
+    if (error) return { error: "Erreur lors de l'enregistrement." };
+    revalidatePath("/dashboard/client/aujourdhui");
+    return {};
+  } catch (e) {
+    console.error("setFocusHabit error:", e);
     return { error: "Erreur inattendue." };
   }
 }

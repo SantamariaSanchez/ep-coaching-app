@@ -5427,4 +5427,12 @@ export const EN: Record<string, string> = {
   "idée(s) ajoutée(s) au Studio.": "idea(s) added to the Studio.",
   "Déjà dans le Studio.": "Already in the Studio.",
   "Détails de l'appel": "Call details",
+  "Commence par une seule habitude": "Start with a single habit",
+  "Une seule, pendant 14 jours. C'est comme ça qu'on obtient une première victoire rapide, sans se disperser.": "Just one, for 14 days. That is how you get a quick first win without spreading yourself thin.",
+  "Ton habitude du moment": "Your habit of the moment",
+  "Deux semaines tenues.": "Two weeks done.",
+  "jours cochés": "days checked",
+  "C'est ta première victoire. Garde cette habitude, et quand tu es prêt, choisis la suivante.": "That is your first win. Keep this habit, and when you are ready, pick the next one.",
+  "Choisir la prochaine habitude": "Pick the next habit",
+  "Toutes les habitudes": "All habits",
 };

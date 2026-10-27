@@ -10,7 +10,9 @@ import { getNutritionProfile, getTodayLogs } from "@/utils/nutrition";
 import { getStepSettings, getTodayStepsActual } from "@/utils/steps";
 import { getDailyQuote, getPromptOfDay } from "@/lib/mindset-content";
 import { todayInParis, nowInParis, weekNumber } from "@/lib/dates";
-import { toggleHabitLog, addJournalEntry } from "@/app/dashboard/client/mindset/actions";
+import { toggleHabitLog, addJournalEntry, setFocusHabit } from "@/app/dashboard/client/mindset/actions";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { focusHabitProgress } from "@/lib/focus-habit";
 import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import { getWeeklyExtras } from "./actions";
 import AujourdhuiView from "@/components/client/AujourdhuiView";
@@ -72,6 +74,32 @@ export default async function AujourdhuiPage() {
   ]);
   const activeSupplements = allSupplements.filter((s) => s.status === "active");
 
+  // Habitude du moment (une seule à la fois, 14 jours) : sa clé, son départ
+  // et les jours déjà cochés depuis.
+  let focusHabit: { key: string; progress: ReturnType<typeof focusHabitProgress> } | null = null;
+  try {
+    const admin = createAdminClient();
+    const { data: focusRow } = await admin
+      .from("profiles")
+      .select("focus_habit_key, focus_habit_since")
+      .eq("id", user.id)
+      .maybeSingle();
+    const key = (focusRow?.focus_habit_key as string | null) ?? null;
+    const since = (focusRow?.focus_habit_since as string | null) ?? null;
+    if (key && since) {
+      const { data: doneRows } = await admin
+        .from("mindset_habit_logs")
+        .select("logged_at")
+        .eq("client_id", user.id)
+        .eq("habit_key", key)
+        .gte("logged_at", since)
+        .limit(60);
+      focusHabit = { key, progress: focusHabitProgress(since, todayStr, ((doneRows as { logged_at: string }[] | null) ?? []).map((r) => r.logged_at)) };
+    }
+  } catch {
+    focusHabit = null;
+  }
+
   const todayBlocks = allBlocks
     .filter((b) => isBlockOnDate(b, todayStr, isoDow))
     .sort((a, b) => a.start_time.localeCompare(b.start_time));
@@ -98,6 +126,8 @@ export default async function AujourdhuiPage() {
       promptOfDay={getPromptOfDay(today)}
       todayStr={todayStr}
       toggleHabitLog={toggleHabitLog}
+      focusHabit={focusHabit}
+      setFocusHabit={setFocusHabit}
       addJournalEntry={addJournalEntry}
       todayWeight={todayLog?.weight_morning ?? null}
       logWeight={upsertDailyLog}
