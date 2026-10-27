@@ -182,6 +182,12 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     prompt:
       "Voici le transcript d'un reel que j'ai déjà tourné : [TRANSCRIPT]. Comprends d'abord de quoi parle VRAIMENT la vidéo et reste strictement dans ce sujet. Livre uniquement : 5 titres hook (texte à l'écran) de 3 à 7 mots, AUCUNE ponctuation, chacun sur une douleur précise et avec une mécanique différente ; puis la description : ligne 1 « Abonne toi », 3 à 4 lignes courtes avec les mots du transcript, dernière ligne = l'appel à commenter dit dans la vidéo. Uniquement des mots présents dans le transcript ou dans les règles d'écriture ci-dessus. Relis-toi et corrige avant de répondre.",
   },
+  {
+    title: "4 titres hook + description d'un clip tiré d'une vidéo YouTube",
+    category: "Script",
+    prompt:
+      "Voici le transcript d'un clip découpé dans une de mes vidéos YouTube : [TRANSCRIPT]. Comprends d'abord de quoi parle VRAIMENT le clip et reste strictement dans ce sujet. Livre uniquement : 4 titres hook (texte à l'écran) de 3 à 7 mots, AUCUNE ponctuation, chacun sur une douleur précise avec une mécanique différente ; puis une description courte : ligne 1 « Abonne toi », 2 à 3 lignes courtes avec les mots du transcript, dernière ligne exactement : « Commente « VIDEO » pour recevoir la vidéo complète ». Le mot-clé reste toujours VIDEO, ne le change pas selon le sujet, et ne cite jamais YouTube dans cet appel à commenter. Uniquement des mots présents dans le transcript. Relis-toi et corrige avant de répondre.",
+  },
 ];
 
 export interface Hook {
