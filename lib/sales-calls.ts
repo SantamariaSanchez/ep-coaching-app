@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import type { SalesCallKind } from "@/lib/sales-call-kinds";
 
 export interface SalesCall {
   id: string;
@@ -9,6 +10,11 @@ export interface SalesCall {
   closed: boolean | null;
   revenue_amount: number | null;
   notes: string | null;
+  call_kind: SalesCallKind;
+  recording_url: string | null;
+  recording_consent: boolean | null;
+  followup_url: string | null;
+  prospect_questions: string | null;
   created_at: string;
 }
 

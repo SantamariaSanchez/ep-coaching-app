@@ -53,6 +53,9 @@ export default async function SalesCallsPage() {
         <p className="text-sm text-(--ep-ink)/45 mt-2">
           {t("Un appel = une ligne. Coche show up et closing une fois l'appel passé, note le CA si signé.")}
         </p>
+        <p className="text-xs text-(--ep-ink)/40 mt-1.5">
+          {t("Enregistre chaque appel avec l'accord de la personne, puis envoie un retour d'appel de moins de 5 minutes. Les détails se trouvent sous la flèche de chaque ligne.")}
+        </p>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-8" style={{ WebkitOverflowScrolling: "touch" }}>
