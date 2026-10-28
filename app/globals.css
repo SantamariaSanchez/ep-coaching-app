@@ -1546,3 +1546,18 @@ html.ep-native .ep-selectable {
 .ep-social-sep { display: flex; align-items: center; gap: 12px; margin: 16px 0 2px; color: rgba(var(--ep-ink-rgb), 0.5); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
 .ep-social-sep::before, .ep-social-sep::after { content: ""; flex: 1; height: 1px; background: rgba(var(--ep-ink-rgb), 0.14); }
 @media (prefers-reduced-motion: reduce) { .ep-social-spin { animation-duration: 1.6s; } .ep-social-btn:active { transform: none; } }
+
+/* ── Ergonomie mobile (2026-10-28) ───────────────────────────────────────── */
+/* Zones tactiles de 44 px sur écran tactile, titres de page plus compacts,
+   phrase d'intro limitée à une ligne : le contenu utile remonte, moins de
+   scroll avant de pouvoir agir. Hors @layer pour gagner sur les composants. */
+@media (pointer: coarse) {
+  .ep-btn-primary, .ep-btn-secondary { min-height: 44px; }
+  .ep-btn-icon { min-width: 44px; min-height: 44px; }
+  .ep-input { min-height: 48px; }
+}
+@media (max-width: 480px) {
+  .ep-h1 { font-size: 28px; }
+  .ep-tagline { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+}
+.ep-input::placeholder { color: rgba(var(--ep-ink-rgb), 0.42); }
