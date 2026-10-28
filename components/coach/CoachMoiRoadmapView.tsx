@@ -47,7 +47,7 @@ export default function CoachMoiRoadmapView({
         }}>
           <Map size={12} />{" "}{t("Mon Suivi")}
         </span>
-        <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 6px" }}>{t("Ma Trajectoire")}</h1>
+        <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 6px" }}>{t("Ma Road Map")}</h1>
         <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 6px" }}>
           {t("Construis et visualise tes propres objectifs et phases de progression.")}
         </p>
@@ -56,7 +56,7 @@ export default function CoachMoiRoadmapView({
 
       {error && (
         <RoadmapLoadError
-          message="Impossible de charger le résumé de ta Trajectoire pour l'instant."
+          message="Impossible de charger le résumé de ta road map pour l'instant."
           hint={t("Ne modifie rien plus bas avant d'avoir rechargé.")}
         />
       )}

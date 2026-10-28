@@ -398,7 +398,7 @@ export function PlanBuilder({
   ) => Promise<{ error?: string; id?: string }>;
   templatesHref?: string;
   subjectLabel?: string;
-  /** Trajectoire déjà posée pour ce client — affichée en phase 1 pour concevoir la diète dans son contexte réel. */
+  /** Road map déjà posée pour ce client — affichée en phase 1 pour concevoir la diète dans son contexte réel. */
   roadmap?: RoadmapWithData | null;
   roadmapHref?: string;
 }) {

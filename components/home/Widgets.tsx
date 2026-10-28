@@ -292,7 +292,7 @@ export async function PrepW({ userId, href }: { userId: string; href: string }) 
   const photoDays = p.photoDays;
   return (
     <Card href={href} icon={Medal} title={t("Ma prépa")} tone="var(--ep-warn)">
-      <span style={big}>{p.phase ?? t("Construis ta Trajectoire")}</span>
+      <span style={big}>{p.phase ?? t("Construis ta road map")}</span>
       {p.daysLeft != null && <span style={sub}>{t("{n} jour(s) avant la fin de la phase", { n: Math.max(0, p.daysLeft) })}</span>}
       <span style={sub}>{photoDays == null ? t("Aucune photo de suivi pour l'instant") : photoDays === 0 ? t("Photos faites aujourd'hui ✓") : t("Dernières photos il y a {n} j", { n: photoDays })}</span>
     </Card>

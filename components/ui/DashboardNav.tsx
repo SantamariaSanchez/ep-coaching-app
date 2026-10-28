@@ -228,7 +228,7 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
       // de suivre son propre contenu (dont ENTREPRENARIAL SECRET, écrit
       // pour un coach). Voir app/dashboard/coach/moi/formations/page.tsx.
       { label: "Formations",     icon: GraduationCap,  segment: "moi/formations" },
-      { label: "Trajectoire",       icon: Map,            segment: "moi/roadmap" },
+      { label: "Road Map",       icon: Map,            segment: "moi/roadmap" },
       { label: "Steps",          icon: Footprints,     segment: "moi/steps" },
       { label: "Sommeil",        icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
@@ -279,7 +279,7 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
       // Revue de la semaine, ouverte à tous (gratuit compris) : contrairement
       // au check-in, personne n'a besoin d'un coach pour la lire.
       { label: "Ma semaine",     icon: CalendarCheck,   segment: "semaine" },
-      { label: "Trajectoire",       icon: Map,             segment: "roadmap" },
+      { label: "Road Map",       icon: Map,             segment: "roadmap" },
       { label: "Steps",          icon: Footprints,      segment: "steps" },
       { label: "Sommeil",       icon: Watch,           segment: "tracking" },
       { label: "Photos",         icon: Image,           segment: "photos" },

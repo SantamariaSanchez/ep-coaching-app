@@ -58,9 +58,9 @@ export default function RoadmapView({
       <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 900, margin: "0 auto" }}>
         <div style={{ marginBottom: 20 }}>
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)" }}>
-            {t("Trajectoire : Communauté")}
+            {t("Road Map : Communauté")}
           </span>
-          <h1 className="ep-h1" style={{ margin: "4px 0 6px" }}>{t("Ma Trajectoire")}</h1>
+          <h1 className="ep-h1" style={{ margin: "4px 0 6px" }}>{t("Ma Road Map")}</h1>
           <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "0 0 6px" }}>
             {t("Construis toi-même tes phases et tes objectifs, en autonomie, sans suivi coach.")}
           </p>
@@ -69,7 +69,7 @@ export default function RoadmapView({
 
         {error && (
           <RoadmapLoadError
-            message="Impossible de charger le résumé de ta Trajectoire pour l'instant."
+            message="Impossible de charger le résumé de ta road map pour l'instant."
             hint={t("Ne modifie rien plus bas avant d'avoir rechargé.")}
           />
         )}
@@ -84,8 +84,8 @@ export default function RoadmapView({
   if (error) {
     return (
       <div className="page-transition" style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto" }}>
-        <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 16px" }}>{t("Ma Trajectoire")}</h1>
-        <RoadmapLoadError message="Impossible de charger ta Trajectoire pour l'instant." />
+        <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 16px" }}>{t("Ma Road Map")}</h1>
+        <RoadmapLoadError message="Impossible de charger ta road map pour l'instant." />
       </div>
     );
   }
@@ -95,10 +95,10 @@ export default function RoadmapView({
       <div style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
         <MapPin size={40} style={{ color: "rgba(var(--ep-accent-rgb),0.3)", margin: "0 auto 16px" }} strokeWidth={1.5} />
         <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--ep-ink)", letterSpacing: "-0.02em", marginBottom: 8 }}>
-          {t("Trajectoire non configurée")}
+          {t("Road Map non configurée")}
         </h1>
         <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
-          {t("Ton coach n'a pas encore configuré ta Trajectoire.")}
+          {t("Ton coach n'a pas encore configuré ta road map.")}
         </p>
       </div>
     );
@@ -109,9 +109,9 @@ export default function RoadmapView({
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)" }}>
-          {t("Trajectoire")}
+          {t("Road Map")}
         </span>
-        <h1 className="ep-h1" style={{ fontSize: 28, margin: "4px 0 6px" }}>{t("Ma Trajectoire")}</h1>
+        <h1 className="ep-h1" style={{ fontSize: 28, margin: "4px 0 6px" }}>{t("Ma Road Map")}</h1>
         <RoadmapStatusLine roadmap={roadmap} phases={phases} today={today} />
       </div>
 

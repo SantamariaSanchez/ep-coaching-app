@@ -50,7 +50,7 @@ export default function CoachClientRoadmapView({
           {clientName || t("Client")}
         </Link>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p className="ep-section-title" style={{ margin: 0 }}>{t("Trajectoire")}</p>
+          <p className="ep-section-title" style={{ margin: 0 }}>{t("Road Map")}</p>
           <h1 className="ep-h1" style={{ margin: "2px 0 0", overflowWrap: "anywhere" }}>{clientName || t("Client")}</h1>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default function CoachClientRoadmapView({
 
       {error && (
         <RoadmapLoadError
-          message="Impossible de charger le résumé de cette Trajectoire pour l'instant."
+          message="Impossible de charger le résumé de cette road map pour l'instant."
           hint={t("Ne modifie rien plus bas avant d'avoir rechargé.")}
         />
       )}

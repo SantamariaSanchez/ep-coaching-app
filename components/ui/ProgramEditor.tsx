@@ -909,7 +909,7 @@ export default function ProgramEditor({
   intake?: ClientIntake | null;
   /** Agenda réel du client — croisé dans l'outil de planification hebdomadaire. */
   scheduleBlocks?: ScheduleBlock[];
-  /** Trajectoire déjà posée pour ce client — affichée en phase 1 pour concevoir le programme dans son contexte réel. */
+  /** Road map déjà posée pour ce client — affichée en phase 1 pour concevoir le programme dans son contexte réel. */
   roadmap?: RoadmapWithData | null;
   /** Lien vers la page road map complète du client. */
   roadmapHref?: string;

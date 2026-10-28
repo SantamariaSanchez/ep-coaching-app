@@ -86,7 +86,7 @@ type ActionState = { error?: string; success?: boolean } | null;
 const TABS = [
   { key: "profil",    label: "Profil",    icon: User },
   { key: "intake",    label: "Fiche client", icon: FileText },
-  { key: "roadmap",   label: "Trajectoire",  icon: Map },
+  { key: "roadmap",   label: "Road Map",  icon: Map },
   { key: "logbook",   label: "Logbook",   icon: BookOpen },
   { key: "performances", label: "Performances", icon: Trophy },
   { key: "programme", label: "Programme", icon: Dumbbell },
@@ -847,13 +847,13 @@ export default function ClientProfileTabs({
         Pas de `hidden` ici : cet onglet n'a aucun état local propre (tout
         vient de roadmapData/roadmapLoading/roadmapError, gérés par le
         useEffect en haut de ce composant parent, pas remonté par ce bloc).
-        Rien à perdre au démontage, et le fetch de la Trajectoire n'est de toute
+        Rien à perdre au démontage, et le fetch de la road map n'est de toute
         façon pas refait puisqu'il vit au-dessus de ce bloc.
       */}
       {activeTab === "roadmap" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-(--ep-ink)/40 uppercase tracking-widest font-semibold">{t("Trajectoire client")}</p>
+            <p className="text-xs text-(--ep-ink)/40 uppercase tracking-widest font-semibold">{t("Road Map client")}</p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/roadmap`}
               className="inline-flex items-center gap-2 bg-(--ep-accent) hover:bg-(--ep-accent-2) text-(--ep-strong) text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
@@ -873,7 +873,7 @@ export default function ClientProfileTabs({
             <Card>
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
                 <p className="text-xs text-(--ep-ink)/40">
-                  {t("Impossible de vérifier si ce client a déjà une Trajectoire. Recharge la page avant de cliquer sur « Configurer », pour ne pas risquer d'en créer une en double.")}
+                  {t("Impossible de vérifier si ce client a déjà une road map. Recharge la page avant de cliquer sur « Configurer », pour ne pas risquer d'en créer une en double.")}
                 </p>
               </div>
             </Card>
@@ -881,7 +881,7 @@ export default function ClientProfileTabs({
             <Card>
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
                 <p className="text-xs text-(--ep-ink)/40">
-                  {t("Clique sur « Configurer » pour créer la Trajectoire de ce client.")}
+                  {t("Clique sur « Configurer » pour créer la road map de ce client.")}
                 </p>
               </div>
             </Card>
