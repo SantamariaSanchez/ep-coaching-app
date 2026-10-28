@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProfileSetupStep from "./ProfileSetupStep";
-import PersonalizationQuiz from "./PersonalizationQuiz";
+import PersonalizationQuiz, { type Parcours } from "./PersonalizationQuiz";
+import { saveTrackingParcoursAction } from "@/app/actions/tracking";
 import OnboardingTour from "./OnboardingTour";
 import { completeOnboarding, getWelcomeGuide, saveMemberPreferences } from "@/app/onboarding/actions";
 import {
@@ -58,7 +59,8 @@ export default function OnboardingFlow({
     router.refresh();
   }
 
-  function handleQuizComplete(answers: Partial<MemberPreferences>) {
+  function handleQuizComplete(answers: Partial<MemberPreferences>, parcours?: Parcours) {
+    if (parcours) saveTrackingParcoursAction(parcours).catch(() => {});
     saveMemberPreferences(answers).catch(() => {
       // Best-effort — si la sauvegarde échoue, l'utilisateur voit quand
       // même un tour personnalisé pour cette session (juste pas persisté).

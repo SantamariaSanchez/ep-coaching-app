@@ -1,5 +1,6 @@
 ﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
+import { getTrackingProfile } from "@/lib/tracking-profile-server";
 import SessionView from "@/components/client/SessionView";
 
 export default async function SessionPage({
@@ -18,5 +19,5 @@ export default async function SessionPage({
   // trouvé sur plusieurs pages client en auditant public/manifest.json.
   if (profile?.role === "coach") redirect(`/dashboard/coach/moi/logbook/session/${id}`);
 
-  return <SessionView sessionId={id} />;
+  return <SessionView sessionId={id}  showEffort={(await getTrackingProfile(user.id)).training.effort !== "none"} />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
   Check,
   ChevronDown,
@@ -275,6 +275,10 @@ function HoldTimer({ onDone }: { onDone: (seconds: number) => void }) {
   );
 }
 
+// Niveau de suivi (lib/tracking-profile.ts) : au niveau Simple, ni RIR ni RPE,
+// seulement charge et répétitions. Par défaut tout est affiché.
+export const EffortContext = createContext<boolean>(true);
+
 function SetEditor({
   ex,
   set,
@@ -331,6 +335,7 @@ function SetEditor({
   const step = set.step ?? lastStep ?? (skill ? stepFromName(skill, ex.exercise.name) : null);
   const intensity = parseIntensity(ex.exercise.intensity);
   const mainLift = mainLiftFor(ex.exercise.name);
+  const showEffort = useContext(EffortContext);
   const showRpe = intensity?.kind === "rpe" || !!form.attempt || !!form.backoff || form.mainLabel === "Top set" || (!!mainLift && ex.exercise.rir == null);
   const rpeNum = num(set.rpe ?? "");
   const e1rm = mainLift || intensity ? estimateE1rm(weightNum, r ? parseInt(r, 10) : null, rpeNum) : null;
@@ -617,6 +622,7 @@ function SetEditor({
         </div>
       )}
 
+      {showEffort && (
       <div>
         <div className="flex items-baseline justify-between mb-1">
           <span className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40">{showRpe ? t("RPE réel") : t("RIR réel")}</span>
@@ -697,6 +703,7 @@ function SetEditor({
           </div>
         )}
       </div>
+      )}
 
       <div className="flex items-center gap-2">
         <span className="shrink-0 rounded-xl border border-(--ep-line)/25 bg-(--ep-s2)">

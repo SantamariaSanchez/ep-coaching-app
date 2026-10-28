@@ -6,29 +6,52 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { PREFERENCE_QUESTIONS, type MemberPreferences } from "@/lib/personalization";
 
-const QUESTIONS = PREFERENCE_QUESTIONS;
+// Question de parcours, posée seulement à qui ne débute pas : elle règle le
+// niveau de détail du suivi (lib/tracking-profile.ts). Aucune question
+// d'âge : le suivi dépend de l'expérience, jamais de l'âge.
+export type Parcours = "aucun" | "phases" | "competition";
+const PARCOURS_QUESTION = {
+  key: "parcours" as const,
+  title: "Tu as déjà fait une phase suivie de près ?",
+  options: [
+    { value: "aucun", label: "Non, pas vraiment" },
+    { value: "phases", label: "Oui, une prise de muscle ou un déficit suivis" },
+    { value: "competition", label: "Oui, une préparation de compétition (peak week)" },
+  ],
+};
 
 export default function PersonalizationQuiz({
   onComplete,
   onSkipAll,
   finishing,
 }: {
-  onComplete: (answers: Partial<MemberPreferences>) => void;
+  onComplete: (answers: Partial<MemberPreferences>, parcours?: Parcours) => void;
   onSkipAll: () => void;
   finishing: boolean;
 }) {
   const t = useT();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<MemberPreferences>>({});
+  const [parcours, setParcours] = useState<Parcours | undefined>(undefined);
 
+  // La question de parcours s'ajoute après l'expérience, sauf pour un débutant.
+  const withParcours = !!answers.experience_level && answers.experience_level !== "debutant";
+  const QUESTIONS: { key: string; title: string; options: { value: string; label: string }[] }[] = withParcours
+    ? [PREFERENCE_QUESTIONS[0], PARCOURS_QUESTION, ...PREFERENCE_QUESTIONS.slice(1)]
+    : [...PREFERENCE_QUESTIONS];
   const question = QUESTIONS[step];
   const isLast = step === QUESTIONS.length - 1;
 
   function select(value: string) {
+    if (question.key === "parcours") {
+      setParcours(value as Parcours);
+      setTimeout(() => setStep((s) => s + 1), 180);
+      return;
+    }
     const next = { ...answers, [question.key]: value };
     setAnswers(next);
     if (isLast) {
-      onComplete(next);
+      onComplete(next, parcours);
     } else {
       setTimeout(() => setStep((s) => s + 1), 180);
     }
@@ -121,7 +144,7 @@ export default function PersonalizationQuiz({
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {question.options.map((opt) => {
-                const selected = answers[question.key] === opt.value;
+                const selected = question.key === "parcours" ? parcours === opt.value : (answers as Record<string, string | undefined>)[question.key] === opt.value;
                 return (
                   <button
                     key={opt.value}

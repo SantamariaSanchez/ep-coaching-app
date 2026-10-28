@@ -112,8 +112,14 @@ export async function upsertDailyLog(
       }
     }
 
+    // Enregistrement automatique (bilan rapide) : chaque réponse part seule,
+    // sans points ni message au coach. Un dernier appel « autosave_done »
+    // (sans champ) signale que le bilan est complet et déclenche tout cela.
+    const silent = formData.get("autosave") === "1";
+    const doneOnly = formData.get("autosave_done") === "1";
+
     // Vérifié AVANT l'upsert (voir lib/first-action-celebration.ts).
-    const isFirstBilan = await isFirstEverAction(guard.userId, "daily_logs", "client_id");
+    let isFirstBilan = silent ? false : await isFirstEverAction(guard.userId, "daily_logs", "client_id");
 
     const { error } = await supabase.from("daily_logs").upsert(payload, { onConflict: "client_id,log_date" });
 
@@ -148,6 +154,16 @@ export async function upsertDailyLog(
         });
     }
 
+    if (silent) {
+      revalidatePath("/dashboard/client/nutrition");
+      return { success: true };
+    }
+    if (doneOnly) {
+      // Les réponses sont déjà enregistrées une à une : c'est le premier bilan
+      // si cette journée est la seule ligne de la personne.
+      const { count } = await supabase.from("daily_logs").select("log_date", { count: "exact", head: true }).eq("client_id", guard.userId);
+      isFirstBilan = (count ?? 0) <= 1;
+    }
     after(() => awardPoints(guard.userId, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date));
 
     // Encouragement immédiat au membre lui-même, uniquement la toute

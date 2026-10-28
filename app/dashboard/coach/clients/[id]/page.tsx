@@ -57,6 +57,9 @@ import { todayInParis as engagementTodayInParis } from "@/lib/dates";
 import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhaseSuggestions } from "@/lib/coaching-phase";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import ClientSetupCard from "@/components/coach/ClientSetupCard";
+import ClientTrackingCard from "@/components/coach/ClientTrackingCard";
+import { getTrackingProfile } from "@/lib/tracking-profile-server";
+import { describeTracking } from "@/lib/tracking-profile";
 import { loadPerformance } from "@/lib/performance-server";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { levelFromExperience } from "@/lib/plan-generator";
@@ -140,6 +143,7 @@ export default async function ClientDetailPage({
     roadmapRow,
     eatingRelation,
     memberPreferences,
+    trackingProfile,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -185,6 +189,7 @@ export default async function ClientDetailPage({
     createAdminClient().from("roadmaps").select("id").eq("client_id", id).maybeSingle(),
     getEatingRelation(id),
     getMemberPreferences(id),
+    getTrackingProfile(id),
   ]);
 
   const engagement = client.subscription_status === "active" ? await getEngagement(id) : null;
@@ -273,6 +278,17 @@ export default async function ClientDetailPage({
           checkinDay={(client.checkin_day as number | null) ?? null}
         />
       )}
+
+      <ClientTrackingCard
+        clientId={id}
+        level={trackingProfile.level}
+        autoLevel={trackingProfile.autoLevel}
+        source={trackingProfile.source}
+        reasons={trackingProfile.reasons}
+        safeguards={trackingProfile.safeguards}
+        summary={describeTracking(trackingProfile)}
+        suggestion={trackingProfile.suggestion}
+      />
 
       <ClientProfileTabs
         performance={performance}

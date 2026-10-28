@@ -73,7 +73,7 @@ import { inferLoadMode, isBodyweightMode } from "@/lib/training-styles";
 import { setExtra } from "@/components/client/session/strength";
 import { uploadSetVideo, normalizeVideoType, videoExtension, isProbablyVideo } from "@/lib/set-video-upload";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import ExerciseBlock from "@/components/client/session/ExerciseBlock";
+import ExerciseBlock, { EffortContext } from "@/components/client/session/ExerciseBlock";
 import RestBar from "@/components/client/session/RestBar";
 import SessionClock from "@/components/client/session/SessionClock";
 import { useTypingInSession } from "@/components/client/session/useTypingInSession";
@@ -842,9 +842,12 @@ function SliderInput({
 export default function SessionView({
   sessionId,
   returnPath = "/dashboard/client/logbook",
+  showEffort = true,
 }: {
   sessionId: string;
   returnPath?: string;
+  /** Faux au niveau de suivi Simple : pas de RIR ni de RPE à saisir. */
+  showEffort?: boolean;
 }) {
   const tr = useT();
   const router = useRouter();
@@ -2242,6 +2245,7 @@ export default function SessionView({
     const exState = exercises[exIdx];
     const isLast = isLastOfSuperset(groups, exIdx);
     return (
+      <EffortContext.Provider value={showEffort}>
       <ExerciseBlock
         key={exState.key}
         ex={exState}
@@ -2275,6 +2279,7 @@ export default function SessionView({
         onSendVideo={(setIdx) => void sendVideoToCoach(exState.key, exState.sets[setIdx].localId)}
         onPause={handlePause}
       />
+      </EffortContext.Provider>
     );
   };
 

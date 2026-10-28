@@ -24,6 +24,12 @@ export async function saveAppSetupAction(answers: Record<string, unknown>): Prom
   const modules = modulesFromAnswers(questions, clean);
   const now = new Date().toISOString();
   const admin = createAdminClient();
+  // Le niveau de suivi (choisi par la personne ou son coach) n'est pas une
+  // question du questionnaire : on le conserve.
+  const { data: existing } = await admin.from("user_app_setup").select("answers").eq("user_id", user.id).maybeSingle();
+  const prev = (existing?.answers as Record<string, unknown> | undefined) ?? {};
+  if (prev.tracking_level) clean.tracking_level = prev.tracking_level;
+  if (prev.tracking_level_by) clean.tracking_level_by = prev.tracking_level_by;
   const { error } = await admin
     .from("user_app_setup")
     .upsert({ user_id: user.id, answers: clean, modules, completed_at: now, updated_at: now }, { onConflict: "user_id" });

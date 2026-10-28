@@ -13,6 +13,8 @@ import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioni
 import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
 import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
 import { isMissingColumnError } from "@/lib/coach-ideation";
+import { getTrackingProfile } from "@/lib/tracking-profile-server";
+import { describeTracking, TRACKING_LEVEL_LABEL } from "@/lib/tracking-profile";
 import { YOUTUBE_TOOLS, youtubeToolsForRole, callYoutubeTool } from "@/lib/mcp-tools-youtube";
 
 type Role = "coach" | "client" | "staff";
@@ -66,6 +68,12 @@ export const EXTRA_TOOLS: ToolDef[] = [
     name: "mes_records",
     roles: ALL,
     description: "Records et dernières performances dans EP Coaching (course, Hyrox, CrossFit, force, rééducation, suivi santé) et les meilleures charges en musculation.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "mon_tracking",
+    roles: ALL,
+    description: "Niveau de suivi de la personne dans EP Coaching (Simple, Standard ou Avancé), pourquoi, et ce qui est suivi (poids, bilan du jour, alimentation, séances, photos, rappels). Déduit automatiquement du profil ; la personne le change en un tap dans l'appli.",
     inputSchema: { type: "object", properties: {} },
   },
   {
@@ -319,6 +327,14 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       return text(`${list.length} client(s)\n${lines.join("\n")}`);
     }
 
+    case "mon_tracking": {
+      const tp = await getTrackingProfile(ownerId);
+      const lines = [`Niveau de suivi : ${TRACKING_LEVEL_LABEL[tp.level]}${tp.source === "auto" ? " (déduit automatiquement)" : tp.source === "coach" ? " (fixé par le coach)" : " (choisi par la personne)"}`];
+      lines.push(...tp.reasons.map((r) => `- ${r}`), ...tp.safeguards.map((r) => `- Garde-fou : ${r}`), ...describeTracking(tp));
+      if (tp.suggestion) lines.push(`Suggestion : passer en ${TRACKING_LEVEL_LABEL[tp.suggestion.level]}. ${tp.suggestion.reason}`);
+      return text(lines.join("\n"));
+    }
+
     case "fiche_client": {
       const nom = String(args.nom ?? "").trim();
       const { data: clients } = await admin.from("profiles").select("id, full_name, email").eq("coach_id", ownerId).eq("role", "client").neq("id", ownerId).limit(300);
@@ -336,6 +352,9 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const w = (logs ?? []) as { log_date: string; weight_morning: number }[];
       if (w.length >= 2) lines.push(`Poids sur 4 semaines : ${fr(Number(w[0].weight_morning), 1)} kg (${w[0].log_date}) puis ${fr(Number(w[w.length - 1].weight_morning), 1)} kg (${w[w.length - 1].log_date})`);
       lines.push(`Séances terminées sur 14 jours : ${(sess ?? []).length}`);
+      // Niveau de suivi configuré automatiquement (suggestion, le coach ajuste dans la fiche).
+      const tp = await getTrackingProfile(found.id);
+      lines.push(`Tracking configuré automatiquement : ${TRACKING_LEVEL_LABEL[tp.level]}${tp.source === "coach" ? " (fixé par toi)" : tp.source === "client" ? " (choisi par le client)" : ""}. ${tp.reasons.slice(0, 3).join(" ; ")}${tp.suggestion ? `. Suggestion : ${tp.suggestion.reason}` : ""}`);
       // Engagement (6 mois par défaut) : mois en cours et appel bilan.
       const { data: eng } = await admin.from("client_engagements").select("start_date, end_date, duration_months, renewal_status").eq("client_id", found.id).maybeSingle();
       if (eng) {

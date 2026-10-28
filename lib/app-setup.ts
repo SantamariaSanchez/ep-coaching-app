@@ -159,6 +159,30 @@ export const MEMBER_QUESTIONS: SetupQuestion[] = [
     }),
   },
   {
+    key: "annees",
+    title: "Depuis combien de temps tu t'entraînes régulièrement ?",
+    subtitle: "Ça sert à choisir le bon niveau de suivi : plus léger si tu débutes, plus fin si tu as de l'expérience.",
+    multi: false,
+    options: [
+      { value: "jamais", label: "Pas encore, je débute" },
+      { value: "moins_1", label: "Moins d'un an" },
+      { value: "1_3", label: "1 à 3 ans" },
+      { value: "plus_3", label: "Plus de 3 ans" },
+    ],
+  },
+  {
+    key: "historique",
+    title: "Qu'as-tu déjà vécu et suivi de près ?",
+    subtitle: "Coche ce qui te correspond, ça règle le niveau de détail de ton suivi. Rien à cocher si ce n'est pas ton cas.",
+    multi: true,
+    options: [
+      { value: "prise_muscle", label: "Une phase de prise de muscle", hint: "Surplus calorique suivi" },
+      { value: "deficit", label: "Une phase de déficit", hint: "Perte de gras avec suivi" },
+      { value: "peak_week", label: "Une peak week" },
+      { value: "competition", label: "Une compétition" },
+    ],
+  },
+  {
     key: "corps",
     title: "Qu'est-ce que tu veux suivre sur ton corps ?",
     subtitle: "Coche tout ce qui t'intéresse, tu pourras changer plus tard.",

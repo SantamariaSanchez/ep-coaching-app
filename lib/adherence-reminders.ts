@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { alreadyNotifiedToday } from "@/utils/insert-notification";
 import { isOn, type AppSetup, type Modules } from "@/lib/app-setup";
+import { getTrackingProfiles } from "@/lib/tracking-profile-server";
+import { isWeighDay } from "@/lib/tracking-profile";
 
 // Rappels d'adhérence (2026-10-13, retour direct du fondateur : « des
 // rappels pour que le client adhère réellement, qu'il fasse ses bilans
@@ -85,6 +87,12 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
   const people = (profiles ?? []).filter((p) => p.role === "client" && !String(p.email ?? "").endsWith("@epcoaching.app"));
   if (!people.length) return sent;
 
+  // Heures, fréquence et jours de rappel propres à chaque personne (moteur de
+  // tracking) : un niveau Simple reçoit au plus un rappel, les jours de
+  // pesée seulement, à une heure qui suit son réveil ; jamais d'insistance.
+  const trackingOf = await getTrackingProfiles(people.map((p) => p.id as string));
+  const toMin = (hhmm: string | null | undefined, fallback: number) => (hhmm ? Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5)) : fallback);
+
   // Qui est concerné à cette heure-ci (la plupart des passages : personne).
   type Due = { id: string; clock: LocalClock; kinds: ("morning" | "evening" | "checkin" | "checkin_late")[]; coachId: string | null };
   const due: Due[] = [];
@@ -92,13 +100,19 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
     const clock = localClock(now, tzOf.get(p.id as string) ?? "Europe/Paris");
     const kinds: Due["kinds"] = [];
     const setup: AppSetup = { answers: {}, modules: modulesOf.get(p.id as string) ?? {}, completed: true };
-    if (inWindow(clock.minutes, MORNING_MIN) && (isOn(setup, "poids") || isOn(setup, "sommeil"))) kinds.push("morning");
-    if (inWindow(clock.minutes, EVENING_MIN)) kinds.push("evening");
+    const tp = trackingOf.get(p.id as string);
+    const morningAt = toMin(tp?.reminders.morning, MORNING_MIN);
+    const eveningAt = toMin(tp?.reminders.evening, EVENING_MIN);
     const day = p.checkin_day as number | null;
     if (p.coach_id && day) {
       if (clock.isoWeekday === day && inWindow(clock.minutes, CHECKIN_MIN)) kinds.push("checkin");
-      if (clock.isoWeekday === (day % 7) + 1 && inWindow(clock.minutes, MORNING_MIN)) kinds.push("checkin_late");
+      if (clock.isoWeekday === (day % 7) + 1 && inWindow(clock.minutes, morningAt)) kinds.push("checkin_late");
     }
+    const weighOk = !tp || !tp.reminders.weighDaysOnly || isWeighDay(tp, clock.isoWeekday);
+    if (tp?.reminders.morning !== null && weighOk && inWindow(clock.minutes, morningAt) && (isOn(setup, "poids") || isOn(setup, "sommeil"))) kinds.push("morning");
+    if ((!tp || tp.reminders.evening !== null) && inWindow(clock.minutes, eveningAt)) kinds.push("evening");
+    // Jamais plus de rappels par jour que le niveau de suivi le permet.
+    if (tp && kinds.length > tp.reminders.maxPerDay) kinds.splice(tp.reminders.maxPerDay);
     if (kinds.length) due.push({ id: p.id as string, clock, kinds, coachId: (p.coach_id as string | null) ?? null });
   }
   if (!due.length) return sent;
@@ -120,7 +134,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
         await notifyUser(d.id, {
           type: "daily_bilan_reminder_morning",
           title: "☀️ Ton bilan du matin",
-          body: "Poids et sommeil, 20 secondes. C'est ce qui permet d'ajuster ta diète au bon moment.",
+          body: trackingOf.get(d.id)?.level === "simple" ? "Ta pesée du jour, 10 secondes. Ta tendance se construit pas à pas." : "Poids et sommeil, 20 secondes. C'est ce qui permet d'ajuster ta diète au bon moment.",
           url: "/dashboard/client",
         }).catch(() => {});
         sent.morning += 1;

@@ -5,6 +5,10 @@ import { getAppSetup } from "@/lib/app-setup-server";
 import { defaultAnswers } from "@/lib/app-setup-defaults";
 import { getClientIntake } from "@/utils/client-intake";
 import AppSetupWizard from "@/components/setup/AppSetupWizard";
+import TrackingLevelPicker from "@/components/tracking/TrackingLevelPicker";
+import { getTrackingProfile } from "@/lib/tracking-profile-server";
+import { describeTracking } from "@/lib/tracking-profile";
+import { setTrackingLevelAction } from "@/app/actions/tracking";
 import BackLink from "@/components/ui/BackLink";
 
 export const dynamic = "force-dynamic";
@@ -16,10 +20,11 @@ export default async function ClientAppSetupPage() {
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/mon-appli");
-  const [setup, intake, coachSetup] = await Promise.all([
+  const [setup, intake, coachSetup, tracking] = await Promise.all([
     getAppSetup(user.id),
     getClientIntake(user.id),
     profile?.coach_id ? getAppSetup(profile.coach_id) : Promise.resolve(null),
+    getTrackingProfile(user.id),
   ]);
   const coachNiches = Array.isArray(coachSetup?.answers?.niches) ? (coachSetup.answers.niches as string[]) : [];
   const initial = defaultAnswers(setup, { role: "client", isWoman: intake?.gender === "Femme", coachNiches });
@@ -30,6 +35,9 @@ export default async function ClientAppSetupPage() {
       <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 18px", lineHeight: 1.6 }}>
         {t("Dis-nous ce que tu veux suivre : ton menu et ton bilan ne garderont que ça. Tu peux changer à tout moment.")}
       </p>
+      <div style={{ marginBottom: 14 }}>
+        <TrackingLevelPicker level={tracking.level} autoLevel={tracking.autoLevel} source={tracking.source} reasons={tracking.reasons} summary={describeTracking(tracking)} suggestion={tracking.suggestion} onPick={setTrackingLevelAction} />
+      </div>
       <AppSetupWizard role="client" initialAnswers={initial} doneHref="/dashboard/client" />
     </div>
   );

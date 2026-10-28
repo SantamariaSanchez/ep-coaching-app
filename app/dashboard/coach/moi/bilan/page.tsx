@@ -10,6 +10,13 @@ import { getAppSetup } from "@/lib/app-setup-server";
 import { isWithinBilanBackfillWindow } from "@/lib/dates";
 import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
+import QuickBilan from "@/components/tracking/QuickBilan";
+import TrackingLevelPicker from "@/components/tracking/TrackingLevelPicker";
+import Link from "next/link";
+import { getTrackingProfile } from "@/lib/tracking-profile-server";
+import { bilanLayout, describeTracking, isWeighDay, nextWeighDayLabel } from "@/lib/tracking-profile";
+import { setTrackingLevelAction } from "@/app/actions/tracking";
+import { nowInParis } from "@/lib/dates";
 import BilanProgressView from "@/components/ui/BilanProgressView";
 import { upsertCoachDailyLog } from "./actions";
 import { todayInParis } from "@/lib/dates";
@@ -21,7 +28,7 @@ function fmt(d: string) {
   return capitalize(new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(d + "T12:00:00")));
 }
 
-export default async function CoachMonBilanPage({ searchParams }: { searchParams: Promise<{ jour?: string }> }) {
+export default async function CoachMonBilanPage({ searchParams }: { searchParams: Promise<{ jour?: string; complet?: string }> }) {
   const t = await getT();
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
@@ -37,14 +44,15 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
   const today = todayInParis();
   // Bilan d'un jour passé (?jour=AAAA-MM-JJ, 30 jours max) : rattraper un
   // oubli avec exactement le même formulaire.
-  const { jour } = await searchParams;
+  const { jour, complet } = await searchParams;
   const date = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && isWithinBilanBackfillWindow(jour) ? jour : today;
-  const [allLogs, dayFoodLogs, autoSteps, activePlan, appSetup] = await Promise.all([
+  const [allLogs, dayFoodLogs, autoSteps, activePlan, appSetup, tracking] = await Promise.all([
     getClientDailyLogs(user.id, 90),
     getTodayLogs(user.id, date),
     date === today ? getTodayStepsActual(user.id) : Promise.resolve(null),
     getActiveDietPlan(user.id),
     getAppSetup(user.id),
+    getTrackingProfile(user.id),
   ]);
   const todayLog = allLogs.find((l) => l.log_date === date) ?? null;
   const todayFoodLogs = dayFoodLogs;
@@ -66,6 +74,11 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
       )
     : null;
 
+  const layout = bilanLayout(tracking, appSetup.modules);
+  const { isoDow } = nowInParis();
+  const lastWeight = allLogs.find((l) => l.log_date < date && l.weight_morning != null)?.weight_morning ?? null;
+  const lastSleep = allLogs.find((l) => l.log_date < date && l.sleep_hours != null)?.sleep_hours ?? null;
+
   return (
     <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
@@ -75,8 +88,28 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
 
       <BilanDayPicker basePath="/dashboard/coach/moi/bilan" today={today} selected={date} logs={allLogs} />
 
+      {complet !== "1" ? (
+        <div className="animate-scale-in" style={{ marginBottom: 14 }}>
+          <QuickBilan
+            key={date} today={date} existing={todayLog} action={upsertCoachDailyLog}
+            fields={layout.fields} extraFields={layout.extraFields} minimum={layout.minimum}
+            isWeighDay={date !== today || isWeighDay(tracking, isoDow)} nextWeighLabel={nextWeighDayLabel(tracking, isoDow)}
+            lastWeight={lastWeight} lastSleep={lastSleep} autoSteps={autoSteps} hasPlan={!!activePlan}
+            trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`}
+            tone={tracking.tone} allowQuick={tracking.level !== "simple"}
+          />
+          <p style={{ margin: "10px 2px 0", fontSize: 12 }}>
+            <Link href={date === today ? "?complet=1" : `?jour=${date}&complet=1`} style={{ color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 700 }}>{t("Formulaire complet")}</Link>
+          </p>
+        </div>
+      ) : (
       <div className="ep-card animate-scale-in" style={{ padding: "20px 16px", marginBottom: 32 }}>
         <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertCoachDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`} setup={appSetup} />
+      </div>
+      )}
+
+      <div style={{ marginBottom: 28 }}>
+        <TrackingLevelPicker level={tracking.level} autoLevel={tracking.autoLevel} source={tracking.source} reasons={tracking.reasons} summary={describeTracking(tracking)} suggestion={tracking.suggestion} onPick={setTrackingLevelAction} compact />
       </div>
 
       <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />

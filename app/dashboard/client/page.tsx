@@ -18,6 +18,8 @@ import { getClientActivityStreak } from "@/lib/client-activity";
 import { getClientHomeDay } from "@/utils/client-home";
 import { weeksSince } from "@/lib/client-home";
 import { todayInParis } from "@/lib/dates";
+import { getHomeQuickData } from "@/lib/tracking-home-server";
+import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import { CoachedHome, WelcomeGuide } from "@/components/client/home/ClientHome";
 
 // Le rendu de l'accueil vit dans components/client/home/ClientHome.tsx
@@ -58,10 +60,13 @@ export default async function ClientDashboard({
       // Membre gratuit : pas de messages, tâches ni check-in du coach.
       getClientHomeDay(user.id, { coached: false, checkinDone: true }),
     ]);
+    const quick = await getHomeQuickData(user.id, appSetup);
     return (
       <>
         <PushPermission userId={user.id} />
         <WelcomeGuide
+          quick={quick}
+          quickAction={upsertDailyLog}
           firstName={profile?.full_name?.split(" ")[0] ?? ""}
           hasCoach={!!profile?.coach_id}
           personalization={derivePersonalization(preferences)}
@@ -124,10 +129,13 @@ export default async function ClientDashboard({
     weeks < 4 ? getOnboardingChecklist(user.id) : Promise.resolve([]),
   ]);
 
+  const quick = await getHomeQuickData(user.id, appSetup);
   return (
     <>
       <PushPermission userId={user.id} />
       <CoachedHome
+        quick={quick}
+        quickAction={upsertDailyLog}
         profile={profile}
         thisWeekCheckin={thisWeekCheckin}
         latestNote={latestNote}

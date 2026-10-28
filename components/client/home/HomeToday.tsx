@@ -444,14 +444,27 @@ function Meter({ value, max, color, height = 5 }: { value: number; max: number; 
   );
 }
 
-export async function NutritionMini({ day, coached = false }: { day: HomeDayData; coached?: boolean }) {
+export async function NutritionMini({ day, coached = false, habits = false }: { day: HomeDayData; coached?: boolean; habits?: boolean }) {
   const t = await getT();
   const n = day.nutrition;
   const href = n.next ? `${C}/nutrition?repas=${n.next.slot}` : `${C}/nutrition`;
   return (
     <Link href={href} className="ep-card" style={{ padding: 14, display: "flex", flexDirection: "column", minWidth: 0, textDecoration: "none" }}>
       <MiniHead icon={Apple} label={t("Nutrition")} color="var(--ep-warn)" />
-      {n.target ? (
+      {habits && n.hasPlan ? (
+        <>
+          <p style={{ ...miniTitle, whiteSpace: "normal" }}>{n.next ? t("Prochain repas") : t("Repas du jour")}</p>
+          <p style={{ ...miniMeta, marginTop: "auto", paddingTop: 10 }}>
+            {n.next ? (
+              <>
+                {n.next.when === "late" ? t("À cocher") : n.next.when === "now" ? t("Maintenant") : t("Prochain")} : <b style={{ color: "rgba(var(--ep-ink-rgb),0.8)" }}>{t(n.next.label)}</b> · {n.next.time}
+              </>
+            ) : (
+              <span style={{ color: "var(--ep-ok)", fontWeight: 800 }}>{t("Tous les repas sont cochés")}</span>
+            )}
+          </p>
+        </>
+      ) : n.target ? (
         <>
           <p style={{ margin: 0, fontSize: 17, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--ep-ink)", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
             {fmt(n.eaten.kcal)}

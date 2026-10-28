@@ -11,6 +11,9 @@ import { reorderByPriority, type derivePersonalization } from "@/lib/personaliza
 import type { OnboardingChecklistItem } from "@/lib/onboarding-checklist";
 import { visibleTodos, type HomeDayData } from "@/lib/client-home";
 import StagnationBanner from "@/components/client/StagnationBanner";
+import HomeQuickBilan from "@/components/tracking/HomeQuickBilan";
+import type { HomeQuickData } from "@/lib/tracking-home-server";
+import type { QuickAction } from "@/components/tracking/QuickBilan";
 import { HomeAutoRefresh, HomeHeaderTools } from "@/components/client/home/HomeClient";
 import { HomeHeader, NowCard, NutritionMini, Shortcuts, TodayPair, TodoList, TrainingMini } from "@/components/client/home/HomeToday";
 import {
@@ -368,7 +371,11 @@ export async function WelcomeGuide({
   day,
   locale,
   preview = false,
+  quick = null,
+  quickAction,
 }: {
+  quick?: HomeQuickData | null;
+  quickAction?: QuickAction;
   firstName: string;
   hasCoach: boolean;
   personalization: ReturnType<typeof derivePersonalization>;
@@ -407,13 +414,14 @@ export async function WelcomeGuide({
       {hasStarted ? (
         <div className="ep-cols-main">
           <div style={{ minWidth: 0 }}>
+            {quick && quickAction && !preview && <HomeQuick quick={quick} action={quickAction} />}
             <NowCard day={day} />
           </div>
           <div style={{ minWidth: 0 }}>
             {(show.entrainement || show.nutrition) && (
               <TodayPair>
                 {show.entrainement && <TrainingMini day={day} coached={false} />}
-                {show.nutrition && <NutritionMini day={day} />}
+                {show.nutrition && <NutritionMini day={day} habits={!!quick?.nutritionHabits} />}
               </TodayPair>
             )}
             <TodoList todos={visibleTodos(day)} />
@@ -539,6 +547,27 @@ async function ProgressRow({ start, current, goal }: { start: number | null; cur
   );
 }
 
+function HomeQuick({ quick, action }: { quick: HomeQuickData; action: QuickAction }) {
+  return (
+    <HomeQuickBilan
+      today={quick.today}
+      existing={quick.existing}
+      action={action}
+      fields={quick.fields}
+      extraFields={[]}
+      minimum={quick.minimum}
+      isWeighDay={quick.isWeighDay}
+      nextWeighLabel={quick.nextWeighLabel}
+      lastWeight={quick.lastWeight}
+      lastSleep={quick.lastSleep}
+      autoSteps={quick.autoSteps}
+      tone={quick.tone}
+      doneAtLoad={quick.doneAtLoad}
+      summary={quick.summary}
+    />
+  );
+}
+
 // ── Client accompagné ───────────────────────────────────────────────────────
 
 export async function CoachedHome({
@@ -552,7 +581,12 @@ export async function CoachedHome({
   day,
   checklist = [],
   preview = false,
+  quick = null,
+  quickAction,
 }: {
+  /** Saisie rapide du jour (moteur de tracking), absente en aperçu coach. */
+  quick?: HomeQuickData | null;
+  quickAction?: QuickAction;
   profile: Profile | null;
   thisWeekCheckin: CheckIn | null;
   latestNote: CoachNote | null;
@@ -604,6 +638,7 @@ export async function CoachedHome({
           droite. Téléphone : dans l'ordre de lecture. */}
       <div className="ep-cols-main">
         <div style={{ minWidth: 0 }}>
+          {quick && quickAction && !preview && <HomeQuick quick={quick} action={quickAction} />}
           <NowCard day={day} />
           {latestNote && <div className="hidden min-[1000px]:block"><CoachNoteMini note={latestNote} /></div>}
         </div>
@@ -611,7 +646,7 @@ export async function CoachedHome({
           {(showTraining || showNutrition) && (
             <TodayPair>
               {showTraining && <TrainingMini day={day} coached />}
-              {showNutrition && <NutritionMini day={day} coached />}
+              {showNutrition && <NutritionMini day={day} coached habits={!!quick?.nutritionHabits} />}
             </TodayPair>
           )}
           <TodoList todos={visibleTodos(day)} />

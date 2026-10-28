@@ -3,6 +3,7 @@ import { todayInParis } from "@/lib/dates";
 import { MEAL_SLOT_TIMES, MEAL_SLOT_LABELS, timeToMinutes, parisNow } from "@/lib/meal-slots";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { isOn } from "@/lib/app-setup";
+import { getTrackingProfile } from "@/lib/tracking-profile-server";
 
 // Bilan en 2 temps + repas obligatoires (demande explicite, 2026-08-15) :
 // tant que le bilan du matin (poids + sommeil) n'est pas fait, ou qu'un
@@ -114,7 +115,7 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
     const supabase = await createServerSupabase();
     const today = todayInParis();
 
-    const [logRes, profileRes, setup] = await Promise.all([
+    const [logRes, profileRes, setup, tracking] = await Promise.all([
       supabase
         .from("daily_logs")
         .select("weight_morning, sleep_hours, sleep_rating, steps, digestion, stress, hunger")
@@ -123,6 +124,10 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
         .maybeSingle(),
       supabase.from("profiles").select("target_bedtime").eq("id", userId).maybeSingle(),
       getAppSetup(userId),
+      // Moteur de tracking : le verrou ne bloque que ceux pour qui c'est utile
+      // (niveau Avancé, ou Standard avec pesée quotidienne). Un niveau Simple
+      // n'est jamais bloqué.
+      getTrackingProfile(userId),
     ]);
     // Personnalisation "Mon appli" : on n'exige que les champs choisis.
     const on = (k: Parameters<typeof isOn>[1]) => isOn(setup, k);
@@ -131,13 +136,17 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
 
     // Matin : poids + sommeil, priorité absolue sur tout le reste — voir
     // components/ui/DailyBilanForm.tsx (carte SleepCard).
-    const morningNeeded = on("poids") || on("sommeil");
+    // Seule la durée du sommeil est exigée (jamais la note de qualité), et
+    // seulement au niveau Avancé.
+    const needWeight = tracking.gate.morning && on("poids");
+    const needSleep = tracking.level === "avance" && tracking.gate.morning && on("sommeil") && tracking.bilan.sleep !== "off";
+    const morningNeeded = needWeight || needSleep;
     const morningDone =
       !morningNeeded ||
-      (!!log && (!on("poids") || log.weight_morning != null) && (!on("sommeil") || (log.sleep_hours != null && log.sleep_rating != null)));
+      (!!log && (!needWeight || log.weight_morning != null) && (!needSleep || log.sleep_hours != null));
     if (!morningDone) return { active: "morning" };
 
-    const pendingMeal = on("nutrition") ? await getPendingMeal(supabase, userId, today) : null;
+    const pendingMeal = on("nutrition") && tracking.gate.meal ? await getPendingMeal(supabase, userId, today) : null;
     if (pendingMeal) return { active: "meal", pendingMeal };
 
     const targetBedtime = (profileRes.data?.target_bedtime as string | null | undefined) || DEFAULT_BEDTIME;
@@ -147,7 +156,7 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
     // Ne gère volontairement pas un coucher visé après minuit (cas rare,
     // non demandé) ni la période entre minuit et le réveil — le bilan du
     // matin du lendemain reprend la main dès l'ouverture suivante.
-    const eveningDue = dueAt >= 0 && nowMinutes >= dueAt;
+    const eveningDue = tracking.gate.evening && dueAt >= 0 && nowMinutes >= dueAt;
     if (eveningDue) {
       const eveningNeeded = on("pas") || on("digestion") || on("stress") || on("faim");
       const eveningDone =
