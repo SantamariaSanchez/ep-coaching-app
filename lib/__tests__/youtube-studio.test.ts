@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   analyzeYoutubeScript, buildVideoBlueprint, buildYoutubeDescription, checkDescription, cleanVideoPlan, clipHooks,
-  deriveClips, extractChapters, formatChapters, generateTitles, scoreTitle, thumbnailIdeas, thumbnailTextOptions, YT_STRUCTURES, CLIP_CTA,
+  deriveClips, generateTitles, scoreTitle, thumbnailIdeas, thumbnailTextOptions, YT_STRUCTURES, CLIP_CTA,
 } from "../youtube-studio";
 
 const filler = (n: number, seed = "mot") => Array.from({ length: n }, (_, i) => `${seed}${i % 7}`).join(" ");
@@ -56,22 +56,21 @@ test("plan : la chronologie couvre toute la vidéo avec des relances espacées",
   assert.equal(bp.segments.at(-1)!.endSec, 720);
   const relances = bp.beats.filter((b) => b.kind === "relance");
   for (let i = 1; i < relances.length; i++) assert.ok(relances[i].atSec - relances[i - 1].atSec <= 180);
-  assert.ok(bp.chapters.length >= 3);
+  assert.equal((bp as unknown as Record<string, unknown>).chapters, undefined);
 });
 
-test("chapitres : intro, parties annoncées, récap, horodatés par les mots", () => {
-  const ch = extractChapters(script(), 720);
-  assert.equal(ch[0].startSec, 0);
-  assert.ok(ch.length >= 5);
-  assert.ok(ch.every((c, i) => i === 0 || c.startSec > ch[i - 1].startSec));
-  assert.match(formatChapters(ch), /^00:00 Intro/);
-  assert.deepEqual(extractChapters("trop court", 100), []);
+test("aucun chapitre ni timecode dans le module (décision d'Emmanuel)", async () => {
+  const mod = (await import("../youtube-studio")) as Record<string, unknown>;
+  assert.equal(mod.extractChapters, undefined);
+  assert.equal(mod.formatChapters, undefined);
+  assert.ok(!YT_STRUCTURES.some((s) => ["Y17", "Y18", "Y19"].includes(s.id)));
+  assert.equal(YT_STRUCTURES.length, 16);
 });
 
 test("analyse : script conforme sans alerte de rétention", () => {
   const a = analyzeYoutubeScript({ content: script(), durationSec: 720 });
   for (const id of ["hook_open", "promise", "loop_open", "resource_mid", "recap", "end_asks"]) assert.equal(a.checks.find((c) => c.id === id)!.ok, true, id);
-  assert.ok(a.score >= 60);
+  assert.ok(a.passed >= a.total - 3);
 });
 
 test("analyse : repère ouverture générique, vouvoiement, tiret et chapitre écrit", () => {
@@ -93,8 +92,7 @@ test("description : modèle d'Emmanuel, conforme au contrôle", () => {
   assert.ok(checkDescription(d).every((c) => c.ok), JSON.stringify(checkDescription(d).filter((c) => !c.ok)));
   assert.ok(d.startsWith("Je t'ai préparé"));
   assert.ok(!/00:00/.test(d));
-  const withCh = buildYoutubeDescription({ guideSlug: "x", falseProblem: "a", trueProblem: "b", promise: "c", rule: "r", question: "q ?", themes: "t", hashtags: ["a", "b", "c"], chapters: extractChapters(script(), 720) });
-  assert.match(withCh, /00:00 Intro/);
+  assert.equal(checkDescription(d + "\n\n00:00 Intro\n01:10 Partie 1").find((c) => c.id === "forbidden")!.ok, false);
 });
 
 test("clips : passages courts, 4 titres hook, CTA exact", () => {
@@ -111,5 +109,5 @@ test("clips : passages courts, 4 titres hook, CTA exact", () => {
 test("plan enregistré : valeurs inconnues écartées", () => {
   const p = cleanVideoPlan({ structure: "Y03", hookType: "ZZ", hookId: "H12", titles: ["a", 3], checklist: { titre_choisi: true, inconnu: true } });
   assert.deepEqual(p, { structure: "Y03", hookId: "H12", titles: ["a"], checklist: { titre_choisi: true } });
-  assert.equal(YT_STRUCTURES.length, 19);
+  assert.equal(YT_STRUCTURES.length, 16);
 });

@@ -6,7 +6,7 @@ import { fuzzyScore } from "@/lib/fuzzy-search";
 import { isMissingColumnError } from "@/lib/coach-ideation";
 import {
   HOOK_TYPES, TITLE_ANGLES, YT_STRUCTURES, analyzeYoutubeScript, blueprintToText, buildVideoBlueprint, checkDescription,
-  cleanVideoPlan, deriveClips, fmtTime, formatChapters, generateTitles, getYtStructure, journalRow, scoreTitle, thumbnailIdeas,
+  cleanVideoPlan, deriveClips, fmtTime, generateTitles, getYtStructure, journalRow, scoreTitle, thumbnailIdeas,
   type TitleInput,
 } from "@/lib/youtube-studio";
 
@@ -40,7 +40,7 @@ export const YOUTUBE_TOOLS: ToolDef[] = [
   {
     name: "structure_video_youtube",
     roles: ["coach"],
-    description: "Plan d'une vidéo YouTube longue : chronologie (hook 0-30 s, promesse, plan, parties, récap, demandes de fin), nombre de mots, relances toutes les 2 à 3 minutes, boucle ouverte, rappel de la ressource, plan de chapitres horodatés (pour le montage, jamais dans le texte parlé). Renvoie aussi les 16 structures Y01 à Y16 et les types de hook pour en choisir une différente des dernières vidéos.",
+    description: "Plan d'une vidéo YouTube longue : chronologie (hook 0-30 s, promesse, plan, parties, récap, demandes de fin), nombre de mots, relances toutes les 2 à 3 minutes, boucle ouverte, rappel de la ressource. Jamais de chapitres ni de timecodes. Renvoie aussi les 16 structures Y01 à Y16 et les types de hook pour en choisir une différente des dernières vidéos.",
     inputSchema: {
       type: "object",
       properties: {
@@ -59,7 +59,7 @@ export const YOUTUBE_TOOLS: ToolDef[] = [
   {
     name: "analyser_script_youtube",
     roles: ["coach"],
-    description: "Audit d'un script YouTube du Studio : score de rétention et de structure (hook, promesse, plan, boucle ouverte, relances, rappel de la ressource, récap, fin), règles de marque, chapitres horodatés estimés et contrôle de la description. Lis-le avant de réécrire un script, puis corrige ce qui échoue.",
+    description: "Audit d'un script YouTube du Studio : points de relecture (ouverture, promesse, plan annoncé, boucle ouverte, relances, rappel de la ressource, récap, fin), règles de marque et contrôle de la description. Lis-le avant de réécrire un script, puis corrige ce qui échoue.",
     inputSchema: { type: "object", properties: { script: SCRIPT_REF }, required: ["script"] },
   },
   {
@@ -120,7 +120,7 @@ export async function callYoutubeTool(ownerId: string, role: Role, name: string,
       const titre = str(args.titre, 200);
       if (titre) {
         const s = scoreTitle(titre);
-        return text([`« ${titre} » : ${s.score}/100`, ...s.criteria.map((c) => `- ${c.ok ? "ok" : "à corriger"} · ${c.label}${c.ok || !c.hint ? "" : ` : ${c.hint}`}`)].join("\n"));
+        return text([`« ${titre} » : ${s.passed}/${s.total} critères tenus`, ...s.criteria.map((c) => `- ${c.ok ? "ok" : "à corriger"} · ${c.label}${c.ok || !c.hint ? "" : ` : ${c.hint}`}`)].join("\n"));
       }
       const input: TitleInput = {
         subject: str(args.sujet, 120), pain: str(args.douleur, 160), result: str(args.resultat, 120), mistake: str(args.erreur, 120),
@@ -130,7 +130,7 @@ export async function callYoutubeTool(ownerId: string, role: Role, name: string,
       const list = generateTitles(input);
       if (!list.length) return text("Donne au moins un élément : sujet, douleur, résultat, erreur, idée reçue ou public.");
       const angle = (id: string) => TITLE_ANGLES.find((a) => a.id === id)?.label ?? id;
-      return text(["Titres candidats (note sur 100, moins de 60 caractères). Relis-les : ce sont des gabarits à ajuster avec les mots du coach, la promesse doit être tenue dans la vidéo.", ...list.map((c) => `- [${angle(c.angle)}] ${c.text} (${c.score}/100)`)].join("\n"));
+      return text(["Titres candidats (moins de 60 caractères). Relis-les : ce sont des gabarits à ajuster avec les mots du coach, la promesse doit être tenue dans la vidéo.", ...list.map((c) => `- [${angle(c.angle)}] ${c.text}`)].join("\n"));
     }
 
     case "structure_video_youtube": {
@@ -161,10 +161,9 @@ export async function callYoutubeTool(ownerId: string, role: Role, name: string,
       const a = analyzeYoutubeScript({ content: script.content, durationSec: script.duration_seconds });
       const desc = checkDescription(script.instagram_caption).filter((d) => !d.ok);
       return text([
-        `« ${script.title} » : ${a.score}/100 · ${a.words} mots · ${a.minutes} min · plus longue durée sans relance ${fmtTime(a.longestGapSec)}`,
+        `« ${script.title} » : ${a.passed}/${a.total} points tenus · ${a.words} mots · ${a.minutes} min · plus longue durée sans relance ${fmtTime(a.longestGapSec)}`,
         ...a.checks.map((c) => `- ${c.ok ? "ok" : "À CORRIGER"} · ${c.label}${c.ok || !c.detail ? "" : ` : ${c.detail}`}`),
         "",
-        a.chapters.length ? `CHAPITRES ESTIMÉS (montage)\n${formatChapters(a.chapters)}` : "Chapitres : annonce les parties à l'oral (« premier point », « deuxième point ») pour les obtenir.",
         desc.length ? `\nDESCRIPTION À CORRIGER\n${desc.map((d) => `- ${d.text}`).join("\n")}` : "\nDescription conforme au modèle.",
       ].join("\n"));
     }

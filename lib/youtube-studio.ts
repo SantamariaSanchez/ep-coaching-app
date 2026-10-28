@@ -1,15 +1,15 @@
-// Studio YouTube (2026-10-28). Tout ce qui fait une vidéo longue qui retient :
-// structure (hook 0-30 s, promesse, plan, boucles ouvertes, relances,
-// rappel de la ressource, récap, demandes de fin), titres notés, description
-// au format d'Emmanuel, idées de miniatures A/B, chapitres horodatés (plan de
-// production), clips pour les reels et checklist de publication et de
-// recyclage.
+// Studio YouTube. Ce qui aide à faire une vidéo longue qui retient :
+// structure (question ou douleur d'entrée, promesse, parties annoncées à
+// l'oral, récap, demandes de fin), titres, description au format d'Emmanuel,
+// idées de miniatures A/B, clips pour les reels et checklist de publication.
+// JAMAIS de chapitres ni de timecodes : les vrais scripts de référence n'en
+// ont pas (décision d'Emmanuel, 2026-10-28).
 //
 // Sources : Centre de commandes contenu (structures Y01 à Y16, banque de hooks
-// H01 à H92, modèle de description A4), Bible contenu (D1, F : relances et
-// transitions), guides de production YouTube, titres et miniatures, et les
-// transcripts de référence (Yomi Denzel, Marvin Ndiaye, ThePrepDad, Hormozi).
-// Aucune source n'est jamais affichée à un client.
+// H01 à H92, modèle de description A4), Dictionnaire EP Coaching, et les
+// transcripts de référence lus en entier ou en partie (voir la page Notion
+// « Ce que j'ai appris des transcripts »). Aucune source n'est jamais affichée
+// à un client.
 //
 // Module pur, sans import serveur : utilisable côté client, serveur et dans le
 // connecteur Claude. Testé dans lib/__tests__/youtube-studio.test.ts.
@@ -43,14 +43,11 @@ export const YT_STRUCTURES: YtStructure[] = [
   { id: "Y09", name: "Histoire vraie et mécanisme", steps: ["Histoire publique datée et vérifiée", "Le mécanisme qu'elle montre", "Comment l'appliquer à ton physique"], bestFor: "Une leçon qui se raconte. Jamais d'histoire inventée." },
   { id: "Y10", name: "Deux situations", steps: ["Les deux extrêmes", "À ton avis, lequel progresse le plus ?", "Le milieu qui marche"], bestFor: "Comparer deux façons de faire." },
   { id: "Y11", name: "Étape par étape de zéro", steps: ["Situation de départ", "Je construis devant toi", "Étapes numérotées", "Plan complet"], bestFor: "Un plan complet à faire de A à Z." },
-  { id: "Y12", name: "La méthode nommée", steps: ["Le nom de la méthode (Trajectoire)", "Une partie par phase", "Ce qu'on y fait", "Comment savoir qu'on en sort"], bestFor: "Expliquer le cycle prise de muscle, perte de gras, maintenance." },
+  { id: "Y12", name: "La méthode nommée", steps: ["Le nom de la méthode (Road map)", "Une partie par phase", "Ce qu'on y fait", "Comment savoir qu'on en sort"], bestFor: "Expliquer le cycle prise de muscle, perte de gras, maintenance." },
   { id: "Y13", name: "La contrainte principale", steps: ["Il y a que 3 raisons pour lesquelles...", "Le test pour trouver la tienne", "La solution pour chaque cas"], bestFor: "Un blocage (stagnation, motivation, ventre qui ne part pas) avec peu de causes." },
   { id: "Y14", name: "Copier ce qui marche ailleurs", steps: ["Ce que font ceux qui progressent", "Ce que tu peux copier dès demain"], bestFor: "Un sujet de méthode et d'organisation." },
   { id: "Y15", name: "Une semaine de prépa", steps: ["La vraie semaine d'Emmanuel", "Chaque scène donne une leçon"], bestFor: "Preuve par l'exécution. Vécu documenté uniquement." },
   { id: "Y16", name: "Classement des conseils des réseaux", steps: ["Les conseils qu'on voit partout", "Notés sur 5 (utile, simple, durable)", "Le meilleur à la fin"], bestFor: "Trier les conseils viraux." },
-  { id: "Y17", name: "Diagnostic : N causes et l'ordre pour agir", steps: ["Le symptôme que le spectateur vit", "N causes annoncées (pas plus)", "Pour chaque cause : comment la vérifier et que faire", "Dans quel ordre agir, sans tout changer"], bestFor: "Un blocage (stagnation, poids qui ne bouge plus) où il faut vérifier avant de corriger." },
-  { id: "Y18", name: "Un calcul, puis la correction", steps: ["Le chiffre que le spectateur croit", "Le calcul à voix haute (« regarde bien ce calcul »)", "Le verdict qui pique", "La correction concrète", "Comment suivre"], bestFor: "Quand un calcul simple montre l'écart entre ce qu'on croit et la réalité." },
-  { id: "Y19", name: "Le plan en étapes, avec plan B", steps: ["Le principe", "Les repères chiffrés", "Les étapes numérotées à faire sur papier", "Le plan B quand la semaine explose", "Récap et devoir"], bestFor: "Un plan à écrire et à appliquer pendant ou juste après la vidéo." },
 ];
 
 export function getYtStructure(id: string | null | undefined): YtStructure | null {
@@ -111,7 +108,11 @@ export interface TitleCriterion {
 }
 
 export interface TitleScore {
+  /** Valeur interne pour trier les candidats, jamais affichée comme une note. */
   score: number;
+  /** Critères tenus sur critères évalués (ce qu'on montre au coach). */
+  passed: number;
+  total: number;
   criteria: TitleCriterion[];
 }
 
@@ -124,7 +125,7 @@ function chars(s: string): number {
   return Array.from(s.trim()).length;
 }
 
-/** Note un titre sur 100 selon les critères observés dans les transcripts de référence. */
+/** Vérifie un titre contre les critères du guide titres. */
 export function scoreTitle(raw: string): TitleScore {
   const title = (raw ?? "").trim();
   const len = chars(title);
@@ -144,7 +145,8 @@ export function scoreTitle(raw: string): TitleScore {
   let score = criteria.reduce((n, c) => n + c.points, 0);
   const clean = criteria.find((c) => c.id === "clean");
   if (clean && !clean.ok) score = Math.max(0, score - 15);
-  return { score: Math.min(100, score), criteria };
+  const evaluated = criteria;
+  return { score: Math.min(100, score), passed: evaluated.filter((c) => c.ok).length, total: evaluated.length, criteria };
 }
 
 export interface TitleCandidate {
@@ -367,7 +369,6 @@ export interface VideoBlueprint {
   totalWords: number;
   segments: BlueprintSegment[];
   beats: RetentionBeat[];
-  chapters: Chapter[];
 }
 
 export function fmtTime(sec: number): string {
@@ -439,20 +440,10 @@ export function buildVideoBlueprint(input: { durationMin?: number; parts?: numbe
   beats.push({ atSec: bodyEnd, kind: "recap", idea: "Récap et phrase règle." });
   beats.sort((a, b) => a.atSec - b.atSec);
 
-  const chapters: Chapter[] = [
-    { startSec: 0, label: "Intro" },
-    ...segments.filter((s) => s.id.startsWith("partie_")).map((s, i) => ({ startSec: s.startSec, label: `Partie ${i + 1}` })),
-    { startSec: bodyEnd, label: "Récap" },
-  ];
-  return { durationSec, totalWords, segments, beats, chapters };
+  return { durationSec, totalWords, segments, beats };
 }
 
-// ── Chapitres horodatés (plan de production) ─────────────────────────────
-
-export interface Chapter {
-  startSec: number;
-  label: string;
-}
+// ── Repères de découpe (utilisés par l'audit et les clips) ───────────────
 
 const ORDINAL = "(?:premi(?:er|ère)|deuxi[èe]me|troisi[èe]me|quatri[èe]me|cinqui[èe]me|sixi[èe]me|septi[èe]me|dernier|dernière)";
 const PART_NOUN = "(?:point|chose|erreur|raison|partie|truc|levier)";
@@ -465,50 +456,6 @@ function paragraphs(content: string): string[] {
 
 function wordCount(s: string): number {
   return (s.match(/[\p{L}\p{N}'’-]+/gu) ?? []).length;
-}
-
-function chapterLabel(p: string): string {
-  // « Premier point : ton objectif n'est pas précis. » → « ton objectif n'est pas précis »
-  const afterColon = p.split(/\n/)[0].match(/:\s*([^.?!]{6,80})/);
-  let label = afterColon ? afterColon[1] : p.split(/[.?!]/)[0];
-  label = label.replace(/^(?:et |mais |donc )/i, "").trim();
-  if (label.length > 60) label = label.slice(0, 57).replace(/\s+\S*$/, "") + "...";
-  return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
-/**
- * Chapitres estimés d'un script : l'intro à 00:00, une entrée par partie
- * annoncée à l'oral et le récap. Horodatage proportionnel au nombre de mots.
- * Plan de production, jamais écrit dans le texte parlé.
- */
-export function extractChapters(content: string | null | undefined, durationSec?: number | null): Chapter[] {
-  const text = (content ?? "").trim();
-  if (!text) return [];
-  const paras = paragraphs(text);
-  const total = paras.reduce((n, p) => n + wordCount(p), 0);
-  if (total < 200) return [];
-  const duration = durationSec && durationSec > 60 ? durationSec : Math.round(total / WORDS_PER_SECOND);
-  const found: Chapter[] = [];
-  let acc = 0;
-  let recapDone = false;
-  for (const p of paras) {
-    const at = Math.round((acc / total) * duration);
-    if (!recapDone && RECAP_RE.test(p.slice(0, 120))) {
-      found.push({ startSec: at, label: "Récap" });
-      recapDone = true;
-    } else if (!recapDone && MARKER_RE.test(p)) {
-      found.push({ startSec: at, label: chapterLabel(p) });
-    }
-    acc += wordCount(p);
-  }
-  const chapters: Chapter[] = [{ startSec: 0, label: "Intro" }, ...found];
-  // Garde-fous YouTube : 3 chapitres minimum, 10 secondes minimum chacun.
-  const filtered = chapters.filter((c, i) => i === 0 || c.startSec - chapters[i - 1].startSec >= 10);
-  return filtered.length >= 3 ? filtered : [];
-}
-
-export function formatChapters(chapters: Chapter[]): string {
-  return chapters.map((c) => `${fmtTime(c.startSec)} ${c.label}`).join("\n");
 }
 
 // ── Description YouTube (modèle d'Emmanuel, Centre de commandes A4) ──────
@@ -538,8 +485,6 @@ export interface DescriptionInput {
   question: string;
   themes: string;
   hashtags: string[];
-  /** Ajoute le bloc de chapitres (désactivé par défaut : Emmanuel n'en veut pas en description publique). */
-  chapters?: Chapter[];
 }
 
 export function buildYoutubeDescription(d: DescriptionInput): string {
@@ -551,7 +496,6 @@ export function buildYoutubeDescription(d: DescriptionInput): string {
     d.question,
     `Abonne-toi si tu veux plus de vidéos sur ${d.themes}. Bon visionnage !`,
   ];
-  if (d.chapters && d.chapters.length >= 3) lines.push(formatChapters(d.chapters));
   lines.push(
     `Mon application, avec essai gratuit :\n${YT_LINKS.app}`,
     `Réserver un appel :\n${YT_LINKS.call}`,
@@ -583,7 +527,7 @@ export function checkDescription(desc: string | null | undefined): DescriptionIs
     { id: "links_block", ok: ["ep-coaching.vercel.app/auth/client", "prequalification", "santamariasanchez.github.io/EPCoaching", "instagram.com/santamariasanchezep_"].every((l) => d.includes(l)), text: "Le bloc de liens est complet (appli, appel, site, Instagram)." },
     { id: "who", ok: /Emmanuel Santamaria Sanchéz/.test(d), text: "Le « qui je suis » avec le nom public." },
     { id: "hashtags", ok: (d.match(/#[\p{L}\p{N}_]+/gu) ?? []).length >= 3 && (d.match(/#[\p{L}\p{N}_]+/gu) ?? []).length <= 5, text: "3 à 5 hashtags." },
-    { id: "forbidden", ok: !/[—–]/.test(d) && !/lien en bio/i.test(d) && !/commente\s+\d{3}/i.test(d), text: "Pas de tiret cadratin, de « lien en bio » ni de « commente un numéro »." },
+    { id: "forbidden", ok: !/[—–]/.test(d) && !/lien en bio/i.test(d) && !/commente\s+\d{3}/i.test(d) && !/\b\d{1,2}:\d{2}\b/.test(d), text: "Pas de tiret cadratin, de « lien en bio », de « commente un numéro » ni de chapitres horodatés." },
   ];
   return checks;
 }
@@ -595,15 +539,15 @@ export interface ScriptCheck {
   label: string;
   ok: boolean;
   detail: string;
-  weight: number;
 }
 
 export interface ScriptAnalysis {
-  score: number;
+  /** Points tenus sur points relevés (pas une note : une aide de relecture). */
+  passed: number;
+  total: number;
   words: number;
   minutes: number;
   checks: ScriptCheck[];
-  chapters: Chapter[];
   longestGapSec: number;
   /** Début (en secondes) du plus long passage sans relance. */
   longestGapAtSec: number;
@@ -638,18 +582,16 @@ export function analyzeYoutubeScript(input: { content: string | null | undefined
   const duration = input.durationSec && input.durationSec > 60 ? input.durationSec : Math.round(words / WORDS_PER_SECOND);
   const minutes = Math.round((duration / 60) * 10) / 10;
   const checks: ScriptCheck[] = [];
-  const add = (id: string, label: string, ok: boolean, detail: string, weight: number) => checks.push({ id, label, ok, detail, weight });
+  const add = (id: string, label: string, ok: boolean, detail: string, _weight?: number) => { void _weight; checks.push({ id, label, ok, detail }); };
 
-  if (!words) return { score: 0, words: 0, minutes: 0, checks: [], chapters: [], longestGapSec: 0, longestGapAtSec: 0 };
+  if (!words) return { passed: 0, total: 0, words: 0, minutes: 0, checks: [], longestGapSec: 0, longestGapAtSec: 0 };
 
   const wordsAt = (pct: number) => Math.round(words * pct);
   const textBetween = (fromW: number, toW: number) => paras.filter((p) => p.startWord + p.words > fromW && p.startWord < toW).map((p) => p.text).join("\n\n");
-  const first30Words = Math.round(30 * WORDS_PER_SECOND); // 69 mots
   const openingPara = paras[0]?.text ?? "";
 
   // 1. Hook
   add("hook_open", "Ouverture sur une douleur ou une question, pas sur une formule d'accueil", !BANNED_OPENINGS.test(openingPara), BANNED_OPENINGS.test(openingPara) ? "Ouvre sur la douleur du spectateur, jamais « salut », « aujourd'hui » ou ta présentation." : "", 12);
-  add("hook_short", "Le hook tient dans les 30 premières secondes", paras[0] ? paras[0].words <= first30Words : false, paras[0] && paras[0].words > first30Words ? `Le premier paragraphe fait ${paras[0].words} mots (${Math.round(paras[0].words / WORDS_PER_SECOND)} s) : coupe à ${first30Words} mots maximum.` : "", 8);
 
   // 2. Promesse + plan dans les 90 premières secondes
   const early = textBetween(0, Math.round(90 * WORDS_PER_SECOND));
@@ -679,35 +621,23 @@ export function analyzeYoutubeScript(input: { content: string | null | undefined
   }
   const longestSec = Math.round(longest / WORDS_PER_SECOND);
   add("relances", "Une relance au moins toutes les 3 minutes", longestSec <= 180, longestSec > 180 ? `Plus longue stretch sans relance : ${fmtTime(longestSec)}. Ajoute un « regarde bien », un « retiens ça » ou une transition qui donne envie.` : "", 14);
-  const benefit = (content.match(/\b(?:ça va te|tu vas pouvoir|tu vas comprendre|c'est ce qui|c'est là que|ça change tout|c'est pour ça que|ça te permet|ça t'évite|pour que tu|tu repars avec|c'est ce qui te|tu sauras|tu vas voir|c'est exactement ce qui)/gi) ?? []).length;
-  add("benefit", "Le bénéfice est rappelé au fil de la vidéo", benefit >= 2, "Rappelle toutes les 2 à 3 minutes pourquoi continuer à regarder.", 4);
 
   // 6. Récap et fin
   add("recap", "Récapitulatif (« donc si je devais récapituler »)", /r[ée]capitul|si tu ne retiens qu'une chose|si tu dois retenir|en r[ée]sum[ée]/i.test(textBetween(wordsAt(0.7), words)), "Une phrase par partie, puis la phrase règle.", 6);
   const end = textBetween(wordsAt(0.88), words);
   add("end_asks", "2 ou 3 demandes en fin de vidéo (abonnement, guide en description, appel en description)", /abonne/i.test(end) && /description/i.test(end), "Termine par l'abonnement et le renvoi vers la description.", 6);
 
-  // 7. Exemples chiffrés
-  const digits = (content.match(/\d/g) ?? []).length;
-  const numberWords = (content.match(/\b(?:deux|trois|quatre|cinq|six|sept|huit|dix|vingt|cent|mille)\b/gi) ?? []).length;
-  add("examples", "Au moins un exemple chiffré vérifiable", digits >= 6 || numberWords >= 8, "Un cas type chiffré : calories, séries, pas, grammes. Jamais un résultat inventé.", 4);
-
-  // 8. Durée
-  add("length", "Entre 10 et 14 minutes parlées", minutes >= 9.5 && minutes <= 15, `${minutes} minutes pour ${words} mots (environ ${Math.round(WORDS_PER_SECOND * 60 * 10)} à ${Math.round(WORDS_PER_SECOND * 60 * 14)} mots visés).`, 4);
-
   // 9. Règles de marque
   const issues = checkVocabulary(content).filter((i) => !i.why.startsWith("Interdit (sauf pour la dénoncer)"));
   const brand: string[] = issues.map((i) => i.why);
   if (usesVous(content)) brand.push("Vouvoiement : tutoie partout");
-  if (/\[CHAPITRE|\b\d{1,2}:\d{2}\b/.test(content)) brand.push("Chapitre ou timecode écrit dans le texte parlé (le plan de chapitres vit à part)");
+  if (/\[CHAPITRE|\b\d{1,2}:\d{2}\b/.test(content)) brand.push("Chapitre ou timecode écrit dans le texte parlé : retire-le, les vrais scripts n'en ont jamais");
   if (/\bSantamaria Sanchéz\b/.test(content) && !/Emmanuel Santamaria Sanchéz/.test(content)) brand.push("Nom public : « Emmanuel Santamaria Sanchéz »");
   if (/commente\s+(?:le\s+)?(?:num[ée]ro\s+)?\d{3,4}\b/i.test(content)) brand.push("Pas de « commente un numéro » sur YouTube");
   const uniq = Array.from(new Set(brand));
   add("brand", "Règles de marque et vocabulaire respectés", uniq.length === 0, uniq.join(" ; "), 9);
 
-  const total = checks.reduce((n, c) => n + c.weight, 0);
-  const got = checks.reduce((n, c) => n + (c.ok ? c.weight : 0), 0);
-  return { score: Math.round((got / total) * 100), words, minutes, checks, chapters: extractChapters(content, duration), longestGapSec: longestSec, longestGapAtSec: Math.round(longestAt / WORDS_PER_SECOND) };
+  return { passed: checks.filter((c) => c.ok).length, total: checks.length, words, minutes, checks, longestGapSec: longestSec, longestGapAtSec: Math.round(longestAt / WORDS_PER_SECOND) };
 }
 
 // ── Clips (reels dérivés d'une vidéo longue) ─────────────────────────────
@@ -834,7 +764,7 @@ export const CHECKLIST_GROUPS: { id: ChecklistItem["group"]; label: string }[] =
 ];
 
 export const PUBLISH_CHECKLIST: ChecklistItem[] = [
-  { id: "titre_choisi", group: "avant", label: "Titre choisi parmi plusieurs candidats (moins de 60 caractères, score 70 ou plus)" },
+  { id: "titre_choisi", group: "avant", label: "Titre choisi parmi plusieurs candidats (moins de 60 caractères, une vraie phrase)" },
   { id: "hooks_testes", group: "avant", label: "3 hooks écrits de 3 types différents, le plus fort gardé" },
   { id: "structure_choisie", group: "avant", label: "Structure Y choisie, différente des dernières vidéos (Journal de rotation)" },
   { id: "guide_existe", group: "avant", label: "Le guide gratuit existe et prolonge exactement la vidéo" },
@@ -949,6 +879,5 @@ export function blueprintToText(bp: VideoBlueprint): string {
   for (const s of bp.segments) lines.push(`- ${fmtTime(s.startSec)} à ${fmtTime(s.endSec)} · ${s.label} (~${s.words} mots) : ${s.note}`);
   lines.push("", "RELANCES ET BOUCLES");
   for (const b of bp.beats) lines.push(`- ${fmtTime(b.atSec)} · ${b.kind.replace("_", " ")} : ${b.idea}`);
-  lines.push("", "PLAN DE CHAPITRES (production, jamais écrit dans le texte parlé)", formatChapters(bp.chapters));
   return lines.join("\n");
 }

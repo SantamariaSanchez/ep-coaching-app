@@ -1,9 +1,8 @@
 "use client";
 
-// Studio YouTube (2026-10-28) : le panneau d'une vidéo longue. Structure et
-// audit de rétention, titres notés, description au modèle d'Emmanuel,
-// miniatures A/B, chapitres horodatés (plan de production), clips pour les
-// reels, checklist de publication et de recyclage. Toute la logique vit dans
+// Studio YouTube : le panneau d'une vidéo longue. Structure et points de
+// relecture, titres, description au modèle d'Emmanuel, miniatures A/B, clips
+// pour les reels, checklist de publication. Pas de chapitres. Toute la logique vit dans
 // lib/youtube-studio.ts (pure, testée) ; ce composant ne fait qu'afficher et
 // enregistrer le plan (coach_scripts.video_plan).
 
@@ -16,7 +15,7 @@ import type { CoachScript } from "@/lib/coach-ideation";
 import {
   CHECKLIST_GROUPS, HOOK_TYPES, PUBLISH_CHECKLIST, TITLE_ANGLES, TITLE_MAX_CHARS, YT_STRUCTURES,
   analyzeYoutubeScript, autoChecklist, buildVideoBlueprint, checkDescription, cleanVideoPlan, deriveClips,
-  formatChapters, fmtTime, generateTitles, getYtStructure, journalRow, scoreTitle, thumbnailIdeas,
+  fmtTime, generateTitles, getYtStructure, journalRow, scoreTitle, thumbnailIdeas,
   type TitleInput, type VideoPlan,
 } from "@/lib/youtube-studio";
 
@@ -142,7 +141,7 @@ export default function YoutubeStudio({ script, onPatch }: { script: CoachScript
 
           {tab === "structure" && analysis && <StructureTab script={script} plan={plan} analysis={analysis} savePlan={savePlan} />}
           {tab === "titres" && <TitlesTab script={script} plan={plan} savePlan={savePlan} applyTitle={(title) => applyField({ title })} />}
-          {tab === "description" && <DescriptionTab script={script} applyCaption={(caption) => applyField({ caption })} />}
+          {tab === "description" && <DescriptionTab script={script} />}
           {tab === "miniatures" && <ThumbnailsTab script={script} plan={plan} savePlan={savePlan} />}
           {tab === "clips" && <ClipsTab script={script} />}
           {tab === "publication" && <PublicationTab script={script} plan={plan} savePlan={savePlan} />}
@@ -157,13 +156,13 @@ export default function YoutubeStudio({ script, onPatch }: { script: CoachScript
 function StructureTab({ script, plan, analysis, savePlan }: { script: CoachScript; plan: VideoPlan; analysis: ReturnType<typeof analyzeYoutubeScript>; savePlan: (p: VideoPlan) => void }) {
   const tr = useT();
   const structure = getYtStructure(plan.structure);
-  const blueprint = useMemo(() => buildVideoBlueprint({ durationMin: analysis.minutes || 12, parts: Math.max(3, analysis.chapters.length - 2) }), [analysis]);
+  const blueprint = useMemo(() => buildVideoBlueprint({ durationMin: analysis.minutes || 12, parts: 4 }), [analysis]);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-        <span style={{ fontSize: 26, fontWeight: 900, color: scoreColor(analysis.score) }}>{analysis.score}</span>
+        <span style={{ fontSize: 22, fontWeight: 900, color: scoreColor(analysis.total ? (analysis.passed / analysis.total) * 100 : 0) }}>{analysis.passed}/{analysis.total}</span>
         <span style={{ fontSize: 11.5, color: ink(0.55) }}>
-          {tr("sur 100 en rétention et structure")} · {analysis.words} {tr("mots")} · {analysis.minutes} min
+          {tr("points de relecture tenus")} · {analysis.words} {tr("mots")} · {analysis.minutes} min
         </span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -201,19 +200,6 @@ function StructureTab({ script, plan, analysis, savePlan }: { script: CoachScrip
         </select>
       </div>
 
-      <div>
-        <span style={label}>{tr("Chapitres estimés (plan de production)")}</span>
-        {analysis.chapters.length ? (
-          <div style={{ marginTop: 4, display: "flex", alignItems: "flex-start", gap: 6 }}>
-            <pre style={{ margin: 0, flex: 1, fontSize: 12, whiteSpace: "pre-wrap", fontFamily: "inherit", color: ink(0.75) }}>{formatChapters(analysis.chapters)}</pre>
-            <CopyMini text={formatChapters(analysis.chapters)} />
-          </div>
-        ) : (
-          <p style={{ margin: "4px 0 0", fontSize: 11.5, color: ink(0.55) }}>{tr("Annonce tes parties à l'oral (« premier point », « deuxième point ») pour obtenir les chapitres.")}</p>
-        )}
-        <p style={{ margin: "4px 0 0", fontSize: 11, color: ink(0.45) }}>{tr("Les chapitres servent au montage. Ils ne sont jamais écrits dans le texte parlé ni dans la description publique.")}</p>
-      </div>
-
       <details>
         <summary style={{ ...label, cursor: "pointer" }}>{tr("Chronologie type")} {fmtTime(blueprint.durationSec)}</summary>
         <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 11.5, color: ink(0.65), display: "flex", flexDirection: "column", gap: 3 }}>
@@ -248,7 +234,7 @@ function TitlesTab({ script, plan, savePlan, applyTitle }: { script: CoachScript
       <div>
         <span style={label}>{tr("Titre actuel")}</span>
         <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 700 }}>
-          {script.title} <span style={{ color: scoreColor(current.score) }}>{current.score}/100</span>
+          {script.title} <span style={{ color: scoreColor((current.passed / current.total) * 100) }}>{current.passed}/{current.total}</span>
           <span style={{ color: ink(0.45), fontWeight: 600 }}> · {Array.from(script.title).length}/{TITLE_MAX_CHARS}</span>
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 4 }}>
@@ -272,7 +258,6 @@ function TitlesTab({ script, plan, savePlan, applyTitle }: { script: CoachScript
             <div key={c.text} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 8px", borderRadius: 8, border: `1px solid ${ink(0.08)}` }}>
               <span style={{ fontSize: 12.5, flex: 1 }}>{c.text}</span>
               <span style={{ fontSize: 9, fontWeight: 800, color: ink(0.4), textTransform: "uppercase" }}>{TITLE_ANGLES.find((a) => a.id === c.angle)?.label}</span>
-              <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor(c.score) }}>{c.score}</span>
               <button type="button" onClick={() => applyTitle(c.text)} style={{ fontSize: 11, fontWeight: 800, color: "var(--ep-accent)", background: "none", border: "none", cursor: "pointer" }}>{tr("Utiliser")}</button>
               <button type="button" onClick={() => savePlan({ ...plan, titles: Array.from(new Set([...(plan.titles ?? []), c.text])).slice(0, 10) })} style={{ fontSize: 11, color: ink(0.5), background: "none", border: "none", cursor: "pointer" }}>{tr("Garder")}</button>
             </div>
@@ -287,7 +272,7 @@ function TitlesTab({ script, plan, savePlan, applyTitle }: { script: CoachScript
           const s = scoreTitle(custom);
           return (
             <div style={{ marginTop: 6 }}>
-              <strong style={{ color: scoreColor(s.score) }}>{s.score}/100</strong>
+              <strong style={{ color: scoreColor((s.passed / s.total) * 100) }}>{s.passed}/{s.total}</strong>
               {s.criteria.filter((c) => !c.ok && c.hint).map((c) => <p key={c.id} style={{ margin: "2px 0 0", fontSize: 11, color: ink(0.55) }}>{c.hint}</p>)}
             </div>
           );
@@ -306,13 +291,9 @@ function TitlesTab({ script, plan, savePlan, applyTitle }: { script: CoachScript
 
 // ── Description ──────────────────────────────────────────────────────────
 
-function DescriptionTab({ script, applyCaption }: { script: CoachScript; applyCaption: (c: string) => void }) {
+function DescriptionTab({ script }: { script: CoachScript }) {
   const tr = useT();
   const checks = checkDescription(script.instagram_caption);
-  const chapters = analyzeYoutubeScript({ content: script.content, durationSec: script.duration_seconds }).chapters;
-  const withChapters = chapters.length >= 3 && script.instagram_caption && !/\b\d{2}:\d{2}\b/.test(script.instagram_caption)
-    ? script.instagram_caption.replace(/\n\n(Mon application, avec essai gratuit)/, `\n\n${formatChapters(chapters)}\n\n$1`)
-    : null;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <span style={label}>{tr("Contrôle contre le modèle d'Emmanuel")}</span>
@@ -320,11 +301,6 @@ function DescriptionTab({ script, applyCaption }: { script: CoachScript; applyCa
       <p style={{ margin: 0, fontSize: 11, color: ink(0.5) }}>
         {tr("Modèle : lien du guide en première ligne, faux problème et vrai problème, phrase règle, question en commentaire, abonnement, liens, qui je suis, hashtags. Les titres alternatifs et l'idée de miniature ne vont jamais dans la description.")}
       </p>
-      {withChapters && (
-        <button type="button" onClick={() => applyCaption(withChapters)} style={{ alignSelf: "flex-start", fontSize: 11.5, fontWeight: 800, color: "var(--ep-accent)", background: "none", border: `1px dashed ${ink(0.2)}`, borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>
-          {tr("Ajouter les chapitres estimés dans la description (optionnel)")}
-        </button>
-      )}
     </div>
   );
 }
