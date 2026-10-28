@@ -6,6 +6,7 @@ import { Suspense, useActionState, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Heart } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { loginClient } from "./actions";
 import SignupFlow from "./SignupFlow";
@@ -204,7 +205,7 @@ export default function ClientAuthPage() {
         <Link href="/" style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           color: "rgba(var(--ep-ink-rgb),0.3)", textDecoration: "none",
-          fontSize: 12, fontWeight: 600, marginBottom: 28,
+          fontSize: 12, fontWeight: 600, marginBottom: 12,
         }}>
           <ChevronLeft size={14} />
           {t("Retour")}
@@ -221,6 +222,22 @@ export default function ClientAuthPage() {
               {t("Communauté")}
             </span>
           </div>
+        </div>
+
+        {/* Connexion sociale : le chemin le plus court (un tap), avant le formulaire. */}
+        <div className="animate-fade-up stagger-2" style={{ marginBottom: 6 }}>
+          <SocialAuthButtons
+            role="client"
+            separator
+            note={
+              <p style={{ margin: "10px 0 0", fontSize: 11.5, lineHeight: 1.5, textAlign: "center", color: "rgba(var(--ep-ink-rgb),0.55)" }}>
+                {t("En continuant, tu acceptes les")}{" "}
+                <Link href="/legal/cgu" style={{ color: "var(--ep-ink)", textDecoration: "underline" }}>{t("CGU")}</Link>{" "}
+                {t("et la")}{" "}
+                <Link href="/legal/confidentialite" style={{ color: "var(--ep-ink)", textDecoration: "underline" }}>{t("politique de confidentialité")}</Link>.
+              </p>
+            }
+          />
         </div>
 
         {/* Content */}

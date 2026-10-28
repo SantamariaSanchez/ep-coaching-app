@@ -6,6 +6,7 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Shield } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { loginCoach } from "./actions";
 import { useIsIOSApp } from "@/lib/use-native";
@@ -162,6 +163,15 @@ export default function CoachLoginPage() {
                 {t === "connexion" ? tr("Connexion") : tr("Devenir coach")}
               </button>
             ))}
+          </div>
+
+          <div style={{ marginBottom: 18 }}>
+            <SocialAuthButtons role="coach" separator />
+            {tab === "inscription" && (
+              <p style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", textAlign: "center" }}>
+                {tr("Avec Google ou Apple, ton espace coach s'ouvre en accès gratuit.")}
+              </p>
+            )}
           </div>
 
           {tab === "inscription" ? (

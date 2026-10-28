@@ -42,6 +42,8 @@ export default function NativeBridge() {
         else App.minimizeApp().catch(() => {});
       });
       const deep = await App.addListener("appUrlOpen", ({ url }) => {
+        // Retour de Google / Apple : referme le navigateur système (iOS).
+        Browser.close().catch(() => {});
         try {
           const u = new URL(url);
           if (u.hostname.endsWith("ep-coaching.vercel.app") || u.protocol === "epcoaching:") router.push(`${u.pathname}${u.search}`);

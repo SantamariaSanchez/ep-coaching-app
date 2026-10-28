@@ -2,6 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.epcoaching.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>epcoaching</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Pour tes photos de progression et filmer tes séries afin que ton coach corrige ta technique.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

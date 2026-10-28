@@ -1508,3 +1508,41 @@ html.ep-native .ep-selectable {
   letter-spacing: 0;
   text-transform: none;
 }
+
+/* ── Connexion sociale (Google, Apple) ───────────────────────────────────── */
+/* Une seule paire de boutons pour toute l'appli (components/auth/
+   SocialAuthButtons.tsx). Couleurs de thème uniquement : fond « strong »
+   (blanc en sombre, encre en clair) pour un contraste maximal, texte sur le
+   fond de la page. Seuls les logos Google et Apple gardent leurs couleurs de
+   marque. Zone tactile de 52 px. */
+.ep-social-stack { display: flex; flex-direction: column; gap: 10px; }
+.ep-social-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .ep-social-row { grid-template-columns: 1fr; } }
+.ep-social-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 52px; padding: 0 18px;
+  border-radius: var(--radius-xl); border: 1px solid rgba(var(--ep-strong-rgb), 0.9);
+  background: var(--ep-strong); color: var(--ep-bg);
+  font-family: var(--font-montserrat, 'Montserrat'), sans-serif;
+  font-size: 15px; font-weight: 700; letter-spacing: -0.005em; cursor: pointer;
+  transition: transform 0.12s var(--ep-ease-out), opacity 0.15s, box-shadow 0.15s;
+}
+.ep-social-btn:hover { box-shadow: 0 6px 24px rgba(var(--ep-accent-rgb), 0.22); }
+.ep-social-btn:active { transform: scale(0.98); }
+.ep-social-btn:focus-visible { outline: 2px solid var(--ep-accent); outline-offset: 3px; }
+.ep-social-btn:disabled { opacity: 0.6; cursor: default; }
+.ep-social-spin {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid currentColor; border-top-color: transparent;
+  animation: epSocialSpin 0.7s linear infinite;
+}
+@keyframes epSocialSpin { to { transform: rotate(360deg); } }
+.ep-social-error {
+  margin: 10px 0 0; padding: 10px 14px; border-radius: 12px;
+  font-size: 13px; font-weight: 600; line-height: 1.4; text-align: left;
+  color: var(--ep-ink); background: rgba(var(--ep-accent-rgb), 0.1);
+  border: 1px solid rgba(var(--ep-accent-rgb), 0.3);
+}
+.ep-social-sep { display: flex; align-items: center; gap: 12px; margin: 16px 0 2px; color: rgba(var(--ep-ink-rgb), 0.5); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+.ep-social-sep::before, .ep-social-sep::after { content: ""; flex: 1; height: 1px; background: rgba(var(--ep-ink-rgb), 0.14); }
+@media (prefers-reduced-motion: reduce) { .ep-social-spin { animation-duration: 1.6s; } .ep-social-btn:active { transform: none; } }

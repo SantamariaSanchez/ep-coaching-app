@@ -5823,4 +5823,16 @@ export const EN: Record<string, string> = {
   "tâche à faire": "task to do",
   "Tâches faites": "Tasks done",
   "autres alertes": "more alerts",
+  // ── Connexion sociale ──
+  "Continuer avec Google": "Continue with Google",
+  "Continuer avec Apple": "Continue with Apple",
+  "En continuant, tu acceptes les": "By continuing, you accept the",
+  "Avec Google ou Apple, ton espace coach s'ouvre en accès gratuit.": "With Google or Apple, your coach space opens with free access.",
+  "Connexion en cours…": "Signing in…",
+  "Cette connexion n'est pas encore activée. Utilise ton e-mail pour l'instant, ça prend 30 secondes.": "This sign-in is not enabled yet. Use your email for now, it takes 30 seconds.",
+  "Connexion annulée. Tu peux réessayer ou utiliser ton e-mail.": "Sign-in cancelled. You can try again or use your email.",
+  "La connexion n'a pas abouti. Réessaie ou utilise ton e-mail.": "Sign-in did not complete. Try again or use your email.",
+  "Ce compte n'est pas un compte coach. Connecte-toi depuis l'espace membre.": "This account is not a coach account. Sign in from the member area.",
+  "Ton fournisseur n'a pas transmis d'adresse e-mail. Utilise l'inscription par e-mail.": "Your provider did not share an email address. Use email sign-up.",
+  "Ton compte n'a pas pu être créé. Réessaie dans un instant.": "Your account could not be created. Try again in a moment.",
 };
