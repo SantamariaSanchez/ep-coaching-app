@@ -190,17 +190,17 @@ export default async function CoachDashboard() {
   return (
     <div
       className="page-transition ep-page-wide"
-      style={{ padding: "24px 16px 48px" }}
+      style={{ padding: "16px 16px 48px" }}
     >
       {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <div className="animate-fade-up" style={{ marginBottom: 22 }}>
+      <div className="animate-fade-up" style={{ marginBottom: 14 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>
           {formattedDate}
         </p>
         {/* Idée #1 : salutation adaptée à l'heure plutôt que "Bonjour" figé
             toute la journée, y compris à 22h. */}
         <h1 className="ep-h1">{t(timeAwareGreeting(Number(hhmm.split(":")[0])))}, {firstName}</h1>
-        <p className="ep-tagline">{t("Ta journée, en un coup d'œil.")}</p>
+        <p className="ep-tagline hidden md:block">{t("Ta journée, en un coup d'œil.")}</p>
       </div>
 
       {/* ── Urgent alerts ─────────────────────────────────────────────────────

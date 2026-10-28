@@ -9,7 +9,7 @@ import { HomeStartSession } from "@/components/client/home/HomeClient";
 import MoveSession from "@/components/ui/MoveSession";
 import { isoWeekday } from "@/lib/program-week";
 import {
-  Apple, ArrowRight, CalendarPlus, CheckCircle2, ChevronRight, Circle, ClipboardCheck, ClipboardList, Clock, Droplet,
+  Apple, ArrowRight, CalendarPlus, CheckCircle2, ChevronDown, ChevronRight, Circle, ClipboardCheck, ClipboardList, Clock, Droplet,
   Dumbbell, Footprints, ListChecks, MessageCircle, Moon, Sparkles, Trophy, UtensilsCrossed, type LucideIcon,
 } from "lucide-react";
 
@@ -68,18 +68,21 @@ export function HomeHeader({
   meta?: React.ReactNode;
   tools?: React.ReactNode;
 }) {
+  // Accueil sans scroll (2026-10-28) : note rapide et recherche (zone tactile
+  // de 44 px) passent sur la ligne de la date, le titre prend toute la largeur
+  // et tient sur une ligne : ~35 px de plus pour la carte du jour.
   return (
-    <header className="animate-fade-up" style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 18 }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4, lineHeight: "16px" }}>{eyebrow}</p>
-        <h1 className="ep-h1" style={{ fontSize: 30, overflowWrap: "anywhere" }}>{title}</h1>
-        {meta && (
-          <div style={{ marginTop: 7, display: "flex", flexWrap: "wrap", alignItems: "center", gap: "4px 10px", fontSize: 12, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
-            {meta}
-          </div>
-        )}
+    <header className="animate-fade-up" style={{ marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, minHeight: tools ? 44 : undefined, marginTop: tools ? -8 : 0 }}>
+        <p className="ep-section-title" style={{ margin: 0, flex: 1, minWidth: 0, lineHeight: "16px" }}>{eyebrow}</p>
+        {tools && <div style={{ marginRight: -8 }}>{tools}</div>}
       </div>
-      {tools}
+      <h1 className="ep-h1" style={{ fontSize: 26, overflowWrap: "anywhere", lineHeight: 1.12, marginTop: tools ? -2 : 4 }}>{title}</h1>
+      {meta && (
+        <div style={{ marginTop: 5, display: "flex", flexWrap: "wrap", alignItems: "center", gap: "2px 10px", fontSize: 12, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
+          {meta}
+        </div>
+      )}
     </header>
   );
 }
@@ -156,27 +159,29 @@ async function BlockDetail({ block, day }: { block: HomeBlock; day: HomeDayData 
 async function TaskList({ block }: { block: HomeBlock }) {
   const t = await getT();
   if (block.tasks.length === 0) return null;
-  const shown = block.tasks.slice(0, 4);
+  const left = block.tasks.filter((x) => !x.done).length;
+  // Replié : la carte du jour garde sa hauteur, les tâches s'ouvrent d'un tap.
   return (
-    <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 7 }}>
-      {shown.map((task, i) => (
-        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, lineHeight: 1.35 }}>
-          {task.done ? (
-            <CheckCircle2 size={15} strokeWidth={2} style={{ color: "var(--ep-ok)", flexShrink: 0, marginTop: 1 }} />
-          ) : (
-            <Circle size={15} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0, marginTop: 1 }} />
-          )}
-          <span style={{ minWidth: 0, overflowWrap: "anywhere", color: task.done ? "rgba(var(--ep-ink-rgb),0.4)" : "rgba(var(--ep-ink-rgb),0.85)", textDecoration: task.done ? "line-through" : "none" }}>
-            {task.text}
-          </span>
-        </li>
-      ))}
-      {block.tasks.length > shown.length && (
-        <li style={{ fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", paddingLeft: 23 }}>
-          +{block.tasks.length - shown.length} {t("autres")}
-        </li>
-      )}
-    </ul>
+    <details className="ep-home-details" style={{ marginTop: 8 }}>
+      <summary style={{ listStyle: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, minHeight: 40, fontSize: 12.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
+        <span>{left > 0 ? `${left} ${left > 1 ? t("tâches à faire") : t("tâche à faire")}` : t("Tâches faites")}</span>
+        <ChevronDown size={15} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />
+      </summary>
+      <ul style={{ listStyle: "none", margin: "2px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 7 }}>
+        {block.tasks.map((task, i) => (
+          <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, lineHeight: 1.35 }}>
+            {task.done ? (
+              <CheckCircle2 size={15} strokeWidth={2} style={{ color: "var(--ep-ok)", flexShrink: 0, marginTop: 1 }} />
+            ) : (
+              <Circle size={15} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0, marginTop: 1 }} />
+            )}
+            <span style={{ minWidth: 0, overflowWrap: "anywhere", color: task.done ? "rgba(var(--ep-ink-rgb),0.4)" : "rgba(var(--ep-ink-rgb),0.85)", textDecoration: task.done ? "line-through" : "none" }}>
+              {task.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
@@ -262,7 +267,7 @@ export async function NowCard({ day, agendaHref = `${C}/agenda` }: { day: HomeDa
   const color = focus ? blockColor(focus) : "var(--ep-ok)";
   return (
     <section className="animate-fade-up stagger-1" style={{ marginBottom: 16 }}>
-      <div className="ep-card-hero" style={{ padding: 18 }}>
+      <div className="ep-card-hero" style={{ padding: 16 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 10 }}>
           <p className="ep-label" style={{ margin: 0, color: "rgba(var(--ep-accent-rgb),0.75)" }}>{t("Ta journée")}</p>
           <Link href={agendaHref} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)", textDecoration: "none", minHeight: 24 }}>
@@ -315,7 +320,7 @@ export async function NowCard({ day, agendaHref = `${C}/agenda` }: { day: HomeDa
               </p>
             )}
             <TaskList block={focus} />
-            <div style={{ marginTop: focus.action === "agenda" ? 8 : 14 }}>
+            <div style={{ marginTop: focus.action === "agenda" ? 8 : 12 }}>
               <BlockCta block={focus} day={day} primary />
             </div>
           </>
@@ -331,10 +336,10 @@ export async function NowCard({ day, agendaHref = `${C}/agenda` }: { day: HomeDa
 
         {now.later.length > 0 && (
           <>
-            <div className="ep-divider-subtle" style={{ margin: "16px 0 6px" }} />
-            <p className="ep-label" style={{ margin: "0 0 2px" }}>{t("Ensuite")}</p>
+            <div className="ep-divider-subtle" style={{ margin: "12px 0 4px" }} />
+            <p className="ep-label" style={{ margin: "0 0 0" }}>{t("Ensuite")}</p>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              {now.later.map((b) => {
+              {now.later.slice(0, 1).map((b) => {
                 const Icon = blockIcon(b);
                 const c = blockColor(b);
                 return (
@@ -391,7 +396,7 @@ export async function TrainingMini({ day, coached }: { day: HomeDayData; coached
         </Link>
         <div style={{ marginTop: "auto", paddingTop: 12 }}>
           {heroIsSession && s.state !== "done" ? secondaryBtn(`${C}/program`, t("Voir les exos")) : <HomeStartSession session={s} compact />}
-          {s.state !== "done" && (
+          {s.state !== "done" && !heroIsSession && (
             <div style={{ display: "flex", justifyContent: "center" }}>
               <MoveSession dayId={s.dayId} days={tr.schedule} todayDow={isoWeekday(day.date)} />
             </div>

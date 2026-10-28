@@ -147,15 +147,21 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
   },
   {
     group: "Mon business",
+    // Ordre par utilité (demande d'Emmanuel 2026-10-28) : le Studio créatif
+    // d'abord, c'est ce qu'il ouvre tous les jours ; « Business » sur mobile
+    // ouvre le PREMIER élément de ce groupe (computeNav → firstVisible), donc
+    // l'ordre ci-dessous est aussi la page d'arrivée. La niche et l'avatar se
+    // posent une fois puis se consultent peu : ils passent après les outils
+    // du quotidien.
     items: [
-      { label: "Ma niche et mon avatar", icon: Crosshair, segment: "positionnement" },
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
       { label: "Mes stats réseaux", icon: BarChart3, segment: "stats-reseaux" },
-      { label: "Mes formations", icon: GraduationCap, segment: "formations" },
       { label: "Appels de vente", icon: PhoneCall, segment: "admin/ventes" },
       { label: "Pilotage", icon: Gauge, segment: "business/pilotage" },
+      { label: "Mes formations", icon: GraduationCap, segment: "formations" },
       { label: "Mon équipe", icon: UsersRound, segment: "mon-equipe" },
       { label: "Publicité", icon: Megaphone, segment: "business/ads" },
+      { label: "Ma niche et mon avatar", icon: Crosshair, segment: "positionnement" },
       { label: "Développer mon business", icon: Rocket, segment: "business" },
       { label: "Documents", icon: FileText, segment: "documents" },
       { label: "Masterclass", icon: BookOpenCheck, segment: "masterclass" },
@@ -294,8 +300,8 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
     items: [
       // Item 25 : qui est ton coach, comment le joindre, ce qui est inclus —
       // freeLocked comme les autres items coach-only de ce groupe.
-      { label: "Mon coach", icon: User, segment: "coach", freeLocked: true },
       { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
+      { label: "Mon coach", icon: User, segment: "coach", freeLocked: true },
       // locked: sans coach personnel, ces trois pages affichent le message
       // "reserve aux membres coaching" (CoachOnlyGate) plutot que du contenu
       // vide — voir app/dashboard/client/{tasks,checkin,live}/page.tsx.
@@ -1188,7 +1194,7 @@ export default function DashboardNav({
               // de faire défiler seulement les onglets.
               touchAction: "pan-x",
               overscrollBehavior: "contain",
-              padding: "10px 8px 10px 12px",
+              padding: "4px 8px 4px 12px",
             }}
           >
             {mobileSubItems.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
@@ -1205,12 +1211,16 @@ export default function DashboardNav({
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    padding: "7px 12px",
+                    // Zone tactile de 44 px (HIG) sans allonger la bande :
+                    // la hauteur reprend celle des anciens 10 px de marge.
+                    minHeight: 44,
+                    padding: "0 14px",
+                    alignSelf: "center",
                     borderRadius: 999,
                     background: active ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-ink-rgb),0.04)",
-                    color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
+                    color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.55)",
                     fontWeight: active ? 700 : 600,
-                    fontSize: 11,
+                    fontSize: 12,
                     whiteSpace: "nowrap",
                     textDecoration: "none",
                     border: active ? "1px solid rgba(var(--ep-accent-rgb),0.3)" : "1px solid transparent",
@@ -1323,7 +1333,7 @@ export default function DashboardNav({
                     size={18}
                     strokeWidth={active ? 2.3 : 1.6}
                     style={{
-                      color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.28)",
+                      color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.45)",
                       transition: "color 0.2s, stroke-width 0.2s",
                     }}
                   />
@@ -1351,10 +1361,10 @@ export default function DashboardNav({
 
                 {/* Label */}
                 <span style={{
-                  fontSize: 9,
-                  fontWeight: active ? 700 : 500,
-                  letterSpacing: "0.03em",
-                  color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.28)",
+                  fontSize: 10,
+                  fontWeight: active ? 700 : 600,
+                  letterSpacing: "0.02em",
+                  color: active ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.55)",
                   transition: "color 0.2s",
                   lineHeight: 1,
                   whiteSpace: "nowrap",

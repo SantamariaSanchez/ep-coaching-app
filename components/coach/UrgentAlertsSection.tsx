@@ -37,13 +37,13 @@ export default function UrgentAlertsSection() {
 
   if (loading) {
     return (
-      <section className="mb-10">
-        <div className="flex items-center gap-2 mb-4">
+      <section className="mb-5">
+        <div className="flex items-center gap-2 mb-3">
           <Skeleton className="h-3.5 w-3.5 rounded-full" />
           <Skeleton className="h-3.5 w-32" />
         </div>
         <div className="space-y-2">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
+          {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
         </div>
       </section>
     );
@@ -51,7 +51,7 @@ export default function UrgentAlertsSection() {
 
   if (loadError) {
     return (
-      <section className="mb-10">
+      <section className="mb-5">
         <div className="flex items-center gap-2.5 bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl px-4 py-3.5">
           <WifiOff size={15} className="text-(--ep-ink)/35 flex-shrink-0" strokeWidth={1.8} />
           <p className="text-xs text-(--ep-ink)/40">
@@ -70,7 +70,7 @@ export default function UrgentAlertsSection() {
   // échoué au lieu de ne rien trouver).
   if (alerts.length === 0) {
     return (
-      <section className="mb-10">
+      <section className="mb-5">
         <div className="flex items-center gap-2.5 bg-green-500/5 border border-green-500/15 rounded-xl px-4 py-3.5">
           <CheckCircle2 size={15} className="text-green-400/70 flex-shrink-0" strokeWidth={1.8} />
           <p className="text-xs text-(--ep-ink)/45">
@@ -82,8 +82,8 @@ export default function UrgentAlertsSection() {
   }
 
   return (
-    <section className="mb-10">
-      <div className="flex items-center justify-between mb-4">
+    <section className="mb-5">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <AlertTriangle size={14} className="text-red-400" />
           <h2 className="text-sm font-black uppercase tracking-widest text-red-400/80">
@@ -97,7 +97,7 @@ export default function UrgentAlertsSection() {
             plus les clients sans signal mais silencieux depuis 30j+. */}
         <Link
           href="/dashboard/coach/prioritaires"
-          className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 hover:text-(--ep-ink)/70 transition-colors"
+          className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/50 hover:text-(--ep-ink)/70 transition-colors min-h-11 pl-3"
         >
           {t("Voir tout")}
           <ChevronRight size={12} />
@@ -105,7 +105,9 @@ export default function UrgentAlertsSection() {
       </div>
 
       <div className="space-y-2">
-        {alerts.map((item, i) => (
+        {/* Accueil sans scroll (2026-10-28) : les deux alertes les plus
+            graves, le reste est derrière « Voir tout ». */}
+        {alerts.slice(0, 2).map((item, i) => (
           <Link
             key={i}
             href={`/dashboard/coach/clients/${item.clientId}`}
@@ -136,15 +138,17 @@ export default function UrgentAlertsSection() {
         ))}
       </div>
 
-      <div className="mt-3 text-center">
-        <Link
-          href="/dashboard/coach/clients"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-(--ep-ink)/30 hover:text-(--ep-accent) transition-colors"
-        >
-          <Users size={12} />
-          {t("Voir tous les clients")}
-        </Link>
-      </div>
+      {alerts.length > 2 && (
+        <div className="mt-1 text-center">
+          <Link
+            href="/dashboard/coach/prioritaires"
+            className="inline-flex items-center gap-1.5 min-h-11 text-xs font-bold uppercase tracking-widest text-(--ep-ink)/50 hover:text-(--ep-accent) transition-colors"
+          >
+            <Users size={12} />
+            +{alerts.length - 2} {t("autres alertes")}
+          </Link>
+        </div>
+      )}
     </section>
   );
 }

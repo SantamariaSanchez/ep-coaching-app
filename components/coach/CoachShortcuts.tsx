@@ -18,13 +18,13 @@ export default function CoachShortcuts({ objectives, configured }: { objectives:
   const items = ALL.filter((i) => objectives.includes(i.key));
   if (!configured || items.length === 0) {
     return (
-      <Link href="/dashboard/coach/mon-appli" className="ep-card animate-fade-up" style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", marginBottom: 20, textDecoration: "none", color: "rgba(var(--ep-ink-rgb),0.8)", fontSize: 13, fontWeight: 700 }}>
+      <Link href="/dashboard/coach/mon-appli" className="ep-card animate-fade-up" style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", minHeight: 48, marginBottom: 14, textDecoration: "none", color: "rgba(var(--ep-ink-rgb),0.8)", fontSize: 13, fontWeight: 700 }}>
         <SlidersHorizontal size={15} style={{ color: "var(--ep-accent)" }} /> Dis-nous tes objectifs : ton accueil mettra en avant tes outils.
       </Link>
     );
   }
   return (
-    <div className="animate-fade-up" style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 20, paddingBottom: 2 }}>
+    <div className="animate-fade-up" style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
       {items.map((i) => {
         const Icon = i.icon;
         return (
@@ -32,7 +32,7 @@ export default function CoachShortcuts({ objectives, configured }: { objectives:
             key={i.href}
             href={i.href}
             className="ep-card"
-            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 14px", textDecoration: "none", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, minHeight: 44, padding: "0 14px", textDecoration: "none", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}
           >
             <Icon size={14} style={{ color: "var(--ep-accent)" }} /> {i.label}
           </Link>

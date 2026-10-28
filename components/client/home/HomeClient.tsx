@@ -18,9 +18,9 @@ import type { HomeSession } from "@/lib/client-home";
  */
 export function HomeHeaderTools({ base = "/dashboard/client" }: { base?: string }) {
   const t = useT();
-  const style: React.CSSProperties = { width: 36, height: 36, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" };
+  const style: React.CSSProperties = { width: 44, height: 44, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" };
   return (
-    <div className="flex md:hidden" style={{ gap: 6, flexShrink: 0 }}>
+    <div className="flex md:hidden" style={{ gap: 2, flexShrink: 0 }}>
       <Link prefetch={false} href={`${base}/notes?capture=1`} aria-label={t("Note rapide")} title={t("Note rapide")} className="ep-btn-icon" style={style}>
         <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(var(--ep-ink-rgb),0.6)" }} />
       </Link>

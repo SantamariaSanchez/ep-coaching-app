@@ -5818,4 +5818,9 @@ export const EN: Record<string, string> = {
   "équipements": "items",
   "Ma salle :": "My gym:",
   "Mes salles": "My gyms",
+  // ── Ergonomie mobile ──
+  "tâches à faire": "tasks to do",
+  "tâche à faire": "task to do",
+  "Tâches faites": "Tasks done",
+  "autres alertes": "more alerts",
 };
