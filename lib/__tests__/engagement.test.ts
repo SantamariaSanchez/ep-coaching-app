@@ -101,3 +101,9 @@ test("message de renouvellement : tutoiement, date de fin, sans tiret cadratin n
   }
   assert.ok(renewalMessage({ firstName: null, kind: "fin", endDate: "2026-07-14" }).startsWith("Salut,"));
 });
+
+test("le message de fin propose aussi une recommandation, sans obligation", () => {
+  const m = renewalMessage({ firstName: "Léa", kind: "fin", endDate: "2026-07-14" });
+  assert.ok(m.includes("recommandation"));
+  assert.ok(!renewalMessage({ firstName: "Léa", kind: "un_mois", endDate: "2026-07-14" }).includes("recommandation"));
+});

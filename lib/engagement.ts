@@ -181,7 +181,7 @@ export function renewalMessage(opts: { firstName: string | null; kind: RenewalMe
   if (opts.kind === "un_mois") {
     return `${hello}\n\nIl reste environ un mois à ton accompagnement, il se termine le ${end}. Je te propose un appel bilan pour faire le point ensemble : ce qui a marché, ce qui t'a demandé le plus d'efforts, et ce que tu veux pour la suite.\n\nÀ la fin de l'appel, on décide ensemble de la suite : continuer sur la même base, changer d'objectif ou faire une pause. Tu n'as rien à préparer, juste venir avec ton ressenti.${link}`;
   }
-  return `${hello}\n\nTon accompagnement se termine le ${end}. Merci pour le travail fourni pendant ces mois. Si tu veux continuer, je te propose de repartir sur un nouvel objectif et de refaire le point sur ton plan. Si tu préfères faire une pause, aucun souci : tout ton suivi reste disponible.\n\nDis-moi ce que tu préfères et on organise la suite.${link}`;
+  return `${hello}\n\nTon accompagnement se termine le ${end}. Merci pour le travail fourni pendant ces mois. Si tu veux continuer, je te propose de repartir sur un nouvel objectif et de refaire le point sur ton plan. Si tu préfères faire une pause, aucun souci : tout ton suivi reste disponible.\n\nDis-moi ce que tu préfères et on organise la suite.\n\nEt si ton parcours t'a plu, tu connais peut-être quelqu'un qui aimerait être accompagné de la même façon : une recommandation de ta part m'aiderait beaucoup, sans aucune obligation.${link}`;
 }
 
 function frenchDate(iso: string): string {
