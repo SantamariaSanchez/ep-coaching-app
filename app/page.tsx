@@ -9,28 +9,16 @@
 // peut les rendre sans problème.
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Shield,
-  Heart,
-  ArrowRight,
-  Dumbbell,
-  Utensils,
-  LineChart,
-  ClipboardList,
-  BookOpen,
-  Video,
-  Users,
-  Activity,
-  MessageCircle,
-  FlaskConical,
-  Map,
-  UtensilsCrossed,
-} from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
-import { ALL_LIVE_TYPES } from "@/lib/live-types";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
+import AppMock from "@/components/landing/AppMock";
+import DemoTabs from "@/components/landing/DemoTabs";
+import { COACH_PLATFORM_PLANS, COACH_PLAN_DETAILS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/brand-links";
 import { entityGraph, faqNode, SHOWCASE_URL } from "@/lib/seo-entity";
+import "./landing.css";
 
 const TITLE = "EP Coaching : coach sportif à Annecy et en ligne, appli musculation et nutrition";
 const DESCRIPTION =
@@ -58,37 +46,20 @@ export const metadata: Metadata = {
 // quotidien) ensuite : ce sont des modules réels et utiles, juste pas ce
 // qui fait venir quelqu'un.
 const FEATURES = [
-  { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A" },
-  // Pas de "5 formations complètes" ici (audit de cohérence 2026-09-01,
-  // confirmé et corrigé le 2026-09-02) : les 5 formations existent bien en
-  // structure (148 leçons planifiées, ~25h au total, vérifié en base
-  // formation_lessons.duration_min), mais aucune n'est publiée et aucune
-  // leçon n'a encore de vidéo tournée. On annonce donc le périmètre et le
-  // statut réel ("à venir"), jamais un état d'avancement qu'on ne peut pas
-  // tenir.
-  { icon: BookOpen, title: "Formations (à venir)", desc: "Bodybuilding, nutrition, training, business, psychologie" },
-  // "coach humain par défaut" retiré : la formule n'a de sens que si on sait
-  // qu'il existe des coachs IA, or ils restent strictement internes à
-  // l'espace connecté (règle de positionnement Notion).
-  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées" },
-  { icon: LineChart, title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
-  { icon: Dumbbell, title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
-  { icon: Utensils, title: "Nutrition", desc: "Plans alimentaires et calcul de macros personnalisé" },
-  { icon: ClipboardList, title: "Logbook séances", desc: "Enregistre tes performances en temps réel" },
-  { icon: Activity, title: "Tracker quotidien", desc: "Pas, sommeil, biométrie au jour le jour" },
-  { icon: Users, title: "Communauté", desc: "Échange avec des membres aussi motivés que toi" },
-  { icon: FlaskConical, title: "Science & recherche", desc: "Études et actualité sourcées, sans blabla" },
-  { icon: Map, title: "Road Map", desc: "Tes objectifs et les étapes pour les atteindre" },
-  { icon: UtensilsCrossed, title: "Recettes", desc: "Des idées de repas healthy et gourmands" },
-];
-
-// Chiffres dérivés du code plutôt qu'écrits à la main : ils ne peuvent pas
-// se désynchroniser de ce que l'app propose réellement (l'ancien "5
-// Formations" annonçait des formations dont aucune n'est publiée à ce jour).
-const STATS = [
-  { value: String(FEATURES.length), label: "Outils inclus" },
-  { value: String(ALL_LIVE_TYPES.length), label: "Formats live" },
-  { value: "100%", label: "Personnalisé" },
+  { title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A" },
+  // Pas de "5 formations complètes" (audit de cohérence 2026-09-01) : aucune
+  // n'est publiée, on annonce le statut réel ("à venir").
+  { title: "Formations (à venir)", desc: "Bodybuilding, nutrition, training, business, psychologie" },
+  { title: "Messagerie coach", desc: "Contact direct, réponses personnalisées" },
+  { title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
+  { title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
+  { title: "Nutrition", desc: "Plans alimentaires et calcul de macros personnalisé" },
+  { title: "Logbook séances", desc: "Enregistre tes performances en temps réel" },
+  { title: "Tracker quotidien", desc: "Pas, sommeil, biométrie au jour le jour" },
+  { title: "Communauté", desc: "Échange avec des membres aussi motivés que toi" },
+  { title: "Science & recherche", desc: "Études et actualité sourcées, sans blabla" },
+  { title: "Road map", desc: "Tes objectifs et les étapes pour les atteindre" },
+  { title: "Recettes", desc: "Des idées de repas healthy et gourmands" },
 ];
 
 // JSON-LD (retour direct 2026-09-17 : "je veux que quand on cherche mon
@@ -146,405 +117,231 @@ const FAQS = [
 
 const STRUCTURED_DATA = entityGraph([faqNode(FAQS)]);
 
+
+const BENEFITS = [
+  { n: "01", t: "Un programme fait pour toi", d: "Séances, exercices et progression adaptés à ton niveau, ton matériel et le temps que tu as. Tu sais quoi faire en ouvrant l'appli." },
+  { n: "02", t: "Une nutrition qui se calcule", d: "Tes cibles de calories et de protéines, ton plan alimentaire, le prochain repas : plus de calculs à la main." },
+  { n: "03", t: "Un suivi en deux minutes", d: "Bilan du jour, poids lissé, photos, mesures. Tu vois si ça avance, et ton coach aussi." },
+  { n: "04", t: "Ton coach, dans la même appli", d: "Messagerie, check-in de la semaine, retours personnalisés. Un vrai humain derrière, pas un robot." },
+  { n: "05", t: "Comprendre, pas juste suivre", d: "Guides et études sourcés, expliqués simplement. Tu comprends chaque choix au lieu de copier un plan." },
+  { n: "06", t: "Une communauté qui avance", d: "Victoires, questions, classement : des membres aussi motivés que toi, sans pression." },
+] as const;
+
+const PLAN_PICKS = { standard: [0, 1, 2], premium: [0, 3, 4] } as const;
+
+function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
+  return (
+    <div className="lp-cta">
+      <SocialAuthButtons role={coach ? "coach" : "client"} layout="stack" className="lp-social" />
+      <div className="lp-email">
+        <Link href={coach ? "/auth/coach" : "/auth/client"} className="lp-btn lp-btn--ghost" style={{ width: "100%" }}>
+          Continuer avec un e-mail
+        </Link>
+      </div>
+      <p className="lp-micro">
+        En continuant, tu acceptes les <Link href="/legal/cgu">CGU</Link> et la{" "}
+        <Link href="/legal/confidentialite">politique de confidentialité</Link>.
+      </p>
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "44px 20px 56px",
-        position: "relative",
-        zIndex: 1,
-        overflow: "hidden",
-      }}
-    >
-      <script
-        type="application/ld+json"
-         
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
-      />
+    <div className="lp">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
 
-      <div style={{ width: "100%", maxWidth: 480, position: "relative", zIndex: 1 }}>
-
-        {/* ── Logo ── */}
-        <div
-          className="ep-logo-glow animate-fade-up"
-          style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}
-        >
-          <EPLogo size="lg" showCoaching />
+      {/* ── En-tête : logo + connexion au téléphone, navigation complète sur ordinateur ── */}
+      <header className="lp-header">
+        <div className="lp-wrap lp-header-in">
+          <Link href="/" className="lp-logo" aria-label="EP Coaching, accueil">
+            <EPLogo size="sm" showCoaching={false} />
+          </Link>
+          <nav className="lp-nav" aria-label="Sections">
+            <a href="#fonctionnalites">Fonctionnalités</a>
+            <a href="#demo">Démo</a>
+            <a href="#coachs">Pour les coachs</a>
+            <a href="#faq">Questions</a>
+          </nav>
+          <div className="lp-header-actions">
+            <Link href="/auth/client?mode=login" className="lp-link">Se connecter</Link>
+            <Link href="/auth/client" className="lp-btn lp-btn--primary lp-btn--sm lp-header-cta">Commencer gratuitement</Link>
+          </div>
         </div>
+      </header>
 
-        {/* ── Badge ── */}
-        <div className="animate-fade-up stagger-1" style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
-          <span className="ep-badge-red">Coaching Bodybuilding</span>
-        </div>
-
-        {/* ── Headline ── */}
-        <div
-          className="animate-fade-up stagger-2"
-          style={{ textAlign: "center", marginBottom: 14 }}
-        >
-          <h1
-            style={{
-              fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
-              fontWeight: 900,
-              fontSize: "clamp(28px, 7vw, 42px)",
-              letterSpacing: "-0.05em",
-              color: "var(--ep-ink)",
-              margin: "0 0 10px",
-              lineHeight: 1.05,
-            }}
-          >
-            TA TRANSFORMATION
-            <br />
-            <span style={{
-              background: "linear-gradient(135deg, var(--ep-accent) 0%, var(--ep-pink) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>
-              COMMENCE ICI
-            </span>
-          </h1>
-          <p
-            style={{
-              fontSize: 13.5,
-              color: "rgba(var(--ep-ink-rgb),0.40)",
-              fontWeight: 500,
-              margin: "0 auto",
-              maxWidth: 360,
-              lineHeight: 1.5,
-            }}
-          >
-            Tu t&apos;entraînes, tu fais attention à ce que tu manges, et les résultats ne suivent pas. Ici tu comprends chaque choix, ton suivi se construit sur ta situation. Pas une appli de plus.
-          </p>
-        </div>
-
-        {/* ── Stats strip ── */}
-        <div
-          className="animate-fade-up stagger-3"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 0,
-            margin: "26px 0 32px",
-          }}
-        >
-          {STATS.map((s, i) => (
-            <div key={s.label} style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ textAlign: "center", padding: "0 20px" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "var(--ep-ink)", letterSpacing: "-0.03em" }}>
-                  {s.value}
-                </div>
-                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.30)", marginTop: 2 }}>
-                  {s.label}
-                </div>
-              </div>
-              {i < STATS.length - 1 && (
-                <div style={{ width: 1, height: 28, background: "rgba(var(--ep-accent-rgb),0.18)" }} />
-              )}
+      <main>
+        {/* ── Hero : un écran, une promesse, trois façons d'entrer ── */}
+        <section className="lp-wrap lp-hero" aria-labelledby="lp-h1">
+          <div className="lp-hero-visual animate-fade-up">
+            <AppMock />
+          </div>
+          <div className="lp-hero-copy">
+            <h1 id="lp-h1" className="lp-h1 animate-fade-up">
+              Ton coach, ton programme et ta nutrition. <span>Dans une seule appli.</span>
+            </h1>
+            <p className="lp-sub animate-fade-up stagger-1">
+              Séances, repas, bilans et messages au même endroit, construits sur ta situation. Gratuit pour commencer, sans carte bancaire.
+            </p>
+            <div className="animate-fade-up stagger-2">
+              <GoogleAppleCta />
             </div>
-          ))}
-        </div>
-
-        {/* ── Feature grid ── */}
-        <div
-          className="animate-fade-up stagger-4"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 10,
-            marginBottom: 32,
-          }}
-        >
-          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-            <div
-              key={title}
-              className="ep-card"
-              style={{
-                padding: "16px 10px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-                gap: 8,
-                animationDelay: `${i * 35}ms`,
-              }}
-            >
-              <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: "linear-gradient(135deg, rgba(var(--ep-accent-rgb),0.18) 0%, rgba(var(--ep-line-rgb),0.10) 100%)",
-                border: "1px solid rgba(var(--ep-accent-rgb),0.22)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}>
-                <Icon size={17} style={{ color: "var(--ep-accent)" }} strokeWidth={1.9} />
-              </div>
-              <div>
-                <p style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 3px", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
-                  {title}
-                </p>
-                <p style={{ fontSize: 9.5, color: "rgba(var(--ep-ink-rgb),0.32)", margin: 0, lineHeight: 1.35, fontWeight: 500 }}>
-                  {desc}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Preuve sociale : volontairement absente (audit de cohérence
-            2026-09-01). Le bloc précédent promettait "de vraies
-            transformations de membres" et menait vers /reussites, qui ne
-            contient aujourd'hui aucune victoire publique (0 ligne
-            community_posts publique, vérifié en base) : la page d'accueil
-            promettait donc une preuve qui n'existe pas et envoyait le
-            visiteur sur un écran vide, juste avant l'appel à l'action.
-            L'absence de preuve sociale est assumée dans la stratégie
-            (0 client payant à ce jour, la légitimité repose sur
-            l'exécution), elle ne se compense pas par un lien qui sonne
-            creux. À restaurer tel quel dès qu'un membre a publié une
-            victoire publique, c'est le premier levier à débloquer. ── */}
-
-        {/* ── Main CTA ── */}
-        <div className="animate-fade-up stagger-5">
-          <Link
-            href="/auth/client"
-            className="ep-btn-primary"
-            style={{
-              width: "100%",
-              height: 56,
-              borderRadius: "var(--radius-xl)",
-              fontSize: 13,
-              textDecoration: "none",
-            }}
-          >
-            <Heart size={18} strokeWidth={2} />
-            Rejoindre la communauté
-            <ArrowRight size={16} />
-          </Link>
-
-          <p style={{
-            textAlign: "center",
-            marginTop: 14,
-            fontSize: 11,
-            color: "rgba(var(--ep-ink-rgb),0.3)",
-            fontWeight: 500,
-          }}>
-            Accès gratuit · Sans engagement
-          </p>
-
-          {/* Axe 5 (VISION.md) : un visiteur indécis doit pouvoir voir qui
-              l'accompagnera avant de s'inscrire. Grossi et passé en doré
-              (retour direct 2026-08-17) : cette page sert aussi de
-              destination pour le lien en bio, ces deux liens secondaires
-              méritent plus de poids visuel.
-              Le libellé ne promet plus "plusieurs coachs" (audit de
-              cohérence 2026-09-01) : l'annuaire public ne liste que les
-              coachs humains, et il n'y en a qu'un à ce jour. Cette
-              formulation reste juste le jour où un coach tiers rejoint la
-              plateforme. */}
-          <Link
-            href="/coachs"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              marginTop: 14,
-              fontSize: 13,
-              fontWeight: 800,
-              color: "var(--ep-warn)",
-              textDecoration: "none",
-            }}
-          >
-            <Users size={14} /> Voir qui va t&apos;accompagner
-          </Link>
-
-          {/* Chemin de repli pour un visiteur pas encore prêt à créer un
-              compte : plutôt que de le perdre, un lead magnet gratuit sans
-              inscription capture son email pour une relance plus tard (voir
-              LEADMAGNETS.md). Jusqu'ici la page d'accueil ne renvoyait
-              jamais vers /ressources du tout. */}
-          <Link
-            href="/ressources"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              marginTop: 10,
-              fontSize: 13,
-              fontWeight: 800,
-              color: "var(--ep-warn)",
-              textDecoration: "none",
-            }}
-          >
-            <BookOpen size={14} /> Pas encore prêt(e) ? Ressources gratuites sans inscription
-          </Link>
-        </div>
-
-        {/* ── Qui et où (SEO/GEO 2026-10-13) : le nom du fondateur et Annecy
-            en texte visible, liés aux pages À propos et Coach à Annecy. ── */}
-        <section className="ep-card animate-fade-up stagger-6" style={{ marginTop: 32, padding: "18px 18px 16px" }}>
-          <h2 style={{ fontSize: 16, fontWeight: 900, color: "var(--ep-ink)", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
-            Fondé à Annecy par Emmanuel Santamaria Sanchéz
-          </h2>
-          <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.6)", margin: "0 0 12px", lineHeight: 1.55 }}>
-            Coach en musculation et nutrition, athlète naturel. EP Coaching est né à Annecy, en Haute-Savoie, et accompagne en ligne
-            partout en France : programme, nutrition, bilans et messages, dans une seule appli.
-          </p>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <Link href="/a-propos" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-accent)", textDecoration: "none" }}>
-              Qui suis-je →
-            </Link>
-            <Link href="/coach-sportif-annecy" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-accent)", textDecoration: "none" }}>
-              Coach sportif à Annecy →
-            </Link>
+            <p className="lp-already">
+              Déjà un compte ? <Link href="/auth/client?mode=login">Se connecter</Link>
+            </p>
+            <ul className="lp-proof">
+              <li>Fondée à Annecy par Emmanuel Santamaria Sanchéz</li>
+              <li>iPhone, Android et ordinateur</li>
+            </ul>
+            <Link href="/auth/coach" className="lp-coach-link">Tu es coach ? Ouvre ton espace gratuit</Link>
           </div>
         </section>
 
-        {/* ── FAQ ── contenu visible qui correspond exactement au JSON-LD
-            FAQPage ci-dessus (voir FAQS) : jamais de données structurées
-            sans le texte réel derrière, ni pour l'IA ni pour Google. */}
-        <div className="animate-fade-up stagger-6" style={{ marginTop: 32 }}>
-          <h2
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "rgba(var(--ep-ink-rgb),0.35)",
-              textAlign: "center",
-              marginBottom: 14,
-            }}
-          >
-            Questions fréquentes
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {FAQS.map(({ q, a }) => (
-              <div key={q} className="ep-card" style={{ padding: "14px 16px" }}>
-                <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px" }}>
-                  {q}
-                </p>
-                <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: 0, lineHeight: 1.5 }}>
-                  {a}
-                </p>
-              </div>
+        {/* ── Ce que tu y trouves ── */}
+        <section id="fonctionnalites" className="lp-wrap lp-section" aria-labelledby="lp-feat">
+          <div className="lp-reveal">
+            <p className="lp-eyebrow">Ce que tu y trouves</p>
+            <h2 id="lp-feat" className="lp-h2">Tout ce qu&apos;il faut pour progresser, au même endroit</h2>
+            <p className="lp-lead">
+              Tu t&apos;entraînes, tu fais attention à ce que tu manges, et les résultats ne suivent pas ? Ici tu comprends chaque choix, et ton suivi se construit sur ta situation. Pas une appli de plus.
+            </p>
+          </div>
+          <div className="lp-bento">
+            {BENEFITS.map((b) => (
+              <article key={b.n} className="lp-card lp-reveal">
+                <div className="lp-card-n" aria-hidden="true">{b.n}</div>
+                <h3>{b.t}</h3>
+                <p>{b.d}</p>
+              </article>
             ))}
           </div>
+          <p className="lp-lead" style={{ marginTop: 18, marginBottom: 0, fontSize: 14 }}>
+            Et aussi : {FEATURES.filter((f) => ["Coaching live", "Logbook séances", "Tracker quotidien", "Road map", "Recettes"].includes(f.title)).map((f) => f.title.toLowerCase()).join(", ")}. Les formations arrivent bientôt.
+          </p>
+        </section>
+
+        {/* ── Démonstration ── */}
+        <section id="demo" className="lp-wrap lp-section" aria-labelledby="lp-demo">
+          <div className="lp-reveal">
+            <p className="lp-eyebrow">En vrai, ça donne quoi</p>
+            <h2 id="lp-demo" className="lp-h2">Une journée dans l&apos;appli</h2>
+            <p className="lp-lead">Quatre écrans, un par moment de ta journée. Tu ouvres, tu sais quoi faire.</p>
+          </div>
+          <div className="lp-reveal"><DemoTabs /></div>
+        </section>
+
+        {/* ── Pour les coachs : les offres réelles, depuis la source unique ── */}
+        <section id="coachs" className="lp-wrap lp-section" aria-labelledby="lp-coach">
+          <div className="lp-reveal">
+            <p className="lp-eyebrow">Pour les coachs</p>
+            <h2 id="lp-coach" className="lp-h2">Tu es coach ? Suis tous tes clients au même endroit</h2>
+            <p className="lp-lead">
+              Gratuit pour les membres. Pour les coachs : un accès gratuit en échange de tes retours, ou une formule sans engagement et sans limite de clients.
+            </p>
+          </div>
+          <div className="lp-plans">
+            <article className="lp-plan lp-reveal">
+              <h3>{COACH_TESTER_PLAN.label}</h3>
+              <p className="lp-price">0 € <small>/ mois</small></p>
+              <p>{COACH_TESTER_PLAN.sublabel}.</p>
+              <ul>
+                <li>Suivi de tes clients dans l&apos;appli</li>
+                <li>Clients illimités</li>
+                <li>Sans carte bancaire</li>
+              </ul>
+              <Link href="/auth/coach" className="lp-btn lp-btn--ghost">Ouvrir mon espace coach</Link>
+            </article>
+            {COACH_PLATFORM_PLANS.map((plan) => {
+              const d = COACH_PLAN_DETAILS[plan.id];
+              const picks = PLAN_PICKS[plan.id].map((n) => d.includes[n]?.title).filter(Boolean);
+              const hi = plan.id === "premium";
+              return (
+                <article key={plan.id} className={`lp-plan lp-reveal${hi ? " lp-plan--hi" : ""}`}>
+                  {d.badge && <span className="lp-badge">{d.badge}</span>}
+                  <h3>{plan.label}</h3>
+                  <p className="lp-price">{plan.amount} € <small>/ mois</small></p>
+                  <p>{d.promise}</p>
+                  <ul>
+                    {d.includesIntro && <li>{d.includesIntro.replace(/\s*:\s*$/, "")}</li>}
+                    {picks.map((t) => <li key={t}>{t}</li>)}
+                  </ul>
+                  <Link href="/auth/coach" className={`lp-btn ${hi ? "lp-btn--primary" : "lp-btn--ghost"}`}>{d.ctaLabel}</Link>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ── Qui et où (SEO/GEO) ── */}
+        <section className="lp-wrap lp-section" aria-labelledby="lp-founder">
+          <div className="lp-founder lp-reveal">
+            <h2 id="lp-founder">Fondé à Annecy par Emmanuel Santamaria Sanchéz</h2>
+            <p>
+              Coach en musculation et nutrition, athlète naturel. EP Coaching est né à Annecy, en Haute-Savoie, et accompagne en ligne partout en France : programme, nutrition, bilans et messages, dans une seule appli.
+            </p>
+            <div className="lp-founder-links">
+              <Link href="/a-propos">Qui suis-je →</Link>
+              <Link href="/coach-sportif-annecy">Coach sportif à Annecy →</Link>
+              <Link href="/coachs">Voir qui va t&apos;accompagner →</Link>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">Instagram @{INSTAGRAM_HANDLE} →</a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FAQ : texte visible identique au JSON-LD FAQPage ── */}
+        <section id="faq" className="lp-wrap lp-section" aria-labelledby="lp-faq">
+          <div className="lp-reveal">
+            <p className="lp-eyebrow">Questions fréquentes</p>
+            <h2 id="lp-faq" className="lp-h2">Tout ce qu&apos;on te demande avant de commencer</h2>
+          </div>
+          <div className="lp-faq">
+            {FAQS.map(({ q, a }) => (
+              <details key={q}>
+                <summary>{q}</summary>
+                <p>{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Appel final ── */}
+        <section className="lp-wrap lp-section" aria-labelledby="lp-final">
+          <div className="lp-final lp-reveal">
+            <h2 id="lp-final" className="lp-h2" style={{ marginBottom: 6 }}>Prêt à commencer ?</h2>
+            <p className="lp-lead" style={{ margin: "0 auto" }}>Gratuit, sans engagement, en moins d&apos;une minute.</p>
+            <GoogleAppleCta />
+          </div>
+        </section>
+      </main>
+
+      <footer className="lp-footer">
+        <div className="lp-wrap lp-footer-grid">
+          <div>
+            <EPLogo size="sm" showCoaching />
+            <p className="lp-legal" style={{ marginTop: 18 }}>
+              EP Coaching · Fondé par Emmanuel Santamaria Sanchéz · Coaching musculation et nutrition
+            </p>
+            <nav aria-label="Plus sur EP Coaching" style={{ marginTop: 10 }}>
+              <Link href="/a-propos">À propos</Link>
+              <Link href="/coach-sportif-annecy">Coach sportif à Annecy</Link>
+              <Link href="/ressources">Guides gratuits</Link>
+              <Link href="/outils">Calculateurs</Link>
+              <Link href="/coachs">Les coachs</Link>
+              <Link href="/carrieres">Carrières</Link>
+              <a href={SHOWCASE_URL} target="_blank" rel="noopener">Le site EP Coaching</a>
+            </nav>
+            <nav aria-label="Informations légales">
+              <Link href="/legal/cgu">CGU</Link>
+              <Link href="/legal/cgv">CGV</Link>
+              <Link href="/legal/confidentialite">Confidentialité</Link>
+            </nav>
+          </div>
+          <div>
+            <NewsletterSignupForm source="app_home" />
+            <InstallAppHint />
+          </div>
         </div>
-
-        {/* ── Coachs : accès gratuit (décision du fondateur 2026-10-09 :
-            priorité aux utilisateurs, appli gratuite pour les coachs,
-            clients illimités, en échange de leurs retours). ── */}
-        <Link
-          href="/auth/coach"
-          className="animate-fade-up stagger-6"
-          style={{
-            display: "block",
-            marginTop: 24,
-            padding: "18px 18px 16px",
-            borderRadius: "var(--radius-xl)",
-            textDecoration: "none",
-            background: "linear-gradient(150deg, rgba(var(--ep-accent-rgb),0.16), rgba(var(--ep-s1-rgb),0.85) 65%)",
-            border: "1px solid rgba(var(--ep-accent-rgb),0.35)",
-            boxShadow: "0 0 40px rgba(var(--ep-accent-rgb),0.12)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ep-accent)", marginBottom: 6 }}>
-            <Shield size={13} /> Tu es coach ?
-          </div>
-          <div style={{ fontSize: 17, fontWeight: 900, color: "var(--ep-ink)", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
-            L&apos;appli complète, gratuite, pour tous tes clients
-          </div>
-          <p className="ep-tagline" style={{ margin: "6px 0 10px", fontSize: 14 }}>Tu gagnes un outil. On gagne tes retours.</p>
-          <div style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.5, marginBottom: 12 }}>
-            Clients illimités · Sans carte bancaire · Sans engagement
-          </div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, color: "var(--ep-strong)" }}>
-            Créer mon espace coach gratuit <ArrowRight size={15} />
-          </div>
-        </Link>
-
-        {/* ── Newsletter ── */}
-        <div className="ep-card-flat animate-fade-up stagger-6" style={{ padding: 16, marginTop: 24 }}>
-          <NewsletterSignupForm source="app_home" />
-        </div>
-
-        <InstallAppHint />
-
-        {/* ── Plan du site public (maillage interne, SEO 2026-10-14) ── */}
-        <nav
-          aria-label="Plus sur EP Coaching"
-          className="animate-fade-up stagger-6"
-          style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", columnGap: 16, rowGap: 0, marginTop: 24, lineHeight: "44px" }}
-        >
-          {[
-            { href: "/a-propos", label: "À propos" },
-            { href: "/coach-sportif-annecy", label: "Coach sportif à Annecy" },
-            { href: "/ressources", label: "Guides gratuits" },
-            { href: "/outils", label: "Calculateurs" },
-            { href: "/coachs", label: "Les coachs" },
-            { href: "/carrieres", label: "Tu es coach ?" },
-          ].map((l) => (
-            <Link key={l.href} href={l.href} style={{ color: "rgba(var(--ep-ink-rgb),0.6)", textDecoration: "none", fontSize: 12.5, fontWeight: 700 }}>
-              {l.label}
-            </Link>
-          ))}
-          <a href={SHOWCASE_URL} target="_blank" rel="noopener" style={{ color: "rgba(var(--ep-ink-rgb),0.6)", textDecoration: "none", fontSize: 12.5, fontWeight: 700 }}>
-            Le site EP Coaching
-          </a>
-        </nav>
-
-        {/* ── Legal links ── */}
-        <div
-          className="animate-fade-up stagger-6"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            gap: 14,
-            marginTop: 20,
-          }}
-        >
-          {[
-            { href: "/legal/cgu", label: "CGU" },
-            { href: "/legal/cgv", label: "CGV" },
-            { href: "/legal/confidentialite", label: "Confidentialité" },
-          ].map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              style={{ color: "var(--ep-accent)", textDecoration: "none", fontSize: 12.5, fontWeight: 600 }}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* ── Bottom line ── */}
-        <p
-          className="animate-fade-up stagger-6"
-          style={{
-            marginTop: 16,
-            textAlign: "center",
-            fontSize: 10,
-            color: "rgba(var(--ep-ink-rgb),0.12)",
-            fontWeight: 600,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-          }}
-        >
-          EP Coaching · Fondé par Emmanuel Santamaria Sanchéz · Coaching Bodybuilding & Performance
-        </p>
-      </div>
+      </footer>
     </div>
   );
 }
