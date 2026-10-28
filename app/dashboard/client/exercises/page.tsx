@@ -9,6 +9,8 @@ import { getEquipmentType, type EquipmentType } from "@/lib/exercise-library-con
 import ExerciseLibraryView from "@/components/ui/ExerciseLibraryView";
 import GymsDirectoryView from "@/components/ui/GymsDirectoryView";
 import LibraryHub from "@/components/ui/LibraryHub";
+import TrainingGymsManager from "@/components/gyms/TrainingGymsManager";
+import { getTrainingGyms } from "@/utils/training-gyms";
 import { createExercise, updateExercise, deleteExercise } from "./actions";
 import { createGym, updateGym, deleteGym, upsertGymReview, deleteGymReview, setMyGymForCurrentUser } from "../gyms/actions";
 import { Dumbbell } from "lucide-react";
@@ -29,11 +31,12 @@ export default async function ClientExercisesPage({
 
   const { tab } = await searchParams;
 
-  const [exercises, points, gyms, intake] = await Promise.all([
+  const [exercises, points, gyms, intake, myGyms] = await Promise.all([
     getExerciseLibrary(),
     getTotalPoints(user.id),
     getGymsWithReviews(),
     getClientIntake(user.id),
+    getTrainingGyms(user.id),
   ]);
 
   const exerciseTypeCounts = exercises.reduce<Record<EquipmentType, number>>((acc, ex) => {
@@ -58,12 +61,15 @@ export default async function ClientExercisesPage({
       </div>
 
       <LibraryHub
-        initialTab={tab === "gyms" ? "gyms" : "exercises"}
+        initialTab={tab === "gyms" ? "gyms" : tab === "mine" ? "mine" : "exercises"}
+        myGymCount={myGyms.length}
+        myGymsView={<TrainingGymsManager ownerId={user.id} gyms={myGyms} />}
         exerciseCount={exercises.length}
         gymCount={gyms.length}
         exerciseView={
           <ExerciseLibraryView
             exercises={exercises}
+            trainingGyms={myGyms}
             isCoach={false}
             points={points}
             isSubscribed={isSubscribed(profile)}

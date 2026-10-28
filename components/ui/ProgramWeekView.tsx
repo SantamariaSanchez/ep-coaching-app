@@ -1,44 +1,15 @@
 "use client";
 
 // Page « Mon programme » (client coaché, membre gratuit, coach pour lui-même
-// et aperçu « Voir comme mon client »). Deuxième refonte du 2026-10-20 sur
-// retour direct du fondateur : « vraiment travaille bien sur l'onglet
-// programme, ça doit être clairement meilleur que l'actuel » (après « qu'on
-// voie bien le jour, l'heure, les accessoires, quelle salle et quel exo, et
-// optimise l'espace »).
-//
-// - En tête : programme, fréquence et où on en est du bloc (semaine 3 sur 6,
-//   semaine allégée à venir), sans jargon.
-// - La semaine : 7 jours compacts, état de chaque jour (faite, en cours,
-//   manquée, à venir avec l'heure, repos). Un tap affiche la séance du jour
-//   choisi.
-// - La séance du jour (ou la prochaine, « dans 2 jours ») en héros : quand,
-//   où, durée, muscles travaillés, matériel et sac, bouton Démarrer /
-//   Reprendre / Refaire, puis les exercices avec la DERNIÈRE PERFORMANCE
-//   réelle, l'objectif du jour (double progression, la même règle que la
-//   séance guidée) et la tendance sur le bloc. Consigne et vidéo au tap.
-// - Les séries de la semaine par muscle (faites / prévues), à la place des
-//   jauges MEV/MAV/MRV de VolumeIntensitySection, illisibles pour un client.
+// et aperçu « Voir comme mon client »). Version condensée (retour d'Emmanuel,
+// 2026-10-28) : seulement le nécessaire, les jours, la séance (nom), les exos
+// (séries × reps, repos), la durée estimée, les accessoires et la salle de la
+// séance. Aucune consigne ni note longue ici : elles vivent dans le logbook,
+// pendant la séance. Une séance tient sur un écran de téléphone.
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  Backpack,
-  CalendarPlus,
-  Check,
-  ChevronDown,
-  Clock,
-  Dumbbell,
-  ExternalLink,
-  Link2,
-  MapPin,
-  Play,
-  RotateCw,
-  Timer,
-  TrendingDown,
-  TrendingUp,
-  Minus,
-} from "lucide-react";
+import { Backpack, Check, Clock, Link2, MapPin, Play, RotateCw } from "lucide-react";
 import { useLocale, useT } from "@/components/i18n/I18nProvider";
 import { intlLocale } from "@/lib/i18n";
 import type { Exercise, ProgramDay, ProgramWithDays } from "@/utils/programs";
@@ -48,26 +19,16 @@ import {
   WEEKDAY_LONG,
   addDaysIso,
   equipmentForDay,
-  equipmentKey,
   estimateMinutes,
   isoWeekday,
-  musclesForDay,
-  plannedSetsByMuscle,
   shortHour,
-  type ExerciseHistory,
-  type PerfSet,
 } from "@/lib/program-week";
 import { accessoriesForSession, ALWAYS_ACCESSORIES } from "@/lib/session-accessories";
-import { formatRest, techniqueHint, techniqueLabel, unitShort, isTimeUnit } from "@/lib/program-sheet";
-import { parseRepScheme, rangeForSet, suggestSet, formatKg } from "@/lib/set-targets";
-import { describeTempo } from "@/lib/live-session";
+import { formatRest, unitShort } from "@/lib/program-sheet";
 import { toBlocks } from "@/components/program-builder/ProgramExerciseList";
 import { withAlpha } from "@/lib/theme-color";
-import { safeExternalUrl } from "@/lib/sanitize";
 import { useStartSession } from "@/hooks/useStartSession";
-import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 import MoveSession from "@/components/ui/MoveSession";
-import { resolveVideoEmbed } from "@/lib/video-embed-utils";
 
 function norm(v: string): string {
   return v.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -88,263 +49,43 @@ function relativeDay(t: T, today: string, date: string): string {
   return d > 0 ? t("Dans {n} jours", { n: d }) : t("Il y a {n} jours", { n: -d });
 }
 
-// ── Performance d'un exercice ────────────────────────────────────────────────
+const NBSP = " ";
 
-const NBSP = " ";
-
-/** « 80 kg × 10 · 9 · 8 » si la charge ne bouge pas, sinon « 82,5×8 · 80×9 ». */
-function formatSets(sets: PerfSet[], unit: string | null | undefined, t: T): string {
-  const timed = isTimeUnit(unit);
-  const reps = (r: number | null) => (r == null ? "?" : timed ? `${r}${NBSP}s` : String(r));
-  const weights = sets.map((s) => (s.w != null && s.w > 0 ? s.w : null));
-  if (weights.every((w) => w == null)) {
-    return `${sets.map((s) => reps(s.r)).join(" · ")}${timed ? "" : `${NBSP}${t("reps")}`}`;
-  }
-  const same = weights.every((w) => w === weights[0]);
-  if (same) return `${formatKg(weights[0] as number)}${NBSP}kg × ${sets.map((s) => reps(s.r)).join(" · ")}`;
-  return sets.map((s) => (s.w != null && s.w > 0 ? `${formatKg(s.w)}×${reps(s.r)}` : reps(s.r))).join(" · ");
-}
-
-/** Objectif de la première série, même règle que la séance guidée (lib/set-targets). */
-function objectiveFor(ex: Exercise, hist: ExerciseHistory, t: T): { text: string; reason: string | null; up: boolean } | null {
-  const range = rangeForSet(parseRepScheme(ex.reps, ex.sets), 0);
-  const first = hist.lastSets[0];
-  if (!range || !first || first.r == null) return null;
-  if (first.w != null && first.w > 0) {
-    const s = suggestSet({ range, prev: { weight: first.w, reps: String(first.r), rir: first.rir }, targetRir: ex.rir ?? null });
-    if (!s) return null;
-    return { text: `${formatKg(s.weightKg)}${NBSP}kg × ${s.reps}`, reason: t(s.reason), up: s.weightKg > first.w || s.reps > first.r };
-  }
-  // Poids du corps : une rep de plus, jusqu'au haut de la fourchette.
-  if (isTimeUnit(ex.reps_unit)) return null;
-  if (first.r >= range.max) return { text: t("lest ou tempo plus lent"), reason: null, up: true };
-  return { text: `${Math.max(range.min, first.r + 1)}${NBSP}${t("reps")}`, reason: null, up: true };
-}
-
-function TrendBadge({ hist }: { hist: ExerciseHistory }) {
+function ExerciseRow({ ex, index, tag, color, restShown }: { ex: Exercise; index: number; tag: string | null; color: string | null; restShown: string | null }) {
   const t = useT();
-  const tr = hist.trend;
-  if (!tr) return null;
-  const up = tr.delta > 0;
-  const down = tr.delta < 0;
-  const amount =
-    tr.kind === "kg"
-      ? `${up ? "+" : "−"}${formatKg(Math.abs(tr.delta))}${NBSP}kg`
-      : tr.kind === "reps"
-        ? `${up ? "+" : "−"}${Math.abs(tr.delta)}${NBSP}${Math.abs(tr.delta) > 1 ? t("reps") : t("rep")}`
-        : t("stable");
-  const Icon = up ? TrendingUp : down ? TrendingDown : Minus;
-  return (
-    <span
-      className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-black tabular-nums whitespace-nowrap"
-      style={
-        up
-          ? { background: "rgba(var(--ep-ok-rgb),0.13)", color: "var(--ep-ok)" }
-          : { background: "rgba(var(--ep-ink-rgb),0.07)", color: "rgba(var(--ep-ink-rgb),0.6)" }
-      }
-      title={t("Meilleure série, depuis {n} sem.", { n: tr.weeks })}
-    >
-      <Icon size={11} strokeWidth={2.75} aria-hidden />
-      {amount}
-      <span className="font-bold opacity-70 max-[399px]:hidden">
-        {NBSP}
-        {tr.weeks}
-        {NBSP}
-        {t("sem.")}
-      </span>
-    </span>
-  );
-}
-
-// ── Un exercice ──────────────────────────────────────────────────────────────
-
-function ExerciseRow({
-  ex,
-  index,
-  tag,
-  color,
-  restShown,
-  ctx,
-  done,
-}: {
-  ex: Exercise;
-  index: number;
-  tag: string | null;
-  color: string | null;
-  restShown: string | null;
-  ctx: ProgramWeekContext;
-  done: boolean;
-}) {
-  const t = useT();
-  const locale = useLocale();
-  const [open, setOpen] = useState(false);
-  const key = equipmentKey(ex.name);
-  const hist = ctx.history?.[key];
-  const guide = ctx.guides?.[key];
-  const equipment = ctx.equipmentByName[key];
   const unit = unitShort(ex.reps_unit);
-  const tech = techniqueLabel(ex.technique);
-  const target =
-    ex.sets && ex.reps ? `${ex.sets} × ${ex.reps}${NBSP}${unit}` : ex.sets ? `${ex.sets} ${t("séries")}` : ex.reps ? `${ex.reps} ${unit}` : null;
-  const objective = hist && !done ? objectiveFor(ex, hist, t) : null;
-  const tempoText = describeTempo(ex.tempo);
-  const video = guide?.videoUrl ? safeExternalUrl(guide.videoUrl) : null;
-  const image = guide?.imageUrl ? safeExternalUrl(guide.imageUrl) : null;
-  const embeddable = video ? !!resolveVideoEmbed(video) : false;
-  const accessories = ctx.accessoriesByName[ex.name] ?? [];
-  const hasAnyHistory = Object.keys(ctx.history ?? {}).length > 0;
-  const hasDetails = !!(guide?.instructions || guide?.tips.length || video || image || tech || tempoText || accessories.length || objective?.reason);
-  const lastDate = hist
-    ? new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${hist.lastDate}T12:00:00Z`))
-    : null;
-
+  const target = ex.sets && ex.reps ? `${ex.sets} × ${ex.reps}${NBSP}${unit}` : ex.sets ? `${ex.sets} ${t("séries")}` : ex.reps ? `${ex.reps} ${unit}` : null;
   return (
-    <li className="py-2 first:pt-1 last:pb-1">
-      <button
-        type="button"
-        onClick={() => hasDetails && setOpen(!open)}
-        aria-expanded={hasDetails ? open : undefined}
-        className={`w-full flex gap-2.5 text-left ${hasDetails ? "" : "cursor-default"}`}
+    <li className="flex items-baseline gap-2 py-1.5 first:pt-0.5 last:pb-0.5">
+      <span
+        className="w-5 shrink-0 text-center text-[10px] font-black tabular-nums"
+        style={tag ? { color: color ?? undefined } : { color: "rgba(var(--ep-ink-rgb),0.45)" }}
       >
-        <span
-          className="mt-px w-6 h-6 shrink-0 rounded-md flex items-center justify-center text-[10px] font-black tabular-nums"
-          style={
-            tag
-              ? { background: withAlpha(color, "26"), color: color ?? undefined }
-              : { background: "rgba(var(--ep-ink-rgb),0.08)", color: "rgba(var(--ep-ink-rgb),0.6)" }
-          }
-        >
-          {tag ?? index}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="flex items-start gap-1.5">
-            <span className="min-w-0 flex-1 text-[13.5px] font-bold leading-snug text-(--ep-strong) break-words">{ex.name}</span>
-            {hasDetails && (
-              <ChevronDown
-                size={15}
-                aria-hidden
-                className="mt-0.5 shrink-0 text-(--ep-ink)/35 transition-transform"
-                style={{ transform: open ? "rotate(180deg)" : undefined }}
-              />
-            )}
-          </span>
-          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11.5px] leading-4 text-(--ep-ink)/60">
-            <span className="font-black text-(--ep-ink)/90 tabular-nums">{target ?? t("à définir avec ton coach")}</span>
-            {ex.rir != null && <span className="tabular-nums">RIR {ex.rir}</span>}
-            {restShown && (
-              <span className="inline-flex items-center gap-0.5 tabular-nums">
-                <Timer size={10} aria-hidden /> {restShown}
-              </span>
-            )}
-            {tech && (
-              <span className="rounded px-1.5 py-px text-[9.5px] font-black uppercase tracking-wide bg-(--ep-gold)/15 text-(--ep-gold)">{t(tech)}</span>
-            )}
-            {equipment && norm(equipment) !== "autre" && <span className="text-(--ep-ink)/40">{equipment}</span>}
-          </span>
-          {ex.notes && <span className="block mt-0.5 text-[11px] italic leading-snug text-(--ep-ink)/50">{ex.notes}</span>}
-
-          {/* Dernière fois / objectif du jour */}
-          {hist ? (
-            <span className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 rounded-lg bg-(--ep-ink)/[0.045] px-2 py-1.5 text-[11.5px] leading-4 sm:inline-flex sm:max-w-full">
-              <span className="basis-full min-w-0 sm:basis-auto">
-                <span className="text-[9.5px] font-black uppercase tracking-wider text-(--ep-ink)/40">{lastDate}</span>{" "}
-                <span className="font-bold tabular-nums text-(--ep-ink)/85">{formatSets(hist.lastSets, ex.reps_unit, t)}</span>
-              </span>
-              {objective && (
-                <span className="min-w-0">
-                  <span className="text-[9.5px] font-black uppercase tracking-wider text-(--ep-accent)">{t("Objectif")}</span>{" "}
-                  <span className="font-black tabular-nums text-(--ep-strong) whitespace-nowrap">{objective.text}</span>
-                </span>
-              )}
-              {hist.trend && (
-                <span className="ml-auto sm:ml-0">
-                  <TrendBadge hist={hist} />
-                </span>
-              )}
-            </span>
-          ) : (
-            !done &&
-            hasAnyHistory && (
-              <span className="mt-1 block text-[11px] leading-4 text-(--ep-ink)/40">
-                {ex.rir != null
-                  ? ex.rir === 0
-                    ? t("Première fois : trouve une charge qui t'amène à l'échec dans la fourchette")
-                    : t(ex.rir === 1 ? "Première fois : trouve une charge qui te laisse 1 rep en réserve" : "Première fois : trouve une charge qui te laisse {n} reps en réserve", { n: ex.rir })
-                  : t("Première fois : trouve ta charge de travail")}
-              </span>
-            )
-          )}
-        </span>
-      </button>
-
-      {open && hasDetails && (
-        <div className="ml-[34px] mt-2 space-y-2 rounded-xl border border-(--ep-line)/20 bg-(--ep-s2)/70 px-3 py-2.5 text-[12px] leading-relaxed text-(--ep-ink)/75">
-          {objective?.reason && (
-            <p>
-              <b className="text-(--ep-strong)">{t("Objectif :")}</b> {objective.reason}
-            </p>
-          )}
-          {tech && techniqueHint(ex.technique) && (
-            <p>
-              <b className="text-(--ep-gold)">{t(tech)} :</b> {t(techniqueHint(ex.technique) ?? "")}
-            </p>
-          )}
-          {(tempoText || ex.tempo) && (
-            <p>
-              <b className="text-(--ep-strong)">{t("Tempo")} {ex.tempo} :</b> {tempoText ?? t("vitesse imposée par ton coach")}
-            </p>
-          )}
-          {guide?.instructions ? (
-            <p className="whitespace-pre-wrap">{guide.instructions}</p>
-          ) : guide?.tips.length ? (
-            <ul className="space-y-0.5">
-              {guide.tips.map((tip, i) => (
-                <li key={i} className="flex gap-1.5">
-                  <span className="text-(--ep-accent) font-black">·</span>
-                  {tip}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {accessories.length > 0 && (
-            <p className="flex items-center gap-1.5">
-              <Backpack size={12} className="shrink-0 text-(--ep-ink)/45" aria-hidden />
-              {accessories.join(" · ")}
-            </p>
-          )}
-          {image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={image} alt={ex.name} loading="lazy" className="w-full max-w-[420px] rounded-lg border border-(--ep-line)/25 object-cover" />
-          )}
-          {video &&
-            (embeddable ? (
-              <EmbeddedVideo url={video} maxWidth={420} />
-            ) : (
-              <a href={video} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 min-h-11 font-bold text-(--ep-accent)">
-                <ExternalLink size={12} /> {t("Voir la vidéo d'exemple")}
-              </a>
-            ))}
-        </div>
-      )}
+        {tag ?? index}
+      </span>
+      <span className="min-w-0 flex-1 text-[13px] font-bold leading-snug text-(--ep-strong) break-words">{ex.name}</span>
+      <span className="shrink-0 text-right text-[12px] leading-4 tabular-nums">
+        <span className="font-black text-(--ep-ink)/90">{target ?? t("à définir")}</span>
+        {restShown && <span className="ml-1.5 text-(--ep-ink)/50">{restShown}</span>}
+      </span>
     </li>
   );
 }
 
-function ExerciseList({ day, ctx, done }: { day: ProgramDay; ctx: ProgramWeekContext; done: boolean }) {
+function ExerciseList({ day }: { day: ProgramDay }) {
   const t = useT();
   const blocks = toBlocks(day.exercises);
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-0.5">
       {blocks.map((b, bi) => (
         <div
           key={bi}
-          className={b.label ? "rounded-xl border-l-[3px] pl-2 pr-1.5 pt-1.5" : ""}
+          className={b.label ? "rounded-lg border-l-[3px] pl-2 pr-1.5 pt-1" : ""}
           style={b.color ? { borderColor: b.color, background: withAlpha(b.color, "0d") } : undefined}
         >
           {b.label && (
             <p className="flex items-center gap-1 text-[9.5px] font-black uppercase tracking-widest" style={{ color: b.color ?? undefined }}>
               <Link2 size={11} aria-hidden /> {t(b.label)}
-              <span className="normal-case tracking-normal font-bold text-(--ep-ink)/50">· {t("enchaîne sans repos")}</span>
             </p>
           )}
           <ul className={b.label ? "" : "divide-y divide-(--ep-line)/10"}>
@@ -357,8 +98,6 @@ function ExerciseList({ day, ctx, done }: { day: ProgramDay; ctx: ProgramWeekCon
                 color={b.color}
                 // Dans un superset, le repos ne compte qu'après le dernier.
                 restShown={!b.label || ii === b.items.length - 1 ? formatRest(ex.rest_seconds) : null}
-                ctx={ctx}
-                done={done}
               />
             ))}
           </ul>
@@ -439,51 +178,38 @@ function SessionCard({
   info,
   featured,
   nextAfter,
-  weekComplete,
   program,
   ctx,
   sessionBasePath,
   gymsHref,
-  agendaHref,
   canMove,
   onSelect,
 }: {
   info: DayInfo;
   featured: Featured;
   nextAfter: { info: DayInfo; date: string | null } | null;
-  weekComplete: boolean;
   program: ProgramWithDays;
   ctx: ProgramWeekContext;
   sessionBasePath: string;
   gymsHref: string;
-  agendaHref: string;
   canMove: boolean;
   onSelect: (id: string) => void;
 }) {
   const t = useT();
   const locale = useLocale();
-  const { day, minutes, equipment, done, resume, missed } = info;
+  const { day, minutes, done, resume, missed } = info;
   const isFeatured = featured?.id === day.id;
   const date = isFeatured && featured?.kind === "nextweek" ? featured.date : info.date;
   const slot = ctx.slots[day.id] ?? null;
-  const muscles = musclesForDay(day.exercises);
-  const bag = accessoriesForSession(day.exercises.map((e) => e.name), ctx.accessoriesByName).filter(
+  const bag = accessoriesForSession(day.exercises.map((e) => e.name), ctx.accessoriesByName, ctx.equipmentByName).filter(
     (a) => !ALWAYS_ACCESSORIES.some((al) => al.accessory === a.accessory)
   );
-  const gymUrl = ctx.gym?.link ? safeExternalUrl(ctx.gym.link) : null;
+  // Salle de la séance : celle rattachée à la séance, sinon la salle de la fiche.
+  const dayGym = day.gym_id ? ctx.trainingGyms.find((g) => g.id === day.gym_id) ?? null : null;
+  const gymLabel = dayGym ? [dayGym.name, dayGym.city && !dayGym.name.toLowerCase().includes(dayGym.city.toLowerCase()) ? dayGym.city : null].filter(Boolean).join(", ") : ctx.gym?.name ?? null;
   const isToday = date === ctx.today;
   const fmtDate = (iso: string) =>
     new Intl.DateTimeFormat(intlLocale(locale), { weekday: "long", day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${iso}T12:00:00Z`));
-
-  const eyebrow = isToday
-      ? t("Ta séance du jour")
-      : isFeatured && featured?.kind === "nextweek" && weekComplete
-        ? `${t("Semaine bouclée")} ✓ · ${t("Prochaine séance")}`
-        : isFeatured && (featured?.kind === "next" || featured?.kind === "nextweek")
-          ? `${t("Repos aujourd'hui")} · ${t("Prochaine séance")}`
-        : !day.weekday
-          ? t("Séance sans jour fixe")
-          : t(WEEKDAY_LONG[day.weekday]);
 
   const status = resume
     ? { label: t("En cours"), color: "var(--ep-warn)", rgb: "--ep-warn-rgb" }
@@ -493,42 +219,31 @@ function SessionCard({
         ? { label: t("Manquée"), color: "var(--ep-bad)", rgb: "--ep-bad-rgb" }
         : null;
 
-  const relative = date && !isToday ? relativeDay(t, ctx.today, date) : null;
-  const factRow = "flex items-center gap-2 min-h-7 text-[12.5px] leading-snug";
-  const linkCls = "inline-flex items-center gap-1 -my-2 min-h-11 font-bold text-(--ep-accent)";
+  const factRow = "flex items-center gap-2 min-h-6 text-[12.5px] leading-snug";
 
   return (
     <section
-      className="scroll-mt-16 rounded-2xl border bg-(--ep-s1) p-3.5 mb-3"
+      className="scroll-mt-16 rounded-2xl border bg-(--ep-s1) p-3 mb-3"
       style={{
         borderColor: isToday || resume ? "rgba(var(--ep-accent-rgb),0.45)" : "rgba(var(--ep-line-rgb),0.3)",
         boxShadow: isToday || resume ? "0 0 28px rgba(var(--ep-accent-rgb),0.10)" : undefined,
       }}
       aria-label={day.day_label}
     >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-black uppercase tracking-widest text-(--ep-accent) truncate">{eyebrow}</p>
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="min-w-0 text-[22px] font-black uppercase tracking-tight leading-[1.05] text-(--ep-strong) break-words">{day.day_label}</h2>
         {status && (
-          <span
-            className="shrink-0 rounded-md px-1.5 py-0.5 text-[9.5px] font-black uppercase tracking-wide"
-            style={{ color: status.color, background: `rgba(var(${status.rgb}),0.14)` }}
-          >
+          <span className="mt-1 shrink-0 rounded-md px-1.5 py-0.5 text-[9.5px] font-black uppercase tracking-wide" style={{ color: status.color, background: `rgba(var(${status.rgb}),0.14)` }}>
             {status.label}
           </span>
         )}
       </div>
-      <h2 className="mt-0.5 text-[26px] font-black uppercase tracking-tight leading-[1.05] text-(--ep-strong) break-words">{day.day_label}</h2>
 
-      {/* Quand, où, combien de temps */}
-      <div className="mt-2 space-y-0.5">
+      <div className="mt-1.5 space-y-0.5">
         <p className={factRow}>
-          <Clock size={14} className="shrink-0 text-(--ep-accent)" aria-hidden />
-          <span className="min-w-0">
-            {date ? (
-              <span className="font-bold text-(--ep-ink)/90 first-letter:uppercase inline-block">{fmtDate(date)}</span>
-            ) : (
-              <span className="font-bold text-(--ep-ink)/90">{t("Jour libre")}</span>
-            )}
+          <Clock size={13} className="shrink-0 text-(--ep-accent)" aria-hidden />
+          <span className="min-w-0 font-bold text-(--ep-ink)/90">
+            {date ? <span className="first-letter:uppercase inline-block">{fmtDate(date)}</span> : t("Jour libre")}
             {slot ? (
               <span className="font-black text-(--ep-strong) tabular-nums">
                 {" · "}
@@ -536,8 +251,13 @@ function SessionCard({
                 {slot.end ? `–${shortHour(slot.end)}` : ""}
               </span>
             ) : null}
-            {relative && <span className="text-(--ep-ink)/50"> · {relative.toLowerCase()}</span>}
             {day.weekMoved && <span className="text-(--ep-warn)"> · {t("décalée cette semaine")}</span>}
+            {" · "}
+            <span className="tabular-nums">
+              {minutes != null ? `~${minutes} min` : ""}
+              {minutes != null ? " · " : ""}
+              {day.exercises.length} {day.exercises.length > 1 ? t("exos") : t("exo")}
+            </span>
           </span>
           {canMove && !done && (
             <span className="ml-auto shrink-0">
@@ -549,107 +269,37 @@ function SessionCard({
             </span>
           )}
         </p>
-        {!slot && (
-          <p className={factRow}>
-            <CalendarPlus size={14} className="shrink-0 text-(--ep-ink)/40" aria-hidden />
-            <span className="text-(--ep-ink)/55">{day.weekday ? t("Pas encore d'heure.") : t("Pas encore de jour.")}</span>
-            <Link href={agendaHref} className={linkCls}>
-              {day.weekday ? t("La caler dans l'agenda") : t("Choisir un jour")} →
-            </Link>
-          </p>
-        )}
         <p className={factRow}>
-          <MapPin size={14} className={`shrink-0 ${ctx.gym ? "text-(--ep-accent)" : "text-(--ep-ink)/40"}`} aria-hidden />
-          {ctx.gym ? (
-            <>
-              {gymUrl ? (
-                <a href={gymUrl} target="_blank" rel="noopener noreferrer" className="-my-2 min-h-11 min-w-0 inline-flex items-center gap-1 font-bold text-(--ep-ink)/90">
-                  <span className="truncate">{ctx.gym.name}</span>
-                  <ExternalLink size={11} className="shrink-0 text-(--ep-ink)/35" aria-hidden />
-                </a>
-              ) : (
-                <span className="min-w-0 truncate font-bold text-(--ep-ink)/90">{ctx.gym.name}</span>
-              )}
-              <Link href={gymsHref} className="shrink-0 -my-2 min-h-11 inline-flex items-center px-1 text-[11.5px] font-bold text-(--ep-ink)/45">
-                {t("Changer")}
-              </Link>
-            </>
+          <MapPin size={13} className={`shrink-0 ${gymLabel ? "text-(--ep-accent)" : "text-(--ep-ink)/40"}`} aria-hidden />
+          {gymLabel ? (
+            <span className="min-w-0 truncate font-bold text-(--ep-ink)/90">{gymLabel}</span>
           ) : (
             <>
               <span className="text-(--ep-ink)/55">{t("Pas de salle choisie.")}</span>
-              <Link href={gymsHref} className={linkCls}>
-                {t("Choisir ma salle")} →
+              <Link href={gymsHref} className="inline-flex items-center gap-1 -my-2 min-h-11 font-bold text-(--ep-accent)">
+                {t("Ajouter ma salle")} →
               </Link>
             </>
           )}
         </p>
-        <p className={factRow}>
-          <Timer size={14} className="shrink-0 text-(--ep-accent)" aria-hidden />
-          <span className="font-bold text-(--ep-ink)/90 tabular-nums">
-            {minutes != null ? `~${minutes} min · ` : ""}
-            {day.exercises.length} {day.exercises.length > 1 ? t("exercices") : t("exercice")}
-          </span>
-        </p>
+        {bag.length > 0 && (
+          <p className={`${factRow} items-start`}>
+            <Backpack size={13} className="mt-0.5 shrink-0 text-(--ep-ink)/45" aria-hidden />
+            <span className="min-w-0 text-(--ep-ink)/85">
+              <span className="font-black uppercase tracking-wider text-[9.5px] text-(--ep-ink)/45 mr-1.5">{t("Accessoires")}</span>
+              {bag.map((a, i) => (
+                <span key={a.accessory}>
+                  {i > 0 && <span className="text-(--ep-ink)/35"> · </span>}
+                  <span className="font-bold">{t(a.accessory)}</span>
+                </span>
+              ))}
+            </span>
+          </p>
+        )}
       </div>
 
-      {/* Muscles travaillés */}
-      {muscles.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {muscles.map((m) => (
-            <span
-              key={m.group}
-              className="inline-flex items-baseline gap-1 rounded-md px-2 py-1 text-[11px] font-bold bg-(--ep-accent)/10 text-(--ep-ink)/85"
-            >
-              {m.group}
-              <span className="text-[10px] font-black tabular-nums text-(--ep-accent)">{m.sets}</span>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Matériel et sac */}
-      {(equipment.length > 0 || bag.length > 0) && (
-        <div className="mt-2 space-y-1 text-[12px] leading-snug">
-          {equipment.length > 0 && (
-            <p className="flex items-start gap-2">
-              <Dumbbell size={13} className="mt-0.5 shrink-0 text-(--ep-ink)/45" aria-hidden />
-              <span className="min-w-0 text-(--ep-ink)/80">
-                <span className="font-black uppercase tracking-wider text-[9.5px] text-(--ep-ink)/45 mr-1.5">{t("Matériel")}</span>
-                {equipment.join(" · ")}
-              </span>
-            </p>
-          )}
-          {bag.length > 0 && (
-            <p className="flex items-start gap-2">
-              <Backpack size={13} className="mt-0.5 shrink-0 text-(--ep-ink)/45" aria-hidden />
-              <span className="min-w-0 text-(--ep-ink)/80">
-                <span className="font-black uppercase tracking-wider text-[9.5px] text-(--ep-ink)/45 mr-1.5">{t("Dans le sac")}</span>
-                {bag.map((a, i) => (
-                  <span key={a.accessory}>
-                    {i > 0 && <span className="text-(--ep-ink)/35"> · </span>}
-                    {a.url ? (
-                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="inline-block py-1.5 -my-1.5 font-bold underline decoration-(--ep-line)/50 underline-offset-2">
-                        {a.accessory}
-                      </a>
-                    ) : (
-                      <span className="font-bold">{a.accessory}</span>
-                    )}
-                  </span>
-                ))}
-              </span>
-            </p>
-          )}
-        </div>
-      )}
-
-      {day.notes && (
-        <p className="mt-2 text-[11.5px] leading-relaxed text-(--ep-ink)/75 bg-(--ep-accent)/[0.07] border border-(--ep-accent)/20 rounded-lg px-3 py-2">
-          {day.notes}
-        </p>
-      )}
-
       {day.exercises.length > 0 && (
-        <div className="mt-3">
+        <div className="mt-2.5">
           <StartButton day={day} programId={program.id} sessionBasePath={sessionBasePath} resume={resume} done={done} />
         </div>
       )}
@@ -658,7 +308,7 @@ function SessionCard({
         <button
           type="button"
           onClick={() => onSelect(nextAfter.info.day.id)}
-          className="mt-2 w-full min-h-11 flex items-center justify-center gap-1.5 text-[12px] text-(--ep-ink)/60"
+          className="mt-1 w-full min-h-11 flex items-center justify-center gap-1.5 text-[12px] text-(--ep-ink)/60"
         >
           {t("Prochaine")} :<span className="font-black text-(--ep-strong)">{nextAfter.info.day.day_label}</span>
           {nextAfter.date && <span>· {relativeDay(t, ctx.today, nextAfter.date).toLowerCase()}</span>}
@@ -666,27 +316,8 @@ function SessionCard({
         </button>
       )}
 
-      <div className="mt-3 border-t border-(--ep-line)/15 pt-2">
-        {day.exercises.length > 0 && Object.keys(ctx.history ?? {}).length > 0 && (
-          <p className="mb-0.5 flex items-baseline justify-between gap-2 text-[9.5px] font-black uppercase tracking-widest text-(--ep-ink)/40">
-            {t("Exercices")}
-            {!(done && !resume) && (
-              <span className="normal-case tracking-normal font-bold text-[10.5px]">
-                {t("ta dernière fois")} → <span className="text-(--ep-accent)">{t("objectif du jour")}</span>
-              </span>
-            )}
-          </p>
-        )}
-        {day.exercises.length > 0 && Object.keys(ctx.history ?? {}).length === 0 && !done && (
-          <p className="mb-1 rounded-lg bg-(--ep-ink)/[0.045] px-2.5 py-1.5 text-[11.5px] leading-snug text-(--ep-ink)/60">
-            {t("Première séance : choisis des charges qui te laissent le RIR indiqué en réserve (RIR 2 = encore 2 reps possibles). Tes perfs s'afficheront ici ensuite.")}
-          </p>
-        )}
-        {day.exercises.length === 0 ? (
-          <p className="text-[12px] italic text-(--ep-ink)/40">{t("Aucun exercice")}</p>
-        ) : (
-          <ExerciseList day={day} ctx={ctx} done={done && !resume} />
-        )}
+      <div className="mt-2 border-t border-(--ep-line)/15 pt-2">
+        {day.exercises.length === 0 ? <p className="text-[12px] italic text-(--ep-ink)/40">{t("Aucun exercice")}</p> : <ExerciseList day={day} />}
       </div>
     </section>
   );
@@ -833,51 +464,6 @@ function WeekStrip({
   );
 }
 
-// ── Séries par muscle sur la semaine ─────────────────────────────────────────
-
-function WeekVolume({ program, ctx }: { program: ProgramWithDays; ctx: ProgramWeekContext }) {
-  const t = useT();
-  const planned = plannedSetsByMuscle(program.days);
-  const rows = Object.entries(planned)
-    .filter(([, n]) => n > 0)
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "fr"));
-  if (rows.length === 0) return null;
-  const doneBy = ctx.weekSetsByMuscle ?? {};
-  const totalPlanned = rows.reduce((s, [, n]) => s + n, 0);
-  const totalDone = rows.reduce((s, [g, n]) => s + Math.min(doneBy[g] ?? 0, n), 0);
-  return (
-    <section className="ep-card mb-3" style={{ padding: "12px 14px" }}>
-      <div className="flex items-baseline justify-between gap-2 mb-2">
-        <p className="text-[10px] font-black uppercase tracking-widest text-(--ep-ink)/50">{t("Séries par muscle")}</p>
-        <p className="text-[11px] text-(--ep-ink)/50 tabular-nums">
-          <span className="font-black text-(--ep-ink)/80">{totalDone}</span>/{totalPlanned} {t("cette semaine")}
-        </p>
-      </div>
-      <ul className="space-y-1.5">
-        {rows.map(([group, n]) => {
-          const done = doneBy[group] ?? 0;
-          const pct = Math.min(100, Math.round((done / n) * 100));
-          const full = done >= n;
-          return (
-            <li key={group} className="grid grid-cols-[minmax(0,7.5rem)_1fr_auto] items-center gap-2.5 text-[11.5px]">
-              <span className="truncate font-bold text-(--ep-ink)/80">{group}</span>
-              <span className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(var(--ep-ink-rgb),0.08)" }}>
-                <span
-                  className="block h-full rounded-full"
-                  style={{ width: `${pct}%`, background: full ? "var(--ep-ok)" : "var(--ep-accent)", minWidth: done > 0 ? 4 : 0 }}
-                />
-              </span>
-              <span className="w-12 text-right tabular-nums text-(--ep-ink)/50">
-                <span className={`font-black ${full ? "text-(--ep-ok)" : "text-(--ep-ink)/85"}`}>{done}</span>/{n}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProgramWeekView({
@@ -885,7 +471,6 @@ export default function ProgramWeekView({
   ctx,
   sessionBasePath,
   gymsHref,
-  agendaHref,
   eyebrow,
   canMove = false,
 }: {
@@ -893,7 +478,8 @@ export default function ProgramWeekView({
   ctx: ProgramWeekContext;
   sessionBasePath: string;
   gymsHref: string;
-  agendaHref: string;
+  /** Conservé pour compatibilité des appelants : la page ne propose plus de caler la séance. */
+  agendaHref?: string;
   eyebrow: string;
   /** Propose « Décaler » sur chaque séance (le client ou le coach pour son propre programme). */
   canMove?: boolean;
@@ -968,14 +554,13 @@ export default function ProgramWeekView({
         <p className="ep-section-title" style={{ marginBottom: 2 }}>
           {eyebrow}
         </p>
-        <h1 className="ep-h1 uppercase" style={{ fontSize: 30 }}>
+        <h1 className="ep-h1 uppercase" style={{ fontSize: 26 }}>
           {t("Mon programme")}
         </h1>
         <p className="mt-1.5 text-[12.5px] leading-snug text-(--ep-ink)/55">
           <span className="font-bold text-(--ep-ink)/85">{program.name}</span>
           {` · ${program.days.length} ${program.days.length > 1 ? t("séances") : t("séance")} ${t("par semaine")}`}
         </p>
-        {program.objective && <p className="mt-0.5 text-[12px] leading-snug text-(--ep-ink)/45">{program.objective}</p>}
       </div>
 
       <WeekStrip ctx={ctx} ordered={ordered} selectedId={selected?.day.id ?? null} onSelect={select} doneCount={doneCount} total={program.days.length} />
@@ -996,19 +581,16 @@ export default function ProgramWeekView({
             info={selected}
             featured={featured}
             nextAfter={nextAfter}
-            weekComplete={doneCount >= program.days.length}
             program={program}
             ctx={ctx}
             sessionBasePath={sessionBasePath}
             gymsHref={gymsHref}
-            agendaHref={agendaHref}
             canMove={canMove}
             onSelect={select}
           />
         </div>
       )}
 
-      <WeekVolume program={program} ctx={ctx} />
     </div>
   );
 }

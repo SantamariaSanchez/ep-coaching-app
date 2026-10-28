@@ -36,6 +36,8 @@ import type { LibraryExercise, ExerciseCategory, ExerciseDifficulty } from "@/ut
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
 import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import { equipmentFilterFor, exerciseFeasible } from "@/lib/gym-equipment";
+import type { TrainingGym } from "@/utils/training-gyms";
 
 async function uploadExerciseVideo(file: File): Promise<string | null> {
   try {
@@ -632,6 +634,8 @@ interface Props {
   missingVideoTop?: MissingVideoExercise[];
   /** Utilisateur connecté : distingue « Mes exercices » (créés par lui) de la bibliothèque. */
   currentUserId?: string;
+  /** Salles d'entraînement de l'utilisateur : filtre « Ma salle » (seuls les exercices faisables avec son matériel). */
+  trainingGyms?: TrainingGym[];
 }
 
 export default function ExerciseLibraryView({
@@ -644,6 +648,7 @@ export default function ExerciseLibraryView({
   deleteExercise,
   missingVideoTop = [],
   currentUserId,
+  trainingGyms = [],
 }: Props) {
   const tr = useT();
   const videosUnlocked = hasUnlocked("exercise_videos", points, isSubscribed);
@@ -659,6 +664,8 @@ export default function ExerciseLibraryView({
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [activeEquipmentType, setActiveEquipmentType] = useState<EquipmentType | null>(null);
+  const [gymId, setGymId] = useState<string | null>(null);
+  const gymEquipment = useMemo(() => equipmentFilterFor(trainingGyms.find((g) => g.id === gymId)), [trainingGyms, gymId]);
   const [showCreate, setShowCreate] = useState(false);
   const [showMissingVideo, setShowMissingVideo] = useState(false);
   const [scope, setScope] = useState<"all" | "library" | "mine">("all");
@@ -700,12 +707,13 @@ export default function ExerciseLibraryView({
       if (activeGroup && e.muscle_group !== activeGroup) return false;
       if (activeBrand && e.brand !== activeBrand) return false;
       if (activeEquipmentType && getEquipmentType(e.equipment) !== activeEquipmentType) return false;
+      if (gymEquipment && !exerciseFeasible(e, gymEquipment)) return false;
       if (!q) return true;
       return (
         fuzzyMatchAny([e.name, e.muscle_subgroup, e.equipment, e.brand], q)
       );
     });
-  }, [exercises, search, activeGroup, activeBrand, activeEquipmentType, scope, noDemoOnly]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [exercises, search, activeGroup, activeBrand, activeEquipmentType, scope, noDemoOnly, gymEquipment]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const byGroup = useMemo(() => {
     const map: Record<string, LibraryExercise[]> = {};
@@ -856,6 +864,25 @@ export default function ExerciseLibraryView({
           </button>
         ))}
       </div>
+
+      {trainingGyms.length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mr-1">
+            {tr("Ma salle :")}
+          </span>
+          {[{ id: null as string | null, name: tr("Toutes") }, ...trainingGyms.map((g) => ({ id: g.id as string | null, name: g.name }))].map((g) => (
+            <button
+              key={g.id ?? "all"}
+              onClick={() => setGymId(g.id)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                gymId === g.id ? "bg-(--ep-accent)/20 border-(--ep-accent)/50 text-(--ep-accent)" : "border-(--ep-line)/25 text-(--ep-ink)/40"
+              }`}
+            >
+              {g.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/25 mr-1">

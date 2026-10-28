@@ -37,6 +37,8 @@ export interface SheetDay {
   weekday: number | null;
   notes: string;
   rows: SheetRow[];
+  /** Salle rattachée à la séance : seuls les exercices faisables avec son matériel sont proposés. */
+  gym_id?: string | null;
 }
 
 export const DEFAULT_ROWS = 8;
@@ -245,6 +247,7 @@ export function daysFromProgram(program: ProgramWithDays | null, prefix = "p"): 
       id: key,
       label: d.day_label,
       weekday: d.weekday ?? null,
+      gym_id: d.gym_id ?? null,
       notes: d.notes ?? "",
       rows: padRows(normalizeSupersets(d.exercises.map((e, j) => rowFromExercise(`${key}r${j}`, e, key))), key),
     };
@@ -303,6 +306,7 @@ export function daysToInput(days: SheetDay[]): DayInput[] {
     return {
       day_label: d.label.trim() || `Séance ${String.fromCharCode(65 + i)}`,
       weekday: d.weekday,
+      gym_id: d.gym_id ?? null,
       notes: d.notes.trim() || null,
       exercises,
     };

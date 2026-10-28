@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import { getTrainingGyms } from "@/utils/training-gyms";
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
@@ -42,7 +43,7 @@ export default async function CoachMonProgrammePage() {
           program={program}
           ctx={weekCtx}
           sessionBasePath="/dashboard/coach/moi/logbook"
-          gymsHref="/dashboard/coach/gyms"
+          gymsHref="/dashboard/coach/exercises?tab=mine"
           agendaHref="/dashboard/coach/moi/agenda"
           canMove
           eyebrow={t("Mon entraînement")}
@@ -66,6 +67,7 @@ export default async function CoachMonProgrammePage() {
             clientId={user.id}
             clientName="moi"
             program={program}
+            gyms={await getTrainingGyms(user.id)}
             saveProgram={saveOwnCoachProgram}
             templates={templates}
             saveAsTemplate={saveCurrentProgramAsTemplate}

@@ -199,7 +199,7 @@ export default async function ClientPreviewPage({
             program={program}
             ctx={weekCtx}
             sessionBasePath={SESSION_BASE_PATH}
-            gymsHref="/dashboard/client/gyms"
+            gymsHref="/dashboard/client/exercises?tab=mine"
             agendaHref="/dashboard/client/agenda"
             eyebrow={isFree ? t("Training") : t("Entraînement")}
           />

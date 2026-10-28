@@ -14,15 +14,20 @@ export default function LibraryHub({
   gymCount,
   exerciseView,
   gymView,
+  myGymsView,
+  myGymCount = 0,
 }: {
-  initialTab: "exercises" | "gyms";
+  initialTab: "exercises" | "gyms" | "mine";
   exerciseCount: number;
   gymCount: number;
   exerciseView: React.ReactNode;
   gymView: React.ReactNode;
+  /** « Mes salles » : salles d'entraînement avec matériel et photos (optionnel). */
+  myGymsView?: React.ReactNode;
+  myGymCount?: number;
 }) {
   const t = useT();
-  const [tab, setTab] = useState<"exercises" | "gyms">(initialTab);
+  const [tab, setTab] = useState<"exercises" | "gyms" | "mine">(initialTab);
 
   return (
     <div>
@@ -46,9 +51,19 @@ export default function LibraryHub({
         >
           <MapPin size={13} />{" "}{t("Salles (")}{gymCount})
         </button>
+        {myGymsView && (
+          <button
+            onClick={() => setTab("mine")}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
+              tab === "mine" ? "text-(--ep-accent) border-b-2 border-(--ep-accent)" : "text-(--ep-ink)/40 hover:text-(--ep-ink)/70"
+            }`}
+          >
+            <MapPin size={13} />{" "}{t("Mes salles (")}{myGymCount})
+          </button>
+        )}
       </div>
 
-      {tab === "exercises" ? exerciseView : gymView}
+      {tab === "exercises" ? exerciseView : tab === "mine" && myGymsView ? myGymsView : gymView}
     </div>
   );
 }

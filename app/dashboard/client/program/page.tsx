@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import { getTrainingGyms } from "@/utils/training-gyms";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAccessType } from "@/utils/auth-client";
@@ -61,7 +62,7 @@ export default async function ClientProgramPage() {
               program={program}
               ctx={weekCtx}
               sessionBasePath={SESSION_BASE_PATH}
-              gymsHref="/dashboard/client/gyms"
+              gymsHref="/dashboard/client/exercises?tab=mine"
               agendaHref="/dashboard/client/agenda"
               canMove
               eyebrow={t("Training")}
@@ -95,6 +96,7 @@ export default async function ClientProgramPage() {
             <ProgramFromScratchSection
               clientId={user.id}
               program={program}
+              gyms={await getTrainingGyms(user.id)}
               saveProgram={saveOwnProgram}
             />
           </CollapsibleSection>
@@ -165,7 +167,7 @@ export default async function ClientProgramPage() {
             program={program}
             ctx={weekCtx}
             sessionBasePath={SESSION_BASE_PATH}
-            gymsHref="/dashboard/client/gyms"
+            gymsHref="/dashboard/client/exercises?tab=mine"
             agendaHref="/dashboard/client/agenda"
             canMove
             eyebrow={t("Entraînement")}

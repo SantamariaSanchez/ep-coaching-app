@@ -5,12 +5,15 @@ import { useState } from "react";
 import { Wrench, ChevronDown, ChevronUp } from "lucide-react";
 import ProgramBuilder from "@/components/program-builder/ProgramBuilder";
 import type { ProgramInput, ProgramWithDays } from "@/utils/programs";
+import type { TrainingGym } from "@/utils/training-gyms";
 
 export default function ProgramFromScratchSection({
   clientId,
+  gyms = [],
   saveProgram,
 }: {
   clientId: string;
+  gyms?: TrainingGym[];
   program: ProgramWithDays | null;
   saveProgram: (clientId: string, input: ProgramInput) => Promise<{ error?: string }>;
 }) {
@@ -36,6 +39,7 @@ export default function ProgramFromScratchSection({
             clientId={clientId}
             clientName="moi"
             program={null}
+            gyms={gyms}
             saveProgram={saveProgram}
             backHref="/dashboard/client/program"
             programHref="/dashboard/client/program"

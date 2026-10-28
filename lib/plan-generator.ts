@@ -2,6 +2,7 @@ import type { ClientIntake } from "@/utils/client-intake";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { getEquipmentType, type EquipmentType } from "@/lib/exercise-library-content";
+import { exerciseFeasible } from "@/lib/gym-equipment";
 import {
   computeMacroTargets,
   restSecondsFor,
@@ -366,12 +367,17 @@ function filteredCandidates(
   category: SlotCategory,
   excludeText: string,
   allowed: EquipmentType[],
-  level: TrainingLevel = "intermediaire"
+  level: TrainingLevel = "intermediaire",
+  gymEquipment: readonly string[] | null = null
 ): LibraryExercise[] {
   const own = library.filter((ex) => ex.muscle_group === group && ex.category === category);
   const pool = [...own, ...crossGroupCandidates(library, group, category)];
   const eligible = pool.filter(
-    (ex) => isTrainingExercise(ex) && !isExcluded(ex, excludeText) && allowed.includes(getEquipmentType(ex.equipment))
+    (ex) =>
+      isTrainingExercise(ex) &&
+      !isExcluded(ex, excludeText) &&
+      allowed.includes(getEquipmentType(ex.equipment)) &&
+      exerciseFeasible(ex, gymEquipment)
   );
   return rankCandidates(eligible, group, category, level);
 }
@@ -385,11 +391,12 @@ function suggestForGroup(
   excludeText: string,
   trainingAccess: ClientIntake["training_access"],
   level: TrainingLevel,
-  maxPerCategory = 3
+  maxPerCategory = 3,
+  gymEquipment: readonly string[] | null = null
 ): MuscleGroupSuggestion {
   const allowed = allowedEquipmentTypes(trainingAccess);
-  const compound = filteredCandidates(library, group, "compose", excludeText, allowed, level).slice(0, maxPerCategory);
-  const isolation = filteredCandidates(library, group, "isolation", excludeText, allowed, level).slice(0, maxPerCategory);
+  const compound = filteredCandidates(library, group, "compose", excludeText, allowed, level, gymEquipment).slice(0, maxPerCategory);
+  const isolation = filteredCandidates(library, group, "isolation", excludeText, allowed, level, gymEquipment).slice(0, maxPerCategory);
 
   return {
     group,
@@ -414,7 +421,8 @@ export function buildProgramSuggestions(
   exercisesProblematic: string | null,
   trainingAccess: ClientIntake["training_access"] = null,
   injuries: string | null = null,
-  level: TrainingLevel = "intermediaire"
+  level: TrainingLevel = "intermediaire",
+  gymEquipment: readonly string[] | null = null
 ): ProgramSuggestion[] {
   const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
   const excludeText = buildExcludeText(dislikedEquipment, exercisesProblematic, injuries);
@@ -423,7 +431,7 @@ export function buildProgramSuggestions(
     const groups = [...new Set(day.slots.map((sl) => sl.group))];
     return {
       dayLabel: day.label,
-      groups: groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess, level)),
+      groups: groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess, level, 3, gymEquipment)),
     };
   });
 }
@@ -457,6 +465,8 @@ export interface ProgramPlanOptions {
   recovery?: RecoveryStatus;
   /** Durée possible d'une séance, en minutes ; 60 si inconnue. */
   sessionMinutes?: number | null;
+  /** Matériel de la salle (lib/gym-equipment) : seuls les exercices faisables sont choisis. Absent : aucun filtre. */
+  gymEquipment?: readonly string[] | null;
 }
 
 export interface GeneratedProgramPlan {
@@ -591,7 +601,7 @@ export function generateProgramPlan(
   const missing = new Set<string>();
 
   function pick(group: string, category: SlotCategory, dayIdx: number, avoidPosition?: string | null): LibraryExercise | null {
-    const candidates = filteredCandidates(library, group, category, excludeText, allowed, level).filter((ex) => !used[dayIdx].has(ex.name));
+    const candidates = filteredCandidates(library, group, category, excludeText, allowed, level, options.gymEquipment ?? null).filter((ex) => !used[dayIdx].has(ex.name));
     if (candidates.length === 0) return null;
     const pool = avoidPosition ? candidates.filter((x) => x.position !== avoidPosition) : candidates;
     const usable = pool.length > 0 ? pool : candidates;
@@ -682,12 +692,13 @@ export function findSwapCandidate(
   injuries: string | null,
   trainingAccess: ClientIntake["training_access"],
   excludeNames: string[],
-  level: TrainingLevel = "intermediaire"
+  level: TrainingLevel = "intermediaire",
+  gymEquipment: readonly string[] | null = null
 ): LibraryExercise | null {
   if (!current.category) return null;
   const excludeText = buildExcludeText(dislikedEquipment, exercisesProblematic, injuries);
   const allowed = allowedEquipmentTypes(trainingAccess);
-  const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed, level).filter(
+  const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed, level, gymEquipment).filter(
     (ex) => !excludeNames.includes(ex.name)
   );
   return candidates[0] ?? null;

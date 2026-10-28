@@ -54,6 +54,8 @@ export interface ProgramDay {
   notes?: string | null;
   /** Vrai si la séance est décalée « juste cette semaine » (program_day_moves). */
   weekMoved?: boolean;
+  /** Salle rattachée à la séance (migration 20261029_training_gyms). */
+  gym_id?: string | null;
 }
 
 export interface Program {
@@ -114,6 +116,7 @@ export interface DayInput {
   exercises: ExerciseInput[];
   weekday?: number | null;
   notes?: string | null;
+  gym_id?: string | null;
 }
 
 export interface ProgramInput {
@@ -278,8 +281,15 @@ export async function saveProgramForClient(
     }));
     let { data: dayRows, error: daysError } = await supabase
       .from("program_days")
-      .insert(dayBase.map((d, i) => ({ ...d, notes: input.days[i].notes?.trim() || null })))
+      .insert(dayBase.map((d, i) => ({ ...d, notes: input.days[i].notes?.trim() || null, gym_id: input.days[i].gym_id || null })))
       .select();
+    // Migration salles pas encore passée : on réessaie sans gym_id.
+    if (daysError && isUnknownColumnError(daysError)) {
+      ({ data: dayRows, error: daysError } = await supabase
+        .from("program_days")
+        .insert(dayBase.map((d, i) => ({ ...d, notes: input.days[i].notes?.trim() || null })))
+        .select());
+    }
     if (daysError && isUnknownColumnError(daysError)) {
       ({ data: dayRows, error: daysError } = await supabase.from("program_days").insert(dayBase).select());
     }

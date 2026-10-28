@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { LibraryExercise } from "@/utils/exercise-library";
+import type { TrainingGym } from "@/utils/training-gyms";
+import { equipmentFilterFor, filterFeasible } from "@/lib/gym-equipment";
 import type { ClientIntake } from "@/utils/client-intake";
 import { MUSCLE_GROUPS, type MuscleGroup } from "@/lib/volume-data";
 import { checkExerciseConflicts, conflictSourceLabel } from "@/lib/plan-generator";
@@ -63,6 +65,8 @@ export default function SessionSheet({
   index,
   total,
   library,
+  gyms = [],
+  gymsHref,
   intake,
   agendaDays,
   sessionMinutesTarget,
@@ -77,6 +81,10 @@ export default function SessionSheet({
   index: number;
   total: number;
   library: LibraryExercise[];
+  /** Salles d'entraînement du client (matériel et photos). */
+  gyms?: TrainingGym[];
+  /** Où créer ou compléter les salles (matériel, photos). */
+  gymsHref?: string;
   intake: ClientIntake | null;
   /** Jours où l'agenda du client a déjà un créneau sport (1 = lundi). */
   agendaDays: Set<number>;
@@ -90,6 +98,9 @@ export default function SessionSheet({
   onSwap: (rowId: string) => void;
 }) {
   const tr = useT();
+  const gymEquipment = useMemo(() => equipmentFilterFor(gyms.find((g) => g.id === day.gym_id)), [gyms, day.gym_id]);
+  // Seuls les exercices faisables avec le matériel de la salle de la séance sont proposés.
+  const pickable = useMemo(() => filterFeasible(library, gymEquipment), [library, gymEquipment]);
   const libByName = useMemo(() => new Map(library.map((l) => [l.name.toLowerCase(), l])), [library]);
   const labels = supersetLabels(day.rows.map((r) => r.superset));
   const groupColor = useMemo(() => {
@@ -281,6 +292,26 @@ export default function SessionSheet({
               );
             })}
           </div>
+          {gyms.length === 0 && gymsHref && (
+            <a href={gymsHref} className="inline-flex min-h-8 items-center text-[11.5px] font-bold text-(--ep-accent)">
+              {tr("+ Ajouter une salle")}
+            </a>
+          )}
+          {gyms.length > 0 && (
+            <select
+              value={day.gym_id ?? ""}
+              onChange={(e) => onChange({ ...day, gym_id: e.target.value || null })}
+              aria-label={tr("Salle de la séance")}
+              className="min-h-8 max-w-40 rounded-md border border-(--ep-line)/35 bg-(--ep-shade)/30 px-1.5 text-[11.5px] font-bold text-(--ep-strong)"
+            >
+              <option value="">{tr("Salle : aucune")}</option>
+              {gyms.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          )}
           <span className={`text-[11px] ${tooLong ? "text-amber-300" : "text-(--ep-ink)/40"}`}>
             {filled.length} {tr("exos")} · {sets} {tr("séries")} · ~{minutes} min
             {tooLong && sessionMinutesTarget ? ` (${tr("il a")} ${sessionMinutesTarget} min)` : ""}
@@ -325,7 +356,7 @@ export default function SessionSheet({
                   <div className="flex-1 min-w-0 rounded-lg bg-(--ep-shade)/15 border border-(--ep-line)/25 focus-within:border-(--ep-accent)">
                     <ExerciseCell
                       value={row.name}
-                      library={library}
+                      library={pickable}
                       intake={intake}
                       cellId={`${day.id}:${rowIdx}:0`}
                       onChange={(v) => updateRow(row.id, { name: v })}
@@ -487,7 +518,7 @@ export default function SessionSheet({
                     <div className="flex items-center">
                       <ExerciseCell
                         value={row.name}
-                        library={library}
+                        library={pickable}
                         intake={intake}
                         cellId={`${day.id}:${rowIdx}:0`}
                         onChange={(v) => updateRow(row.id, { name: v })}

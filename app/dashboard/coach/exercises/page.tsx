@@ -7,6 +7,8 @@ import { getEquipmentType, type EquipmentType } from "@/lib/exercise-library-con
 import ExerciseLibraryView from "@/components/ui/ExerciseLibraryView";
 import GymsDirectoryView from "@/components/ui/GymsDirectoryView";
 import LibraryHub from "@/components/ui/LibraryHub";
+import TrainingGymsManager from "@/components/gyms/TrainingGymsManager";
+import { getTrainingGyms } from "@/utils/training-gyms";
 import SeedLibraryButton from "@/components/ui/SeedLibraryButton";
 import {
   createExercise,
@@ -40,10 +42,11 @@ export default async function CoachExercisesPage({
 
   const { tab } = await searchParams;
 
-  const [exercises, gyms, missingVideoTop] = await Promise.all([
+  const [exercises, gyms, missingVideoTop, myGyms] = await Promise.all([
     getExerciseLibrary(),
     getGymsWithReviews(),
     getTopExercisesMissingVideo(),
+    getTrainingGyms(user.id),
   ]);
 
   const exerciseTypeCounts = exercises.reduce<Record<EquipmentType, number>>((acc, ex) => {
@@ -72,12 +75,15 @@ export default async function CoachExercisesPage({
       </div>
 
       <LibraryHub
-        initialTab={tab === "gyms" ? "gyms" : "exercises"}
+        initialTab={tab === "gyms" ? "gyms" : tab === "mine" ? "mine" : "exercises"}
+        myGymCount={myGyms.length}
+        myGymsView={<TrainingGymsManager ownerId={user.id} gyms={myGyms} />}
         exerciseCount={exercises.length}
         gymCount={gyms.length}
         exerciseView={
           <ExerciseLibraryView
             exercises={exercises}
+            trainingGyms={myGyms}
             isCoach
             createExercise={createExercise}
             updateExercise={updateExercise}

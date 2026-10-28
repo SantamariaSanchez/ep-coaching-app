@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import { getTrainingGyms } from "@/utils/training-gyms";
 import BackButton from "@/components/ui/BackButton";
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -63,6 +64,7 @@ export default async function CoachClientProgramPage({
         workoutLogs={workoutLogs}
         sessionsThisWeek={sessionsThisWeek}
         accessoriesByName={accessoriesByName}
+        gyms={(await getTrainingGyms(id)).map((g) => ({ id: g.id, name: g.name, city: g.city }))}
       />
     </div>
   );

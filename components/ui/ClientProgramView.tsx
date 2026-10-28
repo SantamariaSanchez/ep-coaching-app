@@ -1,34 +1,31 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useState } from "react";
 import Link from "next/link";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
-import VolumeIntensitySection from "./VolumeIntensitySection";
-import { accessoriesForSession } from "@/lib/session-accessories";
-import { Pencil, Plus, Backpack, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
-import ProgramExerciseList from "@/components/program-builder/ProgramExerciseList";
+import { accessoriesForSession, ALWAYS_ACCESSORIES } from "@/lib/session-accessories";
+import { estimateMinutes } from "@/lib/program-week";
+import { formatRest, unitShort } from "@/lib/program-sheet";
+import { Pencil, Plus, Backpack, MapPin } from "lucide-react";
 
 export default function ClientProgramView({
   clientId,
   program,
-  workoutLogs,
-  sessionsThisWeek,
   accessoriesByName,
+  gyms = [],
 }: {
   clientId: string;
   program: ProgramWithDays | null;
-  workoutLogs: WorkoutLog[];
-  sessionsThisWeek: number;
+  /** Conservés pour compatibilité des appelants : le volume se lit dans l'éditeur, plus dans cette vue condensée. */
+  workoutLogs?: WorkoutLog[];
+  sessionsThisWeek?: number;
   /** Bagage d'accessoires choisi par exercice (exercise_library.accessories). */
   accessoriesByName?: Record<string, string[]>;
+  /** Salles d'entraînement du client : la salle de chaque séance vient de program_days.gym_id. */
+  gyms?: { id: string; name: string; city: string | null }[];
 }) {
   const t = useT();
-  // Jours repliés par défaut (retour direct 2026-09-09 : "fermer pas
-  // dérouler direct") : le label + les accessoires à prévoir suffisent
-  // pour un coup d'oeil, la liste complète des exercices s'ouvre au clic.
-  const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
   return (
     <div>
@@ -74,87 +71,49 @@ export default function ClientProgramView({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto pb-4">
-          <div
-            className="flex gap-4"
-            style={{ minWidth: `${program.days.length * 280}px` }}
-          >
-            {program.days.map((day) => {
-              const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name), accessoriesByName);
-              const isOpen = !!openDays[day.id];
-              return (
-              <div
-                key={day.id}
-                className="flex-1 min-w-[260px] bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-4"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenDays((prev) => ({ ...prev, [day.id]: !prev[day.id] }))}
-                  aria-expanded={isOpen}
-                  className={`flex items-center justify-between w-full text-left ${isOpen ? "mb-4 pb-2 border-b border-(--ep-line)/20" : ""}`}
-                >
-                  <span className="text-xs font-bold uppercase tracking-widest text-(--ep-accent)">
-                    {day.day_label}
-                  </span>
-                  <span className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[10px] text-(--ep-ink)/30 font-semibold">
-                      {day.exercises.length}{" "}{t("exercice")}{day.exercises.length > 1 ? "s" : ""}
-                    </span>
-                    {isOpen ? <ChevronUp size={14} className="text-(--ep-ink)/30" /> : <ChevronDown size={14} className="text-(--ep-ink)/30" />}
-                  </span>
-                </button>
-
-                {isOpen && (
-                <>
-                {accessories.length > 0 && (
-                  <div className="bg-(--ep-shade)/30 border border-(--ep-line)/20 rounded-lg px-3 py-2.5 mb-3">
-                    <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
-                      <Backpack size={11} />{" "}{t("À prévoir")}
-                    </p>
-                    <div className="flex flex-col gap-1">
-                      {accessories.map((a) =>
-                        // ALWAYS_ACCESSORIES (trépied, shaker) n'ont pas de
-                        // fiche produit, voir lib/session-accessories.ts.
-                        a.url ? (
-                          <a
-                            key={a.accessory}
-                            href={a.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-[11.5px] font-bold text-(--ep-strong) hover:text-(--ep-accent) transition-colors"
-                          >
-                            {a.accessory}
-                            <ExternalLink size={9} className="text-(--ep-ink)/30" />
-                          </a>
-                        ) : (
-                          <span key={a.accessory} className="flex items-center gap-1 text-[11.5px] font-bold text-(--ep-strong)">
-                            {a.accessory}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {day.exercises.length === 0 ? (
-                  <p className="text-xs text-(--ep-ink)/25 italic">
-                    {t("Aucun exercice")}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {program.days.map((day) => {
+            const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name), accessoriesByName).filter(
+              (a) => !ALWAYS_ACCESSORIES.some((al) => al.accessory === a.accessory)
+            );
+            const gym = day.gym_id ? gyms.find((g) => g.id === day.gym_id) ?? null : null;
+            const minutes = estimateMinutes(day.exercises);
+            return (
+              <section key={day.id} className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-3.5" aria-label={day.day_label}>
+                <h3 className="text-sm font-black uppercase tracking-wide text-(--ep-accent)">{day.day_label}</h3>
+                <p className="mt-0.5 text-[11.5px] text-(--ep-ink)/60 tabular-nums">
+                  {minutes != null ? `~${minutes} min · ` : ""}
+                  {day.exercises.length} {day.exercises.length > 1 ? t("exos") : t("exo")}
+                </p>
+                {gym && (
+                  <p className="mt-1 flex items-center gap-1.5 text-[12px] font-bold text-(--ep-ink)/85">
+                    <MapPin size={12} className="text-(--ep-accent)" aria-hidden /> {gym.name}
                   </p>
+                )}
+                {accessories.length > 0 && (
+                  <p className="mt-1 flex items-start gap-1.5 text-[12px] text-(--ep-ink)/80">
+                    <Backpack size={12} className="mt-0.5 shrink-0 text-(--ep-ink)/45" aria-hidden />
+                    <span className="font-bold">{accessories.map((a) => t(a.accessory)).join(" · ")}</span>
+                  </p>
+                )}
+                {day.exercises.length === 0 ? (
+                  <p className="mt-2 text-xs text-(--ep-ink)/25 italic">{t("Aucun exercice")}</p>
                 ) : (
-                  <ProgramExerciseList exercises={day.exercises} dayNotes={day.notes} />
+                  <ul className="mt-2 divide-y divide-(--ep-line)/10">
+                    {day.exercises.map((ex) => (
+                      <li key={ex.id} className="flex items-baseline gap-2 py-1.5">
+                        <span className="min-w-0 flex-1 text-[12.5px] font-bold text-(--ep-strong) break-words">{ex.name}</span>
+                        <span className="shrink-0 text-[11.5px] tabular-nums text-(--ep-ink)/80">
+                          <span className="font-black">{ex.sets && ex.reps ? `${ex.sets} × ${ex.reps} ${unitShort(ex.reps_unit)}` : ex.sets ? `${ex.sets} ${t("séries")}` : ex.reps ?? ""}</span>
+                          {formatRest(ex.rest_seconds) && <span className="ml-1.5 text-(--ep-ink)/50">{formatRest(ex.rest_seconds)}</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 )}
-                </>
-                )}
-              </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {program && program.days.length > 0 && (
-        <div className="mt-6">
-          <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+              </section>
+            );
+          })}
         </div>
       )}
     </div>

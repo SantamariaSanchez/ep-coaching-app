@@ -18,14 +18,13 @@
 // Mieux vaut ne rien suggérer qu'envoyer quelqu'un chercher du matériel dont il
 // n'a pas besoin, ce qui décrédibiliserait toute la liste.
 //
-// Retour direct 2026-09-10 ("les accessoires sont encore faux, c'est moi qui
-// choisis") : ce même principe appliqué jusqu'au bout — la devinette par
-// mots-clés (RULES) ne s'affiche plus JAMAIS toute seule comme une vraie
-// recommandation dans une séance ou un programme (accessoriesForSession
-// n'utilise plus que le choix explicite, exercise_library.accessories). Elle
-// ne sert plus que de suggestion cliquable au moment de configurer un
-// exercice (ExerciseDetailPanel, guessedAccessoryForExercise) : un humain
-// valide avant que ça s'affiche à qui que ce soit.
+// Retour d'Emmanuel (2026-10-28) : « dans les accessoires tu n'as même pas mis les
+// straps » sur des séances de tirage. Le calcul combine désormais le choix
+// explicite par exercice (exercise_library.accessories) ET les accessoires
+// déduits de l'exercice lui-même (derivedAccessoriesFor, plus bas) : straps
+// pour tout mouvement de tirage, cuffs à la poulie, chaînes et bandes quand le
+// nom les annonce. La devinette large par mots-clés (RULES) reste une simple
+// suggestion cliquable dans ExerciseDetailPanel.
 
 export interface AccessoryRule {
   /** Motif cherché dans le nom de l'exercice, en minuscules sans accent. */
@@ -43,7 +42,7 @@ export interface AccessoryRule {
 // explicite par exercice (exercise_library.accessories, voir
 // ExerciseDetailPanel) — une seule source de vérité pour le nom/la raison/
 // le lien de chaque accessoire, jamais dupliquée entre les deux mécanismes.
-export const ACCESSORY_CATALOG: { accessory: string; reason: string; url: string }[] = [
+export const ACCESSORY_CATALOG: { accessory: string; reason: string; url: string; /** Nom affiché si différent de la clé stockée. */ label?: string }[] = [
   {
     accessory: "Lock Belt",
     reason: "T'ancre au siège pour arrêter de compenser, et sert de ceinture de lest sur les tractions et dips",
@@ -51,6 +50,7 @@ export const ACCESSORY_CATALOG: { accessory: string; reason: string; url: string
   },
   {
     accessory: "Prime Straps",
+    label: "Straps",
     reason: "La prise lâche avant le dos sur les tirages lourds, tu perds des répétitions pour rien",
     url: "https://0rir-shop.com/products/prime-straps",
   },
@@ -91,6 +91,13 @@ export const ACCESSORY_CATALOG: { accessory: string; reason: string; url: string
   // correspond) — même statut que Fat Grips (hors 0RIR), mais sans lien
   // produit connu : url vide en attendant que Santamaria en donne un, pas
   // un lien inventé.
+  // Podcast 0 RIR (épisode 15, accessoires) et demande d'Emmanuel : accessoires
+  // associés à certains mouvements, sans fiche produit connue (url vide).
+  { accessory: "Ceinture", reason: "Appui sur les mouvements très lourds, optionnelle", url: "" },
+  { accessory: "Bandes de poignet", reason: "Confort sur les développés lourds, optionnelles (une barre bien alignée règle souvent le problème)", url: "" },
+  { accessory: "Chaînes", reason: "La charge augmente en haut du mouvement", url: "" },
+  { accessory: "Bandes élastiques", reason: "Résistance variable ou assistance", url: "" },
+  { accessory: "Magnésie", reason: "Prise sûre sur les gros tirages", url: "" },
   {
     accessory: "Sangle en 8",
     reason: "Bloque le poignet à la barre en configuration \"8\" sur les tirages lourds, sans lâcher avant le dos",
@@ -219,9 +226,54 @@ export function guessedAccessoryForExercise(exerciseName: string): AccessoryRule
  * renvoie simplement rien, plutôt qu'un accessoire deviné qui peut être
  * faux et se faire passer pour une vraie recommandation.
  */
+/**
+ * Accessoires déduits de l'exercice lui-même (nom et matériel de la
+ * bibliothèque), pas devinés : straps pour tout mouvement de tirage où la
+ * prise peut limiter le dos (rowing, tractions, tirages, shrugs, soulevés
+ * de terre), cuffs pour le travail à la poulie, chaînes et bandes quand le
+ * nom les annonce. Ceinture et bandes de poignet restent optionnelles
+ * (podcast 0 RIR : pas essentielles). Les noms sont les clés du catalogue.
+ */
+export function derivedAccessoriesFor(exerciseName: string, equipment?: string | null): string[] {
+  const n = normalize(exerciseName);
+  const eq = equipment ? normalize(equipment) : "";
+  const out: string[] = [];
+
+  const pull =
+    /(traction|tirage|pulldown|rowing|\brow\b|souleve de terre|deadlift|rack pull|shrug|haussement|farmer|high pull|pendlay|yates|seal row)/.test(n) &&
+    !/(menton|upright|bras tendus|straight-arm|dead hang|suspension|hang\b|relev|toes to bar|knee raise|dragon|muscle-up|front lever|back lever|australienne|inverted|inverse|face pull)/.test(n);
+  if (pull) out.push("Prime Straps");
+
+  if (/souleve de terre|deadlift|rack pull/.test(n) && !/jambes tendues|roumain|romanian/.test(n)) out.push("Magnésie");
+
+  const cable = eq === "poulie" || /(poulie|cable|crossover|pallof|face pull|woodchopper|pull-through)/.test(n);
+  if (cable && !pull) out.push("Cuffs");
+
+  if (/chaine/.test(n)) out.push("Chaînes");
+  if (/avec bandes|bandes elastiques/.test(n)) out.push("Bandes élastiques");
+
+  if (eq === "barre" && /(squat|souleve de terre|rack pull|good morning)/.test(n) && !/(gobelet|goblet|sauté|saute)/.test(n)) out.push("Ceinture");
+  if (eq === "barre" && /(developpe couche|developpe militaire|developpe incline|floor press|spoto)/.test(n)) out.push("Bandes de poignet");
+  return out;
+}
+
+const PRIORITY = ["Prime Straps", "Lock Belt", "Cuffs", "Lift Loops", "Super Pin", "Micro Plates", "Fat Grips", "Sangle en 8", "Magnésie", "Ceinture", "Bandes de poignet", "Chaînes", "Bandes élastiques"];
+const MAX_BAG = 4;
+
+/**
+ * Liste dédupliquée des accessoires à prévoir pour une séance : le choix
+ * explicite par exercice (exercise_library.accessories) PLUS les accessoires
+ * déduits de l'exercice (derivedAccessoriesFor). Straps en tête dès qu'un
+ * mouvement de tirage figure dans la séance. Plafonnée à 4 (+ trépied et
+ * shaker toujours présents) : au-delà ce n'est plus une liste de préparation.
+ *
+ * `equipmentByName` (clé = nom normalisé, comme ProgramWeekContext) précise le
+ * matériel de la bibliothèque quand on l'a.
+ */
 export function accessoriesForSession(
   exerciseNames: string[],
-  accessoriesByName?: Record<string, string[] | null | undefined>
+  accessoriesByName?: Record<string, string[] | null | undefined>,
+  equipmentByName?: Record<string, string | null | undefined>
 ): SessionAccessory[] {
   const found = new Map<string, SessionAccessory>();
 
@@ -233,7 +285,7 @@ export function accessoriesForSession(
       return;
     }
     found.set(accessoryName, {
-      accessory: accessoryName,
+      accessory: catalogEntry?.label ?? accessoryName,
       reason: catalogEntry?.reason ?? "",
       url: catalogEntry?.url ?? "",
       forExercises: [forExercise],
@@ -242,12 +294,15 @@ export function accessoriesForSession(
 
   for (const raw of exerciseNames) {
     const explicit = accessoriesByName?.[raw];
-    if (!explicit || explicit.length === 0) continue;
-    for (const accessoryName of explicit) add(accessoryName, raw);
+    if (explicit && explicit.length > 0) for (const accessoryName of explicit) add(accessoryName, raw);
+    for (const accessoryName of derivedAccessoriesFor(raw, equipmentByName?.[normalize(raw)])) add(accessoryName, raw);
   }
 
-  // ALWAYS_ACCESSORIES (trépied, shaker) s'ajoutent après le plafond à 3 :
-  // ils ne sont pas déduits de la séance, donc ne doivent jamais prendre la
-  // place d'une vraie suggestion liée aux exercices du jour.
-  return [...found.values()].slice(0, 3).concat(ALWAYS_ACCESSORIES);
+  const labelOf = (key: string) => ACCESSORY_CATALOG.find((a) => a.accessory === key)?.label ?? key;
+  const rank = (label: string) => {
+    const i = PRIORITY.findIndex((k) => labelOf(k) === label);
+    return i === -1 ? PRIORITY.length : i;
+  };
+  const ordered = [...found.values()].sort((x, y) => rank(x.accessory) - rank(y.accessory));
+  return ordered.slice(0, MAX_BAG).concat(ALWAYS_ACCESSORIES);
 }

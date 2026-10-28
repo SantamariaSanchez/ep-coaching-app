@@ -5,6 +5,8 @@ import { getClientIntake } from "@/utils/client-intake";
 import { getLatestWeight } from "@/utils/daily-logs";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { getEatingRelation } from "@/lib/eating-safety-server";
+import { getTrainingGyms } from "@/utils/training-gyms";
+import { equipmentFilterFor } from "@/lib/gym-equipment";
 import { buildDietFramework, type DietFramework } from "@/lib/diet-models";
 import { NUTRITION_RULES } from "@/lib/coaching-knowledge";
 import { getExerciseLibrary } from "@/utils/exercise-library";
@@ -115,6 +117,9 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
 
   // ── Programme (suggestions, pas un programme prêt à sauvegarder) ────────
   const library = await getExerciseLibrary();
+  // Le programme dépend du matériel de la salle du client, jamais de la diète.
+  const clientGyms = await getTrainingGyms(clientId);
+  const gymEquipment = equipmentFilterFor(clientGyms[0]);
   let program: ProgramSuggestion[] | null = null;
   if (library.length === 0) {
     warnings.push("Programme : bibliothèque d'exercices vide.");
@@ -126,7 +131,8 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
       intake.exercises_problematic,
       intake.training_access,
       intake.injuries,
-      level
+      level,
+      gymEquipment
     );
     if (!intake.training_access) {
       warnings.push(

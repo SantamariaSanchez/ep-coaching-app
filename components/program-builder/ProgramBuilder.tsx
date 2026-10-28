@@ -25,6 +25,8 @@ import type { ClientIntake } from "@/utils/client-intake";
 import type { ScheduleBlock } from "@/utils/agenda";
 import type { ProgramTemplateWithDays, ProgramTemplateInput } from "@/utils/program-templates";
 import type { LibraryExercise } from "@/utils/exercise-library";
+import type { TrainingGym } from "@/utils/training-gyms";
+import { equipmentFilterFor } from "@/lib/gym-equipment";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import { TENSION_FOCUS_LABELS, TENSION_FOCUS_OPTIONS } from "@/lib/exercise-library-content";
 import { findSwapCandidate, generateProgramPlan, recoveryFromIntake } from "@/lib/plan-generator";
@@ -90,6 +92,7 @@ export default function ProgramBuilder({
   templates = [],
   scheduleBlocks = [],
   photos = { gym: [], physique: [] },
+  gyms = [],
   saveProgram,
   saveAsTemplate,
   mode = "client",
@@ -106,6 +109,8 @@ export default function ProgramBuilder({
   templates?: ProgramTemplateWithDays[];
   scheduleBlocks?: ScheduleBlock[];
   photos?: ContextPhotos;
+  /** Salles d'entraînement du client (matériel et photos). */
+  gyms?: TrainingGym[];
   saveProgram: SaveProgramFn;
   saveAsTemplate?: (input: ProgramTemplateInput) => Promise<{ id?: string; error?: string }>;
   /** "self" : le coach programme pour lui-même (pas de fiche client ni de notif). */
@@ -291,6 +296,8 @@ export default function ProgramBuilder({
   // (blessures, exercices qui font mal, matériel détesté, salle ou maison),
   // avec séries/reps/RIR/repos par défaut. Le coach n'a plus qu'à ajuster.
   const baseCount = sessionCount || suggestedCount || 4;
+  // Salle par défaut pour la base automatique : celle de la première séance qui en a une, sinon la première salle.
+  const defaultGym = gyms.find((g) => g.id === state.days.find((d) => d.gym_id)?.gym_id) ?? gyms[0] ?? null;
   async function generateBase(n: number) {
     setTemplateMenu(false);
     if (library.length === 0) {
@@ -305,7 +312,7 @@ export default function ProgramBuilder({
       intake?.exercises_problematic ?? null,
       intake?.training_access ?? null,
       intake?.injuries ?? null,
-      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration) }
+      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration), gymEquipment: equipmentFilterFor(defaultGym) }
     );
     const draft = plan.days;
     setPlanNotes(plan.notes);
@@ -321,7 +328,7 @@ export default function ProgramBuilder({
           is_direct: e.is_direct,
         }));
         while (rows.length < DEFAULT_ROWS) rows.push(emptyRow());
-        return { ...emptyDay(d.dayLabel, 0), rows };
+        return { ...emptyDay(d.dayLabel, 0), rows, gym_id: defaultGym?.id ?? null };
       }),
     }));
   }
@@ -355,7 +362,8 @@ export default function ProgramBuilder({
       intake?.injuries ?? null,
       intake?.training_access ?? null,
       day.rows.map((r) => r.name),
-      experienceLevel
+      experienceLevel,
+      equipmentFilterFor(gyms.find((g) => g.id === day.gym_id))
     );
     if (next) patchRow(dayId, rowId, { name: next.name, muscle_group: next.muscle_group, muscle_subgroup: next.muscle_subgroup ?? "" });
   }
@@ -707,6 +715,8 @@ export default function ProgramBuilder({
                 index={i}
                 total={state.days.length}
                 library={library}
+                gyms={gyms}
+                gymsHref={mode === "client" ? `/dashboard/coach/clients/${clientId}/salles` : programHref.includes("/coach/") ? "/dashboard/coach/exercises?tab=mine" : "/dashboard/client/exercises?tab=mine"}
                 intake={intake}
                 agendaDays={agendaDays}
                 sessionMinutesTarget={sessionMinutesTarget}

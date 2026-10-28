@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import { getTrainingGyms } from "@/utils/training-gyms";
 import BackButton from "@/components/ui/BackButton";
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -63,6 +64,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
 
+  const gyms = await getTrainingGyms(id);
   const photos = await signedPhotos(intake?.gym_photo_paths ?? [], intake?.physique_photo_paths ?? []);
   const clientName = client.full_name ?? t("Client");
 
@@ -92,6 +94,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
         templates={templates}
         scheduleBlocks={scheduleBlocks}
         photos={photos}
+        gyms={gyms}
         saveProgram={saveProgram}
         saveAsTemplate={saveCurrentProgramAsTemplate}
         backHref={`/dashboard/coach/clients/${id}/program`}

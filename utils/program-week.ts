@@ -4,6 +4,7 @@ import { todayInParis } from "@/lib/dates";
 import { getClientIntake } from "@/utils/client-intake";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getExerciseLibrary } from "@/utils/exercise-library";
+import { getTrainingGyms } from "@/utils/training-gyms";
 import { EXECUTION_TIPS, getTips } from "@/lib/execution-tips";
 import type { ProgramWithDays } from "@/utils/programs";
 import {
@@ -36,6 +37,8 @@ export interface ProgramWeekContext {
   today: string;
   weekStart: string;
   gym: { name: string; link: string | null } | null;
+  /** Salles d'entraînement du client (id, nom, ville) : la salle d'une séance vient de program_days.gym_id. */
+  trainingGyms: { id: string; name: string; city: string | null }[];
   /** Créneau d'agenda par jour du programme (id du jour). */
   slots: Record<string, DaySlot | null>;
   /** Nom d'exercice normalisé -> matériel (exercise_library.equipment). */
@@ -138,11 +141,12 @@ export async function getProgramWeekContext(userId: string, program: ProgramWith
   const today = todayInParis();
   const weekStart = weekStartOf(today);
   const names = [...new Set((program?.days ?? []).flatMap((d) => d.exercises.map((e) => e.name)))];
-  const [intake, blocks, library, training] = await Promise.all([
+  const [intake, blocks, library, training, trainingGyms] = await Promise.all([
     getClientIntake(userId),
     getScheduleBlocks(userId),
     getExerciseLibrary(),
     getTrainingData(userId, names, weekStart, today, db),
+    getTrainingGyms(userId),
   ]);
 
   const keys = new Set(names.map(equipmentKey));
@@ -175,6 +179,7 @@ export async function getProgramWeekContext(userId: string, program: ProgramWith
     today,
     weekStart,
     gym: intake?.gym_name?.trim() ? { name: intake.gym_name.trim(), link: intake.gym_link ?? null } : null,
+    trainingGyms: trainingGyms.map((g) => ({ id: g.id, name: g.name, city: g.city })),
     slots,
     equipmentByName,
     accessoriesByName,
