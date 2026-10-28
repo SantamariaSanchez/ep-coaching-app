@@ -15,7 +15,7 @@ import {
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
   AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
-  BookOpenCheck, Gauge, Award, CalendarCheck, Crosshair, BrainCircuit,
+  BookOpenCheck, Gauge, Award, CalendarCheck, Crosshair, BrainCircuit, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -555,6 +555,14 @@ export default function DashboardNav({
   const pathname = usePathname();
   const onSessionPage = pathname.includes("/logbook/session/");
   const [isDesktop, setIsDesktop] = useState(false);
+  // Version ordinateur : barre latérale de 240 px à partir de 1024 px, rail
+  // d'icônes de 68 px en dessous (tablette) ou à la demande (touche « [ » ou
+  // bouton en bas). Le choix de la personne est mémorisé ; sans choix, la
+  // largeur de la fenêtre décide.
+  const [isWide, setIsWide] = useState(false);
+  const [railPref, setRailPref] = useState<boolean | null>(null);
+  const collapsed = isDesktop && (railPref ?? !isWide);
+  const sidebarW = collapsed ? 68 : 240;
 
   // Clavier ouvert (téléphone, appli native) : la nav du bas remontait
   // au-dessus du clavier et recouvrait le champ en cours de saisie. Même
@@ -597,6 +605,15 @@ export default function DashboardNav({
   const [hasPersonalCoach, setHasPersonalCoach] = useState(false);
 
   useEffect(() => {
+    const wide = window.matchMedia("(min-width: 1024px)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsWide(wide.matches);
+    const hw = (e: MediaQueryListEvent) => setIsWide(e.matches);
+    wide.addEventListener("change", hw);
+    try {
+      const saved = localStorage.getItem("ep-sidebar-collapsed");
+      if (saved === "1" || saved === "0") setRailPref(saved === "1");
+    } catch {}
     const mq = window.matchMedia("(min-width: 768px)");
     // `window` n'existe pas côté serveur : lire matchMedia pendant le rendu
     // (même via un initialiseur "lazy" de useState) produirait un mismatch
@@ -607,8 +624,40 @@ export default function DashboardNav({
     setIsDesktop(mq.matches);
     const h = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener("change", h);
-    return () => mq.removeEventListener("change", h);
+    return () => {
+      mq.removeEventListener("change", h);
+      wide.removeEventListener("change", hw);
+    };
   }, []);
+
+  function toggleRail() {
+    const next = !collapsed;
+    setRailPref(next);
+    try { localStorage.setItem("ep-sidebar-collapsed", next ? "1" : "0"); } catch {}
+  }
+
+  // Raccourcis clavier (ordinateur) : « / » recherche, « [ » replie la barre,
+  // « g » puis une lettre pour aller à une page. Jamais dans un champ de saisie.
+  useEffect(() => {
+    if (!isDesktop) return;
+    let armed = 0;
+    const go: Record<string, string> = isCoach
+      ? { h: base, c: `${base}/clients`, m: `${base}/messages`, b: `${base}/studio`, a: `${base}/moi/agenda`, n: `${base}/moi/nutrition`, l: `${base}/moi/logbook`, p: `${base}/programmation` }
+      : { h: base, p: `${base}/program`, l: `${base}/logbook`, n: `${base}/nutrition`, b: `${base}/bilan`, a: `${base}/agenda`, m: `${base}/messages` };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      if (e.key === "/") { e.preventDefault(); window.dispatchEvent(new Event("ep:open-search")); return; }
+      if (e.key === "[") { toggleRail(); return; }
+      if (e.key === "g") { armed = Date.now(); return; }
+      if (armed && Date.now() - armed < 1200 && go[e.key]) { armed = 0; router.push(go[e.key]); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // toggleRail ne dépend que de `collapsed`, relu à chaque frappe via la fermeture.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDesktop, isCoach, base, router, collapsed]);
 
   // Retour direct 2026-09-16 (Supabase passé en dépassement de quota,
   // "ça repart le 27 septembre") : ce prefetch chauffait TOUTE la nav (81
@@ -828,7 +877,9 @@ export default function DashboardNav({
           left: 0, top: 0,
           height: "100%",
           zIndex: 40,
-          width: 220,
+          width: sidebarW,
+          transition: "width 0.2s var(--ep-ease-out)",
+          overflow: "hidden",
           background: "rgba(var(--ep-bg-rgb),0.88)",
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
@@ -838,7 +889,7 @@ export default function DashboardNav({
       >
         {/* Logo */}
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingTop: 28, paddingBottom: 24, position: "relative" }}>
-          <EPLogo size="md" showCoaching />
+          {collapsed ? <EPLogo size="sm" showCoaching={false} /> : <EPLogo size="md" showCoaching />}
         </div>
 
         {/* Bouton de recherche visible (2026-09-08) : la palette de commande
@@ -846,27 +897,28 @@ export default function DashboardNav({
             n'avait jamais de point d'entrée visible, seulement Ctrl/Cmd+K —
             personne ne peut découvrir un raccourci qui ne s'affiche nulle
             part. */}
-        <div style={{ display: "flex", gap: 6, margin: "0 16px 12px" }}>
+        <div style={{ display: "flex", flexDirection: collapsed ? "column" : "row", gap: 6, margin: collapsed ? "0 12px 12px" : "0 16px 12px" }}>
         <button
+          title={`${t("Rechercher")} (/)`}
           type="button"
           onClick={() => window.dispatchEvent(new Event("ep:open-search"))}
           style={{
             flex: 1, minWidth: 0,
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "8px 10px",
+            display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 8,
+            minHeight: 40, padding: "8px 10px",
             background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
             borderRadius: 10, color: "rgba(var(--ep-ink-rgb),0.35)", cursor: "pointer",
             fontSize: 12, fontWeight: 600, textAlign: "left",
           }}
         >
           <Search size={13} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}>{t("Rechercher")}</span>
-          <span style={{
-            fontSize: 9, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.25)",
-            border: "1px solid rgba(var(--ep-ink-rgb),0.15)", borderRadius: 4, padding: "1px 5px",
+          {!collapsed && <span style={{ flex: 1 }}>{t("Rechercher")}</span>}
+          {!collapsed && <span style={{
+            fontSize: 10, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)",
+            border: "1px solid rgba(var(--ep-ink-rgb),0.2)", borderRadius: 4, padding: "1px 5px",
           }}>
             ⌘K
-          </span>
+          </span>}
         </button>
         {/* Note rapide : le même geste qu'au téléphone, sans bouton flottant. */}
         <Link
@@ -875,9 +927,9 @@ export default function DashboardNav({
           aria-label={t("Note rapide")}
           title={t("Note rapide")}
           style={{
-            width: 34, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+            width: collapsed ? "100%" : 40, minHeight: 40, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
             background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-accent-rgb),0.14)",
-            borderRadius: 10, color: "rgba(var(--ep-ink-rgb),0.45)",
+            borderRadius: 10, color: "rgba(var(--ep-ink-rgb),0.6)",
           }}
         >
           <NotebookPen size={14} strokeWidth={1.8} />
@@ -887,16 +939,17 @@ export default function DashboardNav({
         <div className="ep-divider-subtle" style={{ margin: "0 16px 8px" }} />
 
         {/* Sidebar nav */}
-        <nav style={{ flex: 1, padding: "0 10px", overflowY: "auto" }}>
+        <nav style={{ flex: 1, padding: collapsed ? "0 8px" : "0 10px", overflowY: "auto", overflowX: "hidden" }}>
           {sidebar.map((group, gi) => (
             <div key={gi} style={{ marginBottom: 4 }}>
-              {group.group && (
+              {group.group && collapsed && gi > 0 && <div className="ep-divider-subtle" style={{ margin: "8px 10px" }} />}
+              {group.group && !collapsed && (
                 <p style={{
                   fontSize: 9,
                   fontWeight: 700,
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
-                  color: "rgba(var(--ep-ink-rgb),0.18)",
+                  color: "rgba(var(--ep-ink-rgb),0.45)",
                   padding: "14px 10px 5px",
                   margin: 0,
                 }}>
@@ -911,17 +964,21 @@ export default function DashboardNav({
                   <Link prefetch={false}
                     key={href}
                     href={href}
+                    title={collapsed ? t(label) : undefined}
+                    aria-label={collapsed ? t(label) : undefined}
                     className="animate-fade-up ep-nav-link"
                     style={{
                       animationDelay: `${(gi * 3 + i) * 30}ms`,
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: collapsed ? "center" : "flex-start",
                       gap: 10,
-                      padding: "9px 12px",
+                      minHeight: 40,
+                      padding: collapsed ? "9px 0" : "9px 12px",
                       borderRadius: 10,
                       marginBottom: 1,
                       position: "relative",
-                      color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.32)",
+                      color: active ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.6)",
                       fontWeight: active ? 700 : 500,
                       fontSize: 13,
                       textDecoration: "none",
@@ -936,7 +993,7 @@ export default function DashboardNav({
                       if (active) return;
                       const el = e.currentTarget as HTMLAnchorElement;
                       el.style.background = "transparent";
-                      el.style.color = "rgba(var(--ep-ink-rgb),0.32)";
+                      el.style.color = "rgba(var(--ep-ink-rgb),0.6)";
                     }}
                   >
                     {/* layoutId partagé : Framer Motion fait glisser ce fond
@@ -969,14 +1026,15 @@ export default function DashboardNav({
                       strokeWidth={active ? 2.2 : 1.7}
                       style={{ color: active ? "var(--ep-accent)" : "inherit", flexShrink: 0 }}
                     />
-                    <span style={{ flex: 1 }}>{t(label)}</span>
-                    {locked && (
+                    {!collapsed && <span style={{ flex: 1 }}>{t(label)}</span>}
+                    {locked && !collapsed && (
                       <Lock size={11} style={{ color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0 }} strokeWidth={2} />
                     )}
                     {count > 0 && (
                       <span
                         className="animate-pulse-glow animate-badge-pop"
                         style={{
+                          ...(collapsed ? { position: "absolute", top: 3, right: 8 } : {}),
                           background: "var(--ep-accent)",
                           color: "#fff",
                           borderRadius: "50%",
@@ -1001,8 +1059,8 @@ export default function DashboardNav({
         </nav>
 
         {/* Bottom: user + logout */}
-        <div style={{ borderTop: "1px solid rgba(var(--ep-accent-rgb),0.08)", padding: "14px 12px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div style={{ borderTop: "1px solid rgba(var(--ep-accent-rgb),0.08)", padding: collapsed ? "12px 8px" : "14px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10, marginBottom: 10 }} title={collapsed ? userName ?? undefined : undefined}>
             <div style={{
               width: 34,
               height: 34,
@@ -1019,7 +1077,7 @@ export default function DashboardNav({
             }}>
               {initials}
             </div>
-            <div style={{ minWidth: 0 }}>
+            {!collapsed && <div style={{ minWidth: 0 }}>
               <div style={{
                 fontSize: 12,
                 fontWeight: 700,
@@ -1037,7 +1095,7 @@ export default function DashboardNav({
               }}>
                 {userRole ?? "…"}
               </div>
-            </div>
+            </div>}
           </div>
 
           {userRole === "coach" && hasPersonalCoach && (
@@ -1046,8 +1104,10 @@ export default function DashboardNav({
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: collapsed ? "center" : "flex-start",
                 gap: 8,
                 width: "100%",
+                minHeight: 40,
                 padding: "7px 10px",
                 borderRadius: 8,
                 background: "transparent",
@@ -1070,7 +1130,7 @@ export default function DashboardNav({
               }}
             >
               <ArrowLeftRight size={14} strokeWidth={1.7} />
-              {isCoach ? t("Mon coaching perso") : t("Mon espace coach")}
+              {!collapsed && (isCoach ? t("Mon coaching perso") : t("Mon espace coach"))}
             </Link>
           )}
 
@@ -1080,8 +1140,10 @@ export default function DashboardNav({
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: collapsed ? "center" : "flex-start",
                 gap: 8,
                 width: "100%",
+                minHeight: 40,
                 padding: "7px 10px",
                 borderRadius: 8,
                 background: "transparent",
@@ -1104,22 +1166,26 @@ export default function DashboardNav({
               }}
             >
               <Crown size={14} strokeWidth={1.7} />
-              {t("Mon coaching")}
+              {!collapsed && t("Mon coaching")}
             </Link>
           )}
 
           <button
             onClick={handleSignOut}
+            title={collapsed ? t("Déconnexion") : undefined}
+            aria-label={t("Déconnexion")}
             style={{
               display: "flex",
               alignItems: "center",
+              justifyContent: collapsed ? "center" : "flex-start",
               gap: 8,
               width: "100%",
+              minHeight: 40,
               padding: "7px 10px",
               borderRadius: 8,
               background: "transparent",
               border: "none",
-              color: "rgba(var(--ep-ink-rgb),0.22)",
+              color: "rgba(var(--ep-ink-rgb),0.5)",
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",
@@ -1132,12 +1198,28 @@ export default function DashboardNav({
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "rgba(var(--ep-ink-rgb),0.22)";
+              el.style.color = "rgba(var(--ep-ink-rgb),0.5)";
               el.style.background = "transparent";
             }}
           >
             <LogOut size={14} strokeWidth={1.7} />
-            {t("Déconnexion")}
+            {!collapsed && t("Déconnexion")}
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleRail}
+            title={`${collapsed ? t("Agrandir le menu") : t("Réduire le menu")} ([)`}
+            aria-label={collapsed ? t("Agrandir le menu") : t("Réduire le menu")}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 8,
+              width: "100%", minHeight: 40, padding: "7px 10px", marginTop: 2, borderRadius: 8,
+              background: "transparent", border: "none", color: "rgba(var(--ep-ink-rgb),0.5)",
+              fontSize: 12, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            {collapsed ? <PanelLeftOpen size={15} strokeWidth={1.7} /> : <PanelLeftClose size={15} strokeWidth={1.7} />}
+            {!collapsed && t("Réduire le menu")}
           </button>
         </div>
       </aside>
@@ -1145,7 +1227,8 @@ export default function DashboardNav({
       {/* ── Page content ─────────────────────────────────────────────────────── */}
       <main
         style={{
-          marginLeft: isDesktop ? 220 : 0,
+          marginLeft: isDesktop ? sidebarW : 0,
+          transition: "margin-left 0.2s var(--ep-ease-out)",
           // Bottom padding: 72px nav + safe area inset
           paddingBottom: isDesktop ? 0 : "calc(72px + env(safe-area-inset-bottom, 0px))",
           minHeight: "100vh",
