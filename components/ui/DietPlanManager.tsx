@@ -864,7 +864,7 @@ export function PlanBuilder({
           <input
             value={planName}
             onChange={(e) => setPlanName(e.target.value)}
-            placeholder={tr("Ex. Prise de masse semaine 1")} aria-label={tr("Nom du plan")}
+            placeholder={tr("Ex. Prise de muscle semaine 1")} aria-label={tr("Nom du plan")}
             className={inputCls}
           />
         </div>
@@ -901,7 +901,7 @@ export function PlanBuilder({
         <input
           value={objective}
           onChange={(e) => setObjective(e.target.value)}
-          placeholder={tr("Ex. Sèche progressive, 400 kcal sous la maintenance, protéines hautes")} aria-label={tr("Objectif")}
+          placeholder={tr("Ex. Perte de gras progressive, 400 kcal sous la maintenance, protéines hautes")} aria-label={tr("Objectif")}
           className={inputCls}
         />
       </div>
@@ -1298,7 +1298,7 @@ export function PlanBuilder({
                 <input aria-label={tr("Nom du modèle")}
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
-                  placeholder={planName || tr("Ex. Sèche 2000 kcal, 4 repas")}
+                  placeholder={planName || tr("Ex. Perte de gras 2000 kcal, 4 repas")}
                   className={inputCls}
                 />
               </div>

@@ -639,7 +639,7 @@ const prepa: Discipline = {
       { label: "Posing (7 j)", value: posing ? formatDuration(posing) : "0" },
     ];
   },
-  tip: "Repère courant en sèche : perdre environ 0,5 à 1 % du poids de corps par semaine pour garder le muscle. Le posing se travaille toute la prépa, pas seulement les dernières semaines.",
+  tip: "Repère courant en perte de gras : perdre environ 0,5 à 1 % du poids de corps par semaine pour garder le muscle. Le posing se travaille toute la prépa, pas seulement les dernières semaines.",
 };
 
 // ── Grossesse et post-partum ───────────────────────────────────────────

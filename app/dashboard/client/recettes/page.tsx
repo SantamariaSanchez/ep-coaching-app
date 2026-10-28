@@ -39,7 +39,7 @@ export default async function ClientRecettesPage({
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Recettes & idées repas")}</h1>
         <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Toutes les recettes triées par régime, phase (surplus, maintenance, sèche), macros, allergènes, saison et goûts, produits français de saison. Ajoute les tiennes ou crée une recette 100% sur mesure.")}
+          {t("Toutes les recettes triées par régime, phase (surplus, maintenance, perte de gras), macros, allergènes, saison et goûts, produits français de saison. Ajoute les tiennes ou crée une recette 100% sur mesure.")}
         </p>
       </div>
 

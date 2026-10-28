@@ -537,7 +537,7 @@ export default function ProgramBuilder({
             <input
               value={state.name}
               onChange={(e) => update((s) => ({ ...s, name: e.target.value }))}
-              placeholder={tr("Nom du programme (ex. Prise de masse, bloc 1)")}
+              placeholder={tr("Nom du programme (ex. Prise de muscle, bloc 1)")}
               aria-label={tr("Nom du programme")}
               className="flex-1 min-w-[200px] bg-transparent text-lg font-black text-(--ep-strong) placeholder:text-(--ep-ink)/25 placeholder:font-semibold focus:outline-none border-b border-transparent focus:border-(--ep-accent)/50"
             />

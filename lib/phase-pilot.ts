@@ -15,8 +15,8 @@
 //
 // Les couloirs de vitesse de poids sont des REPÈRES de la littérature, jamais
 // une prescription, et rien ici ne propose d'ajuster les calories : le
-// fondateur est mineur, c'est un tableau de bord, pas un coach automatique.
-//   - Prise de masse naturelle : +0,25 à +0,5 % du poids de corps par semaine
+// coach décide, c'est un tableau de bord, pas un coach automatique.
+//   - Prise de muscle naturelle : +0,25 à +0,5 % du poids de corps par semaine
 //     (Iraki et al. 2019, "Nutrition Recommendations for Bodybuilders in the
 //     Off-Season", Sports 7(7):154, DOI 10.3390/sports7070154).
 //   - Sèche : -0,5 à -1 % par semaine (Helms et al. 2014, "Evidence-based
@@ -162,7 +162,7 @@ const TRAINING_BLOCK_TYPES = new Set(["masse", "deficit", "maintenance", "custom
 
 const CORRIDOR_CONTEXT: Record<string, string> = {
   masse: "d'une PDM naturelle",
-  deficit: "d'une sèche",
+  deficit: "d'une perte de gras",
   maintenance: "du maintien",
   diet_break: "d'un diet break",
 };

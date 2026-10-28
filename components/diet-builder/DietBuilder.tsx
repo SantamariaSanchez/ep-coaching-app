@@ -452,7 +452,7 @@ export default function DietBuilder({
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={template ? tr("Nom du modèle (ex. Sèche 1800 kcal, 4 repas)") : tr("Nom du plan (ex. Sèche, semaine 1)")}
+              placeholder={template ? tr("Nom du modèle (ex. Perte de gras 1800 kcal, 4 repas)") : tr("Nom du plan (ex. Perte de gras, semaine 1)")}
               aria-label={tr("Nom du plan")}
               className="flex-1 min-w-[180px] bg-transparent text-lg font-black text-(--ep-strong) placeholder:text-(--ep-ink)/25 placeholder:font-semibold focus:outline-none border-b border-transparent focus:border-(--ep-accent)/50"
             />

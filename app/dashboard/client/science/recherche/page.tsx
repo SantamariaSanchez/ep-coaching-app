@@ -1,39 +1,15 @@
-import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getScienceCounts } from "@/utils/science";
-import { FlaskConical } from "lucide-react";
-import ScienceSubNav from "@/components/science/ScienceSubNav";
-import SearchView from "@/components/science/SearchView";
-import { importArticle } from "@/app/dashboard/client/science/actions";
 
 export const dynamic = "force-dynamic";
 
+// La recherche directe sur PubMed montre des sources brutes : aucune source
+// n'est jamais affichée à un client, elle reste réservée au coach. Le client
+// retrouve les énoncés simples dans la bibliothèque.
 export default async function ClientScienceRecherchePage() {
-  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
-
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/science/recherche");
-
-  const counts = await getScienceCounts(profile?.coach_id ?? "");
-
-  return (
-    <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-          {t("Contenu")}
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <FlaskConical size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
-          {t("Science")}
-        </h1>
-      </div>
-
-      <ScienceSubNav base="/dashboard/client/science" counts={counts} />
-
-      <SearchView isCoach={false} importArticle={importArticle} />
-    </div>
-  );
+  redirect("/dashboard/client/science/bibliotheque");
 }

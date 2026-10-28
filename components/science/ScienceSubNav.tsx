@@ -21,7 +21,7 @@ export default function ScienceSubNav({
 
   return (
     <div className="flex gap-1 mb-6 border-b border-(--ep-line)/20 -mx-1 px-1 overflow-x-auto">
-      {ITEMS.map(({ label, segment, countKey }) => {
+      {ITEMS.filter((i) => base !== "/dashboard/client/science" || i.segment !== "recherche").map(({ label, segment, countKey }) => {
         const href = `${base}/${segment}`;
         const active = pathname === href || pathname.startsWith(`${href}/`);
         const count = countKey && counts ? counts[countKey] : null;

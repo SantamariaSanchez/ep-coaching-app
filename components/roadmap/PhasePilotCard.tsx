@@ -356,7 +356,7 @@ export default function PhasePilotCard({
         )}
 
         <p style={{ fontSize: 9.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.28)", margin: 0 }}>
-          {tr("Repères indicatifs (Iraki et al. 2019 pour la prise de masse, Helms et al. 2014 pour la sèche), jamais une consigne. Calculé sur les pesées du bilan, le tracker nutrition, les séances terminées et le sommeil noté.")}
+          {tr("Repères indicatifs, jamais une consigne. Calculé sur les pesées du bilan, le tracker nutrition, les séances terminées et le sommeil noté.")}
         </p>
       </div>
     </section>

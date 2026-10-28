@@ -338,7 +338,7 @@ export default function ClientMedicalConstraintsPanel({
                       href={`/dashboard/coach/contraintes/${constraint.slug}`}
                       className="inline-block text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi)"
                     >
-                      {t("Voir la fiche complète et les sources →")}
+                      {t("Voir la fiche complète →")}
                     </Link>
                   </div>
                 )}

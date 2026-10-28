@@ -71,9 +71,9 @@ export const DIET_LABELS: Record<Diet, string> = {
 };
 
 export const PHASE_LABELS: Record<Phase, string> = {
-  surplus: "Surplus (prise de masse)",
+  surplus: "Surplus (prise de muscle)",
   maintenance: "Maintenance",
-  deficit: "Déficit (sèche)",
+  deficit: "Déficit (perte de gras)",
 };
 
 export const SEASON_LABELS: Record<Season, string> = {
@@ -210,7 +210,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter les fruits coupés et le granola",
       "Saupoudrer de cannelle",
     ],
-    tip: "Le skyr a deux fois plus de protéines qu'un yaourt grec classique pour le même nombre de calories, parfait en sèche.",
+    tip: "Le skyr a deux fois plus de protéines qu'un yaourt grec classique pour le même nombre de calories, parfait en perte de gras.",
   },
   {
     id: "pdj-toast-avocat-oeuf",
@@ -495,7 +495,7 @@ export const RECIPES: Recipe[] = [
       "Saisir le steak 2-3 min par face avec beurre, ail et thym",
       "Laisser reposer 3 min avant de trancher",
     ],
-    tip: "Pour la sèche, réduis simplement la portion de riz à 50g.",
+    tip: "Pour la perte de gras, réduis simplement la portion de riz à 50g.",
   },
   {
     id: "dej-tofu-saute-legumes",
@@ -547,7 +547,7 @@ export const RECIPES: Recipe[] = [
       "Verser dans un plat avec la courgette et le chèvre émietté",
       "Cuire 25 min à 180°C",
     ],
-    tip: "Sans pâte = beaucoup moins de glucides et de calories qu'une quiche classique, idéal en sèche.",
+    tip: "Sans pâte = beaucoup moins de glucides et de calories qu'une quiche classique, idéal en perte de gras.",
   },
 
   // ─────────────────────────── DÎNER ───────────────────────────
@@ -574,7 +574,7 @@ export const RECIPES: Recipe[] = [
       "Arroser d'huile d'olive, citron et thym",
       "Fermer la papillote, cuire 20 min à 200°C",
     ],
-    tip: "Plat très léger en calories mais rassasiant, parfait pour un dîner en phase de sèche.",
+    tip: "Plat très léger en calories mais rassasiant, parfait pour un dîner en phase de perte de gras.",
   },
   {
     id: "din-soupe-legumes-hiver",
@@ -728,7 +728,7 @@ export const RECIPES: Recipe[] = [
       "Incorporer le lait de coco en fin de cuisson",
       "Servir avec coriandre fraîche",
     ],
-    tip: "Plat réconfortant et économique, riche en fibres pour la satiété en phase de sèche.",
+    tip: "Plat réconfortant et économique, riche en fibres pour la satiété en phase de perte de gras.",
   },
   {
     id: "din-tartare-boeuf-frites-patate",
@@ -870,7 +870,7 @@ export const RECIPES: Recipe[] = [
     allergens: [],
     ingredients: ["100g de houmous maison ou du commerce", "Carotte, concombre, céleri en bâtonnets"],
     steps: ["Couper les légumes en bâtonnets", "Servir avec le houmous"],
-    tip: "Très peu calorique pour le volume, combat bien les fringales en phase de sèche.",
+    tip: "Très peu calorique pour le volume, combat bien les fringales en phase de perte de gras.",
   },
   {
     id: "col-shaker-whey-banane",
@@ -959,7 +959,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["lactose"],
     ingredients: ["200g de skyr nature", "1 c. à café de cacao non sucré", "Fruits rouges"],
     steps: ["Mélanger le skyr et le cacao", "Ajouter les fruits rouges par-dessus"],
-    tip: "Effet 'dessert' avec très peu de calories, excellent pour gérer les envies de sucré en sèche.",
+    tip: "Effet 'dessert' avec très peu de calories, excellent pour gérer les envies de sucré en perte de gras.",
   },
   {
     id: "col-toast-fromage-frais-radis",
@@ -1074,7 +1074,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["lactose"],
     ingredients: ["150g de yaourt grec 0%", "Fruits rouges surgelés", "1/2 banane", "Eau ou glaçons"],
     steps: ["Mixer tous les ingrédients jusqu'à texture lisse", "Boire frais"],
-    tip: "Faible en calories mais riche en protéines, parfait quand tu es en sèche et que tu veux limiter l'apport calorique post-séance.",
+    tip: "Faible en calories mais riche en protéines, parfait quand tu es en perte de gras et que tu veux limiter l'apport calorique post-séance.",
   },
   {
     id: "post-galette-riz-jambon-fromage",
@@ -1726,7 +1726,7 @@ export const RECIPES: Recipe[] = [
     allergens: [],
     ingredients: ["Poignée d'épinards frais", "1 pomme", "Jus de citron", "Eau, glaçons"],
     steps: ["Mixer tous les ingrédients jusqu'à texture lisse", "Servir bien frais"],
-    tip: "Une collation très basse en calories, idéale pour gérer une fringale en sèche sans plomber le bilan.",
+    tip: "Une collation très basse en calories, idéale pour gérer une fringale en perte de gras sans plomber le bilan.",
   },
   {
     id: "col2-toast-houmous-radis",
@@ -2595,7 +2595,7 @@ export const RECIPES: Recipe[] = [
       "Dresser le cottage cheese, le thon égoutté et les œufs dans une assiette",
       "Ajouter les crudités, assaisonner",
     ],
-    tip: "L'assiette la plus riche en protéines du livre pour le moins de calories, imbattable en sèche.",
+    tip: "L'assiette la plus riche en protéines du livre pour le moins de calories, imbattable en perte de gras.",
   },
   {
     id: "hp-boeuf-hache-riz-brocoli",
@@ -2656,7 +2656,7 @@ export const RECIPES: Recipe[] = [
       "Faire sauter les crevettes 3-4 min avec ail et persil",
       "Dresser ensemble, arroser de citron et huile d'olive",
     ],
-    tip: "Le plat idéal en sèche : haute densité protéique, très faible en calories et rapide à préparer.",
+    tip: "Le plat idéal en perte de gras : haute densité protéique, très faible en calories et rapide à préparer.",
   },
   {
     id: "hp-galette-flocon-avoine-blanc-oeuf",
@@ -2686,7 +2686,7 @@ export const RECIPES: Recipe[] = [
       "Cuire à la poêle antiadhésive 2-3 min par face",
       "Servir avec fruits rouges",
     ],
-    tip: "Sans jaune d'œuf, le ratio protéines/calories explose à la hausse, idéal en sèche.",
+    tip: "Sans jaune d'œuf, le ratio protéines/calories explose à la hausse, idéal en perte de gras.",
   },
 
   // ─────────────────────────── VÉGÉTARIEN / VEGAN ───────────────────────────
@@ -3137,7 +3137,7 @@ export const RECIPES: Recipe[] = [
       "Effilocher le poulet, le remettre dans la soupe",
       "Servir avec les herbes fraîches",
     ],
-    tip: "Volume généreux pour très peu de calories, parfait pour les soirs où la faim se fait sentir en sèche.",
+    tip: "Volume généreux pour très peu de calories, parfait pour les soirs où la faim se fait sentir en perte de gras.",
   },
   {
     id: "seche-salade-chou-chinois-poulet",
@@ -3168,7 +3168,7 @@ export const RECIPES: Recipe[] = [
       "Préparer la vinaigrette avec soja, vinaigre, sésame et gingembre",
       "Ajouter le poulet en morceaux, arroser de vinaigrette",
     ],
-    tip: "Le chou chinois a un très faible apport calorique mais un volume impressionnant, parfait pour caler en sèche.",
+    tip: "Le chou chinois a un très faible apport calorique mais un volume impressionnant, parfait pour caler en perte de gras.",
   },
 
   // ─────────────────────────── PETIT-DÉJEUNER (3) ───────────────────────────
@@ -3828,7 +3828,7 @@ export const RECIPES: Recipe[] = [
       "Préparer la sauce légère en mélangeant citron, moutarde et yaourt",
       "Servir le poisson sur les légumes, napper de sauce",
     ],
-    tip: "Le lieu noir est le poisson blanc le moins cher pour son apport protéique, idéal en sèche.",
+    tip: "Le lieu noir est le poisson blanc le moins cher pour son apport protéique, idéal en perte de gras.",
   },
   {
     id: "din3-saumon-croute-herbes",
@@ -4179,7 +4179,7 @@ export const RECIPES: Recipe[] = [
       "Mélanger citron, yaourt 0% et moutarde pour la sauce",
       "Napper le poisson de sauce",
     ],
-    tip: "Excellent dîner de jour off ou de sèche stricte : volume dans l'assiette, calories et glucides très bas.",
+    tip: "Excellent dîner de jour off ou de perte de gras stricte : volume dans l'assiette, calories et glucides très bas.",
   },
   {
     id: "ctx-steak-hache-haricots-oeuf-hp",
@@ -4507,7 +4507,7 @@ export const RECIPES: Recipe[] = [
       "Monter le burger avec salade, tomate et oignon",
       "Servir avec les quartiers de pommes de terre",
     ],
-    tip: "Repas à réserver aux jours de gros volume d'entraînement ou en fin de phase de sèche pour un refeed contrôlé.",
+    tip: "Repas à réserver aux jours de gros volume d'entraînement ou en fin de phase de perte de gras pour un refeed contrôlé.",
   },
 
   // ─────────────────────────── CONTEXTE : VÉGÉTAL CIBLÉ (glucides / protéines / lipides) ───────────────────────────
@@ -4889,7 +4889,7 @@ export const RECIPES: Recipe[] = [
     allergens: [],
     ingredients: ["40g d'abricots secs", "20g de raisins secs", "Un grand verre d'eau"],
     steps: ["Manger les fruits secs avec un grand verre d'eau"],
-    tip: "Option la plus légère en calories pour une séance en phase de sèche, sans sacrifier l'énergie glucidique disponible.",
+    tip: "Option la plus légère en calories pour une séance en phase de perte de gras, sans sacrifier l'énergie glucidique disponible.",
   },
   {
     id: "pretrain2-pain-epices-the",
@@ -5060,7 +5060,7 @@ export const RECIPES: Recipe[] = [
       "Pocher 20 min dans l'eau sucrée à la cannelle",
       "Laisser refroidir dans le sirop avant de servir",
     ],
-    tip: "Dessert quasiment sans matière grasse, parfait pour finir un repas en phase de sèche sans culpabiliser.",
+    tip: "Dessert quasiment sans matière grasse, parfait pour finir un repas en phase de perte de gras sans culpabiliser.",
   },
   {
     id: "des4-mugcake-chocolat",
@@ -5544,7 +5544,7 @@ export const RECIPES: Recipe[] = [
       "Cuire les œufs au plat",
       "Dresser les tortillas garnies de haricots, œufs, avocat et fromage râpé, parsemer de coriandre",
     ],
-    tip: "Le classique mexicain du dimanche matin, copieux et équilibré. Idéal en phase de prise de masse.",
+    tip: "Le classique mexicain du dimanche matin, copieux et équilibré. Idéal en phase de prise de muscle.",
   },
   {
     id: "pdj4-porridge-patate-douce",

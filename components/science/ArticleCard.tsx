@@ -142,13 +142,17 @@ export default function ArticleCard({
           )}
         </div>
         <p className="text-sm font-bold text-(--ep-strong) leading-snug">{article.title_fr || article.title}</p>
-        {article.title_fr && (
+        {/* Aucune source n'est jamais affichée à un client : titre d'origine,
+            revue, date et auteurs restent réservés au coach. */}
+        {isCoach && article.title_fr && (
           <p className="text-[10px] text-(--ep-ink)/25 italic mt-0.5 truncate">{article.title}</p>
         )}
-        <p className="text-[10px] text-(--ep-ink)/35 mt-1">
-          {article.journal}
-          {article.pub_date ? ` · ${formatDate(article.pub_date)}` : ""}
-        </p>
+        {isCoach && (
+          <p className="text-[10px] text-(--ep-ink)/35 mt-1">
+            {article.journal}
+            {article.pub_date ? ` · ${formatDate(article.pub_date)}` : ""}
+          </p>
+        )}
         {article.summary_fr && (
           <p className="text-xs text-(--ep-ink)/55 leading-relaxed mt-2 line-clamp-2">{article.summary_fr}</p>
         )}
@@ -170,7 +174,7 @@ export default function ArticleCard({
 
       {expanded && !editing && (
         <div className="px-4 pb-4 border-t border-(--ep-line)/15 pt-3 space-y-2">
-          {article.authors && <p className="text-[11px] text-(--ep-ink)/40 italic">{article.authors}</p>}
+          {isCoach && article.authors && <p className="text-[11px] text-(--ep-ink)/40 italic">{article.authors}</p>}
 
           {article.summary_fr && (
             <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-lg p-3">
@@ -181,11 +185,12 @@ export default function ArticleCard({
             </div>
           )}
 
-          {article.abstract && (
+          {isCoach && article.abstract && (
             <p className="text-xs text-(--ep-ink)/45 leading-relaxed">{article.abstract}</p>
           )}
 
           <div className="flex items-center gap-3 pt-2 border-t border-(--ep-line)/10">
+            {isCoach && (
             <a
               href={article.url}
               target="_blank"
@@ -194,7 +199,8 @@ export default function ArticleCard({
             >
               <ExternalLink size={11} />{" "}{tr("Voir sur PubMed")}
             </a>
-            {article.doi && (
+            )}
+            {isCoach && article.doi && (
               <a
                 href={`https://doi.org/${article.doi}`}
                 target="_blank"
