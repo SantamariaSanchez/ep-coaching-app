@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import {
   applyCalorieDelta,
   calorieStep,
-  clientNudge,
   computeAdjustments,
   performanceDeclineRatio,
   stagnantExercises,
@@ -60,7 +59,7 @@ function logs(kgPerWeek: number, over: (daysAgo: number) => Partial<DailyLog> = 
 const TARGET = { calories: 2300, proteins: 176, carbs: 250, fats: 70 };
 
 function input(over: Partial<AdjustmentInput> = {}): AdjustmentInput {
-  return { today: TODAY, phase: "deficit", level: "intermediaire", eatingRelation: "non", age: 30, target: TARGET, logs: logs(0), sessions: [], ...over };
+  return { today: TODAY, phase: "deficit", level: "intermediaire", eatingRelation: "non", target: TARGET, logs: logs(0), sessions: [], ...over };
 }
 
 const hasCalorieAction = (s: ReturnType<typeof computeAdjustments>) => s.some((x) => x.action?.type === "adjust_calories");
@@ -73,7 +72,7 @@ test("sécurité : signal alimentaire actuel ou incertain, aucune suggestion chi
     assert.equal(s.length, 1);
     assert.equal(s[0].kind, "safety");
     assert.equal(s[0].action, null);
-    assert.doesNotMatch(s[0].coachText + s[0].clientText, /\d+\s*kcal/);
+    assert.doesNotMatch(s[0].coachText, /\d+\s*kcal/);
   }
 });
 
@@ -107,9 +106,8 @@ test("adhésion faible : on simplifie, aucune baisse de calories", () => {
   assert.ok(s.some((x) => x.kind === "adherence"));
 });
 
-test("relation passée ou mineur : jamais de baisse de calories proposée", () => {
+test("relation passée : jamais de baisse de calories proposée", () => {
   assert.equal(hasCalorieAction(computeAdjustments(input({ eatingRelation: "passe" }))), false);
-  assert.equal(hasCalorieAction(computeAdjustments(input({ age: 16 }))), false);
 });
 
 test("perte trop rapide : on remonte, même avec une relation passée", () => {
@@ -217,14 +215,12 @@ test("macros après un changement de calories : protéines inchangées, glucides
   }
 });
 
-test("message client : une seule phrase, au tutoiement, jamais de source ni de tiret cadratin, pas de suggestion réservée au coach", () => {
+test("propositions pour le coach : jamais de source ni de tiret cadratin, aucune action qui modifie sans clic, aucun traitement lié à l'âge", () => {
   const s = computeAdjustments(input({ logs: logs(0, () => ({ sleep_hours: 5.2 })) }));
-  const nudge = clientNudge(s);
-  assert.ok(nudge);
-  assert.doesNotMatch(nudge!.text, /—|https?:/);
+  assert.ok(s.length > 0);
   for (const x of s) {
-    assert.doesNotMatch(x.coachText + x.clientText, /—/);
-    assert.doesNotMatch(x.coachText + x.clientText, /étude|selon /i);
+    assert.doesNotMatch(x.coachText, /—/);
+    assert.doesNotMatch(x.coachText, /étude|selon |mineur/i);
+    assert.ok(x.action === null || x.action.type === "adjust_calories" || x.action.type === "link");
   }
-  assert.equal(clientNudge([]), null);
 });

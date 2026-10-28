@@ -6,12 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { ProgramWithDays, ProgramInput, TensionFocus } from "@/utils/programs";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, VOLUME_LANDMARKS, type MuscleGroup } from "@/lib/volume-data";
-import {
-  MESOCYCLE_WEEKS_MIN,
-  MESOCYCLE_WEEKS_MAX,
-  DEFAULT_MESOCYCLE_WEEKS,
-  computeMesocycleStatus,
-} from "@/lib/mesocycle";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { ClientIntake } from "@/utils/client-intake";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
@@ -182,10 +176,10 @@ function computeWeeklyVolume(days: DayRow[]): Record<string, number> {
 }
 
 function volumeStatus(sets: number, mev: number, mav: number, mrv: number): { label: string; color: string } {
-  if (sets < mev) return { label: "Insuffisant", color: "var(--ep-bad)" };
-  if (sets <= mav) return { label: "Optimal", color: "var(--ep-ok)" };
-  if (sets <= mrv) return { label: "Élevé, gérable", color: "var(--ep-warn)" };
-  return { label: "Excessif", color: "var(--ep-bad)" };
+  if (sets < mev) return { label: "Sous le départ", color: "var(--ep-warn)" };
+  if (sets <= mav) return { label: "Plage de départ", color: "var(--ep-ok)" };
+  if (sets <= mrv) return { label: "Si récupération", color: "var(--ep-warn)" };
+  return { label: "Au-delà du repère", color: "var(--ep-bad)" };
 }
 
 // ── Budget de volume & intensité (fusionné, en Livraison) ────────────────
@@ -205,15 +199,10 @@ function VolumeBudgetReviewPanel({
   days,
   targets,
   onSetTarget,
-  mesocycle,
 }: {
   days: DayRow[];
   targets: Record<string, string>;
   onSetTarget: (group: string, value: string) => void;
-  // Axe FM (MASTERCLASS.md) : quand un mésocycle est suivi, le budget visé
-  // saisi ci-dessous représente la cible PLEINE (avant-dernière semaine,
-  // juste avant la décharge) — ajusté ici pour la semaine en cours.
-  mesocycle?: { startDate: string; weeks: number } | null;
 }) {
   const tr = useT();
   const volume = computeWeeklyVolume(days);
@@ -224,38 +213,14 @@ function VolumeBudgetReviewPanel({
   const hiddenGroups = MUSCLE_GROUPS.filter((g) => !relevantGroups.includes(g));
   const displayedGroups = showAll ? MUSCLE_GROUPS : relevantGroups;
 
-  const mesoStatus = mesocycle ? computeMesocycleStatus(mesocycle.startDate, mesocycle.weeks) : null;
-
   return (
     <div className="bg-(--ep-s1) border border-(--ep-line)/40 rounded-xl p-5">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {tr("Volume & intensité")}
       </p>
       <p className="text-[10.5px] text-(--ep-ink)/30 mb-3 leading-relaxed max-w-2xl">
-        {tr("Séries directes/semaine par groupe musculaire, comparées au budget visé et aux repères MEV/MAV/MRV (Renaissance Periodization). Un repère, pas une règle : récupération, historique et priorités du client comptent tout autant (")}
-        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-(--ep-ink)/50">
-          {tr("Pelland et al., Sports Med 2025")}
-        </a>
-        ).
+        {tr("Séries directes/semaine par groupe musculaire, comparées au budget visé. Départ à 8 à 12 séries difficiles par groupe, puis jusqu'à 10 à 25 seulement si le client récupère en avance. Un repère, pas une règle : récupération, historique et priorités du client comptent tout autant.")}
       </p>
-
-      {mesoStatus && (
-        <div
-          className={`flex items-center gap-2 rounded-lg px-3 py-2 mb-3 border ${
-            mesoStatus.isOverdue || mesoStatus.isDeloadWeek
-              ? "bg-amber-500/10 border-amber-500/25 text-amber-300"
-              : "bg-(--ep-s2) border-(--ep-line)/20 text-(--ep-ink)/50"
-          }`}
-        >
-          <p className="text-[11px] font-bold">
-            {mesoStatus.isOverdue
-              ? tr("Bloc déjà terminé selon les dates renseignées, à relancer.")
-              : mesoStatus.isDeloadWeek
-              ? `Semaine ${mesoStatus.currentWeek}/${mesoStatus.totalWeeks} · décharge (~50% du budget plein)`
-              : `Semaine ${mesoStatus.currentWeek}/${mesoStatus.totalWeeks} · budgets ci-dessous ajustés à ~${Math.round(mesoStatus.volumeFactor * 100)}%`}
-          </p>
-        </div>
-      )}
 
       {displayedGroups.length === 0 ? (
         <p className="text-[11px] text-(--ep-ink)/25 italic">{tr("Aucun groupe travaillé pour l'instant.")}</p>
@@ -264,11 +229,7 @@ function VolumeBudgetReviewPanel({
           {displayedGroups.map((group) => {
             const landmark = VOLUME_LANDMARKS[group];
             const sets = volume[group] ?? 0;
-            const fullTarget = targets[group] ? parseInt(targets[group], 10) : null;
-            const target =
-              fullTarget != null && mesoStatus && !mesoStatus.isOverdue
-                ? Math.round(fullTarget * mesoStatus.volumeFactor)
-                : fullTarget;
+            const target = targets[group] ? parseInt(targets[group], 10) : null;
             const status = landmark ? volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv) : { label: "", color: "var(--ep-ink)" };
             return (
               <div key={group} className="flex items-center gap-2.5 bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2">
@@ -276,7 +237,7 @@ function VolumeBudgetReviewPanel({
                   <p className="text-xs font-bold text-(--ep-strong) truncate">{group}</p>
                   {landmark && (
                     <p className="text-[9px] text-(--ep-ink)/25">
-                      {tr("MEV")}{" "}{landmark.mev}{" "}{tr("· MAV")}{" "}{landmark.mav}{" "}{tr("· MRV")}{" "}{landmark.mrv}
+                      {tr("départ")}{" "}{landmark.mev}-{landmark.mav}{" "}{tr("· jusqu'à")}{" "}{landmark.mrv}
                     </p>
                   )}
                 </div>
@@ -290,7 +251,7 @@ function VolumeBudgetReviewPanel({
                     aria-label={`${group}, séries par semaine visées`}
                     className="w-12 bg-(--ep-s1) border border-(--ep-line)/30 rounded px-1.5 py-1 text-xs text-center text-(--ep-strong) placeholder:text-(--ep-ink)/20 focus:outline-none focus:border-(--ep-accent)/60 transition-colors"
                   />
-                  <span className="text-[9px] text-(--ep-ink)/20">{tr("visé")}{mesoStatus && !mesoStatus.isOverdue ? tr(" (plein)") : ""}</span>
+                  <span className="text-[9px] text-(--ep-ink)/20">{tr("visé")}</span>
                 </div>
                 <div className="text-right flex-shrink-0" style={{ width: 64 }}>
                   <p className="text-sm font-black" style={{ color: status.color }}>
@@ -515,8 +476,6 @@ function initFromProgram(program: ProgramWithDays | null) {
       objective: "",
       coach_notes: "",
       volume_targets: {} as Record<string, string>,
-      mesocycle_start_date: "",
-      mesocycle_weeks: "",
       days: [] as DayRow[],
     };
   }
@@ -529,8 +488,6 @@ function initFromProgram(program: ProgramWithDays | null) {
     volume_targets: Object.fromEntries(
       Object.entries(program.volume_targets ?? {}).map(([k, v]) => [k, String(v)])
     ) as Record<string, string>,
-    mesocycle_start_date: program.mesocycle_start_date ?? "",
-    mesocycle_weeks: program.mesocycle_weeks != null ? String(program.mesocycle_weeks) : "",
     days: program.days.map((d) => ({
       localId: uid(),
       day_label: d.day_label,
@@ -998,7 +955,7 @@ export default function ProgramEditor({
   // ── Program meta ────────────────────────────────────────────────────────────
 
   function updateMeta(
-    field: "name" | "type" | "frequency" | "objective" | "coach_notes" | "mesocycle_start_date" | "mesocycle_weeks",
+    field: "name" | "type" | "frequency" | "objective" | "coach_notes",
     value: string
   ) {
     setState((s) => ({ ...s, [field]: value }));
@@ -1091,12 +1048,10 @@ export default function ProgramEditor({
       frequency: template.frequency != null ? String(template.frequency) : s.frequency,
       objective: template.objective ?? s.objective,
       coach_notes: template.notes ?? s.coach_notes,
-      // Un modèle n'a pas de budget de volume ni de mésocycle propre à un
+      // Un modèle n'a pas de budget de volume propre à un
       // client — ce qui est déjà décidé pour ce client (s'il y en a) est
       // conservé tel quel.
       volume_targets: s.volume_targets,
-      mesocycle_start_date: s.mesocycle_start_date,
-      mesocycle_weeks: s.mesocycle_weeks,
       days: template.days.map((d) => ({
         localId: uid(),
         day_label: d.day_label,
@@ -1369,9 +1324,6 @@ export default function ProgramEditor({
         .map(([k, v]) => [k, parseInt(v, 10)])
     );
 
-    const mesocycleWeeksNum = state.mesocycle_weeks.trim() !== "" ? parseInt(state.mesocycle_weeks, 10) : null;
-    const mesocycleActive = state.mesocycle_start_date.trim() !== "" && mesocycleWeeksNum != null;
-
     const input: ProgramInput = {
       name: state.name.trim(),
       type: state.type || null,
@@ -1379,8 +1331,6 @@ export default function ProgramEditor({
       objective: state.objective.trim() || null,
       coach_notes: state.coach_notes.trim() || null,
       volume_targets: Object.keys(volumeTargets).length > 0 ? volumeTargets : null,
-      mesocycle_start_date: mesocycleActive ? state.mesocycle_start_date : null,
-      mesocycle_weeks: mesocycleActive ? mesocycleWeeksNum : null,
       days: buildDays(),
     };
 
@@ -1627,77 +1577,6 @@ export default function ProgramEditor({
             placeholder={tr("Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…")} aria-label={tr("Notes du coach")}
             className={`${inputCls} resize-none`}
           />
-        </div>
-
-        <div className="mt-4 bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl p-4">
-          <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/40 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={state.mesocycle_start_date.trim() !== ""}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setState((s) => ({
-                    ...s,
-                    mesocycle_start_date: new Date().toISOString().slice(0, 10),
-                    mesocycle_weeks: s.mesocycle_weeks || String(DEFAULT_MESOCYCLE_WEEKS),
-                  }));
-                } else {
-                  updateMeta("mesocycle_start_date", "");
-                }
-              }}
-              className="accent-(--ep-accent)"
-            />
-            {tr("Suivre un mésocycle (montée de volume programmée + décharge en fin de bloc)")}
-          </label>
-          {state.mesocycle_start_date.trim() !== "" && (
-            <>
-              <p className="mt-2 text-[10.5px] text-(--ep-ink)/30 leading-relaxed max-w-2xl">
-                {tr("Le budget de volume ci-dessous (phase Livraison) sert de cible pour l'avant-dernière semaine du bloc : la première semaine démarre plus bas, la dernière est une décharge automatique à ~50%. Un repère de calcul, jamais une réécriture des séries : à toi d'ajuster.")}
-              </p>
-              <div className="mt-3 flex flex-wrap items-end gap-4">
-                <div>
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1 block">
-                    {tr("Date de départ")}
-                  </label>
-                  <input
-                    type="date"
-                    value={state.mesocycle_start_date}
-                    onChange={(e) => updateMeta("mesocycle_start_date", e.target.value)}
-                    aria-label={tr("Date de départ du mésocycle")}
-                    className="bg-(--ep-s1) border border-(--ep-line)/30 rounded-lg px-2.5 py-1.5 text-xs text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/60 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/30 mb-1 block">
-                    {tr("Durée (semaines)")}
-                  </label>
-                  <input
-                    type="number"
-                    min={MESOCYCLE_WEEKS_MIN}
-                    max={MESOCYCLE_WEEKS_MAX}
-                    value={state.mesocycle_weeks}
-                    onChange={(e) => updateMeta("mesocycle_weeks", e.target.value)}
-                    aria-label={tr("Durée du mésocycle en semaines")}
-                    className="w-16 bg-(--ep-s1) border border-(--ep-line)/30 rounded-lg px-2.5 py-1.5 text-xs text-center text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/60 transition-colors"
-                  />
-                </div>
-                {(() => {
-                  const weeksNum = parseInt(state.mesocycle_weeks, 10);
-                  if (isNaN(weeksNum) || weeksNum < MESOCYCLE_WEEKS_MIN) return null;
-                  const status = computeMesocycleStatus(state.mesocycle_start_date, weeksNum);
-                  return (
-                    <p className="text-[10.5px] text-(--ep-ink)/45 pb-1.5">
-                      {status.isOverdue
-                        ? tr("Bloc déjà terminé selon ces dates, il est temps d'en démarrer un nouveau.")
-                        : status.isDeloadWeek
-                        ? `Semaine ${status.currentWeek}/${status.totalWeeks} · décharge`
-                        : `Semaine ${status.currentWeek}/${status.totalWeeks} · volume à ~${Math.round(status.volumeFactor * 100)}% de la cible`}
-                    </p>
-                  );
-                })()}
-              </div>
-            </>
-          )}
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -2189,11 +2068,6 @@ export default function ProgramEditor({
             days={state.days}
             targets={state.volume_targets}
             onSetTarget={setVolumeTarget}
-            mesocycle={
-              state.mesocycle_start_date.trim() !== "" && state.mesocycle_weeks.trim() !== ""
-                ? { startDate: state.mesocycle_start_date, weeks: parseInt(state.mesocycle_weeks, 10) }
-                : null
-            }
           />
           <PositionCoveragePanel days={state.days} library={library} />
           <DeliveryReviewPanel

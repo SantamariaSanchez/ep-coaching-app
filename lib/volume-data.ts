@@ -40,24 +40,38 @@ export const MUSCLE_SUBGROUPS: Record<MuscleGroup, string[]> = {
   Trapèzes: ["Trapèze supérieur", "Trapèze moyen", "Trapèze inférieur"],
 };
 
+import { SMALL_MUSCLE_GROUPS, SMALL_MUSCLE_VOLUME_FACTOR, TRAINING_RULES, WEEKLY_SETS_FLOOR } from "@/lib/coaching-knowledge";
+
+/**
+ * Repères de volume en séries difficiles par semaine et par groupe.
+ * Source unique : lib/coaching-knowledge.ts (Mastermind). `mev` et `mav`
+ * bornent la plage de DÉPART (8 à 12), `mrv` le haut de la plage utile
+ * (10 à 25) selon la récupération. Ce sont des repères de départ, jamais
+ * une prescription : on ajoute des séries seulement si le client récupère
+ * en avance. Les noms de champs sont conservés pour les consommateurs
+ * existants (jauges, couleurs).
+ */
 export interface VolumeLandmark {
+  /** Bas de la plage de départ. */
   mev: number;
+  /** Haut de la plage de départ. */
   mav: number;
+  /** Haut de la plage utile. */
   mrv: number;
 }
 
-export const VOLUME_LANDMARKS: Record<string, VolumeLandmark> = {
-  Pectoraux:         { mev: 8,  mav: 16, mrv: 22 },
-  Dos:               { mev: 10, mav: 18, mrv: 25 },
-  Épaules:           { mev: 6,  mav: 14, mrv: 20 },
-  Biceps:            { mev: 6,  mav: 14, mrv: 20 },
-  Triceps:           { mev: 6,  mav: 14, mrv: 20 },
-  Quadriceps:        { mev: 8,  mav: 16, mrv: 22 },
-  "Ischio-jambiers": { mev: 6,  mav: 12, mrv: 16 },
-  Fessiers:          { mev: 4,  mav: 12, mrv: 16 },
-  Adducteurs:        { mev: 4,  mav: 10, mrv: 14 },
-  Mollets:           { mev: 8,  mav: 16, mrv: 20 },
-  Abdominaux:        { mev: 4,  mav: 12, mrv: 16 },
-  "Avant-bras":      { mev: 4,  mav: 10, mrv: 14 },
-  Trapèzes:          { mev: 4,  mav: 12, mrv: 16 },
-};
+function landmarkFor(group: string): VolumeLandmark {
+  const { weeklyHardSetsStart, weeklyHardSetsRange } = TRAINING_RULES;
+  if (SMALL_MUSCLE_GROUPS.includes(group)) {
+    return {
+      mev: WEEKLY_SETS_FLOOR,
+      mav: Math.round(weeklyHardSetsStart.max * SMALL_MUSCLE_VOLUME_FACTOR),
+      mrv: weeklyHardSetsRange.max,
+    };
+  }
+  return { mev: weeklyHardSetsStart.min, mav: weeklyHardSetsStart.max, mrv: weeklyHardSetsRange.max };
+}
+
+export const VOLUME_LANDMARKS: Record<string, VolumeLandmark> = Object.fromEntries(
+  MUSCLE_GROUPS.map((g) => [g, landmarkFor(g)])
+);

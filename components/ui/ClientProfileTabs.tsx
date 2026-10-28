@@ -59,7 +59,6 @@ import ClientPeriodTracking from "./ClientPeriodTracking";
 import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
 import CoachAdjustmentsPanel from "./CoachAdjustmentsPanel";
 import { computeAdjustments } from "@/lib/coaching-adjustments";
-import { ageFromDateOfBirth } from "@/lib/plan-generator";
 import type { TrainingLevel } from "@/lib/coaching-knowledge";
 import { todayInParis } from "@/lib/dates";
 import CoachingPhasePanel from "./CoachingPhasePanel";
@@ -462,7 +461,6 @@ export default function ClientProfileTabs({
         phase: nutritionProfile?.phase ?? null,
         level: experienceLevel,
         eatingRelation,
-        age: nutritionProfile?.age ?? (intake?.date_of_birth ? ageFromDateOfBirth(intake.date_of_birth) : null),
         target:
           nutritionProfile?.calories_target != null && nutritionProfile.proteins_target != null && nutritionProfile.carbs_target != null && nutritionProfile.fats_target != null
             ? { calories: nutritionProfile.calories_target, proteins: nutritionProfile.proteins_target, carbs: nutritionProfile.carbs_target, fats: nutritionProfile.fats_target }
@@ -470,7 +468,7 @@ export default function ClientProfileTabs({
         logs: recentDailyLogs,
         sessions: logbookSessions,
       }),
-    [nutritionProfile, experienceLevel, eatingRelation, intake?.date_of_birth, recentDailyLogs, logbookSessions]
+    [nutritionProfile, experienceLevel, eatingRelation, recentDailyLogs, logbookSessions]
   );
 
   // Regroupe les suggestions par onglet concerné — affiché en pastille sur

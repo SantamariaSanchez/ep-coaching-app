@@ -29,7 +29,6 @@ import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-
 import { TENSION_FOCUS_LABELS, TENSION_FOCUS_OPTIONS } from "@/lib/exercise-library-content";
 import { findSwapCandidate, generateProgramPlan, recoveryFromIntake } from "@/lib/plan-generator";
 import type { TrainingLevel } from "@/lib/coaching-knowledge";
-import { computeMesocycleStatus } from "@/lib/mesocycle";
 import SessionSheet from "./SessionSheet";
 import ClientContextPanel, { plannedVolume, volumeColor, SPORT_BLOCK, type ContextPhotos } from "./ClientContextPanel";
 import {
@@ -53,8 +52,6 @@ interface BuilderState {
   objective: string;
   coach_notes: string;
   type: string;
-  mesocycle_weeks: string;
-  mesocycle_start_date: string;
   days: SheetDay[];
 }
 
@@ -64,8 +61,6 @@ function initState(program: ProgramWithDays | null): BuilderState {
     objective: program?.objective ?? "",
     coach_notes: program?.coach_notes ?? "",
     type: program?.type ?? "Custom",
-    mesocycle_weeks: program?.mesocycle_weeks != null ? String(program.mesocycle_weeks) : "",
-    mesocycle_start_date: program?.mesocycle_start_date ?? "",
     days: daysFromProgram(program),
   };
 }
@@ -403,8 +398,6 @@ export default function ProgramBuilder({
       );
       if (!ok) return;
     }
-    const weeks = parseInt(state.mesocycle_weeks, 10);
-    const meso = Number.isFinite(weeks) && weeks > 0;
     const input: ProgramInput = {
       name: state.name.trim() || (state.type !== "Custom" ? `${SPLITS.find((s) => s.key === state.type)?.label ?? "Programme"}` : tr("Programme")),
       type: state.type || null,
@@ -412,8 +405,6 @@ export default function ProgramBuilder({
       objective: state.objective.trim() || null,
       coach_notes: state.coach_notes.trim() || null,
       volume_targets: program?.volume_targets ?? null,
-      mesocycle_start_date: meso ? state.mesocycle_start_date || new Date().toISOString().slice(0, 10) : null,
-      mesocycle_weeks: meso ? weeks : null,
       days: daysToInput(state.days).filter((d) => d.exercises.length > 0 || state.days.length === 1),
     };
     setSaving(true);
@@ -463,11 +454,6 @@ export default function ProgramBuilder({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
-
-  const meso =
-    state.mesocycle_weeks && parseInt(state.mesocycle_weeks, 10) > 0
-      ? computeMesocycleStatus(state.mesocycle_start_date || new Date().toISOString().slice(0, 10), parseInt(state.mesocycle_weeks, 10))
-      : null;
 
   const detailsDay = detailsFor ? state.days.find((d) => d.id === detailsFor.dayId) : null;
   const detailsRow = detailsDay?.rows.find((r) => r.id === detailsFor?.rowId) ?? null;
@@ -619,33 +605,6 @@ export default function ProgramBuilder({
                 </button>
               ))}
             </div>
-            <label className="flex items-center gap-2 text-[11px] text-(--ep-ink)/50">
-              <span className="font-bold uppercase tracking-widest text-[10px] text-(--ep-ink)/40">{tr("Bloc")}</span>
-              <select
-                value={state.mesocycle_weeks}
-                onChange={(e) =>
-                  update((s) => ({
-                    ...s,
-                    mesocycle_weeks: e.target.value,
-                    mesocycle_start_date: e.target.value ? s.mesocycle_start_date || new Date().toISOString().slice(0, 10) : "",
-                  }))
-                }
-                aria-label={tr("Durée du bloc")}
-                className="bg-(--ep-shade)/30 border border-(--ep-line)/35 rounded-md px-1.5 py-1 text-[12px] text-(--ep-strong) focus:outline-none"
-              >
-                <option value="">{tr("sans")}</option>
-                {[4, 5, 6, 8, 10, 12].map((w) => (
-                  <option key={w} value={String(w)}>
-                    {w} {tr("sem. + décharge")}
-                  </option>
-                ))}
-              </select>
-              {meso && !meso.isOverdue && (
-                <span className="text-[10.5px] text-(--ep-ink)/35">
-                  {tr("sem.")} {meso.currentWeek}/{meso.totalWeeks}
-                </span>
-              )}
-            </label>
           </div>
 
           <input

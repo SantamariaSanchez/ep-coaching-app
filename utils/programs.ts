@@ -72,11 +72,6 @@ export interface Program {
   // Budget de volume (migration 20260807c) — cibles de séries directes/semaine
   // par groupe musculaire, décidées avant la construction. Voir VolumeBudgetPanel.
   volume_targets?: Record<string, number> | null;
-  // Périodisation de mésocycle (migration 20260923_program_mesocycle, Axe FM)
-  // — voir lib/mesocycle.ts. NULL = pas de mésocycle suivi, comportement
-  // historique inchangé.
-  mesocycle_start_date?: string | null;
-  mesocycle_weeks?: number | null;
   /** Livraison au client (migration 20261013_program_sheet). */
   delivered_at?: string | null;
 }
@@ -129,8 +124,6 @@ export interface ProgramInput {
   objective?: string | null;
   coach_notes?: string | null;
   volume_targets?: Record<string, number> | null;
-  mesocycle_start_date?: string | null;
-  mesocycle_weeks?: number | null;
 }
 
 // Colonnes de conception ajoutées par la migration 20260806. Le code doit
@@ -243,31 +236,13 @@ export async function saveProgramForClient(
       volume_targets: input.volume_targets ?? null,
     };
 
-    const mesoRow = {
-      ...designRow,
-      mesocycle_start_date: input.mesocycle_start_date ?? null,
-      mesocycle_weeks: input.mesocycle_weeks ?? null,
-    };
-
     let { data: program, error: programError } = await supabase
       .from("programs")
-      .insert({ ...mesoRow, delivered_at: new Date().toISOString() })
+      .insert({ ...designRow, delivered_at: new Date().toISOString() })
       .select()
       .single();
 
     // Migration 20261013_program_sheet pas encore passée : sans delivered_at.
-    if (programError && isUnknownColumnError(programError)) {
-      ({ data: program, error: programError } = await supabase
-        .from("programs")
-        .insert(mesoRow)
-        .select()
-        .single());
-    }
-
-    // Migration 20260923_program_mesocycle pas encore exécutée dans le SQL
-    // Editor : on retombe sur la ligne de conception SANS le mésocycle
-    // plutôt que de tout perdre (objective/coach_notes/volume_targets
-    // restent, seul le mésocycle échoue silencieusement à s'enregistrer).
     if (programError && isUnknownColumnError(programError)) {
       ({ data: program, error: programError } = await supabase
         .from("programs")

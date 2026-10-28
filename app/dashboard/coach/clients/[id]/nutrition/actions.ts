@@ -12,7 +12,6 @@ import { getEatingRelation } from "@/lib/eating-safety-server";
 import { eatingSafetyLevel } from "@/lib/eating-safety";
 import { applyCalorieDelta } from "@/lib/coaching-adjustments";
 import { ADJUSTMENT_RULES } from "@/lib/coaching-knowledge";
-import { MINOR_AGE } from "@/lib/plan-generator";
 import type { NutritionProfile } from "@/utils/nutrition";
 
 export async function saveNutritionProfile(
@@ -132,7 +131,7 @@ export async function saveNutritionProfile(
 // Applique en un clic un ajustement de calories suggéré (lib/coaching-adjustments.ts).
 // Les chiffres sont recalculés ici, jamais repris du navigateur : paliers de
 // 150 à 300 kcal au plus, protéines inchangées, glucides ajustés. Aucune
-// baisse en cas de signal alimentaire (même passé) ou pour un mineur.
+// baisse en cas de signal alimentaire (même passé). Action explicite du coach uniquement.
 export async function applyCalorieAdjustment(clientId: string, deltaKcal: number): Promise<{ error?: string }> {
   const guard = await requireOwnClientOrSelf(clientId);
   if (!guard.ok) return { error: guard.error };
@@ -155,7 +154,6 @@ export async function applyCalorieAdjustment(clientId: string, deltaKcal: number
     if (delta < 0) {
       const relation = await getEatingRelation(clientId);
       if (eatingSafetyLevel(relation) !== "clear") return { error: "Aucune baisse de calories pour ce profil." };
-      if (p.age != null && p.age < MINOR_AGE) return { error: "Aucune baisse de calories pour une personne mineure." };
     }
     if (p.height == null || p.age == null || p.tdee == null || p.bmr == null || !p.gender) {
       return { error: "Profil nutrition incomplet : ouvre le calculateur pour le compléter." };

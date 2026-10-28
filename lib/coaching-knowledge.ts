@@ -225,6 +225,36 @@ export const TRAINING_RULES = {
   deloadVolumeFactor: 0.5,
 } as const;
 
+/**
+ * Proximité de l'échec, périodisation, sélection et accessoires.
+ * Statut : enseignement du Mastermind (niveau 3 sélection des exercices,
+ * niveau 4 périodisation et programmation) et du podcast « 0 RIR »
+ * (épisodes 4, 15 et 18). Ce sont des enseignements, pas des preuves : la
+ * proximité de l'échec est solide, la périodisation n'est pas démontrée
+ * comme indispensable, le choix des accessoires est une préférence de coach.
+ */
+export const PROGRAMMING_PRINCIPLES = {
+  /**
+   * À proximité de l'échec égale, une série légère longue et une série lourde
+   * courte donnent le même stimulus : ce qui compte est la proximité de
+   * l'échec, pas le nombre de répétitions. Les répétitions impaires comptent
+   * (7, 9, 11, 13) : si la série peut aller une répétition de plus, on la fait.
+   */
+  stimulusDependsOnProximityToFailure: true,
+  /** Aucun modèle de périodisation n'est imposé : ni mésocycle, ni montée de volume programmée. */
+  periodizationImposed: false,
+  /** Préférence du coach : varier plages de répétitions, repos et RIR dans la semaine, selon l'exercice. */
+  variationWithinWeek: ["plage de répétitions", "temps de repos", "RIR"],
+  /** Changer d'exercice pour une vraie raison (stagnation, douleur, ennui), pas toutes les semaines. */
+  changeExerciseOnlyForRealReason: true,
+  /** Le programme ne dépend jamais de la diète ni de l'objectif calorique. */
+  programIndependentOfDiet: true,
+  /** L'application ne modifie jamais un plan, des calories ou un programme seule : le coach décide et applique. */
+  neverAutoModify: true,
+  /** Facteurs dont dépend un programme. */
+  programDependsOn: ["niveau", "fréquence", "durée de séance", "matériel et salle", "blessures", "récupération", "objectif d'entraînement"],
+} as const;
+
 /** Séries par exercice pour une séance, selon la fréquence hebdomadaire du groupe. */
 export function setsPerSessionFor(weeklyAppearances: number, category: "compose" | "isolation" | null): number {
   const appearances = Math.max(1, weeklyAppearances);
@@ -441,6 +471,11 @@ export const COACHING_KNOWLEDGE_PROMPT = `Repères de coaching à appliquer (val
 - Timing et fréquence des repas pèsent peu sur la composition corporelle : 3 à 5 repas, sans fenêtre anabolique de 30 minutes (l'effet dure plus de 24 h). Glucides avant ou après la séance : confort, pas obligation. Après la séance, ce sont les protéines qui comptent.
 - Micronutriments : d'abord l'alimentation (fruits et légumes variés, 2 à 3 portions de chaque), puis compléments seulement si un besoin est identifié, idéalement après une prise de sang. La créatine monohydrate (3 à 5 g par jour, environ 0,1 g/kg) est le seul complément vraiment évident. Vitamine D, magnésium, fer, caféine : jamais de dose personnalisée de ta part, oriente vers un professionnel de santé ; la caféine dépend de la sensibilité, de l'âge et du sommeil, et se déconseille en fin de journée selon l'heure du coucher.
 - Entraînement hypertrophie : 8 à 12 séries difficiles par groupe musculaire et par semaine au départ, jusqu'à 10 à 25 selon la récupération, 2 à 3 séances par semaine par groupe, 5 à 20 répétitions, 0 à 3 répétitions en réserve (2 à 3 pour un débutant), repos de 2 à 3 minutes sur les exercices lourds et 1 à 2 minutes sur l'isolation, excentrique contrôlé.
+- Proximité de l'échec : à proximité égale, 20 répétitions à 0 RIR et 6 répétitions à 0 RIR donnent le même stimulus ; ce qui compte est de s'approcher de l'échec, pas le nombre de répétitions. Les répétitions impaires comptent aussi (si la série peut aller à la 13e, on la fait). Garde un RIR constant pour lire la progression.
+- Aucun modèle de périodisation n'est meilleur qu'un autre et aucun n'est imposé : pas de mésocycle ni de montée de volume programmée par toi. Préférence du coach : varier plages de répétitions, temps de repos et RIR dans la semaine selon les exercices. On ne change pas d'exercice toutes les semaines, seulement pour une vraie raison (stagnation, douleur, lassitude).
+- Un programme dépend du niveau, de la fréquence, de la durée de séance, du matériel et de la salle, des blessures, de la récupération et de l'objectif d'entraînement. Jamais de la diète ni du nombre de calories.
+- Tu ne modifies jamais toi-même un plan, des calories ou un programme : tu proposes au coach, c'est lui qui applique. Aucun traitement lié à l'âge : seuls la dépense, l'apport et la relation à l'alimentation comptent.
+- Accessoires : les sangles de tirage sont le premier accessoire utile sur tous les mouvements de tirage (la poignée ne doit pas limiter le dos) ; ensuite les sangles de cheville pour la poulie, les élastiques, les micro-disques ou le pin de chargement pour monter par petits paliers, la magnésie sur les gros mouvements de tirage ; ceinture, bandes de poignet et protège-dents ne sont pas essentiels.
 - On ajoute des séries seulement si le client récupère en avance. Si la récupération ou les performances baissent, on gère la fatigue (volume, proximité de l'échec) avant d'ajouter quoi que ce soit. Décharge : réduction du volume ou des charges d'environ la moitié, une semaine ou quelques séances, pas de règle fixe.
 - Les moyennes ne décrivent jamais un individu : ne déduis pas un volume ou une fréquence du sexe de la personne, pars de sa récupération et de sa progression réelles.
 - Végétarien ou végan : même fourchette de protéines, haut de fourchette, sources variées et lysine, B12 en complément, vigilance sur le zinc, le fer, le calcium, l'iode et les oméga 3 (algue, car la conversion de l'ALA est faible).

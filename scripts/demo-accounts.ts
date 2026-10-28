@@ -145,7 +145,7 @@ async function seedRichDemo(coachId: string, clientId: string, password: string)
   await admin.from("programs").delete().eq("client_id", clientId);
   const { data: program } = await admin
     .from("programs")
-    .insert({ client_id: clientId, name: "Recomposition, bloc 2", type: "Custom", frequency: 4, is_active: true, objective: "Perdre du gras en gardant la force", mesocycle_start_date: daysAgo(14), mesocycle_weeks: 6 })
+    .insert({ client_id: clientId, name: "Recomposition, bloc 2", type: "Custom", frequency: 4, is_active: true, objective: "Perdre du gras en gardant la force" })
     .select("id")
     .single();
   const DAYS: [string, number, [string, string, number, string, number][]][] = [

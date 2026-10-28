@@ -15,6 +15,7 @@ import {
   ADJUSTMENT_RULES,
   HABIT_RULES,
   PLANT_BASED_RULES,
+  PROGRAMMING_PRINCIPLES,
   SMALL_MUSCLE_GROUPS,
   WEEKLY_SETS_FLOOR,
   distributeProtein,
@@ -224,4 +225,31 @@ test("prompt IA : ajustements, phases, choix des exercices et progression prése
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Choix des exercices/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Progression :/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
+});
+
+test("programmation : aucune périodisation imposée, proximité de l'échec, programme indépendant de la diète, jamais de modification automatique", () => {
+  assert.equal(PROGRAMMING_PRINCIPLES.periodizationImposed, false);
+  assert.equal(PROGRAMMING_PRINCIPLES.programIndependentOfDiet, true);
+  assert.equal(PROGRAMMING_PRINCIPLES.neverAutoModify, true);
+  assert.ok(!PROGRAMMING_PRINCIPLES.programDependsOn.some((x) => /diète|calorie|nutrition/i.test(x)));
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Proximité de l'échec/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /aucun n'est imposé/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /sangles de tirage/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne modifies jamais toi-même/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /mésocycle de \d|toutes les \d+ semaines/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
+});
+
+test("repères de volume : dérivés des règles du Mastermind, aucune valeur dupliquée par groupe", async () => {
+  const { VOLUME_LANDMARKS, MUSCLE_GROUPS } = await import("../volume-data");
+  for (const g of MUSCLE_GROUPS) {
+    const lm = VOLUME_LANDMARKS[g];
+    assert.ok(lm, g);
+    assert.ok(lm.mev <= lm.mav && lm.mav <= lm.mrv);
+    assert.equal(lm.mrv, TRAINING_RULES.weeklyHardSetsRange.max);
+    if (!SMALL_MUSCLE_GROUPS.includes(g)) {
+      assert.equal(lm.mev, TRAINING_RULES.weeklyHardSetsStart.min);
+      assert.equal(lm.mav, TRAINING_RULES.weeklyHardSetsStart.max);
+    }
+  }
 });

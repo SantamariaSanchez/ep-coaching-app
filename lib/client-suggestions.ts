@@ -198,45 +198,6 @@ export function generateClientSuggestions(
     });
   }
 
-  // ── Âge — pas de jugement, juste un rappel de calibrage utile pour la
-  // progression de charge et la fréquence de récupération ──
-  if (intake.date_of_birth) {
-    const ageMs = Date.now() - new Date(intake.date_of_birth).getTime();
-    const age = Math.floor(ageMs / (365.25 * 24 * 60 * 60 * 1000));
-    if (age >= 55) {
-      s.push({
-        id: "age-recovery",
-        severity: "info",
-        text: `${age} ans, progression de charge probablement plus lente à envisager, avec une récupération entre séances à surveiller de près.`,
-        tab: "programme",
-      });
-    } else if (age > 0 && age < 16) {
-      s.push({
-        id: "age-young",
-        severity: "warning",
-        text: `${age} ans déclarés, vérifie l'encadrement adapté (charges, technique, supervision) pour un public aussi jeune.`,
-        tab: "programme",
-      });
-    }
-  }
-
-  // ── Cardio explicitement détesté/absent alors que l'objectif est une
-  // perte de poids — le programme doit compter sur autre chose (NEAT, déficit
-  // calorique) plutôt que de forcer du cardio qui ne sera pas suivi ──
-  if (
-    intake.cardio_preference &&
-    /aucun|d[ée]teste|pas de cardio|n'aime pas|horreur/i.test(intake.cardio_preference) &&
-    intake.goal_3_months &&
-    /sec|sèch|deficit|défic|maigr|perte/i.test(intake.goal_3_months)
-  ) {
-    s.push({
-      id: "cardio-aversion",
-      severity: "info",
-      text: `Cardio explicitement pas apprécié ("${intake.cardio_preference}") alors que l'objectif est une perte de poids, mise sur le NEAT et le déficit alimentaire plutôt que sur du cardio imposé qui a peu de chances d'être tenu.`,
-      tab: "programme",
-    });
-  }
-
   // ── Exercices qui fonctionnent bien pour ce client — toujours affiché
   // s'il est renseigné, pour ne pas les perdre de vue lors d'une refonte de
   // programme (contrairement aux exercices problématiques, rien ne les
@@ -467,7 +428,7 @@ export function generateFatigueTrendSuggestion(
   return {
     id: "fatigue-trend",
     severity: "warning",
-    text: `Feeling et énergie en baisse sur les 3 dernières séances par rapport aux 3 précédentes.${rirNote} Une semaine de décharge (volume ou intensité réduits) est probablement à envisager avant la prochaine progression de charge.`,
+    text: `Feeling et énergie en baisse sur les 3 dernières séances par rapport aux 3 précédentes.${rirNote} À regarder avec le client : sommeil, stress, volume et proximité de l'échec. Une décharge (volume ou charges réduits d'environ la moitié, sans règle fixe) est une option parmi d'autres, à décider par le coach.`,
     tab: "programme",
   };
 }

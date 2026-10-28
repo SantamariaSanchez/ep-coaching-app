@@ -10,12 +10,14 @@
 //  - avant de baisser les calories, on regarde les pas du quotidien ;
 //  - en prise de muscle, on ne monte pas si les performances progressent déjà ;
 //  - sécurité : aucun chiffre de déficit en cas de signal de trouble
-//    alimentaire (lib/eating-safety.ts), ni pour une personne mineure ;
+//    alimentaire (lib/eating-safety.ts) ; aucun traitement lié à l'âge ;
 //    jamais de diagnostic, on oriente.
 //
 // Chaque suggestion tient en une phrase simple, a un niveau de confiance
-// INTERNE (jamais affiché, jamais de source) et au plus une action. Le coach
-// décide toujours : rien n'est appliqué sans un clic.
+// INTERNE (jamais affiché, jamais de source) et au plus une action. Ce sont
+// des PROPOSITIONS pour le coach : l'app ne modifie jamais un plan, des
+// calories ou un programme toute seule, rien n'est appliqué sans son clic
+// explicite et le client ne voit aucune de ces suggestions.
 
 import type { DailyLog } from "@/lib/daily-logs-helpers";
 import type { SessionWithSets } from "@/utils/sessions";
@@ -67,8 +69,6 @@ export interface AdjustmentSuggestion {
   audience: "coach" | "client" | "both";
   /** Une phrase, à la troisième personne, pour la fiche coach. */
   coachText: string;
-  /** Une phrase, au tutoiement, pour le client. */
-  clientText: string;
   /** Confiance interne dans la règle : jamais affichée à un client. */
   confidence: ConfidenceLevel;
   action: AdjustmentAction | null;
@@ -80,7 +80,6 @@ export interface AdjustmentInput {
   phase: NutritionPhase | null;
   level: TrainingLevel;
   eatingRelation: EatingRelation | null;
-  age: number | null;
   target: MacroTargetsLite | null;
   /** Bilans quotidiens, dans n'importe quel ordre. */
   logs: DailyLog[];
@@ -217,7 +216,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
       audience: "coach",
       coachText:
         "Relation à l'alimentation signalée : aucun ajustement de calories à proposer, oriente vers un professionnel de santé et parle du factuel et de la santé, jamais de l'apparence.",
-      clientText: "On avance sur l'entraînement et les habitudes, sans toucher aux chiffres pour l'instant.",
       confidence: "decision",
       action: null,
     });
@@ -227,8 +225,7 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
   const logs = [...input.logs].sort((a, b) => b.log_date.localeCompare(a.log_date));
   const last14 = within(logs, today, 14);
   const last7 = within(logs, today, 7);
-  const minor = input.age != null && input.age < 18;
-  const deficitFrozen = safety === "watch" || minor;
+  const deficitFrozen = safety === "watch";
 
   // ── Données ───────────────────────────────────────────────────────────────
   const weightPoints = within(logs, today, 28)
@@ -244,7 +241,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
       severity: "info",
       audience: "both",
       coachText: `Moins de ${ADJUSTMENT_RULES.minWeighInsIn14Days} pesées sur 14 jours : pas assez pour décider d'un ajustement, encourage la pesée du matin.`,
-      clientText: "Pèse-toi chaque matin : après deux semaines de pesées, on pourra ajuster avec certitude.",
       confidence: "enseignement",
       action: { type: "link", tab: "bilans", label: "Voir les bilans" },
     });
@@ -263,7 +259,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
       audience: "both",
       coachText:
         "Peu de jours renseignés ces deux dernières semaines : demande ce qui bloque et simplifie le plan de la semaine suivante avant de toucher aux chiffres.",
-      clientText: "Cette semaine, on simplifie : note seulement tes protéines et tes calories, le reste peut attendre.",
       confidence: "enseignement",
       action: { type: "link", tab: "nutrition", label: "Ouvrir la nutrition" },
     });
@@ -281,7 +276,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
       severity: "warning",
       audience: "both",
       coachText: "Sommeil court ou stress élevé cette semaine : ne monte pas le volume et ne baisse pas les calories maintenant, la récupération passe d'abord.",
-      clientText: "Cette semaine, vise plus de sommeil : c'est ce qui te fera le plus avancer, avant de changer quoi que ce soit au plan.",
       confidence: "enseignement",
       action: { type: "link", tab: "bilans", label: "Voir le sommeil" },
     });
@@ -306,7 +300,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
         severity: "info",
         audience: "coach",
         coachText: "Tendance de poids encore fragile (pesées espacées ou irrégulières) : ne change rien aux calories, demande des pesées plus régulières.",
-        clientText: "Pèse-toi à la même heure chaque matin, la tendance sera plus claire.",
         confidence: "enseignement",
         action: null,
       });
@@ -320,7 +313,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
             severity: "info",
             audience: "both",
             coachText: "Perte au ralenti, mais faim élevée ou récupération courte : on ne baisse pas les calories, on améliore d'abord le sommeil et la faim.",
-            clientText: "Ta perte ralentit mais ton corps a surtout besoin de récupérer : on ne baisse rien cette semaine.",
             confidence: "enseignement",
             action: null,
           });
@@ -331,7 +323,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
             severity: "info",
             audience: "both",
             coachText: `Perte au ralenti avec ${Math.round(stepsAvg)} pas par jour en moyenne : ajoute ${HABIT_RULES.stepsRampPer2Weeks} pas par jour avant de baisser les calories.`,
-            clientText: `Pour relancer ta perte, ajoute ${HABIT_RULES.stepsRampPer2Weeks} pas par jour, c'est plus doux qu'une baisse de calories.`,
             confidence: "enseignement",
             action: { type: "link", tab: "bilans", label: "Voir les pas" },
           });
@@ -342,7 +333,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
             severity: "info",
             audience: "both",
             coachText: "L'apport réel dépasse nettement la cible : vérifie pesées d'aliments et sauces avant de baisser la cible.",
-            clientText: "Ton apport réel dépasse ta cible : pèse tes aliments crus et compte l'huile, avant de changer ton plan.",
             confidence: "enseignement",
             action: null,
           });
@@ -354,7 +344,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
             severity: "info",
             audience: "coach",
             coachText: `Perte au ralenti depuis plus de deux semaines avec un suivi propre : baisse de ${-delta} kcal, protéines inchangées.`,
-            clientText: "Ta coach peut ajuster légèrement tes calories pour relancer ta perte.",
             confidence: "enseignement",
             action: { type: "adjust_calories", deltaKcal: delta, label: `Baisser de ${-delta} kcal` },
           });
@@ -367,7 +356,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
           severity: "warning",
           audience: "coach",
           coachText: `Perte plus rapide que ${-corridor.min} % du poids par semaine : remonte de ${delta} kcal pour protéger le muscle et l'énergie.`,
-          clientText: "Tu perds un peu vite : on remonte légèrement tes calories pour garder ton énergie et ton muscle.",
           confidence: "enseignement",
           action: { type: "adjust_calories", deltaKcal: delta, label: `Remonter de ${delta} kcal` },
         });
@@ -379,7 +367,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
           severity: "warning",
           audience: "both",
           coachText: `Déficit depuis ${input.deficitWeeks} semaines : prévois ${ADJUSTMENT_RULES.maintenanceBreakWeeks.min} à ${ADJUSTMENT_RULES.maintenanceBreakWeeks.max} semaines à la maintenance, puis un retour progressif.`,
-          clientText: "Tu es en déficit depuis longtemps : une pause à la maintenance va t'aider.",
           confidence: "enseignement",
           action: { type: "link", tab: "profil", label: "Voir la phase" },
         });
@@ -390,7 +377,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
           severity: "warning",
           audience: "both",
           coachText: `Faim élevée et énergie basse après plusieurs semaines de déficit : envisage ${ADJUSTMENT_RULES.maintenanceBreakWeeks.min} à ${ADJUSTMENT_RULES.maintenanceBreakWeeks.max} semaines à la maintenance.`,
-          clientText: "Tu sembles fatigué et affamé : une pause à la maintenance peut te faire du bien.",
           confidence: "enseignement",
           action: { type: "link", tab: "profil", label: "Voir la phase" },
         });
@@ -404,7 +390,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
             severity: "info",
             audience: "both",
             coachText: "Le poids bouge peu mais les charges montent : ne monte pas les calories, il progresse déjà.",
-            clientText: "Tes charges montent : on ne change rien, continue comme ça.",
             confidence: "enseignement",
             action: null,
           });
@@ -416,7 +401,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
             severity: "info",
             audience: "coach",
             coachText: `Poids stable en prise de muscle depuis plus de deux semaines et peu de progrès : monte de ${delta} kcal, par les glucides.`,
-            clientText: "Ta coach peut ajouter quelques calories pour relancer ta prise de muscle.",
             confidence: "enseignement",
             action: { type: "adjust_calories", deltaKcal: delta, label: `Monter de ${delta} kcal` },
           });
@@ -429,7 +413,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
           severity: "info",
           audience: "coach",
           coachText: "Prise plus rapide que prévu : une partie sera du gras, redescends un peu les calories.",
-          clientText: "Tu prends un peu vite : on ajuste légèrement pour que ce soit surtout du muscle.",
           confidence: "enseignement",
           action: { type: "adjust_calories", deltaKcal: delta, label: `Baisser de ${-delta} kcal` },
         });
@@ -446,7 +429,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
           severity: "info",
           audience: "coach",
           coachText: "Appétit en baisse et fréquence cardiaque au repos en hausse : signes possibles de fin de prise de muscle, parle de la suite avec le client.",
-          clientText: "Si tu as moins d'appétit et plus de fatigue, dis-le à ta coach : on peut passer à la suite.",
           confidence: "hypothese",
           action: { type: "link", tab: "profil", label: "Voir la phase" },
         });
@@ -458,7 +440,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
         severity: "info",
         audience: "coach",
         coachText: `Le poids dérive de ${Math.abs(Math.round(weeklyPct * 100) / 100)} % par semaine en maintenance : la maintenance réelle est probablement ${weeklyPct > 0 ? "plus basse" : "plus haute"} que prévu.`,
-        clientText: "Ton poids bouge un peu : on affinera ton apport si ça continue.",
         confidence: "enseignement",
         action: null,
       });
@@ -474,7 +455,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
       severity: "warning",
       audience: "both",
       coachText: `Les performances baissent sur plusieurs exercices : une semaine de décharge (volume ou charges réduits d'environ ${Math.round((1 - TRAINING_RULES.deloadVolumeFactor) * 100)} %) avant de reprendre.`,
-      clientText: "Tes performances ont un peu baissé : une semaine plus légère va te faire repartir plus fort.",
       confidence: "enseignement",
       action: { type: "link", tab: "programme", label: "Voir le programme" },
     });
@@ -495,7 +475,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
         severity: "info",
         audience: "coach",
         coachText: `Récupération correcte et charges qui tiennent : tu peux ajouter ${ADJUSTMENT_RULES.volumeAddSets.min} à ${ADJUSTMENT_RULES.volumeAddSets.max} séries sur ${room.join(", ")}.`,
-        clientText: "Tu récupères bien : ta coach peut ajouter quelques séries à ton programme.",
         confidence: "enseignement",
         action: { type: "link", tab: "programme", label: "Voir le programme" },
       });
@@ -511,7 +490,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
       severity: "info",
       audience: "both",
       coachText: `Pas de progrès sur ${names} depuis ${PROGRESSION_RULES.stagnationSessions} séances : change la plage de répétitions, la variante ou le repos avant d'ajouter des séries.`,
-      clientText: `${stagnant[0]} stagne : ta coach peut te proposer une variante ou une autre plage de répétitions.`,
       confidence: "decision",
       action: { type: "link", tab: "programme", label: "Voir le programme" },
     });
@@ -526,7 +504,6 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
       severity: "info",
       audience: "both",
       coachText: "Les protéines restent sous la cible : propose une source de protéines simple à ajouter à chaque repas.",
-      clientText: "Ajoute une source de protéines à chaque repas : c'est le levier le plus simple pour atteindre ta cible.",
       confidence: "enseignement",
       action: { type: "link", tab: "nutrition", label: "Voir la nutrition" },
     });
@@ -534,11 +511,4 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
 
   const rank = { warning: 0, info: 1 } as const;
   return out.sort((a, b) => rank[a.severity] - rank[b.severity]);
-}
-
-/** Suggestions à montrer à un client : au plus une, jamais intrusive, sans action de modification. */
-export function clientNudge(all: AdjustmentSuggestion[]): { id: string; text: string } | null {
-  const visible = all.filter((s) => s.audience !== "coach");
-  const pick = visible.find((s) => s.severity === "warning") ?? visible[0];
-  return pick ? { id: pick.id, text: pick.clientText } : null;
 }

@@ -58,7 +58,6 @@ import {
   type PerfSet,
 } from "@/lib/program-week";
 import { accessoriesForSession, ALWAYS_ACCESSORIES } from "@/lib/session-accessories";
-import { computeMesocycleStatus } from "@/lib/mesocycle";
 import { formatRest, techniqueHint, techniqueLabel, unitShort, isTimeUnit } from "@/lib/program-sheet";
 import { parseRepScheme, rangeForSet, suggestSet, formatKg } from "@/lib/set-targets";
 import { describeTempo } from "@/lib/live-session";
@@ -955,10 +954,6 @@ export default function ProgramWeekView({
     return first?.day.weekday ? { info: first, date: addDaysIso(ctx.weekStart, 7 + first.day.weekday - 1) } : null;
   }, [ordered, selected, todayDow, ctx.weekStart]);
 
-  const meso =
-    program.mesocycle_start_date && program.mesocycle_weeks
-      ? computeMesocycleStatus(program.mesocycle_start_date, program.mesocycle_weeks, new Date(`${ctx.today}T12:00:00`))
-      : null;
   const doneCount = infos.filter((i) => i.done).length;
 
   function select(id: string) {
@@ -981,54 +976,6 @@ export default function ProgramWeekView({
           {` · ${program.days.length} ${program.days.length > 1 ? t("séances") : t("séance")} ${t("par semaine")}`}
         </p>
         {program.objective && <p className="mt-0.5 text-[12px] leading-snug text-(--ep-ink)/45">{program.objective}</p>}
-        {meso && (
-          <div className="mt-2">
-            <p className="text-[11.5px] leading-snug text-(--ep-ink)/60">
-              {meso.isOverdue ? (
-                t("Bloc terminé : ton coach prépare la suite")
-              ) : meso.isDeloadWeek ? (
-                <>
-                  <span className="font-black text-(--ep-warn)">{t("Semaine allégée")}</span> · {t("moins de séries, tu récupères")}
-                </>
-              ) : (
-                <>
-                  <span className="font-black text-(--ep-ink)/85">
-                    {t("Semaine {n} sur {total}", { n: meso.currentWeek, total: meso.totalWeeks })}
-                  </span>
-                  {" · "}
-                  {meso.totalWeeks - meso.currentWeek === 1
-                    ? t("semaine allégée la semaine prochaine")
-                    : t("semaine allégée dans {n} sem.", { n: meso.totalWeeks - meso.currentWeek })}
-                </>
-              )}
-            </p>
-            <div className="mt-1 flex gap-0.5" aria-hidden>
-              {Array.from({ length: meso.totalWeeks }).map((_, i) => {
-                const w = i + 1;
-                const deload = w === meso.totalWeeks;
-                const past = meso.isOverdue || w < meso.currentWeek;
-                const current = !meso.isOverdue && w === meso.currentWeek;
-                return (
-                  <span
-                    key={i}
-                    className="h-1.5 flex-1 rounded-full"
-                    style={{
-                      background: current
-                        ? deload
-                          ? "var(--ep-warn)"
-                          : "var(--ep-accent)"
-                        : past
-                          ? "rgba(var(--ep-accent-rgb),0.4)"
-                          : deload
-                            ? "rgba(var(--ep-warn-rgb),0.28)"
-                            : "rgba(var(--ep-ink-rgb),0.12)",
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       <WeekStrip ctx={ctx} ordered={ordered} selectedId={selected?.day.id ?? null} onSelect={select} doneCount={doneCount} total={program.days.length} />

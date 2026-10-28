@@ -132,14 +132,14 @@ async function loadPilot(
       .lte("session_date", today),
     supabase
       .from("nutrition_profiles")
-      .select("calories_target, proteins_target, sessions_per_week, age")
+      .select("calories_target, proteins_target, sessions_per_week")
       .eq("client_id", clientId)
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
     supabase
       .from("programs")
-      .select("frequency, mesocycle_start_date, mesocycle_weeks")
+      .select("frequency")
       .eq("client_id", clientId)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -191,8 +191,6 @@ async function loadPilot(
       sessionsPerWeek: sessionsPerWeek && sessionsPerWeek > 0 ? sessionsPerWeek : null,
     },
     competitionDate: isValidIsoDate(competitionDate) ? competitionDate : null,
-    age: num(nutrition?.age),
-    programHasMesocycle: !!program?.mesocycle_start_date && (num(program?.mesocycle_weeks) ?? 0) > 1,
     perspective,
   });
 }

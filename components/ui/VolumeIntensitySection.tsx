@@ -40,12 +40,12 @@ function VolumeGaugeRow({
 
   const zone =
     total < landmark.mev
-      ? "SOUS-MEV"
+      ? "SOUS LE DÉPART"
       : total <= landmark.mav
-      ? "OPTIMAL"
+      ? "PLAGE DE DÉPART"
       : total <= landmark.mrv
-      ? "PROCHE MRV"
-      : "DÉPASSEMENT MRV";
+      ? "SI RÉCUPÉRATION"
+      : "AU-DELÀ DU REPÈRE";
 
   const fillColor =
     total < landmark.mev
@@ -119,19 +119,19 @@ function VolumeGaugeRow({
           className="absolute text-[8px] text-(--ep-ink)/25 font-bold -translate-x-1/2"
           style={{ left: `${mevPct}%` }}
         >
-          MEV {landmark.mev}
+          Départ {landmark.mev}
         </span>
         <span
           className="absolute text-[8px] text-(--ep-ink)/25 font-bold -translate-x-1/2"
           style={{ left: `${mavPct}%` }}
         >
-          MAV {landmark.mav}
+          Jusqu&apos;à {landmark.mav}
         </span>
         <span
           className="absolute text-[8px] text-(--ep-bad)/50 font-bold -translate-x-1/2"
           style={{ left: `${mrvPct}%` }}
         >
-          MRV {landmark.mrv}
+          Utile {landmark.mrv}
         </span>
       </div>
 
@@ -307,7 +307,7 @@ export default function VolumeIntensitySection({
     <div className="space-y-5 mb-8">
       {(hasRealized || hasVolume) && (
         <p className="text-[10px] text-(--ep-ink)/25 leading-relaxed">
-          MEV : volume minimum utile. MAV : volume optimal. MRV : volume maximum récupérable avant de nuire à la récupération.
+          Départ à 8 à 12 séries difficiles par groupe et par semaine, jusqu&apos;à 10 à 25 seulement si le client récupère en avance. Un repère, pas une règle.
         </p>
       )}
       {/* ── Adherence this week ── */}

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { EXERCISE_LIBRARY_SEED } from "../exercise-library-seed";
-import { generateProgramPlan, computeNutritionTargets, buildProgramSuggestions, findSwapCandidate, levelFromExperience, MINOR_AGE } from "../plan-generator";
+import { generateProgramPlan, computeNutritionTargets, buildProgramSuggestions, findSwapCandidate, levelFromExperience } from "../plan-generator";
 import { isTrainingExercise } from "../exercise-selection";
 import { NUTRITION_RULES, TRAINING_RULES, WEEKLY_SETS_FLOOR, weeklySetsCeilingFor, type TrainingLevel, type RecoveryStatus } from "../coaching-knowledge";
 import type { LibraryExercise } from "@/utils/exercise-library";
@@ -145,7 +145,7 @@ test("suggestions et remplacement : même filtre (pas d'étirement, blessures re
   assert.ok(swap == null || isTrainingExercise(swap));
 });
 
-test("nutrition : déficit de 15 % pour un profil avancé, 20 % sinon, maintenance en cas de signal alimentaire ou pour un mineur", () => {
+test("nutrition : déficit de 15 % pour un profil avancé, 20 % sinon, maintenance en cas de signal alimentaire", () => {
   const base = { gender: "Homme" as const, weightKg: 80, heightCm: 180, age: 30, sessionsPerWeek: 4, sessionDurationMin: 60, stepsPerDay: 8000, phase: "deficit" as const };
   const maint = computeNutritionTargets({ ...base, phase: "maintenance" });
   const inter = computeNutritionTargets({ ...base, level: "intermediaire" });
@@ -162,8 +162,9 @@ test("nutrition : déficit de 15 % pour un profil avancé, 20 % sinon, maintenan
   }
   const past = computeNutritionTargets({ ...base, eatingRelation: "passe" });
   assert.equal(past.phaseApplied, "deficit");
-  const minor = computeNutritionTargets({ ...base, age: MINOR_AGE - 1 });
-  assert.equal(minor.phaseApplied, "maintenance");
+  // Aucun traitement lié à l'âge : seule la relation à l'alimentation compte.
+  const young = computeNutritionTargets({ ...base, age: 16 });
+  assert.equal(young.phaseApplied, "deficit");
 });
 
 test("nutrition : protéines et lipides dans les bornes pour toutes les phases et tous les profils", () => {

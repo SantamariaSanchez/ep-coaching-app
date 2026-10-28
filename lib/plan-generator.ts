@@ -90,9 +90,6 @@ export interface GeneratedNutritionTargets {
   note: string | null;
 }
 
-/** Âge en dessous duquel aucun déficit chiffré n'est proposé automatiquement (prudence, décision produit). */
-export const MINOR_AGE = 18;
-
 export function computeNutritionTargets(params: {
   gender: "Homme" | "Femme" | "Autre" | null;
   weightKg: number;
@@ -117,16 +114,14 @@ export function computeNutritionTargets(params: {
   const tdee = bmr + eat + neat + tef;
 
   // Sécurité d'abord : pas de déficit chiffré en cas de signal de trouble
-  // alimentaire, ni pour une personne mineure (lib/eating-safety.ts).
+  // alimentaire (lib/eating-safety.ts). Aucun traitement lié à l'âge : le
+  // bilan énergétique dépend de la dépense et de l'apport.
   let phase = params.phase;
   let note: string | null = null;
   if (phase === "deficit") {
     if (!deficitAllowed(eatingSafetyLevel(params.eatingRelation))) {
       phase = "maintenance";
       note = "Relation à l'alimentation signalée : maintenance proposée, aucun déficit chiffré.";
-    } else if (a < MINOR_AGE) {
-      phase = "maintenance";
-      note = "Personne mineure : maintenance proposée, pas de déficit chiffré sans avis d'un professionnel de santé.";
     }
   }
 

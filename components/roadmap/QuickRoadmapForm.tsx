@@ -27,11 +27,11 @@ const PHASE_KEYS = Object.keys(PHASE_COLORS) as (keyof typeof PHASE_COLORS)[];
 
 type Preset = { key: string; label: string; phases: [keyof typeof PHASE_COLORS, number, string?][] };
 const PRESETS: Preset[] = [
-  { key: "masse", label: "Prise de muscle · 6 mois", phases: [["masse", 10], ["deload", 1], ["masse", 10], ["maintenance", 3]] },
+  { key: "masse", label: "Prise de muscle · 6 mois", phases: [["masse", 21], ["maintenance", 3]] },
   { key: "seche", label: "Perte de gras · 4 mois", phases: [["deficit", 8], ["diet_break", 2], ["deficit", 6], ["maintenance", 2]] },
   { key: "recompo", label: "Recomposition · 3 mois", phases: [["maintenance", 12, "Recomposition"]] },
   { key: "prepa", label: "Prépa compétition · 6 mois", phases: [["deficit", 16], ["peak_week", 1], ["competition", 1], ["maintenance", 4, "Reverse diet"]] },
-  { key: "saison", label: "Saison complète · 1 an", phases: [["masse", 16], ["deload", 1], ["masse", 16], ["maintenance", 4], ["deficit", 10], ["maintenance", 5]] },
+  { key: "saison", label: "Saison complète · 1 an", phases: [["masse", 32], ["maintenance", 4], ["deficit", 10], ["maintenance", 5]] },
 ];
 
 const OBJ_KINDS = [

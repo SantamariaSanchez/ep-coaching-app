@@ -13,7 +13,7 @@ import type { StudyInput } from "@/app/dashboard/client/science/actions";
 // formalisé en protocole testable sur la communauté.
 const EXAMPLE_PROMPTS = [
   "Mes clients qui font du cardio à jeun perdent-ils du gras plus vite que ceux qui mangent avant ?",
-  "Une semaine de décharge toutes les 6 semaines change-t-elle vraiment la progression à 3 mois ?",
+  "Mes clients qui standardisent leurs temps de repos progressent-ils plus régulièrement sur leurs charges ?",
   "Le suivi du sommeil via tracker améliore-t-il la récupération perçue, ou juste l'attention qu'on y porte ?",
 ];
 

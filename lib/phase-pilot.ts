@@ -74,10 +74,6 @@ export interface PhasePilotInput {
   targets: { kcal: number | null; protein: number | null; sessionsPerWeek: number | null };
   /** profiles.competition_date, dernier repli pour le compte à rebours. */
   competitionDate: string | null;
-  /** nutrition_profiles.age : repère de sommeil ado (8 h) ou adulte (7 h). */
-  age: number | null;
-  /** Le programme actif planifie déjà ses décharges (mésocycle configuré). */
-  programHasMesocycle: boolean;
   /** "self" : tutoiement ; "coach" : un coach regarde la road map d'un client. */
   perspective: PilotPerspective;
 }
@@ -544,11 +540,10 @@ export function computePhasePilot(input: PhasePilotInput): PhasePilot {
     tone: trainingTone,
   });
 
-  // Sommeil : 14 dernières nuits. Repère 8 h pour un ado (recommandation
-  // AASM 8 à 10 h entre 13 et 18 ans), 7 h pour un adulte.
+  // Sommeil : 14 dernières nuits, repère unique de 7 h (aucun traitement lié à l'âge).
   const sleepFrom = addDaysIso(today, -(SLEEP_WINDOW_DAYS - 1));
   const nights = inWindow(input.sleep, sleepFrom, today).filter((s) => s.hours > 0);
-  const sleepRef = input.age != null && input.age < 18 ? 8 : 7;
+  const sleepRef = 7;
   const sleepAvg = nights.length ? nights.reduce((s, n) => s + n.hours, 0) / nights.length : null;
   tiles.push({
     key: "sleep",
@@ -568,26 +563,16 @@ export function computePhasePilot(input: PhasePilotInput): PhasePilot {
         : "bad",
   });
 
-  // ── Repère de décharge ──────────────────────────────────────────────────────
-  // Deux phases ne peuvent pas se chevaucher (lib/roadmap-validation.ts), donc
-  // un deload se planifie comme une phase à part : on compte les semaines
-  // depuis la fin du dernier deload/dévolume (ou depuis le début de la phase
-  // en cours s'il n'y en a jamais eu). Rien si le programme actif gère déjà
-  // ses décharges (mésocycle, voir lib/mesocycle.ts).
+  // ── Décharge planifiée par le coach ─────────────────────────────────────────
+  // On ne signale que ce que le coach a lui-même posé sur la road map (une
+  // phase de décharge à venir). Aucun repère de fréquence imposé : le
+  // Mastermind ne fixe pas de rythme de décharge.
   let deloadHint: PhasePilot["deloadHint"] = null;
-  if (active && TRAINING_BLOCK_TYPES.has(active.type) && !input.programHasMesocycle) {
+  if (active && TRAINING_BLOCK_TYPES.has(active.type)) {
     const nextDeload = phases.find((p) => DELOAD_TYPES.has(p.type) && p.start_date > today);
-    const lastDeload = last(phases.filter((p) => DELOAD_TYPES.has(p.type) && p.end_date < today));
-    const since = lastDeload ? maxIso(addDaysIso(lastDeload.end_date, 1), active.start_date) : active.start_date;
-    const weeksWithout = Math.floor(diffDaysIso(since, today) / 7) + 1;
     const nextIn = nextDeload ? diffDaysIso(today, nextDeload.start_date) : null;
     if (nextDeload && nextIn != null && nextIn <= 28) {
       deloadHint = { tone: "info", text: `${nextDeload.label || "Deload"} prévu dans ${plural(nextIn, "jour", "jours")}.` };
-    } else if (weeksWithout >= 6) {
-      deloadHint = {
-        tone: weeksWithout > 10 ? "warn" : "info",
-        text: `Semaine ${weeksWithout} sans deload sur ${self ? "ta" : "sa"} road map : repère courant, un allègement toutes les 6 à 10 semaines.`,
-      };
     }
   }
 

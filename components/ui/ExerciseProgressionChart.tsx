@@ -193,7 +193,7 @@ export default function ExerciseProgressionChart({
         <div className="flex items-start gap-3 mb-4 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
           <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-(--ep-ink)/60 leading-relaxed">
-            <span className="font-bold text-amber-400">{t("Charge stable depuis 4 séances")}</span>{" "}{t("sur cet exercice (")}{recentWindow[0].maxWeight}{" "}{t("kg). Une décharge (volume ou intensité réduits une semaine) peut aider à relancer la progression.")}
+            <span className="font-bold text-amber-400">{t("Charge stable depuis 4 séances")}</span>{" "}{t("sur cet exercice (")}{recentWindow[0].maxWeight}{" "}{t("kg). Pistes avant d'ajouter des séries : changer la plage de répétitions, la variante ou le repos.")}
           </p>
         </div>
       )}
