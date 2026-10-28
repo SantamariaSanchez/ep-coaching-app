@@ -15,6 +15,8 @@ import {
   type CoachingPhaseState,
   type CoachingPhaseHistoryEntry,
   type AdherenceSignal,
+  PHASE_DEFAULT_WEEKS,
+  validatePhaseDetails,
 } from "@/lib/coaching-phase-helpers";
 
 // ── Lecture / écriture de la phase courante ─────────────────────────────────
@@ -25,14 +27,32 @@ import {
 export async function getClientCoachingPhase(clientId: string): Promise<CoachingPhaseState | null> {
   try {
     const supabase = await createServerSupabase();
-    const { data } = await supabase
+    // Les colonnes planned_weeks / replaces_id viennent de la migration
+    // 20261028 : repli sur la lecture historique si elle n'est pas encore passée.
+    const first = await supabase
       .from("client_coaching_phases")
-      .select("phase, started_at")
+      .select("id, phase, started_at, planned_weeks, replaces_id")
       .eq("client_id", clientId)
       .is("ended_at", null)
       .maybeSingle();
+    let data = first.data;
+    if (first.error) {
+      ({ data } = await supabase
+        .from("client_coaching_phases")
+        .select("id, phase, started_at")
+        .eq("client_id", clientId)
+        .is("ended_at", null)
+        .maybeSingle());
+    }
     if (!data) return null;
-    return { phase: data.phase as CoachingPhase, since: data.started_at as string };
+    const row = data as { id: string; phase: CoachingPhase; started_at: string; planned_weeks?: number | null; replaces_id?: string | null };
+    return {
+      phase: row.phase,
+      since: row.started_at,
+      id: row.id,
+      plannedWeeks: row.planned_weeks ?? null,
+      replacesId: row.replaces_id ?? null,
+    };
   } catch {
     return null;
   }
@@ -41,13 +61,22 @@ export async function getClientCoachingPhase(clientId: string): Promise<Coaching
 export async function getCoachingPhaseHistory(clientId: string): Promise<CoachingPhaseHistoryEntry[]> {
   try {
     const supabase = await createServerSupabase();
-    const { data } = await supabase
+    const firstH = (await supabase
       .from("client_coaching_phases")
-      .select("id, phase, started_at, ended_at, note")
+      .select("id, phase, started_at, ended_at, note, planned_weeks")
       .eq("client_id", clientId)
       .order("started_at", { ascending: false })
-      .limit(10);
-    return (data as CoachingPhaseHistoryEntry[]) ?? [];
+      .limit(20)) as { data: CoachingPhaseHistoryEntry[] | null; error: unknown };
+    let data = firstH.data;
+    if (firstH.error) {
+      ({ data } = (await supabase
+        .from("client_coaching_phases")
+        .select("id, phase, started_at, ended_at, note")
+        .eq("client_id", clientId)
+        .order("started_at", { ascending: false })
+        .limit(20)) as { data: CoachingPhaseHistoryEntry[] | null; error: unknown });
+    }
+    return data ?? [];
   } catch {
     return [];
   }
@@ -75,6 +104,7 @@ export async function startCalibrationPhase(clientId: string, changedBy: string)
     phase: "calibrage",
     changed_by: changedBy,
     note: "Début du coaching, abonnement activé",
+    planned_weeks: PHASE_DEFAULT_WEEKS.calibrage,
   });
 }
 
@@ -93,29 +123,134 @@ export async function endCoachingPhaseTracking(clientId: string, changedBy: stri
 }
 
 // Transition manuelle déclenchée par le coach (bouton sur la fiche client) —
-// le système suggère une transition, il ne la fait jamais tout seul.
+// le système suggère une transition, il ne la fait jamais tout seul. Dans
+// les deux sens : avancer, revenir à une phase précédente ou ouvrir un
+// nouveau bloc de la même phase. Rien d'irréversible : la ligne remplacée
+// est mémorisée (replaces_id), voir undoCoachingPhaseTransition.
+export interface PhaseTransitionResult {
+  error?: string;
+  /** Id de la ligne créée. */
+  newId?: string;
+  /** Phase fermée par ce changement (null si aucune n'était ouverte). */
+  fromPhase?: CoachingPhase | null;
+}
+
 export async function transitionCoachingPhase(
   clientId: string,
   changedBy: string,
   toPhase: CoachingPhase,
-  note?: string | null
-): Promise<{ error?: string }> {
+  note?: string | null,
+  opts?: { startedOn?: string | null; plannedWeeks?: number | null }
+): Promise<PhaseTransitionResult> {
   const admin = createAdminClient();
 
-  await admin
+  const { data: current } = await admin
     .from("client_coaching_phases")
-    .update({ ended_at: new Date().toISOString(), changed_by: changedBy })
+    .select("id, phase, started_at")
     .eq("client_id", clientId)
-    .is("ended_at", null);
+    .is("ended_at", null)
+    .maybeSingle();
 
-  const { error } = await admin.from("client_coaching_phases").insert({
-    client_id: clientId,
-    phase: toPhase,
-    changed_by: changedBy,
-    note: note?.trim() || null,
-  });
+  const checked = validatePhaseDetails(
+    { startedOn: opts?.startedOn ?? null, plannedWeeks: opts?.plannedWeeks === undefined ? PHASE_DEFAULT_WEEKS[toPhase] : opts.plannedWeeks },
+    { previousStartedAt: current?.started_at ?? null }
+  );
+  if (checked.error) return { error: checked.error };
+  const startedAt = checked.startedAt ?? new Date().toISOString();
 
+  if (current) {
+    const { error: closeErr } = await admin
+      .from("client_coaching_phases")
+      .update({ ended_at: startedAt, changed_by: changedBy })
+      .eq("id", current.id);
+    if (closeErr) return { error: closeErr.message };
+  }
+
+  const { data: created, error } = await admin
+    .from("client_coaching_phases")
+    .insert({
+      client_id: clientId,
+      phase: toPhase,
+      started_at: startedAt,
+      changed_by: changedBy,
+      note: note?.trim() || null,
+      planned_weeks: checked.plannedWeeks ?? null,
+      replaces_id: current?.id ?? null,
+    })
+    .select("id")
+    .single();
+
+  if (error || !created) {
+    // Jamais de client sans phase après un échec : on rouvre la précédente.
+    if (current) {
+      await admin.from("client_coaching_phases").update({ ended_at: null }).eq("id", current.id);
+    }
+    return { error: error?.message ?? "Changement de phase impossible." };
+  }
+  return { newId: created.id as string, fromPhase: (current?.phase as CoachingPhase | undefined) ?? null };
+}
+
+// Annule un changement de phase : supprime la ligne créée par ce changement
+// (seulement si elle est toujours la phase en cours) et rouvre la précédente.
+export async function undoCoachingPhaseTransition(clientId: string, rowId: string): Promise<{ error?: string; restoredPhase?: CoachingPhase | null }> {
+  const admin = createAdminClient();
+  const { data: row } = await admin
+    .from("client_coaching_phases")
+    .select("id, client_id, ended_at, replaces_id")
+    .eq("id", rowId)
+    .maybeSingle();
+  if (!row || row.client_id !== clientId) return { error: "Changement introuvable." };
+  if (row.ended_at) return { error: "Cette phase est déjà terminée, choisis la phase voulue dans la liste." };
+
+  const { error: delErr } = await admin.from("client_coaching_phases").delete().eq("id", rowId);
+  if (delErr) return { error: delErr.message };
+
+  if (!row.replaces_id) return { restoredPhase: null };
+  const { data: restored, error: reopenErr } = await admin
+    .from("client_coaching_phases")
+    .update({ ended_at: null })
+    .eq("id", row.replaces_id)
+    .eq("client_id", clientId)
+    .select("phase")
+    .maybeSingle();
+  if (reopenErr) return { error: reopenErr.message };
+  return { restoredPhase: (restored?.phase as CoachingPhase | undefined) ?? null };
+}
+
+// Ajuste la phase en cours : date de début, durée prévue, note. La phase
+// précédente est prolongée ou raccourcie pour que l'historique reste continu.
+export async function updateCurrentPhaseDetails(
+  clientId: string,
+  changedBy: string,
+  input: { startedOn?: string | null; plannedWeeks?: number | null; note?: string | null }
+): Promise<{ error?: string }> {
+  const admin = createAdminClient();
+  const { data: current } = await admin
+    .from("client_coaching_phases")
+    .select("id, started_at, replaces_id")
+    .eq("client_id", clientId)
+    .is("ended_at", null)
+    .maybeSingle();
+  if (!current) return { error: "Aucune phase en cours." };
+
+  let previousStartedAt: string | null = null;
+  if (current.replaces_id) {
+    const { data: prev } = await admin.from("client_coaching_phases").select("started_at").eq("id", current.replaces_id).maybeSingle();
+    previousStartedAt = (prev?.started_at as string | undefined) ?? null;
+  }
+  const checked = validatePhaseDetails({ startedOn: input.startedOn ?? null, plannedWeeks: input.plannedWeeks }, { previousStartedAt });
+  if (checked.error) return { error: checked.error };
+
+  const patch: Record<string, unknown> = { changed_by: changedBy };
+  if (checked.startedAt) patch.started_at = checked.startedAt;
+  if (checked.plannedWeeks !== undefined) patch.planned_weeks = checked.plannedWeeks;
+  if (input.note !== undefined) patch.note = input.note?.trim() || null;
+
+  const { error } = await admin.from("client_coaching_phases").update(patch).eq("id", current.id);
   if (error) return { error: error.message };
+  if (checked.startedAt && current.replaces_id) {
+    await admin.from("client_coaching_phases").update({ ended_at: checked.startedAt }).eq("id", current.replaces_id);
+  }
   return {};
 }
 
@@ -263,19 +398,28 @@ export async function getCoachingPhaseOverview(
   if (clientIds.length === 0) return {};
   try {
     const supabase = await createServerSupabase();
-    const { data: phases } = await supabase
+    type OverviewRow = { client_id: string; phase: CoachingPhase; started_at: string; planned_weeks?: number | null };
+    const firstP = (await supabase
       .from("client_coaching_phases")
-      .select("client_id, phase, started_at")
+      .select("client_id, phase, started_at, planned_weeks")
       .in("client_id", clientIds)
-      .is("ended_at", null);
+      .is("ended_at", null)) as { data: OverviewRow[] | null; error: unknown };
+    let phases = firstP.data;
+    if (firstP.error) {
+      ({ data: phases } = (await supabase
+        .from("client_coaching_phases")
+        .select("client_id, phase, started_at")
+        .in("client_id", clientIds)
+        .is("ended_at", null)) as { data: OverviewRow[] | null; error: unknown });
+    }
 
     if (!phases || phases.length === 0) return {};
 
     const result: Record<string, CoachingPhaseSummary> = {};
 
     await Promise.all(
-      (phases as { client_id: string; phase: CoachingPhase; started_at: string }[]).map(async (row) => {
-        const state: CoachingPhaseState = { phase: row.phase, since: row.started_at };
+      (phases as { client_id: string; phase: CoachingPhase; started_at: string; planned_weeks?: number | null }[]).map(async (row) => {
+        const state: CoachingPhaseState = { phase: row.phase, since: row.started_at, plannedWeeks: row.planned_weeks ?? null };
         let signals: AdherenceSignal[] = [];
 
         if (row.phase === "calibrage") {

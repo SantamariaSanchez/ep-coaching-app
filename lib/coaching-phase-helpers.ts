@@ -50,7 +50,21 @@ export const PHASE_DESCRIPTIONS: Record<CoachingPhase, string> = {
   performance: "Phase avancée, orientée résultats maximaux ou échéance proche.",
 };
 
-const PHASE_ORDER: CoachingPhase[] = ["calibrage", "optimisation", "performance"];
+export const PHASE_ORDER: CoachingPhase[] = ["calibrage", "optimisation", "performance"];
+
+/**
+ * Durée prévue par défaut d'une phase, en semaines (décision produit,
+ * alignée sur un engagement de 6 mois, voir lib/engagement.ts : calibrage
+ * 2 à 3 semaines, blocs d'optimisation d'environ 5 semaines). Le Mastermind
+ * ne fixe aucune durée de phase : c'est un repère de planification que le
+ * coach modifie librement pour chaque client.
+ */
+export const PHASE_DEFAULT_WEEKS: Record<CoachingPhase, number> = {
+  calibrage: 3,
+  optimisation: 5,
+  performance: 4,
+};
+export const MAX_PHASE_WEEKS = 52;
 
 export function nextPhase(phase: CoachingPhase): CoachingPhase | null {
   const idx = PHASE_ORDER.indexOf(phase);
@@ -60,6 +74,12 @@ export function nextPhase(phase: CoachingPhase): CoachingPhase | null {
 export interface CoachingPhaseState {
   phase: CoachingPhase;
   since: string; // ISO timestamp (started_at de la ligne ouverte)
+  /** Id de la ligne ouverte (pour annuler le changement qui l'a créée). */
+  id?: string;
+  /** Durée prévue en semaines, modifiable (null = pas de durée fixée). */
+  plannedWeeks?: number | null;
+  /** Phase remplacée par cette ligne : permet de revenir en arrière. */
+  replacesId?: string | null;
 }
 
 export interface CoachingPhaseHistoryEntry {
@@ -68,6 +88,7 @@ export interface CoachingPhaseHistoryEntry {
   started_at: string;
   ended_at: string | null;
   note: string | null;
+  planned_weeks?: number | null;
 }
 
 // ok = null veut dire "pas assez de recul ou pas applicable" — jamais
@@ -162,6 +183,15 @@ export function generateCoachingPhaseSuggestions(
     }
   }
 
+  // Durée prévue dépassée : un simple rappel, jamais une décision à la place du coach.
+  if (phaseState.plannedWeeks && ageDays >= phaseState.plannedWeeks * 7 + 7) {
+    s.push({
+      id: "phase-duree-depassee",
+      severity: "info",
+      text: `La durée prévue de cette phase (${phaseState.plannedWeeks} semaines) est dépassée : prolonge-la, passe à la suite ou ajuste sa durée.`,
+    });
+  }
+
   // Optimisation longue (8 semaines et plus) : à ce stade le moteur
   // d'alertes général (lib/coach-analytics.ts) a déjà largement eu
   // l'occasion de signaler un décrochage éventuel, donc ici on se contente
@@ -175,4 +205,81 @@ export function generateCoachingPhaseSuggestions(
   }
 
   return s;
+}
+
+// ── Changement de phase : logique pure (testée) ─────────────────────────────
+
+export type PhaseChangeKind = "same" | "forward" | "backward";
+
+/** Sens d'un changement : avancer, revenir en arrière, ou rester (nouveau bloc de la même phase). */
+export function phaseChangeKind(from: CoachingPhase, to: CoachingPhase): PhaseChangeKind {
+  const a = PHASE_ORDER.indexOf(from);
+  const b = PHASE_ORDER.indexOf(to);
+  if (a === b) return "same";
+  return b > a ? "forward" : "backward";
+}
+
+/** Fin prévue d'une phase (date calendaire YYYY-MM-DD), null sans durée. */
+export function plannedPhaseEnd(sinceIso: string, plannedWeeks: number | null | undefined): string | null {
+  if (!plannedWeeks || plannedWeeks < 1) return null;
+  const start = Date.parse(sinceIso);
+  if (!Number.isFinite(start)) return null;
+  return new Date(start + plannedWeeks * 7 * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** Semaine en cours dans la phase (1 la première semaine), à partir de la date de début. */
+export function phaseWeekNumber(sinceIso: string, now: number = Date.now()): number {
+  const start = Date.parse(sinceIso);
+  if (!Number.isFinite(start)) return 1;
+  return Math.max(1, Math.floor((now - start) / (7 * 86_400_000)) + 1);
+}
+
+export interface PhaseDetailsInput {
+  /** Date de début saisie (YYYY-MM-DD), optionnelle. */
+  startedOn?: string | null;
+  plannedWeeks?: number | null;
+}
+
+export interface PhaseDetailsContext {
+  /** Début de la phase précédente (on ne peut pas commencer avant elle). */
+  previousStartedAt?: string | null;
+  now?: number;
+}
+
+/**
+ * Valide la date de début et la durée prévue. Jamais de piège : une date
+ * dans le futur proche est refusée, pas une date passée (le coach rattrape
+ * souvent un changement oublié), mais jamais avant le début de la phase
+ * précédente (sinon l'historique se chevauche).
+ */
+export function validatePhaseDetails(
+  input: PhaseDetailsInput,
+  ctx: PhaseDetailsContext = {}
+): { error?: string; startedAt?: string; plannedWeeks?: number | null } {
+  const now = ctx.now ?? Date.now();
+  let plannedWeeks: number | null | undefined;
+  if (input.plannedWeeks !== undefined && input.plannedWeeks !== null) {
+    const w = Number(input.plannedWeeks);
+    if (!Number.isInteger(w) || w < 1 || w > MAX_PHASE_WEEKS) {
+      return { error: `La durée doit être un nombre entier de semaines entre 1 et ${MAX_PHASE_WEEKS}.` };
+    }
+    plannedWeeks = w;
+  } else if (input.plannedWeeks === null) {
+    plannedWeeks = null;
+  }
+  let startedAt: string | undefined;
+  if (input.startedOn) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.startedOn)) return { error: "Date de début invalide." };
+    const ms = Date.parse(`${input.startedOn}T12:00:00Z`);
+    if (!Number.isFinite(ms)) return { error: "Date de début invalide." };
+    if (ms > now + 86_400_000) return { error: "La date de début ne peut pas être dans le futur." };
+    if (ctx.previousStartedAt) {
+      const prev = Date.parse(ctx.previousStartedAt);
+      if (Number.isFinite(prev) && ms < prev - 86_400_000) {
+        return { error: "La date de début ne peut pas précéder le début de la phase précédente." };
+      }
+    }
+    startedAt = new Date(ms).toISOString();
+  }
+  return { startedAt, plannedWeeks };
 }

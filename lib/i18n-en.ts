@@ -5453,4 +5453,17 @@ export const EN: Record<string, string> = {
   "Trajectoire de": "Trajectory of",
   "Construis ta Trajectoire": "Build your trajectory",
   "Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l'app (programme, logbook, nutrition, bilan, communauté...) reste gratuit pendant tes 2 mois d'accès gratuit, que tu réserves un appel ou non.": "This page is only about that: having a real human coach, on top. Everything you already use in the app (program, logbook, nutrition, check-in, community...) stays free during your 2 months of free access, whether you book a call or not.",
+  // ── Phases de coaching réversibles ───────────────────────────────────────
+  "Phase changée": "Phase changed",
+  "Phase démarrée": "Phase started",
+  "Changer de phase": "Change phase",
+  "Ouvrir un nouveau bloc de": "Open a new block of",
+  "Revenir à la phase": "Go back to phase",
+  "Passer en phase": "Move to phase",
+  "La phase en cours sera clôturée à la date de début choisie. Le client ne voit jamais ces phases. Tu pourras annuler juste après, ou modifier et changer de phase librement ensuite.": "The current phase will be closed on the chosen start date. The client never sees these phases. You can undo right after, or edit and change phase freely later.",
+  "Vide : aujourd'hui": "Empty: today",
+  "Durée prévue (semaines)": "Planned duration (weeks)",
+  "Modifier la phase en cours": "Edit the current phase",
+  ", fin prévue le": ", planned end on",
+  "semaines prévues": "planned weeks",
 };
