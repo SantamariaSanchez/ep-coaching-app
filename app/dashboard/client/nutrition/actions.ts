@@ -668,6 +668,7 @@ const MEAL_SLOT_LABELS: Record<string, string> = {
   lunch: "Déjeuner",
   afternoon: "Collation après-midi",
   preworkout: "Pré-entraînement",
+  intraworkout: "Intra-entraînement",
   postworkout: "Post-entraînement",
   dinner: "Dîner",
 };

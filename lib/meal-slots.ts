@@ -9,6 +9,7 @@ export const MEAL_SLOT_TIMES: Record<string, string> = {
   lunch: "12:30",
   afternoon: "16:00",
   preworkout: "17:30",
+  intraworkout: "18:15",
   postworkout: "19:00",
   dinner: "20:00",
 };
@@ -19,6 +20,7 @@ export const MEAL_SLOT_LABELS: Record<string, string> = {
   lunch: "déjeuner",
   afternoon: "collation de l'après-midi",
   preworkout: "repas pré-entraînement",
+  intraworkout: "boisson intra-entraînement",
   postworkout: "repas post-entraînement",
   dinner: "dîner",
 };

@@ -101,7 +101,7 @@ export default function WeekBuilderSheet({
     for (const d of ALL_DAYS) {
       let slots = ctx.diet ? dietSlotsForDay(ctx, d) : DEFAULT_MEALS;
       // Diète identique tous les jours : pas de pré/post les jours sans séance.
-      if (ctx.diet?.structure !== "weekly" && !sessionsByDay[d]) slots = slots.filter((s) => s !== "preworkout" && s !== "postworkout");
+      if (ctx.diet?.structure !== "weekly" && !sessionsByDay[d]) slots = slots.filter((s) => s !== "preworkout" && s !== "intraworkout" && s !== "postworkout");
       map[d] = slots;
     }
     return map;

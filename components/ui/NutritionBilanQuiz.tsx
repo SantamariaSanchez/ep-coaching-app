@@ -26,6 +26,7 @@ const ALL_SLOTS: MealSlotDef[] = [
   { key: "lunch",       label: "Déjeuner",             emoji: "🍽️" },
   { key: "afternoon",   label: "Collation après-midi", emoji: "🥜" },
   { key: "preworkout",  label: "Pré-entraînement",     emoji: "🔥" },
+  { key: "intraworkout", label: "Intra-entraînement",   emoji: "⚡" },
   { key: "postworkout", label: "Post-entraînement",    emoji: "💪" },
   { key: "dinner",      label: "Dîner",                emoji: "🌙" },
 ];

@@ -291,6 +291,7 @@ export const MEAL_SLOTS = [
   { key: "lunch", label: "Déjeuner" },
   { key: "afternoon", label: "Collation après-midi" },
   { key: "preworkout", label: "Pré-entraînement" },
+  { key: "intraworkout", label: "Intra-entraînement" },
   { key: "postworkout", label: "Post-entraînement" },
   { key: "dinner", label: "Dîner" },
 ];

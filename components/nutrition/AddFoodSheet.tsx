@@ -42,6 +42,7 @@ const MEAL_FOR_SLOT: Record<string, string> = {
   lunch: "dejeuner",
   afternoon: "collation",
   preworkout: "collation",
+  intraworkout: "collation",
   postworkout: "dejeuner",
   dinner: "diner",
 };

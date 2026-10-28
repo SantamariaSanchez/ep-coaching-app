@@ -208,7 +208,7 @@ export function formatSteps(n: number): string {
 
 // ── Repas ─────────────────────────────────────────────────────────────────
 
-export const MEAL_SLOT_ORDER = ["breakfast", "morning", "lunch", "afternoon", "preworkout", "postworkout", "dinner"];
+export const MEAL_SLOT_ORDER = ["breakfast", "morning", "lunch", "afternoon", "preworkout", "intraworkout", "postworkout", "dinner"];
 
 export const MEAL_SLOT_NAMES: Record<string, string> = {
   breakfast: "Petit-déjeuner",
@@ -216,6 +216,7 @@ export const MEAL_SLOT_NAMES: Record<string, string> = {
   lunch: "Déjeuner",
   afternoon: "Collation après-midi",
   preworkout: "Pré-entraînement",
+  intraworkout: "Intra-entraînement",
   postworkout: "Post-entraînement",
   dinner: "Dîner",
 };
@@ -229,6 +230,7 @@ export function mealSlotOf(b: { label: string; start_time: string; link_ref?: st
   if (isMealSlot(b.link_ref)) return b.link_ref;
   const l = b.label;
   if (/petit[- ]?d[ée]j|breakfast/i.test(l)) return "breakfast";
+  if (/\bintra\b|intra[- ]?(work|entra|training|s[ée]ance)/i.test(l)) return "intraworkout";
   if (/pr[ée][- ]?(work|entra|training|s[ée]ance)/i.test(l)) return "preworkout";
   if (/post[- ]?(work|entra|training|s[ée]ance)/i.test(l)) return "postworkout";
   if (/d[ée]jeuner|lunch|midi/i.test(l)) return "lunch";
@@ -238,7 +240,7 @@ export function mealSlotOf(b: { label: string; start_time: string; link_ref?: st
   let best = "lunch";
   let bestD = Infinity;
   for (const [slot, time] of Object.entries(MEAL_SLOT_TIMES)) {
-    if (slot === "preworkout" || slot === "postworkout") continue;
+    if (slot === "preworkout" || slot === "intraworkout" || slot === "postworkout") continue;
     const d = Math.abs(toMin(time) - t);
     if (d < bestD) {
       bestD = d;
@@ -645,8 +647,8 @@ export function buildWeek(input: BuildInput): GenBlock[] {
     const mealDur = prefs.mealMinutes;
     const ordered = [...slots].sort((x, y) => MEAL_SLOT_ORDER.indexOf(x) - MEAL_SLOT_ORDER.indexOf(y));
     // Pré et post d'abord : ils sont accrochés à la séance, les autres repas s'écartent.
-    const prePost = ordered.filter((sl) => sl === "preworkout" || sl === "postworkout");
-    const others = ordered.filter((sl) => sl !== "preworkout" && sl !== "postworkout");
+    const prePost = ordered.filter((sl) => sl === "preworkout" || sl === "intraworkout" || sl === "postworkout");
+    const others = ordered.filter((sl) => sl !== "preworkout" && sl !== "intraworkout" && sl !== "postworkout");
     for (const slot of [...prePost, ...others]) {
       let wanted = defaultMealAbs(slot, w);
       let maxShift = 6 * 60;

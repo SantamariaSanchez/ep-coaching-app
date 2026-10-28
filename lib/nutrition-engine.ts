@@ -66,6 +66,7 @@ export const MEAL_SLOTS = [
   { key: "lunch", label: "Déjeuner" },
   { key: "afternoon", label: "Collation après-midi" },
   { key: "preworkout", label: "Pré-entraînement" },
+  { key: "intraworkout", label: "Intra-entraînement" },
   { key: "postworkout", label: "Post-entraînement" },
   { key: "dinner", label: "Dîner" },
 ] as const;
@@ -73,7 +74,7 @@ export const MEAL_SLOTS = [
 export type SlotKey = (typeof MEAL_SLOTS)[number]["key"];
 
 /** Heure après laquelle un repas est considéré comme passé (HH:MM). */
-export const SLOT_END: Record<string, string> = { breakfast: "10:00", morning: "11:30", lunch: "14:30", afternoon: "17:30", preworkout: "18:30", postworkout: "20:30", dinner: "23:59" };
+export const SLOT_END: Record<string, string> = { breakfast: "10:00", morning: "11:30", lunch: "14:30", afternoon: "17:30", preworkout: "18:30", intraworkout: "18:45", postworkout: "20:30", dinner: "23:59" };
 
 /** Le repas est-il encore à venir à cette heure ? */
 export function isSlotUpcoming(slot: string, hhmm: string): boolean {

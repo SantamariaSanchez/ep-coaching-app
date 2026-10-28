@@ -56,7 +56,7 @@ export const EXTRA_TOOLS: ToolDef[] = [
           type: "array",
           items: { type: "object", properties: { nom: { type: "string" }, grammes: { type: "number" } }, required: ["nom", "grammes"] },
         },
-        repas: { type: "string", enum: MEAL_SLOTS.map((s) => s.key), description: "breakfast, morning, lunch, afternoon, preworkout, postworkout ou dinner" },
+        repas: { type: "string", enum: MEAL_SLOTS.map((s) => s.key), description: "breakfast, morning, lunch, afternoon, preworkout, intraworkout, postworkout ou dinner" },
         date: { type: "string", description: "AAAA-MM-JJ, aujourd'hui par défaut" },
       },
       required: ["aliments", "repas"],
@@ -227,7 +227,7 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const date = isDate(args.date) ? args.date : today;
       if (date > today || date < shift(today, -30)) return text("Date hors limites : aujourd'hui ou les 30 derniers jours seulement.");
       const slot = MEAL_SLOTS.some((s) => s.key === args.repas) ? String(args.repas) : null;
-      if (!slot) return text("Repas inconnu : breakfast, morning, lunch, afternoon, preworkout, postworkout ou dinner.");
+      if (!slot) return text("Repas inconnu : breakfast, morning, lunch, afternoon, preworkout, intraworkout, postworkout ou dinner.");
       const items = (Array.isArray(args.aliments) ? args.aliments : []).slice(0, 15) as { nom?: unknown; grammes?: unknown }[];
       const done: string[] = [];
       const missing: string[] = [];
