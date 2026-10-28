@@ -20,6 +20,7 @@ import {
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
+import InstallAppHint from "@/components/ui/InstallAppHint";
 import CommandPalette from "@/components/ui/CommandPalette";
 import { useT } from "@/components/i18n/I18nProvider";
 import { useTypingInSession } from "@/components/client/session/useTypingInSession";
@@ -606,7 +607,6 @@ export default function DashboardNav({
 
   useEffect(() => {
     const wide = window.matchMedia("(min-width: 1024px)");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsWide(wide.matches);
     const hw = (e: MediaQueryListEvent) => setIsWide(e.matches);
     wide.addEventListener("change", hw);
@@ -1205,6 +1205,8 @@ export default function DashboardNav({
             <LogOut size={14} strokeWidth={1.7} />
             {!collapsed && t("Déconnexion")}
           </button>
+
+          {!collapsed && <InstallAppHint />}
 
           <button
             type="button"

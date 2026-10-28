@@ -1,11 +1,27 @@
 // EP Coaching Service Worker — push notifications
 
-self.addEventListener("install", () => {
-  self.skipWaiting();
+// v2 : installable sur ordinateur et téléphone. Rien n'est mis en cache à part
+// la petite page « Pas de connexion », affichée seulement quand une navigation
+// échoue faute de réseau : les pages et les données restent toujours celles du
+// serveur (aucun risque de contenu périmé).
+const OFFLINE_CACHE = "ep-offline-v1";
+const OFFLINE_URL = "/offline.html";
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(OFFLINE_CACHE).then((c) => c.add(OFFLINE_URL)).catch(() => {}).then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(clients.claim());
+});
+
+self.addEventListener("fetch", (event) => {
+  if (event.request.mode !== "navigate") return;
+  event.respondWith(
+    fetch(event.request).catch(async () => (await caches.match(OFFLINE_URL)) || Response.error())
+  );
 });
 
 self.addEventListener("push", (event) => {

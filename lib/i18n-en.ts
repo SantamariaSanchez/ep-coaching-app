@@ -5835,4 +5835,8 @@ export const EN: Record<string, string> = {
   "Ce compte n'est pas un compte coach. Connecte-toi depuis l'espace membre.": "This account is not a coach account. Sign in from the member area.",
   "Ton fournisseur n'a pas transmis d'adresse e-mail. Utilise l'inscription par e-mail.": "Your provider did not share an email address. Use email sign-up.",
   "Ton compte n'a pas pu être créé. Réessaie dans un instant.": "Your account could not be created. Try again in a moment.",
+  // ── Version ordinateur ──
+  "Installer l'appli sur ton ordinateur": "Install the app on your computer",
+  "Agrandir le menu": "Expand menu",
+  "Réduire le menu": "Collapse menu",
 };

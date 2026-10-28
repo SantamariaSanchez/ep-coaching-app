@@ -1,12 +1,25 @@
 {
+  "id": "/launch",
   "name": "EP Coaching",
   "short_name": "EP Coaching",
-  "description": "Ton espace coaching personnalisé",
+  "description": "Ton coach, ton programme et ta nutrition dans une seule appli.",
+  "lang": "fr",
+  "dir": "ltr",
   "start_url": "/launch",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#000000",
-  "theme_color": "#E01E1E",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#0D0000",
+  "theme_color": "#0D0000",
+  "categories": [
+    "health",
+    "fitness",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "/icon-192.png",

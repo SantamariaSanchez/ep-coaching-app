@@ -6,7 +6,7 @@ import { Smartphone, X, MoreVertical, Share, Download } from "lucide-react";
 
 const DISMISS_KEY = "ep-install-hint-dismissed";
 
-type Platform = "ios" | "android" | null;
+type Platform = "ios" | "android" | "desktop" | null;
 
 // Chrome/Edge exposent cet évènement pour déclencher le VRAI prompt
 // d'installation natif du navigateur — pas de type officiel dans le DOM lib.
@@ -43,12 +43,16 @@ export default function InstallAppHint() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPlatform(detectPlatform());
     setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
 
     function onBeforeInstallPrompt(e: Event) {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
+      // Ordinateur (Chrome, Edge) : le navigateur propose l'installation, on la
+      // rend disponible discrètement sans toucher aux appareils déjà gérés.
+      setPlatform((p) => p ?? (window.matchMedia("(display-mode: standalone)").matches ? null : "desktop"));
     }
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
@@ -90,10 +94,10 @@ export default function InstallAppHint() {
     <div className="flex justify-center">
       <button
         onClick={handleClick}
-        className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-(--ep-ink)/30 hover:text-(--ep-ink)/55 transition-colors py-2"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--ep-ink)/55 hover:text-(--ep-ink)/80 transition-colors min-h-11"
       >
         {deferredPrompt ? <Download size={11} strokeWidth={1.8} /> : <Smartphone size={11} strokeWidth={1.8} />}
-        {t("Installer l'appli sur ton téléphone")}
+        {platform === "desktop" ? t("Installer l'appli sur ton ordinateur") : t("Installer l'appli sur ton téléphone")}
       </button>
 
       {open && (
