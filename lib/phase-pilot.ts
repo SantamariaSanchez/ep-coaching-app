@@ -24,6 +24,7 @@
 //     11:20, DOI 10.1186/1550-2783-11-20).
 //   - Maintenance / diet break : stable, plus ou moins 0,25 % par semaine.
 
+import { ADJUSTMENT_RULES } from "@/lib/coaching-knowledge";
 import { PHASE_COLORS } from "@/lib/roadmap-colors";
 import {
   addDaysIso,
@@ -148,10 +149,10 @@ export interface PhasePilot {
 
 /** Couloirs de vitesse de poids, en % du poids de corps par semaine. */
 export const PHASE_RATE_CORRIDORS: Readonly<Record<string, { min: number; max: number }>> = {
-  masse: { min: 0.25, max: 0.5 },
-  deficit: { min: -1, max: -0.5 },
-  maintenance: { min: -0.25, max: 0.25 },
-  diet_break: { min: -0.25, max: 0.25 },
+  masse: { ...ADJUSTMENT_RULES.weeklyRatePct.surplus },
+  deficit: { ...ADJUSTMENT_RULES.weeklyRatePct.deficit },
+  maintenance: { ...ADJUSTMENT_RULES.weeklyRatePct.maintenance },
+  diet_break: { ...ADJUSTMENT_RULES.weeklyRatePct.maintenance },
 };
 
 // Phases courtes qui n'ont pas de sens nutritionnel propre : elles héritent

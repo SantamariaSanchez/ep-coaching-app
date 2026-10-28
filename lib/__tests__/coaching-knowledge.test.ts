@@ -12,6 +12,20 @@ import {
   proteinGPerKgFor,
   proteinPerMealRange,
   setsPerSessionFor,
+  ADJUSTMENT_RULES,
+  HABIT_RULES,
+  PLANT_BASED_RULES,
+  SMALL_MUSCLE_GROUPS,
+  WEEKLY_SETS_FLOOR,
+  distributeProtein,
+  recoveryStatusFrom,
+  restSecondsFor,
+  sessionSetBudget,
+  weeklySetsCeilingFor,
+  weeklySetsForMuscle,
+  weeklySetsStartFor,
+  type RecoveryStatus,
+  type TrainingLevel,
 } from "../coaching-knowledge";
 
 test("déficit : 20 % par défaut, 15 % pour un profil avancé, jamais sous 10 % ni au-delà de 30 %", () => {
@@ -114,4 +128,100 @@ test("entraînement : volume de départ 8 à 12 puis 10 à 25, repos en fourchet
   assert.ok(TRAINING_RULES.restSeconds.isolation.min < TRAINING_RULES.restSeconds.isolation.max);
   assert.ok(COACHING_KNOWLEDGE_PROMPT.includes("8 à 12 séries difficiles"));
   assert.ok(COACHING_KNOWLEDGE_PROMPT.includes("10 à 25"));
+});
+
+const LEVELS: TrainingLevel[] = ["debutant", "intermediaire", "avance"];
+const RECOVERIES: RecoveryStatus[] = ["limited", "normal", "good"];
+
+test("volume de départ : toujours dans 8 à 12, plus bas quand la récupération est limitée, jamais lié au sexe", () => {
+  for (const level of LEVELS) {
+    for (const rec of RECOVERIES) {
+      const v = weeklySetsStartFor(level, rec);
+      assert.ok(v >= TRAINING_RULES.weeklyHardSetsStart.min && v <= TRAINING_RULES.weeklyHardSetsStart.max, `${level} ${rec}`);
+    }
+    assert.ok(weeklySetsStartFor(level, "limited") <= weeklySetsStartFor(level, "normal"));
+    assert.ok(weeklySetsStartFor(level, "normal") <= weeklySetsStartFor(level, "good"));
+    assert.ok(weeklySetsCeilingFor(level) >= TRAINING_RULES.weeklyHardSetsRange.min);
+    assert.ok(weeklySetsCeilingFor(level) <= TRAINING_RULES.weeklyHardSetsRange.max);
+  }
+  assert.ok(weeklySetsStartFor("debutant") <= weeklySetsStartFor("avance"));
+  assert.ok(weeklySetsCeilingFor("debutant") < weeklySetsCeilingFor("avance"));
+});
+
+test("petits muscles : départ allégé mais jamais sous le plancher des cas pratiques", () => {
+  for (const level of LEVELS) {
+    for (const rec of RECOVERIES) {
+      for (const g of SMALL_MUSCLE_GROUPS) {
+        const v = weeklySetsForMuscle(g, level, rec);
+        assert.ok(v >= WEEKLY_SETS_FLOOR && v <= weeklySetsStartFor(level, rec));
+      }
+      assert.equal(weeklySetsForMuscle("Pectoraux", level, rec), weeklySetsStartFor(level, rec));
+    }
+  }
+});
+
+test("récupération : sommeil court, mauvaise qualité ou stress élevé la limitent, un bon profil la favorise", () => {
+  assert.equal(recoveryStatusFrom({ sleepHours: 5 }), "limited");
+  assert.equal(recoveryStatusFrom({ sleepQuality: 3 }), "limited");
+  assert.equal(recoveryStatusFrom({ stressLevel: 9 }), "limited");
+  assert.equal(recoveryStatusFrom({ sleepHours: 8, sleepQuality: 8, stressLevel: 3 }), "good");
+  assert.equal(recoveryStatusFrom({}), "normal");
+  assert.equal(recoveryStatusFrom({ sleepHours: 7 }), "normal");
+});
+
+test("temps de séance : le budget de séries grandit avec la durée, repos dans la fourchette", () => {
+  assert.ok(sessionSetBudget(30) < sessionSetBudget(60));
+  assert.ok(sessionSetBudget(60) < sessionSetBudget(90));
+  assert.equal(sessionSetBudget(null), sessionSetBudget(60));
+  const c = TRAINING_RULES.restSeconds.compound;
+  const i = TRAINING_RULES.restSeconds.isolation;
+  for (const heavy of [true, false]) {
+    for (const timeLimited of [true, false]) {
+      const rc = restSecondsFor("compound", { heavy, timeLimited });
+      const ri = restSecondsFor("isolation", { heavy, timeLimited });
+      assert.ok(rc >= c.min && rc <= c.max && ri >= i.min && ri <= i.max);
+    }
+  }
+  assert.ok(restSecondsFor("compound", { timeLimited: true }) <= restSecondsFor("compound", { heavy: true }));
+});
+
+test("protéines réparties : total respecté, 3 à 5 prises, jamais au-dessus du haut de la fourchette par repas", () => {
+  for (const [total, w] of [[160, 80], [110, 55], [200, 90]] as const) {
+    const d = distributeProtein(total, w);
+    assert.equal(d.perMealG.reduce((a, b) => a + b, 0), total);
+    assert.ok(d.meals >= NUTRITION_RULES.proteinMeals.min && d.meals <= NUTRITION_RULES.proteinMeals.max);
+    assert.equal(d.perMealG.length, d.meals);
+  }
+  // Total élevé avec peu de repas demandés : on ajoute des prises plutôt que de dépasser 0,4 g/kg.
+  const d = distributeProtein(160, 80, 3);
+  assert.ok(d.perMealG.every((g) => g <= proteinPerMealRange(80).max + 1));
+});
+
+test("règles d'ajustement : alignées sur les fourchettes de nutrition, durées de déficit et de pause cohérentes", () => {
+  const { deficit, surplus } = ADJUSTMENT_RULES.weeklyRatePct;
+  assert.equal(-deficit.max, NUTRITION_RULES.lossRatePctPerWeek.min);
+  assert.equal(-deficit.min, NUTRITION_RULES.lossRatePctPerWeek.max);
+  assert.equal(surplus.min, NUTRITION_RULES.gainRatePctPerMonth.min / 4);
+  assert.equal(surplus.max, NUTRITION_RULES.gainRatePctPerMonth.max / 4);
+  assert.ok(ADJUSTMENT_RULES.minDaysBeforeAdjust >= 14);
+  assert.ok(ADJUSTMENT_RULES.minDaysBeforeAdjust >= MAINTENANCE_TREND_RULES.minSpanDays);
+  assert.ok(ADJUSTMENT_RULES.maintenanceBreakWeeks.min < ADJUSTMENT_RULES.maintenanceBreakWeeks.max);
+  assert.ok(ADJUSTMENT_RULES.stepKcal.min < ADJUSTMENT_RULES.stepKcal.max);
+  assert.ok(HABIT_RULES.sleepHoursMin >= 7);
+});
+
+test("végétarien ou végan : protéines en haut de fourchette, points de vigilance complets", () => {
+  assert.ok(PLANT_BASED_RULES.proteinGPerKgFloor >= NUTRITION_RULES.proteinGPerKg.min);
+  assert.ok(PLANT_BASED_RULES.proteinGPerKgFloor <= NUTRITION_RULES.proteinGPerKg.max);
+  const keys: string[] = PLANT_BASED_RULES.watch.map((w) => w.key);
+  for (const k of ["b12", "fer", "zinc", "calcium", "iode", "omega3"]) assert.ok(keys.includes(k), k);
+  for (const w of PLANT_BASED_RULES.watch) assert.doesNotMatch(`${w.label}${w.advice}`, /—/);
+});
+
+test("prompt IA : ajustements, phases, choix des exercices et progression présents, sans tiret cadratin", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ajuster :/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Phases :/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Choix des exercices/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Progression :/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
 });
