@@ -58,6 +58,8 @@ import ClientIntakeForm from "./ClientIntakeForm";
 import ClientPeriodTracking from "./ClientPeriodTracking";
 import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
 import CoachingPhasePanel from "./CoachingPhasePanel";
+import EngagementPanel from "./EngagementPanel";
+import type { EngagementRow } from "@/lib/engagement";
 import type { CoachingPhaseState, AdherenceSignal, PhaseSuggestion } from "@/lib/coaching-phase-helpers";
 import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
 import ClientCorrectionsReplySection from "./ClientCorrectionsReplySection";
@@ -266,6 +268,9 @@ export default function ClientProfileTabs({
   corrections,
   sendCorrectionFeedback,
   coachingPhase,
+  engagement,
+  engagementToday,
+  engagementBookingUrl,
   calibrationSignals,
   phaseSuggestions,
   supplements,
@@ -349,6 +354,10 @@ export default function ClientProfileTabs({
   // "active" (voir plus bas). coachingPhase est déjà null côté page.tsx
   // pour un membre gratuit, cette prop double juste la garantie côté UI.
   coachingPhase: CoachingPhaseState | null;
+  /** Engagement du client coaché (6 mois par défaut), null sans fiche. */
+  engagement: EngagementRow | null;
+  engagementToday: string;
+  engagementBookingUrl: string;
   calibrationSignals: AdherenceSignal[];
   phaseSuggestions: PhaseSuggestion[];
   // Compléments : ces quatre props manquaient, l'onglet Nutrition > Compléments
@@ -535,6 +544,15 @@ export default function ClientProfileTabs({
               phase={coachingPhase}
               signals={calibrationSignals}
               suggestions={phaseSuggestions}
+            />
+          )}
+          {client.subscription_status === "active" && (
+            <EngagementPanel
+              clientId={client.id}
+              engagement={engagement}
+              firstName={client.full_name?.split(" ")[0] ?? null}
+              today={engagementToday}
+              bookingUrl={engagementBookingUrl}
             />
           )}
 

@@ -4,6 +4,8 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { loadRoadmapPageData } from "@/utils/phase-pilot";
 import { todayInParis } from "@/lib/dates";
 import RoadmapView from "@/components/client/RoadmapView";
+import EngagementProgressCard from "@/components/client/EngagementProgress";
+import { getEngagementProgress } from "@/lib/engagement-server";
 
 export default async function ClientRoadmapPage() {
   const user = await getUser();
@@ -22,5 +24,17 @@ export default async function ClientRoadmapPage() {
   const isFree = getAccessType(profile) === "membre_gratuit";
   const data = await loadRoadmapPageData(await createServerSupabase(), user.id, "self");
 
-  return <RoadmapView userId={user.id} isFree={isFree} today={todayInParis()} data={data} />;
+  // Mois X sur 6 : seulement pour un client coaché, pendant son engagement.
+  const engagement = isFree ? null : await getEngagementProgress(user.id);
+
+  return (
+    <>
+      {engagement?.status === "active" && (
+        <div style={{ padding: "24px 20px 0", maxWidth: 900, margin: "0 auto" }}>
+          <EngagementProgressCard progress={engagement} />
+        </div>
+      )}
+      <RoadmapView userId={user.id} isFree={isFree} today={todayInParis()} data={data} />
+    </>
+  );
 }

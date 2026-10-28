@@ -52,6 +52,8 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal, sendIntakeReminder } from "./intake/actions";
 import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
+import { getEngagement } from "@/lib/engagement-server";
+import { todayInParis as engagementTodayInParis } from "@/lib/dates";
 import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhaseSuggestions } from "@/lib/coaching-phase";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import ClientSetupCard from "@/components/coach/ClientSetupCard";
@@ -180,6 +182,8 @@ export default async function ClientDetailPage({
     createAdminClient().from("roadmaps").select("id").eq("client_id", id).maybeSingle(),
     getEatingRelation(id),
   ]);
+
+  const engagement = client.subscription_status === "active" ? await getEngagement(id) : null;
 
   const cycleStats = computeCycleStats(periodLogs);
 
@@ -321,6 +325,9 @@ export default async function ClientDetailPage({
         corrections={corrections}
         sendCorrectionFeedback={sendCorrectionFeedback}
         coachingPhase={coachingPhase}
+        engagement={engagement}
+        engagementToday={engagementTodayInParis()}
+        engagementBookingUrl={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/client/live/reserver`}
         calibrationSignals={calibrationSignals}
         phaseSuggestions={phaseSuggestions}
         supplements={supplements}

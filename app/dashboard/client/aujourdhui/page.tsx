@@ -16,6 +16,7 @@ import { focusHabitProgress } from "@/lib/focus-habit";
 import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import { getWeeklyExtras } from "./actions";
 import AujourdhuiView from "@/components/client/AujourdhuiView";
+import { getEngagementProgress } from "@/lib/engagement-server";
 
 export default async function AujourdhuiPage() {
   const user = await getUser();
@@ -45,6 +46,7 @@ export default async function AujourdhuiPage() {
   // chargés après coup côté client (voir getWeeklyExtras dans ./actions.ts,
   // appelé depuis AujourdhuiView). Ce Promise.all attend donc 2 requêtes
   // serveur de moins avant de pouvoir rendre la page.
+  const engagementPromise = subscribed ? getEngagementProgress(user.id) : Promise.resolve(null);
   const [
     allBlocks, habitLogs, biometricLogs, insights, todayLog, allSupplements,
     nutritionProfile, todayFoodLogs, stepSettings, todaySteps,
@@ -112,11 +114,14 @@ export default async function AujourdhuiPage() {
     ? { logged: nutritionLogged, target: nutritionProfile?.calories_target ?? null }
     : null;
 
+  const engagement = await engagementPromise;
+
   return (
     <AujourdhuiView
       firstName={profile?.full_name?.split(" ")[0] ?? ""}
       hour={Number(nowInParis().hhmm.split(":")[0])}
       weekNum={weekNumber(profile?.start_date ?? null)}
+      engagement={engagement?.status === "active" ? engagement : null}
       todayBlocks={todayBlocks}
       habitLogs={habitLogs}
       isSubscribedClient={subscribed}

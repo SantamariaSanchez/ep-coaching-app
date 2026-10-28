@@ -1,6 +1,9 @@
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { classifyClient, type TrafficLight } from "@/lib/client-traffic-light";
+import { reviewDate, reviewState } from "@/lib/engagement";
+import { diffDaysIso } from "@/lib/roadmap-weeks";
+import { todayInParis } from "@/lib/dates";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -372,6 +375,52 @@ export async function getClientAlerts(
         icon: "PhoneOff",
       });
     }
+  }
+
+  // ── 10. Appel bilan d'engagement (1 mois avant la fin) ──────────────────
+  // L'engagement type dure 6 mois (lib/engagement.ts). Un mois avant la fin,
+  // le coach doit proposer l'appel bilan puis la suite : sans ce signal, la
+  // fin d'un accompagnement passait inaperçue. Table absente (migration
+  // 20261028 non passée) : aucune alerte, jamais d'erreur.
+  try {
+    const { data: engagement } = await supabase
+      .from("client_engagements")
+      .select("end_date, renewal_status")
+      .eq("client_id", clientId)
+      .maybeSingle();
+    if (engagement) {
+      const todayIso = todayInParis();
+      const end = engagement.end_date as string;
+      const state = reviewState(end, todayIso, (engagement.renewal_status as "en_reflexion" | "renouvele" | "arrete" | null) ?? null);
+      if (state === "late") {
+        alerts.push({
+          type: "engagement_review",
+          severity: "high",
+          label: "Engagement terminé, suite à décider",
+          suggestion: "Propose un appel bilan et la suite (renouvellement, nouvel objectif ou pause) : un message modèle est prêt sur la fiche",
+          icon: "CalendarClock",
+        });
+      } else if (state === "due") {
+        const left = Math.max(0, diffDaysIso(todayIso, end));
+        alerts.push({
+          type: "engagement_review",
+          severity: "medium",
+          label: `Appel bilan à proposer : fin d'engagement dans ${left} jour${left > 1 ? "s" : ""}`,
+          suggestion: "Propose l'appel bilan (il reste environ un mois), un message modèle est prêt sur la fiche",
+          icon: "CalendarClock",
+        });
+      } else if (state === "upcoming") {
+        alerts.push({
+          type: "engagement_review",
+          severity: "low",
+          label: `Appel bilan à prévoir le ${reviewDate(end).split("-").reverse().join("/")}`,
+          suggestion: "Réserve un créneau d'appel bilan, un mois avant la fin d'engagement",
+          icon: "CalendarClock",
+        });
+      }
+    }
+  } catch {
+    // ignoré
   }
 
   return alerts;

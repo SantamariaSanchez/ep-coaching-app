@@ -4,6 +4,7 @@ import { requireOwnClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { startCalibrationPhase, endCoachingPhaseTracking } from "@/lib/coaching-phase";
+import { startEngagement } from "@/lib/engagement-server";
 import { notifyUser } from "@/lib/notify";
 import { getClientIntake } from "@/utils/client-intake";
 import { notifyAdmin } from "@/lib/admin-notify";
@@ -61,6 +62,7 @@ export async function setClientSubscriptionStatus(
   // "calibrage" au tout début d'un coaching payant (voir lib/coaching-phase.ts).
   if (!wasActive && status === "active") {
     await startCalibrationPhase(clientId, guard.userId);
+    await startEngagement(clientId, guard.userId);
 
     // Le client remplit lui-même sa fiche via le questionnaire d'onboarding
     // (voir /onboarding/intake) — le coach ne la voit/modifie qu'une fois

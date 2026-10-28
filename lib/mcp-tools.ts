@@ -4,6 +4,7 @@
 // (et, pour un coach, sur ses propres clients).
 import { createAdminClient } from "@/lib/supabase-admin";
 import { todayInParis } from "@/lib/dates";
+import { engagementProgress, reviewDate, reviewState, type RenewalStatus } from "@/lib/engagement";
 import { fuzzyScore } from "@/lib/fuzzy-search";
 import { syncDailyNutrition } from "@/lib/nutrition-sync";
 import { MEAL_SLOTS } from "@/lib/nutrition-engine";
@@ -330,6 +331,13 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const w = (logs ?? []) as { log_date: string; weight_morning: number }[];
       if (w.length >= 2) lines.push(`Poids sur 4 semaines : ${fr(Number(w[0].weight_morning), 1)} kg (${w[0].log_date}) puis ${fr(Number(w[w.length - 1].weight_morning), 1)} kg (${w[w.length - 1].log_date})`);
       lines.push(`Séances terminées sur 14 jours : ${(sess ?? []).length}`);
+      // Engagement (6 mois par défaut) : mois en cours et appel bilan.
+      const { data: eng } = await admin.from("client_engagements").select("start_date, end_date, duration_months, renewal_status").eq("client_id", found.id).maybeSingle();
+      if (eng) {
+        const pr = engagementProgress(eng.start_date as string, eng.end_date as string, today);
+        const rs = reviewState(eng.end_date as string, today, (eng.renewal_status as RenewalStatus | null) ?? null);
+        lines.push(`Engagement : ${pr.status === "ended" ? "terminé" : `mois ${pr.monthIndex} sur ${pr.months}`}, du ${eng.start_date} au ${eng.end_date}${rs === "due" || rs === "late" ? `. Appel bilan à proposer maintenant (dès le ${reviewDate(eng.end_date as string)})` : rs === "upcoming" ? `. Appel bilan à prévoir le ${reviewDate(eng.end_date as string)}` : ""}`);
+      }
       for (const c of (checks ?? []) as Record<string, string | number | null>[]) {
         const bits = [
           c.weight_avg != null && `poids moyen ${fr(Number(c.weight_avg), 1)} kg`,

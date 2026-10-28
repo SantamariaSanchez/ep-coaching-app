@@ -2,6 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
+import { EngagementChip, type EngagementProgressData } from "@/components/client/EngagementProgress";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -55,6 +56,7 @@ export default function AujourdhuiView({
   firstName,
   hour,
   weekNum,
+  engagement,
   todayBlocks,
   habitLogs,
   isSubscribedClient,
@@ -79,6 +81,8 @@ export default function AujourdhuiView({
   hour: number;
   /** Semaine de coaching en cours (depuis start_date), null si non défini. */
   weekNum: number | null;
+  /** Progression de l'engagement (mois X sur 6), null hors coaching ou hors période. */
+  engagement?: EngagementProgressData | null;
   todayBlocks: ScheduleBlock[];
   habitLogs: MindsetHabitLog[];
   isSubscribedClient: boolean;
@@ -253,6 +257,7 @@ export default function AujourdhuiView({
               {tr("Semaine")}{" "}{weekNum}
             </span>
           )}
+          {engagement && <EngagementChip progress={engagement} />}
         </p>
         {/* Idée #1 côté coach, reprise ici : salutation adaptée à l'heure
             plutôt que "Salut" figé toute la journée. */}
