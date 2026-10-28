@@ -103,7 +103,7 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "ajouter_script",
     roles: ["coach"],
-    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach.",
+    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach. Écris comme les vraies références : ouverture sur une question qui revient ou un faux problème (jamais une scène inventée), parties annoncées à l'oral, exemple chiffré refaisable, nuance, règle courte ; jamais de chapitre ni de timecode, ni de tiret cadratin ; dis adhésion (pas adhérence) et Road map.",
     inputSchema: {
       type: "object",
       properties: {

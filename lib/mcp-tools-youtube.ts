@@ -1,8 +1,9 @@
-// Outils YouTube du connecteur Claude (2026-10-28) : titres notés, structure
+// Outils YouTube du connecteur Claude (2026-10-28) : titres relus, structure
 // d'une vidéo longue, miniatures, audit d'un script, clips pour les reels et
 // plan enregistré. Toute la logique vit dans lib/youtube-studio.ts.
 import { createAdminClient } from "@/lib/supabase-admin";
 import { fuzzyScore } from "@/lib/fuzzy-search";
+import { SCRIPT_VOICE_NOTES } from "@/lib/content-vocabulary";
 import { isMissingColumnError } from "@/lib/coach-ideation";
 import {
   HOOK_TYPES, TITLE_ANGLES, YT_STRUCTURES, analyzeYoutubeScript, blueprintToText, buildVideoBlueprint, checkDescription,
@@ -21,7 +22,7 @@ export const YOUTUBE_TOOLS: ToolDef[] = [
   {
     name: "titres_youtube",
     roles: ["coach"],
-    description: "Titres YouTube notés sur 100 (moins de 60 caractères, vraie phrase, contraste, mots simples, aucun appât), un candidat par angle : curiosité, résultat, erreur, contre-pied, chiffre fermé, filtre d'audience. Donne ce que tu sais (sujet, douleur, résultat, erreur, idée reçue, vérité, nombre) ; ou passe `titre` pour noter un titre existant. Montre les meilleurs au coach et garde la liste pour un test.",
+    description: "Titres YouTube relus selon les critères du guide titres (moins de 60 caractères, vraie phrase, contraste, mots simples, aucun appât), sans note chiffrée, un candidat par angle : curiosité, résultat, erreur, contre-pied, chiffre fermé, filtre d'audience. Donne ce que tu sais (sujet, douleur, résultat, erreur, idée reçue, vérité, nombre) ; ou passe `titre` pour noter un titre existant. Montre les meilleurs au coach et garde la liste pour un test.",
     inputSchema: {
       type: "object",
       properties: {
@@ -138,6 +139,8 @@ export async function callYoutubeTool(ownerId: string, role: Role, name: string,
       const bp = buildVideoBlueprint({ durationMin: typeof args.duree_minutes === "number" ? args.duree_minutes : undefined, parts: typeof args.parties === "number" ? args.parties : undefined });
       return text([
         blueprintToText(bp),
+        "",
+        SCRIPT_VOICE_NOTES,
         "",
         s ? `STRUCTURE ${s.id} · ${s.name} : ${s.steps.join(" → ")}. Pour : ${s.bestFor}` : "STRUCTURES : " + YT_STRUCTURES.map((x) => `${x.id} ${x.name}`).join(" ; "),
         "TYPES DE HOOK : " + HOOK_TYPES.map((h) => `${h.id} ${h.label}`).join(" ; ") + ". Écris 3 hooks de 3 types différents et garde le plus fort.",

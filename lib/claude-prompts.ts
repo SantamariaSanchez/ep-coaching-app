@@ -119,8 +119,8 @@ const COACH: PromptGroup[] = [
     cards: [
       {
         title: "Retoucher un script puis le publier",
-        hint: "Accroche, description, appel à l'action.",
-        prompt: "Montre-moi mes scripts tournés dans EP Coaching (outil mes_scripts, statut tourne). Pour celui que je choisis, propose une meilleure accroche et une description de post, mets-les à jour avec modifier_script, puis marque-le publié avec publier_script quand je te le dis.",
+        hint: "Hook, description, appel à l'action.",
+        prompt: "Montre-moi mes scripts tournés dans EP Coaching (outil mes_scripts, statut tourne). Pour celui que je choisis, propose un meilleur hook et une description de post, mets-les à jour avec modifier_script, puis marque-le publié avec publier_script quand je te le dis.",
       },
       {
         title: "Le bon guide pour mon reel",
@@ -140,7 +140,7 @@ const COACH: PromptGroup[] = [
       {
         title: "Écrire 5 scripts dans mon Studio",
         hint: "À partir de ton positionnement et de tes stats.",
-        prompt: "Lis mon positionnement (outil mon_positionnement) et mes stats réseaux (outil mes_stats_reseaux) dans EP Coaching. Écris 5 scripts de reels de 30 à 45 secondes pour mon avatar, avec ses mots exacts dans l'accroche. Montre-les-moi, puis quand je valide ajoute-les dans mon Studio (outil ajouter_script).",
+        prompt: "Lis mon positionnement (outil mon_positionnement) et mes stats réseaux (outil mes_stats_reseaux) dans EP Coaching. Écris 5 scripts de reels de 30 à 45 secondes pour mon avatar, avec ses mots exacts dans le hook. Montre-les-moi, puis quand je valide ajoute-les dans mon Studio (outil ajouter_script).",
       },
       {
         title: "Un script dans un format précis",
@@ -149,18 +149,18 @@ const COACH: PromptGroup[] = [
       },
       {
         title: "Préparer une vidéo YouTube de A à Z",
-        hint: "Titres notés, structure, miniatures A/B, clips pour les reels.",
-        prompt: "Prépare ma prochaine vidéo YouTube avec EP Coaching. D'abord lis mon positionnement (outil mon_positionnement) et mes scripts (outil mes_scripts) pour ne pas répéter une structure récente. Sujet : . Donne-moi 3 hooks de 3 types différents, puis les titres avec l'outil titres_youtube, la chronologie avec structure_video_youtube et les miniatures A et B avec miniatures_youtube. Montre-moi tout, et quand je valide, écris le script mot pour mot avec ajouter_script (plateforme youtube) puis enregistre le plan avec plan_video_youtube.",
+        hint: "Titres, structure, miniatures A/B, clips pour les reels.",
+        prompt: "Prépare ma prochaine vidéo YouTube avec EP Coaching. D'abord lis mon positionnement (outil mon_positionnement) et mes scripts (outil mes_scripts) pour ne pas répéter une structure récente. Sujet : . Donne-moi 3 hooks de 3 types différents, puis les titres avec l'outil titres_youtube, la chronologie et la façon d'écrire avec structure_video_youtube et les miniatures A et B avec miniatures_youtube. Montre-moi tout, et quand je valide, écris le script mot pour mot avec ajouter_script (plateforme youtube) : ouverture sur une question qui revient ou un faux problème, parties annoncées à l'oral, exemple chiffré refaisable, jamais de chapitre ni de timecode. Enregistre ensuite le plan avec plan_video_youtube.",
       },
       {
         title: "Améliorer un script YouTube existant",
-        hint: "Audit de rétention, puis réécriture des passages faibles.",
-        prompt: "Analyse mon script YouTube avec l'outil analyser_script_youtube (script : ). Corrige ce qui est marqué À CORRIGER : hook, promesse, boucle ouverte, relances, rappel de la description, récap. Montre-moi les passages réécrits avec les mots du script, sans inventer de chiffre ni d'étude. Quand je valide, mets le script à jour avec modifier_script (l'ancien texte est gardé automatiquement), puis donne-moi les clips avec clips_depuis_video.",
+        hint: "Points de relecture, puis réécriture des passages faibles.",
+        prompt: "Analyse mon script YouTube avec l'outil analyser_script_youtube (script : ). Corrige ce qui est marqué À CORRIGER : ouverture, promesse, relances, rappel de la description, récap. Montre-moi les passages réécrits avec les mots du script, sans inventer de chiffre ni d'étude. Quand je valide, mets le script à jour avec modifier_script (l'ancien texte est gardé automatiquement), puis donne-moi les clips avec clips_depuis_video.",
       },
       {
         title: "Transformer une idée en script",
         hint: "Colle ton idée à la fin.",
-        prompt: "Lis mon positionnement dans EP Coaching, puis transforme cette idée en script de reel de 40 secondes (accroche, développement, appel à l'action) et ajoute-le dans mon Studio : ",
+        prompt: "Lis mon positionnement dans EP Coaching, puis transforme cette idée en script de reel de 40 secondes (hook, développement, appel à l'action) et ajoute-le dans mon Studio : ",
       },
       {
         title: "Mes idées de la semaine",
