@@ -5631,4 +5631,14 @@ export const EN: Record<string, string> = {
   "Tu récupères bien : ta coach peut ajouter quelques séries à ton programme.": "You are recovering well: your coach can add a few sets to your program.",
   "Les protéines restent sous la cible : propose une source de protéines simple à ajouter à chaque repas.": "Protein stays under target: suggest a simple protein source to add to each meal.",
   "Ajoute une source de protéines à chaque repas : c'est le levier le plus simple pour atteindre ta cible.": "Add a protein source to each meal: it is the simplest lever to reach your target.",
+  // ── Cadre de diète ───────────────────────────────────────────────────────
+  "Répartition conseillée sur la journée": "Suggested split across the day",
+  "Petit-déjeuner": "Breakfast",
+  "Déjeuner": "Lunch",
+  "Collation": "Snack",
+  "Dîner": "Dinner",
+  "Collation du soir": "Evening snack",
+  "fibres": "fiber",
+  "Féculents": "Starches",
+  "Points de vigilance": "Watch points",
 };

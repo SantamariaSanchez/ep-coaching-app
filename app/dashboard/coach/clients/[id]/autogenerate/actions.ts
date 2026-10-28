@@ -5,6 +5,8 @@ import { getClientIntake } from "@/utils/client-intake";
 import { getLatestWeight } from "@/utils/daily-logs";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { getEatingRelation } from "@/lib/eating-safety-server";
+import { buildDietFramework, type DietFramework } from "@/lib/diet-models";
+import { NUTRITION_RULES } from "@/lib/coaching-knowledge";
 import { getExerciseLibrary } from "@/utils/exercise-library";
 import {
   inferPhase,
@@ -27,6 +29,10 @@ export interface NutritionSuggestion {
   tdee: number;
   bmr: number;
   phase: InferredPhase;
+  /** Fibres conseillées, en g par jour. */
+  fiber: number;
+  /** Cadre de répartition des repas ; null si la relation à l'alimentation interdit tout chiffre. */
+  dietFramework: DietFramework | null;
 }
 
 export interface PlanSuggestions {
@@ -86,7 +92,20 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
       level,
       eatingRelation,
     });
-    nutrition = { ...targets, phase: targets.phaseApplied };
+    nutrition = {
+      ...targets,
+      phase: targets.phaseApplied,
+      fiber: Math.round((targets.calories / 1000) * NUTRITION_RULES.fiberGPer1000Kcal),
+      dietFramework: buildDietFramework({
+        targets: { calories: targets.calories, proteins: targets.proteins, carbs: targets.carbs, fats: targets.fats },
+        weightKg,
+        mealsPerDay: intake.meals_ideal,
+        dietType: intake.diet_type,
+        practical: intake.schedule_type === "variable",
+        planPreference: intake.plan_preference,
+        eatingRelation,
+      }),
+    };
     if (targets.note) warnings.push(`Nutrition : ${targets.note}`);
   } else {
     warnings.push(

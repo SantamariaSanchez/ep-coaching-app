@@ -101,6 +101,47 @@ export default function AutoGeneratePlanButton({
                 </div>
               )}
 
+              {result.nutrition?.dietFramework && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">
+                    {t("Répartition conseillée sur la journée")}
+                  </p>
+                  <div className="border border-(--ep-line)/15 rounded-lg overflow-hidden">
+                    {result.nutrition.dietFramework.meals.map((m) => (
+                      <div key={m.name} className="flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] border-b border-(--ep-line)/10 last:border-b-0">
+                        <span className="font-semibold text-(--ep-strong)">{t(m.name)}</span>
+                        <span className="text-(--ep-ink)/55">
+                          {m.calories} kcal · {m.proteins} g P · {m.carbs} g G · {m.fats} g L · {m.fiber} g {t("fibres")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-(--ep-ink)/45 mt-2 leading-relaxed">
+                    <strong>{t("Protéines")}</strong> : {result.nutrition.dietFramework.proteinSources.join(", ")}.{" "}
+                    <strong>{t("Féculents")}</strong> : {result.nutrition.dietFramework.carbSources.join(", ")}.{" "}
+                    <strong>{t("Lipides")}</strong> : {result.nutrition.dietFramework.fatSources.join(", ")}.
+                  </p>
+                  <ul className="mt-2 space-y-1 text-[10px] text-(--ep-ink)/45 leading-relaxed list-disc pl-4">
+                    {result.nutrition.dietFramework.tips.map((tip) => (
+                      <li key={tip}>{tip}</li>
+                    ))}
+                    {result.nutrition.dietFramework.warnings.map((w) => (
+                      <li key={w} className="text-(--ep-ink)/70">{w}</li>
+                    ))}
+                  </ul>
+                  {result.nutrition.dietFramework.watch.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-[10px] font-bold text-(--ep-ink)/50 mb-1">{t("Points de vigilance")}</p>
+                      <ul className="space-y-0.5 text-[10px] text-(--ep-ink)/45 leading-relaxed list-disc pl-4">
+                        {result.nutrition.dietFramework.watch.map((w) => (
+                          <li key={w.label}><strong>{w.label}</strong> : {w.advice}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {result.program && result.program.length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-2">

@@ -9,6 +9,7 @@ import {
   weeklySetsForMuscle,
   weeklySetsCeilingFor,
   recoveryStatusFrom,
+  SMALL_MUSCLE_GROUPS,
   type RecoveryStatus,
   type TrainingLevel,
 } from "@/lib/coaching-knowledge";
@@ -573,11 +574,20 @@ export function generateProgramPlan(
     timeLimited = true;
   }
   for (const d of days) {
-    const total = dayTotal(d);
-    if (total > budget) {
-      timeLimited = true;
-      const factor = budget / total;
-      for (const sl of d.slots) sets.set(sl, Math.max(MIN_SETS_PER_SLOT, Math.floor((sets.get(sl) ?? 0) * factor)));
+    if (dayTotal(d) <= budget) continue;
+    timeLimited = true;
+    // D'abord les petits muscles, qui reçoivent déjà du travail indirect.
+    const small = d.slots.filter((sl) => SMALL_MUSCLE_GROUPS.includes(sl.group));
+    for (let guard = 0; guard < 60 && dayTotal(d) > budget; guard++) {
+      const reducible = small.filter((sl) => (sets.get(sl) ?? 0) > MIN_SETS_PER_SLOT).sort((a, b) => (sets.get(b) ?? 0) - (sets.get(a) ?? 0))[0];
+      if (!reducible) break;
+      sets.set(reducible, (sets.get(reducible) ?? 0) - 1);
+    }
+    // Puis le reste, un peu partout, sans descendre sous le minimum par exercice.
+    for (let guard = 0; guard < 80 && dayTotal(d) > budget; guard++) {
+      const reducible = d.slots.filter((sl) => (sets.get(sl) ?? 0) > MIN_SETS_PER_SLOT).sort((a, b) => (sets.get(b) ?? 0) - (sets.get(a) ?? 0))[0];
+      if (!reducible) break;
+      sets.set(reducible, (sets.get(reducible) ?? 0) - 1);
     }
   }
 

@@ -411,6 +411,14 @@ export function distributeProtein(totalG: number, weightKg: number, meals: numbe
   return { meals: n, perMealG };
 }
 
+/** Structure d'un plan alimentaire (enseignement du Mastermind, niveau 4). */
+export const PLAN_STRUCTURE_RULES = {
+  /** Sources différentes de protéines et de lipides dans la journée. */
+  sourcesPerDay: { min: 2, max: 4 },
+  /** Repas laissés libres dans un plan partiel. */
+  flexibleMealsPerDay: { min: 1, max: 2 },
+} as const;
+
 /** Critères de sélection d'un exercice (enseignement du Mastermind, niveau 3). */
 export const EXERCISE_SELECTION_CRITERIA = [
   "tension sur le muscle visé, pas la seule étiquette polyarticulaire ou isolation",

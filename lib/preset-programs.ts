@@ -1,6 +1,7 @@
 import type { ProgramInput } from "@/utils/programs";
 import type { MemberPreferences } from "@/lib/personalization";
 import type { TrainingStyle } from "@/lib/training-styles";
+import type { TrainingLevel } from "@/lib/coaching-knowledge";
 
 export interface PresetProgram {
   id: string;
@@ -8,6 +9,8 @@ export interface PresetProgram {
   split: string;
   description: string;
   frequency: number;
+  /** Niveau pour lequel il est pensé. */
+  level?: TrainingLevel;
   /** Discipline pour laquelle il est pensé (bodybuilding si absent). */
   style?: TrainingStyle;
   input: ProgramInput;
@@ -20,9 +23,10 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
   // pas de salle. Voir recommendPreset() plus bas.
   {
     id: "debutant2",
+    level: "debutant",
     name: "Débuter : Full Body 2 jours",
     split: "Full Body",
-    description: "2 séances par semaine, environ 45 min. Machines et haltères, gestes simples, charges légères : tu apprends les mouvements et tu prends l'habitude avant de chercher la performance.",
+    description: "2 séances par semaine, environ 50 min. Machines et haltères, gestes simples, charges légères : tu apprends les mouvements et tu prends l'habitude avant de chercher la performance. Tu gardes 2 à 3 répétitions en réserve.",
     frequency: 2,
     input: {
       name: "Programme Débuter Full Body 2 jours",
@@ -32,21 +36,23 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
         {
           day_label: "Séance A : Bases",
           exercises: [
-            { name: "Presse à cuisses (leg press)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Pieds largeur d'épaules, descends tant que le bas du dos reste collé au dossier", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
-            { name: "Développé couché haltères", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Charge légère pour apprendre la trajectoire, coudes à environ 45° du buste", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
-            { name: "Tirage vertical poulie haute (lat pulldown)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Tire la barre vers le haut de la poitrine, sans balancer le buste", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Leg curl assis", sets: 2, reps: "12-15", rir: 2, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
-            { name: "Planche (plank)", sets: 3, reps: "20-30 s", rir: null, rest_seconds: 60, notes: "Corps gainé de la tête aux talons, respire normalement", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+            { name: "Presse à cuisses (leg press)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 120, notes: "Pieds largeur d'épaules, descends tant que le bas du dos reste collé au dossier", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Développé couché haltères", sets: 3, reps: "10-12", rir: 3, rest_seconds: 120, notes: "Charge légère pour apprendre la trajectoire, coudes à environ 45° du buste", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage vertical poulie haute (lat pulldown)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 120, notes: "Tire la barre vers le haut de la poitrine, sans balancer le buste", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl assis", sets: 3, reps: "12-15", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 3, reps: "12-15", rir: 2, rest_seconds: 90, notes: "Légère flexion du coude, monte jusqu'à l'horizontale sans élan", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Planche (plank)", sets: 2, reps: "20-30 s", rir: null, rest_seconds: 60, notes: "Corps gainé de la tête aux talons, respire normalement", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
           ],
         },
         {
           day_label: "Séance B : Bases",
           exercises: [
-            { name: "Squat gobelet (goblet squat)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Haltère tenu contre la poitrine, descends aussi bas que tu restes dos droit", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
-            { name: "Tirage horizontal haltère (rowing unilatéral)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 75, notes: "Un genou et une main sur le banc, tire le coude vers la hanche", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Développé militaire haltères", sets: 2, reps: "10-12", rir: 3, rest_seconds: 90, notes: "Assis, dos contre le dossier", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
-            { name: "Pont fessier (glute bridge)", sets: 3, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Serre les fessiers en haut une seconde", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
-            { name: "Dead bug", sets: 2, reps: "8-10", rir: null, rest_seconds: 60, notes: "Répétitions par côté. Bas du dos plaqué au sol pendant tout le mouvement", muscle_group: "Abdominaux", muscle_subgroup: null, is_direct: true },
+            { name: "Squat gobelet (goblet squat)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 120, notes: "Haltère tenu contre la poitrine, descends aussi bas que tu restes dos droit", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Développé à la machine (chest press)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 120, notes: "Dos plaqué au dossier, pousse sans verrouiller les coudes", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage horizontal haltère (rowing unilatéral)", sets: 3, reps: "10-12", rir: 3, rest_seconds: 120, notes: "Un genou et une main sur le banc, tire le coude vers la hanche", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé militaire haltères", sets: 3, reps: "10-12", rir: 3, rest_seconds: 120, notes: "Assis, dos contre le dossier", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl couché", sets: 3, reps: "12-15", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Pont fessier (glute bridge)", sets: 3, reps: "12-15", rir: 2, rest_seconds: 90, notes: "Serre les fessiers en haut une seconde", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
           ],
         },
       ],
@@ -54,6 +60,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
   },
   {
     id: "maison",
+    level: "debutant",
     name: "Reprise à la maison, sans matériel",
     split: "Full Body",
     description: "2 séances par semaine, environ 30 min, au poids du corps. Pour reprendre en douceur sans salle ni matériel. Tu ajoutes une 3e séance quand ça devient facile.",
@@ -87,44 +94,271 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
     },
   },
   {
-    id: "ppl",
-    name: "Push / Pull / Legs",
-    split: "PPL",
-    description: "3 séances par semaine. Tu alternes poussée, tirage et jambes pour récupérer efficacement entre les groupes musculaires.",
+    id: "debutant3",
+    name: "Débuter : 3 séances par semaine",
+    split: "Haut / Bas / Corps entier",
+    level: "debutant",
+    description: "3 séances par semaine, environ 60 min. Machines et gestes simples, charges légères avec 2 à 3 répétitions en réserve : chaque grand muscle revient deux fois par semaine pour apprendre vite.",
     frequency: 3,
     input: {
-      name: "Programme PPL Intermédiaire",
-      type: "PPL",
+      name: "Programme Débuter : 3 séances par semaine",
+      type: "Full Body",
       frequency: 3,
       days: [
         {
-          day_label: "Push : Pectoraux / Épaules / Triceps",
+          day_label: "Séance 1 : Haut du corps",
           exercises: [
-            { name: "Développé couché barre", sets: 4, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Barre, prise légèrement plus large que les épaules", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
-            { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Inclinaison 30-45°", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
-            { name: "Développé militaire haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Assis ou debout", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
-            { name: "Élévations latérales haltères", sets: 4, reps: "12-15", rir: 1, rest_seconds: 60, notes: "Légère flexion du coude, monter jusqu'à l'horizontale", muscle_group: "Épaules", muscle_subgroup: null, is_direct: false },
-            { name: "Triceps poulie haute (corde)", sets: 3, reps: "12-15", rir: 1, rest_seconds: 60, notes: "Coudes fixes, extension complète", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+            { name: "Développé à la machine (chest press)", sets: 4, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Dos plaqué au dossier, pousse sans verrouiller complètement les coudes.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage vertical poulie haute (lat pulldown)", sets: 4, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Tire la barre vers le haut de la poitrine sans te pencher en arrière excessivement.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé épaules machine", sets: 3, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Dos calé, pousse les poignées vers le haut.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 3, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Lève les bras jusqu'à l'horizontale, coudes légèrement fléchis.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Curl poulie basse", sets: 2, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Tension continue sur tout le mouvement, contrairement à la barre/haltères.", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+            { name: "Extension poulie haute barre droite", sets: 2, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Coudes fixes le long du corps, pousse la barre vers le bas.", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
           ],
         },
         {
-          day_label: "Pull : Dos / Biceps",
+          day_label: "Séance 2 : Bas du corps",
           exercises: [
-            { name: "Tractions (ou tirage vertical)", sets: 4, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Tractions si possible, sinon tirage vertical prise large", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Rowing barre pronation", sets: 3, reps: "6-8", rir: 2, rest_seconds: 90, notes: "Dos à plat, tirage vers le nombril", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Tirage horizontal poulie basse", sets: 3, reps: "10-12", rir: 2, rest_seconds: 75, notes: "Prise neutre, omoplates serrées en fin de mouvement", muscle_group: "Dos", muscle_subgroup: null, is_direct: false },
-            { name: "Curl barre", sets: 3, reps: "8-10", rir: 2, rest_seconds: 75, notes: "Pas d'élan, coudes fixes", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
-            { name: "Curl marteau haltères", sets: 3, reps: "10-12", rir: 1, rest_seconds: 60, notes: "Prise neutre, travail des brachial et brachio-radial", muscle_group: "Biceps", muscle_subgroup: null, is_direct: false },
+            { name: "Presse à cuisses (leg press)", sets: 4, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Pieds à largeur d'épaules, pousse sans verrouiller complètement les genoux.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Soulevé de terre roumain", sets: 3, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Jambes presque tendues, recule les hanches en gardant le dos plat.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Hip thrust machine", sets: 6, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Même mouvement que la barre, trajectoire guidée.", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl assis", sets: 3, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Dos calé, fléchis les genoux contre la résistance.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
           ],
         },
         {
-          day_label: "Legs : Quadriceps / Ischio / Mollets",
+          day_label: "Séance 3 : Corps entier",
           exercises: [
-            { name: "Squat barre", sets: 4, reps: "6-8", rir: 2, rest_seconds: 150, notes: "Descente contrôlée, genoux dans l'axe des orteils", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
-            { name: "Presse jambes", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Pieds à hauteur d'épaules, dos plaqué contre le dossier", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: false },
-            { name: "Soulevé de terre jambes tendues", sets: 3, reps: "10-12", rir: 2, rest_seconds: 90, notes: "Dos neutre, descente contrôlée jusqu'à la mi-tibia", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
-            { name: "Leg curl couché", sets: 3, reps: "10-12", rir: 1, rest_seconds: 75, notes: "Flexion complète, extension lente", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: false },
-            { name: "Mollets debout (presse ou barre)", sets: 4, reps: "12-15", rir: 1, rest_seconds: 60, notes: "Amplitude complète, maintien 1s en extension", muscle_group: "Mollets", muscle_subgroup: null, is_direct: true },
+            { name: "Squat Smith machine", sets: 4, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Trajectoire guidée, utile pour se concentrer sur la descente.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage horizontal poulie basse", sets: 4, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Dos droit, tire la poignée vers l'abdomen en rapprochant les omoplates.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé incliné machine", sets: 4, reps: "8-12", rir: 3, rest_seconds: 120, notes: "Trajectoire guidée vers le haut des pectoraux.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl couché", sets: 2, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Allongé sur le ventre, ramène les talons vers les fessiers.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales machine", sets: 2, reps: "12-15", rir: 2, rest_seconds: 60, notes: "Coudes calés contre les appuis, lève sans élan.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "haut_bas_corps",
+    name: "Haut du corps / Bas du corps / Corps entier",
+    split: "Haut / Bas / Full",
+    level: "intermediaire",
+    description: "3 séances par semaine, environ 75 min. Chaque grand muscle est travaillé deux fois par semaine, composés d'abord puis isolation, repos standardisés.",
+    frequency: 3,
+    input: {
+      name: "Programme Haut du corps / Bas du corps / Corps entier",
+      type: "Custom",
+      frequency: 3,
+      days: [
+        {
+          day_label: "Séance 1 : Haut du corps",
+          exercises: [
+            { name: "Développé incliné haltères", sets: 5, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Banc à 30-45°, descends jusqu'à sentir l'étirement.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage vertical poulie haute (lat pulldown)", sets: 5, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Tire la barre vers le haut de la poitrine sans te pencher en arrière excessivement.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé épaules machine", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Dos calé, pousse les poignées vers le haut.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Lève les bras jusqu'à l'horizontale, coudes légèrement fléchis.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Curl incliné haltères", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Banc incliné à 45-60°, bras tombant dans le dos pour étirer le chef long.", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+            { name: "Overhead triceps extension barre EZ", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Barre EZ derrière la tête, coudes pointés vers le plafond, étire le chef long.", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 2 : Bas du corps",
+          exercises: [
+            { name: "Presse à cuisses (leg press)", sets: 5, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Pieds à largeur d'épaules, pousse sans verrouiller complètement les genoux.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Soulevé de terre roumain", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Jambes presque tendues, recule les hanches en gardant le dos plat.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Hip thrust machine", sets: 6, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Même mouvement que la barre, trajectoire guidée.", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl assis", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Dos calé, fléchis les genoux contre la résistance.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 3 : Corps entier",
+          exercises: [
+            { name: "Hack squat", sets: 5, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Dos calé contre le support, descends en contrôlant.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage horizontal poulie basse", sets: 5, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Dos droit, tire la poignée vers l'abdomen en rapprochant les omoplates.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé à la machine (chest press)", sets: 5, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Dos plaqué au dossier, pousse sans verrouiller complètement les coudes.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl couché", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Allongé sur le ventre, ramène les talons vers les fessiers.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales poulie", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Tension continue contrairement aux haltères, lève jusqu'à l'horizontale.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "ppl_ul5",
+    name: "Push / Pull / Legs + Haut / Bas",
+    split: "PPL + Upper/Lower",
+    level: "intermediaire",
+    description: "5 séances par semaine, environ 75 min. Chaque grand muscle est travaillé deux fois par semaine, avec un volume réparti sur la semaine.",
+    frequency: 5,
+    input: {
+      name: "Programme Push / Pull / Legs + Haut / Bas",
+      type: "Custom",
+      frequency: 5,
+      days: [
+        {
+          day_label: "Séance 1 : Push",
+          exercises: [
+            { name: "Développé incliné haltères", sets: 4, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Banc à 30-45°, descends jusqu'à sentir l'étirement.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Développé épaules machine", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Dos calé, pousse les poignées vers le haut.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Écarté à la poulie vis-à-vis", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Cross-over, ramène les poignées devant le sternum en arc de cercle.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Lève les bras jusqu'à l'horizontale, coudes légèrement fléchis.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Overhead triceps extension barre EZ", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Barre EZ derrière la tête, coudes pointés vers le plafond, étire le chef long.", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 2 : Pull",
+          exercises: [
+            { name: "Tirage vertical poulie haute (lat pulldown)", sets: 4, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Tire la barre vers le haut de la poitrine sans te pencher en arrière excessivement.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Machine tirage horizontal assis", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Pieds calés, tire les poignées vers le buste en gardant le dos droit.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Curl incliné haltères", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Banc incliné à 45-60°, bras tombant dans le dos pour étirer le chef long.", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales poulie", sets: 2, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Tension continue contrairement aux haltères, lève jusqu'à l'horizontale.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 3 : Legs",
+          exercises: [
+            { name: "Presse à cuisses (leg press)", sets: 4, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Pieds à largeur d'épaules, pousse sans verrouiller complètement les genoux.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Soulevé de terre roumain", sets: 4, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Jambes presque tendues, recule les hanches en gardant le dos plat.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Hip thrust machine", sets: 5, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Même mouvement que la barre, trajectoire guidée.", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl assis", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Dos calé, fléchis les genoux contre la résistance.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Mollets assis machine", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Genoux fléchis, accentue le travail du soléaire.", muscle_group: "Mollets", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 4 : Haut du corps",
+          exercises: [
+            { name: "Développé à la machine (chest press)", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Dos plaqué au dossier, pousse sans verrouiller complètement les coudes.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Machine tirage horizontal assis", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Pieds calés, tire les poignées vers le buste en gardant le dos droit.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales machine", sets: 2, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Coudes calés contre les appuis, lève sans élan.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Curl poulie basse", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Tension continue sur tout le mouvement, contrairement à la barre/haltères.", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+            { name: "Extension poulie haute barre droite", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Coudes fixes le long du corps, pousse la barre vers le bas.", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 5 : Bas du corps",
+          exercises: [
+            { name: "Hack squat", sets: 3, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Dos calé contre le support, descends en contrôlant.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Hip thrust barre", sets: 5, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Haut du dos sur un banc, pousse les hanches vers le plafond en contractant les fessiers.", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl couché", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Allongé sur le ventre, ramène les talons vers les fessiers.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Leg extension", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Tibias calés sous le rouleau, étends les jambes sans à-coup.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Mollets debout machine", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Monte sur la pointe des pieds le plus haut possible, descends en étirant.", muscle_group: "Mollets", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "ppl",
+    name: "Push / Pull / Legs",
+    split: "PPL",
+    level: "avance",
+    description: "6 séances par semaine, environ 75 min. Chaque grand muscle est travaillé deux fois par semaine. Réservé à ceux qui récupèrent bien : si le sommeil ou le stress se dégradent, passe à 4 ou 5 séances.",
+    frequency: 6,
+    input: {
+      name: "Programme Push / Pull / Legs",
+      type: "PPL",
+      frequency: 6,
+      days: [
+        {
+          day_label: "Séance 1 : Push A",
+          exercises: [
+            { name: "Développé incliné haltères", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Banc à 30-45°, descends jusqu'à sentir l'étirement.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Développé épaules machine", sets: 2, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Dos calé, pousse les poignées vers le haut.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Écarté à la poulie vis-à-vis", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Cross-over, ramène les poignées devant le sternum en arc de cercle.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Overhead triceps extension barre EZ", sets: 5, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Barre EZ derrière la tête, coudes pointés vers le plafond, étire le chef long.", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 2, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Lève les bras jusqu'à l'horizontale, coudes légèrement fléchis.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 2 : Pull A",
+          exercises: [
+            { name: "Tirage vertical poulie haute (lat pulldown)", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Tire la barre vers le haut de la poitrine sans te pencher en arrière excessivement.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Machine tirage horizontal assis", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Pieds calés, tire les poignées vers le buste en gardant le dos droit.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Curl incliné haltères", sets: 5, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Banc incliné à 45-60°, bras tombant dans le dos pour étirer le chef long.", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales poulie", sets: 2, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Tension continue contrairement aux haltères, lève jusqu'à l'horizontale.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 3 : Legs A",
+          exercises: [
+            { name: "Presse à cuisses (leg press)", sets: 5, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Pieds à largeur d'épaules, pousse sans verrouiller complètement les genoux.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Soulevé de terre roumain", sets: 6, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Jambes presque tendues, recule les hanches en gardant le dos plat.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Hip thrust machine", sets: 6, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Même mouvement que la barre, trajectoire guidée.", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Mollets assis machine", sets: 5, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Genoux fléchis, accentue le travail du soléaire.", muscle_group: "Mollets", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 4 : Push B",
+          exercises: [
+            { name: "Développé à la machine (chest press)", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Dos plaqué au dossier, pousse sans verrouiller complètement les coudes.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Développé militaire haltères", sets: 2, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Assis ou debout, pousse les haltères à la verticale des épaules.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales machine", sets: 2, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Coudes calés contre les appuis, lève sans élan.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Extension poulie haute barre droite", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Coudes fixes le long du corps, pousse la barre vers le bas.", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+            { name: "Pec deck / Butterfly", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Coudes au niveau des épaules, rapproche les bras sans à-coup.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 5 : Pull B",
+          exercises: [
+            { name: "Machine tirage horizontal assis", sets: 3, reps: "6-10", rir: 2, rest_seconds: 150, notes: "Pieds calés, tire les poignées vers le buste en gardant le dos droit.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Pull-over poulie haute", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Bras quasi tendus, tire la barre vers les cuisses.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Curl poulie basse", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Tension continue sur tout le mouvement, contrairement à la barre/haltères.", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+            { name: "Reverse pec deck", sets: 2, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Face à la machine, écarte les bras vers l'arrière.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 6 : Legs B",
+          exercises: [
+            { name: "Hip thrust barre", sets: 6, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Haut du dos sur un banc, pousse les hanches vers le plafond en contractant les fessiers.", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Hack squat", sets: 4, reps: "6-10", rir: 2, rest_seconds: 180, notes: "Dos calé contre le support, descends en contrôlant.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl assis", sets: 5, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Dos calé, fléchis les genoux contre la résistance.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Leg extension", sets: 3, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Tibias calés sous le rouleau, étends les jambes sans à-coup.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Mollets debout machine", sets: 4, reps: "10-15", rir: 1, rest_seconds: 90, notes: "Monte sur la pointe des pieds le plus haut possible, descends en étirant.", muscle_group: "Mollets", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "maison_equipe",
+    name: "À la maison avec haltères",
+    split: "Haut / Bas / Corps entier",
+    level: "intermediaire",
+    description: "3 séances par semaine, environ 60 min, avec des haltères et une barre. Chaque grand muscle revient deux fois par semaine.",
+    frequency: 3,
+    input: {
+      name: "Programme À la maison avec haltères",
+      type: "Custom",
+      frequency: 3,
+      days: [
+        {
+          day_label: "Séance 1 : Haut du corps",
+          exercises: [
+            { name: "Développé incliné haltères", sets: 3, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Banc à 30-45°, descends jusqu'à sentir l'étirement.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage horizontal haltère (rowing unilatéral)", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Un genou sur le banc, tire l'haltère vers la hanche.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé militaire haltères", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Assis ou debout, pousse les haltères à la verticale des épaules.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Lève les bras jusqu'à l'horizontale, coudes légèrement fléchis.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Curl incliné haltères", sets: 2, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Banc incliné à 45-60°, bras tombant dans le dos pour étirer le chef long.", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
+            { name: "Overhead triceps extension barre EZ", sets: 2, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Barre EZ derrière la tête, coudes pointés vers le plafond, étire le chef long.", muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 2 : Bas du corps",
+          exercises: [
+            { name: "Squat barre (back squat)", sets: 5, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Barre sur le haut du dos, descends hanches en arrière et genoux dans l'axe des pieds.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Soulevé de terre roumain", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Jambes presque tendues, recule les hanches en gardant le dos plat.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Hip thrust barre", sets: 6, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Haut du dos sur un banc, pousse les hanches vers le plafond en contractant les fessiers.", muscle_group: "Fessiers", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl sur swiss ball", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Allongé au sol, talons sur le ballon, ramène le ballon vers les fessiers en pont.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+          ],
+        },
+        {
+          day_label: "Séance 3 : Corps entier",
+          exercises: [
+            { name: "Squat gobelet (goblet squat)", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Charge tenue contre la poitrine, bon premier pas vers le squat.", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Rowing T-bar", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Buste penché, tire la charge vers le sternum.", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Développé couché haltères", sets: 4, reps: "6-10", rir: 2, rest_seconds: 120, notes: "Amplitude plus grande qu'à la barre, contrôle la descente.", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Nordic ham curl", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Genoux ancrés, descends le buste vers l'avant en résistant le plus possible.", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Oiseau (élévations postérieures) haltères", sets: 3, reps: "10-15", rir: 1, rest_seconds: 60, notes: "Buste penché à 90°, écarte les bras en gardant les coudes légèrement fléchis.", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
           ],
         },
       ],
@@ -132,6 +366,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
   },
   {
     id: "fullbody",
+    level: "intermediaire",
     name: "Full Body",
     split: "Full Body",
     description: "3 séances par semaine. Chaque séance sollicite l'ensemble du corps avec des mouvements polyarticulaires. Idéal pour consolider les bases.",
@@ -145,29 +380,29 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           day_label: "Séance A : Force",
           exercises: [
             { name: "Squat barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 150, notes: "Mouvement fondamental, priorité à la technique", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
-            { name: "Développé couché barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 120, notes: "Descente jusqu'au sternum, pas de rebond", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Développé couché barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 150, notes: "Descente jusqu'au sternum, pas de rebond", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
             { name: "Tractions (ou tirage vertical)", sets: 4, reps: "5-6", rir: 2, rest_seconds: 120, notes: "Amplitude complète, montée contrôlée", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Développé militaire barre", sets: 3, reps: "6-8", rir: 2, rest_seconds: 90, notes: "Debout ou assis, dos neutre", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Développé militaire barre", sets: 3, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Debout ou assis, dos neutre", muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
             { name: "Curl barre", sets: 3, reps: "8-10", rir: 2, rest_seconds: 75, notes: "Coudes fixes", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
           ],
         },
         {
           day_label: "Séance B : Volume",
           exercises: [
-            { name: "Soulevé de terre roumain", sets: 4, reps: "8-10", rir: 2, rest_seconds: 120, notes: "Jambes légèrement fléchies, hanches en arrière", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
-            { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Inclinaison 30°, contrôle en descente", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
-            { name: "Rowing haltère unilatéral", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Appui sur un banc, dos plat", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Élévations latérales haltères", sets: 3, reps: "12-15", rir: 1, rest_seconds: 60, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: false },
+            { name: "Soulevé de terre roumain", sets: 4, reps: "8-10", rir: 2, rest_seconds: 150, notes: "Jambes légèrement fléchies, hanches en arrière", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 120, notes: "Inclinaison 30°, contrôle en descente", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Rowing haltère unilatéral", sets: 3, reps: "8-10", rir: 2, rest_seconds: 120, notes: "Appui sur un banc, dos plat", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 3, reps: "12-15", rir: 1, rest_seconds: 60, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
             { name: "Triceps poulie haute (corde)", sets: 3, reps: "12-15", rir: 1, rest_seconds: 60, notes: null, muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
           ],
         },
         {
           day_label: "Séance C : Mixte",
           exercises: [
-            { name: "Presse jambes", sets: 4, reps: "10-12", rir: 2, rest_seconds: 90, notes: "Pieds légèrement hauts pour plus d'ischio", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: false },
-            { name: "Dips lestés (ou non)", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Légèrement penché vers l'avant pour les pectoraux", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
-            { name: "Tirage horizontal poulie basse", sets: 3, reps: "10-12", rir: 2, rest_seconds: 75, notes: "Prise neutre, omoplates actives", muscle_group: "Dos", muscle_subgroup: null, is_direct: false },
-            { name: "Leg curl couché", sets: 3, reps: "10-12", rir: 1, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: false },
+            { name: "Presse jambes", sets: 4, reps: "10-12", rir: 2, rest_seconds: 150, notes: "Pieds légèrement hauts pour plus d'ischio", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Dips lestés (ou non)", sets: 3, reps: "8-10", rir: 2, rest_seconds: 120, notes: "Légèrement penché vers l'avant pour les pectoraux", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Tirage horizontal poulie basse", sets: 3, reps: "10-12", rir: 2, rest_seconds: 120, notes: "Prise neutre, omoplates actives", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl couché", sets: 3, reps: "10-12", rir: 1, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
             { name: "Curl haltères incliné", sets: 3, reps: "10-12", rir: 1, rest_seconds: 60, notes: "Assis incliné à 45°, grand étirement du biceps", muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
           ],
         },
@@ -176,6 +411,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
   },
   {
     id: "upperlower",
+    level: "intermediaire",
     name: "Upper / Lower",
     split: "Upper / Lower",
     description: "4 séances par semaine. Tu alternes séances haut du corps et bas du corps pour plus de volume et de fréquence sur chaque groupe.",
@@ -188,27 +424,27 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
         {
           day_label: "Upper A : Force haut du corps",
           exercises: [
-            { name: "Développé couché barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 120, notes: "Charge lourde, technique prioritaire", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Développé couché barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 150, notes: "Charge lourde, technique prioritaire", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
             { name: "Tractions (ou tirage vertical)", sets: 4, reps: "5-6", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Développé militaire barre", sets: 3, reps: "6-8", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
-            { name: "Rowing barre", sets: 3, reps: "6-8", rir: 2, rest_seconds: 90, notes: "Tirage vers le nombril, dos à plat", muscle_group: "Dos", muscle_subgroup: null, is_direct: false },
+            { name: "Développé militaire barre", sets: 3, reps: "6-8", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
+            { name: "Rowing barre", sets: 3, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Tirage vers le nombril, dos à plat", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
           ],
         },
         {
           day_label: "Lower A : Force bas du corps",
           exercises: [
             { name: "Squat barre", sets: 5, reps: "5", rir: 2, rest_seconds: 150, notes: "Priorité à la technique, charge progressive", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
-            { name: "Soulevé de terre roumain", sets: 4, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Maintien du dos neutre tout au long du mouvement", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
-            { name: "Presse jambes", sets: 3, reps: "10-12", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: false },
-            { name: "Leg curl couché", sets: 3, reps: "10-12", rir: 2, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: false },
+            { name: "Soulevé de terre roumain", sets: 4, reps: "6-8", rir: 2, rest_seconds: 150, notes: "Maintien du dos neutre tout au long du mouvement", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Presse jambes", sets: 3, reps: "10-12", rir: 2, rest_seconds: 150, notes: null, muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl couché", sets: 3, reps: "10-12", rir: 2, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
           ],
         },
         {
           day_label: "Upper B : Volume haut du corps",
           exercises: [
-            { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
-            { name: "Rowing haltère unilatéral", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "3 séries de chaque côté", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
-            { name: "Élévations latérales haltères", sets: 4, reps: "12-15", rir: 1, rest_seconds: 60, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: false },
+            { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
+            { name: "Rowing haltère unilatéral", sets: 3, reps: "8-10", rir: 2, rest_seconds: 120, notes: "3 séries de chaque côté", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
+            { name: "Élévations latérales haltères", sets: 4, reps: "12-15", rir: 1, rest_seconds: 60, notes: null, muscle_group: "Épaules", muscle_subgroup: null, is_direct: true },
             { name: "Curl barre", sets: 3, reps: "8-10", rir: 2, rest_seconds: 75, notes: null, muscle_group: "Biceps", muscle_subgroup: null, is_direct: true },
             { name: "Triceps poulie haute (corde)", sets: 3, reps: "12-15", rir: 1, rest_seconds: 60, notes: null, muscle_group: "Triceps", muscle_subgroup: null, is_direct: true },
           ],
@@ -216,9 +452,9 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
         {
           day_label: "Lower B : Volume bas du corps",
           exercises: [
-            { name: "Presse jambes pieds hauts", sets: 4, reps: "10-12", rir: 2, rest_seconds: 90, notes: "Pieds hauts pour maximiser les ischio-jambiers", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: false },
-            { name: "Fentes marchées haltères", sets: 3, reps: "10-12", rir: 2, rest_seconds: 90, notes: "8-10 pas de chaque côté", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: false },
-            { name: "Leg curl assis", sets: 3, reps: "12-15", rir: 1, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: false },
+            { name: "Presse jambes pieds hauts", sets: 4, reps: "10-12", rir: 2, rest_seconds: 150, notes: "Pieds hauts pour maximiser les ischio-jambiers", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
+            { name: "Fentes marchées haltères", sets: 3, reps: "10-12", rir: 2, rest_seconds: 120, notes: "8-10 pas de chaque côté", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
+            { name: "Leg curl assis", sets: 3, reps: "12-15", rir: 1, rest_seconds: 75, notes: null, muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
             { name: "Mollets debout", sets: 4, reps: "12-15", rir: 1, rest_seconds: 60, notes: "Amplitude complète, 1s de maintien en haut", muscle_group: "Mollets", muscle_subgroup: null, is_direct: true },
           ],
         },
@@ -227,6 +463,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
   },
   {
     id: "force4",
+    level: "intermediaire",
     name: "Force : Squat, développé couché, soulevé de terre (4 jours)",
     split: "Force",
     description: "4 séances par semaine, environ 75 min. Un jour par mouvement de compétition avec un top set au RPE puis des séries de back-off, des variantes pause et un jour de volume haut du corps. Pour qui connaît déjà la technique des trois mouvements.",
@@ -286,6 +523,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
   },
   {
     id: "calisthenics_debutant",
+    level: "debutant",
     name: "Calisthenics : Débuter Full Body (3 jours)",
     split: "Full Body",
     description: "3 séances par semaine, environ 45 min, aux barres ou à la maison. Tractions négatives, pompes, dips assistés et premiers équilibres : tu construis la force de base avant les skills.",
@@ -334,6 +572,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
   },
   {
     id: "calisthenics_skills",
+    level: "intermediaire",
     name: "Calisthenics : Skills et force (4 jours)",
     split: "Skills + Force",
     description: "4 séances par semaine, environ 60 min. Planche, front lever, handstand et muscle-up travaillés étape par étape, avec tractions et dips lestés pour la force. Pour qui fait déjà 10 tractions et 15 dips.",
@@ -441,6 +680,12 @@ export function recommendPreset(
     };
   }
   if (level === "debutant") {
+    if (freq === "3-4" || freq === "5+") {
+      return {
+        preset: byId("debutant3"),
+        reason: "Tu débutes et tu peux t'entraîner 3 fois : chaque grand muscle revient deux fois par semaine, avec des machines et des gestes simples, pour apprendre vite sans te fatiguer.",
+      };
+    }
     return {
       preset: byId("debutant2"),
       reason: "Tu débutes : 2 séances simples par semaine pour apprendre les mouvements et prendre l'habitude.",
@@ -452,16 +697,22 @@ export function recommendPreset(
       reason: "Tu vises 1 à 2 séances par semaine : un full body sur 2 jours fait travailler tout le corps à chaque fois.",
     };
   }
-  if (freq === "5+" || (freq === "3-4" && level === "confirme")) {
+  if (freq === "5+") {
+    return {
+      preset: byId("ppl_ul5"),
+      reason: "Tu peux t'entraîner 5 fois : poussée, tirage, jambes puis haut et bas du corps, chaque grand muscle revient deux fois par semaine. Si ton sommeil ou ton stress se dégradent, passe à 4 séances.",
+    };
+  }
+  if (freq === "3-4" && level === "confirme") {
     return {
       preset: byId("upperlower"),
-      reason: "Tu peux t'entraîner souvent : 4 séances haut et bas du corps pour plus de volume sur chaque muscle.",
+      reason: "Tu t'entraînes sérieusement depuis des années : 4 séances haut et bas du corps pour plus de volume sur chaque muscle.",
     };
   }
   if (goal === "prise_muscle") {
     return {
-      preset: byId("ppl"),
-      reason: "Tu veux prendre du muscle sur 3 séances : poussée, tirage et jambes, chaque groupe a le temps de récupérer.",
+      preset: byId("haut_bas_corps"),
+      reason: "Tu veux prendre du muscle sur 3 séances : haut du corps, bas du corps et corps entier, chaque grand muscle est travaillé deux fois par semaine.",
     };
   }
   return {
