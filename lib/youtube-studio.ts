@@ -48,6 +48,9 @@ export const YT_STRUCTURES: YtStructure[] = [
   { id: "Y14", name: "Copier ce qui marche ailleurs", steps: ["Ce que font ceux qui progressent", "Ce que tu peux copier dès demain"], bestFor: "Un sujet de méthode et d'organisation." },
   { id: "Y15", name: "Une semaine de prépa", steps: ["La vraie semaine d'Emmanuel", "Chaque scène donne une leçon"], bestFor: "Preuve par l'exécution. Vécu documenté uniquement." },
   { id: "Y16", name: "Classement des conseils des réseaux", steps: ["Les conseils qu'on voit partout", "Notés sur 5 (utile, simple, durable)", "Le meilleur à la fin"], bestFor: "Trier les conseils viraux." },
+  { id: "Y17", name: "Diagnostic : N causes et l'ordre pour agir", steps: ["Le symptôme que le spectateur vit", "N causes annoncées (pas plus)", "Pour chaque cause : comment la vérifier et que faire", "Dans quel ordre agir, sans tout changer"], bestFor: "Un blocage (stagnation, poids qui ne bouge plus) où il faut vérifier avant de corriger." },
+  { id: "Y18", name: "Un calcul, puis la correction", steps: ["Le chiffre que le spectateur croit", "Le calcul à voix haute (« regarde bien ce calcul »)", "Le verdict qui pique", "La correction concrète", "Comment suivre"], bestFor: "Quand un calcul simple montre l'écart entre ce qu'on croit et la réalité." },
+  { id: "Y19", name: "Le plan en étapes, avec plan B", steps: ["Le principe", "Les repères chiffrés", "Les étapes numérotées à faire sur papier", "Le plan B quand la semaine explose", "Récap et devoir"], bestFor: "Un plan à écrire et à appliquer pendant ou juste après la vidéo." },
 ];
 
 export function getYtStructure(id: string | null | undefined): YtStructure | null {
@@ -452,8 +455,8 @@ export interface Chapter {
 }
 
 const ORDINAL = "(?:premi(?:er|ère)|deuxi[èe]me|troisi[èe]me|quatri[èe]me|cinqui[èe]me|sixi[èe]me|septi[èe]me|dernier|dernière)";
-const PART_NOUN = "(?:point|chose|erreur|raison|partie|truc|croyance|mythe|levier|étape)";
-const MARKER_RE = new RegExp(`^(?:maintenant(?:,| que [^,]+,)?\\s*(?:on\\s+)?(?:passons|passe|on passe)\\s+(?:au|à la|à l')\\s*)?${ORDINAL}\\s+${PART_NOUN}\\b`, "i");
+const PART_NOUN = "(?:point|chose|erreur|raison|partie|truc|levier)";
+const MARKER_RE = new RegExp(`^(?:(?:le|la|ça)\\s+)?(?:maintenant(?:,| que [^,]+,)?\\s*(?:on\\s+)?(?:passons|passe|on passe)\\s+(?:au|à la|à l')\\s*)?${ORDINAL}\\s+${PART_NOUN}\\b`, "i");
 const RECAP_RE = /r[ée]capitul/i;
 
 function paragraphs(content: string): string[] {
@@ -602,11 +605,13 @@ export interface ScriptAnalysis {
   checks: ScriptCheck[];
   chapters: Chapter[];
   longestGapSec: number;
+  /** Début (en secondes) du plus long passage sans relance. */
+  longestGapAtSec: number;
 }
 
 const BANNED_OPENINGS = /^(?:salut|bonjour|hello|hey|aujourd'hui|dans cette vidéo|je suis|c'est (?:emmanuel|santamaria)|bienvenue)/i;
-const LOOP_OPEN = /reste (?:bien )?jusqu'au bout|reste bien|je te r[ée]v[èe]le|je te le montre|dans quelques (?:secondes|minutes)|dans (?:vingt|20) secondes|plus tard dans cette vid[ée]o|je t'en dis pas plus|le dernier point|celui que je t'annonce|à la fin de cette vid[ée]o|c'est pas celui que tu crois/i;
-const LOOP_CLOSE = /celui que je t'ai annonc[ée]|que je t'avais annonc[ée]|comme promis|je t'avais dit|celui que je t'ai parl[ée]|le dernier point, celui/i;
+const LOOP_OPEN = /reste (?:bien )?jusqu'(?:au bout|au dernier|à la dernière|au point)|reste bien|je te la montre|je te la donne au point|je te r[ée]v[èe]le|je te le montre|dans quelques (?:secondes|minutes)|dans (?:vingt|20) secondes|plus tard dans cette vid[ée]o|je t'en dis pas plus|le dernier point|celui que je t'annonce|à la fin de cette vid[ée]o|c'est pas celui que tu crois/i;
+const LOOP_CLOSE = /dont je te parlais|(?:celui|celle|point|truc|chose) que je t'ai (?:annonc|promis|parl)[ée]e?|que je t'avais annonc[ée]|comme promis|je t'avais dit|celui que je t'ai parl[ée]|le dernier point, celui/i;
 const RELANCE = /regarde bien|retiens bien|mets pause|note-le|note ça|ça change tout|dernière pièce|nerf de la guerre|tu dois te dire|je m'explique|on change de|maintenant,? (?:passons|on passe)|jusqu'ici on a parl[ée]|avant ça|hyper important|ce passage est important|tu sais ce que je fais/i;
 
 interface Para {
@@ -635,7 +640,7 @@ export function analyzeYoutubeScript(input: { content: string | null | undefined
   const checks: ScriptCheck[] = [];
   const add = (id: string, label: string, ok: boolean, detail: string, weight: number) => checks.push({ id, label, ok, detail, weight });
 
-  if (!words) return { score: 0, words: 0, minutes: 0, checks: [], chapters: [], longestGapSec: 0 };
+  if (!words) return { score: 0, words: 0, minutes: 0, checks: [], chapters: [], longestGapSec: 0, longestGapAtSec: 0 };
 
   const wordsAt = (pct: number) => Math.round(words * pct);
   const textBetween = (fromW: number, toW: number) => paras.filter((p) => p.startWord + p.words > fromW && p.startWord < toW).map((p) => p.text).join("\n\n");
@@ -648,8 +653,8 @@ export function analyzeYoutubeScript(input: { content: string | null | undefined
 
   // 2. Promesse + plan dans les 90 premières secondes
   const early = textBetween(0, Math.round(90 * WORDS_PER_SECOND));
-  add("promise", "Promesse claire (« dans cette vidéo, je te montre... ») dans les 90 premières secondes", /dans cette vid[ée]o/i.test(early), "Dis concrètement ce que la personne repart avec.", 10);
-  add("plan", "Plan annoncé (nombre de parties) dans les 90 premières secondes", /\b(?:deux|trois|quatre|cinq|six|sept|2|3|4|5|6|7)\s+(?:points?|choses?|raisons?|erreurs?|parties|étapes|croyances|leviers|idées)/i.test(early), "Annonce le nombre de parties : on reste quand on sait où on va.", 8);
+  add("promise", "Promesse claire (« dans cette vidéo, je te montre... ») dans les 90 premières secondes", /dans cette vid[ée]o|l'objectif de cette vid[ée]o|voilà ce que tu vas|à la fin,? tu (?:sauras|auras)|je vais te (?:montrer|donner|dire|expliquer)|tu vas (?:comprendre|voir|repartir)/i.test(early), "Dis concrètement ce que la personne repart avec.", 10);
+  add("plan", "Plan annoncé (nombre de parties) dans les 90 premières secondes", /\b(?:deux|trois|quatre|cinq|six|sept|2|3|4|5|6|7)\s+(?:points?|choses?|raisons?|erreurs?|parties|étapes|croyances|leviers|idées|trucs?|fuites|situations)/i.test(early), "Annonce le nombre de parties : on reste quand on sait où on va.", 8);
 
   // 3. Boucle ouverte, refermée
   const openLoop = LOOP_OPEN.test(textBetween(0, wordsAt(0.3)));
@@ -665,29 +670,33 @@ export function analyzeYoutubeScript(input: { content: string | null | undefined
 
   // 5. Relances : pas plus de 3 minutes sans relance
   const markers: number[] = [0];
-  for (const p of paras) if (RELANCE.test(p.text) || MARKER_RE.test(p.text) || LOOP_OPEN.test(p.text) || /petite parenth[èe]se|description/i.test(p.text)) markers.push(p.startWord);
+  for (const p of paras) if (RELANCE.test(p.text) || MARKER_RE.test(p.text) || LOOP_OPEN.test(p.text) || RECAP_RE.test(p.text.slice(0, 120)) || /petite parenth[èe]se|description|si tu ne retiens qu'une chose|ton devoir/i.test(p.text)) markers.push(p.startWord);
   markers.push(words);
   let longest = 0;
-  for (let i = 1; i < markers.length; i++) longest = Math.max(longest, markers[i] - markers[i - 1]);
+  let longestAt = 0;
+  for (let i = 1; i < markers.length; i++) {
+    if (markers[i] - markers[i - 1] > longest) { longest = markers[i] - markers[i - 1]; longestAt = markers[i - 1]; }
+  }
   const longestSec = Math.round(longest / WORDS_PER_SECOND);
   add("relances", "Une relance au moins toutes les 3 minutes", longestSec <= 180, longestSec > 180 ? `Plus longue stretch sans relance : ${fmtTime(longestSec)}. Ajoute un « regarde bien », un « retiens ça » ou une transition qui donne envie.` : "", 14);
-  const benefit = (content.match(/\b(?:ça va te|tu vas pouvoir|tu vas comprendre|c'est ce qui|c'est là que|ça change tout|c'est pour ça que)\b/gi) ?? []).length;
-  add("benefit", "Le bénéfice est rappelé au fil de la vidéo", benefit >= Math.floor(minutes / 3), "Rappelle toutes les 2 à 3 minutes pourquoi continuer à regarder.", 4);
+  const benefit = (content.match(/\b(?:ça va te|tu vas pouvoir|tu vas comprendre|c'est ce qui|c'est là que|ça change tout|c'est pour ça que|ça te permet|ça t'évite|pour que tu|tu repars avec|c'est ce qui te|tu sauras|tu vas voir|c'est exactement ce qui)/gi) ?? []).length;
+  add("benefit", "Le bénéfice est rappelé au fil de la vidéo", benefit >= 2, "Rappelle toutes les 2 à 3 minutes pourquoi continuer à regarder.", 4);
 
   // 6. Récap et fin
-  add("recap", "Récapitulatif (« donc si je devais récapituler »)", /r[ée]capitul/i.test(textBetween(wordsAt(0.7), words)), "Une phrase par partie, puis la phrase règle.", 6);
+  add("recap", "Récapitulatif (« donc si je devais récapituler »)", /r[ée]capitul|si tu ne retiens qu'une chose|si tu dois retenir|en r[ée]sum[ée]/i.test(textBetween(wordsAt(0.7), words)), "Une phrase par partie, puis la phrase règle.", 6);
   const end = textBetween(wordsAt(0.88), words);
   add("end_asks", "2 ou 3 demandes en fin de vidéo (abonnement, guide en description, appel en description)", /abonne/i.test(end) && /description/i.test(end), "Termine par l'abonnement et le renvoi vers la description.", 6);
 
   // 7. Exemples chiffrés
   const digits = (content.match(/\d/g) ?? []).length;
-  add("examples", "Au moins un exemple chiffré vérifiable", digits >= 6, "Un cas type chiffré : calories, séries, pas, grammes. Jamais un résultat inventé.", 4);
+  const numberWords = (content.match(/\b(?:deux|trois|quatre|cinq|six|sept|huit|dix|vingt|cent|mille)\b/gi) ?? []).length;
+  add("examples", "Au moins un exemple chiffré vérifiable", digits >= 6 || numberWords >= 8, "Un cas type chiffré : calories, séries, pas, grammes. Jamais un résultat inventé.", 4);
 
   // 8. Durée
   add("length", "Entre 10 et 14 minutes parlées", minutes >= 9.5 && minutes <= 15, `${minutes} minutes pour ${words} mots (environ ${Math.round(WORDS_PER_SECOND * 60 * 10)} à ${Math.round(WORDS_PER_SECOND * 60 * 14)} mots visés).`, 4);
 
   // 9. Règles de marque
-  const issues = checkVocabulary(content);
+  const issues = checkVocabulary(content).filter((i) => !i.why.startsWith("Interdit (sauf pour la dénoncer)"));
   const brand: string[] = issues.map((i) => i.why);
   if (usesVous(content)) brand.push("Vouvoiement : tutoie partout");
   if (/\[CHAPITRE|\b\d{1,2}:\d{2}\b/.test(content)) brand.push("Chapitre ou timecode écrit dans le texte parlé (le plan de chapitres vit à part)");
@@ -698,7 +707,7 @@ export function analyzeYoutubeScript(input: { content: string | null | undefined
 
   const total = checks.reduce((n, c) => n + c.weight, 0);
   const got = checks.reduce((n, c) => n + (c.ok ? c.weight : 0), 0);
-  return { score: Math.round((got / total) * 100), words, minutes, checks, chapters: extractChapters(content, duration), longestGapSec: longestSec };
+  return { score: Math.round((got / total) * 100), words, minutes, checks, chapters: extractChapters(content, duration), longestGapSec: longestSec, longestGapAtSec: Math.round(longestAt / WORDS_PER_SECOND) };
 }
 
 // ── Clips (reels dérivés d'une vidéo longue) ─────────────────────────────

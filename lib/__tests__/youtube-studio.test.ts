@@ -111,5 +111,5 @@ test("clips : passages courts, 4 titres hook, CTA exact", () => {
 test("plan enregistré : valeurs inconnues écartées", () => {
   const p = cleanVideoPlan({ structure: "Y03", hookType: "ZZ", hookId: "H12", titles: ["a", 3], checklist: { titre_choisi: true, inconnu: true } });
   assert.deepEqual(p, { structure: "Y03", hookId: "H12", titles: ["a"], checklist: { titre_choisi: true } });
-  assert.equal(YT_STRUCTURES.length, 16);
+  assert.equal(YT_STRUCTURES.length, 19);
 });

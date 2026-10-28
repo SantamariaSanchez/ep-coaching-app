@@ -334,7 +334,7 @@ function DescriptionTab({ script, applyCaption }: { script: CoachScript; applyCa
 function ThumbnailsTab({ script, plan, savePlan }: { script: CoachScript; plan: VideoPlan; savePlan: (p: VideoPlan) => void }) {
   const tr = useT();
   const ideas = useMemo(() => thumbnailIdeas({ title: script.title }), [script.title]);
-  const describe = (c: (typeof ideas.concepts)[number]) => `${c.label} : ${c.composition} Émotion : ${c.emotion} Contraste : ${c.contrast}`.slice(0, 400);
+  const describe = (c: (typeof ideas.concepts)[number]) => `${c.label} : ${c.composition} Émotion : ${c.emotion}`;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {ideas.concepts.map((c) => (
