@@ -607,6 +607,7 @@ export default function DashboardNav({
 
   useEffect(() => {
     const wide = window.matchMedia("(min-width: 1024px)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsWide(wide.matches);
     const hw = (e: MediaQueryListEvent) => setIsWide(e.matches);
     wide.addEventListener("change", hw);
@@ -620,7 +621,6 @@ export default function DashboardNav({
     // d'hydratation, donc ça ne peut être lu qu'ici, après montage. La valeur
     // initiale ET les changements ultérieurs passent par le même setState,
     // c'est le seul endroit qui synchronise cet état avec l'API navigateur.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDesktop(mq.matches);
     const h = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener("change", h);
