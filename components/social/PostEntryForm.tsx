@@ -203,7 +203,7 @@ export default function PostEntryForm({
 
       <div style={{ marginTop: 10 }}>
         <label style={lbl}>{tr("Sujet ou accroche")}</label>
-        <input style={input} value={v.caption} onChange={(e) => set("caption", e.target.value)} placeholder={tr("Ex. 3 erreurs qui bloquent ta sèche")} aria-label={tr("Sujet")} />
+        <input style={input} value={v.caption} onChange={(e) => set("caption", e.target.value)} placeholder={tr("Ex. 3 erreurs qui bloquent ta perte de gras")} aria-label={tr("Sujet")} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginTop: 10 }}>
         <div>

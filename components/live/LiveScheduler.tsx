@@ -283,7 +283,7 @@ export default function LiveScheduler({
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={tr("Ex : point sur la phase de sèche")} aria-label={tr("Ex : point sur la phase de sèche")}
+              placeholder={tr("Ex : point sur la phase de perte de gras")} aria-label={tr("Ex : point sur la phase de perte de gras")}
               className={inputCls}
             />
           </div>

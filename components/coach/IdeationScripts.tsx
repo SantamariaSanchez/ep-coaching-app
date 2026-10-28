@@ -1792,7 +1792,7 @@ function FormatScriptGenerator({ context }: { context: string | null }) {
       <input
         value={sujet}
         onChange={(e) => setSujet(e.target.value)}
-        placeholder={tr("Sujet (ex : les compléments qui servent vraiment en sèche)")}
+        placeholder={tr("Sujet (ex : les compléments qui servent vraiment en déficit)")}
         aria-label={tr("Sujet du script")}
         style={{ ...inputStyle, marginTop: 10 }}
       />

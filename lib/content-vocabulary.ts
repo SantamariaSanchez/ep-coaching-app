@@ -140,8 +140,7 @@ export const DICTIONARY_ENDINGS = [
  * Ndiaye, Yomi Denzel, 0RIR, script validé par Emmanuel). Court et utile :
  * pas une grille à cocher, une façon de parler.
  */
-export const SCRIPT_VOICE_NOTES = [
-  "FAÇON D'ÉCRIRE UN SCRIPT, TELLE QU'ON LA VOIT DANS LES VRAIES RÉFÉRENCES :",
+export const SCRIPT_VOICE_POINTS = [
   "- Ouverture : une question qui revient (« C'est une question qui revient extrêmement souvent »), un faux problème (« La majorité des gens pensent... C'est pas du tout le cas »), un paradoxe ou une règle courte. Jamais une scène inventée (« Il y a deux mois, t'étais à fond... »), jamais « aujourd'hui on va parler de ».",
   "- Ensuite : une phrase de présentation, la promesse (« je vais t'expliquer pourquoi »), une nuance honnête (« c'est ma vision et c'est pas la vision »), le lien du guide en description.",
   "- Les parties s'annoncent à l'oral : « Premier point, ... », « Maintenant, passons au deuxième point », « Dernier point et pas des moindres ». Aucun titre de partie écrit, AUCUN chapitre, AUCUN timecode.",
@@ -149,6 +148,11 @@ export const SCRIPT_VOICE_NOTES = [
   "- Phrases courtes qui posent (« Non. », « C'est pas du tout le cas. »), d'autres plus longues qui expliquent. Une relance toutes les deux ou trois minutes, pas à chaque paragraphe.",
   "- Fin : « Donc si je devais récapituler cette vidéo... », puis deux ou trois demandes simples (s'abonner, le guide en description, l'appel en description).",
   "- Reel : la cible et l'erreur dans la première phrase, un format net (vrai ou faux, 3 erreurs, 4 étapes numérotées, un calcul « prends X, multiplie par Y »), une punchline, un seul mot ou numéro à commenter.",
+];
+
+export const SCRIPT_VOICE_NOTES = [
+  "FAÇON D'ÉCRIRE UN SCRIPT, TELLE QU'ON LA VOIT DANS LES VRAIES RÉFÉRENCES :",
+  ...SCRIPT_VOICE_POINTS,
 ].join("\n");
 
 /**

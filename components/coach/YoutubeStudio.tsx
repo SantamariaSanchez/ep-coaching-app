@@ -12,6 +12,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { safeAction } from "@/lib/safe-action";
 import { saveVideoPlan, updateScript } from "@/app/dashboard/coach/studio/actions";
 import type { CoachScript } from "@/lib/coach-ideation";
+import { SCRIPT_VOICE_POINTS } from "@/lib/content-vocabulary";
 import {
   CHECKLIST_GROUPS, HOOK_TYPES, PUBLISH_CHECKLIST, TITLE_ANGLES, TITLE_MAX_CHARS, YT_STRUCTURES,
   analyzeYoutubeScript, autoChecklist, buildVideoBlueprint, checkDescription, cleanVideoPlan, deriveClips,
@@ -200,6 +201,12 @@ function StructureTab({ script, plan, analysis, savePlan }: { script: CoachScrip
         </select>
       </div>
 
+      <details>
+        <summary style={{ ...label, cursor: "pointer" }}>{tr("Comment ça se dit dans les vraies références")}</summary>
+        <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 11.5, color: ink(0.65), display: "flex", flexDirection: "column", gap: 3 }}>
+          {SCRIPT_VOICE_POINTS.map((p) => <li key={p}>{p.replace(/^- /, "")}</li>)}
+        </ul>
+      </details>
       <details>
         <summary style={{ ...label, cursor: "pointer" }}>{tr("Chronologie type")} {fmtTime(blueprint.durationSec)}</summary>
         <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 11.5, color: ink(0.65), display: "flex", flexDirection: "column", gap: 3 }}>

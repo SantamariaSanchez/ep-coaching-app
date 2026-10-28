@@ -103,7 +103,7 @@ export function generateClientSuggestions(
     s.push({
       id: "no-refeed",
       severity: "info",
-      text: "Zéro écart déclaré alors que l'objectif est une sèche, envisage un repas ou une journée de refeed planifiée pour limiter le risque de craquage incontrôlé.",
+      text: "Zéro écart déclaré alors que l'objectif est une perte de gras, envisage un repas ou une journée de refeed planifiée pour limiter le risque de craquage incontrôlé.",
       tab: "nutrition",
     });
   }
@@ -285,7 +285,7 @@ export function generateClientSuggestions(
       s.push({
         id: "weight-trend-mismatch-gain",
         severity: "warning",
-        text: `Objectif de prise de masse mais le poids a baissé de ${Math.abs(deltaKg).toFixed(1)}kg sur les pesées récentes, les calories sont probablement trop basses par rapport à l'objectif affiché.`,
+        text: `Objectif de prise de muscle mais le poids a baissé de ${Math.abs(deltaKg).toFixed(1)}kg sur les pesées récentes, les calories sont probablement trop basses par rapport à l'objectif affiché.`,
         tab: "nutrition",
       });
     } else if (wantsLoss && deltaKg > 0.5) {

@@ -98,7 +98,7 @@ export async function SleepUnderstand() {
   const t = await getT();
   const items = [
     ["Pourquoi c'est la base", "C'est pendant le sommeil profond que ton corps répare les muscles et libère l'hormone de croissance. Mal dormir, c'est perdre une partie de ta séance."],
-    ["Sommeil et faim", "Une nuit courte augmente la faim et l'envie de sucre le lendemain. Si tu sèches, dormir est aussi important que compter tes calories."],
+    ["Sommeil et faim", "Une nuit courte augmente la faim et l'envie de sucre le lendemain. Si tu es en déficit, dormir est aussi important que compter tes calories."],
     ["La règle des horaires", "Se coucher et se lever à la même heure, même le week-end, règle ton horloge interne. Tu t'endors plus vite et tu te réveilles moins fatigué."],
     ["Les 3 ennemis du soir", "La caféine après 14 h, les écrans lumineux dans le lit et un gros repas juste avant de dormir. Garde 2 à 3 heures entre ton dernier repas et le coucher."],
     ["Chambre idéale", "Noire, silencieuse et fraîche (autour de 18 °C). Un bruit de fond régulier aide si tu as un environnement bruyant."],
