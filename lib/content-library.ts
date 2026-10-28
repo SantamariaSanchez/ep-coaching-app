@@ -96,13 +96,37 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     title: "Titre + miniature YouTube (SEO et CTR)",
     category: "YouTube",
     prompt:
-      "Pour cette vidéo YouTube : [RÉSUMÉ DE LA VIDÉO], propose-moi 8 titres différents (moins de 60 caractères chacun, sans clickbait mensonger, une vraie promesse tenue dans la vidéo) et pour chacun une idée de texte de miniature en 2-4 mots maximum qui crée une tension visuelle avec le titre plutôt que de le répéter. Varie les angles : chiffre, question, contradiction, promesse de résultat, urgence.",
+      "Pour cette vidéo YouTube : [RÉSUMÉ DE LA VIDÉO, avec la douleur du spectateur et ce qu'il repart avec]. Propose-moi 8 titres, 2 par angle : curiosité (un manque à combler), résultat (ce qu'il repart avec), erreur (ce qu'il faut arrêter), contre-pied (on renverse une idée reçue). Chaque titre : moins de 60 caractères, une vraie phrase ou une vraie question (jamais un fragment coupé par deux-points), des mots simples du quotidien, un élément concret (chiffre ou objet), une promesse tenue dans la vidéo, aucun mot d'appât ni tiret cadratin. Note chacun sur 100 (longueur, phrase, tu, contraste, concret, mots simples, aucun appât) et garde les 3 meilleurs. Ensuite, pour le meilleur, deux miniatures A et B qui ne diffèrent que d'une variable : composition, émotion du visage, objet unique, contraste, et un texte facultatif de 2 à 4 mots qui crée une tension avec le titre au lieu de le répéter. Aucun logo, aucun chiffre qui ne soit pas dans la vidéo.",
   },
   {
     title: "Plan de vidéo YouTube longue (8-15 min)",
     category: "YouTube",
     prompt:
-      "Écris-moi un plan détaillé (pas le script mot à mot) d'une vidéo YouTube de 8 à 15 minutes sur : [SUJET]. Structure : accroche (20-30s, ce que la vidéo va vraiment apporter, sans sur-promettre), contexte/problème (1-2 min), 3 à 5 parties principales avec pour chacune le point clé + un exemple concret + une transition, un rappel du bénéfice toutes les 2-3 minutes pour garder l'attention, récap final (« donc si je devais récapituler ») + appel à l'action (« le lien est dans la description »). Les parties s'annoncent à l'oral (« premier point », « on passe au deuxième »), JAMAIS de chapitres ni de timecodes. Public : pratiquants qui veulent des réponses fiables, pas du contenu marketing creux.",
+      "Écris-moi le plan détaillé (pas le script mot à mot) d'une vidéo YouTube de 10 à 14 minutes sur : [SUJET]. Chronologie : hook de 0 à 30 secondes (une douleur ou une question avec les mots du spectateur, la promesse du titre tenue dans les 10 premières secondes), présentation et promesse (ce qu'il repart avec, le nombre de parties, la ressource gratuite en description, une boucle ouverte : le point que tu révèles à la fin), 3 à 5 parties annoncées à l'oral avec pour chacune le problème, ce qui se passe vraiment, que faire, un exemple chiffré vérifiable et une transition qui donne envie de la suite, une relance toutes les 2 à 3 minutes (« regarde bien ce calcul », « retiens bien ça », « mets pause et fais-le »), un rappel de la description vers le milieu juste après un moment de forte valeur, la boucle refermée sur le dernier point, un récap (« donc si je devais récapituler »), puis 2 ou 3 demandes de fin (s'abonner, le guide gratuit et l'appel en description). Termine par un plan de chapitres horodatés pour le montage (jamais écrits dans le texte parlé). Public : pratiquants qui veulent des réponses fiables, pas du contenu marketing creux.",
+  },
+  {
+    title: "3 hooks de types différents pour une vidéo YouTube",
+    category: "YouTube",
+    prompt:
+      "Pour cette vidéo YouTube : [SUJET ET DOULEUR DU SPECTATEUR]. Écris 3 hooks parlés de 30 secondes maximum, de 3 types différents parmi : faux problème (« tu penses que ton problème, c'est X, en réalité c'est Y »), paradoxe (« tu peux X et ne jamais Y »), vérité qui dérange, mythe, ciblage (« si tu X mais que Y, t'es sur la bonne vidéo »), question directe, mise en garde, chiffre fermé (« il y a que trois raisons, pas dix »), comparaison visuelle, prédiction et choix, boucle ouverte. Chaque hook nomme la douleur la plus précise en moins de 2 secondes avec les mots du spectateur, sans « aujourd'hui on va parler de », sans « salut c'est », sans chiffre de résultat inventé. Indique le type de chacun, garde le plus fort et dis pourquoi.",
+  },
+  {
+    title: "Audit de rétention d'un script YouTube",
+    category: "YouTube",
+    prompt:
+      "Voici le script d'une vidéo YouTube : [SCRIPT]. Audite sa rétention comme un éditeur exigeant : le hook tient-il en 30 secondes, la promesse et le plan sont-ils clairs dans les 90 premières secondes, y a-t-il une boucle ouverte refermée avant la fin, une relance au moins toutes les 3 minutes (repère le plus long passage sans relance), la ressource gratuite annoncée tôt puis rappelée vers le milieu, un récap, 2 ou 3 demandes de fin. Cite les passages exacts qui perdent le spectateur et propose pour chacun une réécriture avec les mots du script, sans inventer de chiffre ni d'étude. Rends ensuite le plan de chapitres horodatés (estimés au nombre de mots, 2,3 mots par seconde).",
+  },
+  {
+    title: "Clips pour reels tirés d'une vidéo longue",
+    category: "Repurposing",
+    prompt:
+      "Voici le script d'une de mes vidéos YouTube : [SCRIPT]. Repère 4 à 6 passages de 30 à 60 secondes qui tiennent seuls, avec chacun une idée complète. Pour chaque clip : le passage exact, 4 titres hook de 3 à 7 mots sans aucune ponctuation faits uniquement avec les mots du passage (une mécanique différente chacun), et la description : ligne 1 « Abonne toi », 2 ou 3 lignes courtes avec les mots du passage, dernière ligne exactement « Commente « VIDEO » pour recevoir la vidéo complète ». Ne cite jamais YouTube dans cet appel à commenter.",
+  },
+  {
+    title: "Description YouTube au modèle d'Emmanuel",
+    category: "Description",
+    prompt:
+      "Écris la description de cette vidéo YouTube : [SCRIPT OU RÉSUMÉ] avec le guide [SLUG DU GUIDE]. Ordre exact : 1) une phrase qui donne envie puis le lien nu du guide (https://ep-coaching.vercel.app/ressources/[slug]) ; 2) un paragraphe « Tu penses que ton problème, c'est X. En réalité, il est en amont : Y. » puis « Dans cette vidéo, je te montre... » ; 3) une phrase règle qui claque ; 4) une question simple pour les commentaires ; 5) « Abonne-toi si tu veux plus de vidéos sur [thèmes]. Bon visionnage ! » ; 6) les liens nus un par ligne avec un libellé (appli avec essai gratuit, réserver un appel, site, Instagram) ; 7) « qui je suis » en 2 ou 3 phrases vraies ; 8) 3 à 5 hashtags. Pas de chapitre dans la description sauf demande, aucun chiffre de résultat inventé, aucune étude citée, pas de tiret cadratin. Les titres alternatifs et l'idée de miniature restent en note interne, jamais dans la description.",
   },
   {
     title: "Script vidéo YouTube \"vlog/dans les coulisses\"",
@@ -344,7 +368,7 @@ export const TECHNICAL_SHEETS: TechnicalSheet[] = [
       "Accroche de 20-30s qui annonce clairement ce que la vidéo va apporter, sans sur-promettre ce qui n'est pas dedans.",
       "Une transition visuelle ou sonore claire à chaque changement de partie, pour que le spectateur sente la progression.",
       "Réinjecter un rappel du bénéfice toutes les 2-3 minutes (pourquoi continuer à regarder), surtout après une partie plus technique.",
-      "Utiliser des chapitres YouTube correspondant exactement à la structure du script, améliore la rétention ET le référencement.",
+      "Prévoir des chapitres horodatés qui suivent exactement les parties du script : ils guident le montage (une transition visuelle à chaque chapitre) et, si tu le décides, la description. Jamais écrits dans le texte parlé.",
       "Garder un rythme de coupe plus posé que le format court (1 plan toutes les 6-10s en moyenne), sauf sur les moments de démonstration.",
     ],
   },

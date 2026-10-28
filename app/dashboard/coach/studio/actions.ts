@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
 import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus, isMissingColumnError } from "@/lib/coach-ideation";
 import { isContentFormatId } from "@/lib/content-formats";
+import { cleanVideoPlan, type VideoPlan } from "@/lib/youtube-studio";
 import { safeExternalUrl } from "@/lib/sanitize";
 import { getAllGuidesWithContent, type GuideMagnet } from "@/lib/lead-magnets";
 
@@ -403,6 +404,25 @@ export async function updateScript(
 
   revalidatePath("/dashboard/coach/studio");
   return { success: true };
+}
+
+/** Enregistre le plan de la vidéo YouTube (structure, hook, titres, miniatures, checklist). */
+export async function saveVideoPlan(id: string, plan: unknown): Promise<{ error?: string; success?: boolean; plan?: VideoPlan }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+  const clean = cleanVideoPlan(plan);
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("coach_scripts")
+    .update({ video_plan: clean, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("coach_id", guard.userId);
+  if (error && isMissingColumnError(error)) {
+    return { error: "Le plan de vidéo arrive bientôt : la mise à jour de la base n'est pas encore faite." };
+  }
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true, plan: clean };
 }
 
 const SCRIPT_DELETION_REASONS = ["info_fausse", "sujet_nul", "autre"] as const;

@@ -148,6 +148,16 @@ const COACH: PromptGroup[] = [
         prompt: "Lis mon positionnement dans EP Coaching (outil mon_positionnement). Écris-moi un script de reel au format tier list (autres formats possibles : clone à deux personnes, B-roll avec voix off, yap, question/réponse, mythe vs réalité, cas client vrai, storytelling, carrousel...), dans la forme exacte que décrit l'outil ajouter_script pour ce format. Montre-le-moi, puis quand je valide ajoute-le dans mon Studio avec ajouter_script et le bon format_contenu. Sujet : ",
       },
       {
+        title: "Préparer une vidéo YouTube de A à Z",
+        hint: "Titres notés, structure, miniatures A/B, clips pour les reels.",
+        prompt: "Prépare ma prochaine vidéo YouTube avec EP Coaching. D'abord lis mon positionnement (outil mon_positionnement) et mes scripts (outil mes_scripts) pour ne pas répéter une structure récente. Sujet : . Donne-moi 3 hooks de 3 types différents, puis les titres avec l'outil titres_youtube, la chronologie avec structure_video_youtube et les miniatures A et B avec miniatures_youtube. Montre-moi tout, et quand je valide, écris le script mot pour mot avec ajouter_script (plateforme youtube) puis enregistre le plan avec plan_video_youtube.",
+      },
+      {
+        title: "Améliorer un script YouTube existant",
+        hint: "Audit de rétention, puis réécriture des passages faibles.",
+        prompt: "Analyse mon script YouTube avec l'outil analyser_script_youtube (script : ). Corrige ce qui est marqué À CORRIGER : hook, promesse, boucle ouverte, relances, rappel de la description, récap. Montre-moi les passages réécrits avec les mots du script, sans inventer de chiffre ni d'étude. Quand je valide, mets le script à jour avec modifier_script (l'ancien texte est gardé automatiquement), puis donne-moi les clips avec clips_depuis_video.",
+      },
+      {
         title: "Transformer une idée en script",
         hint: "Colle ton idée à la fin.",
         prompt: "Lis mon positionnement dans EP Coaching, puis transforme cette idée en script de reel de 40 secondes (accroche, développement, appel à l'action) et ajoute-le dans mon Studio : ",

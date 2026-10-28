@@ -11,10 +11,14 @@ export interface RotationScript {
   content_format?: string | null;
   pillar?: string | null;
   created_at: string;
+  /** Structure Y01 à Y16 du plan vidéo YouTube (coach_scripts.video_plan). */
+  structure?: string | null;
+  /** Type de hook (FP, PX, VD...) du plan vidéo YouTube. */
+  hook_type?: string | null;
 }
 
 export interface RotationCheck {
-  id: "reel-formats" | "youtube-formats" | "reel-ego";
+  id: "reel-formats" | "youtube-formats" | "reel-ego" | "youtube-structure" | "youtube-hooks";
   ok: boolean;
   text: string;
 }
@@ -23,6 +27,8 @@ const REEL_BATCH = 5;
 const MIN_REEL_FORMATS = 3;
 const YOUTUBE_STREAK = 3;
 const MAX_EGO_PER_BATCH = 1;
+const YOUTUBE_STRUCTURE_WINDOW = 10;
+const YOUTUBE_HOOK_BATCH = 5;
 
 function latest(scripts: readonly RotationScript[], platform: string, n: number): RotationScript[] {
   return scripts
@@ -74,6 +80,33 @@ export function checkRotation(scripts: readonly RotationScript[]): RotationCheck
       text: same
         ? `Tes ${YOUTUBE_STREAK} dernières vidéos YouTube ont le même format : change de format pour la prochaine.`
         : "Tes dernières vidéos YouTube alternent les formats.",
+    });
+  }
+
+  // Structure (Y01 à Y16) : jamais la même deux fois sur les 10 dernières
+  // vidéos ; type de hook : jamais deux fois le même sur une fournée de 5.
+  const structured = latest(scripts, "youtube", YOUTUBE_STRUCTURE_WINDOW).map((s) => s.structure).filter((x): x is string => !!x);
+  if (structured.length >= 2) {
+    const repeated = structured.filter((x, i) => structured.indexOf(x) !== i);
+    checks.push({
+      id: "youtube-structure",
+      ok: repeated.length === 0,
+      text:
+        repeated.length === 0
+          ? "Tes dernières vidéos YouTube changent de structure."
+          : `La structure ${Array.from(new Set(repeated)).join(", ")} revient sur tes ${YOUTUBE_STRUCTURE_WINDOW} dernières vidéos : change de structure.`,
+    });
+  }
+  const hooks = latest(scripts, "youtube", YOUTUBE_HOOK_BATCH).map((s) => s.hook_type).filter((x): x is string => !!x);
+  if (hooks.length >= 2) {
+    const repeated = hooks.filter((x, i) => hooks.indexOf(x) !== i);
+    checks.push({
+      id: "youtube-hooks",
+      ok: repeated.length === 0,
+      text:
+        repeated.length === 0
+          ? "Les hooks de tes dernières vidéos YouTube sont de types différents."
+          : `Le hook ${Array.from(new Set(repeated)).join(", ")} revient sur tes ${YOUTUBE_HOOK_BATCH} dernières vidéos : change de type de hook.`,
     });
   }
 

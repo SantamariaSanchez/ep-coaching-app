@@ -15,6 +15,8 @@ import Link from "next/link";
 import { withAlpha } from "@/lib/theme-color";
 import { safeAction } from "@/lib/safe-action";
 import { checkRotation } from "@/lib/studio-rotation";
+import { cleanVideoPlan } from "@/lib/youtube-studio";
+import YoutubeStudio from "@/components/coach/YoutubeStudio";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript, prompterText } from "@/lib/content-formats";
 import { ContentFormatBadge, ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
 
@@ -381,7 +383,13 @@ function MyScripts({
   // migration pour une v1 de ce résumé.
   // Variété du Studio (règle anti-stagnation, lib/studio-rotation.ts) : pas
   // toujours le même format ni le même pilier.
-  const rotation = useMemo(() => checkRotation(scripts), [scripts]);
+  const rotation = useMemo(
+    () => checkRotation(scripts.map((s) => {
+      const plan = s.platform === "youtube" ? cleanVideoPlan(s.video_plan) : null;
+      return { ...s, structure: plan?.structure ?? null, hook_type: plan?.hookType ?? null };
+    })),
+    [scripts],
+  );
   const [weeklyPerfNow] = useState(() => Date.now());
   const weeklyPerf = useMemo(() => {
     const now = weeklyPerfNow;
@@ -1530,6 +1538,13 @@ function MyScripts({
                 >
                   {tr("+ Ajouter une description")}{" "}{platformInfo?.label ?? ""}
                 </button>
+              )}
+
+              {script.platform === "youtube" && (
+                <YoutubeStudio
+                  script={script}
+                  onPatch={(patch) => setScripts((prev) => prev.map((x) => (x.id === script.id ? { ...x, ...patch } : x)))}
+                />
               )}
 
               {/* Tracking de performance (2026-09-10) — seulement une fois

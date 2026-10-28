@@ -110,6 +110,10 @@ export interface CoachScript {
   // et de `format` (court/long). Absent tant que la migration
   // 20261021_coach_scripts_content_format n'est pas passée : face caméra.
   content_format?: string | null;
+  // Plan de la vidéo YouTube (2026-10-28, lib/youtube-studio.ts) : structure,
+  // type de hook, titres candidats, miniatures A/B, checklist. Absent tant que
+  // la migration 20261028_coach_scripts_video_plan n'est pas passée.
+  video_plan?: unknown;
 }
 
 /** Colonne absente (migration pas encore passée) : on relit sans elle. */
@@ -123,7 +127,8 @@ export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
     const admin = createAdminClient();
     const base = "id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status, views, likes, comments_count, shares, saves";
     const query = (cols: string) => admin.from("coach_scripts").select(cols).eq("coach_id", coachId).order("updated_at", { ascending: false });
-    let { data, error } = await query(`${base}, content_format`);
+    let { data, error } = await query(`${base}, content_format, video_plan`);
+    if (isMissingColumnError(error)) ({ data, error } = await query(`${base}, content_format`));
     if (isMissingColumnError(error)) ({ data, error } = await query(base));
     return (data as unknown as CoachScript[]) ?? [];
   } catch {

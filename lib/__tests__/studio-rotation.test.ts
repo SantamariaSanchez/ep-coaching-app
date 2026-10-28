@@ -45,3 +45,30 @@ test("les textes n'ont pas de tiret cadratin", () => {
   const scripts = [reel(1, "face_cam"), reel(2, "face_cam"), reel(3, "face_cam"), reel(4, "face_cam"), reel(5, "face_cam")];
   for (const c of checkRotation(scripts)) assert.doesNotMatch(c.text, /—/);
 });
+
+function video(i: number, structure: string | null, hookType: string | null): RotationScript {
+  return { platform: "youtube", structure, hook_type: hookType, created_at: `2026-10-${String(10 + i).padStart(2, "0")}T10:00:00Z` };
+}
+
+test("YouTube : une structure qui revient sur les 10 dernières vidéos est signalée", () => {
+  const c = checkRotation([video(1, "Y01", "FP"), video(2, "Y03", "PX"), video(3, "Y01", "VD")]);
+  const s = c.find((x) => x.id === "youtube-structure")!;
+  assert.equal(s.ok, false);
+  assert.match(s.text, /Y01/);
+});
+
+test("YouTube : structures et hooks variés, aucune alerte", () => {
+  const c = checkRotation([video(1, "Y01", "FP"), video(2, "Y03", "PX"), video(3, "Y06", "VD")]);
+  assert.equal(c.find((x) => x.id === "youtube-structure")!.ok, true);
+  assert.equal(c.find((x) => x.id === "youtube-hooks")!.ok, true);
+});
+
+test("YouTube : un hook du même type deux fois dans la fournée est signalé", () => {
+  const c = checkRotation([video(1, "Y01", "FP"), video(2, "Y03", "FP")]);
+  assert.equal(c.find((x) => x.id === "youtube-hooks")!.ok, false);
+});
+
+test("YouTube : sans plan vidéo enregistré, rien à contrôler", () => {
+  const c = checkRotation([video(1, null, null), video(2, null, null)]);
+  assert.equal(c.find((x) => x.id === "youtube-structure"), undefined);
+});

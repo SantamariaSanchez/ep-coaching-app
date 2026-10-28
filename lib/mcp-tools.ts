@@ -13,6 +13,7 @@ import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioni
 import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
 import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
 import { isMissingColumnError } from "@/lib/coach-ideation";
+import { YOUTUBE_TOOLS, youtubeToolsForRole, callYoutubeTool } from "@/lib/mcp-tools-youtube";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -155,12 +156,16 @@ export function toolsForRole(role: Role) {
   return [
     ...EXTRA_TOOLS.filter((t) => t.roles.includes(role)).map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema })),
     ...dailyToolsForRole(role),
+    ...youtubeToolsForRole(role),
   ];
 }
 
 export async function callExtraTool(ownerId: string, role: Role, name: string, args: Record<string, unknown>) {
   const tool = EXTRA_TOOLS.find((t) => t.name === name);
-  if (!tool) return DAILY_TOOLS.some((t) => t.name === name) ? callDailyTool(ownerId, role, name, args) : null;
+  if (!tool) {
+    if (YOUTUBE_TOOLS.some((t) => t.name === name)) return callYoutubeTool(ownerId, role, name, args);
+    return DAILY_TOOLS.some((t) => t.name === name) ? callDailyTool(ownerId, role, name, args) : null;
+  }
   if (!tool.roles.includes(role)) return text("Cet outil est réservé aux coachs.");
   const admin = createAdminClient();
   const today = todayInParis();

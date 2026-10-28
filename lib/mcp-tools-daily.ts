@@ -378,6 +378,15 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
         patch.content_format = args.format_contenu;
       }
       if (Object.keys(patch).length === 1) return text("Aucun champ à modifier.");
+      // Sauvegarde l'ancien texte avant de le remplacer (colonne previous_version),
+      // pour pouvoir revenir en arrière. Le plus ancien état reste dans `earlier_version`.
+      if (patch.title !== undefined || patch.hook !== undefined || patch.content !== undefined || patch.cta !== undefined || patch.instagram_caption !== undefined) {
+        const { data: before } = await admin.from("coach_scripts").select("title, hook, content, cta, pillar, source_reference, instagram_caption, previous_version").eq("id", script.id).eq("coach_id", ownerId).maybeSingle();
+        if (before) {
+          const { previous_version: older, ...current } = before as Record<string, unknown>;
+          await admin.from("coach_scripts").update({ previous_version: { ...current, raison: "Modification via Claude", saved_at: new Date().toISOString(), ...(older ? { earlier_version: older } : {}) } }).eq("id", script.id).eq("coach_id", ownerId);
+        }
+      }
       const { error } = await admin.from("coach_scripts").update(patch).eq("id", script.id).eq("coach_id", ownerId);
       if (error && patch.content_format && isMissingColumnError(error)) return text("Les formats de contenu ne sont pas encore activés dans la base EP Coaching. Réessaie sans format_contenu.");
       if (error) return text("Modification impossible, réessaie.");
