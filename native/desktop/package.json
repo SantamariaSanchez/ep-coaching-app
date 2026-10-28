@@ -1,0 +1,24 @@
+{
+  "name": "ep-coaching-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "EP Coaching pour Windows et Mac : une fenêtre qui ouvre l'appli en ligne",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.epcoaching.desktop",
+    "productName": "EP Coaching",
+    "files": ["main.js", "preload.js"],
+    "protocols": [{ "name": "EP Coaching", "schemes": ["epcoaching"] }],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg", "category": "public.app-category.healthcare-fitness" }
+  }
+}
