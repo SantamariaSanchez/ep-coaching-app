@@ -57,6 +57,11 @@ import CoachClientNutritionTabs from "./CoachClientNutritionTabs";
 import ClientIntakeForm from "./ClientIntakeForm";
 import ClientPeriodTracking from "./ClientPeriodTracking";
 import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
+import CoachAdjustmentsPanel from "./CoachAdjustmentsPanel";
+import { computeAdjustments } from "@/lib/coaching-adjustments";
+import { ageFromDateOfBirth } from "@/lib/plan-generator";
+import type { TrainingLevel } from "@/lib/coaching-knowledge";
+import { todayInParis } from "@/lib/dates";
 import CoachingPhasePanel from "./CoachingPhasePanel";
 import EngagementPanel from "./EngagementPanel";
 import type { EngagementRow } from "@/lib/engagement";
@@ -250,6 +255,7 @@ export default function ClientProfileTabs({
   deleteDietPlan,
   intake,
   eatingRelation = null,
+  experienceLevel = "intermediaire",
   saveClientIntake,
   sendIntakeReminder,
   stepGoal,
@@ -325,6 +331,8 @@ export default function ClientProfileTabs({
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   intake: ClientIntake | null;
   eatingRelation?: EatingRelation | null;
+  /** Niveau d'entraînement du client (quiz d'onboarding). */
+  experienceLevel?: TrainingLevel;
   saveClientIntake: (clientId: string, data: ClientIntakeInput) => Promise<{ error?: string }>;
   sendIntakeReminder: (clientId: string) => Promise<{ error?: string }>;
   stepGoal: number;
@@ -445,6 +453,26 @@ export default function ClientProfileTabs({
     return fatigue ? [...base, fatigue] : base;
   }, [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, logbookSessions, eatingRelation]);
 
+  // Ajustements (calories, décharge, volume, exercices) : règles du Mastermind
+  // sur les bilans et les séances déjà chargés, voir lib/coaching-adjustments.ts.
+  const adjustments = useMemo(
+    () =>
+      computeAdjustments({
+        today: todayInParis(),
+        phase: nutritionProfile?.phase ?? null,
+        level: experienceLevel,
+        eatingRelation,
+        age: nutritionProfile?.age ?? (intake?.date_of_birth ? ageFromDateOfBirth(intake.date_of_birth) : null),
+        target:
+          nutritionProfile?.calories_target != null && nutritionProfile.proteins_target != null && nutritionProfile.carbs_target != null && nutritionProfile.fats_target != null
+            ? { calories: nutritionProfile.calories_target, proteins: nutritionProfile.proteins_target, carbs: nutritionProfile.carbs_target, fats: nutritionProfile.fats_target }
+            : null,
+        logs: recentDailyLogs,
+        sessions: logbookSessions,
+      }),
+    [nutritionProfile, experienceLevel, eatingRelation, intake?.date_of_birth, recentDailyLogs, logbookSessions]
+  );
+
   // Regroupe les suggestions par onglet concerné — affiché en pastille sur
   // le bouton pour que la fiche client se répercute directement sur la
   // navigation au lieu de rester enfermée dans le panneau "Profil" que rien
@@ -555,6 +583,12 @@ export default function ClientProfileTabs({
               bookingUrl={engagementBookingUrl}
             />
           )}
+
+          <CoachAdjustmentsPanel
+            clientId={client.id}
+            suggestions={adjustments}
+            onOpenTab={(tab) => setActiveTab(tab)}
+          />
 
           <ClientSuggestionsPanel suggestions={suggestions} />
 

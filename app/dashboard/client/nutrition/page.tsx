@@ -22,6 +22,7 @@ import { getTrainingDays } from "@/utils/training-days";
 import { mealTimesForDate } from "@/lib/meal-times";
 import { ChevronDown } from "lucide-react";
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
+import ClientNudge from "@/components/ui/ClientNudge";
 import NutritionForm from "@/components/ui/NutritionForm";
 import OwnDietPlansSection from "@/components/ui/OwnDietPlansSection";
 import SeasonModeToggle from "@/components/ui/SeasonModeToggle";
@@ -114,6 +115,7 @@ export default async function ClientNutritionPage() {
 
     return (
       <div className="pb-24 md:pb-8 page-transition">
+        <ClientNudge userId={user.id} />
         {!nutritionProfile && (
           <div className="px-4 pt-5 ep-page-medium">
             <p className="ep-section-title" style={{ marginBottom: 2 }}>{t("Nutrition")}</p>
@@ -214,6 +216,7 @@ export default async function ClientNutritionPage() {
 
   return (
     <div className="pb-24 md:pb-8">
+      <ClientNudge userId={user.id} />
       <ClientNutritionView
         today={today}
         nutritionProfile={nutritionProfile}

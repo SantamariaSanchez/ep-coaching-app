@@ -58,6 +58,8 @@ import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhas
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import ClientSetupCard from "@/components/coach/ClientSetupCard";
 import { loadPerformance } from "@/lib/performance-server";
+import { getMemberPreferences } from "@/utils/member-preferences";
+import { levelFromExperience } from "@/lib/plan-generator";
 import { Eye, FileText, LayoutTemplate } from "lucide-react";
 import BackButton from "@/components/ui/BackButton";
 
@@ -137,6 +139,7 @@ export default async function ClientDetailPage({
     performance,
     roadmapRow,
     eatingRelation,
+    memberPreferences,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -181,6 +184,7 @@ export default async function ClientDetailPage({
     loadPerformance(id),
     createAdminClient().from("roadmaps").select("id").eq("client_id", id).maybeSingle(),
     getEatingRelation(id),
+    getMemberPreferences(id),
   ]);
 
   const engagement = client.subscription_status === "active" ? await getEngagement(id) : null;
@@ -307,6 +311,7 @@ export default async function ClientDetailPage({
         deleteDietPlan={deleteDietPlan}
         intake={intake}
         eatingRelation={eatingRelation}
+        experienceLevel={levelFromExperience(memberPreferences?.experience_level)}
         saveClientIntake={saveClientIntake}
         sendIntakeReminder={sendIntakeReminder}
         stepGoal={stepSettings.daily_goal}

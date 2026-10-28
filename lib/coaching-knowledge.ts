@@ -372,6 +372,12 @@ export const ADJUSTMENT_RULES = {
   primingWeeks: { min: 2, max: 4 },
   /** Repère : environ quatre fois plus de temps en surplus ou maintenance qu'en déficit. */
   surplusToDeficitRatio: 4,
+  /** Pesées minimum sur 14 jours avant de décider d'un ajustement. */
+  minWeighInsIn14Days: 5,
+  /** Incertitude maximale de la pente de poids, en % du poids par semaine (décision produit). */
+  trendMaxMarginPct: 0.5,
+  /** Séries à ajouter sur un muscle quand la récupération suit. */
+  volumeAddSets: { min: 1, max: 2 },
   /** Vitesse de poids visée, en % du poids de corps par semaine (négatif = perte). */
   weeklyRatePct: { deficit: { min: -1, max: -0.5 }, surplus: { min: 0.25, max: 0.5 }, maintenance: { min: -0.25, max: 0.25 } },
 } as const;

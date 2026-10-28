@@ -8,6 +8,12 @@ import { notifyUser } from "@/lib/notify";
 import { alreadyNotifiedToday } from "@/utils/insert-notification";
 import { rescaleActiveDietPlanToTargets } from "./diet-plan-actions";
 import { after } from "next/server";
+import { getEatingRelation } from "@/lib/eating-safety-server";
+import { eatingSafetyLevel } from "@/lib/eating-safety";
+import { applyCalorieDelta } from "@/lib/coaching-adjustments";
+import { ADJUSTMENT_RULES } from "@/lib/coaching-knowledge";
+import { MINOR_AGE } from "@/lib/plan-generator";
+import type { NutritionProfile } from "@/utils/nutrition";
 
 export async function saveNutritionProfile(
   clientId: string,
@@ -119,6 +125,67 @@ export async function saveNutritionProfile(
     return {};
   } catch (e) {
     console.error("saveNutritionProfile exception:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Applique en un clic un ajustement de calories suggéré (lib/coaching-adjustments.ts).
+// Les chiffres sont recalculés ici, jamais repris du navigateur : paliers de
+// 150 à 300 kcal au plus, protéines inchangées, glucides ajustés. Aucune
+// baisse en cas de signal alimentaire (même passé) ou pour un mineur.
+export async function applyCalorieAdjustment(clientId: string, deltaKcal: number): Promise<{ error?: string }> {
+  const guard = await requireOwnClientOrSelf(clientId);
+  if (!guard.ok) return { error: guard.error };
+  const delta = Math.round(deltaKcal);
+  if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > ADJUSTMENT_RULES.stepKcal.max) {
+    return { error: "Ajustement non valide." };
+  }
+  try {
+    const admin = createAdminClient();
+    const { data: rows } = await admin
+      .from("nutrition_profiles")
+      .select("*")
+      .eq("client_id", clientId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    const p = (rows?.[0] as NutritionProfile | undefined) ?? null;
+    if (!p || p.calories_target == null || p.proteins_target == null || p.carbs_target == null || p.fats_target == null) {
+      return { error: "Objectifs nutrition introuvables : enregistre-les d'abord." };
+    }
+    if (delta < 0) {
+      const relation = await getEatingRelation(clientId);
+      if (eatingSafetyLevel(relation) !== "clear") return { error: "Aucune baisse de calories pour ce profil." };
+      if (p.age != null && p.age < MINOR_AGE) return { error: "Aucune baisse de calories pour une personne mineure." };
+    }
+    if (p.height == null || p.age == null || p.tdee == null || p.bmr == null || !p.gender) {
+      return { error: "Profil nutrition incomplet : ouvre le calculateur pour le compléter." };
+    }
+    const next = applyCalorieDelta(
+      { calories: p.calories_target, proteins: p.proteins_target, carbs: p.carbs_target, fats: p.fats_target },
+      delta
+    );
+    return await saveNutritionProfile(clientId, {
+      calories_target: next.calories,
+      proteins_target: next.proteins,
+      carbs_target: next.carbs,
+      fats_target: next.fats,
+      calories_offset_rest: p.calories_offset_rest,
+      calories_offset_high: p.calories_offset_high,
+      tdee: p.tdee,
+      bmr: p.bmr,
+      phase: p.phase ?? "maintenance",
+      gender: p.gender,
+      weight: p.weight,
+      height: p.height,
+      age: p.age,
+      training_type: p.training_type ?? "Musculation",
+      sessions_per_week: p.sessions_per_week ?? 3,
+      session_duration: p.session_duration ?? 60,
+      steps_per_day: p.steps_per_day ?? 6000,
+      activity_level: p.activity_level ?? 1,
+    });
+  } catch (e) {
+    console.error("applyCalorieAdjustment exception:", e);
     return { error: "Erreur inattendue." };
   }
 }
