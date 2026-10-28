@@ -57,7 +57,14 @@ export const NUTRITION_RULES = {
   proteinPerMealGPerKg: { min: 0.25, max: 0.4 },
   /** Nombre de prises de protéines par jour. */
   proteinMeals: { min: 3, max: 5, ideal: 4 },
-  /** Lipides, g par kg (équivaut à environ 20 à 35 % des calories). */
+  /**
+   * Lipides, g par kg (équivaut à environ 20 à 35 % des calories). Tranché
+   * en faveur de la fiche Mastermind « Nutrition 2 » : 0,8 à 1,5 g/kg, jamais
+   * sous 20 % des calories pour un client normal. La vidéo de formation qui
+   * annonce 20 à 25 % est un cas isolé, à harmoniser au tournage, pas une
+   * règle. Descendre à 0,3 à 0,5 g/kg n'existe qu'en préparation de
+   * compétition, décidée à la main, jamais par ce calcul automatique.
+   */
   fatGPerKg: { min: 0.8, max: 1.5 },
   fatPctKcal: { min: 0.2, max: 0.35 },
   /** Fibres, g pour 1000 kcal. */
@@ -184,7 +191,18 @@ export const MAINTENANCE_TREND_RULES = {
 export const ENERGY_GUIDANCE_FR =
   "Ce chiffre est une estimation de départ. Pour prendre du muscle, ajoute environ 5 à 10 % de ta maintenance. Pour perdre du gras, retire 10 à 20 % (jusqu'à 30 % si tu as beaucoup à perdre). Ensuite on ajuste sur ton poids réel, pas sur la formule.";
 
-/** Entraînement (hypertrophie). */
+/**
+ * Entraînement (hypertrophie). Statut : enseignement du Mastermind (niveau 4,
+ * cas pratiques, fatigue, périodisation), confirmé au recoupement : volume
+ * de départ 8 à 12 séries difficiles puis 10 à 25 selon la récupération
+ * (jamais un nombre unique pour tous), repos standardisé d'une semaine à
+ * l'autre (2 à 3 min sur le lourd, 1 à 2 min sur l'isolation, plus de 3 min
+ * possible sur presse ou soulevé de terre roumain), aucun modèle de
+ * périodisation « meilleur » que les autres (le coach varie plages de
+ * répétitions, repos et RIR dans la semaine). Les durées de phase et
+ * d'engagement (lib/engagement.ts) sont des décisions produit : le
+ * Mastermind n'en fixe aucune.
+ */
 export const TRAINING_RULES = {
   /** Séries difficiles par groupe musculaire et par semaine. */
   weeklyHardSetsStart: { min: 8, max: 12 },
@@ -233,5 +251,6 @@ export const COACHING_KNOWLEDGE_PROMPT = `Repères de coaching à appliquer (val
 - Les moyennes ne décrivent jamais un individu : ne déduis pas un volume ou une fréquence du sexe de la personne, pars de sa récupération et de sa progression réelles.
 - Végétarien ou végan : même fourchette de protéines, haut de fourchette, sources variées et lysine, B12 en complément, vigilance sur le zinc, le fer, le calcium, l'iode et les oméga 3 (algue, car la conversion de l'ALA est faible).
 - Troubles du comportement alimentaire (signes : carence énergétique, aménorrhée, restriction, sport à catégorie de poids) : aucun coaching de ce sujet par toi, jamais de déficit ni de chiffre de calories proposé, orientation vers un professionnel de santé (médecin traitant) et alerte à la coach humaine. Parle du factuel et de la santé, jamais de l'apparence, ne culpabilise jamais un écart.
+- Rythme du suivi : un bilan par semaine suffit pour la population générale (plus pour un compétiteur), des questions courtes (victoires de la semaine, adhésion, obstacles à venir, soutien de l'entourage, ce qu'il faut ajuster), une réponse claire et un ajustement expliqué en peu de mots, réponse sous 24 h. L'accompagnement type dure 6 mois : un appel bilan un mois avant la fin, pour décider de la suite avec le client. Le but est que la personne progresse sur la durée, pas qu'elle reste abonnée.
 - Suivi client : classe mentalement chaque client en vert (il avance, on célèbre), orange (il stagne, demande ce qui a changé) ou rouge (il a du mal à suivre, demande comment simplifier le plan). Si la stagnation s'installe, propose un appel plutôt qu'un message de plus.
 - N'affirme jamais qu'une étude prouve quelque chose et ne cite jamais de source, d'auteur ou de « selon… » : dis simplement ce qui marche, en une phrase simple, avec l'action concrète.`;

@@ -99,3 +99,19 @@ test("compléments : pas de dose de vitamine D ni d'heure limite de caféine fix
 test("cohérence entre la règle et le texte du calculateur public", () => {
   assert.match(ENERGY_GUIDANCE_FR, /5 à 10 %/);
 });
+
+test("lipides : 0,8 à 1,5 g/kg et 20 à 35 % des calories, cohérents entre eux et avec le prompt", () => {
+  assert.deepEqual(NUTRITION_RULES.fatGPerKg, { min: 0.8, max: 1.5 });
+  assert.deepEqual(NUTRITION_RULES.fatPctKcal, { min: 0.2, max: 0.35 });
+  assert.ok(COACHING_KNOWLEDGE_PROMPT.includes("0,8 à 1,5 g/kg (20 à 35 % des calories)"));
+  assert.ok(!COACHING_KNOWLEDGE_PROMPT.includes("20 à 25 %"));
+});
+
+test("entraînement : volume de départ 8 à 12 puis 10 à 25, repos en fourchette, jamais un nombre unique", () => {
+  assert.deepEqual(TRAINING_RULES.weeklyHardSetsStart, { min: 8, max: 12 });
+  assert.deepEqual(TRAINING_RULES.weeklyHardSetsRange, { min: 10, max: 25 });
+  assert.ok(TRAINING_RULES.restSeconds.compound.min < TRAINING_RULES.restSeconds.compound.max);
+  assert.ok(TRAINING_RULES.restSeconds.isolation.min < TRAINING_RULES.restSeconds.isolation.max);
+  assert.ok(COACHING_KNOWLEDGE_PROMPT.includes("8 à 12 séries difficiles"));
+  assert.ok(COACHING_KNOWLEDGE_PROMPT.includes("10 à 25"));
+});
