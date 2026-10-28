@@ -4,6 +4,8 @@ import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientIntake } from "@/utils/client-intake";
+import { getMemberPreferences } from "@/utils/member-preferences";
+import { levelFromExperience } from "@/lib/plan-generator";
 import { getCoachProgramTemplates } from "@/utils/program-templates";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -46,7 +48,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, client, program, intake, templates, scheduleBlocks] = await Promise.all([
+  const [profile, client, program, intake, templates, scheduleBlocks, preferences] = await Promise.all([
     getProfile(user.id),
     getClientById(id, user.id),
     // includeCoachNotes : page réservée au coach, la note privée de conception
@@ -55,6 +57,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
     getClientIntake(id),
     getCoachProgramTemplates(user.id),
     getScheduleBlocks(id),
+    getMemberPreferences(id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
@@ -85,6 +88,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
         clientName={clientName}
         program={program}
         intake={intake}
+        experienceLevel={levelFromExperience(preferences?.experience_level)}
         templates={templates}
         scheduleBlocks={scheduleBlocks}
         photos={photos}

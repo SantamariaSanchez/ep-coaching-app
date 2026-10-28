@@ -3,6 +3,8 @@ import { requireOwnClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getClientIntake } from "@/utils/client-intake";
 import { getLatestWeight } from "@/utils/daily-logs";
+import { getMemberPreferences } from "@/utils/member-preferences";
+import { getEatingRelation } from "@/lib/eating-safety-server";
 import { getExerciseLibrary } from "@/utils/exercise-library";
 import {
   inferPhase,
@@ -11,6 +13,7 @@ import {
   computeNutritionTargets,
   buildProgramSuggestions,
   buildRoadmapPayload,
+  levelFromExperience,
   type InferredPhase,
   type ProgramSuggestion,
   type RoadmapPayload,
@@ -55,10 +58,13 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
   const warnings: string[] = [];
   const admin = createAdminClient();
 
-  const [latestWeight, profileRes] = await Promise.all([
+  const [latestWeight, profileRes, preferences, eatingRelation] = await Promise.all([
     getLatestWeight(clientId),
     admin.from("profiles").select("weight_start").eq("id", clientId).single(),
+    getMemberPreferences(clientId),
+    getEatingRelation(clientId),
   ]);
+  const level = levelFromExperience(preferences?.experience_level);
   const weightKg = latestWeight ?? (profileRes.data as { weight_start: number | null } | null)?.weight_start ?? null;
 
   const phase = inferPhase(intake);
@@ -77,8 +83,11 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
       sessionDurationMin: parseSessionDuration(intake.session_duration),
       stepsPerDay: intake.avg_daily_steps ?? 6000,
       phase,
+      level,
+      eatingRelation,
     });
-    nutrition = { ...targets, phase };
+    nutrition = { ...targets, phase: targets.phaseApplied };
+    if (targets.note) warnings.push(`Nutrition : ${targets.note}`);
   } else {
     warnings.push(
       "Nutrition : il manque le poids (aucune pesée trouvée), la taille ou la date de naissance dans la fiche client."
@@ -97,7 +106,8 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
       intake.disliked_equipment,
       intake.exercises_problematic,
       intake.training_access,
-      intake.injuries
+      intake.injuries,
+      level
     );
     if (!intake.training_access) {
       warnings.push(

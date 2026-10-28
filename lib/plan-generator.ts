@@ -2,7 +2,25 @@ import type { ClientIntake } from "@/utils/client-intake";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { getEquipmentType, type EquipmentType } from "@/lib/exercise-library-content";
-import { computeMacroTargets, setsPerSessionFor } from "@/lib/coaching-knowledge";
+import {
+  computeMacroTargets,
+  restSecondsFor,
+  sessionSetBudget,
+  weeklySetsForMuscle,
+  weeklySetsCeilingFor,
+  recoveryStatusFrom,
+  type RecoveryStatus,
+  type TrainingLevel,
+} from "@/lib/coaching-knowledge";
+import { deficitAllowed, eatingSafetyLevel, type EatingRelation } from "@/lib/eating-safety";
+import {
+  crossGroupCandidates,
+  injuryAvoidKeywords,
+  isHeavyLift,
+  isTrainingExercise,
+  rankCandidates,
+  type SlotCategory,
+} from "@/lib/exercise-selection";
 
 // ── Accès matériel réel du client ───────────────────────────────────────────
 // Racine du bug remonté : rien dans l'app ne savait si un client s'entraîne
@@ -65,7 +83,14 @@ export interface GeneratedNutritionTargets {
   fats: number;
   tdee: number;
   bmr: number;
+  /** Phase réellement appliquée : peut différer de celle demandée par prudence. */
+  phaseApplied: InferredPhase;
+  /** Pourquoi la phase demandée a été remplacée, le cas échéant (jamais montré tel quel à un client). */
+  note: string | null;
 }
+
+/** Âge en dessous duquel aucun déficit chiffré n'est proposé automatiquement (prudence, décision produit). */
+export const MINOR_AGE = 18;
 
 export function computeNutritionTargets(params: {
   gender: "Homme" | "Femme" | "Autre" | null;
@@ -76,6 +101,10 @@ export function computeNutritionTargets(params: {
   sessionDurationMin: number;
   stepsPerDay: number;
   phase: InferredPhase;
+  /** Niveau d'entraînement : un profil avancé a un déficit plus prudent (15 %). */
+  level?: TrainingLevel;
+  /** Relation à l'alimentation déclarée : « actuel » ou « incertain » interdit tout déficit chiffré. */
+  eatingRelation?: EatingRelation | null;
 }): GeneratedNutritionTargets {
   const { weightKg: w, heightCm: h, age: a } = params;
   const bmr = params.gender === "Femme" ? 10 * w + 6.25 * h - 5 * a - 161 : 10 * w + 6.25 * h - 5 * a + 5;
@@ -86,50 +115,91 @@ export function computeNutritionTargets(params: {
   const tef = 0.1 * (bmr + eat + neat);
   const tdee = bmr + eat + neat + tef;
 
+  // Sécurité d'abord : pas de déficit chiffré en cas de signal de trouble
+  // alimentaire, ni pour une personne mineure (lib/eating-safety.ts).
+  let phase = params.phase;
+  let note: string | null = null;
+  if (phase === "deficit") {
+    if (!deficitAllowed(eatingSafetyLevel(params.eatingRelation))) {
+      phase = "maintenance";
+      note = "Relation à l'alimentation signalée : maintenance proposée, aucun déficit chiffré.";
+    } else if (a < MINOR_AGE) {
+      phase = "maintenance";
+      note = "Personne mineure : maintenance proposée, pas de déficit chiffré sans avis d'un professionnel de santé.";
+    }
+  }
+
   // Ajustement en % de la maintenance, protéines et lipides au poids de
   // corps, glucides = le reste (règles partagées : lib/coaching-knowledge.ts).
-  const { calories, proteins, fats, carbs } = computeMacroTargets({ weightKg: w, tdee, phase: params.phase });
+  const { calories, proteins, fats, carbs } = computeMacroTargets({ weightKg: w, tdee, phase, level: params.level });
 
-  return { calories, proteins, carbs, fats, tdee: Math.round(tdee), bmr: Math.round(bmr) };
+  return { calories, proteins, carbs, fats, tdee: Math.round(tdee), bmr: Math.round(bmr), phaseApplied: phase, note };
 }
 
 // ── Programme d'entraînement — split par nombre de séances/semaine ──────────
 
-interface DayTemplate {
-  label: string;
-  groups: string[];
+type SlotPriority = 1 | 2 | 3;
+
+interface Slot {
+  group: string;
+  category: SlotCategory;
+  /** 1 : indispensable, 2 : utile, 3 : retiré en premier quand le temps manque. */
+  priority: SlotPriority;
 }
 
+interface DayTemplate {
+  label: string;
+  slots: Slot[];
+}
+
+const c = (group: string, priority: SlotPriority): Slot => ({ group, category: "compose", priority });
+const i = (group: string, priority: SlotPriority): Slot => ({ group, category: "isolation", priority });
+
+const PEC = "Pectoraux";
+const BACK = "Dos";
+const SHO = "Épaules";
+const BIC = "Biceps";
+const TRI = "Triceps";
+const QUA = "Quadriceps";
+const HAM = "Ischio-jambiers";
+const GLU = "Fessiers";
+const CAL = "Mollets";
+
+// Un split par nombre de séances. Règles : composés d'abord puis isolation,
+// groupes prioritaires en premier, chaque grand muscle revient deux fois par
+// semaine dès 3 séances (le Mastermind enseigne 2 à 3 ; à volume égal, la
+// fréquence est surtout une question de préférence et de récupération).
+// À 2 séances, tout le corps est travaillé à chaque fois.
 const SPLIT_TEMPLATES: Record<number, DayTemplate[]> = {
   2: [
-    { label: "Full Body A", groups: ["Quadriceps", "Pectoraux", "Dos", "Épaules"] },
-    { label: "Full Body B", groups: ["Ischio-jambiers", "Dos", "Pectoraux", "Biceps", "Triceps"] },
+    { label: "Full Body A", slots: [c(QUA, 1), c(PEC, 1), c(BACK, 1), i(HAM, 1), i(SHO, 2), i(TRI, 3)] },
+    { label: "Full Body B", slots: [c(HAM, 1), c(BACK, 1), c(PEC, 1), c(GLU, 2), i(QUA, 2), i(BIC, 3)] },
   ],
   3: [
-    { label: "Push", groups: ["Pectoraux", "Épaules", "Triceps"] },
-    { label: "Pull", groups: ["Dos", "Biceps", "Trapèzes"] },
-    { label: "Legs", groups: ["Quadriceps", "Ischio-jambiers", "Fessiers", "Mollets"] },
+    { label: "Haut du corps", slots: [c(PEC, 1), c(BACK, 1), c(SHO, 2), i(SHO, 2), i(BIC, 2), i(TRI, 2)] },
+    { label: "Bas du corps", slots: [c(QUA, 1), c(HAM, 1), c(GLU, 2), i(HAM, 2), i(CAL, 3), i(QUA, 3)] },
+    { label: "Corps entier", slots: [c(QUA, 1), c(BACK, 1), c(PEC, 1), i(HAM, 1), i(SHO, 2), i(TRI, 3)] },
   ],
   4: [
-    { label: "Haut du corps A", groups: ["Pectoraux", "Dos", "Épaules"] },
-    { label: "Bas du corps A", groups: ["Quadriceps", "Ischio-jambiers", "Fessiers"] },
-    { label: "Haut du corps B", groups: ["Dos", "Pectoraux", "Biceps", "Triceps"] },
-    { label: "Bas du corps B", groups: ["Fessiers", "Ischio-jambiers", "Mollets"] },
+    { label: "Haut du corps A", slots: [c(PEC, 1), c(BACK, 1), c(SHO, 2), i(PEC, 2), i(TRI, 2), i(BIC, 2)] },
+    { label: "Bas du corps A", slots: [c(QUA, 1), c(HAM, 1), c(GLU, 2), i(QUA, 2), i(CAL, 3)] },
+    { label: "Haut du corps B", slots: [c(BACK, 1), c(PEC, 1), i(SHO, 1), i(BACK, 2), i(BIC, 2), i(TRI, 2)] },
+    { label: "Bas du corps B", slots: [c(GLU, 1), c(QUA, 1), i(HAM, 1), i(HAM, 2), i(CAL, 3)] },
   ],
   5: [
-    { label: "Push", groups: ["Pectoraux", "Épaules", "Triceps"] },
-    { label: "Pull", groups: ["Dos", "Biceps", "Trapèzes"] },
-    { label: "Legs", groups: ["Quadriceps", "Ischio-jambiers", "Fessiers", "Mollets"] },
-    { label: "Haut du corps", groups: ["Pectoraux", "Dos", "Épaules"] },
-    { label: "Bas du corps", groups: ["Quadriceps", "Fessiers", "Mollets"] },
+    { label: "Push", slots: [c(PEC, 1), c(SHO, 1), i(PEC, 2), i(SHO, 2), i(TRI, 2)] },
+    { label: "Pull", slots: [c(BACK, 1), c(BACK, 1), i(BIC, 2), i(SHO, 2)] },
+    { label: "Legs", slots: [c(QUA, 1), c(HAM, 1), c(GLU, 2), i(HAM, 2), i(CAL, 3)] },
+    { label: "Haut du corps", slots: [c(PEC, 1), c(BACK, 1), i(SHO, 2), i(BIC, 2), i(TRI, 2)] },
+    { label: "Bas du corps", slots: [c(QUA, 1), c(GLU, 1), i(HAM, 1), i(QUA, 2), i(CAL, 3)] },
   ],
   6: [
-    { label: "Push A", groups: ["Pectoraux", "Épaules", "Triceps"] },
-    { label: "Pull A", groups: ["Dos", "Biceps", "Trapèzes"] },
-    { label: "Legs A", groups: ["Quadriceps", "Ischio-jambiers", "Fessiers"] },
-    { label: "Push B", groups: ["Pectoraux", "Épaules", "Triceps"] },
-    { label: "Pull B", groups: ["Dos", "Biceps"] },
-    { label: "Legs B", groups: ["Quadriceps", "Ischio-jambiers", "Mollets"] },
+    { label: "Push A", slots: [c(PEC, 1), c(SHO, 1), i(PEC, 2), i(TRI, 2), i(SHO, 2)] },
+    { label: "Pull A", slots: [c(BACK, 1), c(BACK, 1), i(BIC, 2), i(SHO, 2)] },
+    { label: "Legs A", slots: [c(QUA, 1), c(HAM, 1), c(GLU, 2), i(CAL, 3)] },
+    { label: "Push B", slots: [c(PEC, 1), c(SHO, 1), i(SHO, 2), i(TRI, 2), i(PEC, 2)] },
+    { label: "Pull B", slots: [c(BACK, 1), i(BACK, 2), i(BIC, 2), i(SHO, 2)] },
+    { label: "Legs B", slots: [c(GLU, 1), c(QUA, 1), i(HAM, 1), i(QUA, 2), i(CAL, 3)] },
   ],
 };
 
@@ -149,6 +219,11 @@ function isExcluded(ex: LibraryExercise, excludeText: string): boolean {
     .filter((k) => k.length > 2);
   const haystack = `${ex.name} ${ex.equipment ?? ""}`.toLowerCase();
   return keywords.some((k) => haystack.includes(k));
+}
+
+/** Texte d'exclusion complet : déclarations libres + précautions mécaniques tirées des blessures. */
+export function buildExcludeText(disliked: string | null, problematic: string | null, injuries: string | null): string {
+  return [disliked ?? "", problematic ?? "", injuries ?? "", injuryAvoidKeywords(injuries).join(",")].join(",");
 }
 
 // ── Vérification de compatibilité exercice / client ─────────────────────────
@@ -241,18 +316,6 @@ export function checkExerciseConflicts(
   return conflicts;
 }
 
-// Débutant < intermédiaire < avancé — un exercice "avancé" (drag curl, sissy
-// squat, JM press...) ne devrait jamais être le premier choix suggéré sans
-// savoir si le client a le niveau technique requis. Le générateur n'a pas
-// accès au niveau réel du client (pas de champ dans la fiche), donc on
-// privilégie par défaut les mouvements les plus simples/robustes plutôt que
-// de tirer au hasard (ancien tri : alphabétique).
-const DIFFICULTY_RANK: Record<string, number> = { debutant: 0, intermediaire: 1, avance: 2 };
-
-function difficultyRank(ex: LibraryExercise): number {
-  return DIFFICULTY_RANK[ex.difficulty ?? "intermediaire"] ?? 1;
-}
-
 export interface ExerciseSuggestion {
   name: string;
   category: "compose" | "isolation" | null;
@@ -296,28 +359,25 @@ export interface MuscleGroupSuggestion {
   isolation: ExerciseSuggestion[];
 }
 
-const byQuality = (a: LibraryExercise, b: LibraryExercise) =>
-  difficultyRank(a) - difficultyRank(b) || a.name.localeCompare(b.name, "fr");
-
 // Point commun entre les suggestions (plusieurs pistes) et la génération
 // (un choix ferme) : mêmes règles d'éligibilité (groupe, exclusions,
-// matériel disponible), mêmes plus simples/robustes en tête de liste.
+// blessures, matériel disponible, vrais exercices d'entraînement), classés
+// selon les critères de sélection du Mastermind et le niveau de la personne
+// (lib/exercise-selection.ts).
 function filteredCandidates(
   library: LibraryExercise[],
   group: string,
-  category: "compose" | "isolation",
+  category: SlotCategory,
   excludeText: string,
-  allowed: EquipmentType[]
+  allowed: EquipmentType[],
+  level: TrainingLevel = "intermediaire"
 ): LibraryExercise[] {
-  return library
-    .filter(
-      (ex) =>
-        ex.muscle_group === group &&
-        ex.category === category &&
-        !isExcluded(ex, excludeText) &&
-        allowed.includes(getEquipmentType(ex.equipment))
-    )
-    .sort(byQuality);
+  const own = library.filter((ex) => ex.muscle_group === group && ex.category === category);
+  const pool = [...own, ...crossGroupCandidates(library, group, category)];
+  const eligible = pool.filter(
+    (ex) => isTrainingExercise(ex) && !isExcluded(ex, excludeText) && allowed.includes(getEquipmentType(ex.equipment))
+  );
+  return rankCandidates(eligible, group, category, level);
 }
 
 // Renvoie plusieurs candidats par catégorie (pas un choix figé) — le but est
@@ -328,11 +388,12 @@ function suggestForGroup(
   group: string,
   excludeText: string,
   trainingAccess: ClientIntake["training_access"],
+  level: TrainingLevel,
   maxPerCategory = 3
 ): MuscleGroupSuggestion {
   const allowed = allowedEquipmentTypes(trainingAccess);
-  const compound = filteredCandidates(library, group, "compose", excludeText, allowed).slice(0, maxPerCategory);
-  const isolation = filteredCandidates(library, group, "isolation", excludeText, allowed).slice(0, maxPerCategory);
+  const compound = filteredCandidates(library, group, "compose", excludeText, allowed, level).slice(0, maxPerCategory);
+  const isolation = filteredCandidates(library, group, "isolation", excludeText, allowed, level).slice(0, maxPerCategory);
 
   return {
     group,
@@ -347,30 +408,28 @@ export interface ProgramSuggestion {
 }
 
 // Suggestions pures, jamais un programme prêt à sauvegarder — pas de sets/reps
-// prescrits, pas d'ExerciseInput/DayInput : le coach construit le programme
-// lui-même (via le picker normal) et pioche dans ces pistes s'il veut.
-// `injuries` ajouté (Axe FL, MASTERCLASS.md) : contrairement à
-// findSwapCandidate (qui inclut déjà intake.injuries depuis un fix
-// antérieur), cette fonction — qui produit les toutes premières
-// suggestions vues par le coach — n'excluait que le matériel détesté et
-// les exercices signalés problématiques, jamais les BLESSURES déclarées.
-// Même donnée, même risque (suggérer un mouvement qui aggrave une
-// blessure connue), la cohérence entre les deux fonctions manquait.
+// prescrits : le coach construit le programme lui-même (via le picker normal)
+// et pioche dans ces pistes s'il veut. Les blessures déclarées écartent les
+// mouvements qui sollicitent le plus la zone (précaution, jamais un diagnostic).
 export function buildProgramSuggestions(
   sessionsPerWeek: number,
   library: LibraryExercise[],
   dislikedEquipment: string | null,
   exercisesProblematic: string | null,
   trainingAccess: ClientIntake["training_access"] = null,
-  injuries: string | null = null
+  injuries: string | null = null,
+  level: TrainingLevel = "intermediaire"
 ): ProgramSuggestion[] {
   const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
-  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""} ${injuries ?? ""}`;
+  const excludeText = buildExcludeText(dislikedEquipment, exercisesProblematic, injuries);
 
-  return template.map((day) => ({
-    dayLabel: day.label,
-    groups: day.groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess)),
-  }));
+  return template.map((day) => {
+    const groups = [...new Set(day.slots.map((sl) => sl.group))];
+    return {
+      dayLabel: day.label,
+      groups: groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess, level)),
+    };
+  });
 }
 
 // ── Génération d'un brouillon complet ───────────────────────────────────────
@@ -395,27 +454,189 @@ export interface GeneratedDay {
   exercises: GeneratedExercise[];
 }
 
-// Séries : on vise 8 à 12 séries difficiles par groupe et par semaine au
-// départ, réparties selon le nombre de fois où le groupe revient dans la
-// semaine (lib/coaching-knowledge.ts). Reps 5-20, RIR 0-3, repos 2-3 min sur
-// le lourd et 1-2 min sur l'isolation.
-function defaultPrescription(
-  category: "compose" | "isolation" | null,
-  weeklyAppearances = 2
-): Pick<GeneratedExercise, "sets" | "reps" | "rir" | "rest_seconds"> {
-  const sets = String(setsPerSessionFor(weeklyAppearances, category));
-  if (category === "isolation") return { sets, reps: "10-15", rir: "1", rest_seconds: "90" };
-  return { sets, reps: "6-10", rir: "2", rest_seconds: "150" };
+export interface ProgramPlanOptions {
+  /** Niveau d'entraînement ; intermédiaire si inconnu. */
+  level?: TrainingLevel;
+  /** Récupération estimée (sommeil, stress) ; normale si inconnue. */
+  recovery?: RecoveryStatus;
+  /** Durée possible d'une séance, en minutes ; 60 si inconnue. */
+  sessionMinutes?: number | null;
 }
 
-function toGeneratedExercise(ex: LibraryExercise, weeklyAppearances = 2): GeneratedExercise {
+export interface GeneratedProgramPlan {
+  days: GeneratedDay[];
+  level: TrainingLevel;
+  recovery: RecoveryStatus;
+  /** Séries directes par groupe sur la semaine. */
+  weeklySetsByGroup: Record<string, number>;
+  /** Le temps disponible a obligé à réduire le volume sous la cible de départ. */
+  timeLimited: boolean;
+  /** Constats lisibles pour le coach (jamais affichés tels quels à un client). */
+  notes: string[];
+}
+
+const MIN_SETS_PER_SLOT = 2;
+const MAX_SETS_PER_SLOT = 6;
+const COMPOUND_WEIGHT = 1.3;
+
+function slotWeight(sl: Slot): number {
+  return sl.category === "compose" ? COMPOUND_WEIGHT : 1;
+}
+
+/** Répartit la cible hebdomadaire d'un groupe sur ses créneaux (plus de séries sur les polyarticulaires). */
+function allocateSets(slots: { slot: Slot }[], target: number): number[] {
+  const total = slots.reduce((sum, { slot }) => sum + slotWeight(slot), 0);
+  if (total === 0) return [];
+  const raw = slots.map(({ slot }) => (target * slotWeight(slot)) / total);
+  const out = raw.map((r) => Math.floor(r));
+  let left = Math.round(target) - out.reduce((a, b) => a + b, 0);
+  const order = raw.map((r, idx) => ({ idx, frac: r - Math.floor(r) })).sort((a, b) => b.frac - a.frac);
+  for (let k = 0; left > 0 && k < order.length * 2; k++, left--) out[order[k % order.length].idx] += 1;
+  return out.map((n) => Math.min(MAX_SETS_PER_SLOT, Math.max(MIN_SETS_PER_SLOT, n)));
+}
+
+function prescription(
+  category: SlotCategory,
+  name: string,
+  level: TrainingLevel,
+  timeLimited: boolean
+): Pick<GeneratedExercise, "reps" | "rir" | "rest_seconds"> {
+  const beginner = level === "debutant";
+  if (category === "isolation") {
+    return {
+      reps: beginner ? "12-15" : "10-15",
+      // Un débutant sous-estime sa proximité de l'échec : on vise 2 à 3.
+      rir: beginner ? "2" : "1",
+      rest_seconds: String(restSecondsFor("isolation", { timeLimited })),
+    };
+  }
   return {
-    name: ex.name,
-    muscle_group: ex.muscle_group,
-    muscle_subgroup: ex.muscle_subgroup,
-    is_direct: true,
-    ...defaultPrescription(ex.category, weeklyAppearances),
+    reps: beginner ? "8-12" : "6-10",
+    rir: beginner ? "3" : "2",
+    rest_seconds: String(restSecondsFor("compound", { heavy: isHeavyLift(name), timeLimited })),
   };
+}
+
+/**
+ * Programme de départ personnalisé : split selon la fréquence, volume de
+ * départ selon le niveau et la récupération, tenu dans le temps de séance
+ * possible, exercices selon le matériel, les blessures et le niveau.
+ */
+export function generateProgramPlan(
+  sessionsPerWeek: number,
+  library: LibraryExercise[],
+  dislikedEquipment: string | null,
+  exercisesProblematic: string | null,
+  trainingAccess: ClientIntake["training_access"] = null,
+  injuries: string | null = null,
+  options: ProgramPlanOptions = {}
+): GeneratedProgramPlan {
+  const level = options.level ?? "intermediaire";
+  const recovery = options.recovery ?? "normal";
+  const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
+  const excludeText = buildExcludeText(dislikedEquipment, exercisesProblematic, injuries);
+  const allowed = allowedEquipmentTypes(trainingAccess);
+  const budget = sessionSetBudget(options.sessionMinutes);
+  const notes: string[] = [];
+
+  // Créneaux retenus par jour (copie : on peut en retirer quand le temps manque).
+  const days = template.map((d) => ({ label: d.label, slots: [...d.slots] }));
+
+  // Volume hebdomadaire visé par groupe (départ selon niveau et récupération).
+  const groups = [...new Set(days.flatMap((d) => d.slots.map((sl) => sl.group)))];
+  const targetOf = (g: string) => weeklySetsForMuscle(g, level, recovery);
+
+  const setsFor = (): Map<Slot, number> => {
+    const map = new Map<Slot, number>();
+    for (const g of groups) {
+      const slots = days.flatMap((d) => d.slots.filter((sl) => sl.group === g).map((slot) => ({ slot })));
+      if (slots.length === 0) continue;
+      allocateSets(slots, targetOf(g)).forEach((n, idx) => map.set(slots[idx].slot, n));
+    }
+    return map;
+  };
+
+  let sets = setsFor();
+  const dayTotal = (d: { slots: Slot[] }) => d.slots.reduce((sum, sl) => sum + (sets.get(sl) ?? 0), 0);
+
+  // Trop long pour le temps possible : on retire d'abord les créneaux
+  // facultatifs (priorité 3), puis on réduit le volume proportionnellement
+  // plutôt que de supprimer des muscles, sans descendre sous 2 séries par
+  // exercice. Le coach en est averti.
+  let timeLimited = false;
+  for (let guard = 0; guard < 40; guard++) {
+    const over = days.find((d) => dayTotal(d) > budget && d.slots.some((sl) => sl.priority === 3));
+    if (!over) break;
+    const removable = over.slots.filter((sl) => sl.priority === 3).slice(-1)[0];
+    over.slots.splice(over.slots.indexOf(removable), 1);
+    sets = setsFor();
+    timeLimited = true;
+  }
+  for (const d of days) {
+    const total = dayTotal(d);
+    if (total > budget) {
+      timeLimited = true;
+      const factor = budget / total;
+      for (const sl of d.slots) sets.set(sl, Math.max(MIN_SETS_PER_SLOT, Math.floor((sets.get(sl) ?? 0) * factor)));
+    }
+  }
+
+  const rotation: Record<string, number> = {};
+  const used: Set<string>[] = days.map(() => new Set());
+  const missing = new Set<string>();
+
+  function pick(group: string, category: SlotCategory, dayIdx: number, avoidPosition?: string | null): LibraryExercise | null {
+    const candidates = filteredCandidates(library, group, category, excludeText, allowed, level).filter((ex) => !used[dayIdx].has(ex.name));
+    if (candidates.length === 0) return null;
+    const pool = avoidPosition ? candidates.filter((x) => x.position !== avoidPosition) : candidates;
+    const usable = pool.length > 0 ? pool : candidates;
+    const key = `${group}:${category}`;
+    const idx = (rotation[key] ?? 0) % usable.length;
+    rotation[key] = (rotation[key] ?? 0) + 1;
+    return usable[idx];
+  }
+
+  const weeklySetsByGroup: Record<string, number> = {};
+  const outDays: GeneratedDay[] = days.map((d, dayIdx) => {
+    const exercises: GeneratedExercise[] = [];
+    // Composés d'abord (muscles prioritaires en tête), isolation ensuite.
+    const ordered = [...d.slots].sort((a, b) => (a.category === b.category ? a.priority - b.priority : a.category === "compose" ? -1 : 1));
+    for (const sl of ordered) {
+      const ex = pick(sl.group, sl.category, dayIdx);
+      if (!ex) {
+        missing.add(sl.group);
+        continue;
+      }
+      used[dayIdx].add(ex.name);
+      const n = sets.get(sl) ?? MIN_SETS_PER_SLOT;
+      weeklySetsByGroup[sl.group] = (weeklySetsByGroup[sl.group] ?? 0) + n;
+      exercises.push({
+        name: ex.name,
+        muscle_group: ex.muscle_group,
+        muscle_subgroup: ex.muscle_subgroup,
+        sets: String(n),
+        is_direct: true,
+        ...prescription(sl.category, ex.name, level, timeLimited),
+      });
+    }
+    return { dayLabel: d.label, exercises };
+  });
+
+  if (timeLimited) {
+    notes.push("Le temps de séance disponible limite le volume : les repos sont au bas de la fourchette et les séries sont réduites. Plus de temps ou une séance de plus permet de monter.");
+  }
+  if (missing.size > 0) {
+    notes.push(`Aucun exercice compatible trouvé pour : ${[...missing].join(", ")} (matériel ou précautions). À compléter à la main.`);
+  }
+  if (injuryAvoidKeywords(injuries).length > 0) {
+    notes.push("Des mouvements sollicitant la zone douloureuse déclarée ont été écartés par précaution. Ce n'est pas un diagnostic : un avis médical reste nécessaire.");
+  }
+  const ceiling = weeklySetsCeilingFor(level);
+  for (const [g, n] of Object.entries(weeklySetsByGroup)) {
+    if (n > ceiling) notes.push(`${g} dépasse ${ceiling} séries par semaine pour ce niveau, à vérifier.`);
+  }
+
+  return { days: outDays, level, recovery, weeklySetsByGroup, timeLimited, notes };
 }
 
 export function generateProgramDraft(
@@ -424,61 +645,30 @@ export function generateProgramDraft(
   dislikedEquipment: string | null,
   exercisesProblematic: string | null,
   trainingAccess: ClientIntake["training_access"] = null,
-  injuries: string | null = null
+  injuries: string | null = null,
+  options: ProgramPlanOptions = {}
 ): GeneratedDay[] {
-  const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
-  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""} ${injuries ?? ""}`;
-  const allowed = allowedEquipmentTypes(trainingAccess);
-  // Fait tourner le choix quand un même groupe revient plusieurs fois dans
-  // la semaine (ex. Legs A / Legs B) plutôt que de recoller le même
-  // exercice partout — un programme "réfléchi", pas juste répété.
-  const rotation: Record<string, number> = {};
+  return generateProgramPlan(sessionsPerWeek, library, dislikedEquipment, exercisesProblematic, trainingAccess, injuries, options).days;
+}
 
-  // `avoidPosition` (Axe FJ, MASTERCLASS.md — suite de l'Axe FF) : quand
-  // renseigné, préfère un candidat dont la position de résistance
-  // (Mi-course/Allongée/Raccourcie, lib/exercise-library) diffère de celle
-  // déjà choisie pour ce groupe dans la même séance, plutôt que de laisser
-  // le hasard/round-robin empiler deux exercices en position identique.
-  // Retombe sur tous les candidats si le filtre viderait le choix (aucune
-  // régression possible par rapport au comportement précédent).
-  function pick(group: string, category: "compose" | "isolation", avoidPosition?: string | null): LibraryExercise | null {
-    const candidates = filteredCandidates(library, group, category, excludeText, allowed);
-    if (candidates.length === 0) return null;
-    const pool = avoidPosition ? candidates.filter((c) => c.position !== avoidPosition) : candidates;
-    const usable = pool.length > 0 ? pool : candidates;
-    const key = `${group}:${category}`;
-    const idx = (rotation[key] ?? 0) % usable.length;
-    rotation[key] = (rotation[key] ?? 0) + 1;
-    return usable[idx];
-  }
+/** Récupération estimée à partir de la fiche client (sommeil, stress). */
+export function recoveryFromIntake(intake: Pick<ClientIntake, "sleep_hours" | "sleep_quality" | "stress_level"> | null): RecoveryStatus {
+  if (!intake) return "normal";
+  return recoveryStatusFrom({ sleepHours: intake.sleep_hours, sleepQuality: intake.sleep_quality, stressLevel: intake.stress_level });
+}
 
-  // Nombre de séances de la semaine où chaque groupe apparaît.
-  const appearances: Record<string, number> = {};
-  for (const day of template) for (const g of day.groups) appearances[g] = (appearances[g] ?? 0) + 1;
-
-  return template.map((day) => {
-    const exercises: GeneratedExercise[] = [];
-    for (const group of day.groups) {
-      const compound = pick(group, "compose");
-      if (compound) exercises.push(toGeneratedExercise(compound, appearances[group]));
-      const isolation = pick(group, "isolation", compound?.position ?? null);
-      if (isolation) exercises.push(toGeneratedExercise(isolation, appearances[group]));
-    }
-    return { dayLabel: day.label, exercises };
-  });
+/** Niveau d'entraînement à partir du quiz d'onboarding (« confirmé » = avancé). */
+export function levelFromExperience(experience: "debutant" | "intermediaire" | "confirme" | null | undefined): TrainingLevel {
+  if (experience === "debutant") return "debutant";
+  if (experience === "confirme") return "avance";
+  return "intermediaire";
 }
 
 // Remplace un exercice par le candidat suivant du même groupe/catégorie —
 // utilisé par le bouton "remplacer" de l'éditeur pour itérer exercice par
 // exercice sans tout régénérer. `excludeNames` évite de retomber sur un
-// exercice déjà utilisé ailleurs dans la même séance.
-//
-// Bug trouvé en creusant ce fichier : contrairement à checkExerciseConflicts
-// (qui inclut intake.injuries comme source de conflit), cette fonction
-// n'excluait que le matériel détesté et les exercices déjà signalés
-// problématiques — jamais les BLESSURES déclarées. Remplacer un exercice
-// pouvait donc suggérer un mouvement qui aggrave une blessure connue, alors
-// que la donnée existe déjà et sert déjà à avertir sur le choix initial.
+// exercice déjà utilisé ailleurs dans la même séance. Les blessures
+// déclarées écartent aussi les candidats, comme à la génération.
 export function findSwapCandidate(
   current: { muscle_group: string; category: "compose" | "isolation" | null },
   library: LibraryExercise[],
@@ -486,12 +676,13 @@ export function findSwapCandidate(
   exercisesProblematic: string | null,
   injuries: string | null,
   trainingAccess: ClientIntake["training_access"],
-  excludeNames: string[]
+  excludeNames: string[],
+  level: TrainingLevel = "intermediaire"
 ): LibraryExercise | null {
   if (!current.category) return null;
-  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""} ${injuries ?? ""}`;
+  const excludeText = buildExcludeText(dislikedEquipment, exercisesProblematic, injuries);
   const allowed = allowedEquipmentTypes(trainingAccess);
-  const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed).filter(
+  const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed, level).filter(
     (ex) => !excludeNames.includes(ex.name)
   );
   return candidates[0] ?? null;

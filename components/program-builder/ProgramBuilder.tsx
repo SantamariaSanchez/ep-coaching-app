@@ -27,7 +27,8 @@ import type { ProgramTemplateWithDays, ProgramTemplateInput } from "@/utils/prog
 import type { LibraryExercise } from "@/utils/exercise-library";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import { TENSION_FOCUS_LABELS, TENSION_FOCUS_OPTIONS } from "@/lib/exercise-library-content";
-import { findSwapCandidate, generateProgramDraft } from "@/lib/plan-generator";
+import { findSwapCandidate, generateProgramPlan, recoveryFromIntake } from "@/lib/plan-generator";
+import type { TrainingLevel } from "@/lib/coaching-knowledge";
 import { computeMesocycleStatus } from "@/lib/mesocycle";
 import SessionSheet from "./SessionSheet";
 import ClientContextPanel, { plannedVolume, volumeColor, SPORT_BLOCK, type ContextPhotos } from "./ClientContextPanel";
@@ -90,6 +91,7 @@ export default function ProgramBuilder({
   clientName,
   program,
   intake = null,
+  experienceLevel = "intermediaire",
   templates = [],
   scheduleBlocks = [],
   photos = { gym: [], physique: [] },
@@ -104,6 +106,8 @@ export default function ProgramBuilder({
   clientName: string;
   program: ProgramWithDays | null;
   intake?: ClientIntake | null;
+  /** Niveau d'entraînement du client (quiz d'onboarding), pour le volume de départ et le choix des exercices. */
+  experienceLevel?: TrainingLevel;
   templates?: ProgramTemplateWithDays[];
   scheduleBlocks?: ScheduleBlock[];
   photos?: ContextPhotos;
@@ -128,6 +132,7 @@ export default function ProgramBuilder({
   const [notify, setNotify] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [planNotes, setPlanNotes] = useState<string[]>([]);
   const [delivered, setDelivered] = useState(false);
   const [mobilePanel, setMobilePanel] = useState(false);
   const [templateMenu, setTemplateMenu] = useState(false);
@@ -298,14 +303,17 @@ export default function ProgramBuilder({
       return;
     }
     if (state.days.some((d) => d.rows.some(isRowFilled)) && !(await confirm(tr("La base automatique remplace les séances en cours. Continuer ?")))) return;
-    const draft = generateProgramDraft(
+    const plan = generateProgramPlan(
       n,
       library,
       intake?.disliked_equipment ?? null,
       intake?.exercises_problematic ?? null,
       intake?.training_access ?? null,
-      intake?.injuries ?? null
+      intake?.injuries ?? null,
+      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration) }
     );
+    const draft = plan.days;
+    setPlanNotes(plan.notes);
     update((s) => ({
       ...s,
       type: "Custom",
@@ -351,7 +359,8 @@ export default function ProgramBuilder({
       intake?.exercises_problematic ?? null,
       intake?.injuries ?? null,
       intake?.training_access ?? null,
-      day.rows.map((r) => r.name)
+      day.rows.map((r) => r.name),
+      experienceLevel
     );
     if (next) patchRow(dayId, rowId, { name: next.name, muscle_group: next.muscle_group, muscle_subgroup: next.muscle_subgroup ?? "" });
   }
@@ -855,6 +864,13 @@ export default function ProgramBuilder({
                 <p className="w-full inline-flex items-center gap-1.5 text-[12px] text-red-400">
                   <AlertCircle size={13} /> {error}
                 </p>
+              )}
+              {planNotes.length > 0 && (
+                <ul className="w-full space-y-1 text-[11.5px] text-(--ep-ink)/60">
+                  {planNotes.map((n) => (
+                    <li key={n}>{tr(n)}</li>
+                  ))}
+                </ul>
               )}
             </div>
           )}
