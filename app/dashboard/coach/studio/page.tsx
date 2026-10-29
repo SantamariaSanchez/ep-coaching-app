@@ -7,6 +7,8 @@ import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import { getRealLeadsByScriptId, getLeadMagnetSlugByScriptId, getTrackedLeadsByScriptId } from "@/lib/content-leads-tracking";
+import { getPositioning } from "@/lib/positioning-server";
+import PositioningSummaryCard from "@/components/coach/PositioningSummaryCard";
 import IdeationHub from "@/components/coach/IdeationHub";
 import WeeklyLivedCard from "@/components/coach/WeeklyLivedCard";
 import { getLivedNotes } from "@/lib/lived-content-server";
@@ -35,7 +37,7 @@ export default async function CoachStudioPage({
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, canvas, appSetup, livedNotes] = await Promise.all([
+  const [ideas, notes, inspirations, scripts, canvas, appSetup, livedNotes, { data: positioning }] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
@@ -47,6 +49,7 @@ export default async function CoachStudioPage({
     getBusinessCanvas(user.id),
     getAppSetup(user.id),
     getLivedNotes(user.id, 90, 40),
+    getPositioning(user.id),
   ]);
   const weekStart = mondayStart(new Date()).getTime();
   const livedDoneThisWeek = livedNotes.some((n) => new Date(n.created_at).getTime() >= weekStart);
@@ -79,6 +82,7 @@ export default async function CoachStudioPage({
         </p>
       </div>
 
+      <PositioningSummaryCard positioning={positioning} />
       <WeeklyLivedCard doneThisWeek={livedDoneThisWeek} livedCount={livedNotes.length} pendingIdeas={livedPendingIdeas} />
 
       <IdeationHub

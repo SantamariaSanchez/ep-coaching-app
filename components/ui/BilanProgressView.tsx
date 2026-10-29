@@ -6,7 +6,8 @@ import {
 } from "recharts";
 import { Download, Flame, Scale, Footprints, Moon, Zap, Beef, Wheat, Droplets, AlertTriangle } from "lucide-react";
 import type { DailyLog } from "@/utils/daily-logs";
-import { groupLogsByWeek } from "@/lib/daily-logs-helpers";
+import { computeLogStreak, groupLogsByWeek } from "@/lib/daily-logs-helpers";
+import { useState } from "react";
 import { todayInParis } from "@/lib/dates";
 import { withAlpha } from "@/lib/theme-color";
 
@@ -47,23 +48,15 @@ function withRollingAverage(data: { date: string; value: number | null }[], wind
   });
 }
 
-// Jours consécutifs avec un bilan rempli, en remontant depuis aujourd'hui —
-// un jour sans entrée casse la série plutôt que d'être ignoré en silence.
-function computeLogStreak(logs: DailyLog[], today: string): number {
-  if (logs.length === 0) return 0;
-  const dates = new Set(logs.map((l) => l.log_date));
-  const earliest = [...dates].sort()[0];
-  const cursor = new Date(earliest + "T12:00:00");
-  const end = new Date(today + "T12:00:00");
-  let run = 0;
-  while (cursor.getTime() <= end.getTime()) {
-    const iso = cursor.toISOString().split("T")[0];
-    if (dates.has(iso)) run++;
-    else run = 0;
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return run;
-}
+type RangeKey = "30" | "90" | "all";
+const RANGES: { key: RangeKey; label: string; days?: number }[] = [
+  { key: "30", label: "30 jours", days: 30 },
+  { key: "90", label: "90 jours", days: 90 },
+  { key: "all", label: "Tout" },
+];
+
+const thStyle = (align: "left" | "right"): React.CSSProperties => ({ textAlign: align, padding: "8px 8px 6px", fontWeight: 800 });
+const tdStyle = (align: "left" | "right"): React.CSSProperties => ({ textAlign: align, padding: "7px 8px", whiteSpace: "nowrap" });
 
 function StatTile({ label, value, sub, gold = false }: { label: string; value: string; sub?: string; gold?: boolean }) {
   return (
@@ -227,6 +220,7 @@ export default function BilanProgressView({
   exportHref?: string;
 }) {
   const t = useT();
+  const [range, setRange] = useState<RangeKey>("30");
   // MASTERCLASS.md Axe L : new Date().toISOString() rend la date en UTC —
   // entre minuit et 1h/2h du matin heure de Paris, "today" pointait encore
   // sur hier et faussait la série (computeLogStreak) juste après minuit.
@@ -251,8 +245,9 @@ export default function BilanProgressView({
   const weightDelta = firstWeight != null && lastWeight != null ? Math.round((lastWeight - firstWeight) * 10) / 10 : null;
 
   const streak = computeLogStreak(logs, today);
-  const avgSteps = avgOf(logs.map((l) => l.steps));
-  const avgSleep = avgOf(logs.map((l) => l.sleep_hours));
+  const cutoff = RANGES.find((r) => r.key === range)?.days;
+  const minDate = cutoff ? new Date(new Date(today + "T12:00:00").getTime() - cutoff * 86400000).toISOString().slice(0, 10) : "";
+  const inRange = (data: { date: string; value: number | null }[]) => (minDate ? data.filter((d) => d.date >= minDate) : data);
 
   const weightData = sorted.map((l) => ({ date: l.log_date, value: l.weight_morning }));
   const sleepData = sorted.map((l) => ({ date: l.log_date, value: l.sleep_hours }));
@@ -272,7 +267,7 @@ export default function BilanProgressView({
   const sleepDebtWarning = last4Sleep.length >= 3 && shortNights >= 3;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {sleepDebtWarning && (
         <div
           style={{
@@ -288,12 +283,28 @@ export default function BilanProgressView({
         </div>
       )}
 
-      {/* Vue d'ensemble */}
+      {/* Courbes : le poids en grand avec sa période au choix, les autres en grille */}
       <div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
-          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.5)", margin: 0 }}>
-            {t("Vue d'ensemble ·")}{" "}{logs.length}{" "}{t("jour")}{logs.length > 1 ? "s" : ""}
-          </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 12, flexWrap: "wrap" }}>
+          <div role="tablist" aria-label={t("Période")} style={{ display: "inline-flex", gap: 4 }}>
+            {RANGES.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                role="tab"
+                aria-selected={range === r.key}
+                onClick={() => setRange(r.key)}
+                style={{
+                  padding: "6px 12px", borderRadius: 99, fontSize: 11.5, fontWeight: 800, cursor: "pointer",
+                  border: `1px solid ${range === r.key ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-ink-rgb),0.1)"}`,
+                  background: range === r.key ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent",
+                  color: range === r.key ? "var(--ep-accent-hi2)" : "rgba(var(--ep-ink-rgb),0.55)",
+                }}
+              >
+                {t(r.label)}
+              </button>
+            ))}
+          </div>
           {exportHref && (
             <a
               href={exportHref}
@@ -309,72 +320,67 @@ export default function BilanProgressView({
             </a>
           )}
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatTile
-            label={t("Poids")}
-            value={weightDelta != null ? `${weightDelta > 0 ? "+" : ""}${weightDelta} kg` : "N/A"}
-            sub={lastWeight != null ? `${lastWeight} kg actuel` : undefined}
-          />
-          <StatTile label={t("Pas / jour")} value={avgSteps != null ? Math.round(avgSteps).toLocaleString("fr-FR") : "N/A"} />
-          <StatTile label={t("Sommeil")} value={avgSleep != null ? `${avgSleep.toFixed(1)}h` : "N/A"} />
-          <StatTile label={t("Bilans d'affilée")} value={`${streak}j`} sub={streak > 0 ? "en cours" : undefined} gold={streak > 0} />
-        </div>
+        <TrendChart title={t("Évolution du poids")} data={inRange(weightData)} unit="kg" color="var(--ep-accent)" />
       </div>
 
-      {/* Poids : la tendance qui compte le plus */}
-      <TrendChart title={t("Évolution du poids")} data={weightData} unit="kg" color="var(--ep-accent)" />
-
-      {/* Autres métriques */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <TrendChart title={t("Sommeil")} data={sleepData} unit="h" color="#818cf8" />
-        <TrendChart title={t("Pas")} data={stepsData} unit="" color="var(--ep-ok)" />
-        <TrendChart title={t("Calories")} data={caloriesData} unit="kcal" color="var(--ep-warn)" />
+      <div className="grid sm:grid-cols-3 gap-3">
+        <TrendChart title={t("Sommeil")} data={inRange(sleepData)} unit="h" color="#818cf8" />
+        <TrendChart title={t("Pas")} data={inRange(stepsData)} unit="" color="var(--ep-ok)" />
+        <TrendChart title={t("Calories")} data={inRange(caloriesData)} unit="kcal" color="var(--ep-warn)" />
       </div>
 
-      {/* Détail semaine par semaine */}
+      {/* Détail semaine par semaine : la plus récente ouverte, un tableau compact par semaine */}
       <div>
-        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.5)", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)", margin: "0 0 10px" }}>
           {t("Détail par semaine")}
         </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {weeks.map(({ weekStart, logs: wLogs, averages }) => (
-            <div key={weekStart}>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
-                borderBottom: "1px solid rgba(var(--ep-line-rgb),0.15)", paddingBottom: 8,
-              }}>
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.5)" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {weeks.map(({ weekStart, logs: wLogs, averages }, idx) => (
+            <details key={weekStart} open={idx === 0} className="ep-card" style={{ padding: 0 }}>
+              <summary style={{ listStyle: "none", cursor: "pointer", padding: "11px 14px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, fontWeight: 900, color: "var(--ep-ink)" }}>
                   {t("Semaine du")}{" "}{fmtShort(weekStart)}
+                  {streak > 0 && idx === 0 && <Flame size={11} style={{ display: "inline", marginLeft: 5, verticalAlign: -1, color: "var(--ep-gold)" }} />}
                 </span>
-                <span style={{ fontSize: 9, color: "rgba(var(--ep-ink-rgb),0.2)", fontWeight: 600 }}>
-                  {wLogs.length}{" "}{t("jour")}{wLogs.length > 1 ? "s" : ""}
-                  {streak > 0 && weekStart === weeks[0]?.weekStart && (
-                    <Flame size={10} style={{ display: "inline", marginLeft: 4, verticalAlign: -1, color: "var(--ep-gold)" }} />
-                  )}
+                <span style={{ flex: 1, minWidth: 0, display: "flex", gap: 12, flexWrap: "wrap", fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
+                  {averages.weight != null && <span>{averages.weight} kg</span>}
+                  {averages.calories_kcal != null && <span>{Math.round(averages.calories_kcal)} kcal</span>}
+                  {averages.proteins_g != null && <span>{Math.round(averages.proteins_g)} g P</span>}
+                  {averages.steps != null && <span>{Math.round(averages.steps).toLocaleString("fr-FR")} {t("pas")}</span>}
+                  {averages.sleep_hours != null && <span>{averages.sleep_hours} h</span>}
                 </span>
+                <span style={{ fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.4)", fontWeight: 700 }}>{wLogs.length} {t("jour")}{wLogs.length > 1 ? "s" : ""}</span>
+              </summary>
+              <div style={{ overflowX: "auto", padding: "0 6px 8px" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>
+                  <thead>
+                    <tr style={{ color: "rgba(var(--ep-ink-rgb),0.45)", fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      <th style={thStyle("left")}>{t("Jour")}</th>
+                      <th style={thStyle("right")}>{t("Poids")}</th>
+                      <th style={thStyle("right")}>{t("Kcal")}</th>
+                      <th style={thStyle("right")}>{t("Prot.")}</th>
+                      <th style={thStyle("right")}>{t("Pas")}</th>
+                      <th style={thStyle("right")}>{t("Sommeil")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {wLogs.map((log) => (
+                      <tr key={log.id} style={{ borderTop: "1px solid rgba(var(--ep-line-rgb),0.1)" }}>
+                        <td style={tdStyle("left")}>
+                          <span style={{ fontWeight: 800 }}>{fmtShort(log.log_date)}</span>
+                          {log.training_name && <span style={{ display: "block", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 600 }}>{log.training_name}</span>}
+                        </td>
+                        <td style={tdStyle("right")}>{log.weight_morning != null ? `${log.weight_morning} kg` : "–"}</td>
+                        <td style={tdStyle("right")}>{log.calories_kcal != null ? log.calories_kcal : "–"}</td>
+                        <td style={tdStyle("right")}>{log.proteins_g != null ? `${log.proteins_g} g` : "–"}</td>
+                        <td style={tdStyle("right")}>{log.steps != null ? log.steps.toLocaleString("fr-FR") : "–"}</td>
+                        <td style={tdStyle("right")}>{log.sleep_hours != null ? `${log.sleep_hours} h` : "–"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-
-              <div className="ep-card" style={{ padding: "12px 14px 4px", marginBottom: 10 }}>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.4)", margin: "0 0 4px" }}>
-                  {t("Moyennes · corps & activité")}
-                </p>
-                <AvgRow metric="poids" label={t("Poids")} value={averages.weight} unit=" kg" />
-                <AvgRow metric="pas" label={t("Pas")} value={averages.steps} />
-                <AvgRow metric="sommeil" label={t("Sommeil")} value={averages.sleep_hours} unit="h" />
-                <AvgRow metric="sommeil" label={t("Qualité sommeil")} value={averages.sleep_rating} unit="%" />
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.4)", margin: "14px 0 4px" }}>
-                  {t("Moyennes · nutrition")}
-                </p>
-                <AvgRow metric="kcal" label={t("Kcal")} value={averages.calories_kcal} unit=" kcal" />
-                <AvgRow metric="proteines" label={t("Protéines")} value={averages.proteins_g} unit="g" />
-                <AvgRow metric="glucides" label={t("Glucides")} value={averages.carbs_g} unit="g" />
-                <AvgRow metric="lipides" label={t("Lipides")} value={averages.fats_g} unit="g" />
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {wLogs.map((log) => <DayCard key={log.id} log={log} />)}
-              </div>
-            </div>
+            </details>
           ))}
         </div>
       </div>

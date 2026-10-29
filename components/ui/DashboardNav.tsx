@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { hiddenSegments, isOn, type AppSetup, type Modules } from "@/lib/app-setup";
+import { cleanPositioning, isPositioningDone } from "@/lib/positioning";
 import AppSetupPrompt from "@/components/setup/AppSetupPrompt";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -529,11 +530,16 @@ export default function DashboardNav({
   const [showCycleTab, setShowCycleTab] = useState(false);
   const [isPlatformOwner, setIsPlatformOwner] = useState(false);
   const [appSetup, setAppSetup] = useState<AppSetup | null>(null);
+  const [positioningDone, setPositioningDone] = useState(false);
   const pathForSetup = usePathname();
-  const hidden = useMemo(
-    () => hiddenSegments(appSetup, pathForSetup.startsWith("/dashboard/coach") ? "coach" : "client"),
-    [appSetup, pathForSetup]
-  );
+  const hidden = useMemo(() => {
+    const h = hiddenSegments(appSetup, pathForSetup.startsWith("/dashboard/coach") ? "coach" : "client");
+    // « Ma niche et mon avatar » est un questionnaire à poser une fois : dès
+    // qu'il est rempli il quitte le menu (il reste modifiable depuis la carte
+    // « Mon positionnement » du Studio créatif et depuis Plus).
+    if (positioningDone) h.add("positionnement");
+    return h;
+  }, [appSetup, pathForSetup, positioningDone]);
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
     useNavState(isFreeTier, showCycleTab || (!!appSetup?.completed && isOn(appSetup, "cycle")), isPlatformOwner, hidden);
   const router = useRouter();
@@ -763,6 +769,16 @@ export default function DashboardNav({
             setUserRole(role);
             setHasPersonalCoach(role === "coach" && !!(data as { coach_id: string | null }).coach_id);
             setIsPlatformOwner(!!(data as { is_platform_owner: boolean | null }).is_platform_owner);
+            if (role === "coach") {
+              supabase
+                .from("coach_positioning")
+                .select("data")
+                .eq("owner_id", user.id)
+                .maybeSingle()
+                .then(({ data: pos }) => {
+                  setPositioningDone(isPositioningDone(cleanPositioning((pos as { data: unknown } | null)?.data)));
+                });
+            }
             supabase
               .from("user_app_setup")
               .select("answers, modules, completed_at")

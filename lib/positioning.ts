@@ -38,6 +38,12 @@ export const EMPTY_POSITIONING: Positioning = {
   difference: "", proof: "", enemy: "", pillars: "",
 };
 
+/** Le questionnaire est considéré comme fait quand la niche, le résultat promis et l'avatar sont posés. */
+export function isPositioningDone(p: Positioning | null | undefined): boolean {
+  if (!p) return false;
+  return !!p.niche.trim() && !!p.result.trim() && !!(p.avatarSituation.trim() || p.avatarName.trim());
+}
+
 export const POSITIONING_KEYS = Object.keys(EMPTY_POSITIONING) as (keyof Positioning)[];
 
 export function cleanPositioning(raw: unknown): Positioning {

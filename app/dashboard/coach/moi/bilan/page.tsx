@@ -18,6 +18,8 @@ import { bilanLayout, describeTracking, isWeighDay, nextWeighDayLabel } from "@/
 import { setTrackingLevelAction } from "@/app/actions/tracking";
 import { nowInParis } from "@/lib/dates";
 import BilanProgressView from "@/components/ui/BilanProgressView";
+import BilanKpiBoard from "@/components/ui/BilanKpiBoard";
+import { computeLogStreak } from "@/lib/daily-logs-helpers";
 import { upsertCoachDailyLog } from "./actions";
 import { todayInParis } from "@/lib/dates";
 
@@ -79,40 +81,66 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
   const lastWeight = allLogs.find((l) => l.log_date < date && l.weight_morning != null)?.weight_morning ?? null;
   const lastSleep = allLogs.find((l) => l.log_date < date && l.sleep_hours != null)?.sleep_hours ?? null;
 
+  const streakDays = computeLogStreak(allLogs, today);
+  const doneToday = date === today && !!todayLog;
+
+  const formBlock = complet !== "1" ? (
+    <div className="animate-scale-in">
+      <QuickBilan
+        key={date} today={date} existing={todayLog} action={upsertCoachDailyLog}
+        fields={layout.fields} extraFields={layout.extraFields} minimum={layout.minimum}
+        isWeighDay={date !== today || isWeighDay(tracking, isoDow)} nextWeighLabel={nextWeighDayLabel(tracking, isoDow)}
+        lastWeight={lastWeight} lastSleep={lastSleep} autoSteps={autoSteps} hasPlan={!!activePlan}
+        trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`}
+        tone={tracking.tone} allowQuick={tracking.level !== "simple"}
+      />
+      <p style={{ margin: "10px 2px 0", fontSize: 12 }}>
+        <Link href={date === today ? "?complet=1" : `?jour=${date}&complet=1`} style={{ color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 700 }}>{t("Formulaire complet")}</Link>
+      </p>
+    </div>
+  ) : (
+    <div className="ep-card animate-scale-in" style={{ padding: "20px 16px" }}>
+      <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertCoachDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`} setup={appSetup} />
+    </div>
+  );
+
   return (
-    <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
-      <div className="animate-fade-up" style={{ marginBottom: 24 }}>
+    <div className="page-transition mx-auto px-4 pt-8 pb-24 md:pb-10" style={{ maxWidth: 1120 }}>
+      <div className="animate-fade-up" style={{ marginBottom: 18 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{date === today ? fmt(today) : `Rattrapage · ${fmt(date)}`}</p>
         <h1 className="ep-h1">{t("Mon bilan & ma progression")}</h1>
       </div>
 
-      <BilanDayPicker basePath="/dashboard/coach/moi/bilan" today={today} selected={date} logs={allLogs} />
+      <div style={{ marginBottom: 14 }}>
+        <BilanDayPicker basePath="/dashboard/coach/moi/bilan" today={today} selected={date} logs={allLogs} />
+      </div>
 
-      {complet !== "1" ? (
-        <div className="animate-scale-in" style={{ marginBottom: 14 }}>
-          <QuickBilan
-            key={date} today={date} existing={todayLog} action={upsertCoachDailyLog}
-            fields={layout.fields} extraFields={layout.extraFields} minimum={layout.minimum}
-            isWeighDay={date !== today || isWeighDay(tracking, isoDow)} nextWeighLabel={nextWeighDayLabel(tracking, isoDow)}
-            lastWeight={lastWeight} lastSleep={lastSleep} autoSteps={autoSteps} hasPlan={!!activePlan}
-            trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`}
-            tone={tracking.tone} allowQuick={tracking.level !== "simple"}
-          />
-          <p style={{ margin: "10px 2px 0", fontSize: 12 }}>
-            <Link href={date === today ? "?complet=1" : `?jour=${date}&complet=1`} style={{ color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 700 }}>{t("Formulaire complet")}</Link>
-          </p>
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:gap-x-6 lg:items-start">
+        {allLogs.length > 0 && (
+          <div className="order-1 lg:col-start-2 lg:row-start-1">
+            <BilanKpiBoard logs={allLogs} streakDays={streakDays} />
+          </div>
+        )}
+
+        <div className="order-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-4 flex flex-col gap-4">
+          {doneToday ? (
+            <details className="ep-card" style={{ padding: 0 }}>
+              <summary style={{ listStyle: "none", cursor: "pointer", padding: "13px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ flex: 1, fontSize: 13.5, fontWeight: 800 }}>{t("Bilan du jour rempli")}</span>
+                <span style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ep-accent-hi2)" }}>{t("Modifier")}</span>
+              </summary>
+              <div style={{ padding: "0 8px 10px" }}>{formBlock}</div>
+            </details>
+          ) : (
+            formBlock
+          )}
+          <TrackingLevelPicker level={tracking.level} autoLevel={tracking.autoLevel} source={tracking.source} reasons={tracking.reasons} summary={describeTracking(tracking)} suggestion={tracking.suggestion} onPick={setTrackingLevelAction} compact />
         </div>
-      ) : (
-      <div className="ep-card animate-scale-in" style={{ padding: "20px 16px", marginBottom: 32 }}>
-        <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertCoachDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`} setup={appSetup} />
-      </div>
-      )}
 
-      <div style={{ marginBottom: 28 }}>
-        <TrackingLevelPicker level={tracking.level} autoLevel={tracking.autoLevel} source={tracking.source} reasons={tracking.reasons} summary={describeTracking(tracking)} suggestion={tracking.suggestion} onPick={setTrackingLevelAction} compact />
+        <div className="order-3 lg:col-start-2 lg:row-start-2">
+          <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />
+        </div>
       </div>
-
-      <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />
     </div>
   );
 }

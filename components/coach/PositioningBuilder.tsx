@@ -6,7 +6,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import ClaudePrompt from "@/components/ai/ClaudePrompt";
 import { savePositioningAction } from "@/app/actions/positioning";
 import {
-  NICHE_PRESETS, bioLines, completion, oneLiner, pillarList, positioningMarkdown,
+  NICHE_PRESETS, bioLines, completion, isPositioningDone, oneLiner, pillarList, positioningMarkdown,
   type Positioning,
 } from "@/lib/positioning";
 
@@ -63,7 +63,8 @@ const STEPS: { title: string; intro: string; fields: Field[] }[] = [
 export default function PositioningBuilder({ initial, hasClaudeKey }: { initial: Positioning; hasClaudeKey: boolean }) {
   const t = useT();
   const [data, setData] = useState<Positioning>(initial);
-  const [step, setStep] = useState(0);
+  // Déjà rempli : on ouvre directement la fiche finale (jamais le questionnaire vide).
+  const [step, setStep] = useState(isPositioningDone(initial) ? STEPS.length : 0);
   const [preset, setPreset] = useState<string>(initial.nicheKey || "");
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [howOpen, setHowOpen] = useState(!initial.niche);

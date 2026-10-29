@@ -127,3 +127,22 @@ export function groupLogsByWeek(logs: DailyLog[]): {
       averages: computeWeeklyAverages(wLogs),
     }));
 }
+
+// Jours consécutifs avec un bilan rempli, en remontant depuis aujourd'hui —
+// un jour sans entrée casse la série plutôt que d'être ignoré en silence.
+export function computeLogStreak(logs: DailyLog[], today: string): number {
+  if (logs.length === 0) return 0;
+  const dates = new Set(logs.map((l) => l.log_date));
+  const earliest = [...dates].sort()[0];
+  const cursor = new Date(earliest + "T12:00:00");
+  const end = new Date(today + "T12:00:00");
+  let run = 0;
+  while (cursor.getTime() <= end.getTime()) {
+    const iso = cursor.toISOString().split("T")[0];
+    if (dates.has(iso)) run++;
+    else run = 0;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return run;
+}
+
