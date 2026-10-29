@@ -154,10 +154,13 @@ export default function IdeationScripts({
   realLeadsByScriptId,
   leadTracking,
   platforms,
+  presetStatus,
 }: {
   initialScripts: CoachScript[];
   /** Script à mettre en avant (lien depuis la recherche globale). */
   focusScriptId?: string;
+  /** Filtre de statut demandé depuis le parcours du Studio (clic sur « À tourner »...). */
+  presetStatus?: { value: ScriptStatus | "all"; n: number };
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
   leadTracking?: LeadTracking;
@@ -169,6 +172,11 @@ export default function IdeationScripts({
   if (focusScriptId !== seenFocus) {
     setSeenFocus(focusScriptId);
     if (focusScriptId) setSubTab("mes-scripts");
+  }
+  const [seenPreset, setSeenPreset] = useState(presetStatus?.n);
+  if (presetStatus?.n !== seenPreset) {
+    setSeenPreset(presetStatus?.n);
+    setSubTab("mes-scripts");
   }
 
   return (
@@ -208,7 +216,7 @@ export default function IdeationScripts({
         coûte rien. Seule la visibilité change désormais.
       */}
       <div hidden={subTab !== "mes-scripts"}>
-        <MyScripts initialScripts={initialScripts} focusScriptId={focusScriptId} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
+        <MyScripts presetStatus={presetStatus} initialScripts={initialScripts} focusScriptId={focusScriptId} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={subTab !== "prompts"}>
         <PromptLibrary canvas={canvas} />
@@ -293,9 +301,11 @@ function MyScripts({
   realLeadsByScriptId,
   leadTracking,
   platforms,
+  presetStatus,
 }: {
   initialScripts: CoachScript[];
   focusScriptId?: string;
+  presetStatus?: { value: ScriptStatus | "all"; n: number };
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
   leadTracking?: LeadTracking;
   platforms?: string[];
@@ -474,6 +484,20 @@ function MyScripts({
   const [platformFilter, setPlatformFilter] = useState<string | "all">("all");
   const [pillarFilter, setPillarFilter] = useState<string | "all">("all");
   const [formatFilter, setFormatFilter] = useState<string | "all">("all");
+  const [showFilters, setShowFilters] = useState(false);
+  // Clic sur une étape du parcours (Idées → À tourner → Tourné → Publié).
+  const [seenPreset, setSeenPreset] = useState(presetStatus?.n);
+  if (presetStatus?.n !== seenPreset) {
+    setSeenPreset(presetStatus?.n);
+    if (presetStatus) {
+      setStatusFilter(presetStatus.value);
+      setSearchQuery("");
+      setPlatformFilter("all");
+      setPillarFilter("all");
+      setFormatFilter("all");
+      if (presetStatus.value === "publie") setShowPublished(true);
+    }
+  }
 
   // Lien depuis la recherche globale (?script=) : le script visé doit être
   // visible, donc on lève recherche et filtres en cours, on déplie les
@@ -845,10 +869,14 @@ function MyScripts({
       ) : (
         <>
           {rotation.length > 0 && (
-            <div className="ep-card" style={{ padding: 14, marginBottom: 14 }}>
-              <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 8 }}>
-                {tr("Variété")}
-              </p>
+            <FoldCard
+              title={tr("Variété")}
+              summary={rotation.some((c) => !c.ok)
+                ? `${rotation.filter((c) => !c.ok).length} ${tr("point à corriger")}`
+                : tr("Tout est varié")}
+              warn={rotation.some((c) => !c.ok)}
+              defaultOpen={rotation.some((c) => !c.ok)}
+            >
               <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
                 {rotation.map((c) => (
                   <li key={c.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12, lineHeight: 1.45, color: c.ok ? "rgba(var(--ep-ink-rgb),0.55)" : "var(--ep-ink)" }}>
@@ -857,13 +885,15 @@ function MyScripts({
                   </li>
                 ))}
               </ul>
-            </div>
+            </FoldCard>
           )}
           {weeklyPerf && (
-            <div className="ep-card" style={{ padding: 14, marginBottom: 14 }}>
-              <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)", marginBottom: 10 }}>
-                {tr("Performance de la semaine")}
-              </p>
+            <FoldCard
+              title={tr("Performance de la semaine")}
+              summary={`${weeklyPerf.publishedCount} ${tr("publié")}${weeklyPerf.publishedCount > 1 ? "s" : ""} · ${weeklyPerf.views.toLocaleString("fr-FR")} ${tr("vues")}`}
+              warn={weeklyPerf.missingViews > 0}
+              defaultOpen={false}
+            >
               <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: weeklyPerf.missingViews > 0 ? 8 : 0 }}>
                 <div>
                   <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ink)" }}>{weeklyPerf.publishedCount}</p>
@@ -897,7 +927,7 @@ function MyScripts({
                   {weeklyPerf.missingViews}{" "}{tr("script")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("publié")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("cette semaine sans vues loguées, ces chiffres restent incomplets tant qu'ils ne sont pas remplis (bouton « Loguer les résultats » sur chaque script publié).")}
                 </p>
               )}
-            </div>
+            </FoldCard>
           )}
 
           <div style={{ position: "relative", marginBottom: 10 }}>
@@ -916,7 +946,17 @@ function MyScripts({
               déroulantes plutôt que des rangées de pills (le pilier est une
               liste ouverte qui peut grossir, des pills deviendraient vite
               illisibles). */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            aria-expanded={showFilters}
+            className="md:hidden"
+            style={{ marginBottom: 10, fontSize: 11.5, fontWeight: 700, background: "none", border: "none", padding: 0, cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.55)" }}
+          >
+            {showFilters ? "▾" : "▸"} {tr("Filtres")}
+            {(statusFilter !== "all" || platformFilter !== "all" || pillarFilter !== "all" || formatFilter !== "all") ? " •" : ""}
+          </button>
+          <div className={showFilters ? "flex" : "hidden md:flex"} style={{ gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as ScriptStatus | "all")}
@@ -1658,6 +1698,26 @@ function MyScripts({
 }
 
 // ── Recherche générique pour les bibliothèques ──────────────────────────
+
+function FoldCard({ title, summary, warn, defaultOpen, children }: { title: string; summary: string; warn?: boolean; defaultOpen: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="ep-card" style={{ padding: open ? 14 : "10px 14px", marginBottom: 14 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", marginBottom: open ? 10 : 0 }}
+      >
+        <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)" }}>{title}</span>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: warn ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.55)" }}>
+          {summary} {open ? "▾" : "▸"}
+        </span>
+      </button>
+      {open && children}
+    </div>
+  );
+}
 
 function LibrarySearch({ query, onChange, placeholder }: { query: string; onChange: (v: string) => void; placeholder: string }) {
   return (

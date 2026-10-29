@@ -10,6 +10,7 @@ import IdeationInspirations from "@/components/coach/IdeationInspirations";
 import IdeationScripts from "@/components/coach/IdeationScripts";
 import SocialGenerator from "@/components/coach/SocialGenerator";
 import type { ContentIdea } from "@/lib/content-ideas";
+import type { ScriptStatus } from "@/lib/coach-ideation";
 import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
@@ -87,10 +88,36 @@ export default function IdeationHub({
   // si on quitte puis revient sur l'onglet (même doctrine que le montage
   // permanent des 5 sous-espaces ci-dessous : ne jamais perdre un état déjà
   // acquis).
+  // Parcours de création : idée → à tourner → tourné → publié. Chaque étape
+  // est cliquable et ouvre la bonne liste.
+  const [presetStatus, setPresetStatus] = useState<{ value: ScriptStatus | "all"; n: number }>({ value: "all", n: 0 });
+  const count = (st: ScriptStatus) => videoScripts.filter((x) => x.status === st).length;
+  const steps: { label: string; n: number; go: () => void }[] = [
+    { label: "Idées", n: initialIdeas.length, go: () => setTab("idees") },
+    { label: "À tourner", n: count("a_tourner"), go: () => { setPresetStatus((p) => ({ value: "a_tourner", n: p.n + 1 })); setTab("scripts"); } },
+    { label: "Tourné", n: count("tourne"), go: () => { setPresetStatus((p) => ({ value: "tourne", n: p.n + 1 })); setTab("scripts"); } },
+    { label: "Publié", n: count("publie"), go: () => { setPresetStatus((p) => ({ value: "publie", n: p.n + 1 })); setTab("scripts"); } },
+  ];
   const [hasOpenedGenerator, setHasOpenedGenerator] = useState(initialTab === "generateur");
 
   return (
     <div>
+      <div className="grid grid-cols-4 gap-2 mb-4" aria-label={tr("Parcours de création")}>
+        {steps.map((st, i) => (
+          <button
+            key={st.label}
+            type="button"
+            onClick={st.go}
+            className="ep-card text-left px-3 py-2.5 rounded-xl"
+            style={{ border: "1px solid rgba(var(--ep-ink-rgb),0.1)", cursor: "pointer" }}
+          >
+            <span className="block text-[9.5px] font-extrabold uppercase tracking-wider text-(--ep-ink)/40">
+              {i + 1}. {tr(st.label)}
+            </span>
+            <span className="block text-xl font-black leading-tight">{st.n}</span>
+          </button>
+        ))}
+      </div>
       <div
         role="tablist"
         aria-label={tr("Sections Idéation")}
@@ -145,7 +172,7 @@ export default function IdeationHub({
         <SocialGenerator active={hasOpenedGenerator} />
       </div>
       <div hidden={tab !== "scripts"}>
-        <IdeationScripts initialScripts={videoScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
+        <IdeationScripts presetStatus={presetStatus} initialScripts={videoScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={tab !== "posts"}>
         <WrittenPosts initialPosts={writtenPosts} />
