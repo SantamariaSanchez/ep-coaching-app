@@ -72,10 +72,15 @@ const FEEDBACK_FORMATS: { value: "ecrit" | "vocal" | "video"; label: string }[] 
 
 export default function CheckinForm({
   weightAvgFromLogs,
+  depth = "standard",
 }: {
   weightAvgFromLogs?: number | null;
+  /** « short » (niveau Simple) : l'essentiel d'abord, le reste en un tap. */
+  depth?: "short" | "standard" | "full";
 }) {
   const t = useT();
+  const [showAll, setShowAll] = useState(false);
+  const compact = depth === "short" && !showAll;
   const [state, formAction, isPending] = useActionState(submitCheckin, null);
   const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [videos, setVideos] = useState<(MediaItem & { label: string; tooBig?: boolean })[]>([]);
@@ -360,8 +365,8 @@ export default function CheckinForm({
             <label className={lbl}>{t("2. Tes 3 plus grosses victoires de la semaine")}</label>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <input name="biggest_win" placeholder={t("Victoire n°1")} aria-label={t("Victoire n°1")} className={inp} style={{ resize: "none" }} />
-              <input name="biggest_win_2" placeholder={t("Victoire n°2")} aria-label={t("Victoire n°2")} className={inp} style={{ resize: "none" }} />
-              <input name="biggest_win_3" placeholder={t("Victoire n°3")} aria-label={t("Victoire n°3")} className={inp} style={{ resize: "none" }} />
+              {!compact && <input name="biggest_win_2" placeholder={t("Victoire n°2")} aria-label={t("Victoire n°2")} className={inp} style={{ resize: "none" }} />}
+              {!compact && <input name="biggest_win_3" placeholder={t("Victoire n°3")} aria-label={t("Victoire n°3")} className={inp} style={{ resize: "none" }} />}
             </div>
           </div>
 
@@ -370,26 +375,41 @@ export default function CheckinForm({
             question="3. Évaluation de tes performances à l'entraînement"
             placeholder={t("Charges, sensations, séances manquées, intensité ressentie…")}
           />
+          {!compact && (
           <Q
             name="work_impact"
             question="4. Événements personnels qui ont impacté ta semaine"
             placeholder={t("Travail, vie perso, imprévus, fatigue accumulée…")}
           />
+          )}
+          {!compact && (
           <Q
             name="improvement_reflection"
             question="5. Comment améliorer la semaine prochaine ?"
             placeholder={t("Ce que tu comptes changer ou mieux gérer…")}
           />
+          )}
+          {!compact && (
           <Q
             name="entourage_support"
             question="6. Ton entourage aide ou complique ton suivi ?"
             placeholder={t("Sorties au resto, soutien à la maison, pression sociale…")}
           />
+          )}
           <Q
             name="upcoming_obstacles"
             question="7. Événements prévus la semaine prochaine"
             placeholder={t("Déplacement, week-end spécial, repas de famille…")}
           />
+          {depth === "short" && (
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="text-[12px] font-semibold text-(--ep-accent) text-left"
+            >
+              {showAll ? t("Version courte") : t("Ajouter plus de détails (facultatif)")}
+            </button>
+          )}
           <Q
             name="plan_adherence_feedback"
             question="8. Ton ressenti sur le plan et l'accompagnement"

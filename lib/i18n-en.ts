@@ -5839,4 +5839,10 @@ export const EN: Record<string, string> = {
   "Installer l'appli sur ton ordinateur": "Install the app on your computer",
   "Agrandir le menu": "Expand menu",
   "Réduire le menu": "Collapse menu",
+  // ── Studio créatif : parcours ──
+  "Parcours de création": "Creation pipeline",
+  "point à corriger": "issue(s) to fix",
+  "Tout est varié": "Everything is varied",
+  "Version courte": "Short version",
+  "Ajouter plus de détails (facultatif)": "Add more details (optional)",
 };

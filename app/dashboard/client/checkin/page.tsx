@@ -14,6 +14,7 @@ import {
 import { getClientDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
 import { safeExternalUrl } from "@/lib/sanitize";
 import CheckinForm from "@/components/ui/CheckinForm";
+import { getTrackingProfile } from "@/lib/tracking-profile-server";
 import WeeklyReview from "@/components/ui/WeeklyReview";
 import { getWeeklyReview } from "@/lib/weekly-review";
 import { resolveWeekStart, trainingSummary } from "@/lib/weekly-review-helpers";
@@ -206,6 +207,7 @@ export default async function CheckinPage() {
     getClientDailyLogs(user.id, 7),
   ]);
 
+  const trackingDepth = (await getTrackingProfile(user.id).catch(() => null))?.checkin.depth ?? "standard";
   const weekNum = getISOWeek(new Date(getWeekStart()));
   const avgWeight = computeWeeklyAverages(recentLogs).weight;
   const checkinDay = profile?.checkin_day ?? 1;
@@ -388,7 +390,7 @@ export default async function CheckinPage() {
             </>
           )}
           <div className="ep-card">
-            <CheckinForm weightAvgFromLogs={avgWeight} />
+            <CheckinForm weightAvgFromLogs={avgWeight} depth={trackingDepth} />
           </div>
         </div>
       )}

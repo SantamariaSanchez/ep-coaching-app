@@ -62,8 +62,10 @@ function mondayOf(date: string, isoWeekday: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-export async function runAdherenceReminders(now = new Date()): Promise<{ morning: number; evening: number; checkin: number }> {
-  const sent = { morning: 0, evening: 0, checkin: 0 };
+const CADENCE_DAYS: Record<string, number> = { weekly: 7, biweekly: 14, monthly: 30 };
+
+export async function runAdherenceReminders(now = new Date()): Promise<{ morning: number; evening: number; checkin: number; progress: number }> {
+  const sent = { morning: 0, evening: 0, checkin: 0, progress: 0 };
   const admin = createAdminClient();
   const since = new Date(now.getTime() - ACTIVE_DAYS * 86400000);
   const sinceDate = since.toISOString().slice(0, 10);
@@ -94,7 +96,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
   const toMin = (hhmm: string | null | undefined, fallback: number) => (hhmm ? Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5)) : fallback);
 
   // Qui est concerné à cette heure-ci (la plupart des passages : personne).
-  type Due = { id: string; clock: LocalClock; kinds: ("morning" | "evening" | "checkin" | "checkin_late")[]; coachId: string | null };
+  type Due = { id: string; clock: LocalClock; kinds: ("morning" | "evening" | "checkin" | "checkin_late" | "progress")[]; coachId: string | null };
   const due: Due[] = [];
   for (const p of people) {
     const clock = localClock(now, tzOf.get(p.id as string) ?? "Europe/Paris");
@@ -111,6 +113,11 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
     const weighOk = !tp || !tp.reminders.weighDaysOnly || isWeighDay(tp, clock.isoWeekday);
     if (tp?.reminders.morning !== null && weighOk && inWindow(clock.minutes, morningAt) && (isOn(setup, "poids") || isOn(setup, "sommeil"))) kinds.push("morning");
     if ((!tp || tp.reminders.evening !== null) && inWindow(clock.minutes, eveningAt)) kinds.push("evening");
+    // Photos et mensurations : un seul rappel doux, le jour du check-in (ou le
+    // dimanche sans check-in), jamais pour une personne dont la relation à
+    // l'alimentation est signalée (pas de pression sur le corps).
+    const progressDay = day ?? 7;
+    if (tp && tp.eatingSafety === "clear" && (tp.photos.cadence !== "off" || tp.measurements.cadence !== "off") && clock.isoWeekday === progressDay && inWindow(clock.minutes, morningAt + 60)) kinds.push("progress");
     // Jamais plus de rappels par jour que le niveau de suivi le permet.
     if (tp && kinds.length > tp.reminders.maxPerDay) kinds.splice(tp.reminders.maxPerDay);
     if (kinds.length) due.push({ id: p.id as string, clock, kinds, coachId: (p.coach_id as string | null) ?? null });
@@ -121,6 +128,24 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
   const dates = [...new Set(due.map((d) => d.clock.date))];
   const weekStarts = [...new Set(due.map((d) => mondayOf(d.clock.date, d.clock.isoWeekday)))];
   const oldestWeek = weekStarts.sort()[0];
+  const progressIds = due.filter((d) => d.kinds.includes("progress")).map((d) => d.id);
+  const lastPhoto = new Map<string, string>();
+  const lastMeasure = new Map<string, string>();
+  if (progressIds.length) {
+    const [{ data: ph }, { data: ci }, { data: me }] = await Promise.all([
+      admin.from("photo_updates").select("client_id, submitted_at").in("client_id", progressIds).order("submitted_at", { ascending: false }).limit(2000),
+      admin.from("check_ins").select("client_id, week_start, photo_urls").in("client_id", progressIds).order("week_start", { ascending: false }).limit(2000),
+      admin.from("measurements").select("client_id, measured_at").in("client_id", progressIds).order("measured_at", { ascending: false }).limit(2000),
+    ]);
+    for (const r of ph ?? []) if (!lastPhoto.has(r.client_id as string)) lastPhoto.set(r.client_id as string, String(r.submitted_at).slice(0, 10));
+    for (const r of ci ?? []) if (((r.photo_urls as string[] | null)?.length ?? 0) > 0) {
+      const cur = lastPhoto.get(r.client_id as string);
+      const d0 = String(r.week_start).slice(0, 10);
+      if (!cur || d0 > cur) lastPhoto.set(r.client_id as string, d0);
+    }
+    for (const r of me ?? []) if (!lastMeasure.has(r.client_id as string)) lastMeasure.set(r.client_id as string, String(r.measured_at).slice(0, 10));
+  }
+  const daysSince = (date: string | undefined, today: string) => (date ? Math.floor((Date.parse(`${today}T12:00:00Z`) - Date.parse(`${date}T12:00:00Z`)) / 86400000) : Infinity);
   const [{ data: todayLogs }, { data: checkins }] = await Promise.all([
     admin.from("daily_logs").select("client_id, log_date, weight_morning, sleep_hours").in("client_id", dueIds).in("log_date", dates),
     admin.from("check_ins").select("client_id, week_start, created_at").in("client_id", dueIds).gte("week_start", oldestWeek),
@@ -148,6 +173,22 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
           url: "/dashboard/client",
         }).catch(() => {});
         sent.evening += 1;
+      }
+      if (kind === "progress") {
+        const tp = trackingOf.get(d.id);
+        if (!tp) continue;
+        const photoDue = tp.photos.cadence !== "off" && daysSince(lastPhoto.get(d.id), d.clock.date) >= CADENCE_DAYS[tp.photos.cadence];
+        const measureDue = tp.measurements.cadence !== "off" && daysSince(lastMeasure.get(d.id), d.clock.date) >= CADENCE_DAYS[tp.measurements.cadence];
+        if (!photoDue && !measureDue) continue;
+        if (await alreadyNotifiedToday(d.id, "progress_reminder")) continue;
+        const what = photoDue && measureDue ? "tes photos et tes mensurations" : photoDue ? "tes photos" : "tes mensurations";
+        await notifyUser(d.id, {
+          type: "progress_reminder",
+          title: "📸 Un point sur ta progression",
+          body: `C'est le moment de faire ${what}. Même lumière, même endroit : ça se compare mieux, et ça prend 2 minutes.`,
+          url: "/dashboard/client/checkin",
+        }).catch(() => {});
+        sent.progress += 1;
       }
       if (kind === "checkin" || kind === "checkin_late") {
         // Semaine du jour de check-in (la veille pour la relance du lendemain).
