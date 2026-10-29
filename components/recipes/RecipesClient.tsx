@@ -706,8 +706,7 @@ export default function RecipesClient({
         />
       ) : (
         <>
-          {/* Add own recipe */}
-          {showAddForm ? (
+          {showAddForm && (
             <div className="mb-4">
               <AddRecipeForm
                 onCreate={async (input) => {
@@ -730,52 +729,42 @@ export default function RecipesClient({
                 onDone={() => setShowAddForm(false)}
               />
             </div>
-          ) : (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-(--ep-accent) mb-4"
-            >
-              <Plus size={13} />{" "}{tr("Ajouter ma recette")}
-            </button>
           )}
 
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" strokeWidth={1.8} />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={tr("Rechercher une recette ou un ingrédient...")} aria-label={tr("Rechercher une recette ou un ingrédient...")}
-              className="w-full bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
-            />
-          </div>
-
-          {/* Filter toggle */}
-          <button
-            onClick={() => setShowFilters((s) => !s)}
-            className="flex items-center justify-between w-full bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-2.5 mb-3"
-          >
-            <span className="text-xs font-bold text-(--ep-ink)/60">
-              {tr("Filtres")}{" "}{activeFilterCount > 0 && `(${activeFilterCount})`}
-            </span>
-            <div className="flex items-center gap-2">
-              {activeFilterCount > 0 && (
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    resetFilters();
-                  }}
-                  className="text-[10px] font-bold text-(--ep-accent) flex items-center gap-1"
-                >
-                  <X size={11} />{" "}{tr("Réinitialiser")}
-                </span>
-              )}
-              <ChevronDown
-                size={14}
-                className={`text-(--ep-ink)/40 transition-transform ${showFilters ? "rotate-180" : ""}`}
+          {/* Recherche, filtres et ajout sur une seule ligne : la bibliothèque s'ouvre sur les recettes, créer est une action secondaire */}
+          <div className="flex items-stretch gap-2 mb-3">
+            <div className="relative flex-1 min-w-0">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--ep-ink)/30" strokeWidth={1.8} />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={tr("Rechercher une recette ou un ingrédient...")} aria-label={tr("Rechercher une recette ou un ingrédient...")}
+                className="w-full h-full min-h-[44px] bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/40"
               />
             </div>
-          </button>
+            <button
+              onClick={() => setShowFilters((s) => !s)}
+              aria-expanded={showFilters}
+              className="flex items-center gap-1.5 min-h-[44px] bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-3.5 text-xs font-bold text-(--ep-ink)/70"
+            >
+              {tr("Filtres")}{activeFilterCount > 0 && ` (${activeFilterCount})`}
+              <ChevronDown size={14} className={`text-(--ep-ink)/40 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+            </button>
+            {activeFilterCount > 0 && (
+              <button onClick={resetFilters} aria-label={tr("Réinitialiser")} className="min-h-[44px] px-2.5 rounded-xl border border-(--ep-line)/20 text-(--ep-accent)">
+                <X size={14} />
+              </button>
+            )}
+            {!showAddForm && (
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="flex items-center gap-1.5 min-h-[44px] rounded-xl border border-(--ep-accent)/40 px-3.5 text-xs font-bold text-(--ep-accent) whitespace-nowrap"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">{tr("Ajouter ma recette")}</span>
+              </button>
+            )}
+          </div>
 
           {showFilters && (
             <div className="bg-(--ep-s2) border border-(--ep-line)/15 rounded-xl p-4 mb-4">
@@ -811,7 +800,7 @@ export default function RecipesClient({
               <p className="text-sm text-(--ep-ink)/35">{tr("Aucune recette ne correspond à ces filtres.")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ alignItems: "start" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3" style={{ alignItems: "start" }}>
               {filtered.map((r) => (
                 <RecipeCard
                   key={r.id}

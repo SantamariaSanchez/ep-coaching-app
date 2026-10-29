@@ -5868,4 +5868,12 @@ export const EN: Record<string, string> = {
   "Une histoire à partir de mon vécu": "A story from my real life",
   "Claude lit tes notes #vécu, te questionne si ça manque, n'invente rien.": "Claude reads your #vécu notes, asks you if something is missing, invents nothing.",
   "Lis mes notes vécu dans EP Coaching (outil notes_vecues). S'il n'y a rien de récent, pose-moi une question à la fois sur ma semaine et range mes réponses avec ajouter_note (tag vécu). Puis propose 3 histoires possibles, uniquement avec ce que j'ai dit, et ajoute celle que je choisis dans mon Studio (format storytelling). Si un détail te manque, demande-le moi.": "Read my real-life notes in EP Coaching (notes_vecues tool). If there is nothing recent, ask me one question at a time about my week and save my answers with ajouter_note (vécu tag). Then suggest 3 possible stories, using only what I said, and add the one I pick to my Studio (storytelling format). If a detail is missing, ask me.",
+  "À poser une seule fois": "Set up once",
+  "Pose ta niche et ton avatar en 5 minutes : tes scripts, ta bio et Claude s'en servent ensuite.": "Set your niche and avatar in 5 minutes: your scripts, bio and Claude use them from then on.",
+  "Mes chiffres": "My numbers",
+  "vs semaine d'avant": "vs previous week",
+  "jours": "days",
+  "30 jours": "30 days",
+  "90 jours": "90 days",
+  "Kcal / jour": "Kcal / day",
 };

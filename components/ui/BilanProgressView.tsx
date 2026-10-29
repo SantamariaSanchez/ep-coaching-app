@@ -33,10 +33,6 @@ function fmtShort(d: string) {
   return capitalize(new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short" }).format(new Date(d + "T12:00:00")));
 }
 
-function avgOf(values: (number | null)[]): number | null {
-  const v = values.filter((x): x is number => x != null);
-  return v.length > 0 ? v.reduce((a, b) => a + b, 0) / v.length : null;
-}
 
 // Moyenne mobile 7 jours en plus de la valeur brute — même logique que sur
 // l'onglet Sommeil, pour un langage visuel cohérent dans toute l'app.
@@ -58,24 +54,6 @@ const RANGES: { key: RangeKey; label: string; days?: number }[] = [
 const thStyle = (align: "left" | "right"): React.CSSProperties => ({ textAlign: align, padding: "8px 8px 6px", fontWeight: 800 });
 const tdStyle = (align: "left" | "right"): React.CSSProperties => ({ textAlign: align, padding: "7px 8px", whiteSpace: "nowrap" });
 
-function StatTile({ label, value, sub, gold = false }: { label: string; value: string; sub?: string; gold?: boolean }) {
-  return (
-    <div
-      className="ep-card"
-      style={{
-        padding: "12px 14px",
-        borderColor: gold ? "rgba(var(--ep-gold-rgb),0.4)" : undefined,
-        boxShadow: gold ? "0 0 0 1px rgba(var(--ep-gold-rgb),0.15), 0 6px 18px rgba(var(--ep-gold-rgb),0.1)" : undefined,
-      }}
-    >
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: "0 0 4px" }}>
-        {label}
-      </p>
-      <p style={{ fontSize: 18, fontWeight: 900, color: gold ? "var(--ep-gold)" : "var(--ep-ink)", margin: 0, letterSpacing: "-0.02em" }}>{value}</p>
-      {sub && <p style={{ fontSize: 10, color: gold ? "rgba(var(--ep-gold-rgb),0.6)" : "rgba(var(--ep-ink-rgb),0.3)", margin: "2px 0 0" }}>{sub}</p>}
-    </div>
-  );
-}
 
 function TrendChart({ title, data, unit, color }: {
   title: string;
@@ -114,20 +92,6 @@ function TrendChart({ title, data, unit, color }: {
   );
 }
 
-function StressChip({ val }: { val: "low" | "medium" | "high" | null }) {
-  if (!val) return <span style={{ color: "rgba(var(--ep-ink-rgb),0.2)" }}>-</span>;
-  const colors: Record<string, string> = { low: "var(--ep-ok)", medium: "var(--ep-yellow)", high: "var(--ep-bad)" };
-  const labels: Record<string, string> = { low: "Bas", medium: "Moyen", high: "Haut" };
-  return (
-    <span style={{
-      display: "inline-block", fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
-      padding: "2px 8px", borderRadius: 99,
-      background: withAlpha(colors[val], "20"), color: colors[val], border: `1px solid ${withAlpha(colors[val], "40")}`,
-    }}>
-      {labels[val]}
-    </span>
-  );
-}
 
 // Chaque métrique a sa propre couleur (reprise des TrendChart au dessus,
 // même langage visuel du haut en bas de l'écran) et sa propre icône —
@@ -146,70 +110,8 @@ const METRIC_STYLE = {
   lipides:   { color: "var(--ep-orange)",         Icon: Droplets },
 } as const;
 
-function KV({ metric, label, value }: { metric: keyof typeof METRIC_STYLE; label: string; value: string | null }) {
-  const { color, Icon } = METRIC_STYLE[metric];
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-      <div style={{
-        width: 22, height: 22, borderRadius: 7, flexShrink: 0,
-        background: `${withAlpha(color, "1a")}`, display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <Icon size={11} style={{ color }} strokeWidth={2.2} />
-      </div>
-      <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.3)", margin: 0, lineHeight: 1.3 }}>
-          {label}
-        </p>
-        <p style={{ fontSize: 13, fontWeight: 800, color: value !== null ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.2)", margin: 0, lineHeight: 1.3 }}>
-          {value ?? "-"}
-        </p>
-      </div>
-    </div>
-  );
-}
 
-function AvgRow({ metric, label, value, unit = "" }: { metric: keyof typeof METRIC_STYLE; label: string; value: number | null; unit?: string }) {
-  const { color, Icon } = METRIC_STYLE[metric];
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(var(--ep-line-rgb),0.08)" }}>
-      <div style={{
-        width: 24, height: 24, borderRadius: 7, flexShrink: 0,
-        background: `${withAlpha(color, "1a")}`, display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <Icon size={12} style={{ color }} strokeWidth={2.2} />
-      </div>
-      <span style={{ flex: 1, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", fontWeight: 600 }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 900, color: value !== null ? color : "rgba(var(--ep-ink-rgb),0.15)", letterSpacing: "-0.01em" }}>
-        {value !== null ? `${value}${unit}` : "-"}
-      </span>
-    </div>
-  );
-}
 
-function DayCard({ log }: { log: DailyLog }) {
-  const t = useT();
-  return (
-    <div className="ep-card" style={{ padding: "12px 14px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--ep-accent-rgb),0.6)" }}>
-            {fmtShort(log.log_date)}
-          </span>
-          {log.training_name && (
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ep-ink)" }}>{log.training_name}</span>
-          )}
-        </div>
-        {log.stress && <StressChip val={log.stress} />}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px" }}>
-        <KV metric="poids" label={t("Poids")} value={log.weight_morning != null ? `${log.weight_morning} kg` : null} />
-        <KV metric="pas" label={t("Pas")} value={log.steps != null ? log.steps.toLocaleString("fr-FR") : null} />
-        <KV metric="sommeil" label={t("Sommeil")} value={log.sleep_hours != null ? `${log.sleep_hours}h` : null} />
-        <KV metric="kcal" label={t("Kcal")} value={log.calories_kcal != null ? `${log.calories_kcal}` : null} />
-      </div>
-    </div>
-  );
-}
 
 export default function BilanProgressView({
   logs,
@@ -239,10 +141,6 @@ export default function BilanProgressView({
   const sorted = [...logs].sort((a, b) => a.log_date.localeCompare(b.log_date));
   const weeks = groupLogsByWeek(logs);
 
-  const weightsWithDate = sorted.filter((l) => l.weight_morning != null);
-  const firstWeight = weightsWithDate[0]?.weight_morning ?? null;
-  const lastWeight = weightsWithDate[weightsWithDate.length - 1]?.weight_morning ?? null;
-  const weightDelta = firstWeight != null && lastWeight != null ? Math.round((lastWeight - firstWeight) * 10) / 10 : null;
 
   const streak = computeLogStreak(logs, today);
   const cutoff = RANGES.find((r) => r.key === range)?.days;

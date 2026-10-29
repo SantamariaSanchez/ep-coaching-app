@@ -106,7 +106,7 @@ export default async function ClientProgramPage() {
   }
 
   return (
-    <div className="page-transition px-4 pt-5 pb-24 md:pb-8 max-w-2xl mx-auto">
+    <div className="page-transition px-4 pt-5 pb-24 md:pb-8 max-w-2xl lg:max-w-4xl mx-auto">
       {(!program || !weekCtx) && (
         <div className="animate-fade-up" style={{ marginBottom: 28 }}>
           <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Entraînement")}</p>
