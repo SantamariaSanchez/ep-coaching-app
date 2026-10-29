@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 const TOOLS = [
   {
     name: "ajouter_note",
-    description: "Ajoute une note dans EP Coaching (idée, résumé, compte rendu, page Notion importée...). Les #tags dans le texte servent à ranger.",
+    description: "Ajoute une note dans EP Coaching (idée, résumé, compte rendu, page Notion importée...). Les #tags dans le texte servent à ranger. Une anecdote ou un récit de la semaine d'Emmanuel prend le tag vécu.",
     inputSchema: {
       type: "object",
       properties: {

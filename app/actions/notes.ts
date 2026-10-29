@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { autoTags, deriveTitle, normalizeTag, parseTags, type NoteKind } from "@/lib/notes";
 import { hashToken, newToken } from "@/lib/api-tokens";
+import { withLivedTag } from "@/lib/lived-content";
 
 // Notes (2026-09-30) : chacun écrit uniquement dans SES notes, l'identité
 // vient toujours de la session.
@@ -35,7 +36,7 @@ export async function createNoteAction(input: { text: string; kind?: NoteKind; t
   const url = text.match(/^https?:\/\/\S+$/)?.[0] ?? null;
   const kind: NoteKind = input.kind && KINDS.includes(input.kind) ? input.kind : url ? "lien" : /^\s*(\[ \]|todo|à faire|a faire)\b/i.test(text) ? "tache" : "note";
   const explicit = [...parseTags(text), ...(input.tags ?? []).map(normalizeTag)].filter(Boolean);
-  const tags = [...new Set([...explicit, ...(explicit.length ? [] : autoTags(text, await knownTags(guard.userId)))])];
+  const tags = withLivedTag(text, [...new Set([...explicit, ...(explicit.length ? [] : autoTags(text, await knownTags(guard.userId)))])]);
   const body = text.replace(/^\s*\[ \]\s*/, "");
   const { data, error } = await createAdminClient()
     .from("notes")

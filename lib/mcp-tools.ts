@@ -15,6 +15,8 @@ import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, get
 import { isMissingColumnError } from "@/lib/coach-ideation";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
 import { describeTracking, TRACKING_LEVEL_LABEL } from "@/lib/tracking-profile";
+import { getLivedNotes, hasLivedThisWeek } from "@/lib/lived-content-server";
+import { STORY_RULES, LIVED_FORMAT_HINTS, WEEKLY_QUESTIONS } from "@/lib/lived-content";
 import { YOUTUBE_TOOLS, youtubeToolsForRole, callYoutubeTool } from "@/lib/mcp-tools-youtube";
 
 type Role = "coach" | "client" | "staff";
@@ -103,7 +105,7 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "ajouter_script",
     roles: ["coach"],
-    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach. Écris comme les vraies références : ouverture sur une question qui revient ou un faux problème (jamais une scène inventée), parties annoncées à l'oral, exemple chiffré refaisable, nuance, règle courte ; jamais de chapitre ni de timecode, ni de tiret cadratin ; dis adhésion (pas adhérence) et Road map.",
+    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach ; pour une histoire du quotidien, lis d'abord notes_vecues et n'utilise que ce qu'il y a dedans. Écris comme les vraies références : ouverture sur une question qui revient ou un faux problème (jamais une scène inventée), parties annoncées à l'oral, exemple chiffré refaisable, nuance, règle courte ; jamais de chapitre ni de timecode, ni de tiret cadratin ; dis adhésion (pas adhérence) et Road map.",
     inputSchema: {
       type: "object",
       properties: {
@@ -117,6 +119,12 @@ export const EXTRA_TOOLS: ToolDef[] = [
       },
       required: ["titre", "contenu"],
     },
+  },
+  {
+    name: "notes_vecues",
+    roles: ["coach"],
+    description: "Les notes « vécu » d'Emmanuel (journal, anecdotes, sa semaine, tagguées #vécu) avec les règles du storytelling. À lire AVANT d'écrire un script story, un reel « je raconte ma journée », un post LinkedIn ou un mail personnel. Si rien n'a été noté cette semaine, l'outil le dit : demande-lui alors ce qui s'est passé, ne comble jamais le vide.",
+    inputSchema: { type: "object", properties: { jours: { type: "number", description: "Fenêtre en jours, 30 par défaut (max 180)" } } },
   },
   {
     name: "ajouter_idee_contenu",
@@ -457,6 +465,15 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       if (isMissingColumnError(error)) ({ error } = await admin.from("coach_scripts").insert(row));
       if (error) return text("Ajout impossible, réessaie.");
       return text(`Script « ${title} » (${getContentFormat(contentFormat).label}) ajouté dans ton Studio, à tourner.`);
+    }
+
+    case "notes_vecues": {
+      const days = Math.min(180, Math.max(1, Number(args.jours ?? 30) || 30));
+      const [notes, done] = await Promise.all([getLivedNotes(ownerId, days, 25), hasLivedThisWeek(ownerId)]);
+      const head = ["Règles du storytelling :", ...STORY_RULES.map((r) => `- ${r}`), "", `Supports possibles : ${LIVED_FORMAT_HINTS.map((h) => h.label).join(", ")}.`, ""];
+      if (!done) head.push("Aucune note vécu cette semaine. Demande à Emmanuel, une question à la fois : " + WEEKLY_QUESTIONS.map((q) => q.label).join(" / ") + " Puis range sa réponse avec ajouter_note (tag vécu).", "");
+      if (!notes.length) return text(head.join("\n") + "\nAucune note vécu sur la période : ne propose aucun script story, demande-lui d'abord.");
+      return text(head.join("\n") + notes.map((n) => `### ${n.title || "Sans titre"} (${n.created_at.slice(0, 10)})\n${n.body.replace(/#[\p{L}\p{N}_-]+/gu, "").trim().slice(0, 1500)}`).join("\n\n"));
     }
 
     case "ajouter_idee_contenu": {

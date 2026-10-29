@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { fuzzyFilter } from "@/lib/fuzzy-search";
+import { withLivedTag } from "@/lib/lived-content";
 
 // Notes façon Obsidian/Tana (2026-09-30). Lectures en service role,
 // toujours filtrées sur la personne connectée (passée par la page).
@@ -113,7 +114,7 @@ export async function insertNote(ownerId: string, input: { text: string; tags?: 
   const text = input.text.slice(0, 50000).trim();
   if (!text) return null;
   const admin = createAdminClient();
-  const tags = [...new Set([...parseTags(text), ...(input.tags ?? []).map(normalizeTag)].filter(Boolean))];
+  const tags = withLivedTag(text, [...new Set([...parseTags(text), ...(input.tags ?? []).map(normalizeTag)].filter(Boolean))]);
   const { data } = await admin
     .from("notes")
     .insert({ owner_id: ownerId, title: (input.title ?? "").slice(0, 200) || deriveTitle(text), body: text, tags, kind: input.kind ?? "note", source_url: input.sourceUrl ?? null })

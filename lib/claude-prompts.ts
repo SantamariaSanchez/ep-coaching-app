@@ -167,6 +167,11 @@ const COACH: PromptGroup[] = [
         hint: "10 idées rangées directement dans ton Studio.",
         prompt: "À partir de mon positionnement et de mes piliers de contenu dans EP Coaching, propose 10 idées de contenu pour cette semaine (une phrase chacune). Quand je valide, ajoute-les dans mon Studio avec l'outil ajouter_idee_contenu.",
       },
+      {
+        title: "Une histoire à partir de mon vécu",
+        hint: "Claude lit tes notes #vécu, te questionne si ça manque, n'invente rien.",
+        prompt: "Lis mes notes vécu dans EP Coaching (outil notes_vecues). S'il n'y a rien de récent, pose-moi une question à la fois sur ma semaine et range mes réponses avec ajouter_note (tag vécu). Puis propose 3 histoires possibles, uniquement avec ce que j'ai dit, et ajoute celle que je choisis dans mon Studio (format storytelling). Si un détail te manque, demande-le moi.",
+      },
     ],
   },
   {

@@ -8,6 +8,9 @@ import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import { getRealLeadsByScriptId, getLeadMagnetSlugByScriptId, getTrackedLeadsByScriptId } from "@/lib/content-leads-tracking";
 import IdeationHub from "@/components/coach/IdeationHub";
+import WeeklyLivedCard from "@/components/coach/WeeklyLivedCard";
+import { getLivedNotes } from "@/lib/lived-content-server";
+import { hasLivedMarker, mondayStart } from "@/lib/lived-content";
 
 // Idéation (ex "Idées & brouillons", renommé le 2026-08-15) : espace de
 // création de contenu du coach — poser des idées Insta/YouTube/LinkedIn
@@ -32,7 +35,7 @@ export default async function CoachStudioPage({
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, canvas, appSetup] = await Promise.all([
+  const [ideas, notes, inspirations, scripts, canvas, appSetup, livedNotes] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
@@ -43,7 +46,11 @@ export default async function CoachStudioPage({
     // chaque prompt copié, voir IdeationScripts.tsx/buildCoachContext.
     getBusinessCanvas(user.id),
     getAppSetup(user.id),
+    getLivedNotes(user.id, 90, 40),
   ]);
+  const weekStart = mondayStart(new Date()).getTime();
+  const livedDoneThisWeek = livedNotes.some((n) => new Date(n.created_at).getTime() >= weekStart);
+  const livedPendingIdeas = livedNotes.filter((n) => !ideas.some((i) => hasLivedMarker((i as { notes?: string | null }).notes, n.id))).length;
   // Le texte intégral des guides (générateur de prompts SocialGenerator,
   // ≈1,6 Mo pour 482 guides publiés) n'est plus chargé ici — voir
   // fetchGuidesForGenerator dans actions.ts, appelé à la demande par
@@ -71,6 +78,8 @@ export default async function CoachStudioPage({
           {t("De l'idée à la vidéo publiée : idées, scripts prêts à tourner, prompteur, puis tes chiffres dans Mes stats réseaux.")}
         </p>
       </div>
+
+      <WeeklyLivedCard doneThisWeek={livedDoneThisWeek} livedCount={livedNotes.length} pendingIdeas={livedPendingIdeas} />
 
       <IdeationHub
         initialIdeas={ideas}
