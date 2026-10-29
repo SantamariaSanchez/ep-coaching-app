@@ -107,6 +107,9 @@ export const DICTIONARY_HOOKS = [
   "La grosse chose évidente, c'est ça le problème. Pas les 100 autres.",
   "Ras le bol, on met les choses au clair : [vérité].",
   "Tu penses que [X] est compliqué. En vrai, c'est beaucoup plus simple que tu ne le penses.",
+  "Vrai ou faux : [affirmation]. Faux.",
+  "On te présente toujours un ennemi, puis on te vend la méthode.",
+  "Ces méthodes fonctionnent à partir du moment où tu es en déficit calorique.",
 ];
 
 export const DICTIONARY_TRANSITIONS = [
@@ -147,6 +150,7 @@ export const SCRIPT_VOICE_POINTS = [
   "- Dans chaque partie : l'idée, pourquoi c'est vrai, un exemple chiffré refaisable (« Pour te donner un ordre d'idée, imaginons que tu pèses 80 kg »), la nuance (« ça dépend »), puis la règle courte.",
   "- Phrases courtes qui posent (« Non. », « C'est pas du tout le cas. »), d'autres plus longues qui expliquent. Une relance toutes les deux ou trois minutes, pas à chaque paragraphe.",
   "- Fin : « Donc si je devais récapituler cette vidéo... », puis deux ou trois demandes simples (s'abonner, le guide en description, l'appel en description).",
+  "- Conversation à deux (podcast 0RIR) : une question posée à chacun, « ça dépend avant tout de l'objectif », des fourchettes plutôt que des chiffres secs, et la règle qui revient : la meilleure diète est celle que tu vas réussir à tenir. En musculation, c'est la stimulation du muscle qu'on cherche, pas la charge la plus lourde.",
   "- Reel : la cible et l'erreur dans la première phrase, un format net (vrai ou faux, 3 erreurs, 4 étapes numérotées, un calcul « prends X, multiplie par Y »), une punchline, un seul mot ou numéro à commenter.",
 ];
 

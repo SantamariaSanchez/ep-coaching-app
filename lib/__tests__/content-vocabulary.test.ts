@@ -23,3 +23,16 @@ test("vocabulaire : tutoiement et blocs de prompt sans chapitre ni scène invent
   assert.match(VOCABULARY_PROMPT_BLOCK, /adhérence/);
   assert.ok(DICTIONARY_HOOKS.every((h) => !/[—–]/.test(h)));
 });
+
+test("bibliothèque du Studio : hooks et prompts sans mot banni, sans tiret, sans chapitre", async () => {
+  const { HOOK_BANK, CONTENT_PROMPTS } = await import("../content-library");
+  // Les hooks et prompts peuvent citer un mot banni pour l'interdire (ex. « jamais de chapitres »).
+  const hooks = HOOK_BANK.map((h) => h.text);
+  for (const t of hooks) {
+    assert.deepEqual(checkVocabulary(t), [], t);
+    assert.ok(!/[—–]/.test(t), t);
+  }
+  for (const p of CONTENT_PROMPTS) assert.ok(!/[—–]/.test(p.prompt), p.title);
+  const categories = new Set(HOOK_BANK.map((h) => h.category));
+  for (const c of ["Calcul", "Vrai ou faux", "Mythe démonté", "Titre YouTube"]) assert.ok(categories.has(c), c);
+});

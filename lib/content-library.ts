@@ -39,6 +39,30 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
       "À partir de ce thème : [THÈME], propose-moi 10 concepts de vidéo totalement différents (pas 10 variations du même angle) : un format liste, un format mythe/réalité, un format \"j'ai testé X pendant Y jours\", un format réaction à une pratique courante, un format avant/après une erreur corrigée, un format question de communauté, un format duo (2 avis qui s'opposent), un format démonstration technique, un format storytelling personnel, un format calcul simple fait à l'écran (« regarde bien ce calcul »). Une phrase de pitch par concept.",
   },
   {
+    title: "Reel calcul à l'écran (étapes puis réponse)",
+    category: "Script",
+    prompt:
+      "Écris-moi un reel de 30 à 40 secondes qui répond à une question de calcul : [QUESTION, ex. combien de temps pour atteindre un objectif]. Forme : le hook est la question, dite et écrite à l'écran mot pour mot dès la première image ; ensuite 3 ou 4 étapes de calcul simples, chacune posée à l'écran pendant qu'on la dit (« regarde bien ce calcul ») ; la réponse arrive à la fin et reboucle sur la question. Les repères chiffrés (déficit, protéines, maintenance) viennent uniquement des règles de l'appli, jamais d'un chiffre inventé, et reste sur des fourchettes. Un seul exemple avec un poids de départ de [80 kg]. Finis par un seul mot à commenter.",
+  },
+  {
+    title: "Reel vrai ou faux (4 affirmations)",
+    category: "Script",
+    prompt:
+      "Écris-moi un reel vrai ou faux sur le thème [THÈME] : 4 affirmations que les gens croient, dans l'ordre. Pour chacune : l'affirmation en une phrase, le verdict net (« Faux. »), puis la correction en deux ou trois phrases simples avec la nuance « ça dépend » quand elle existe. Aucune étude citée, aucun chiffre inventé, rien qui ne soit dans les règles de l'appli ou les transcripts. Termine par une seule question à commenter.",
+  },
+  {
+    title: "Démonter une méthode à la mode",
+    category: "Concept",
+    prompt:
+      "Écris-moi un script sur la méthode [MÉTHODE, ex. cardio à jeun, un seul repas par jour, couper les glucides]. Structure : 1) comment on te la présente (toujours un ennemi, puis la méthode), 2) ce qui est vrai dedans, 3) pourquoi ça marche quand ça marche (le déficit, l'adhésion), 4) ce qu'on te cache ou ce qui ne change rien, 5) ce que je ferais à la place. Ton calme et honnête, jamais moqueur, aucune étude citée, pas de chiffre inventé. Si le sujet touche à la santé ou à un trouble alimentaire, ne diagnostique rien et renvoie vers un professionnel de santé.",
+  },
+  {
+    title: "Vidéo FAQ à partir des questions de la communauté",
+    category: "YouTube",
+    prompt:
+      "Voici 5 questions reçues en messages ou en commentaires : [QUESTIONS]. Écris-moi le script d'une vidéo YouTube où je réponds à chacune : une phrase qui présente la question, la réponse courte tout de suite, puis l'explication avec un exemple chiffré refaisable (« imaginons que tu pèses 80 kg »), la nuance (« ça dépend de ton objectif »), et la règle courte à retenir. Annonce les parties à l'oral (« première question, ... »), jamais de chapitres ni de timecodes. Termine par « Donc si je devais récapituler cette vidéo... » et deux demandes (s'abonner, le guide en description).",
+  },
+  {
     title: "Description d'un reel ou d'une vidéo YouTube",
     category: "Description",
     prompt:
@@ -283,6 +307,36 @@ export const HOOK_BANK: Hook[] = [
   { text: "Montrer l'assiette pesée en gros plan avant de montrer ton visage.", kind: "visuel", category: "Objet" },
   { text: "Écrire à la main sur un carnet ce qui va être expliqué, filmé en train de s'écrire.", kind: "visuel", category: "Objet" },
   { text: "Green screen sur une actu ou un post qui tourne, puis ta réponse face cam.", kind: "visuel", category: "Actu" },
+  // Passe du 2026-10-29 : structures observées sur des reels et vidéos FR qui
+  // dépassent nettement la moyenne de leur chaîne (musculation, perte de gras),
+  // gardées seulement si elles collent au Mastermind et aux transcripts.
+  // Écartés volontairement : les promesses d'âge, les « fais-le 100 fois »,
+  // les abdos « ventre plat » et les transformations perso.
+  // Calcul à l'écran
+  { text: "Voici le calcul pour savoir [combien de temps il te faut pour atteindre ton objectif]. Regarde bien.", kind: "texte", category: "Calcul" },
+  { text: "Prends ta [maintenance], applique [ton déficit], et regarde ce que ça donne sur [quatre semaines].", kind: "texte", category: "Calcul" },
+  // Vrai ou faux
+  { text: "Vrai ou faux : [on ne peut pas perdre du gras et garder son muscle]. Faux. Et je m'explique.", kind: "texte", category: "Vrai ou faux" },
+  { text: "Vrai ou faux : [il faut aller à l'échec à chaque série]. Faux.", kind: "texte", category: "Vrai ou faux" },
+  // Mythe démonté (méthode à la mode)
+  { text: "[Le cardio à jeun] brûle du gras, c'est vrai. Mais ça veut pas dire que tu vas en perdre plus.", kind: "texte", category: "Mythe démonté" },
+  { text: "On te présente toujours un ennemi ([les glucides]), puis on te vend la méthode. Regarde.", kind: "texte", category: "Mythe démonté" },
+  { text: "Ces méthodes fonctionnent à partir du moment où t'es en déficit. Le reste, c'est la façon dont on te les vend.", kind: "texte", category: "Mythe démonté" },
+  // Individualiser, stimulation avant la charge
+  { text: "Ne te compare pas : [100 kilos au squat] ne veut pas dire la même chose pour tout le monde.", kind: "texte", category: "Individualiser" },
+  { text: "Tu cherches la charge la plus lourde, ou la meilleure stimulation du muscle ? C'est pas la même chose.", kind: "texte", category: "Paradoxe" },
+  { text: "Le plus gros problème de [la surcharge progressive], c'est d'en être obnubilé.", kind: "texte", category: "Paradoxe" },
+  // Titres YouTube (formules observées)
+  { text: "[Pourquoi il faut arrêter de] [te comparer aux autres à la salle]", kind: "texte", category: "Titre YouTube" },
+  { text: "[6] leviers pour [passer un plateau de perte de gras]", kind: "texte", category: "Titre YouTube" },
+  { text: "[Déficit calorique] en musculation : [perdre du gras sans perdre de muscle]", kind: "texte", category: "Titre YouTube" },
+  { text: "Comment [créer ta diète en musculation] : [les étapes dans l'ordre]", kind: "texte", category: "Titre YouTube" },
+  // Visuel — premières secondes, calcul, démonstration
+  { text: "Le texte à l'écran reprend mot pour mot la première phrase dite, et la voix démarre dès la première image.", kind: "visuel", category: "Action" },
+  { text: "Le calcul se pose étape par étape à l'écran sur fond noir, la réponse arrive à la fin, puis la vidéo reboucle sur la question.", kind: "visuel", category: "Texte à l'écran" },
+  { text: "Deux petits objets sur la table (deux verres, deux figurines) pour démontrer un mythe en direct.", kind: "visuel", category: "Objet" },
+  { text: "Un débutant corrigé en salle, avec son accord, filmé de l'extérieur : la correction se voit avant de s'expliquer.", kind: "visuel", category: "Réaction" },
+  { text: "Le même mouvement fait par deux morphologies différentes, côte à côte, pour montrer que la technique s'adapte.", kind: "visuel", category: "Opposition" },
 ];
 
 export interface CTAExample {
