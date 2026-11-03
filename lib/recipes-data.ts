@@ -3079,7 +3079,7 @@ export const RECIPES: Recipe[] = [
   // ─────────────────────────── SÈCHE / DÉFICIT ───────────────────────────
   {
     id: "seche-assiette-crudites-proteines",
-    name: "Assiette crudités, thon et œufs (sèche express)",
+    name: "Assiette crudités, thon et œufs (perte de gras express)",
     meal: "dejeuner",
     diet: ["pescetarien"],
     phases: ["deficit"],

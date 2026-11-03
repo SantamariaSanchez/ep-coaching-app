@@ -43,8 +43,8 @@ export async function POST(request: Request) {
   }
 
   const objLabels: Record<string, string> = {
-        prise: "prise de masse",
-        seche: "sèche",
+        prise: "prise de muscle",
+        seche: "perte de gras",
         recomp: "recomposition",
         maint: "maintien",
   };
@@ -99,9 +99,9 @@ export async function POST(request: Request) {
   - Tracking "jamais" → -20 pts (OBLIGATOIRE)
   - Tracking "parfois" → -10 pts
   - Tracking "toujours" → +15 pts
-  - Objectif "sèche" + poids "monte rapidement" → -15 pts supplémentaires (surplus non contrôlé)
-  - Objectif "prise de masse" + poids "descend" → -15 pts (déficit en masse)
-  - Objectif "prise de masse" + poids "monte rapidement" → -5 pts (surplus trop fort)
+  - Objectif "perte de gras" + poids "monte rapidement" → -15 pts supplémentaires (surplus non contrôlé)
+  - Objectif "prise de muscle" + poids "descend" → -15 pts (déficit en prise de muscle)
+  - Objectif "prise de muscle" + poids "monte rapidement" → -5 pts (surplus trop fort)
   - Protéines "1-2 sources" → -15 pts
   - Protéines "5+ sources" → +10 pts
   - Légumes "moins de 5" → -15 pts

@@ -288,7 +288,7 @@ export const EN: Record<string, string> = {
   "Musculation": "Weight training",
   "Prise de muscle, esthétique": "Muscle gain, aesthetics",
   "Perte de gras": "Fat loss",
-  "Sèche, remise en forme": "Cutting, getting back in shape",
+  "Affiner la silhouette, remise en forme": "Getting leaner, getting back in shape",
   "Bodybuilding de compétition": "Competitive bodybuilding",
   "Prépa, posing, peak week": "Prep, posing, peak week",
   "Force et powerlifting": "Strength & powerlifting",

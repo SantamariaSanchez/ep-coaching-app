@@ -121,7 +121,7 @@ const has = (a: string[], v: string) => a.includes(v);
 /** Pratiques proposées aux membres (et niches proposées aux coachs). */
 export const PRACTICE_OPTIONS: ChoiceOption[] = [
   { value: "musculation", label: "Musculation", hint: "Prise de muscle, esthétique" },
-  { value: "perte_gras", label: "Perte de gras", hint: "Sèche, remise en forme" },
+  { value: "perte_gras", label: "Perte de gras", hint: "Affiner la silhouette, remise en forme" },
   { value: "bodybuilding_compet", label: "Bodybuilding de compétition", hint: "Prépa, posing, peak week" },
   { value: "force", label: "Force et powerlifting", hint: "%1RM, RPE, 1RM estimé, total, DOTS" },
   { value: "calisthenics", label: "Street workout, calisthenics", hint: "Poids du corps, lest, skills, étapes" },

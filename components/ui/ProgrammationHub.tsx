@@ -287,7 +287,7 @@ export default function ProgrammationHub({
 
           {roadmapTemplates.length === 0 ? (
             <EmptyState
-              text="Aucun modèle de road map pour l'instant. Conçois une série de phases et de jalons type (prépa compétition, perte de poids, prise de masse) une fois, applique la à chaque nouveau client : les décalages en semaines deviennent de vraies dates."
+              text="Aucun modèle de road map pour l'instant. Conçois une série de phases et de jalons type (prépa compétition, perte de gras, prise de muscle) une fois, applique la à chaque nouveau client : les décalages en semaines deviennent de vraies dates."
               ctaHref="/dashboard/coach/programmation/roadmap/new"
               ctaLabel={tr("Créer le premier modèle")}
             />
