@@ -498,7 +498,7 @@ export function buildYoutubeDescription(d: DescriptionInput): string {
   ];
   lines.push(
     `Mon application, avec essai gratuit :\n${YT_LINKS.app}`,
-    `Réserver un appel :\n${YT_LINKS.call}`,
+    `Réserver ton audit stratégique (offert) :\n${YT_LINKS.call}`,
     `Mon site :\n${YT_LINKS.site}`,
     `Mon Instagram :\n${YT_LINKS.instagram}`,
     YT_WHO,

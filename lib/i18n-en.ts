@@ -2622,6 +2622,7 @@ export const EN: Record<string, string> = {
   "L'Académie EP arrive bientôt": "The EP Academy is coming soon",
   "Parcours le catalogue librement. Les vidéos se débloquent dès que tu rejoins l'accompagnement.": "Browse the catalog freely. Videos unlock as soon as you join the coaching.",
   "Réserver un appel découverte": "Book a discovery call",
+  "Réserver mon audit stratégique": "Book my strategy audit",
   "Progression globale": "Overall progress",
   "Formations à venir": "Upcoming courses",
   "Le contenu sera disponible très prochainement": "Content will be available very soon",
