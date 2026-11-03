@@ -78,3 +78,8 @@ export async function GET(req: Request) {
 
   return NextResponse.json({ ok: true, notified, checked: relevant.length });
 }
+
+// La tâche planifiée Supabase appelle cette route en POST (net.http_post) :
+// sans cet alias, elle recevait une 405 et le rappel ne partait jamais
+// (constaté le 03/11/2026 dans net._http_response).
+export const POST = GET;
