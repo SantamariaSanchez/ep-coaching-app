@@ -1,4 +1,5 @@
 import "server-only";
+import { isBilanDone } from "@/lib/bilan-quick";
 import { getClientDailyLogs } from "@/utils/daily-logs";
 import { getTodayStepsActual } from "@/utils/steps";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
@@ -28,18 +29,6 @@ export interface HomeQuickData {
   nutritionHabits: boolean;
 }
 
-const filledIn = (f: BilanField, l: DailyLog | null): boolean => {
-  if (!l) return false;
-  switch (f) {
-    case "poids": return l.weight_morning != null;
-    case "seance": return !!l.training_name;
-    case "pas": return l.steps != null;
-    case "energie": return l.energy != null;
-    case "sommeil": return l.sleep_hours != null;
-    default: return true;
-  }
-};
-
 export async function getHomeQuickData(userId: string, setup: AppSetup): Promise<HomeQuickData | null> {
   try {
     const [tracking, logs, autoSteps] = await Promise.all([getTrackingProfile(userId), getClientDailyLogs(userId, 14), getTodayStepsActual(userId).catch(() => null)]);
@@ -50,7 +39,7 @@ export async function getHomeQuickData(userId: string, setup: AppSetup): Promise
     const fields = layout.minimum.filter((f) => f !== "poids" || weighToday);
     if (fields.length === 0) return null;
     const existing = logs.find((l) => l.log_date === today) ?? null;
-    const done = fields.every((f) => filledIn(f, existing));
+    const done = isBilanDone(existing, fields, weighToday);
     const bits: string[] = [];
     if (existing?.weight_morning != null) bits.push(`${String(existing.weight_morning).replace(".", ",")} kg`);
     if (existing?.energy != null) bits.push(`énergie ${existing.energy}/5`);

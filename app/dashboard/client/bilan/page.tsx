@@ -10,6 +10,8 @@ import { isWithinBilanBackfillWindow } from "@/lib/dates";
 import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import QuickBilan from "@/components/tracking/QuickBilan";
+import BilanCollapse from "@/components/tracking/BilanCollapse";
+import { isBilanDone } from "@/lib/bilan-quick";
 import TrackingLevelPicker from "@/components/tracking/TrackingLevelPicker";
 import Link from "next/link";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
@@ -90,7 +92,8 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
   const lastSleep = allLogs.find((l) => l.log_date < date && l.sleep_hours != null)?.sleep_hours ?? null;
 
   const streakDays = computeLogStreak(allLogs, today);
-  const doneToday = date === today && !!todayLog;
+  // Fait = infos essentielles présentes (pas une simple ligne avec le poids).
+  const doneToday = date === today && isBilanDone(todayLog, layout.minimum, isWeighDay(tracking, isoDow));
 
   const formBlock = quickMode ? (
     <div className="animate-scale-in">
@@ -145,17 +148,7 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
         )}
 
         <div className="order-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-4 flex flex-col gap-4">
-          {doneToday ? (
-            <details className="ep-card" style={{ padding: 0 }}>
-              <summary style={{ listStyle: "none", cursor: "pointer", padding: "13px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ flex: 1, fontSize: 13.5, fontWeight: 800 }}>{t("Bilan du jour rempli")}</span>
-                <span style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ep-accent-hi2)" }}>{t("Modifier")}</span>
-              </summary>
-              <div style={{ padding: "0 8px 10px" }}>{formBlock}</div>
-            </details>
-          ) : (
-            formBlock
-          )}
+          <BilanCollapse key={date} doneAtLoad={doneToday}>{formBlock}</BilanCollapse>
           <TrackingLevelPicker
             level={tracking.level}
             autoLevel={tracking.autoLevel}

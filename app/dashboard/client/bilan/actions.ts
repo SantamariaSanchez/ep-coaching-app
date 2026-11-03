@@ -112,9 +112,9 @@ export async function upsertDailyLog(
       }
     }
 
-    // Enregistrement automatique (bilan rapide) : chaque réponse part seule,
-    // sans points ni message au coach. Un dernier appel « autosave_done »
-    // (sans champ) signale que le bilan est complet et déclenche tout cela.
+    // Bilan rapide : « autosave » = enregistrement partiel (sans points ni
+    // message au coach) ; l'envoi qui complète le bilan arrive sans ce
+    // drapeau et déclenche tout cela. « autosave_done » reste accepté.
     const silent = formData.get("autosave") === "1";
     const doneOnly = formData.get("autosave_done") === "1";
 
@@ -155,6 +155,9 @@ export async function upsertDailyLog(
     }
 
     if (silent) {
+      // Enregistrement volontaire (bouton) : la page se met à jour, sans
+      // points ni message au coach tant que le bilan n'est pas complet.
+      revalidatePath("/dashboard/client/bilan");
       revalidatePath("/dashboard/client/nutrition");
       return { success: true };
     }
