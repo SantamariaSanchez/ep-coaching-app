@@ -253,3 +253,13 @@ test("repères de volume : dérivés des règles du Mastermind, aucune valeur du
     }
   }
 });
+
+test("prompt IA : digestion, douleur et progression réelle (C44, C45, C46)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /aucun diagnostic/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne retire jamais le gluten/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /un seul changement à la fois/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /professionnel de santé/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne dis jamais de forcer/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /répétitions partielles/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
+});
