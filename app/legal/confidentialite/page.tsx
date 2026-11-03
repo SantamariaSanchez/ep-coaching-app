@@ -149,7 +149,7 @@ const sections: LegalSection[] = [
           Lorsque vous échangez avec un coach IA, le contenu de vos messages est transmis à Anthropic
           pour générer une réponse, dans les mêmes conditions de sécurité que le reste de vos données
           (cloisonnement par coach, aucune revente). Les coachs IA sont volontairement limités à des
-          sujets non cliniques (généraliste, prise de masse, perte de gras, force, débutants...) : toute
+          sujets non cliniques (généraliste, prise de muscle, perte de gras, force, débutants...) : toute
           question touchant à un sujet médical (blessure, trouble du comportement alimentaire,
           grossesse) est explicitement renvoyée vers un coach humain ou un professionnel de santé,
           jamais traitée par l&apos;intelligence artificielle elle-même.

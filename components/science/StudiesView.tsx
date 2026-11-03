@@ -68,7 +68,7 @@ function StudyForm({ initial, onSave, onCancel }: {
     <div className="bg-(--ep-s2) border border-(--ep-line)/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>{t("Titre de l'étude")}</label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Ex. Impact du volume d'entraînement sur la prise de masse à 8 semaines")} aria-label={t("Titre de l'étude")} className={inputCls} />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Ex. Impact du volume d'entraînement sur la prise de muscle à 8 semaines")} aria-label={t("Titre de l'étude")} className={inputCls} />
       </div>
       <div>
         <label className={labelCls}>{t("Hypothèse")}</label>

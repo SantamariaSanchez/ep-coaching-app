@@ -522,7 +522,7 @@ export default function DietBuilder({
           <input
             value={objective}
             onChange={(e) => setObjective(e.target.value)}
-            placeholder={self ? tr("Ton objectif en une phrase, ex. Perdre 4 kg avant l'été") : tr("Objectif en une phrase (le client le voit), ex. Sèche douce, 400 kcal sous la maintenance")}
+            placeholder={self ? tr("Ton objectif en une phrase, ex. Perdre 4 kg avant l'été") : tr("Objectif en une phrase (le client le voit), ex. Perte de gras douce, 400 kcal sous la maintenance")}
             aria-label={tr("Objectif du plan")}
             className="w-full bg-(--ep-shade)/10 border border-(--ep-line)/25 focus:border-(--ep-accent)/50 rounded-lg px-3 py-2 text-[12.5px] text-(--ep-strong) placeholder:text-(--ep-ink)/30 outline-none"
           />
