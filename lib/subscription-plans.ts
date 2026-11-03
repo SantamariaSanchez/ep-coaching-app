@@ -11,6 +11,7 @@ export const SUBSCRIPTION_PLANS = [
     sublabel: "Transformation physique, sans engagement",
     url: "https://buy.stripe.com/dRm28r9Gb2qf1Zy0PhfIs0b",
     highlight: false,
+    retired: false,
   },
   {
     id: "business",
@@ -18,6 +19,13 @@ export const SUBSCRIPTION_PLANS = [
     priceLabel: "500€ / mois",
     sublabel: "Lancer ou scaler son activité de coach, sans engagement",
     url: "https://buy.stripe.com/28EbJ12dJ7Kz9s07dFfIs0c",
-    highlight: true,
+    highlight: false,
+    // Offre arrêtée le 01/11/2026 (plus d'accompagnement business humain) :
+    // gardée seulement pour afficher l'historique des fiches existantes.
+    // Lien de paiement désactivé dans Stripe le 03/11/2026.
+    retired: true,
   },
 ] as const;
+
+/** Offres encore vendables (sans les offres arrêtées). */
+export const ACTIVE_SUBSCRIPTION_PLANS = SUBSCRIPTION_PLANS.filter((p) => !p.retired);
