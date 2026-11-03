@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getUser, getProfile, getAllCoaches, getAllActiveClientsSystemWide } from "@/utils/auth";
 import { getCoachBillingInfo, type CoachBillingInfo } from "@/lib/coach-billing";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
+import { ACTIVE_SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { todayInParis } from "@/lib/dates";
 import { TrendingUp, Users, Crown, History, ExternalLink, ArrowUp, ArrowDown, Minus } from "lucide-react";
@@ -237,7 +237,7 @@ export default async function CoachFinancePage() {
             </div>
           )}
           <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", marginTop: 10 }}>
-            {SUBSCRIPTION_PLANS.map((p) => p.priceLabel).join(" · ")}
+            {ACTIVE_SUBSCRIPTION_PLANS.map((p) => p.priceLabel).join(" · ")}
           </p>
         </div>
       </section>

@@ -153,7 +153,7 @@ export default function SubscriptionToggle({
                 className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 rounded-lg px-2.5 py-2 text-xs text-(--ep-strong) focus:outline-none focus:border-(--ep-accent)/50"
               >
                 <option value="">{t("Non renseigné")}</option>
-                {SUBSCRIPTION_PLANS.map((p) => (
+                {SUBSCRIPTION_PLANS.filter((p) => !p.retired || p.id === plan).map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.label} ({p.priceLabel})
                   </option>

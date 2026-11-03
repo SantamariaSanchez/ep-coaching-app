@@ -42,7 +42,9 @@ export function generateClientSuggestions(
   recentDailyLogs: DailyLog[],
   periodLogsCount = 0,
   program: ProgramWithDays | null = null,
-  eatingRelation: EatingRelation | null = null
+  eatingRelation: EatingRelation | null = null,
+  lastPeriodStart: string | null = null,
+  today: Date = new Date()
 ): ClientSuggestion[] {
   if (!intake) return [];
   const s: ClientSuggestion[] = [];
@@ -231,6 +233,11 @@ export function generateClientSuggestions(
       text: "Cliente sans aucun cycle encore loggé, pense à activer le suivi (onglet Cycle), utile pour interpréter les fluctuations de poids et d'énergie.",
       tab: "cycle",
     });
+  }
+
+  if (intake.gender === "Femme") {
+    const gap = cycleGapSuggestion(lastPeriodStart, today);
+    if (gap) s.push(gap);
   }
 
   const weighIns = recentDailyLogs
@@ -430,5 +437,26 @@ export function generateFatigueTrendSuggestion(
     severity: "warning",
     text: `Feeling et énergie en baisse sur les 3 dernières séances par rapport aux 3 précédentes.${rirNote} À regarder avec le client : sommeil, stress, volume et proximité de l'échec. Une décharge (volume ou charges réduits d'environ la moitié, sans règle fixe) est une option parmi d'autres, à décider par le coach.`,
     tab: "programme",
+  };
+}
+
+// Chantier P27 (sécurité du coaching féminin) : une cliente qui suit son
+// cycle et n'a plus noté de début de règles depuis plus de 3 mois. Fait
+// médical : l'absence de règles pendant 3 mois ou plus (hors grossesse,
+// ménopause, certaines contraceptions) justifie un avis médical. L'appli ne
+// conclut rien (la cliente a peut-être juste oublié de noter) : elle invite
+// la coach à vérifier avec elle et, si l'absence se confirme, à orienter vers
+// un médecin. Aucun chiffre de calories, aucun diagnostic.
+export const CYCLE_GAP_DAYS = 90;
+
+export function cycleGapSuggestion(lastPeriodStart: string | null, today: Date): ClientSuggestion | null {
+  if (!lastPeriodStart) return null;
+  const days = Math.floor((today.getTime() - new Date(lastPeriodStart).getTime()) / 86400000);
+  if (!(days > CYCLE_GAP_DAYS)) return null;
+  return {
+    id: "cycle-gap",
+    severity: "warning",
+    text: `Aucun début de règles noté depuis ${days} jours. Vérifie simplement avec la cliente si c'est un oubli de saisie. Si les règles sont vraiment absentes depuis plus de 3 mois, ne conclus rien et oriente-la vers son médecin, sans toucher seule au déficit ni à l'entraînement.`,
+    tab: "cycle",
   };
 }

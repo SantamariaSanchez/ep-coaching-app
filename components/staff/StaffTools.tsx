@@ -24,7 +24,6 @@ interface Offer {
 // donnent ici, en appel.
 export function OffersPanel() {
   const physique = SUBSCRIPTION_PLANS.find((p) => p.id === "physique");
-  const business = SUBSCRIPTION_PLANS.find((p) => p.id === "business");
   const offers: Offer[] = [
     {
       name: "Coaching individuel physique",
@@ -32,14 +31,6 @@ export function OffersPanel() {
       forWho: "Quelqu'un qui veut transformer son physique avec un vrai suivi humain, et qui a déjà essayé seul sans tenir.",
       includes: ["Programme d'entraînement et nutrition construits sur sa situation", "Bilan chaque semaine et ajustements", "Messagerie directe avec son coach", "Toute l'appli EP Coaching"],
       link: physique?.url ?? null,
-      linkLabel: "Lien de paiement",
-    },
-    {
-      name: "Coaching business",
-      price: business?.priceLabel ?? "500€ / mois",
-      forWho: "Un coach qui veut lancer ou développer son activité, accompagné par Santamaria en personne.",
-      includes: ["Accompagnement individuel par Santamaria", "Offre, acquisition, vente et organisation", "L'appli EP Coaching pour suivre ses propres clients"],
-      link: business?.url ?? null,
       linkLabel: "Lien de paiement",
     },
     ...COACH_PLATFORM_PLANS.map((p) => ({
