@@ -1,17 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { changedFields, fieldFilled, formatHours, parseDecimal, parseHours } from "@/lib/bilan-quick";
 import { Check, ChevronDown, Minus, Plus } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { BilanField } from "@/lib/tracking-profile";
 import type { DailyLog } from "@/utils/daily-logs";
 
-// Bilan du jour en un seul écran, pensé pour moins de 20 secondes : chaque
-// réponse s'enregistre toute seule (plus de bouton Enregistrer par carte),
-// les valeurs sont pré-remplies avec la dernière connue (un tap pour
-// confirmer), et seuls les champs que le moteur de tracking juge utiles à
-// cette personne sont affichés (lib/tracking-profile.ts). Le reste est à un
-// tap sous « Plus de détails », jamais perdu.
+// Bilan du jour en un seul écran, pensé pour moins de 20 secondes. Seuls les
+// champs que le moteur de tracking juge utiles à cette personne sont affichés
+// (lib/tracking-profile.ts), le reste sous « Plus de détails ».
+//
+// 03/11/2026 (retour d'Emmanuel) : plus d'enregistrement à chaque tap. Les
+// réponses restent en brouillon, se tapent au clavier (poids, sommeil « 7h30 »)
+// ou s'ajustent avec − / +, et partent en un seul envoi avec le bouton
+// « Enregistrer le bilan ». La dernière valeur connue n'est plus pré-remplie
+// en douce : « Reprendre … » la reprend d'un tap.
 
 export type QuickAction = (
   prev: { error?: string; success?: boolean } | null,
@@ -67,56 +71,76 @@ function Chips<T extends string | number>({ value, options, onPick, label }: { v
   );
 }
 
-/** Stepper pré-rempli : un tap sur « OK » confirme la valeur suggérée, ± ajuste puis enregistre seul. */
-function Stepper({
-  value, suggested, step, min, max, unit, format, onCommit, label, decimals = 1,
+/**
+ * Champ numérique : on tape la valeur au clavier, ou on ajuste avec − / +.
+ * Rien ne part au serveur ici : la valeur reste en brouillon jusqu'au bouton
+ * « Enregistrer le bilan ». La dernière valeur connue est proposée à part
+ * (« Reprendre … »), jamais comptée comme saisie sans un tap.
+ */
+function NumberInput({
+  value, onChange, parse, format, editFormat, step, min, max, unit, label, suggestion, inputMode = "decimal", placeholder,
 }: {
-  value: number | null; suggested: number | null; step: number; min: number; max: number; unit: string;
-  format?: (n: number) => string; onCommit: (n: number) => void; label: string; decimals?: number;
+  value: number | null; onChange: (n: number | null) => void; parse: (raw: string) => number | null;
+  format: (n: number) => string; editFormat?: (n: number) => string; step: number; min: number; max: number; unit: string; label: string;
+  suggestion?: number | null; inputMode?: "decimal" | "numeric" | "text"; placeholder?: string;
 }) {
   const t = useT();
-  const [draft, setDraft] = useState<number | null>(value ?? suggested);
-  const [saved, setSaved] = useState(value != null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const round = (n: number) => Number(n.toFixed(decimals));
-  const clamp = (n: number) => Math.min(max, Math.max(min, round(n)));
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const [text, setText] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
+  const decimals = String(step).split(".")[1]?.length ?? 0;
+  const clamp = (n: number) => Math.min(max, Math.max(min, Number(n.toFixed(decimals))));
+  const edit = editFormat ?? format;
 
-  function change(delta: number) {
-    const next = clamp((draft ?? min) + delta);
-    setDraft(next);
-    setSaved(false);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { onCommit(next); setSaved(true); }, 700);
+  function typed(raw: string) {
+    setText(raw);
+    if (raw.trim() === "") { setInvalid(false); onChange(null); return; }
+    const n = parse(raw);
+    const ok = n != null && n >= min && n <= max;
+    setInvalid(!ok);
+    if (ok) onChange(n);
   }
-  function confirm() {
-    if (draft == null) return;
-    if (timer.current) clearTimeout(timer.current);
-    onCommit(draft);
-    setSaved(true);
+  function bump(delta: number) {
+    const base = value ?? suggestion ?? null;
+    if (base == null) return; // rien de connu : on tape la valeur
+    const next = clamp(base + delta);
+    setText(null);
+    setInvalid(false);
+    onChange(next);
   }
-  const shown = draft == null ? "···" : format ? format(draft) : String(draft).replace(".", ",");
+  const shown = text ?? (value == null ? "" : format(value));
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <button type="button" onClick={() => change(-step)} aria-label={`${label} -`} style={{ ...chipBase, flex: "0 0 48px", minHeight: 48 }}><Minus size={18} /></button>
-      <div style={{ flex: 1, textAlign: "center", fontSize: 24, fontWeight: 900, color: draft == null ? "rgba(var(--ep-ink-rgb),0.3)" : "var(--ep-ink)", fontVariantNumeric: "tabular-nums" }}>
-        {shown}<span style={{ fontSize: 13, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)", marginLeft: 4 }}>{unit}</span>
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button type="button" onClick={() => bump(-step)} aria-label={`${label} −`} style={{ ...chipBase, flex: "0 0 48px", minHeight: 48 }}><Minus size={18} /></button>
+        <label style={{ flex: 1, position: "relative", display: "block" }}>
+          <span className="sr-only">{label}</span>
+          <input
+            type="text" inputMode={inputMode} enterKeyHint="done" autoComplete="off"
+            value={shown}
+            placeholder={placeholder ?? (suggestion != null ? format(suggestion) : "")}
+            onFocus={(e) => { setText(value == null ? "" : edit(value)); requestAnimationFrame(() => e.target.select()); }}
+            onChange={(e) => typed(e.target.value)}
+            onBlur={() => { setText(null); setInvalid(false); }}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+            aria-invalid={invalid}
+            style={{
+              width: "100%", minHeight: 48, borderRadius: 12, textAlign: "center", fontSize: 22, fontWeight: 900,
+              fontVariantNumeric: "tabular-nums", color: "var(--ep-ink)", background: "rgba(var(--ep-shade-rgb),0.3)",
+              border: `1px solid ${invalid ? "var(--ep-bad)" : "rgba(var(--ep-line-rgb),0.3)"}`, padding: unit ? "0 34px 0 8px" : "0 8px",
+            }}
+          />
+          {unit && <span aria-hidden style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)", pointerEvents: "none" }}>{unit}</span>}
+        </label>
+        <button type="button" onClick={() => bump(step)} aria-label={`${label} +`} style={{ ...chipBase, flex: "0 0 48px", minHeight: 48 }}><Plus size={18} /></button>
       </div>
-      <button type="button" onClick={() => change(step)} aria-label={`${label} +`} style={{ ...chipBase, flex: "0 0 48px", minHeight: 48 }}><Plus size={18} /></button>
-      <button
-        type="button" onClick={confirm} disabled={draft == null} aria-label={t("Valider")}
-        style={{ ...chipBase, flex: "0 0 56px", minHeight: 48, ...(saved ? { background: "rgba(var(--ep-ok-rgb),0.14)", borderColor: "rgba(var(--ep-ok-rgb),0.4)", color: "var(--ep-ok)" } : chipOn) }}
-      >
-        {saved ? <Check size={18} strokeWidth={3} /> : t("OK")}
-      </button>
+      {value == null && suggestion != null && (
+        <button type="button" onClick={() => onChange(suggestion)} style={{ marginTop: 6, background: "none", border: "none", padding: "4px 0", minHeight: 32, cursor: "pointer", fontSize: 12, fontWeight: 800, color: "var(--ep-accent)" }}>
+          {t("Reprendre")} {format(suggestion)}{unit ? ` ${unit}` : ""}
+        </button>
+      )}
+      {invalid && <p role="alert" style={{ margin: "5px 0 0", fontSize: 11, color: "var(--ep-bad)" }}>{t("Valeur non reconnue")}</p>}
     </div>
   );
-}
-
-function hm(n: number): string {
-  const total = Math.round(n * 60);
-  const h = Math.floor(total / 60), m = total % 60;
-  return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, "0")}`;
 }
 
 const TRI = [{ v: "low", label: "Bas" }, { v: "medium", label: "Moyen" }, { v: "high", label: "Haut" }];
@@ -124,8 +148,13 @@ const TRI = [{ v: "low", label: "Bas" }, { v: "medium", label: "Moyen" }, { v: "
 export default function QuickBilan(props: QuickBilanProps) {
   const t = useT();
   const { today, existing, action, minimum } = props;
+  // Ce qui est en base / ce que la personne est en train de remplir. Rien ne
+  // part tant qu'elle n'a pas appuyé sur « Enregistrer le bilan ».
+  const [saved, setSaved] = useState<Partial<DailyLog>>(existing ?? {});
   const [log, setLog] = useState<Partial<DailyLog>>(existing ?? {});
+  const [diet, setDiet] = useState<"oui" | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [errorText, setErrorText] = useState<string | null>(null);
   const quickStored = useSyncExternalStore(
     (cb) => { window.addEventListener("ep-bilan-quick", cb); return () => window.removeEventListener("ep-bilan-quick", cb); },
     () => { try { return localStorage.getItem("ep-bilan-quick") === "1"; } catch { return false; } },
@@ -148,56 +177,53 @@ export default function QuickBilan(props: QuickBilanProps) {
   const primary = shortList;
   const details = [...props.fields.filter((f) => !shortList.includes(f)), ...props.extraFields];
 
-  const filled = useCallback((f: BilanField, l: Partial<DailyLog>): boolean => {
-    switch (f) {
-      case "poids": return l.weight_morning != null;
-      case "seance": return !!l.training_name;
-      case "pas": return l.steps != null;
-      case "energie": return l.energy != null;
-      case "sommeil": return l.sleep_hours != null;
-      case "digestion": return !!l.digestion;
-      case "stress": return !!l.stress;
-      case "humeur": return l.mood != null;
-      case "faim": return !!l.hunger;
-      case "courbatures": return l.soreness != null;
-      case "hydratation": return l.water_l != null;
-      case "sommeil_qualite": return l.sleep_rating != null;
-      case "horaires_sommeil": return !!l.bedtime_actual && !!l.wake_time_actual;
-      case "cardio_repos": return l.resting_hr != null;
-    }
-  }, []);
-
   const needsWeigh = primary.includes("poids") && (props.isWeighDay || weighAnyway || existing?.weight_morning != null);
   const required = primary.filter((f) => (f === "poids" ? needsWeigh : true));
-  const doneCount = required.filter((f) => filled(f, log)).length;
+  const doneCount = required.filter((f) => fieldFilled(f, log)).length;
   const complete = required.length > 0 && doneCount === required.length;
+  const savedComplete = required.length > 0 && required.every((f) => fieldFilled(f, saved));
+  const changes = changedFields(saved as Record<string, unknown>, log as Record<string, unknown>);
+  const dirty = Object.keys(changes).length > 0 || diet !== null;
 
-  const save = useCallback(async (patch: Record<string, string | number | null>, extra?: Record<string, string>) => {
-    const fd = new FormData();
-    fd.set("log_date", today);
-    fd.set("autosave", "1");
-    for (const [k, v] of Object.entries(patch)) fd.set(k, v == null ? "" : String(v));
-    for (const [k, v] of Object.entries(extra ?? {})) fd.set(k, v);
-    setStatus("saving");
-    const res = await action(null, fd);
-    setStatus(res.error ? "error" : "saved");
-  }, [action, today]);
+  // Saisie non enregistrée : le navigateur prévient avant de quitter la page.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
-  function put(patch: Partial<DailyLog>, send?: Record<string, string | number | null>) {
+  function put(patch: Partial<DailyLog>) {
     setLog((l) => ({ ...l, ...patch }));
-    void save((send ?? patch) as Record<string, string | number | null>);
+    if (status !== "saving") setStatus("idle");
   }
 
-  // Bilan complet : un seul signal final (points, message au coach).
-  useEffect(() => {
-    if (complete && !doneSent.current && status === "saved") {
-      doneSent.current = true;
-      const fd = new FormData();
-      fd.set("log_date", today);
-      fd.set("autosave_done", "1");
-      void action(null, fd);
+  /** Un seul envoi avec tout ce qui a changé. Bilan complet : points et coach prévenu, une fois. */
+  async function save(): Promise<boolean> {
+    if (!dirty || status === "saving") return true;
+    const fd = new FormData();
+    fd.set("log_date", today);
+    for (const [k, v] of Object.entries(changes)) fd.set(k, v == null ? "" : String(v));
+    if ("weight_morning" in changes && changes.weight_morning != null) fd.set("weight_time", new Date().toTimeString().slice(0, 5));
+    if (diet) fd.set("diet_followed", diet);
+    const finishing = complete && !doneSent.current && !savedComplete;
+    if (!finishing) fd.set("autosave", "1");
+    setStatus("saving");
+    setErrorText(null);
+    try {
+      const res = await action(null, fd);
+      if (res.error) { setStatus("error"); setErrorText(res.error); return false; }
+      if (finishing) doneSent.current = true;
+      setSaved(log);
+      setDiet(null);
+      setStatus("saved");
+      return true;
+    } catch {
+      setStatus("error");
+      setErrorText(t("Connexion perdue, réessaie."));
+      return false;
     }
-  }, [complete, status, action, today]);
+  }
 
   const row = (f: BilanField) => {
     switch (f) {
@@ -213,10 +239,11 @@ export default function QuickBilan(props: QuickBilanProps) {
           );
         }
         return (
-          <Row key={f} label={t("Poids à jeun")} hint={log.weight_morning == null && props.lastWeight != null ? t("Dernier poids pré-rempli : un tap pour confirmer") : undefined}>
-            <Stepper
-              label={t("Poids")} value={log.weight_morning ?? null} suggested={props.lastWeight} step={0.1} min={30} max={300} unit="kg"
-              onCommit={(n) => put({ weight_morning: n }, { weight_morning: n, weight_time: new Date().toTimeString().slice(0, 5) })}
+          <Row key={f} label={t("Poids à jeun")}>
+            <NumberInput
+              label={t("Poids")} value={log.weight_morning ?? null} suggestion={props.lastWeight} step={0.1} min={30} max={300} unit="kg"
+              parse={parseDecimal} format={(n) => n.toFixed(1).replace(".", ",")} editFormat={(n) => String(n).replace(".", ",")}
+              onChange={(n) => put({ weight_morning: n })}
             />
           </Row>
         );
@@ -240,19 +267,21 @@ export default function QuickBilan(props: QuickBilanProps) {
         );
       case "pas":
         return (
-          <Row key={f} label={t("Pas")} hint={log.steps == null && props.autoSteps != null ? t("Compté automatiquement : un tap pour confirmer") : undefined}>
-            <Stepper
-              label={t("Pas")} value={log.steps ?? null} suggested={props.autoSteps} step={1000} min={0} max={100000} unit="" decimals={0}
-              format={(n) => n.toLocaleString("fr-FR")} onCommit={(n) => put({ steps: n })}
+          <Row key={f} label={t("Pas")} hint={log.steps == null && props.autoSteps != null ? t("Comptés automatiquement : « Reprendre » pour les garder") : undefined}>
+            <NumberInput
+              label={t("Pas")} value={log.steps ?? null} suggestion={props.autoSteps} step={500} min={0} max={100000} unit="" inputMode="numeric"
+              parse={(raw) => { const n = parseDecimal(raw.replace(/[\s.]/g, "")); return n == null ? null : Math.round(n); }}
+              format={(n) => n.toLocaleString("fr-FR")} editFormat={(n) => String(n)} onChange={(n) => put({ steps: n })}
             />
           </Row>
         );
       case "sommeil":
         return (
-          <Row key={f} label={t("Sommeil")}>
-            <Stepper
-              label={t("Sommeil")} value={log.sleep_hours ?? null} suggested={props.lastSleep ?? 7.5} step={0.5} min={0} max={16} unit="" decimals={2}
-              format={hm} onCommit={(n) => put({ sleep_hours: n })}
+          <Row key={f} label={t("Sommeil")} hint={t("Tape par exemple 7h30 ou 7,5")}>
+            <NumberInput
+              label={t("Sommeil")} value={log.sleep_hours ?? null} suggestion={props.lastSleep} step={0.25} min={0} max={16} unit="" inputMode="text"
+              parse={parseHours} format={formatHours} editFormat={(n) => formatHours(n).replace(/\s/g, "")} placeholder={t("ex. 7h30")}
+              onChange={(n) => put({ sleep_hours: n })}
             />
           </Row>
         );
@@ -273,7 +302,7 @@ export default function QuickBilan(props: QuickBilanProps) {
       case "hydratation":
         return (
           <Row key={f} label={t("Eau bue")}>
-            <Stepper label={t("Eau")} value={log.water_l ?? null} suggested={2} step={0.25} min={0} max={15} unit="L" decimals={2} onCommit={(n) => put({ water_l: n })} />
+            <NumberInput label={t("Eau")} value={log.water_l ?? null} step={0.25} min={0} max={15} unit="L" parse={parseDecimal} format={(n) => String(n).replace(".", ",")} onChange={(n) => put({ water_l: n })} placeholder="2" />
           </Row>
         );
       case "sommeil_qualite":
@@ -286,8 +315,8 @@ export default function QuickBilan(props: QuickBilanProps) {
         return (
           <Row key={f} label={t("Coucher et lever")}>
             <div style={{ display: "flex", gap: 8 }}>
-              <TimeField label={t("Coucher (hier soir)")} value={log.bedtime_actual?.slice(0, 5) ?? ""} onChange={(v) => put({ bedtime_actual: v })} />
-              <TimeField label={t("Lever (ce matin)")} value={log.wake_time_actual?.slice(0, 5) ?? ""} onChange={(v) => put({ wake_time_actual: v })} />
+              <TimeField label={t("Coucher (hier soir)")} value={log.bedtime_actual?.slice(0, 5) ?? ""} onChange={(v) => put({ bedtime_actual: v || null })} />
+              <TimeField label={t("Lever (ce matin)")} value={log.wake_time_actual?.slice(0, 5) ?? ""} onChange={(v) => put({ wake_time_actual: v || null })} />
             </div>
           </Row>
         );
@@ -304,21 +333,22 @@ export default function QuickBilan(props: QuickBilanProps) {
   };
 
   const message = props.tone === "encourageant" ? t("Bravo, c'est fait. Chaque jour compte.") : props.doneNote ?? t("Bilan du jour terminé.");
+  const saveLabel = status === "saving" ? t("Enregistrement…")
+    : dirty ? (complete ? t("Enregistrer le bilan") : t("Enregistrer pour l'instant"))
+    : status === "saved" ? t("Enregistré") : t("Rien à enregistrer");
 
   return (
     <section className="ep-card" aria-label={t("Bilan du jour")} style={{ padding: "14px 14px 12px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <p style={{ ...labelStyle, margin: 0, flex: 1 }}>{t("Bilan du jour")}</p>
-        <span aria-live="polite" style={{ fontSize: 11, fontWeight: 800, color: status === "error" ? "var(--ep-bad)" : "var(--ep-ok)" }}>
-          {status === "saving" ? "…" : status === "saved" ? t("Enregistré") : status === "error" ? t("Erreur, réessaie") : ""}
-        </span>
+        {dirty && status !== "saving" && <span style={{ fontSize: 11, fontWeight: 800, color: "var(--ep-warn, #d97706)" }}>{t("Non enregistré")}</span>}
         <span style={{ fontSize: 11, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.45)" }}>{doneCount}/{required.length}</span>
       </div>
       <div style={{ height: 4, borderRadius: 99, background: "rgba(var(--ep-ink-rgb),0.07)", marginBottom: 12, overflow: "hidden" }}>
         <div style={{ width: `${required.length ? (doneCount / required.length) * 100 : 0}%`, height: "100%", background: "var(--ep-accent)", transition: "width .25s ease" }} />
       </div>
 
-      {complete && (
+      {savedComplete && !dirty && (
         <p style={{ margin: "0 0 12px", fontSize: 13, fontWeight: 700, color: "var(--ep-ok)", display: "flex", alignItems: "center", gap: 6 }}>
           <Check size={15} strokeWidth={3} /> {message}
         </p>
@@ -330,11 +360,12 @@ export default function QuickBilan(props: QuickBilanProps) {
         <div style={{ marginTop: 14 }}>
           <p style={labelStyle}>{t("Diète suivie ?")}</p>
           <Chips
-            label={t("Diète suivie ?")} value={null}
+            label={t("Diète suivie ?")} value={diet}
             options={[{ v: "oui", label: t("Oui, comme prévu") }, { v: "non", label: t("Non, autrement") }]}
-            onPick={(v) => {
-              if (v === "oui") void save({}, { diet_followed: "oui" });
-              else window.location.href = props.trackerHref ?? "/dashboard/client/nutrition";
+            onPick={async (v) => {
+              if (v === "oui") { setDiet(diet === "oui" ? null : "oui"); return; }
+              // Ce qui est déjà rempli est enregistré avant d'aller au tracker.
+              if (await save()) window.location.href = props.trackerHref ?? "/dashboard/client/nutrition";
             }}
           />
         </div>
@@ -357,6 +388,23 @@ export default function QuickBilan(props: QuickBilanProps) {
           )}
         </div>
       )}
+
+      <button
+        type="button" onClick={() => void save()} disabled={!dirty || status === "saving"}
+        style={{
+          marginTop: 14, width: "100%", minHeight: 50, borderRadius: 14, fontSize: 15, fontWeight: 900, cursor: dirty ? "pointer" : "default",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background .2s ease, color .2s ease",
+          ...(dirty
+            ? { background: "var(--ep-accent)", color: "var(--ep-strong)", border: "1px solid var(--ep-accent)" }
+            : { background: "rgba(var(--ep-ok-rgb),0.1)", color: status === "saved" ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.25)" }),
+        }}
+      >
+        {!dirty && status === "saved" && <Check size={17} strokeWidth={3} />}
+        {saveLabel}
+      </button>
+      <p aria-live="polite" style={{ margin: errorText ? "6px 0 0" : 0, fontSize: 12, fontWeight: 700, color: "var(--ep-bad)", textAlign: "center" }}>
+        {status === "error" ? errorText ?? t("Erreur, réessaie") : ""}
+      </p>
     </section>
   );
 }
@@ -383,18 +431,18 @@ function TimeField({ label, value, onChange }: { label: string; value: string; o
   return (
     <label style={{ flex: 1, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
       {label}
-      <input type="time" defaultValue={value} onBlur={(e) => e.target.value && onChange(e.target.value)} style={{ ...chipBase, width: "100%", marginTop: 3, fontSize: 15 }} />
+      <input type="time" defaultValue={value} onChange={(e) => onChange(e.target.value)} style={{ ...chipBase, width: "100%", marginTop: 3, fontSize: 15 }} />
     </label>
   );
 }
 
-function NumField({ label, value, min, max, onChange }: { label: string; value: number | null; min: number; max: number; onChange: (v: number) => void }) {
+function NumField({ label, value, min, max, onChange }: { label: string; value: number | null; min: number; max: number; onChange: (v: number | null) => void }) {
   return (
     <label style={{ flex: 1, fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
       {label}
       <input
         type="number" inputMode="numeric" defaultValue={value ?? ""} min={min} max={max}
-        onBlur={(e) => { const n = Number(e.target.value); if (e.target.value && n >= min && n <= max) onChange(n); }}
+        onChange={(e) => { const raw = e.target.value; if (!raw) { onChange(null); return; } const n = Number(raw); if (n >= min && n <= max) onChange(n); }}
         style={{ ...chipBase, width: "100%", marginTop: 3, fontSize: 15 }}
       />
     </label>
