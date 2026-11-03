@@ -166,7 +166,7 @@ export default function QuickRoadmapForm({
           </span>
         </div>
         <p className="mt-3 mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/45">
-          <Sparkles size={12} /> {t("Trajectoires toutes faites")}
+          <Sparkles size={12} /> {t("Road maps toutes faites")}
         </p>
         <div className="flex flex-wrap gap-1.5">
           {PRESETS.map((p) => (
