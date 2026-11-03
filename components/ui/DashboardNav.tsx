@@ -157,7 +157,7 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
     // du quotidien.
     items: [
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
-      { label: "Mes stats réseaux", icon: BarChart3, segment: "stats-reseaux" },
+      { label: "Ce qui marche", icon: BarChart3, segment: "stats-reseaux" },
       { label: "Appels de vente", icon: PhoneCall, segment: "admin/ventes" },
       { label: "Pilotage", icon: Gauge, segment: "business/pilotage" },
       { label: "Mes formations", icon: GraduationCap, segment: "formations" },
@@ -382,8 +382,6 @@ export const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   // pas entrer en collision avec /formations, le catalogue "Academie EP"
   // deja existant (visible cote coach/client, produit paye).
   { label: "Tournage", icon: Video, segment: "admin/tournage" },
-  // Stats de tous les réseaux synchronisées via Windsor (2026-09-29).
-  { label: "Stats réseaux", icon: BarChart3, segment: "admin/stats-reseaux" },
 ];
 
 // ── Hook ────────────────────────────────────────────────────────────────────

@@ -7,7 +7,7 @@ import { Users, Sparkles, BarChart3, GraduationCap, Video, Gauge, UsersRound, Sl
 const ALL = [
   { key: "coacher", label: "Mes clients", href: "/dashboard/coach/clients", icon: Users },
   { key: "contenu", label: "Studio créatif", href: "/dashboard/coach/studio", icon: Sparkles },
-  { key: "contenu", label: "Mes stats réseaux", href: "/dashboard/coach/stats-reseaux", icon: BarChart3 },
+  { key: "contenu", label: "Ce qui marche", href: "/dashboard/coach/stats-reseaux", icon: BarChart3 },
   { key: "formations", label: "Mes formations", href: "/dashboard/coach/formations", icon: GraduationCap },
   { key: "lives", label: "Lives", href: "/dashboard/coach/live", icon: Video },
   { key: "business", label: "Pilotage", href: "/dashboard/coach/business/pilotage", icon: Gauge },

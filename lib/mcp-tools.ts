@@ -93,8 +93,8 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "mes_stats_reseaux",
     roles: ["coach"],
-    description: "Stats réseaux du coach dans EP Coaching : abonnés par plateforme et progression, meilleures et pires publications de la période avec le script du Studio associé, meilleur format.",
-    inputSchema: { type: "object", properties: { jours: { type: "number", description: "7 à 365, 30 par défaut" } } },
+    description: "Ce qui marche dans les publications du coach (EP Coaching, Business > Ce qui marche) : chaque publication analysée est comparée à ses autres publications, avec ses points forts, ses points faibles et comment la refaire, plus les formats et piliers qui marchent le mieux. Les stats brutes restent sur chaque réseau.",
+    inputSchema: { type: "object", properties: {} },
   },
   {
     name: "mes_scripts",
@@ -387,42 +387,28 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
     }
 
     case "mes_stats_reseaux": {
-      const days = numArg(args.jours, 7, 365) ?? 30;
-      const since = shift(today, -days);
-      const { data: accounts } = await admin.from("social_accounts").select("id, platform, name, handle").eq("owner_id", ownerId).eq("active", true);
-      const accs = (accounts ?? []) as { id: string; platform: string; name: string | null; handle: string | null }[];
-      if (!accs.length) return text("Aucun réseau suivi pour l'instant. Ajoute tes comptes dans EP Coaching, Business > Mes stats réseaux.");
-      const ids = accs.map((a) => a.id);
-      const [{ data: snaps }, { data: posts }] = await Promise.all([
-        admin.from("social_account_daily").select("account_id, date, followers_total").in("account_id", ids).gte("date", shift(since, -1)).order("date"),
-        admin.from("social_posts").select("account_id, platform, caption, post_type, published_at, views, impressions, likes, comments, shares, saves, script_id, url").in("account_id", ids).gte("published_at", since).limit(1000),
-      ]);
-      const lines: string[] = [`Stats réseaux sur ${days} jours`];
-      for (const a of accs) {
-        const s = ((snaps ?? []) as { account_id: string; date: string; followers_total: number | null }[]).filter((x) => x.account_id === a.id && x.followers_total != null);
-        if (s.length) {
-          const first = Number(s[0].followers_total), last = Number(s[s.length - 1].followers_total);
-          lines.push(`- ${a.platform} ${a.handle ?? a.name ?? ""} : ${fr(last)} abonnés (${last - first >= 0 ? "+" : ""}${fr(last - first)})`);
-        } else lines.push(`- ${a.platform} ${a.handle ?? a.name ?? ""} : abonnés non renseignés`);
-      }
-      const rows = ((posts ?? []) as { platform: string; caption: string | null; post_type: string | null; published_at: string; views: number | null; impressions: number | null; likes: number | null; comments: number | null; shares: number | null; saves: number | null; script_id: string | null; url: string | null }[])
-        .map((p) => ({ ...p, score: Number(p.views ?? p.impressions ?? 0) }));
-      if (rows.length) {
-        const scriptIds = [...new Set(rows.map((r) => r.script_id).filter(Boolean))] as string[];
-        const { data: scripts } = scriptIds.length ? await admin.from("coach_scripts").select("id, title, hook").in("id", scriptIds) : { data: [] };
-        const sMap = new Map(((scripts ?? []) as { id: string; title: string; hook: string | null }[]).map((s) => [s.id, s]));
-        const fmt = (p: (typeof rows)[number]) => {
-          const sc = p.script_id ? sMap.get(p.script_id) : null;
-          return `${p.platform} ${p.post_type ?? ""} ${p.published_at.slice(0, 10)} : ${fr(p.score)} vues, ${fr(Number(p.likes ?? 0))} j'aime, ${fr(Number(p.comments ?? 0))} com., ${fr(Number(p.shares ?? 0))} partages${sc ? ` | script « ${sc.title} »${sc.hook ? `, accroche « ${sc.hook} »` : ""}` : ""} | ${(p.caption ?? "").replace(/\s+/g, " ").slice(0, 120)}`;
-        };
-        const sorted = [...rows].sort((a, b) => b.score - a.score);
-        lines.push(`${rows.length} publications. Moyenne ${fr(rows.reduce((a, r) => a + r.score, 0) / rows.length)} vues.`);
-        lines.push("Top 5 :", ...sorted.slice(0, 5).map((p) => `- ${fmt(p)}`));
-        if (sorted.length > 5) lines.push("Flop 5 :", ...sorted.slice(-5).map((p) => `- ${fmt(p)}`));
-        const byType = new Map<string, number[]>();
-        for (const r of rows) byType.set(r.post_type ?? "autre", [...(byType.get(r.post_type ?? "autre") ?? []), r.score]);
-        lines.push(`Vues moyennes par format : ${[...byType.entries()].filter(([, v]) => v.length >= 2).map(([k, v]) => `${k} ${fr(v.reduce((a, b) => a + b, 0) / v.length)} (${v.length})`).join(", ") || "pas assez de données"}`);
-      } else lines.push("Aucune publication sur la période.");
+      // Refonte du 03/11/2026 : plus de recopie des stats des réseaux. On lit
+      // les publications analysées (capture ou chiffres saisis) et on dit ce
+      // qui marche et comment le refaire (lib/social/post-insights.ts).
+      const { getReadings } = await import("@/lib/social/readings");
+      const { SIGNAL_LABELS } = await import("@/lib/social/post-insights");
+      const r = await getReadings(ownerId);
+      if (!r.posts.length) return text("Aucune publication analysée. Dans EP Coaching, Business > Ce qui marche : « Analyser une publication » avec une capture de ses statistiques.");
+      const x = (v: number) => `x${(Math.round(v * 10) / 10).toString().replace(".", ",")}`;
+      const label = (p: (typeof r.posts)[number]) => `${p.platform} ${p.post_type ?? ""} ${p.published_at?.slice(0, 10) ?? ""} « ${(p.scriptTitle ?? p.caption ?? "sans titre").replace(/\s+/g, " ").slice(0, 90)} »${p.formatLabel ? ` (${p.formatLabel})` : ""}`;
+      const lines: string[] = [`${r.posts.length} publication(s) analysée(s), chacune comparée aux autres publications du coach (x1 = sa moyenne).`];
+      const groups = [["Format du script", r.byFormat], ["Type de publication", r.byType], ["Pilier", r.byPillar]] as const;
+      for (const [t, rows] of groups) if (rows.length) lines.push(`${t} : ${rows.slice(0, 3).map((g) => `${g.key} ${x(g.score)} (${g.count})`).join(", ")}`);
+      const good = r.posts.filter((p) => p.reading.verdict === "a_refaire");
+      const bad = r.posts.filter((p) => p.reading.verdict === "en_dessous");
+      const detail = (p: (typeof r.posts)[number]) => {
+        const sig = [...p.reading.strengths, ...p.reading.weaknesses].map((s) => `${SIGNAL_LABELS[s]} ${x(p.reading.ratios[s] as number)}`).join(", ");
+        return `- ${label(p)}${sig ? ` | ${sig}` : ""}${p.reading.howTo.length ? `\n  Pour refaire : ${p.reading.howTo.join(" ")}` : ""}`;
+      };
+      if (good.length) lines.push("À refaire :", ...good.slice(0, 5).map(detail));
+      if (bad.length) lines.push("En dessous :", ...bad.slice(0, 5).map(detail));
+      const notYet = r.posts.filter((p) => p.reading.verdict === "pas_assez").length;
+      if (notYet) lines.push(`${notYet} publication(s) pas encore comparable(s) : il faut au moins 4 publications analysées.`);
       return text(lines.join("\n"));
     }
 
