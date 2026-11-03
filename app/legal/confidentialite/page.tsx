@@ -95,6 +95,12 @@ const sections: LegalSection[] = [
             usages anormaux, protection des comptes.
           </li>
           <li>
+            <Strong>Enregistrement des appels d&apos;audit et de suivi</Strong> (consentement) :
+            uniquement si vous l&apos;acceptez à voix haute au début de l&apos;appel, pour mieux suivre
+            votre situation. Vous pouvez refuser sans conséquence sur l&apos;appel. Un enregistrement
+            n&apos;est jamais partagé ni utilisé comme contenu public sans votre accord écrit.
+          </li>
+          <li>
             <Strong>Obligations légales et comptables</Strong> (obligation légale) : conservation des
             factures et pièces comptables.
           </li>
@@ -120,6 +126,7 @@ const sections: LegalSection[] = [
           <li><Strong>Stripe</Strong> : traitement sécurisé des paiements.</li>
           <li><Strong>Oura</Strong> : synchronisation des données de sommeil et de récupération, uniquement si vous connectez votre compte.</li>
           <li><Strong>Jitsi</Strong> : mise à disposition des salons de visioconférence pour les sessions en direct, sans enregistrement.</li>
+          <li><Strong>Zoom ou Google Meet</Strong> : visioconférence des appels individuels et, si vous l&apos;avez accepté, enregistrement de l&apos;appel.</li>
           <li>
             <Strong>Anthropic</Strong> : fournisseur du modèle d&apos;intelligence artificielle (Claude)
             utilisé pour générer les réponses des coachs IA et certains messages automatisés de suivi
@@ -190,6 +197,10 @@ const sections: LegalSection[] = [
           personnelles sont effacées ou anonymisées dans un délai maximum de 30 jours, à l&apos;exception
           des données que nous sommes légalement tenus de conserver plus longtemps (documents
           comptables, conservés 10 ans conformément au droit français).
+        </P>
+        <P>
+          Les enregistrements d&apos;appels, réalisés uniquement avec votre accord, sont conservés
+          12 mois au maximum puis supprimés. Vous pouvez demander leur suppression avant ce délai.
         </P>
       </>
     ),
@@ -269,7 +280,7 @@ export default function PrivacyPolicyPage() {
     <LegalPage
       eyebrow="Données personnelles"
       title="Politique de confidentialité"
-      lastUpdated="19 août 2026"
+      lastUpdated="3 novembre 2026"
       intro={
         <P>
           Cette politique explique quelles données EP Coaching collecte, pourquoi, comment elles sont
