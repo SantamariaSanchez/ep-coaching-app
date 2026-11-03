@@ -148,7 +148,7 @@ export default async function FormationsPage() {
             {t("Parcours le catalogue librement. Les vidéos se débloquent dès que tu rejoins l'accompagnement.")}
           </p>
           <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
-            {t("Réserver un appel découverte")}
+            {t("Réserver mon audit stratégique")}
           </Link>
         </div>
       )}

@@ -175,7 +175,7 @@ export default async function FormationDetailPage({
             {t("Tu peux parcourir tout le programme dès maintenant. Les vidéos se débloquent avec l'accompagnement.")}
           </p>
           <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
-            {t("Réserver un appel découverte")}
+            {t("Réserver mon audit stratégique")}
           </Link>
         </div>
       )}

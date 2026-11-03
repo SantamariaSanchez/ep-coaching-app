@@ -150,7 +150,7 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     title: "Description YouTube au modèle d'Emmanuel",
     category: "Description",
     prompt:
-      "Écris la description de cette vidéo YouTube : [SCRIPT OU RÉSUMÉ] avec le guide [SLUG DU GUIDE]. Ordre exact : 1) une phrase qui donne envie puis le lien nu du guide (https://ep-coaching.vercel.app/ressources/[slug]) ; 2) un paragraphe « Tu penses que ton problème, c'est X. En réalité, il est en amont : Y. » puis « Dans cette vidéo, je te montre... » ; 3) une phrase règle qui claque ; 4) une question simple pour les commentaires ; 5) « Abonne-toi si tu veux plus de vidéos sur [thèmes]. Bon visionnage ! » ; 6) les liens nus un par ligne avec un libellé (appli avec essai gratuit, réserver un appel, site, Instagram) ; 7) « qui je suis » en 2 ou 3 phrases vraies ; 8) 3 à 5 hashtags. Jamais de chapitres ni de timecodes dans la description, aucun chiffre de résultat inventé, aucune étude citée, pas de tiret cadratin. Les titres alternatifs et l'idée de miniature restent en note interne, jamais dans la description.",
+      "Écris la description de cette vidéo YouTube : [SCRIPT OU RÉSUMÉ] avec le guide [SLUG DU GUIDE]. Ordre exact : 1) une phrase qui donne envie puis le lien nu du guide (https://ep-coaching.vercel.app/ressources/[slug]) ; 2) un paragraphe « Tu penses que ton problème, c'est X. En réalité, il est en amont : Y. » puis « Dans cette vidéo, je te montre... » ; 3) une phrase règle qui claque ; 4) une question simple pour les commentaires ; 5) « Abonne-toi si tu veux plus de vidéos sur [thèmes]. Bon visionnage ! » ; 6) les liens nus un par ligne avec un libellé (appli avec essai gratuit, réserver ton audit stratégique, site, Instagram) ; 7) « qui je suis » en 2 ou 3 phrases vraies ; 8) 3 à 5 hashtags. Jamais de chapitres ni de timecodes dans la description, aucun chiffre de résultat inventé, aucune étude citée, pas de tiret cadratin. Les titres alternatifs et l'idée de miniature restent en note interne, jamais dans la description.",
   },
   {
     title: "Script vidéo YouTube \"vlog/dans les coulisses\"",
@@ -356,7 +356,7 @@ export const CTA_EXAMPLES: CTAExample[] = [
   { text: "Mets DIETE en commentaire et je t'envoie tout.", goal: "Reel · appli (diète)" },
   { text: "Commente COACHING si tu veux qu'on regarde ta situation ensemble.", goal: "Reel · coaching" },
   { text: "Le lien du guide gratuit est dans la description, c'est évidemment gratuit.", goal: "YouTube · guide" },
-  { text: "Si tu veux qu'on regarde ta situation ensemble, le lien pour réserver un appel est dans la description. Sinon, applique ce que tu vois dans cette vidéo, c'est gratuit.", goal: "YouTube · appel" },
+  { text: "Si tu veux qu'on regarde ta situation ensemble, le lien pour réserver ton audit stratégique offert est dans la description. Sinon, applique ce que tu vois dans cette vidéo, c'est gratuit.", goal: "YouTube · appel" },
   { text: "Abonne-toi si c'est pas déjà fait, il y aura toujours quelque chose d'utile pour ta progression.", goal: "YouTube · abonnement" },
   { text: "Dis-moi en commentaire où tu bloques en ce moment.", goal: "Engagement (tous formats)" },
   { text: "Envoie cette vidéo à quelqu'un qui s'entraîne dur et qui ne voit rien bouger.", goal: "Partage" },
