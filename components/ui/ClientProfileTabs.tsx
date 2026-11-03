@@ -447,10 +447,10 @@ export default function ClientProfileTabs({
   );
 
   const suggestions = useMemo(() => {
-    const base = generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, eatingRelation);
+    const base = generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, eatingRelation, periodLogs[0]?.start_date ?? null);
     const fatigue = generateFatigueTrendSuggestion(logbookSessions);
     return fatigue ? [...base, fatigue] : base;
-  }, [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, logbookSessions, eatingRelation]);
+  }, [intake, nutritionProfile, recentDailyLogs, periodLogs, program, logbookSessions, eatingRelation]);
 
   // Ajustements (calories, décharge, volume, exercices) : règles du Mastermind
   // sur les bilans et les séances déjà chargés, voir lib/coaching-adjustments.ts.
