@@ -143,15 +143,15 @@ export const GUIDES: Guide[] = [
   },
   {
     id: "stats-reseaux",
-    title: "Suivre tes stats Instagram, TikTok, YouTube",
+    title: "Savoir ce qui marche dans tes vidéos",
     for: ["coach"],
     steps: [
-      "Dans Business, ouvre Mes stats réseaux.",
-      "Chaque semaine, note tes chiffres (abonnés, vues, portée) : le bouton « Où trouver ces chiffres ? » t'indique où les lire dans chaque appli.",
-      "Ajoute tes publications avec leurs chiffres et relie-les à ton script : l'appli te montre ce qui marche (format, jour, heure).",
+      "Dans Business, ouvre Ce qui marche.",
+      "Touche « Analyser une publication », puis « Remplir depuis une capture » : envoie la capture de l'écran Statistiques de ta vidéo (Instagram, TikTok, YouTube…). Vérifie les chiffres lus.",
+      "Relie la publication à son script du Studio : l'appli la compare à tes autres publications et te dit quoi refaire et comment.",
     ],
     href: "stats-reseaux",
-    cta: "Ouvrir mes stats",
+    cta: "Ouvrir Ce qui marche",
   },
   {
     id: "formation",
@@ -184,7 +184,7 @@ export const GUIDES: Guide[] = [
     steps: [
       "Dans Studio, crée un script (la plateforme se choisit une fois pour toutes).",
       "Lance le prompteur : il enchaîne tes scripts prêts à tourner, du plus ancien au plus récent.",
-      "Marque « J'ai tourné » puis « J'ai posté ». Relie la publication dans Mes stats réseaux pour voir ce qu'elle a donné.",
+      "Marque « J'ai tourné » puis « J'ai posté ». Analyse la publication dans Ce qui marche (une capture de ses stats suffit) pour savoir quoi refaire.",
     ],
     href: "studio",
     cta: "Ouvrir le Studio",

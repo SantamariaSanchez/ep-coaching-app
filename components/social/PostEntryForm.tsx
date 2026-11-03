@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { savePostAction, deletePostAction, type PostInput } from "@/app/dashboard/coach/stats-reseaux/actions";
+import ScreenshotFill from "@/components/social/ScreenshotFill";
 
 // Ajout ou mise à jour d'une publication par le coach : ses chiffres,
 // son format, et le script du Studio dont elle vient. Remettre à jour les
@@ -110,12 +111,15 @@ export default function PostEntryForm({
   scripts,
   nowLocal,
   post = null,
+  label = "Ajouter une publication",
 }: {
   platforms: string[];
   scripts: { id: string; title: string; platform: string | null }[];
   /** "YYYY-MM-DDTHH:mm" à Paris, calculé côté serveur. */
   nowLocal: string;
   post?: EditablePost | null;
+  /** Libellé du bouton d'ouverture (nouvelle publication). */
+  label?: string;
 }) {
   const tr = useT();
   const router = useRouter();
@@ -163,7 +167,7 @@ export default function PostEntryForm({
       </span>
     ) : (
       <button type="button" onClick={() => setOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px dashed rgba(var(--ep-accent-rgb),0.55)", background: "rgba(var(--ep-accent-rgb),0.06)", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer" }}>
-        <Plus size={15} />{" "}{tr("Ajouter une publication")}
+        <Plus size={15} />{" "}{tr(label)}
       </button>
     );
   }
@@ -176,6 +180,8 @@ export default function PostEntryForm({
           <X size={16} />
         </button>
       </div>
+
+      <ScreenshotFill onValues={(vals) => setV((cur) => ({ ...cur, ...Object.fromEntries(Object.entries(vals).map(([k, x]) => [k, String(x)])) }))} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
         <div>

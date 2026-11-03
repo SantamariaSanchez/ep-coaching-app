@@ -78,7 +78,7 @@ export default async function CoachStudioPage({
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Studio créatif")}</h1>
         <p className="mt-2 text-sm text-(--ep-ink)/45">
-          {t("De l'idée à la vidéo publiée : idées, scripts prêts à tourner, prompteur, puis tes chiffres dans Mes stats réseaux.")}
+          {t("De l'idée à la vidéo publiée : idées, scripts prêts à tourner, prompteur, puis ce qui marche dans tes vidéos.")}
         </p>
       </div>
 
