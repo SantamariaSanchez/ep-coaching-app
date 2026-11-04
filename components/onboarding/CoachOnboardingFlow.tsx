@@ -107,7 +107,7 @@ export default function CoachOnboardingFlow({
             {t("Bienvenue")}{fullName ? `, ${fullName.split(" ")[0]}` : ""}
           </h1>
           <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6, maxWidth: 440, margin: "0 auto" }}>
-            {t("Ton abonnement plateforme est actif. Avant ton premier client, 3 minutes pour que ta fiche soit prête : ton profil, tes spécialités, ta capacité, et surtout ton lien d'invitation, à envoyer à chaque client pour qu'il te rejoigne. Tout reste modifiable ensuite depuis Paramètres.")}
+            {t("Ton abonnement est actif. Avant ton premier client, 3 minutes pour préparer ta fiche : profil, spécialités, capacité, et surtout ton lien d'invitation. Tout reste modifiable dans Paramètres.")}
           </p>
         </div>
       )}
@@ -134,7 +134,7 @@ export default function CoachOnboardingFlow({
             subtitle={t("Sert à personnaliser automatiquement les prompts de contenu dans Studio créatif à TA situation, pas rester générique.")}
           />
           <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.6, margin: "0 0 14px" }}>
-            {t("Remplis au moins « Proposition de valeur » et « Segments de clientèle » si tu es pressé, les autres blocs t'attendent dans Développer mon business quand tu auras 5 minutes de plus. Rien n'est obligatoire, chaque bloc s'enregistre tout seul.")}
+            {t("Si tu es pressé, remplis « Proposition de valeur » et « Segments de clientèle ». Le reste t'attend dans Développer mon business. Rien n'est obligatoire.")}
           </p>
           <BusinessCanvasEditor canvas={canvas} />
         </div>

@@ -177,7 +177,7 @@ export default function ClientIntakeForm({
   return (
     <div className="space-y-1">
       <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-2">
-        {t("Toutes les infos du questionnaire d'onboarding, à remplir une fois pour toutes. Elles servent ensuite de référence partout dans l'appli (créateur de recette, programme, nutrition...) sans avoir à reposer les mêmes questions à chaque fois.")}
+        {t("Les infos de ton questionnaire, à remplir une seule fois. Elles servent ensuite partout dans l'appli.")}
       </p>
 
       <Section title={t("Informations générales")} />
