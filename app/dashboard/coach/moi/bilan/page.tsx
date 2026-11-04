@@ -12,6 +12,7 @@ import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import QuickBilan from "@/components/tracking/QuickBilan";
 import BilanCollapse from "@/components/tracking/BilanCollapse";
+import { ensureOuraNightSynced } from "@/lib/oura-sync";
 import { isBilanDone } from "@/lib/bilan-quick";
 import TrackingLevelPicker from "@/components/tracking/TrackingLevelPicker";
 import Link from "next/link";
@@ -50,6 +51,8 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
   // oubli avec exactement le même formulaire.
   const { jour, complet } = await searchParams;
   const date = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && isWithinBilanBackfillWindow(jour) ? jour : today;
+  // Bague Oura connectée : la nuit arrive toute seule dans le bilan.
+  await ensureOuraNightSynced(user.id, date);
   const [allLogs, dayFoodLogs, autoSteps, activePlan, appSetup, tracking] = await Promise.all([
     getClientDailyLogs(user.id, 90),
     getTodayLogs(user.id, date),

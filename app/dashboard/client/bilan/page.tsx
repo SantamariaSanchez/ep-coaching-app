@@ -1,3 +1,4 @@
+import { ensureOuraNightSynced } from "@/lib/oura-sync";
 import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -55,6 +56,8 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
   // Bilan d'un jour passé (?jour=AAAA-MM-JJ, 30 jours max) : rattraper un
   // oubli avec exactement le même formulaire.
   const date = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && isWithinBilanBackfillWindow(jour) ? jour : today;
+  // Bague Oura connectée : la nuit arrive toute seule dans le bilan.
+  await ensureOuraNightSynced(user.id, date);
   const [{ data: profile }, allLogs, dayFoodLogs, autoSteps, activePlan, appSetup, tracking] = await Promise.all([
     supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
     getClientDailyLogs(user.id, 90),

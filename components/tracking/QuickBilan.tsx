@@ -327,8 +327,13 @@ export default function QuickBilan(props: QuickBilanProps) {
         );
       case "sommeil_qualite":
         return (
-          <Row key={f} label={t("Qualité du sommeil")}>
-            <Chips label={t("Qualité du sommeil")} value={log.sleep_rating ?? null} options={[20, 40, 60, 80, 100].map((v) => ({ v, label: `${v}` }))} onPick={(v) => put({ sleep_rating: v })} />
+          <Row key={f} label={t("Qualité du sommeil")} hint={t("Le score de ta bague ou de ta montre, de 0 à 100")}>
+            <NumberInput
+              label={t("Qualité du sommeil")} value={log.sleep_rating ?? null} step={1} min={0} max={100} unit="/100" inputMode="numeric"
+              parse={(raw) => { const n = parseDecimal(raw); return n == null ? null : Math.round(n); }}
+              format={(n) => String(n)} placeholder="82"
+              onChange={(n) => put({ sleep_rating: n })}
+            />
           </Row>
         );
       case "horaires_sommeil":
