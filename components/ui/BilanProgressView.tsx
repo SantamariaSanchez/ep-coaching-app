@@ -234,7 +234,7 @@ export default function BilanProgressView({
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {weeks.map(({ weekStart, logs: wLogs, averages }, idx) => (
-            <details key={weekStart} open={idx === 0} className="ep-card" style={{ padding: 0 }}>
+            <details key={weekStart} className="ep-card" style={{ padding: 0 }}>
               <summary style={{ listStyle: "none", cursor: "pointer", padding: "11px 14px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12, fontWeight: 900, color: "var(--ep-ink)" }}>
                   {t("Semaine du")}{" "}{fmtShort(weekStart)}

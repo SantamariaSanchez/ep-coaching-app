@@ -452,7 +452,7 @@ export async function WelcomeGuide({
       )}
 
       {/* Le catalogue de l'appli : ouvert pour un nouveau, replié ensuite. */}
-      <details open={!hasStarted} className="animate-fade-up stagger-3 ep-home-details" style={{ marginBottom: 16 }}>
+      <details className="animate-fade-up stagger-3 ep-home-details" style={{ marginBottom: 16 }}>
         <summary style={{ listStyle: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, minHeight: 36, marginBottom: 8 }}>
           <span className="ep-section-title" style={{ margin: 0 }}>{t("Ce qui est disponible")}</span>
           <ChevronDown size={15} style={{ color: "rgba(var(--ep-ink-rgb),0.4)" }} />

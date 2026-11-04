@@ -348,7 +348,7 @@ export default function CareersClient({
   return (
     <div>
       {poles.map((pole, i) => (
-        <PoleSection key={pole.key} pole={pole} statuses={statuses} defaultOpen={i === 0} />
+        <PoleSection key={pole.key} pole={pole} statuses={statuses} defaultOpen={false} />
       ))}
     </div>
   );

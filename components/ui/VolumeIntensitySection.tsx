@@ -335,7 +335,7 @@ export default function VolumeIntensitySection({
           défaut, c'est la donnée la plus immédiatement utile ("où j'en suis
           là"). */}
       {hasRealized && (
-        <CollapsibleSection title="Volume : réalisé cette semaine" defaultOpen>
+        <CollapsibleSection title="Volume : réalisé cette semaine">
           <div className="space-y-5 pt-1">
             {realizedEntries.map(([group, { direct, indirect, subgroups }]) => {
               const landmark = VOLUME_LANDMARKS[group];

@@ -45,7 +45,7 @@ export default function ClaudeHub({ role, tokens }: { role: ClaudeRole; tokens: 
 
       <section>
         <p className="ep-label" style={{ marginBottom: 8 }}>{t("1. Relier Claude (2 minutes, une seule fois)")}</p>
-        <ClaudeConnect tokens={tokens} defaultOpen={!connected} />
+        <ClaudeConnect tokens={tokens} defaultOpen={false} />
       </section>
 
       {groups.map((g, gi) => (

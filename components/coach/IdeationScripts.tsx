@@ -875,7 +875,7 @@ function MyScripts({
                 ? `${rotation.filter((c) => !c.ok).length} ${tr("point à corriger")}`
                 : tr("Tout est varié")}
               warn={rotation.some((c) => !c.ok)}
-              defaultOpen={rotation.some((c) => !c.ok)}
+              defaultOpen={false}
             >
               <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
                 {rotation.map((c) => (

@@ -637,7 +637,7 @@ export default function AujourdhuiView({
           );
         })()}
 
-        <details open={!focusHabit} style={{ marginBottom: 4 }}>
+        <details style={{ marginBottom: 4 }}>
           {focusHabit && (
             <summary style={{ cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)", padding: "4px 0 10px" }}>
               {tr("Toutes les habitudes")} ({doneCount}/{HABITS.length})
