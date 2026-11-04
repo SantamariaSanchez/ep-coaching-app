@@ -314,4 +314,6 @@ test("le prompt partagé cadre le volume utile et les séances manquées (décal
   assert.match(COACHING_KNOWLEDGE_PROMPT, /6 à 8 séries difficiles par muscle dans une même séance/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /on la décale|on décale la séance/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais en doublant deux séances/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne compare jamais un client à un autre/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /début de séance/);
 });
