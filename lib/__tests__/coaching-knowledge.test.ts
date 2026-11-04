@@ -305,4 +305,6 @@ test("le prompt partagé cadre la vitesse du déficit (mini cut) et relativise u
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Monte les pas progressivement/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /kcal par kilo à la maintenance/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne fixe jamais un minimum de calories universel par sexe/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /jusqu'à 10 à 15 kg environ/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /nombre de semaines rond/);
 });
