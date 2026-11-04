@@ -223,7 +223,7 @@ export default function StepsSyncSetup({
             ) : (
               <p>{t("Le raccourci prêt à installer arrive très vite. En attendant, tu peux le créer toi-même en 2 minutes :")}</p>
             )}
-            <details className="group rounded-xl border border-(--ep-line)/25" open={!shortcutUrl}>
+            <details className="group rounded-xl border border-(--ep-line)/25">
               <summary className="list-none cursor-pointer flex items-center gap-2 px-3 min-h-[44px] text-xs font-bold text-(--ep-ink)/70">
                 <span className="flex-1">{shortcutUrl ? t("Ou le créer à la main") : t("Créer le raccourci à la main")}</span>
                 <ChevronDown size={15} className="transition-transform group-open:rotate-180" />

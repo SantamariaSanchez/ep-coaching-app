@@ -978,7 +978,7 @@ function NutritionContext({ clientName, intake, socialNotes, onSocialNotes }: { 
       </p>
       {!intake && <p className="px-3 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-200">{tr("Pas encore d'onboarding rempli.")}</p>}
       {avoid.length > 0 && (
-        <Section icon={<AlertTriangle size={12} />} title={tr("À éviter")} tone="danger" defaultOpen>
+        <Section icon={<AlertTriangle size={12} />} title={tr("À éviter")} tone="danger">
           <KV items={avoid} />
         </Section>
       )}

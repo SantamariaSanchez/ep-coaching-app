@@ -570,7 +570,7 @@ export default function OrganisationView({
     "coachs-ia" | "candidatures" | "poles" | "parcours" | "formation" | "fiche" | "contrats"
   >(newApplicationsForTab > 0 ? "candidatures" : "poles");
   const newApplications = apps.filter((a) => a.status === "nouvelle").length;
-  const [appsOpen, setAppsOpen] = useState(true);
+  const [appsOpen, setAppsOpen] = useState(false);
 
   async function handleChangeApplicationStatus(id: string, status: ApplicationStatus) {
     const backup = apps.find((a) => a.id === id)?.status;

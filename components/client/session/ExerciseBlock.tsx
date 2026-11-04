@@ -335,7 +335,10 @@ function SetEditor({
   const step = set.step ?? lastStep ?? (skill ? stepFromName(skill, ex.exercise.name) : null);
   const intensity = parseIntensity(ex.exercise.intensity);
   const mainLift = mainLiftFor(ex.exercise.name);
-  const showEffort = useContext(EffortContext);
+  const effortByDefault = useContext(EffortContext);
+  // Niveau Simple : RIR masqué par défaut mais jamais impossible à saisir (un tap).
+  const [effortOpened, setEffortOpened] = useState(false);
+  const showEffort = effortByDefault || effortOpened;
   const showRpe = intensity?.kind === "rpe" || !!form.attempt || !!form.backoff || form.mainLabel === "Top set" || (!!mainLift && ex.exercise.rir == null);
   const rpeNum = num(set.rpe ?? "");
   const e1rm = mainLift || intensity ? estimateE1rm(weightNum, r ? parseInt(r, 10) : null, rpeNum) : null;
@@ -622,6 +625,15 @@ function SetEditor({
         </div>
       )}
 
+      {!showEffort && (
+        <button
+          type="button"
+          onClick={() => setEffortOpened(true)}
+          className="min-h-11 -my-2 px-1 inline-flex items-center text-[11px] font-bold text-(--ep-ink)/50"
+        >
+          {t("+ Ajouter le RIR")}
+        </button>
+      )}
       {showEffort && (
       <div>
         <div className="flex items-baseline justify-between mb-1">
