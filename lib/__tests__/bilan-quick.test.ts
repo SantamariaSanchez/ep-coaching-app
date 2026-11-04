@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isBilanDone, parseDecimal, parseHours, formatHours, changedFields, fieldFilled } from "../bilan-quick";
+import { isBilanDone, parseDecimal, parseHours, formatHours, hoursBetween, changedFields, fieldFilled } from "../bilan-quick";
 
 test("poids tapé au clavier", () => {
   assert.equal(parseDecimal("82,4"), 82.4);
@@ -23,6 +23,19 @@ test("sommeil tapé librement", () => {
   assert.equal(parseHours("beaucoup"), null);
   assert.equal(formatHours(7.5), "7 h 30");
   assert.equal(formatHours(8), "8 h");
+});
+
+test("7.30 veut dire 7 h 30, pas 7,3 h", () => {
+  assert.equal(parseHours("7.30"), 7.5);
+  assert.equal(parseHours("7,15"), 7.25);
+  assert.equal(parseHours("7.75"), 7.75);
+  assert.equal(parseHours("7.5"), 7.5);
+});
+
+test("durée entre coucher et lever", () => {
+  assert.equal(hoursBetween("23:00", "06:30"), 7.5);
+  assert.equal(hoursBetween("00:30", "08:00"), 7.5);
+  assert.equal(hoursBetween("23:00", ""), null);
 });
 
 test("le poids seul ne valide plus tout le bilan", () => {
