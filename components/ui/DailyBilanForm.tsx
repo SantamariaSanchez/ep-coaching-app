@@ -324,7 +324,7 @@ export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dash
             </div>
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
-            {t("Ton iPhone/montre connectée donne ces chiffres dans l'app Santé/Sommeil, sinon une estimation à l'instinct suffit.")}
+            {t("Lis-les dans l'app Santé de ton téléphone ou de ta montre. Sinon, estime.")}
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
@@ -388,7 +388,7 @@ export function LifestyleCard({
               <Footprints size={10} style={{ display: "inline", marginRight: 3, verticalAlign: -1 }} />
               {existing?.steps == null && autoSteps != null
                 ? t("Rempli automatiquement depuis Steps, modifie si besoin.")
-                : t("Regarde dans l'app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone, pas besoin d'inventer.")}
+                : t("Lis ton total dans l'app Santé ou Google Fit.")}
             </p>
           </div>
           )}
@@ -534,7 +534,7 @@ export function NutritionCard({
               {followed === "oui" && (
                 <p className={hint} style={{ color: "rgba(var(--ep-ok-rgb),0.75)" }}>
                   {nutritionTotals
-                    ? t("Les repas de ton plan pas encore logués ce jour-là seront ajoutés à l'enregistrement.")
+                    ? t("Les repas du plan non notés seront ajoutés.")
                     : `Ton plan "${plan.name}" sera logué pour ce jour-là à l'enregistrement.`}
                 </p>
               )}

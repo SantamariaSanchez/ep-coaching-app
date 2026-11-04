@@ -297,8 +297,8 @@ export default function StepsSyncSetup({
           </p>
           <p>
             {hasOura
-              ? t("Tes pas de la veille arrivent tout seuls chaque matin. Pour voir ceux du jour en direct, ajoute aussi le raccourci iPhone ou Android.")
-              : t("Une fois connectée, tes pas de la veille arrivent tout seuls chaque matin, avec ton sommeil et ta récupération.")}
+              ? t("Tes pas de la veille arrivent chaque matin. Pour le direct, ajoute le raccourci.")
+              : t("Connecté : pas, sommeil et récupération arrivent chaque matin.")}
           </p>
           {!hasOura && (
             <Link href={ouraHref} className="w-full min-h-[44px] rounded-xl bg-(--ep-accent) text-(--ep-strong) text-sm font-bold flex items-center justify-center">

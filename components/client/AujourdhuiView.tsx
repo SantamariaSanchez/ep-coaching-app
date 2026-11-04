@@ -347,8 +347,8 @@ export default function AujourdhuiView({
             semaines ne donnent pas le rythme des suivantes. */}
         <p style={{ margin: "8px 2px 0", fontSize: 10.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
           {weekNum !== null && weekNum <= 3
-            ? tr("Les premières semaines, la balance bouge beaucoup (eau, glycogène), puis le rythme se calme : c'est normal. Regarde la moyenne de la semaine, pas le chiffre du jour.")
-            : tr("Le poids bouge avec l'eau et le glycogène. Regarde la moyenne de la semaine, pas le chiffre du jour.")}
+            ? tr("Au début, la balance bouge beaucoup (eau). C'est normal. Suis la moyenne de la semaine.")
+            : tr("Le poids varie avec l'eau. Suis la moyenne de la semaine.")}
         </p>
       </section>
 
@@ -541,7 +541,7 @@ export default function AujourdhuiView({
                   {tr("Commence par une seule habitude")}
                 </p>
                 <p style={{ margin: "0 0 12px", fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
-                  {tr("Une seule, pendant 14 jours. C'est comme ça qu'on obtient une première victoire rapide, sans se disperser.")}
+                  {tr("Une seule, pendant 14 jours. Première victoire rapide.")}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {FOCUS_HABIT_CANDIDATES.map((key) => {
@@ -587,7 +587,7 @@ export default function AujourdhuiView({
                     {tr("Deux semaines tenues.")}{" "}{doneNow}/{FOCUS_HABIT_DAYS} {tr("jours cochés")}
                   </p>
                   <p style={{ margin: "0 0 12px", fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
-                    {tr("C'est ta première victoire. Garde cette habitude, et quand tu es prêt, choisis la suivante.")}
+                    {tr("Première victoire. Garde-la, puis choisis la suivante.")}
                   </p>
                   <button type="button" disabled={focusPending} onClick={() => chooseFocusHabit(null)} className="ep-btn-primary" style={{ width: "100%" }}>
                     {tr("Choisir la prochaine habitude")}

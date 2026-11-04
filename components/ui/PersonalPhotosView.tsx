@@ -214,7 +214,7 @@ export default function PersonalPhotosView({
       <div className="flex items-start gap-2.5 bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl px-4 py-3 mb-6">
         <Lock size={14} className="text-(--ep-ink)/30 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-(--ep-ink)/40 leading-relaxed">
-          {t("Ces photos restent privées. Elles ne servent qu'à toi, pour suivre ta progression physique dans le temps.")}
+          {t("Photos privées. Visibles par toi seul.")}
         </p>
       </div>
 
