@@ -172,7 +172,7 @@ export default function WeeklyReviewReflection({
     <div className="ep-card" style={{ padding: "18px" }}>
       <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Prends 2 minutes de recul")}</p>
       <p style={{ margin: "0 0 16px", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.5 }}>
-        {t("3 questions, réponds à celles qui te parlent. Ta revue est enregistrée dans ton journal Mindset.")}
+        {t("3 questions, réponds à celles que tu veux. Enregistré dans ton journal Mindset.")}
       </p>
 
       <div className="flex flex-col gap-4">

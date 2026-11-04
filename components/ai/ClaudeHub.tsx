@@ -35,10 +35,10 @@ export default function ClaudeHub({ role, tokens }: { role: ClaudeRole; tokens: 
           </p>
           <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: 1.55 }}>
             {role === "coach"
-              ? t("Claude lit tes clients, tes stats réseaux et ton positionnement, écrit tes scripts et les range dans ton Studio, et construit tes pages Notion.")
+              ? t("Claude lit tes clients et tes stats, écrit tes scripts et les range dans ton Studio.")
               : role === "staff"
-                ? t("Claude résume ta semaine, range tes comptes rendus et tes idées dans tes notes, et fait le lien avec Notion.")
-                : t("Claude note ta journée, ajoute tes repas à partir d'une photo, analyse ta semaine et tes records, et fait le lien avec Notion.")}
+                ? t("Claude résume ta semaine et range tes idées dans tes notes.")
+                : t("Claude note ta journée, ajoute tes repas depuis une photo et analyse ta semaine.")}
           </p>
         </div>
       </div>
