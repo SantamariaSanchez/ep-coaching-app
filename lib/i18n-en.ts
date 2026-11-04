@@ -289,6 +289,7 @@ export const EN: Record<string, string> = {
   "C'est parti": "Let's go",
   "Plus tard": "Later",
   "Retour": "Back",
+  "Passer, inviter mon premier client": "Skip, invite my first client",
   "Musculation": "Weight training",
   "Prise de muscle, esthétique": "Muscle gain, aesthetics",
   "Perte de gras": "Fat loss",

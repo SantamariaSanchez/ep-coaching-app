@@ -173,6 +173,15 @@ export default function CoachOnboardingFlow({
         ) : (
           <span />
         )}
+        {stepIndex < STEPS.length - 1 && (
+          <button
+            type="button"
+            onClick={() => setStepIndex(STEPS.length - 1)}
+            style={{ fontSize: 11.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.5)", background: "none", border: "none", cursor: "pointer", padding: "10px 6px", marginLeft: "auto", marginRight: 10 }}
+          >
+            {t("Passer, inviter mon premier client")}
+          </button>
+        )}
         <button
           type="button"
           onClick={next}
