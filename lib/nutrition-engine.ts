@@ -1,7 +1,7 @@
 // Moteur du tracker nutrition (demande directe 2026-09-27) : tout ce qui se
 // calcule sans réseau, pour que le tracker n'ait jamais rien à faire à la
-// main. Fonctions pures, testées par scripts/nutrition-engine.test.ts
-// (npx tsx --tsconfig ./tsconfig.json scripts/nutrition-engine.test.ts).
+// main. Fonctions pures, testées par lib/__tests__/nutrition-engine.test.ts
+// (npm test).
 //
 // - le plan du jour (jour de la semaine, option choisie par repas) ;
 // - les familles d'aliments (catégories de la base normalisées) ;
