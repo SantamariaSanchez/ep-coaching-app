@@ -4,6 +4,7 @@ import { ExternalLink, Zap, Repeat2 } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { todayInParis } from "@/lib/dates";
 import { getReadings } from "@/lib/social/readings";
+import { getInboundDemand } from "@/lib/social/inbound";
 import { PLATFORM_LABELS, type Platform } from "@/lib/social/platforms";
 import { nativeStatsLink } from "@/lib/social/native-stats";
 import { SIGNAL_LABELS, MIN_COMPARABLE, type Verdict } from "@/lib/social/post-insights";
@@ -39,7 +40,7 @@ export default async function WhatWorksPage() {
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [data, setup] = await Promise.all([getReadings(user.id), getAppSetup(user.id)]);
+  const [data, setup, inbound] = await Promise.all([getReadings(user.id), getAppSetup(user.id), getInboundDemand(user.id)]);
   const today = todayInParis();
   const nowLocal = `${today}T${new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date())}`;
 
@@ -63,6 +64,14 @@ export default async function WhatWorksPage() {
       <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: 16, margin: "0 0 18px" }}>
         {tr("Envoie une capture de tes stats : l'appli te dit ce qui marche et comment le refaire.")}
       </p>
+
+      {inbound && (
+        <section className="ep-card" style={{ padding: "12px 14px", marginBottom: 18 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800 }}>{tr("Demandes reçues")}</p>
+          <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: 1.5 }}>{inbound.summary}</p>
+          <p style={{ margin: "4px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{tr("Les vues mesurent la visibilité. Ce qui compte, ce sont les demandes.")}</p>
+        </section>
+      )}
 
       {/* 1. Analyser une publication */}
       <section style={{ marginBottom: 18 }}>
