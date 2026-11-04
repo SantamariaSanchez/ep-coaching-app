@@ -263,3 +263,10 @@ test("prompt IA : digestion, douleur et progression réelle (C44, C45, C46)", ()
   assert.match(COACHING_KNOWLEDGE_PROMPT, /répétitions partielles/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
 });
+
+test("prompt IA : jamais de restriction sévère, pas de « métabolisme cassé », méthode choisie selon la personne (C57)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais de PSMF/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /métabolisme cassé/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /allergie déclarée est une contrainte bloquante/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
+});
