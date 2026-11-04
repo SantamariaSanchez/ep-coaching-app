@@ -99,6 +99,7 @@ const STRENGTH_TIPS: Record<Signal, string> = {
 
 const WEAKNESS_TIPS: Partial<Record<Signal, string>> = {
   retention: "On décroche vite : raccourcis l'intro et montre le résultat ou la réponse dès les premières secondes.",
+  vues: "Peu de vues : garde le sujet et le format, change seulement le hook (les 3 premières secondes) et teste-en plusieurs versions.",
   enregistrements: "Peu gardée : ajoute un point concret à retenir (un chiffre de ton plan, une étape, une liste).",
   partages: "Peu partagée : parle d'une situation précise que ta cible vit, pas d'un sujet général.",
   commentaires: "Peu de réactions : termine par une question précise, à laquelle on répond en un mot.",

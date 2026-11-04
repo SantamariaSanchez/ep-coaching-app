@@ -36,3 +36,12 @@ test("bibliothèque du Studio : hooks et prompts sans mot banni, sans tiret, san
   const categories = new Set(HOOK_BANK.map((h) => h.category));
   for (const c of ["Calcul", "Vrai ou faux", "Mythe démonté", "Titre YouTube"]) assert.ok(categories.has(c), c);
 });
+
+test("bibliothèque du Studio : prompts « outil comme moyen » et hooks testés", async () => {
+  const { CONTENT_PROMPTS } = await import("../content-library");
+  const byTitle = (t: string) => CONTENT_PROMPTS.find((p) => p.title === t)?.prompt ?? "";
+  assert.match(byTitle("Montrer mon outil sans parler de l'outil (4 formats)"), /avant 20 secondes/);
+  assert.match(byTitle("Montrer mon outil sans parler de l'outil (4 formats)"), /jamais dans le texte/);
+  assert.match(byTitle("Tester 10 hooks sur un format qui marche"), /3 premières secondes/);
+  assert.match(byTitle("Surfer sur une actualité"), /à vérifier/);
+});

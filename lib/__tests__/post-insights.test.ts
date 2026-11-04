@@ -67,3 +67,9 @@ test("les conseils respectent le vocabulaire EP Coaching", () => {
   ]);
   for (const t of r1.howTo) assert.deepEqual(checkVocabulary(t), [], t);
 });
+
+test("peu de vues : on garde le format et on ne change que le hook", () => {
+  const r = readPost(P({ views: 200, shares: 2, saves: 2, comments: 1, likes: 10 }), usual);
+  assert.ok(r.weaknesses.includes("vues"));
+  assert.ok(r.howTo.some((t) => /hook/.test(t) && /format/.test(t)));
+});
