@@ -289,6 +289,8 @@ export const EN: Record<string, string> = {
   "C'est parti": "Let's go",
   "Plus tard": "Later",
   "Retour": "Back",
+  "Demandes reçues": "Requests received",
+  "Les vues mesurent la visibilité. Ce qui compte, ce sont les demandes.": "Views measure visibility. What matters is requests.",
   "Passer, inviter mon premier client": "Skip, invite my first client",
   "Musculation": "Weight training",
   "Prise de muscle, esthétique": "Muscle gain, aesthetics",
