@@ -162,10 +162,11 @@ export async function proxy(request: NextRequest) {
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
   }
-  // Unauthenticated on the PWA launch route → marketing homepage (mirrors
-  // app/launch/page.tsx's own `if (!user) redirect("/")`).
+  // Unauthenticated on the PWA launch route → page de connexion, pas la page
+  // marketing (retour d'Emmanuel 04/11/2026 : une personne qui installe l'appli
+  // doit voir directement la connexion, pas la page de présentation).
   if (!user && isLaunch) {
-    const res = NextResponse.redirect(new URL("/", request.url));
+    const res = NextResponse.redirect(new URL("/auth/client", request.url));
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
   }

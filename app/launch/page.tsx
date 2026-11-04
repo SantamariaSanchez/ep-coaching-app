@@ -33,7 +33,8 @@ export const dynamic = "force-dynamic";
 // jamais tourner en pratique, gardée seulement comme filet de sécurité.
 export default async function LaunchPage() {
   const user = await getUser();
-  if (!user) redirect("/");
+  // Appli installée sans session : la connexion, pas la page marketing.
+  if (!user) redirect("/auth/client");
 
   const profile = await getProfile(user.id);
   redirect(profile?.role === "coach" ? "/dashboard/coach" : profile?.role === "staff" ? "/equipe" : "/dashboard/client");

@@ -58,6 +58,23 @@ export default function SocialAuthButtons({
 }) {
   const t = useT();
   const [busy, setBusy] = useState<OAuthProvider | null>(null);
+  const [enabled, setEnabled] = useState<Partial<Record<OAuthProvider, boolean>> | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const ask = async (p: OAuthProvider) => {
+      try {
+        const r = await fetch(`/auth/oauth/status?provider=${p}`);
+        const j = (await r.json()) as { enabled?: boolean; unreachable?: boolean };
+        return j.unreachable ? undefined : !!j.enabled;
+      } catch {
+        return undefined;
+      }
+    };
+    Promise.all([ask("google"), ask("apple")]).then(([g, a]) => {
+      if (alive) setEnabled({ google: g, apple: a });
+    });
+    return () => { alive = false; };
+  }, []);
   const [error, setError] = useState<OAuthErrorCode | null>(null);
 
   // Retour d'un échec (?oauth_error=...) posé par les routes /auth/oauth/*.
@@ -110,10 +127,16 @@ export default function SocialAuthButtons({
     window.location.assign(`/auth/oauth/start?${q.toString()}`);
   }
 
-  const buttons: { provider: OAuthProvider; label: string; mark: React.ReactNode }[] = [
+  const allButtons: { provider: OAuthProvider; label: string; mark: React.ReactNode }[] = [
     { provider: "google", label: t("Continuer avec Google"), mark: <GoogleMark /> },
     { provider: "apple", label: t("Continuer avec Apple"), mark: <AppleMark /> },
   ];
+  // Un bouton qui mène à « pas encore activé » fait fuir : on ne montre que
+  // les connexions réellement actives (04/11/2026, retour d'Emmanuel).
+  // Injoignable ou inconnu : on garde le bouton, le message d'erreur existe.
+  const buttons = enabled ? allButtons.filter((b) => enabled[b.provider] !== false) : [];
+  if (enabled && buttons.length === 0) return null;
+  if (!enabled) return null;
 
   return (
     <div className={className} data-layout={layout}>

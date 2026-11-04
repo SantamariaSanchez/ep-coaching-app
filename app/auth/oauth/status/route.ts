@@ -15,7 +15,8 @@ export async function GET(request: Request) {
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(`${origin}/auth/oauth/finish`)}`;
     const res = await fetch(url, { redirect: "manual", cache: "no-store", signal: AbortSignal.timeout(6000) });
     // 3xx : le fournisseur répond, il est activé. 4xx : pas activé.
-    return NextResponse.json({ enabled: res.status >= 300 && res.status < 400 });
+    // Mis en cache 5 minutes : la page d'accueil le demande à chaque visite.
+    return NextResponse.json({ enabled: res.status >= 300 && res.status < 400 }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
   } catch {
     return NextResponse.json({ enabled: false, unreachable: true });
   }
