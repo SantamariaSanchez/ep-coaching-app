@@ -270,3 +270,18 @@ test("prompt IA : jamais de restriction sévère, pas de « métabolisme cassé 
   assert.match(COACHING_KNOWLEDGE_PROMPT, /allergie déclarée est une contrainte bloquante/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
 });
+
+test("prompt IA : produits dopants, aucune dose ni protocole, orientation médecin (C59)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /stéroïdes, SARMs/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /doses, cycles, arrêts/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /relève d'un médecin/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Jamais de réduction des risques chiffrée/);
+});
+
+test("prompt IA : ton sans culpabilisation, une action prioritaire, aucune promesse inventée (C55)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais d'humiliation, de culpabilisation/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /manque de discipline/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /une seule action prioritaire/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /sans son accord explicite/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
+});
