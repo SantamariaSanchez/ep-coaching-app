@@ -195,6 +195,24 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
       "Aide-moi à remplir 5 colonnes d'idées de contenu à partir de ce que je te donne, méthode par catégories (pas de mélange entre colonnes) : GOÛTS (ce que j'aime, mes intérêts persos liés ou pas au fitness : [LISTE]), ÉCHECS (mes erreurs ou galères passées : [LISTE]), POURQUOI (pourquoi je fais ce métier : [PHRASE]), POINTS COMMUNS AVEC MON AUDIENCE (ce qu'on vit pareil : [LISTE]), MESSAGE (ce qui différencie ma méthode : [PHRASE]). Pour chaque colonne, propose-moi 6 idées de contenu concrètes qui en découlent (30 au total), une ligne par idée, sans blabla.",
   },
   {
+    title: "Tester 10 hooks sur un format qui marche",
+    category: "Hook",
+    prompt:
+      "Voici un contenu qui a déjà bien marché pour moi : [SCRIPT OU DESCRIPTION]. On ne change ni le format ni le sujet : on teste seulement les 3 premières secondes, parce que c'est le hook qui pèse le plus, la rétention vient ensuite. Écris-moi 10 hooks différents (texte à l'écran + première phrase dite), chacun avec un levier différent : curiosité, erreur courante, contradiction, chiffre que je te donne, résultat d'abord. Après chaque hook, une phrase qui le relie à la suite sans rallonger l'intro. Ton direct, jamais de tiret, aucune promesse ni chiffre inventé.",
+  },
+  {
+    title: "Montrer mon outil sans parler de l'outil (4 formats)",
+    category: "Business",
+    prompt:
+      "Écris-moi 4 scripts courts (30-45 s) pour des coachs sportifs, sur ce problème réel de coach : [PROBLÈME, ex. suivre 20 clients sans y passer ses soirées]. La vidéo parle du problème, mon outil n'est qu'un moyen. Un script par format : 1) flow de l'outil : je filme l'écran avec un second appareil, je montre l'action, un hook par-dessus ; 2) duo : une personne en filme une autre qui utilise l'outil, ton spontané ; 3) face caméra : un vrai retour d'expérience, sans musique ; 4) fond vert sur une actualité du coaching. Règles : l'outil apparaît à l'écran avant 20 secondes, son nom n'est jamais dans le texte, le titre ou la description (on le montre, ou on le met en commentaire), aucune phrase qui sonne comme une vente, aucun résultat ni chiffre inventé.",
+  },
+  {
+    title: "Surfer sur une actualité",
+    category: "Concept",
+    prompt:
+      "Voici une actualité ou un sujet dont tout le monde parle en ce moment : [ACTUALITÉ]. Propose-moi 5 angles de vidéo qui la relient honnêtement à mon contenu de coaching. Si le lien est faible, dis-le et écarte l'angle. Pour chaque angle : le hook, le format (fond vert avec une capture de l'actualité, face caméra ou duo) et ce que la personne doit retenir. Jamais de fait inventé sur l'actualité : si tu n'es pas sûr, marque-le « à vérifier ».",
+  },
+  {
     title: "Repérer le pattern qui marche (analyse de performance)",
     category: "Planification",
     prompt:
