@@ -62,7 +62,16 @@ export interface EditablePost {
   new_followers: number | null;
   avg_watch_seconds: number | null;
   completion_rate: number | null;
+  why?: string[];
 }
+
+const WHY = [
+  { key: "hook", label: "L'accroche" },
+  { key: "corps", label: "Le contenu" },
+  { key: "concept", label: "Le sujet" },
+  { key: "format", label: "Le format" },
+  { key: "timing", label: "Le moment" },
+];
 
 const input: React.CSSProperties = {
   width: "100%",
@@ -127,6 +136,8 @@ export default function PostEntryForm({
   const [v, setV] = useState<Record<string, string>>(() => fromPost(post, platforms, nowLocal));
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [why, setWhy] = useState<string[]>(post?.why ?? []);
+  const toggleWhy = (k: string) => setWhy((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]));
 
   const set = (k: string, val: string) => setV((cur) => ({ ...cur, [k]: val }));
   const isVideo = ["reel", "video", "short", "live", ""].includes(v.postType);
@@ -137,7 +148,7 @@ export default function PostEntryForm({
   function save() {
     setError(null);
     start(async () => {
-      const res = await savePostAction({ ...(v as unknown as PostInput), id: post?.id ?? null, scriptId: v.scriptId || null, postType: v.postType || null });
+      const res = await savePostAction({ ...(v as unknown as PostInput), why, id: post?.id ?? null, scriptId: v.scriptId || null, postType: v.postType || null });
       if (res.error) return setError(res.error);
       setOpen(false);
       if (!post) setV(fromPost(null, platforms, nowLocal));
@@ -237,6 +248,15 @@ export default function PostEntryForm({
             </label>
             <input style={input} inputMode="decimal" value={v[m.key] ?? ""} onChange={(e) => set(m.key, e.target.value)} placeholder="-" aria-label={m.label} />
           </div>
+        ))}
+      </div>
+
+      <p style={{ ...lbl, marginTop: 14 }}>{tr("Qu'est-ce qui a fait marcher ? (facultatif)")}</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {WHY.map((w) => (
+          <button key={w.key} type="button" onClick={() => toggleWhy(w.key)} aria-pressed={why.includes(w.key)} style={{ padding: "7px 12px", borderRadius: 999, border: "1px solid rgba(var(--ep-line-rgb),0.45)", background: why.includes(w.key) ? "var(--ep-accent)" : "transparent", color: why.includes(w.key) ? "#fff" : "var(--ep-ink)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+            {tr(w.label)}
+          </button>
         ))}
       </div>
 

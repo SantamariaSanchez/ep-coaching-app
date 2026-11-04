@@ -170,6 +170,11 @@ export default async function WhatWorksPage() {
                       ))}
                     </div>
                   )}
+                  {p.why.length > 0 && (
+                    <p style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
+                      {tr("Ce qui a marché, selon toi :")} {p.why.map((w) => tr(({ hook: "l'accroche", corps: "le contenu", concept: "le sujet", format: "le format", timing: "le moment" } as Record<string, string>)[w] ?? w)).join(", ")}
+                    </p>
+                  )}
                   {p.reading.howTo.length > 0 && (
                     <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
                       {p.reading.howTo.map((h) => (

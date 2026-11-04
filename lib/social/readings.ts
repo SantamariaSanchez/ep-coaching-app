@@ -24,6 +24,7 @@ export interface ReadPost extends PostNumbers {
   scriptTitle: string | null;
   formatLabel: string | null;
   pillar: string | null;
+  why: string[];
   reading: PostReading;
 }
 
@@ -87,6 +88,7 @@ export async function getReadings(ownerId: string): Promise<Readings> {
       scriptTitle: sc?.title ?? kept,
       formatLabel: sc ? getContentFormat(sc.content_format).label : null,
       pillar: sc?.pillar ?? null,
+      why: Array.isArray((p.extra as { why?: unknown } | null)?.why) ? ((p.extra as { why: unknown[] }).why.filter((x) => typeof x === "string") as string[]) : [],
       reading,
     };
   });
