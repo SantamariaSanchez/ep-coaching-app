@@ -292,3 +292,9 @@ test("le prompt partagé définit la vraie série (0 à 5 de l'échec, standardi
   assert.match(COACHING_KNOWLEDGE_PROMPT, /la charge vient en dernier/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé cadre le retour du déficit à la maintenance sans promesse de métabolisme relancé", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Retour du déficit à la maintenance/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ni un moyen de « relancer le métabolisme »/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /vérifie d'abord le suivi réel/);
+});
