@@ -1434,6 +1434,22 @@ function MyScripts({
                 )}
               </div>
 
+              {script.hook_variants && script.hook_variants.length > 0 && (
+                <details style={{ marginTop: 10 }}>
+                  <summary style={{ cursor: "pointer", fontSize: 11.5, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
+                    {tr("Variantes d'accroche (reels d'essai)")} ({script.hook_variants.length})
+                  </summary>
+                  <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {script.hook_variants.map((h, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                        <p style={{ margin: 0, flex: 1, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.75)" }}>{h}</p>
+                        <CopyButton text={h} />
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+
               {(script.hook || script.cta || script.source_reference) && (
                 <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
                   {script.hook && (
