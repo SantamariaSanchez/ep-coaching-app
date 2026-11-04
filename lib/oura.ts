@@ -85,6 +85,9 @@ export interface OuraDailySleep {
   total_sleep_duration_seconds: number | null;
   average_hrv: number | null;
   lowest_heart_rate: number | null;
+  // Heures locales de la bague (« HH:MM »), lues telles quelles dans la date ISO.
+  bedtime: string | null;
+  wake_time: string | null;
 }
 
 // Uniquement le détail par session ("sleep" — durée/HRV/FC). Le score de
@@ -108,6 +111,8 @@ export async function fetchOuraSleepForDate(
       total_sleep_duration?: number;
       average_heart_rate_variability?: number;
       lowest_heart_rate?: number;
+      bedtime_start?: string;
+      bedtime_end?: string;
     }>;
     const mainSession = sessions.sort(
       (a, b) => (b.total_sleep_duration ?? 0) - (a.total_sleep_duration ?? 0)
@@ -120,7 +125,30 @@ export async function fetchOuraSleepForDate(
       total_sleep_duration_seconds: mainSession.total_sleep_duration ?? null,
       average_hrv: mainSession.average_heart_rate_variability ?? null,
       lowest_heart_rate: mainSession.lowest_heart_rate ?? null,
+      bedtime: isoClock(mainSession.bedtime_start),
+      wake_time: isoClock(mainSession.bedtime_end),
     };
+  } catch {
+    return null;
+  }
+}
+
+/** « 2026-11-03T23:12:00+01:00 » → « 23:12 » (heure locale de la bague). */
+export function isoClock(iso: string | null | undefined): string | null {
+  const m = iso?.match(/T(\d{2}:\d{2})/);
+  return m ? m[1] : null;
+}
+
+/** Score de sommeil Oura 0-100 (endpoint daily_sleep) : la « qualité du sommeil ». */
+export async function fetchOuraSleepScore(accessToken: string, date: string): Promise<number | null> {
+  try {
+    const res = await fetch(`${OURA_API_BASE}/daily_sleep?start_date=${date}&end_date=${date}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const score = data.data?.[0]?.score;
+    return typeof score === "number" ? Math.round(score) : null;
   } catch {
     return null;
   }

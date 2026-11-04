@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { fillEmptySleepFields } from "../oura-sync";
 import { isBilanDone, parseDecimal, parseHours, formatHours, hoursBetween, changedFields, fieldFilled } from "../bilan-quick";
 
 test("poids tapé au clavier", () => {
@@ -51,4 +52,10 @@ test("seuls les champs modifiés partent", () => {
   assert.deepEqual(changedFields<Record<string, unknown>>({ weight_morning: 82, energy: 3 }, { weight_morning: 82, energy: 4, sleep_hours: 7 }), { energy: 4, sleep_hours: 7 });
   assert.deepEqual(changedFields({ weight_morning: 82 }, { weight_morning: 82 }), {});
   assert.equal(fieldFilled("horaires_sommeil", { bedtime_actual: "23:00" }), false);
+});
+
+test("la bague remplit le sommeil sans écraser une saisie manuelle", () => {
+  const oura = { hours: 7.42, score: 83, bedtime: "23:10", wake: "06:40", hrv: 54.6, hr: 48.2 };
+  assert.deepEqual(fillEmptySleepFields(null, oura), { sleep_hours: 7.42, sleep_rating: 83, bedtime_actual: "23:10", wake_time_actual: "06:40", hrv: 55, resting_hr: 48 });
+  assert.deepEqual(fillEmptySleepFields({ sleep_hours: 6, sleep_rating: 70 }, oura), { bedtime_actual: "23:10", wake_time_actual: "06:40", hrv: 55, resting_hr: 48 });
 });

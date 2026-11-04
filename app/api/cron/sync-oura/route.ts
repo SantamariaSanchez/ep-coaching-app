@@ -4,6 +4,7 @@ import {
   refreshOuraToken, fetchOuraSleepForDate, fetchOuraReadinessForDate, fetchOuraStepsForDate,
   findWeakestContributor, READINESS_CONTRIBUTOR_INFO,
 } from "@/lib/oura";
+import { syncOuraNightToDailyLog } from "@/lib/oura-sync";
 import { generateInsightsForLatest, type BiometricLogInput } from "@/lib/biometric-rules";
 
 // Synchro quotidienne Oura Ring — voir supabase/migrations/20260717f_oura_integration.sql
@@ -41,6 +42,12 @@ export async function GET(req: NextRequest) {
           expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
         }).eq("client_id", conn.client_id);
       }
+
+      // La nuit se range aussi dans le bilan (aujourd'hui et hier) : plus de
+      // sommeil à retaper quand on a une bague.
+      const todayStr = new Date().toISOString().split("T")[0];
+      await syncOuraNightToDailyLog(admin, conn.client_id, accessToken, todayStr);
+      await syncOuraNightToDailyLog(admin, conn.client_id, accessToken, dateStr);
 
       const [sleep, readiness, steps] = await Promise.all([
         fetchOuraSleepForDate(accessToken, dateStr),
