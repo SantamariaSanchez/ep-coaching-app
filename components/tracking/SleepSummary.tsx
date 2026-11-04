@@ -39,7 +39,7 @@ export default async function SleepSummary({ nights }: { nights: SleepNight[] })
       <div className="rounded-2xl p-4 border border-(--ep-line)/25 bg-(--ep-bg)/80">
         <p className="text-sm font-bold text-(--ep-strong)">{t("Pas encore de nuit enregistrée")}</p>
         <p className="text-[12.5px] text-(--ep-ink)/55 mt-1 leading-relaxed">
-          {t("Ton sommeil se remplit tout seul avec ton bilan du matin (ou ta bague Oura). Rien à saisir ici : reviens dans quelques jours pour voir tes tendances.")}
+          {t("Ton sommeil se remplit avec ton bilan du matin. Reviens dans quelques jours pour voir tes tendances.")}
         </p>
       </div>
     );
@@ -47,8 +47,8 @@ export default async function SleepSummary({ nights }: { nights: SleepNight[] })
 
   // Verdict : le point le plus important d'abord.
   let verdict: string;
-  if (avg7 != null && avg7 < 6.5) verdict = t("Tu dors trop peu : {h} h en moyenne. En dessous de 7 h, la faim augmente, la récup et la force baissent. Priorité numéro un : avancer ton coucher de 30 minutes.", { h: avg7.toFixed(1).replace(".", ",") });
-  else if (spread != null && spread > 60) verdict = t("Ta durée est correcte, mais tes horaires bougent beaucoup (plus d'une heure d'écart d'un soir à l'autre). Un coucher régulier compte autant que la durée.");
+  if (avg7 != null && avg7 < 6.5) verdict = t("Tu dors {h} h en moyenne. Sous 7 h, la faim monte et la récupération baisse. Première étape : te coucher 30 minutes plus tôt.", { h: avg7.toFixed(1).replace(".", ",") });
+  else if (spread != null && spread > 60) verdict = t("Ta durée est correcte, mais tes horaires varient de plus d'une heure. Un coucher régulier compte autant.");
   else if (avg7 != null && avg7 < 7) verdict = t("Presque bon : {h} h en moyenne. Encore 20 à 30 minutes par nuit et tu es dans la zone idéale (7 à 9 h).", { h: avg7.toFixed(1).replace(".", ",") });
   else verdict = t("Bon sommeil : {h} h en moyenne, dans la zone idéale. Garde ces horaires, c'est là que se font la récup et les progrès.", { h: (avg7 ?? 0).toFixed(1).replace(".", ",") });
 

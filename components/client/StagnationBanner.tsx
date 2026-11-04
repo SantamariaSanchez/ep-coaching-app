@@ -49,7 +49,7 @@ export default function StagnationBanner() {
             {t("On dirait que ça coince depuis")}{" "}{status.daysSince}j
           </p>
           <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>
-            {t("Ton coach a été prévenu, mais un vrai échange règle toujours plus vite les choses qu'une appli. Réserve un créneau, ça prend deux minutes.")}
+            {t("Ton coach est prévenu. Un échange règle plus vite qu'une appli : réserve un créneau, deux minutes.")}
           </p>
         </div>
         <Link

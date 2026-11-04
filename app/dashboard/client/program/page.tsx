@@ -139,7 +139,7 @@ export default async function ClientProgramPage() {
             {t("Aucun programme disponible")}
           </p>
           <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
-            {t("Ton coach prépare ton programme. En attendant, tu peux déjà loguer une séance libre : tes charges seront gardées pour la suite.")}
+            {t("Ton coach prépare ton programme. En attendant, note une séance libre : tes charges sont gardées.")}
           </p>
           {/* Cet écran était un cul-de-sac (aucune action possible) : les
               deux gestes utiles en attendant le programme, à un tap. */}

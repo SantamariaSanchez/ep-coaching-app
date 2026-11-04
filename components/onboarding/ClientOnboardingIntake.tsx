@@ -396,7 +396,7 @@ export default function ClientOnboardingIntake() {
               {t("Bienvenue dans")}{" "}<span style={{ fontFamily: "var(--font-playfair,'Playfair Display'),serif", fontStyle: "italic", color: "var(--ep-accent)" }}>{t("EP Coaching")}</span>
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "#e3caca", margin: "0 0 20px" }}>
-              {t("T'as accès à l'appli complète : programme, nutrition, suivi, road map, tout centralisé au même endroit. 5 formations (environ 25h) arrivent bientôt, pour que tu comprennes ce que tu fais, pas juste que tu le suives.")}
+              {t("Tu as toute l'appli : programme, nutrition, suivi, road map. 5 formations (environ 25 h) arrivent bientôt.")}
               <br /><br />
               {t("Réponds à ces quelques questions, ça me permet de démarrer sur des bases solides.")}
             </p>

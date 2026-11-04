@@ -227,7 +227,7 @@ export default async function AbonnementPage() {
                   margin: "0 0 24px",
                 }}
               >
-                {t("Ton coach n'ouvre pas de nouvelle place tout de suite. Rejoins la liste d'attente, il te contactera dès qu'une place se libère.")}
+                {t("Pas de place pour l'instant. Rejoins la liste d'attente, ton coach te contacte dès qu'une place se libère.")}
               </p>
               <WaitlistJoinButton alreadyOnWaitlist={onWaitlist} />
             </>
@@ -247,7 +247,7 @@ export default async function AbonnementPage() {
                   margin: "0 0 24px",
                 }}
               >
-                {t("Pas de pression. On fait le point sur tes objectifs, tes blocages, et on voit ensemble si l'accompagnement est fait pour toi.")}
+                {t("Pas de pression. On fait le point sur tes objectifs et tes blocages, puis on voit si l'accompagnement te convient.")}
               </p>
               <a
                 href={prequalificationUrl}

@@ -397,7 +397,7 @@ export default function TrackingClient({
         <div className="bg-(--ep-s2) border border-(--ep-line)/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
           <Lock size={15} className="text-(--ep-ink)/30 flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-(--ep-ink)/45 leading-relaxed">
-            {t("La bague Oura Ring est offerte aux membres en coaching. Passe en coaching payant pour la recevoir et connecter automatiquement tes données ici. En attendant, log tes données à la main ci-dessous.")}
+            {t("La bague Oura est offerte aux membres en coaching. En attendant, note tes données à la main ci-dessous.")}
           </p>
         </div>
       )}

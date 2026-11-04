@@ -187,7 +187,11 @@ export interface PostInput {
   newFollowers?: number | string | null;
   avgWatchSeconds?: number | string | null;
   completionRate?: number | string | null;
+  /** Ce que le coach pense avoir fait marcher la publication. */
+  why?: string[] | null;
 }
+
+export const WHY_OPTIONS = ["hook", "corps", "concept", "format", "timing"] as const;
 
 /** "2026-09-29T18:30" (heure de Paris) -> ISO UTC. */
 function parisToIso(local: string): string | null {
@@ -217,6 +221,7 @@ export async function savePostAction(input: PostInput): Promise<{ error?: string
     if (!script) return { error: "Script introuvable." };
   }
 
+  const why = (input.why ?? []).filter((w): w is (typeof WHY_OPTIONS)[number] => (WHY_OPTIONS as readonly string[]).includes(w));
   const m = {
     views: num(input.views),
     reach: num(input.reach),
@@ -253,14 +258,15 @@ export async function savePostAction(input: PostInput): Promise<{ error?: string
   if (postId) {
     const { data: own } = await admin
       .from("social_posts")
-      .select("id, account_id, external_post_id, social_accounts!inner(owner_id)")
+      .select("id, account_id, external_post_id, extra, social_accounts!inner(owner_id)")
       .eq("id", postId)
       .eq("social_accounts.owner_id", guard.userId)
       .maybeSingle();
     if (!own || !String(own.external_post_id).startsWith("manuel:")) return { error: "Publication introuvable." };
     const acc = await accountFor(admin, guard.userId, input.platform);
     if ("error" in acc) return acc;
-    const { error } = await admin.from("social_posts").update({ ...fields, account_id: acc.id }).eq("id", postId);
+    const prevExtra = (own as unknown as { extra?: Record<string, unknown> | null }).extra ?? {};
+    const { error } = await admin.from("social_posts").update({ ...fields, extra: { ...prevExtra, why }, account_id: acc.id }).eq("id", postId);
     if (error) {
       console.error("savePostAction update error:", error);
       return { error: "Modification impossible pour le moment." };
@@ -270,7 +276,7 @@ export async function savePostAction(input: PostInput): Promise<{ error?: string
     if ("error" in acc) return acc;
     const { data, error } = await admin
       .from("social_posts")
-      .insert({ ...fields, account_id: acc.id, external_post_id: `manuel:${crypto.randomUUID()}` })
+      .insert({ ...fields, extra: { why }, account_id: acc.id, external_post_id: `manuel:${crypto.randomUUID()}` })
       .select("id")
       .single();
     if (error || !data) {

@@ -210,7 +210,7 @@ export default async function ClientPreviewPage({
             <p style={{ margin: 0, fontSize: 11.5, maxWidth: 320, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
               {isFree
                 ? t("Il voit la liste des programmes prêts à l'emploi et peut en créer un lui-même.")
-                : t("Ton coach prépare ton programme. En attendant, tu peux déjà loguer une séance libre : tes charges seront gardées pour la suite.")}
+                : t("Ton coach prépare ton programme. En attendant, note une séance libre : tes charges sont gardées.")}
             </p>
           </div>
         )}
