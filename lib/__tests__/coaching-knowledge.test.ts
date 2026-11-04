@@ -325,3 +325,15 @@ test("le prompt partagé cadre la recomposition (trois cas, durée limitée, cho
   assert.match(COACHING_KNOWLEDGE_PROMPT, /ne juge jamais sur le poids seul/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /mêmes conditions/);
 });
+
+test("le prompt partagé distingue heures au lit et heures dormies et ne promet pas qu'un déficit améliore le sommeil", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Sommeil et déficit/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne promets jamais qu'un déficit fait mieux dormir/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
+
+test("le prompt partagé cadre l'amplitude (adaptée, standardisée, jamais une amplitude partielle chargée pour l'ego)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /- Amplitude : chaque amplitude se justifie/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /amplitude adaptée/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Aucune étude n'est jamais citée au client/);
+});
