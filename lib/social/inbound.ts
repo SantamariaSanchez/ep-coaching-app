@@ -19,10 +19,15 @@ export async function getInboundDemand(userId: string): Promise<(InboundDemand &
   const { data: me } = await admin.from("profiles").select("is_platform_owner").eq("id", userId).maybeSingle();
   if (!(me as { is_platform_owner?: boolean | null } | null)?.is_platform_owner) return null;
   const since = `${shift(todayInParis(), -30)}T00:00:00Z`;
-  const [{ count: prequal }, { count: coaches }] = await Promise.all([
+  // La table profiles n'a pas de date de création : l'acceptation des CGU,
+  // faite à l'inscription, en tient lieu.
+  const coachBase = () => admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "coach").eq("is_platform_owner", false);
+  const [{ count: prequal }, { count: signups }, { count: onboarded }, { count: allCoaches }] = await Promise.all([
     admin.from("prequalification_responses").select("id", { count: "exact", head: true }).gte("created_at", since),
-    admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "coach").eq("is_platform_owner", false).gte("created_at", since),
+    coachBase().gte("terms_accepted_at", since),
+    coachBase().not("onboarding_completed_at", "is", null),
+    coachBase(),
   ]);
-  const d = { prequalifications: prequal ?? 0, coachSignups: coaches ?? 0 };
+  const d = { prequalifications: prequal ?? 0, coachSignups: signups ?? 0, coachesOnboarded: onboarded ?? 0, coachesTotal: allCoaches ?? 0 };
   return { ...d, summary: inboundSummary(d) };
 }

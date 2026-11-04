@@ -12,3 +12,9 @@ test("accords au singulier et au pluriel", () => {
   assert.equal(inboundSummary({ prequalifications: 1, coachSignups: 0 }), "Sur 30 jours : 1 questionnaire rempli.");
   assert.equal(inboundSummary({ prequalifications: 3, coachSignups: 2 }), "Sur 30 jours : 3 questionnaires remplis et 2 coachs inscrits.");
 });
+
+test("activation des coachs : numérateur et dénominateur explicites", () => {
+  const s = inboundSummary({ prequalifications: 0, coachSignups: 1, coachesOnboarded: 1, coachesTotal: 11 });
+  assert.match(s, /1 coach inscrit/);
+  assert.match(s, /terminé l'onboarding : 1 sur 11/);
+});
