@@ -45,3 +45,11 @@ test("bibliothèque du Studio : prompts « outil comme moyen » et hooks testés
   assert.match(byTitle("Tester 10 hooks sur un format qui marche"), /3 premières secondes/);
   assert.match(byTitle("Surfer sur une actualité"), /à vérifier/);
 });
+
+test("bibliothèque du Studio : revue hebdomadaire et matrice sans rien inventer (C58)", async () => {
+  const { CONTENT_PROMPTS } = await import("../content-library");
+  const byTitle = (n: string) => CONTENT_PROMPTS.find((p) => p.title === n)?.prompt ?? "";
+  assert.match(byTitle("Revue hebdomadaire courte des tests de contenu"), /visibilité/);
+  assert.match(byTitle("Revue hebdomadaire courte des tests de contenu"), /Ne conclus rien sur une seule publication/);
+  assert.match(byTitle("Matrice sujet, angle, format et appel à l'action"), /aucun témoignage ni aucun résultat inventé/);
+});

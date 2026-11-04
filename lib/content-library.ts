@@ -213,6 +213,18 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
       "Voici une actualité ou un sujet dont tout le monde parle en ce moment : [ACTUALITÉ]. Propose-moi 5 angles de vidéo qui la relient honnêtement à mon contenu de coaching. Si le lien est faible, dis-le et écarte l'angle. Pour chaque angle : le hook, le format (fond vert avec une capture de l'actualité, face caméra ou duo) et ce que la personne doit retenir. Jamais de fait inventé sur l'actualité : si tu n'es pas sûr, marque-le « à vérifier ».",
   },
   {
+    title: "Revue hebdomadaire courte des tests de contenu",
+    category: "Planification",
+    prompt:
+      "Voici mes publications de la semaine avec leurs résultats : [LISTE : sujet, format, hook, vues, partages, enregistrements, visites de profil, messages reçus]. Fais une revue courte en 4 colonnes : ce qui a attiré les bonnes personnes, ce qui a déclenché une action (message, clic, réservation), ce qui mérite une nouvelle variation (même sujet, autre angle ou autre hook), ce qu'il faut arrêter. Sépare toujours les résultats de visibilité (vues) des résultats utiles (messages, demandes). Ne conclus rien sur une seule publication : si je n'ai pas assez de données, dis-le et propose un test comparable pour la semaine suivante. Pour chaque décision : répéter, adapter ou arrêter, en une phrase.",
+  },
+  {
+    title: "Matrice sujet, angle, format et appel à l'action",
+    category: "Planification",
+    prompt:
+      "Voici 3 à 5 problèmes réels de mon audience : [PROBLÈMES]. Construis une matrice : pour chaque problème, 3 angles différents, le format adapté à chaque angle (réaction, face caméra, démonstration, éducation visuelle), l'intention (faire découvrir, expliquer, prouver, inviter) et un seul appel à l'action cohérent qui mène à une ressource qui existe vraiment : [MES RESSOURCES RÉELLES]. Règles : aucune question d'abonné, aucun commentaire, aucun témoignage ni aucun résultat inventé, aucune plateforme de plus que celles que j'utilise déjà, aucun volume de publication imposé.",
+  },
+  {
     title: "Repérer le pattern qui marche (analyse de performance)",
     category: "Planification",
     prompt:
