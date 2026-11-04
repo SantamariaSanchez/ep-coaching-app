@@ -1,3 +1,4 @@
+import { HOOK_VARIANTS } from "@/lib/hook-variants";
 import { createAdminClient } from "@/lib/supabase-admin";
 
 // Idéation (ex "Idées & brouillons", voir lib/content-ideas.ts pour le
@@ -135,7 +136,10 @@ export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
     if (isMissingColumnError(error)) ({ data, error } = await query(`${base}, content_format, video_plan`));
     if (isMissingColumnError(error)) ({ data, error } = await query(`${base}, content_format`));
     if (isMissingColumnError(error)) ({ data, error } = await query(base));
-    return (data as unknown as CoachScript[]) ?? [];
+    const rows = (data as unknown as CoachScript[]) ?? [];
+    // Variantes d'accroche : celles de la base si elles existent, sinon la
+    // liste livrée avec le code (indexée par le début de l'id).
+    return rows.map((r) => (r.hook_variants && r.hook_variants.length > 0 ? r : { ...r, hook_variants: HOOK_VARIANTS[r.id.slice(0, 8)] ?? [] }));
   } catch {
     return [];
   }
