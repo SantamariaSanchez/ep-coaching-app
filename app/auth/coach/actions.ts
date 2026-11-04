@@ -155,7 +155,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
     `Formule choisie : ${escapeHtml(plan.label)} (${escapeHtml(plan.priceLabel)})`,
   ], { url: "/dashboard/coach/admin" }).catch(() => {});
 
-  if (input.wantsNewsletter === true) {
+  if (input.acceptedTerms === true) {
     after(() => addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {}));
   }
 

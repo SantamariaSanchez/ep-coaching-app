@@ -57,7 +57,6 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   // Consentement newsletter SÉPARÉ (2026-09-10) — jamais pré-coché : la
   // politique de confidentialité promet un consentement distinct de
   // l'acceptation des CGU pour la newsletter, voir selfSignup côté serveur.
-  const [wantsNewsletter, setWantsNewsletter] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creatingAccount, setCreatingAccount] = useState(false);
   const [submitting, setSubmitting] = useState<string | null>(null); // "free" | "coaching" | null
@@ -92,7 +91,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
     }
     setCreatingAccount(true);
     try {
-      const result = await selfSignup({ fullName, email, phone, password, inviteCode, refCode, acceptedTerms, wantsNewsletter });
+      const result = await selfSignup({ fullName, email, phone, password, inviteCode, refCode, acceptedTerms });
       if ("error" in result) {
         setError(result.error);
         setCreatingAccount(false);
@@ -191,29 +190,6 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
                 {t("politique de confidentialité")}
               </a>
               {t(". Je comprends que le compte gratuit dure 60 jours, qu'il est suspendu ensuite si je ne prends pas d'accompagnement, et qu'un compte laissé sans connexion pendant 60 jours est supprimé.")}
-            </span>
-          </label>
-
-          {/* Newsletter — consentement SÉPARÉ de la case CGU ci-dessus,
-              jamais pré-coché (RGPD : un consentement doit être une action
-              affirmative, pas une case déjà cochée à décocher). */}
-          <label
-            style={{
-              display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
-              padding: "12px 14px", borderRadius: 8, marginTop: 10,
-              background: wantsNewsletter ? "rgba(var(--ep-accent-rgb),0.06)" : "rgba(var(--ep-ink-rgb),0.03)",
-              border: `1px solid ${wantsNewsletter ? "rgba(var(--ep-accent-rgb),0.3)" : "rgba(var(--ep-ink-rgb),0.08)"}`,
-              transition: "background 160ms ease, border-color 160ms ease",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={wantsNewsletter}
-              onChange={(e) => setWantsNewsletter(e.target.checked)}
-              style={{ width: 17, height: 17, marginTop: 1, accentColor: "var(--ep-accent)", flexShrink: 0, cursor: "pointer" }}
-            />
-            <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
-              {t("Je veux aussi recevoir la newsletter EP Coaching (conseils entraînement, nutrition, mindset, un mail de temps en temps). Optionnel, désinscription en un clic à tout moment.")}
             </span>
           </label>
 

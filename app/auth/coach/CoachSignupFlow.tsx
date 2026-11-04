@@ -40,7 +40,6 @@ export default function CoachSignupFlow() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   // Consentement newsletter SÉPARÉ (2026-09-10), jamais pré-coché — même
   // principe que app/auth/client/SignupFlow.tsx.
-  const [wantsNewsletter, setWantsNewsletter] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -71,7 +70,7 @@ export default function CoachSignupFlow() {
     }
     setSubmitting(true);
     try {
-      const result = await signupCoach({ fullName, email, password, planId, acceptedTerms, wantsNewsletter });
+      const result = await signupCoach({ fullName, email, password, planId, acceptedTerms });
       if ("error" in result) {
         setError(result.error);
         setSubmitting(false);
@@ -172,20 +171,7 @@ export default function CoachSignupFlow() {
           <Link href="/legal/cgv" target="_blank" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
             {t("CGV")}
           </Link>{" "}
-          {t("d'EP Coaching, y compris la facturation dès la souscription selon la formule choisie.")}
-        </span>
-      </label>
-
-      {/* Newsletter — consentement SÉPARÉ, jamais pré-coché. */}
-      <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
-        <input
-          type="checkbox"
-          checked={wantsNewsletter}
-          onChange={(e) => setWantsNewsletter(e.target.checked)}
-          style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "var(--ep-accent)" }}
-        />
-        <span style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
-          {t("Je veux aussi recevoir la newsletter EP Coaching. Optionnel, désinscription en un clic à tout moment.")}
+          {t("d'EP Coaching, y compris la facturation dès la souscription selon la formule choisie. Je recevrai aussi la newsletter EP Coaching (désinscription en un clic à tout moment).")}
         </span>
       </label>
 
