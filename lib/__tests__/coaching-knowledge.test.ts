@@ -322,4 +322,6 @@ test("le prompt partagé cadre la recomposition (trois cas, durée limitée, cho
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Recomposition \(perdre du gras et prendre du muscle/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /mémoire musculaire/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /on choisit une direction/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne juge jamais sur le poids seul/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /mêmes conditions/);
 });
