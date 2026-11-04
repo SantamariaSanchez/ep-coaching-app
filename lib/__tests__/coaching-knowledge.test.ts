@@ -337,3 +337,9 @@ test("le prompt partagé cadre l'amplitude (adaptée, standardisée, jamais une 
   assert.match(COACHING_KNOWLEDGE_PROMPT, /amplitude adaptée/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Aucune étude n'est jamais citée au client/);
 });
+
+test("le prompt partagé ne moralise pas les aliments et ne diagnostique pas d'intolérance", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /il n'y a pas de bons ni de mauvais aliments/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne retire pas lait, gluten ou fruits sans raison médicale/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Pas de diagnostic d'intolérance/);
+});
