@@ -317,3 +317,9 @@ test("le prompt partagé cadre le volume utile et les séances manquées (décal
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne compare jamais un client à un autre/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /début de séance/);
 });
+
+test("le prompt partagé cadre la recomposition (trois cas, durée limitée, choisir une direction)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Recomposition \(perdre du gras et prendre du muscle/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /mémoire musculaire/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /on choisit une direction/);
+});
