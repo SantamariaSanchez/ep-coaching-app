@@ -120,12 +120,12 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
 
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:gap-x-6 lg:items-start">
         {allLogs.length > 0 && (
-          <div className="order-1 lg:col-start-2 lg:row-start-1">
+          <div className="order-2 lg:order-none lg:col-start-2 lg:row-start-1">
             <BilanKpiBoard logs={allLogs} streakDays={streakDays} />
           </div>
         )}
 
-        <div className="order-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-4 flex flex-col gap-4">
+        <div className="order-1 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-4 flex flex-col gap-4">
           <BilanCollapse key={date} doneAtLoad={doneToday}>{formBlock}</BilanCollapse>
           <TrackingLevelPicker level={tracking.level} autoLevel={tracking.autoLevel} source={tracking.source} reasons={tracking.reasons} summary={describeTracking(tracking)} suggestion={tracking.suggestion} onPick={setTrackingLevelAction} compact />
         </div>
