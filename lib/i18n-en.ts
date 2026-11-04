@@ -4,6 +4,7 @@
 export const EN: Record<string, string> = {
   // ── Navigation ───────────────────────────────────────────────────────────
   "Aujourd'hui": "Today",
+  "Séance courte (2 séries max)": "Short session (2 sets max)",
   "Training": "Training",
   "Suivi": "Tracking",
   "Coach": "Coach",

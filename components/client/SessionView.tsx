@@ -20,6 +20,7 @@ import {
   Flag,
   MoreVertical,
   Trash2,
+  Scissors,
 } from "lucide-react";
 import {
   BarChart,
@@ -1716,6 +1717,29 @@ export default function SessionView({
     router.push(returnPath);
   }, [sessionId, returnPath, router, confirm]);
 
+  // Semaine chargée : on garde tous les exercices et on ramène chaque exercice
+  // à 2 séries au plus (les séries déjà validées restent). Pas de culpabilité,
+  // pas de séance perdue : une séance courte vaut mieux qu'une séance sautée.
+  const handleShortenSession = useCallback(() => {
+    for (const ex of exercises) {
+      let kept = 0;
+      for (const set of ex.sets) {
+        if (set.validated || kept < 2) {
+          kept += 1;
+          continue;
+        }
+        if (set.dbId) fetch(`/api/client/sessions/${sessionId}/sets/${set.dbId}`, { method: "DELETE" }).catch(() => {});
+        if (savingSetsRef.current.has(set.localId)) removedWhileSavingRef.current.add(set.localId);
+      }
+    }
+    setExercises((prev) =>
+      prev.map((ex) => {
+        let kept = 0;
+        return { ...ex, sets: ex.sets.filter((set) => (set.validated || kept < 2 ? (kept++, true) : false)) };
+      })
+    );
+  }, [exercises, sessionId]);
+
   const goToRecap = useCallback(() => {
     // Referme le repos du dernier set : sans set suivant, sa durée ne serait
     // jamais enregistrée.
@@ -2317,6 +2341,18 @@ export default function SessionView({
                     role="menu"
                     className="absolute right-0 top-full mt-1 z-50 w-60 rounded-xl border border-(--ep-line)/35 bg-(--ep-s4) p-1 shadow-[0_12px_32px_rgba(var(--ep-shade-rgb),0.45)]"
                   >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        handleShortenSession();
+                      }}
+                      className="w-full min-h-11 px-3 flex items-center gap-2 rounded-lg text-left text-[13px] font-bold text-(--ep-strong) active:bg-(--ep-line)/15"
+                    >
+                      <Scissors size={15} className="text-(--ep-accent)" />
+                      {tr("Séance courte (2 séries max)")}
+                    </button>
                     <button
                       type="button"
                       role="menuitem"
