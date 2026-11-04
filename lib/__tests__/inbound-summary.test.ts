@@ -18,3 +18,9 @@ test("activation des coachs : numérateur et dénominateur explicites", () => {
   assert.match(s, /1 coach inscrit/);
   assert.match(s, /terminé l'onboarding : 1 sur 11/);
 });
+
+test("les leads guides gratuits sont comptés avec leur origine", () => {
+  const s = inboundSummary({ prequalifications: 0, coachSignups: 0, leads: 3, leadsByOrigin: { instagram: 2, "origine inconnue": 1 } });
+  assert.match(s, /3 leads guides gratuits \(instagram 2, origine inconnue 1\)/);
+  assert.match(inboundSummary({ prequalifications: 0, coachSignups: 0, leads: 1 }), /1 lead guide gratuit/);
+});
