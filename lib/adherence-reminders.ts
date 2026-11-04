@@ -86,7 +86,17 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
   const tzOf = new Map((settings ?? []).map((s) => [s.user_id as string, (s.timezone as string | null) || "Europe/Paris"]));
   const modulesOf = new Map((setups ?? []).map((s) => [s.user_id as string, (s.modules as Modules) ?? {}]));
 
-  const people = (profiles ?? []).filter((p) => p.role === "client" && !String(p.email ?? "").endsWith("@epcoaching.app"));
+  // Le coach qui suit son propre parcours (espace « Moi », coach_id = lui-même)
+  // reçoit les mêmes rappels qu'un client : jusqu'ici ils étaient réservés au
+  // rôle « client », donc le fondateur n'a jamais reçu un seul rappel de bilan,
+  // de photos ou de semaine (0 sur 1 404 notifications).
+  const isSelfCoach = (p: { id: unknown; role: unknown; coach_id: unknown }) => p.role === "coach" && p.coach_id === p.id;
+  const people = (profiles ?? []).filter((p) => (p.role === "client" || isSelfCoach(p)) && !String(p.email ?? "").endsWith("@epcoaching.app"));
+  const selfCoachIds = new Set(people.filter(isSelfCoach).map((p) => p.id as string));
+  const urls = (id: string) =>
+    selfCoachIds.has(id)
+      ? { home: "/dashboard/coach/moi/bilan", checkin: "/dashboard/coach/moi/semaine", progress: "/dashboard/coach/moi/photos" }
+      : { home: "/dashboard/client", checkin: "/dashboard/client/checkin", progress: "/dashboard/client/checkin" };
   if (!people.length) return sent;
 
   // Heures, fréquence et jours de rappel propres à chaque personne (moteur de
@@ -106,7 +116,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
     const morningAt = toMin(tp?.reminders.morning, MORNING_MIN);
     const eveningAt = toMin(tp?.reminders.evening, EVENING_MIN);
     const day = p.checkin_day as number | null;
-    if (p.coach_id && day) {
+    if ((p.coach_id || selfCoachIds.has(p.id as string)) && day) {
       if (clock.isoWeekday === day && inWindow(clock.minutes, CHECKIN_MIN)) kinds.push("checkin");
       if (clock.isoWeekday === (day % 7) + 1 && inWindow(clock.minutes, morningAt)) kinds.push("checkin_late");
     }
@@ -160,7 +170,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
           type: "daily_bilan_reminder_morning",
           title: "☀️ Ton bilan du matin",
           body: trackingOf.get(d.id)?.level === "simple" ? "Ta pesée du jour, 10 secondes. Ta tendance se construit pas à pas." : "Poids et sommeil, 20 secondes. C'est ce qui permet d'ajuster ta diète au bon moment.",
-          url: "/dashboard/client",
+          url: urls(d.id).home,
         }).catch(() => {});
         sent.morning += 1;
       }
@@ -170,7 +180,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
           type: "daily_bilan_reminder_evening",
           title: "🌙 Ta journée n'a pas encore son bilan",
           body: "Un bilan rapide avant de dormir : ta régularité se construit là.",
-          url: "/dashboard/client",
+          url: urls(d.id).home,
         }).catch(() => {});
         sent.evening += 1;
       }
@@ -186,7 +196,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
           type: "progress_reminder",
           title: "📸 Un point sur ta progression",
           body: `C'est le moment de faire ${what}. Même lumière, même endroit : ça se compare mieux, et ça prend 2 minutes.`,
-          url: "/dashboard/client/checkin",
+          url: urls(d.id).progress,
         }).catch(() => {});
         sent.progress += 1;
       }
@@ -195,13 +205,19 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
         const refDate = kind === "checkin" ? d.clock.date : new Date(new Date(`${d.clock.date}T12:00:00Z`).getTime() - 86400000).toISOString().slice(0, 10);
         const refWeekday = kind === "checkin" ? d.clock.isoWeekday : ((d.clock.isoWeekday + 5) % 7) + 1;
         const weekStart = mondayOf(refDate, refWeekday);
-        const done = (checkins ?? []).some((c) => c.client_id === d.id && String(c.week_start) >= weekStart);
+        const self = selfCoachIds.has(d.id);
+        // Le coach n'a pas de ligne check_ins : sa revue de semaine n'en écrit
+        // aucune, on ne le relance donc qu'une fois, le jour prévu.
+        if (self && kind === "checkin_late") continue;
+        const done = !self && (checkins ?? []).some((c) => c.client_id === d.id && String(c.week_start) >= weekStart);
         if (done || (await alreadyNotifiedToday(d.id, "checkin_reminder"))) continue;
         await notifyUser(d.id, {
           type: "checkin_reminder",
-          title: kind === "checkin" ? "📋 C'est le jour de ton check-in" : "📋 Ton coach attend ton check-in",
-          body: kind === "checkin" ? "5 minutes pour faire le point sur ta semaine. Ton coach s'en sert pour ajuster la suite." : "Il manque ton check-in de la semaine : sans lui, ton coach ajuste à l'aveugle.",
-          url: "/dashboard/client/checkin",
+          title: self ? "📋 Ta semaine en chiffres" : kind === "checkin" ? "📋 C'est le jour de ton check-in" : "📋 Ton coach attend ton check-in",
+          body: self
+            ? "2 minutes pour relire ta semaine et caler la suivante. Ajoute tes photos et tes mensurations pendant que tu y es."
+            : kind === "checkin" ? "5 minutes pour faire le point sur ta semaine. Ton coach s'en sert pour ajuster la suite." : "Il manque ton check-in de la semaine : sans lui, ton coach ajuste à l'aveugle.",
+          url: urls(d.id).checkin,
         }).catch(() => {});
         sent.checkin += 1;
       }
