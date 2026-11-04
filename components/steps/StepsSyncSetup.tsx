@@ -275,7 +275,7 @@ export default function StepsSyncSetup({
           </Step>
           <Step n={2} title={t("Relie Health Connect")} done={received}>
             <p>
-              {t("Sur Android, tes pas (Samsung Santé, Google Fit, Fitbit, ta montre...) sont regroupés dans Health Connect. L'appli EP Coaching tourne sur le web et ne peut pas le lire seule : une appli d'automatisation qui sait lire Health Connect et envoyer une requête web fait le pont.")}
+              {t("Sur Android, tes pas sont regroupés dans Health Connect. L'appli ne peut pas le lire seule : une appli d'automatisation qui lit Health Connect et envoie une requête web fait le pont.")}
             </p>
             <p>{t("Dans cette appli, crée une tâche qui lit le nombre de pas d'aujourd'hui puis envoie :")}</p>
             <CopyField label={t("Requête POST vers")} value={endpoint} />

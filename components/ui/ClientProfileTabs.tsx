@@ -639,7 +639,7 @@ export default function ClientProfileTabs({
             <Card title={t("Fiche client : l'essentiel")}>
               <p className="text-xs text-(--ep-ink)/40 mb-2">
                 {client.subscription_status === "active"
-                  ? t("En attente que le client remplisse son questionnaire d'onboarding. Objectifs, régime, blessures... tout ce qui sert ensuite dans le créateur de recette, de programme et de plan nutrition, se remplira automatiquement dès qu'il l'aura fait.")
+                  ? t("En attente du questionnaire d'onboarding du client. Objectifs, régime, blessures : tout se remplira tout seul dès qu'il l'aura fait.")
                   : t("Active le coaching payant de ce client pour débloquer son questionnaire d'onboarding. C'est lui qui remplit sa fiche, pas toi.")}
               </p>
               <button

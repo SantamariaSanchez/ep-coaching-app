@@ -229,7 +229,7 @@ function CaloriesCalculator() {
             ))}
           </div>
           <p className="text-[10.5px] text-(--ep-ink)/30 mt-4 leading-relaxed">
-            {t("Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 5 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite on ajuste sur ton poids réel, pas sur la formule.")}
+            {t("Estimation de ta maintenance. Pour prendre du muscle, ajoute environ 5 à 10 % ; pour perdre du gras, retire environ 10 à 20 %. Ensuite, on ajuste sur ton poids réel.")}
           </p>
           <ToolCta guideSlug="guide-macros" guideTitle="Le guide des macros sans prise de tête" />
         </div>
