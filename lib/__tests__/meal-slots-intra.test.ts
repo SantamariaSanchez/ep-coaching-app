@@ -35,3 +35,25 @@ test("l'option d'un repas n'est pas ajoutée aux totaux et l'intra compte", () =
   assert.deepEqual(variantsFor(plan, date, "breakfast"), [1, 2]);
   assert.equal(planTotals(planItemsFor(plan, date, { breakfast: 2 })).calories, 770);
 });
+
+test("l'agenda n'ajoute jamais un 6e repas quand 5 sont déjà posés sous des noms libres", async () => {
+  const { buildWeek, placeAll, DEFAULT_PREFS, blockKind } = await import("../agenda-engine");
+  const w = { start: 6 * 60, end: 22 * 60 };
+  const mk = (start_time: string, label: string) => ({
+    day_of_week: 2, start_time, end_time: start_time.replace(/^(\d\d)/, (h) => String(Number(h) + 1).padStart(2, "0")),
+    label, icon: null, color: "#000", notes: null, tasks: [], notify: false, specific_date: null, skipped_dates: null, link_ref: null,
+  });
+  const existing = placeAll(
+    [mk("06:00:00", "Repas 1"), mk("10:00:00", "Repas 2"), mk("12:00:00", "Repas 3 : déjeuner"), mk("17:00:00", "Repas 4"), mk("21:15:00", "Repas 5 : dîner")] as never[],
+    w
+  );
+  const out = buildWeek({
+    window: w,
+    prefs: DEFAULT_PREFS,
+    sessionsByDay: {},
+    mealSlotsByDay: { 2: ["breakfast", "morning", "lunch", "preworkout", "intraworkout", "postworkout"] },
+    existing,
+  });
+  const meals = out.filter((b) => b.col === 2 && blockKind(b) === "repas" && b.link_ref !== "intraworkout");
+  assert.equal(meals.length, 0);
+});

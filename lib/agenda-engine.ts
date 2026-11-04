@@ -649,7 +649,16 @@ export function buildWeek(input: BuildInput): GenBlock[] {
     // Pré et post d'abord : ils sont accrochés à la séance, les autres repas s'écartent.
     const prePost = ordered.filter((sl) => sl === "preworkout" || sl === "intraworkout" || sl === "postworkout");
     const others = ordered.filter((sl) => sl !== "preworkout" && sl !== "intraworkout" && sl !== "postworkout");
+    // Jamais plus de repas dans la journée que n'en prévoit la diète : un bloc
+    // déjà posé sous un nom libre (« Repas 5 : dîner ») ne correspond à aucun
+    // créneau de la diète et faisait ajouter un 6e repas. La boisson
+    // intra-entraînement n'est pas un repas, elle reste en plus.
+    const dietMealCount = (input.mealSlotsByDay[col] ?? []).filter((sl) => sl !== "intraworkout").length;
+    const haveMealCount = existing.filter((p) => blockKind(p.block) === "repas" && mealSlotOf(p.block) !== "intraworkout").length;
+    const mealBudget = Math.max(0, dietMealCount - haveMealCount);
+    const allowedMeals = new Set([...prePost, ...others].filter((sl) => sl !== "intraworkout").slice(0, mealBudget));
     for (const slot of [...prePost, ...others]) {
+      if (slot !== "intraworkout" && !allowedMeals.has(slot)) continue;
       let wanted = defaultMealAbs(slot, w);
       let maxShift = 6 * 60;
       let lo = ws;
