@@ -19,6 +19,7 @@ import DemoTabs from "@/components/landing/DemoTabs";
 import { COACH_PLATFORM_PLANS, COACH_PLAN_DETAILS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/brand-links";
 import { entityGraph, faqNode, SHOWCASE_URL } from "@/lib/seo-entity";
+import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import "./landing.css";
 
 const TITLE = "EP Coaching : coach sportif à Annecy et en ligne, appli musculation et nutrition";
@@ -147,7 +148,20 @@ function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
   );
 }
 
-export default function HomePage() {
+// Guides gratuits montrés sur l'accueil : le visiteur pas prêt à s'inscrire
+// repart avec quelque chose (et devient un lead). Les guides pour coachs
+// restent hors de cette liste. Base injoignable : la section disparaît.
+async function homeGuides() {
+  try {
+    const all = await getAllLeadMagnets();
+    return all.filter((m) => m.category !== "Entrepreneuriat").slice(0, 3);
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const guides = await homeGuides();
   return (
     <div className="lp">
       <StandaloneRedirect />
@@ -305,6 +319,22 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
+        {guides.length > 0 && (
+          <section className="lp-wrap lp-section" aria-labelledby="lp-guides">
+            <h2 id="lp-guides" className="lp-h2">Pas encore prêt ? Commence par un guide gratuit</h2>
+            <p className="lp-lead">Un email, et tu le reçois tout de suite. Sans compte, sans engagement.</p>
+            <div className="lp-plans" style={{ marginTop: 20 }}>
+              {guides.map((g) => (
+                <Link key={g.slug} href={`/ressources/${g.slug}?src=site`} className="lp-card" style={{ textDecoration: "none", display: "block" }}>
+                  <h3>{g.title}</h3>
+                  <p>{g.hook}</p>
+                </Link>
+              ))}
+            </div>
+            <p style={{ marginTop: 16 }}><Link className="lp-link" href="/ressources">Voir tous les guides</Link></p>
+          </section>
+        )}
 
         {/* ── Appel final ── */}
         <section className="lp-wrap lp-section" aria-labelledby="lp-final">
