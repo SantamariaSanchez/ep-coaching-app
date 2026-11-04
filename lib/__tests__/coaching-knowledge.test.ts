@@ -285,3 +285,10 @@ test("prompt IA : ton sans culpabilisation, une action prioritaire, aucune prome
   assert.match(COACHING_KNOWLEDGE_PROMPT, /sans son accord explicite/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /—/);
 });
+
+test("le prompt partagé définit la vraie série (0 à 5 de l'échec, standardisation, charge en dernier)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Vraie série/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /entre 0 et 5 répétitions de l'échec/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /la charge vient en dernier/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
