@@ -298,3 +298,11 @@ test("le prompt partagé cadre le retour du déficit à la maintenance sans prom
   assert.match(COACHING_KNOWLEDGE_PROMPT, /ni un moyen de « relancer le métabolisme »/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /vérifie d'abord le suivi réel/);
 });
+
+test("le prompt partagé cadre la vitesse du déficit (mini cut) et relativise une pause de quelques jours", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Vitesse du déficit/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne fait pas perdre le muscle ni le physique/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Monte les pas progressivement/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /kcal par kilo à la maintenance/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne fixe jamais un minimum de calories universel par sexe/);
+});
