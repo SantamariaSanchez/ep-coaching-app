@@ -181,6 +181,9 @@
   .lp-nav { display: flex; }
   .lp-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: 40px; min-height: min(780px, calc(100vh - 60px)); padding: 24px 0 40px; }
   .lp-hero-visual { order: 2; max-height: none; min-height: 0; overflow: visible; margin: 0; -webkit-mask-image: none; mask-image: none; }
+  /* Grand écran : l'aperçu de l'appli est le visuel principal, il doit se voir. */
+  .lp-hero-visual .lp-mock { width: min(100%, 470px); }
+  .lp-hero-visual::before { content: ""; position: absolute; inset: 6% 4% 2%; background: radial-gradient(60% 60% at 55% 45%, rgba(var(--ep-accent-rgb), 0.22), transparent 70%); filter: blur(30px); z-index: -1; pointer-events: none; }
   .lp-hero-copy { order: 1; }
   .lp-h1 { font-size: clamp(38px, 4vw, 56px); line-height: 1.02; margin-bottom: 18px; }
   .lp-sub { font-size: 18px; margin-bottom: 26px; }

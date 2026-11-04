@@ -7,6 +7,7 @@
 // fois sur app/outils/page.tsx (2026-08-16). InstallAppHint et
 // NewsletterSignupForm restent "use client" eux-mêmes, un parent serveur
 // peut les rendre sans problème.
+import StandaloneRedirect from "@/components/landing/StandaloneRedirect";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -135,7 +136,7 @@ function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
       <SocialAuthButtons role={coach ? "coach" : "client"} layout="stack" className="lp-social" />
       <div className="lp-email">
         <Link href={coach ? "/auth/coach" : "/auth/client"} className="lp-btn lp-btn--ghost" style={{ width: "100%" }}>
-          Continuer avec un e-mail
+          Commencer gratuitement
         </Link>
       </div>
       <p className="lp-micro">
@@ -149,6 +150,7 @@ function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
 export default function HomePage() {
   return (
     <div className="lp">
+      <StandaloneRedirect />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
 
       {/* ── En-tête : logo + connexion au téléphone, navigation complète sur ordinateur ── */}
