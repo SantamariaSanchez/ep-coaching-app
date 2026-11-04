@@ -2556,7 +2556,7 @@ export default function ClientNutritionView({
               </button>
             </div>
             <p className="text-[10px] text-(--ep-ink)/35 mb-5">
-              {tr("Au resto, pas le temps de chercher l'aliment exact ? Indique juste les calories (et les macros si tu les connais), ça compte direct dans ton suivi.")}
+              {tr("Au resto ? Indique juste les calories (et les macros si tu les connais).")}
             </p>
 
             <div className="space-y-3">

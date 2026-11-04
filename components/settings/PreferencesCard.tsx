@@ -57,7 +57,7 @@ export default function PreferencesCard({
       <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Personnalisation")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <p style={{ margin: "0 0 16px", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5 }}>
-          {t("Tes réponses au questionnaire de bienvenue, modifiables à tout moment. Ça change l'ordre de ce qui t'est proposé sur ton tableau de bord et les messages que tu vois, donc ça vaut le coup de les tenir à jour si ta situation évolue.")}
+          {t("Tes réponses de bienvenue, modifiables à tout moment. Elles règlent ton tableau de bord et tes messages.")}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {PREFERENCE_QUESTIONS.map((question) => (

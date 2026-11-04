@@ -153,7 +153,7 @@ async function NoCoachBanner() {
             {t("Tu n'as plus de coach attitré")}
           </p>
           <p style={{ margin: 0, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.6 }}>
-            {t("Envie que Santamaria devienne ton coach ? Écris-lui directement sur Instagram. Tu peux aussi choisir un autre coach actif sur la plateforme.")}
+            {t("Envie que Santamaria devienne ton coach ? Écris-lui sur Instagram, ou choisis un autre coach.")}
           </p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>

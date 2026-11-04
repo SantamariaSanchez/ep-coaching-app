@@ -73,7 +73,7 @@ export default async function ClassementPage() {
           {t("Classement")}
         </h1>
         <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Séances, repas notés, bilans, partages : chaque action réelle rapporte des points. Membres gratuits et clients accompagnés, tous coachs confondus, sur un seul classement. Tu peux t'en retirer depuis tes paramètres.")}
+          {t("Séances, repas notés, bilans : chaque action réelle rapporte des points. Un seul classement pour tous. Tu peux t'en retirer dans les paramètres.")}
         </p>
       </div>
 

@@ -125,7 +125,7 @@ export default async function LiveTypeDetailPage({
             {t("Demander un point flash")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6, marginBottom: 10 }}>
-            {t("Ton coach peut aussi te programmer un call stratégique classique à tout moment. Pour un besoin plus urgent, envoie-lui une demande de point flash :")}
+            {t("Ton coach peut te programmer un call à tout moment. Plus urgent ? Demande un point flash :")}
           </p>
           <FlashRequestButton />
         </div>
