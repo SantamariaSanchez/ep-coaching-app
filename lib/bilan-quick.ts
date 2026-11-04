@@ -64,9 +64,25 @@ export function parseHours(raw: string): number | null {
     if (m >= 60) return null;
     return Math.round((Number(hm[1]) + m / 60) * 100) / 100;
   }
+  // « 7.30 » / « 7,15 » : on écrit presque toujours 7 h 30 / 7 h 15, pas 7,3 h.
+  // Seuls .25 .50 .75 restent des quarts d'heure décimaux.
+  const hm2 = s.match(/^(\d{1,2})[.,](\d{2})$/);
+  if (hm2 && !["25", "50", "75"].includes(hm2[2]) && Number(hm2[2]) < 60) {
+    return Math.round((Number(hm2[1]) + Number(hm2[2]) / 60) * 100) / 100;
+  }
   const dec = s.match(/^\d+(?:[.,]\d+)?$/);
   if (dec) return Number(s.replace(",", "."));
   return null;
+}
+
+/** Durée entre un coucher et un lever (« HH:MM »), en heures ; passe minuit. */
+export function hoursBetween(bed: string | null | undefined, wake: string | null | undefined): number | null {
+  const ok = (v: string | null | undefined) => !!v && /^\d{2}:\d{2}/.test(v);
+  if (!ok(bed) || !ok(wake)) return null;
+  const mins = (v: string) => Number(v.slice(0, 2)) * 60 + Number(v.slice(3, 5));
+  let d = mins(wake as string) - mins(bed as string);
+  if (d <= 0) d += 24 * 60;
+  return Math.round((d / 60) * 100) / 100;
 }
 
 /** 7.5 → « 7 h 30 », 8 → « 8 h ». */

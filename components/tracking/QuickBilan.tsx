@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { changedFields, fieldFilled, formatHours, parseDecimal, parseHours } from "@/lib/bilan-quick";
+import { changedFields, fieldFilled, formatHours, hoursBetween, parseDecimal, parseHours } from "@/lib/bilan-quick";
 import { Check, ChevronDown, Minus, Plus } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { BilanField } from "@/lib/tracking-profile";
@@ -78,11 +78,11 @@ function Chips<T extends string | number>({ value, options, onPick, label }: { v
  * (« Reprendre … »), jamais comptée comme saisie sans un tap.
  */
 function NumberInput({
-  value, onChange, parse, format, editFormat, step, min, max, unit, label, suggestion, inputMode = "decimal", placeholder,
+  value, onChange, parse, format, editFormat, step, min, max, unit, label, suggestion, inputMode = "decimal", placeholder, reading,
 }: {
   value: number | null; onChange: (n: number | null) => void; parse: (raw: string) => number | null;
   format: (n: number) => string; editFormat?: (n: number) => string; step: number; min: number; max: number; unit: string; label: string;
-  suggestion?: number | null; inputMode?: "decimal" | "numeric" | "text"; placeholder?: string;
+  suggestion?: number | null; inputMode?: "decimal" | "numeric" | "text"; placeholder?: string; reading?: (n: number) => string;
 }) {
   const t = useT();
   const [text, setText] = useState<string | null>(null);
@@ -137,6 +137,9 @@ function NumberInput({
         <button type="button" onClick={() => onChange(suggestion)} style={{ marginTop: 6, background: "none", border: "none", padding: "4px 0", minHeight: 32, cursor: "pointer", fontSize: 12, fontWeight: 800, color: "var(--ep-accent)" }}>
           {t("Reprendre")} {format(suggestion)}{unit ? ` ${unit}` : ""}
         </button>
+      )}
+      {reading && text !== null && value != null && !invalid && (
+        <p aria-live="polite" style={{ margin: "5px 0 0", fontSize: 12, fontWeight: 700, color: "var(--ep-accent)", textAlign: "center" }}>= {reading(value)}</p>
       )}
       {invalid && <p role="alert" style={{ margin: "5px 0 0", fontSize: 11, color: "var(--ep-bad)" }}>{t("Valeur non reconnue")}</p>}
     </div>
@@ -195,6 +198,16 @@ export default function QuickBilan(props: QuickBilanProps) {
 
   function put(patch: Partial<DailyLog>) {
     setLog((l) => ({ ...l, ...patch }));
+    if (status !== "saving") setStatus("idle");
+  }
+  // L'horloge (coucher / lever) calcule la durée de sommeil toute seule.
+  const hasClockRow = [...props.fields, ...props.extraFields].includes("horaires_sommeil");
+  function putClock(patch: Partial<DailyLog>) {
+    setLog((l) => {
+      const next = { ...l, ...patch };
+      const d = hoursBetween(next.bedtime_actual, next.wake_time_actual);
+      return d != null ? { ...next, sleep_hours: d } : next;
+    });
     if (status !== "saving") setStatus("idle");
   }
 
@@ -277,12 +290,19 @@ export default function QuickBilan(props: QuickBilanProps) {
         );
       case "sommeil":
         return (
-          <Row key={f} label={t("Sommeil")} hint={t("Tape par exemple 7h30 ou 7,5")}>
+          <Row key={f} label={t("Sommeil")} hint={t("Tape 7h30, ou règle coucher et lever")}>
             <NumberInput
               label={t("Sommeil")} value={log.sleep_hours ?? null} suggestion={props.lastSleep} step={0.25} min={0} max={16} unit="" inputMode="text"
               parse={parseHours} format={formatHours} editFormat={(n) => formatHours(n).replace(/\s/g, "")} placeholder={t("ex. 7h30")}
+              reading={formatHours}
               onChange={(n) => put({ sleep_hours: n })}
             />
+            {!hasClockRow && (
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <TimeField label={t("Coucher (hier soir)")} value={log.bedtime_actual?.slice(0, 5) ?? ""} onChange={(v) => putClock({ bedtime_actual: v || null })} />
+                <TimeField label={t("Lever (ce matin)")} value={log.wake_time_actual?.slice(0, 5) ?? ""} onChange={(v) => putClock({ wake_time_actual: v || null })} />
+              </div>
+            )}
           </Row>
         );
       case "digestion":
@@ -315,8 +335,8 @@ export default function QuickBilan(props: QuickBilanProps) {
         return (
           <Row key={f} label={t("Coucher et lever")}>
             <div style={{ display: "flex", gap: 8 }}>
-              <TimeField label={t("Coucher (hier soir)")} value={log.bedtime_actual?.slice(0, 5) ?? ""} onChange={(v) => put({ bedtime_actual: v || null })} />
-              <TimeField label={t("Lever (ce matin)")} value={log.wake_time_actual?.slice(0, 5) ?? ""} onChange={(v) => put({ wake_time_actual: v || null })} />
+              <TimeField label={t("Coucher (hier soir)")} value={log.bedtime_actual?.slice(0, 5) ?? ""} onChange={(v) => putClock({ bedtime_actual: v || null })} />
+              <TimeField label={t("Lever (ce matin)")} value={log.wake_time_actual?.slice(0, 5) ?? ""} onChange={(v) => putClock({ wake_time_actual: v || null })} />
             </div>
           </Row>
         );

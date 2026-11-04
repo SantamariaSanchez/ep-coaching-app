@@ -5,6 +5,7 @@ import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { DailyLog } from "@/utils/daily-logs";
 import { isOn, type AppSetup } from "@/lib/app-setup";
+import { hoursBetween } from "@/lib/bilan-quick";
 import { Check, Scale, Dumbbell, Moon, Apple, Footprints, BedDouble, Pencil, Sun, MoonStar } from "lucide-react";
 
 export type BilanAction = (
@@ -306,6 +307,10 @@ export function TrainingCard({ today, existing, action, onSaved, logbookHref = "
 export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dashboard/client/tracking" }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void; sleepHref?: string }) {
   const t = useT();
   const [state, formAction, pending] = useActionState(action, null);
+  // L'horloge (coucher / lever) règle la durée toute seule.
+  const [bed, setBed] = useState(existing?.bedtime_actual?.slice(0, 5) ?? "");
+  const [wake, setWake] = useState(existing?.wake_time_actual?.slice(0, 5) ?? "");
+  const auto = hoursBetween(bed, wake);
 
   useEffect(() => {
     if (state?.success) onSaved?.();
@@ -317,7 +322,7 @@ export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dash
       <CardShell icon={BedDouble} title={t("Sommeil")} saved={!!state?.success}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <SleepDurationInput defaultValue={existing?.sleep_hours} />
+            <SleepDurationInput key={auto ?? "manuel"} defaultValue={auto ?? existing?.sleep_hours} />
             <div>
               <label className={lbl}>{t("Qualité sommeil (%)")}</label>
               <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" aria-label="80" className={inp} />
@@ -329,11 +334,11 @@ export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dash
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label className={lbl}>{t("Coucher (hier soir)")}</label>
-              <input name="bedtime_actual" type="time" defaultValue={existing?.bedtime_actual?.slice(0, 5) ?? ""} aria-label={t("Heure de coucher")} className={inp} />
+              <input name="bedtime_actual" type="time" value={bed} onChange={(e) => setBed(e.target.value)} aria-label={t("Heure de coucher")} className={inp} />
             </div>
             <div>
               <label className={lbl}>{t("Lever (ce matin)")}</label>
-              <input name="wake_time_actual" type="time" defaultValue={existing?.wake_time_actual?.slice(0, 5) ?? ""} aria-label={t("Heure de lever")} className={inp} />
+              <input name="wake_time_actual" type="time" value={wake} onChange={(e) => setWake(e.target.value)} aria-label={t("Heure de lever")} className={inp} />
             </div>
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
