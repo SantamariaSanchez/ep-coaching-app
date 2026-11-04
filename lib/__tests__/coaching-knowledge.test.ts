@@ -308,3 +308,12 @@ test("le prompt partagé cadre la vitesse du déficit (mini cut) et relativise u
   assert.match(COACHING_KNOWLEDGE_PROMPT, /jusqu'à 10 à 15 kg environ/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /nombre de semaines rond/);
 });
+
+test("le prompt partagé cadre le volume utile et les séances manquées (décaler, jamais doubler)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Trop en faire/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /6 à 8 séries difficiles par muscle dans une même séance/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /on la décale|on décale la séance/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais en doublant deux séances/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne compare jamais un client à un autre/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /début de séance/);
+});
