@@ -86,8 +86,10 @@ const sections: LegalSection[] = [
             d&apos;échéance).
           </li>
           <li>
-            <Strong>Newsletter EP Coaching</Strong> (consentement séparé et explicite) : uniquement si
-            vous vous y êtes inscrit volontairement. Elle ne concerne jamais les données des clients
+            <Strong>Newsletter EP Coaching</Strong> : à la création de votre compte, l&apos;adresse e-mail que
+            vous avez fournie reçoit la newsletter (conseils sur des services analogues), comme indiqué à côté de la
+            case d&apos;acceptation des conditions. Vous pouvez vous désinscrire en un clic depuis chaque e-mail,
+            ou dans votre profil, à tout moment. Elle ne concerne jamais les données des clients
             des coachs tiers, sauf inscription personnelle de leur part à cette liste distincte.
           </li>
           <li>
@@ -122,7 +124,7 @@ const sections: LegalSection[] = [
         <Ul>
           <li><Strong>Supabase</Strong> : hébergement de la base de données et des fichiers (photos, vidéos).</li>
           <li><Strong>Vercel</Strong> : hébergement de l&apos;application.</li>
-          <li><Strong>Brevo</Strong> : envoi des emails transactionnels et, sur consentement séparé, de la newsletter.</li>
+          <li><Strong>Brevo</Strong> : envoi des emails transactionnels et de la newsletter (désinscription en un clic).</li>
           <li><Strong>Stripe</Strong> : traitement sécurisé des paiements.</li>
           <li><Strong>Oura</Strong> : synchronisation des données de sommeil et de récupération, uniquement si vous connectez votre compte.</li>
           <li><Strong>Jitsi</Strong> : mise à disposition des salons de visioconférence pour les sessions en direct, sans enregistrement.</li>

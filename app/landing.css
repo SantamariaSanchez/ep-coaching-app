@@ -217,3 +217,12 @@
   .lp-btn, .ep-social-btn { min-height: 48px; }
   .lp-proof { display: none; }
 }
+
+/* Téléphone : l'accueil sert à entrer dans l'appli (connexion ou création de
+   compte), pas à présenter les fonctionnalités ni le fondateur. Les sections
+   restent dans la page pour le référencement et s'affichent sur ordinateur. */
+@media (max-width: 767px) {
+  .lp .lp-hero-visual, .lp .lp-proof, .lp main > .lp-section { display: none; }
+  .lp .lp-hero { min-height: calc(100svh - 140px); display: flex; flex-direction: column; justify-content: center; padding-top: 20px; padding-bottom: 28px; }
+  .lp .lp-h1 { font-size: clamp(30px, 9vw, 38px); line-height: 1.08; }
+}

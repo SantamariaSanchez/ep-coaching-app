@@ -74,7 +74,7 @@ export interface ClientSignupContext {
 
 // Tout ce qui suit la création du profil d'un membre : e-mail de confirmation,
 // prévenir le coach rattaché et le fondateur, CRM, bienvenue du coach IA,
-// points de parrainage, newsletter (seulement sur consentement explicite).
+// points de parrainage, newsletter (incluse dans l'acceptation des CGU).
 export async function afterClientSignup(ctx: ClientSignupContext): Promise<void> {
   const { admin, userId, fullName, email, phone, coach, referrer } = ctx;
   // Email de confirmation en tâche de fond : l'écran d'inscription ne l'attend
@@ -151,12 +151,10 @@ export async function afterClientSignup(ctx: ClientSignupContext): Promise<void>
     }).catch(() => {}));
   }
 
-  // Newsletter (2026-09-10) : consentement séparé et explicite, coché par
-  // la personne elle-même au formulaire (jamais pré-coché, voir
-  // wantsNewsletter ci-dessus) — jamais un ajout silencieux déduit de
-  // l'acceptation des CGU. Fire-and-forget comme les autres effets de bord
-  // de cette fonction : un échec Brevo ne doit jamais faire échouer la
-  // création de compte.
+  // Newsletter : incluse dans l'acceptation des CGU/CGV affichée au formulaire
+  // (décision produit 2026-11-04, moins de friction), avec désinscription en un
+  // clic dans chaque e-mail. Fire-and-forget : un échec Brevo ne doit jamais
+  // faire échouer la création de compte.
   if (ctx.wantsNewsletter === true) {
     after(() => addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {}));
   }

@@ -136,7 +136,7 @@ function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
     <div className="lp-cta">
       <SocialAuthButtons role={coach ? "coach" : "client"} layout="stack" className="lp-social" />
       <div className="lp-email">
-        <Link href={coach ? "/auth/coach" : "/auth/client"} className="lp-btn lp-btn--ghost" style={{ width: "100%" }}>
+        <Link href={coach ? "/auth/coach" : "/auth/client"} className="lp-btn lp-btn--primary" style={{ width: "100%" }}>
           Commencer gratuitement
         </Link>
       </div>

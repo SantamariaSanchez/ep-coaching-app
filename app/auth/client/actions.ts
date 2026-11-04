@@ -47,12 +47,6 @@ export interface SelfSignupInput {
   // case côté navigateur, et c'est justement cette acceptation qu'on doit
   // pouvoir prouver plus tard (profiles.cgu_accepted_at).
   acceptedTerms?: boolean;
-  // Consentement SÉPARÉ et explicite à la newsletter (2026-09-10) — jamais
-  // déduit de acceptedTerms ci-dessus : la politique de confidentialité
-  // (/legal/confidentialite) promet explicitement "sur consentement séparé"
-  // pour la newsletter, distinct de l'acceptation des CGU/CGV. Case jamais
-  // pré-cochée côté formulaire (voir SignupFlow.tsx).
-  wantsNewsletter?: boolean;
 }
 
 export type SelfSignupResult = { error: string } | { success: true; userId: string };
@@ -207,7 +201,10 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     phone,
     coach,
     referrer,
-    wantsNewsletter: input.wantsNewsletter === true,
+    // Newsletter incluse dans l'acceptation des CGU/CGV (texte affiché au
+    // formulaire, désinscription en un clic dans chaque e-mail) : moins de
+    // friction à l'inscription (décision produit 2026-11-04).
+    wantsNewsletter: input.acceptedTerms === true,
   });
 
   return { success: true, userId: authData.user.id };
