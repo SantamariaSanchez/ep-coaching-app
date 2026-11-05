@@ -424,3 +424,13 @@ test("le prompt partagé refuse de soigner une douleur par un complément", () =
   assert.match(COACHING_KNOWLEDGE_PROMPT, /ne le normalise pas/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé couvre les régimes particuliers, le FODMAP, le voyage et la communication autour du poids", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Régimes particuliers et pratiques personnelles/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne prescris aucun régime pauvre en FODMAP/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /N'augmente pas les protéines automatiquement pour contrôler la faim/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /n'exige pas la pesée de chaque repas/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Poids et communication \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Demande son accord avant d'aborder le poids/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
