@@ -18,6 +18,7 @@ import { describeTracking, TRACKING_LEVEL_LABEL } from "@/lib/tracking-profile";
 import { getLivedNotes, hasLivedThisWeek } from "@/lib/lived-content-server";
 import { STORY_RULES, LIVED_FORMAT_HINTS, WEEKLY_QUESTIONS } from "@/lib/lived-content";
 import { YOUTUBE_TOOLS, youtubeToolsForRole, callYoutubeTool } from "@/lib/mcp-tools-youtube";
+import { SCRIPT_CONTENT_MAX } from "@/lib/script-limits";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -429,7 +430,7 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
 
     case "ajouter_script": {
       const title = String(args.titre ?? "").trim().slice(0, 200);
-      const content = String(args.contenu ?? "").trim().slice(0, 20000);
+      const content = String(args.contenu ?? "").trim().slice(0, SCRIPT_CONTENT_MAX);
       if (!title || !content) return text("Titre et contenu obligatoires.");
       // Mêmes plateformes que le Studio (IdeationScripts) : un seul « reel »
       // pour tout le format court, quel que soit le réseau.
