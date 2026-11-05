@@ -316,6 +316,8 @@ test("le prompt partagé cadre le volume utile et les séances manquées (décal
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Échauffement \(repère du mentor\)/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Volume alimentaire \(repère du mentor\)/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Pas \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Simplicité d'abord \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /objet brillant/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais comme punition/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /6 à 8 séries difficiles par muscle dans une même séance/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /on la décale|on décale la séance/);
