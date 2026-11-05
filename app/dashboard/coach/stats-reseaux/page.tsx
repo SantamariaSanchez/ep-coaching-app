@@ -176,6 +176,11 @@ export default async function WhatWorksPage() {
                       {tr("Ce qui a marché, selon toi :")} {p.why.map((w) => tr(({ hook: "l'accroche", corps: "le contenu", concept: "le sujet", format: "le format", timing: "le moment" } as Record<string, string>)[w] ?? w)).join(", ")}
                     </p>
                   )}
+                  {p.platform === "youtube" && p.reading.verdict === "a_refaire" && p.published_at && Date.now() - new Date(p.published_at).getTime() > 180 * 86400000 && (
+                    <p style={{ margin: "8px 0 0", fontSize: 12, fontWeight: 700, color: "var(--ep-accent)" }}>
+                      {tr("Une de tes meilleures vidéos date de plus de 6 mois : change la miniature (très différente) pour la relancer comme une nouvelle vidéo.")}
+                    </p>
+                  )}
                   {p.reading.howTo.length > 0 && (
                     <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
                       {p.reading.howTo.map((h) => (

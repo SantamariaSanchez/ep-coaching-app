@@ -5901,4 +5901,5 @@ export const EN: Record<string, string> = {
   "Sur Android, tes pas sont regroupés dans Health Connect. L'appli ne peut pas le lire seule : une appli d'automatisation qui lit Health Connect et envoie une requête web fait le pont.": "On Android, your steps are gathered in Health Connect. The app cannot read it on its own: an automation app that reads Health Connect and sends a web request bridges the gap.",
   "Conversations qualifiées reçues (DM, demandes, appels)": "Qualified conversations received (DMs, requests, calls)",
   "Un Reel à 2 000 vues avec 2 conversations qualifiées peut valoir plus qu'un Reel à 50 000 vues mal ciblées.": "A Reel with 2,000 views and 2 qualified conversations can be worth more than a Reel with 50,000 poorly targeted views.",
+  "Une de tes meilleures vidéos date de plus de 6 mois : change la miniature (très différente) pour la relancer comme une nouvelle vidéo.": "One of your best videos is over 6 months old: change the thumbnail (very different) to relaunch it as a new video.",
 };
