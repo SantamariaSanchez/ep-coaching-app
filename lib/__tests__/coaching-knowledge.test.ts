@@ -369,3 +369,10 @@ test("le prompt partagé cadre la perception de sa sécheresse sans estimer de p
   assert.match(COACHING_KNOWLEDGE_PROMPT, /photos de face, de dos et de profil/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé refuse tout avis, dose ou protocole sur les peptides injectables", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /peptides injectables/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Peptides \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /aucune dose, aucun fournisseur ni protocole/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
