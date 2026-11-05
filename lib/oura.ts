@@ -207,14 +207,16 @@ export async function fetchOuraReadinessForDate(
 
 // Libellé + piste d'action par sous-score Oura — voir OuraReadinessContributors.
 export const READINESS_CONTRIBUTOR_INFO: Record<keyof OuraReadinessContributors, { label: string; tip: string }> = {
-  activity_balance: { label: "Équilibre d'activité", tip: "Les séances récentes sont sans doute trop intenses ou trop rapprochées pour la récupération actuelle." },
-  body_temperature: { label: "Température corporelle", tip: "Écart de température inhabituel, souvent le tout premier signe d'une fatigue ou d'une maladie qui couve." },
-  hrv_balance: { label: "Équilibre HRV", tip: "Le système nerveux montre des signes de fatigue accumulée, un jour de repos serait bénéfique." },
-  previous_day_activity: { label: "Activité de la veille", tip: "La charge d'hier était sans doute trop élevée pour la récupération du moment." },
+  // Aucune interprétation médicale ni décision d'entraînement automatique :
+  // chaque phrase décrit ce que mesure la bague et renvoie au ressenti.
+  activity_balance: { label: "Équilibre d'activité", tip: "Compare ton activité récente à ta récupération. À croiser avec ton ressenti et ton planning de séances." },
+  body_temperature: { label: "Température corporelle", tip: "Écart de ta température par rapport à ta référence personnelle. C'est une estimation de ta bague, pas un diagnostic." },
+  hrv_balance: { label: "Équilibre HRV", tip: "Compare ta HRV récente à ta moyenne. Elle varie beaucoup et reste une estimation : croise avec ton ressenti." },
+  previous_day_activity: { label: "Activité de la veille", tip: "Compare l'activité d'hier à ta moyenne. À croiser avec ton ressenti." },
   previous_night: { label: "Sommeil de la nuit", tip: "La nuit dernière n'était pas optimale, voir le détail sommeil ci-dessous." },
-  recovery_index: { label: "Indice de récupération", tip: "Le corps met plus de temps que d'habitude à récupérer entre deux nuits." },
-  resting_heart_rate: { label: "FC au repos", tip: "FC au repos plus élevée que d'habitude, signe de fatigue ou de stress accumulé." },
-  sleep_balance: { label: "Équilibre sommeil", tip: "Les horaires de sommeil des derniers jours manquent de régularité." },
+  recovery_index: { label: "Indice de récupération", tip: "Mesure le temps mis par ta fréquence cardiaque à se stabiliser pendant la nuit. Estimation de ta bague, à croiser avec ton ressenti." },
+  resting_heart_rate: { label: "FC au repos", tip: "Ta FC au repos comparée à ta moyenne. Elle varie avec le sommeil, le stress, la chaleur ou la caféine : estimation, pas un diagnostic." },
+  sleep_balance: { label: "Équilibre sommeil", tip: "Compare tes durées de sommeil récentes à ton besoin habituel." },
 };
 
 // Identifie le sous-score le plus bas (sous 70, seuil Oura pour "à surveiller")
