@@ -452,3 +452,12 @@ test("le prompt partagé cadre la douleur : jamais bénigne à distance, urgence
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne dis jamais de forcer/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé exige un diagnostic avant toute recommandation, sans donnée inventée", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Diagnostic avant recommandation :/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /N'invente jamais le matériel, l'historique, les performances ni les préférences/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /une donnée manquante reste inconnue/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /question de clarification, jamais le choix arbitraire/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /le coach valide tout changement/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
