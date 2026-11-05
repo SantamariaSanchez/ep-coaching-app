@@ -443,3 +443,12 @@ test("le prompt partagé cadre les corrections techniques sans jugement morpholo
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne diagnostique jamais une blessure ou une limitation depuis une vidéo/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé cadre la douleur : jamais bénigne à distance, urgences, pas de reprise prescrite", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne confirme jamais à distance qu'une douleur est bénigne/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ou les urgences, sans tenter de trier toi-même/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne fixe ni date de reprise, ni progression de charge/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Les courbatures ne sont ni obligatoires/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne dis jamais de forcer/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
