@@ -434,3 +434,12 @@ test("le prompt partagé couvre les régimes particuliers, le FODMAP, le voyage 
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Demande son accord avant d'aborder le poids/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé cadre les corrections techniques sans jugement morphologique ni diagnostic vidéo", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Corrections techniques :/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /une ou deux priorités à la fois/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /n'est pas forcément une erreur/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /demande une autre vue/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne diagnostique jamais une blessure ou une limitation depuis une vidéo/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
