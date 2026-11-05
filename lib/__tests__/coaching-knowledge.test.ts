@@ -396,3 +396,10 @@ test("le prompt partagé traite le poids comme une donnée et non comme un but",
   assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais une fin en soi/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé cadre le changement de salle par schéma de mouvement sans refaire le programme", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Changement de salle ou déplacement \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne refais pas le programme/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne conclus ni à un progrès ni à une stagnation/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
