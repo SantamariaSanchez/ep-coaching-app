@@ -403,3 +403,10 @@ test("le prompt partagé cadre le changement de salle par schéma de mouvement s
   assert.match(COACHING_KNOWLEDGE_PROMPT, /ne conclus ni à un progrès ni à une stagnation/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé cadre le comptage du volume sans en faire un chiffre à viser", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Comptage du volume \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /une série indirecte compte 0,5/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais un chiffre à afficher comme une vérité/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
