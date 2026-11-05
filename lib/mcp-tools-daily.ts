@@ -13,6 +13,7 @@ import { notifyUser } from "@/lib/notify";
 import { sendPushToUser } from "@/lib/push";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { isBlockOnDate } from "@/lib/agenda-day";
+import { SCRIPT_CONTENT_MAX } from "@/lib/script-limits";
 import { isBlockTimeAlreadyPastToday } from "@/lib/schedule-time";
 import { getActivePlan } from "@/lib/nutrition-sync";
 import { MEAL_SLOTS, planItemsFor, slotLabel } from "@/lib/nutrition-engine";
@@ -366,7 +367,7 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
         patch.title = t;
       }
       if (typeof args.accroche === "string") patch.hook = str(args.accroche, 500) || null;
-      if (typeof args.contenu === "string") patch.content = str(args.contenu, 20000) || null;
+      if (typeof args.contenu === "string") patch.content = str(args.contenu, SCRIPT_CONTENT_MAX) || null;
       if (typeof args.cta === "string") patch.cta = str(args.cta, 500) || null;
       if (typeof args.description === "string") patch.instagram_caption = str(args.description, 5000) || null;
       if (typeof args.statut === "string") {
