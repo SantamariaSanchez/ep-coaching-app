@@ -30,7 +30,7 @@ import { equipmentFilterFor } from "@/lib/gym-equipment";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import { TENSION_FOCUS_LABELS, TENSION_FOCUS_OPTIONS } from "@/lib/exercise-library-content";
 import { findSwapCandidate, generateProgramPlan, recoveryFromIntake } from "@/lib/plan-generator";
-import type { TrainingLevel } from "@/lib/coaching-knowledge";
+import type { RecoveryStatus, TrainingLevel } from "@/lib/coaching-knowledge";
 import SessionSheet from "./SessionSheet";
 import ClientContextPanel, { plannedVolume, volumeColor, SPORT_BLOCK, type ContextPhotos } from "./ClientContextPanel";
 import {
@@ -88,6 +88,7 @@ export default function ProgramBuilder({
   clientName,
   program,
   intake = null,
+  recovery: recoveryProp = null,
   experienceLevel = "intermediaire",
   templates = [],
   scheduleBlocks = [],
@@ -104,6 +105,8 @@ export default function ProgramBuilder({
   clientName: string;
   program: ProgramWithDays | null;
   intake?: ClientIntake | null;
+  /** Récupération calculée sur les bilans récents ; absente : on retombe sur la fiche d'onboarding. */
+  recovery?: RecoveryStatus | null;
   /** Niveau d'entraînement du client (quiz d'onboarding), pour le volume de départ et le choix des exercices. */
   experienceLevel?: TrainingLevel;
   templates?: ProgramTemplateWithDays[];
@@ -321,7 +324,7 @@ export default function ProgramBuilder({
       intake?.exercises_problematic ?? null,
       intake?.training_access ?? null,
       intake?.injuries ?? null,
-      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration), gymEquipment: equipmentFilterFor(defaultGym), keepText: intake?.exercises_that_work ?? null }
+      { level: experienceLevel, recovery: recoveryProp ?? recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration), gymEquipment: equipmentFilterFor(defaultGym), keepText: intake?.exercises_that_work ?? null }
     );
     const draft = plan.days;
     setPlanNotes(plan.notes);
