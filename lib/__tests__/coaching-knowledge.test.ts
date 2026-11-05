@@ -390,3 +390,9 @@ test("le prompt partagé cadre l'âge et la reprise sans âge limite ni diagnost
   assert.match(COACHING_KNOWLEDGE_PROMPT, /ne se diagnostiquent pas/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé traite le poids comme une donnée et non comme un but", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Le poids est une donnée \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais une fin en soi/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
