@@ -295,6 +295,15 @@ export default function ProgramBuilder({
   // Base automatique : toute la semaine pré-remplie d'après la fiche
   // (blessures, exercices qui font mal, matériel détesté, salle ou maison),
   // avec séries/reps/RIR/repos par défaut. Le coach n'a plus qu'à ajuster.
+  // Ce que le client a demandé et ce que le programme contient : on le montre au coach, sans rien modifier.
+  const reviewNotes: string[] = [];
+  const filledDays = state.days.filter((d) => d.rows.some(isRowFilled)).length;
+  if (suggestedCount && filledDays > 0 && filledDays !== suggestedCount) {
+    reviewNotes.push(tr("{name} souhaite {n} séances par semaine, le programme en compte {m}. À revoir avec {name} : rien n'a été changé.", { name: firstName, n: suggestedCount, m: filledDays }));
+  }
+  if (intake?.preferred_split && filledDays > 0) {
+    reviewNotes.push(tr("Split préféré par {name} : « {split} ». Compare avec le découpage actuel.", { name: firstName, split: intake.preferred_split }));
+  }
   const baseCount = sessionCount || suggestedCount || 4;
   // Salle par défaut pour la base automatique : celle de la première séance qui en a une, sinon la première salle.
   const defaultGym = gyms.find((g) => g.id === state.days.find((d) => d.gym_id)?.gym_id) ?? gyms[0] ?? null;
@@ -312,7 +321,7 @@ export default function ProgramBuilder({
       intake?.exercises_problematic ?? null,
       intake?.training_access ?? null,
       intake?.injuries ?? null,
-      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration), gymEquipment: equipmentFilterFor(defaultGym) }
+      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration), gymEquipment: equipmentFilterFor(defaultGym), keepText: intake?.exercises_that_work ?? null }
     );
     const draft = plan.days;
     setPlanNotes(plan.notes);
@@ -363,7 +372,8 @@ export default function ProgramBuilder({
       intake?.training_access ?? null,
       day.rows.map((r) => r.name),
       experienceLevel,
-      equipmentFilterFor(gyms.find((g) => g.id === day.gym_id))
+      equipmentFilterFor(gyms.find((g) => g.id === day.gym_id)),
+      intake?.exercises_that_work ?? null
     );
     if (next) patchRow(dayId, rowId, { name: next.name, muscle_group: next.muscle_group, muscle_subgroup: next.muscle_subgroup ?? "" });
   }
@@ -834,10 +844,13 @@ export default function ProgramBuilder({
                   <AlertCircle size={13} /> {error}
                 </p>
               )}
-              {planNotes.length > 0 && (
+              {(planNotes.length > 0 || reviewNotes.length > 0) && (
                 <ul className="w-full space-y-1 text-[11.5px] text-(--ep-ink)/60">
                   {planNotes.map((n) => (
                     <li key={n}>{tr(n)}</li>
+                  ))}
+                  {reviewNotes.map((n) => (
+                    <li key={n} style={{ color: "var(--ep-accent)" }}>{n}</li>
                   ))}
                 </ul>
               )}

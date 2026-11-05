@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildDietFramework, type DietType } from "../diet-models";
+import { buildDietFramework, filterSources, type DietType } from "../diet-models";
 import { computeMacroTargets, NUTRITION_RULES, PLAN_STRUCTURE_RULES, proteinPerMealRange } from "../coaching-knowledge";
 
 const TYPES: DietType[] = ["omnivore", "vegetarien", "vegan", "pescetarien"];
@@ -87,4 +87,36 @@ test("budget et pratique : pas de saumon en budget serré, conseils de préparat
 test("cadre de diète : aucun tiret cadratin", () => {
   const f = buildDietFramework({ targets: targetsFor(75, "deficit"), weightKg: 75, dietType: "vegan", budget: "serre", practical: true })!;
   assert.doesNotMatch(JSON.stringify(f), /—/);
+});
+
+test("aliments déclarés détestés ou restrictions : écartés des sources de départ, sans conseil médical", () => {
+  const targets = targetsFor(75, "maintenance");
+  const f = buildDietFramework({ targets, weightKg: 75, dietType: "omnivore", avoidText: "intolérance au lactose, déteste le thon", eatingRelation: "non" });
+  assert.ok(f);
+  for (const banned of ["fromage blanc", "skyr", "whey", "thon", "thon en boîte"]) assert.ok(!f.proteinSources.includes(banned), banned);
+  assert.ok(f.proteinSources.includes("poulet"));
+  assert.ok(f.warnings.some((w) => /Sources écartées/.test(w)));
+  assert.ok(f.warnings.every((w) => !/gluten|probiotique|supprime/i.test(w)));
+});
+
+test("allergie aux arachides : le beurre de cacahuète disparaît des lipides", () => {
+  const f = buildDietFramework({ targets: targetsFor(70, "surplus"), weightKg: 70, avoidText: "allergie arachide", eatingRelation: "non" });
+  assert.ok(f);
+  assert.ok(!f.fatSources.includes("beurre de cacahuète") && !f.fatSources.includes("cacahuètes"));
+});
+
+test("sans texte à éviter, les listes de départ ne changent pas", () => {
+  assert.deepEqual(filterSources(["riz", "pâtes"], null), ["riz", "pâtes"]);
+  assert.deepEqual(filterSources(["riz", "pâtes"], "  "), ["riz", "pâtes"]);
+});
+
+test("ce que le client aime déjà est mis en avant", () => {
+  const f = buildDietFramework({ targets: targetsFor(80, "maintenance"), weightKg: 80, likedText: "riz, poulet rôti, skyr vanille", eatingRelation: "non" });
+  assert.ok(f);
+  assert.ok(f.tips.some((t) => /aime déjà : riz, poulet rôti, skyr vanille/.test(t)));
+});
+
+test("relation à l'alimentation signalée : toujours aucun cadre chiffré, même avec des préférences", () => {
+  const f = buildDietFramework({ targets: targetsFor(60, "deficit"), weightKg: 60, avoidText: "viande", likedText: "riz", eatingRelation: "actuel" });
+  assert.equal(f, null);
 });

@@ -20,6 +20,7 @@ import {
   injuryAvoidKeywords,
   isHeavyLift,
   isTrainingExercise,
+  mentionedInText,
   rankCandidates,
   type SlotCategory,
 } from "@/lib/exercise-selection";
@@ -322,12 +323,13 @@ export interface ExerciseSuggestion {
   reason: string;
 }
 
-function toSuggestion(ex: LibraryExercise, trainingAccess: ClientIntake["training_access"]): ExerciseSuggestion {
+function toSuggestion(ex: LibraryExercise, trainingAccess: ClientIntake["training_access"], keepText: string | null = null): ExerciseSuggestion {
   const diffLabel =
     ex.difficulty === "debutant" ? "débutant" : ex.difficulty === "avance" ? "avancé, vérifie la maîtrise technique" : "intermédiaire";
   const parts = [
     `${ex.category === "compose" ? "Mouvement composé" : "Isolation"}, niveau ${diffLabel}${ex.muscle_subgroup ? ` (cible ${ex.muscle_subgroup})` : ""}.`,
   ];
+  if (mentionedInText(ex.name, keepText)) parts.push("Déjà dans ce qui marche pour lui : à garder.");
   // Justifie le choix par rapport à la situation réelle du client, pas
   // seulement par les qualités intrinsèques de l'exercice — c'était le
   // reproche exact : des suggestions "vraies dans l'absolu" mais fausses
@@ -368,7 +370,8 @@ function filteredCandidates(
   excludeText: string,
   allowed: EquipmentType[],
   level: TrainingLevel = "intermediaire",
-  gymEquipment: readonly string[] | null = null
+  gymEquipment: readonly string[] | null = null,
+  keepText: string | null = null
 ): LibraryExercise[] {
   const own = library.filter((ex) => ex.muscle_group === group && ex.category === category);
   const pool = [...own, ...crossGroupCandidates(library, group, category)];
@@ -379,7 +382,7 @@ function filteredCandidates(
       allowed.includes(getEquipmentType(ex.equipment)) &&
       exerciseFeasible(ex, gymEquipment)
   );
-  return rankCandidates(eligible, group, category, level);
+  return rankCandidates(eligible, group, category, level, keepText);
 }
 
 // Renvoie plusieurs candidats par catégorie (pas un choix figé) — le but est
@@ -392,16 +395,17 @@ function suggestForGroup(
   trainingAccess: ClientIntake["training_access"],
   level: TrainingLevel,
   maxPerCategory = 3,
-  gymEquipment: readonly string[] | null = null
+  gymEquipment: readonly string[] | null = null,
+  keepText: string | null = null
 ): MuscleGroupSuggestion {
   const allowed = allowedEquipmentTypes(trainingAccess);
-  const compound = filteredCandidates(library, group, "compose", excludeText, allowed, level, gymEquipment).slice(0, maxPerCategory);
-  const isolation = filteredCandidates(library, group, "isolation", excludeText, allowed, level, gymEquipment).slice(0, maxPerCategory);
+  const compound = filteredCandidates(library, group, "compose", excludeText, allowed, level, gymEquipment, keepText).slice(0, maxPerCategory);
+  const isolation = filteredCandidates(library, group, "isolation", excludeText, allowed, level, gymEquipment, keepText).slice(0, maxPerCategory);
 
   return {
     group,
-    compound: compound.map((ex) => toSuggestion(ex, trainingAccess)),
-    isolation: isolation.map((ex) => toSuggestion(ex, trainingAccess)),
+    compound: compound.map((ex) => toSuggestion(ex, trainingAccess, keepText)),
+    isolation: isolation.map((ex) => toSuggestion(ex, trainingAccess, keepText)),
   };
 }
 
@@ -422,7 +426,8 @@ export function buildProgramSuggestions(
   trainingAccess: ClientIntake["training_access"] = null,
   injuries: string | null = null,
   level: TrainingLevel = "intermediaire",
-  gymEquipment: readonly string[] | null = null
+  gymEquipment: readonly string[] | null = null,
+  keepText: string | null = null
 ): ProgramSuggestion[] {
   const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
   const excludeText = buildExcludeText(dislikedEquipment, exercisesProblematic, injuries);
@@ -431,7 +436,7 @@ export function buildProgramSuggestions(
     const groups = [...new Set(day.slots.map((sl) => sl.group))];
     return {
       dayLabel: day.label,
-      groups: groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess, level, 3, gymEquipment)),
+      groups: groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess, level, 3, gymEquipment, keepText)),
     };
   });
 }
@@ -467,6 +472,8 @@ export interface ProgramPlanOptions {
   sessionMinutes?: number | null;
   /** Matériel de la salle (lib/gym-equipment) : seuls les exercices faisables sont choisis. Absent : aucun filtre. */
   gymEquipment?: readonly string[] | null;
+  /** « Ce qui marche pour lui » (fiche client) : ces exercices passent avant la liste de départ. */
+  keepText?: string | null;
 }
 
 export interface GeneratedProgramPlan {
@@ -601,7 +608,7 @@ export function generateProgramPlan(
   const missing = new Set<string>();
 
   function pick(group: string, category: SlotCategory, dayIdx: number, avoidPosition?: string | null): LibraryExercise | null {
-    const candidates = filteredCandidates(library, group, category, excludeText, allowed, level, options.gymEquipment ?? null).filter((ex) => !used[dayIdx].has(ex.name));
+    const candidates = filteredCandidates(library, group, category, excludeText, allowed, level, options.gymEquipment ?? null, options.keepText ?? null).filter((ex) => !used[dayIdx].has(ex.name));
     if (candidates.length === 0) return null;
     const pool = avoidPosition ? candidates.filter((x) => x.position !== avoidPosition) : candidates;
     const usable = pool.length > 0 ? pool : candidates;
@@ -642,6 +649,9 @@ export function generateProgramPlan(
   }
   if (missing.size > 0) {
     notes.push(`Aucun exercice compatible trouvé pour : ${[...missing].join(", ")} (matériel ou précautions). À compléter à la main.`);
+  }
+  if (options.gymEquipment == null && trainingAccess !== "domicile_minimal") {
+    notes.push("Salle non confirmée : le matériel est supposé disponible. Choisis la salle du client (ou confirme son matériel) pour écarter ce qu'il n'a pas.");
   }
   if (injuryAvoidKeywords(injuries).length > 0) {
     notes.push("Des mouvements sollicitant la zone douloureuse déclarée ont été écartés par précaution. Ce n'est pas un diagnostic : un avis médical reste nécessaire.");
@@ -693,12 +703,13 @@ export function findSwapCandidate(
   trainingAccess: ClientIntake["training_access"],
   excludeNames: string[],
   level: TrainingLevel = "intermediaire",
-  gymEquipment: readonly string[] | null = null
+  gymEquipment: readonly string[] | null = null,
+  keepText: string | null = null
 ): LibraryExercise | null {
   if (!current.category) return null;
   const excludeText = buildExcludeText(dislikedEquipment, exercisesProblematic, injuries);
   const allowed = allowedEquipmentTypes(trainingAccess);
-  const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed, level, gymEquipment).filter(
+  const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed, level, gymEquipment, keepText).filter(
     (ex) => !excludeNames.includes(ex.name)
   );
   return candidates[0] ?? null;
