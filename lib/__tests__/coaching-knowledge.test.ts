@@ -461,3 +461,12 @@ test("le prompt partagé exige un diagnostic avant toute recommandation, sans do
   assert.match(COACHING_KNOWLEDGE_PROMPT, /le coach valide tout changement/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé gère le temps réduit et l'adhésion sans diagnostiquer la motivation ni rattraper le volume", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Temps réduit et adhésion/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /version courte sans toucher au programme habituel/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /sans ajouter tout le volume manquant à la séance suivante/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne parle jamais de paresse ou de manque de discipline/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /le coach valide tout changement du programme/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
