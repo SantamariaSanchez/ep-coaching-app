@@ -417,3 +417,10 @@ test("le prompt partagé ne change pas un plan à cause d'une mode ou d'une étu
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Une étude isolée ne décide pas non plus/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé refuse de soigner une douleur par un complément", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Pensée magique et douleur persistante \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne propose jamais un complément comme solution/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne le normalise pas/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
