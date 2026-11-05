@@ -32,6 +32,10 @@ export interface DietFrameworkInput {
   practical?: boolean;
   planPreference?: "fixe" | "flexible" | null;
   eatingRelation?: EatingRelation | null;
+  /** Aliments détestés et restrictions déclarées (fiche client, texte libre) : écartés des listes de sources. */
+  avoidText?: string | null;
+  /** Aliments que le client aime déjà (texte libre) : mis en avant. */
+  likedText?: string | null;
 }
 
 export interface DietFrameworkMeal {
@@ -101,6 +105,47 @@ const FAT_SOURCES = {
 
 const PLANT_ONLY_FATS = ["huile d'olive", "avocat", "noix et amandes", "beurre de cacahuète", "graines de lin moulues", "graines de chia"];
 
+/** Minuscules sans accents, pour comparer le texte du client aux noms d'aliments. */
+function norm(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+/**
+ * Mots que le client peut écrire (allergie, intolérance déclarée, dégoût) et
+ * sources de départ qu'ils écartent. Ce n'est pas un diagnostic : on écarte
+ * seulement de la liste de départ ce que le client dit ne pas manger ou ne
+ * pas supporter, sans jamais conseiller de retirer un aliment de lui-même.
+ */
+const AVOID_RULES: { test: RegExp; sources: string[] }[] = [
+  { test: /lactose|laitier|laitage|produits? laitiers?|lait\b/, sources: ["fromage blanc", "skyr", "yaourt grec", "whey"] },
+  { test: /gluten|coeliaque|celiaque|ble\b/, sources: ["pâtes", "pain complet", "seitan", "pâtes complètes"] },
+  { test: /arachide|cacahu/, sources: ["beurre de cacahuète", "cacahuètes"] },
+  { test: /fruits? a coque|noix|amande/, sources: ["noix et amandes"] },
+  { test: /oeufs?|œufs?/, sources: ["œufs", "œufs entiers"] },
+  { test: /soja|soya/, sources: ["tofu", "tempeh", "soja texturé", "edamame", "protéine de pois ou de soja"] },
+  { test: /poisson/, sources: ["poisson blanc", "saumon", "thon", "thon en boîte", "sardines en boîte", "poissons gras"] },
+  { test: /crustace|fruits? de mer|crevette/, sources: ["crevettes"] },
+  { test: /viande/, sources: ["poulet", "dinde", "bœuf maigre", "cuisses de poulet"] },
+];
+
+/** Garde les sources que le client ne dit pas éviter (nom cité tel quel ou famille déclarée). */
+export function filterSources(list: string[], avoidText: string | null | undefined): string[] {
+  if (!avoidText || !avoidText.trim()) return list;
+  const text = norm(avoidText);
+  const blocked = new Set<string>();
+  for (const rule of AVOID_RULES) if (rule.test.test(text)) rule.sources.forEach((s) => blocked.add(s));
+  return list.filter((src) => {
+    if (blocked.has(src)) return false;
+    const key = norm(src);
+    return !text.split(/[,;\n\/]|\bet\b/).map((f) => f.trim()).some((f) => f.length >= 4 && (key.includes(f) || f.includes(key)));
+  });
+}
+
+function likedList(text: string | null | undefined): string[] {
+  if (!text) return [];
+  return text.split(/[,;\n]/).map((f) => f.trim()).filter((f) => f.length >= 3 && f.length <= 40).slice(0, 8);
+}
+
 function share(n: number): number[] {
   return MEAL_SHARES[n] ?? MEAL_SHARES[4];
 }
@@ -166,17 +211,25 @@ export function buildDietFramework(input: DietFrameworkInput): DietFramework | n
   }
   tips.push(`Fibres : environ ${fiberTotal} g par jour (${NUTRITION_RULES.fiberGPer1000Kcal} g pour 1000 kcal), à monter progressivement avec assez d'eau.`);
 
-  const proteinSources = PROTEIN_SOURCES[dietType][budget];
-  const fatSources = plant ? PLANT_ONLY_FATS.slice(0, budget === "serre" ? 4 : 6) : FAT_SOURCES[budget];
+  const avoid = input.avoidText ?? null;
+  const proteinSources = filterSources(PROTEIN_SOURCES[dietType][budget], avoid);
+  const carbSources = filterSources(CARB_SOURCES[budget], avoid);
+  const fatSources = filterSources(plant ? PLANT_ONLY_FATS.slice(0, budget === "serre" ? 4 : 6) : FAT_SOURCES[budget], avoid);
+  if (avoid && avoid.trim()) {
+    warnings.push("Sources écartées d'après la fiche (aliments détestés ou restrictions déclarées). Confirme avec le client, sans lui demander de retirer d'autres aliments sans avis médical.");
+    if (proteinSources.length === 0) warnings.push("Aucune source de protéines de départ compatible : à compléter à la main avec ce que le client mange.");
+  }
+  const liked = likedList(input.likedText);
+  if (liked.length > 0) tips.push(`Appuie-toi d'abord sur ce que le client aime déjà : ${liked.join(", ")}.`);
 
   return {
     meals,
     fiberTotal,
     proteinPerMealG: range,
     proteinSources,
-    carbSources: CARB_SOURCES[budget],
+    carbSources,
     fatSources,
-    plantSources: plant ? PROTEIN_SOURCES[dietType].standard.filter((x) => !["whey"].includes(x)) : [],
+    plantSources: plant ? filterSources(PROTEIN_SOURCES[dietType].standard.filter((x) => !["whey"].includes(x)), avoid) : [],
     tips,
     watch: plant
       ? PLANT_BASED_RULES.watch.map((w) => ({ label: w.label, advice: w.advice }))

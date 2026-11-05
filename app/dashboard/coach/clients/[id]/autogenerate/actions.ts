@@ -106,6 +106,8 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
         practical: intake.schedule_type === "variable",
         planPreference: intake.plan_preference,
         eatingRelation,
+        avoidText: [intake.disliked_foods, intake.dietary_restrictions].filter(Boolean).join(", ") || null,
+        likedText: intake.liked_foods,
       }),
     };
     if (targets.note) warnings.push(`Nutrition : ${targets.note}`);
