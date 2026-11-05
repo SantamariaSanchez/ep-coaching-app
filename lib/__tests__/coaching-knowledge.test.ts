@@ -410,3 +410,10 @@ test("le prompt partagé cadre le comptage du volume sans en faire un chiffre à
   assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais un chiffre à afficher comme une vérité/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé ne change pas un plan à cause d'une mode ou d'une étude isolée", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Modes et fréquence \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne change jamais le plan d'un client parce qu'une méthode est à la mode/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Une étude isolée ne décide pas non plus/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
