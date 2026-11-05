@@ -63,6 +63,7 @@ export interface EditablePost {
   avg_watch_seconds: number | null;
   completion_rate: number | null;
   why?: string[];
+  convos?: number | null;
 }
 
 const WHY = [
@@ -137,6 +138,7 @@ export default function PostEntryForm({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [why, setWhy] = useState<string[]>(post?.why ?? []);
+  const [convos, setConvos] = useState<string>(post?.convos != null ? String(post.convos) : "");
   const toggleWhy = (k: string) => setWhy((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]));
 
   const set = (k: string, val: string) => setV((cur) => ({ ...cur, [k]: val }));
@@ -148,7 +150,7 @@ export default function PostEntryForm({
   function save() {
     setError(null);
     start(async () => {
-      const res = await savePostAction({ ...(v as unknown as PostInput), why, id: post?.id ?? null, scriptId: v.scriptId || null, postType: v.postType || null });
+      const res = await savePostAction({ ...(v as unknown as PostInput), why, convos, id: post?.id ?? null, scriptId: v.scriptId || null, postType: v.postType || null });
       if (res.error) return setError(res.error);
       setOpen(false);
       if (!post) setV(fromPost(null, platforms, nowLocal));
@@ -259,6 +261,10 @@ export default function PostEntryForm({
           </button>
         ))}
       </div>
+
+      <p style={{ ...lbl, marginTop: 14 }}>{tr("Conversations qualifiées reçues (DM, demandes, appels)")}</p>
+      <input style={input} inputMode="numeric" value={convos} onChange={(e) => setConvos(e.target.value)} placeholder="0" aria-label={tr("Conversations qualifiées reçues (DM, demandes, appels)")} />
+      <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "6px 0 0" }}>{tr("Un Reel à 2 000 vues avec 2 conversations qualifiées peut valoir plus qu'un Reel à 50 000 vues mal ciblées.")}</p>
 
       {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "10px 0 0" }}>{tr(error)}</p>}
       <button type="button" disabled={pending} onClick={save} style={{ marginTop: 14, width: "100%", padding: "12px 14px", borderRadius: 12, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}>

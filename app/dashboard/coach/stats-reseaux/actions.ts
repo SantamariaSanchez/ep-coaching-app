@@ -189,6 +189,8 @@ export interface PostInput {
   completionRate?: number | string | null;
   /** Ce que le coach pense avoir fait marcher la publication. */
   why?: string[] | null;
+  /** Conversations qualifiées déclenchées par la publication (DM, demandes, appels). */
+  convos?: number | string | null;
 }
 
 export const WHY_OPTIONS = ["hook", "corps", "concept", "format", "timing"] as const;
@@ -221,6 +223,7 @@ export async function savePostAction(input: PostInput): Promise<{ error?: string
     if (!script) return { error: "Script introuvable." };
   }
 
+  const convos = num(input.convos, 100000);
   const why = (input.why ?? []).filter((w): w is (typeof WHY_OPTIONS)[number] => (WHY_OPTIONS as readonly string[]).includes(w));
   const m = {
     views: num(input.views),
@@ -266,7 +269,7 @@ export async function savePostAction(input: PostInput): Promise<{ error?: string
     const acc = await accountFor(admin, guard.userId, input.platform);
     if ("error" in acc) return acc;
     const prevExtra = (own as unknown as { extra?: Record<string, unknown> | null }).extra ?? {};
-    const { error } = await admin.from("social_posts").update({ ...fields, extra: { ...prevExtra, why }, account_id: acc.id }).eq("id", postId);
+    const { error } = await admin.from("social_posts").update({ ...fields, extra: { ...prevExtra, why, convos }, account_id: acc.id }).eq("id", postId);
     if (error) {
       console.error("savePostAction update error:", error);
       return { error: "Modification impossible pour le moment." };
@@ -276,7 +279,7 @@ export async function savePostAction(input: PostInput): Promise<{ error?: string
     if ("error" in acc) return acc;
     const { data, error } = await admin
       .from("social_posts")
-      .insert({ ...fields, extra: { why }, account_id: acc.id, external_post_id: `manuel:${crypto.randomUUID()}` })
+      .insert({ ...fields, extra: { why, convos }, account_id: acc.id, external_post_id: `manuel:${crypto.randomUUID()}` })
       .select("id")
       .single();
     if (error || !data) {

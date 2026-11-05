@@ -138,6 +138,7 @@ export default async function WhatWorksPage() {
                 fmt(p.saves) && `${fmt(p.saves)} enregistrements`,
                 fmt(p.comments) && `${fmt(p.comments)} com.`,
                 fmt(p.new_followers) && `+${fmt(p.new_followers)} abonnés`,
+                p.convos != null && p.convos > 0 && `${p.convos} conversation${p.convos > 1 ? "s" : ""} qualifiée${p.convos > 1 ? "s" : ""}`,
               ].filter(Boolean);
               return (
                 <div key={p.id} className="ep-card" style={{ padding: "12px 14px" }}>

@@ -25,6 +25,7 @@ export interface ReadPost extends PostNumbers {
   formatLabel: string | null;
   pillar: string | null;
   why: string[];
+  convos: number | null;
   reading: PostReading;
 }
 
@@ -89,6 +90,7 @@ export async function getReadings(ownerId: string): Promise<Readings> {
       formatLabel: sc ? getContentFormat(sc.content_format).label : null,
       pillar: sc?.pillar ?? null,
       why: Array.isArray((p.extra as { why?: unknown } | null)?.why) ? ((p.extra as { why: unknown[] }).why.filter((x) => typeof x === "string") as string[]) : [],
+      convos: typeof (p.extra as { convos?: unknown } | null)?.convos === "number" ? (p.extra as { convos: number }).convos : null,
       reading,
     };
   });
