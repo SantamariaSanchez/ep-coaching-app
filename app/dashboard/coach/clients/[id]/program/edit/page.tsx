@@ -6,7 +6,8 @@ import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientIntake } from "@/utils/client-intake";
 import { getMemberPreferences } from "@/utils/member-preferences";
-import { levelFromExperience } from "@/lib/plan-generator";
+import { levelFromExperience, recoveryFromLogs } from "@/lib/plan-generator";
+import { getClientDailyLogs } from "@/utils/daily-logs";
 import { getCoachProgramTemplates } from "@/utils/program-templates";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -65,6 +66,9 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
   if (!client) notFound();
 
   const gyms = await getTrainingGyms(id);
+  // Récupération : tendance des bilans des 14 derniers jours (la fiche d'onboarding sert de repli).
+  const recentLogs = await getClientDailyLogs(id, 14);
+  const recovery = recoveryFromLogs(recentLogs, intake);
   const photos = await signedPhotos(intake?.gym_photo_paths ?? [], intake?.physique_photo_paths ?? []);
   const clientName = client.full_name ?? t("Client");
 
@@ -90,6 +94,7 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
         clientName={clientName}
         program={program}
         intake={intake}
+        recovery={recovery}
         experienceLevel={levelFromExperience(preferences?.experience_level)}
         templates={templates}
         scheduleBlocks={scheduleBlocks}

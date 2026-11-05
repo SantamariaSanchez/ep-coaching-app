@@ -225,3 +225,37 @@ test("les suggestions expliquent pourquoi un exercice est gardé", () => {
   const reasons = sugg.flatMap((d) => d.groups).flatMap((g) => [...g.compound, ...g.isolation]).filter((s) => s.name.includes("chest press")).map((s) => s.reason);
   assert.ok(reasons.length > 0 && reasons.every((r) => /à garder/.test(r)));
 });
+
+// ── Récupération : tendance des bilans, pas une nuit isolée ──
+
+import { recoveryFromLogs, type RecoveryLog } from "../plan-generator";
+
+const night = (i: number, hours: number | null, over: Partial<RecoveryLog> = {}): RecoveryLog => ({
+  log_date: `2026-10-${String(30 - i).padStart(2, "0")}`,
+  sleep_hours: hours,
+  sleep_rating: null,
+  stress: null,
+  ...over,
+});
+const INTAKE_OK = { sleep_hours: 8, sleep_quality: 8, stress_level: 3 };
+
+test("une mauvaise nuit isolée ne dégrade pas la récupération", () => {
+  const logs = [night(0, 4), ...Array.from({ length: 9 }, (_, i) => night(i + 1, 7.8))];
+  assert.notEqual(recoveryFromLogs(logs, INTAKE_OK), "limited");
+});
+
+test("plusieurs nuits courtes d'affilée : récupération limitée, même si la fiche d'onboarding était bonne", () => {
+  const logs = Array.from({ length: 8 }, (_, i) => night(i, 5.2));
+  assert.equal(recoveryFromLogs(logs, INTAKE_OK), "limited");
+});
+
+test("moins de cinq nuits renseignées : on retombe sur la fiche d'onboarding", () => {
+  const logs = [night(0, 4), night(1, 4), night(2, 4)];
+  assert.equal(recoveryFromLogs(logs, INTAKE_OK), recoveryFromLogs([], INTAKE_OK));
+  assert.equal(recoveryFromLogs([], null), "normal");
+});
+
+test("beaucoup de jours très stressants sur la période : récupération limitée", () => {
+  const logs = Array.from({ length: 10 }, (_, i) => night(i, 7.5, { stress: i < 5 ? "high" : "low" }));
+  assert.equal(recoveryFromLogs(logs, null), "limited");
+});

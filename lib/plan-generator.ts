@@ -682,6 +682,37 @@ export function recoveryFromIntake(intake: Pick<ClientIntake, "sleep_hours" | "s
   return recoveryStatusFrom({ sleepHours: intake.sleep_hours, sleepQuality: intake.sleep_quality, stressLevel: intake.stress_level });
 }
 
+/** Bilan quotidien réduit à ce qui sert à estimer la récupération. */
+export interface RecoveryLog {
+  log_date: string;
+  sleep_hours: number | null;
+  sleep_rating: number | null;
+  stress: string | null;
+}
+
+/** Au moins ce nombre de nuits renseignées sur la période pour parler de tendance (une nuit isolée ne compte jamais). */
+const RECOVERY_MIN_NIGHTS = 5;
+
+/**
+ * Récupération estimée sur la TENDANCE des bilans récents (14 jours), pas sur
+ * une nuit isolée ni sur la photo de l'onboarding. Sous 5 nuits renseignées,
+ * on retombe sur la fiche d'onboarding. Jamais de l'âge ni du sexe.
+ */
+export function recoveryFromLogs(
+  logs: RecoveryLog[],
+  intake: Pick<ClientIntake, "sleep_hours" | "sleep_quality" | "stress_level"> | null
+): RecoveryStatus {
+  const nights = logs.filter((l) => l.sleep_hours != null).slice(0, 14);
+  if (nights.length < RECOVERY_MIN_NIGHTS) return recoveryFromIntake(intake);
+  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const sleepHours = mean(nights.map((l) => l.sleep_hours as number));
+  const rated = nights.filter((l) => l.sleep_rating != null).map((l) => (l.sleep_rating as number) / 10);
+  const sleepQuality = rated.length >= RECOVERY_MIN_NIGHTS ? mean(rated) : null;
+  const stressLogged = logs.filter((l) => l.stress != null).slice(0, 14);
+  const highShare = stressLogged.length >= RECOVERY_MIN_NIGHTS ? stressLogged.filter((l) => l.stress === "high").length / stressLogged.length : null;
+  return recoveryStatusFrom({ sleepHours, sleepQuality, stressLevel: highShare == null ? null : highShare >= 0.4 ? 9 : highShare === 0 ? 3 : 5 });
+}
+
 /** Niveau d'entraînement à partir du quiz d'onboarding (« confirmé » = avancé). */
 export function levelFromExperience(experience: "debutant" | "intermediaire" | "confirme" | null | undefined): TrainingLevel {
   if (experience === "debutant") return "debutant";
