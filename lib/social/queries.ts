@@ -59,6 +59,7 @@ export interface PostRow {
   duration_seconds: number | null;
   /** Ce que le coach pense avoir fait marcher la publication (hook, corps, concept, format, timing). */
   why: string[];
+  convos: number | null;
 }
 
 export interface SocialInsights {
@@ -134,7 +135,7 @@ function buildInsights(posts: InsightPost[], days: number): SocialInsights {
 }
 
 const POST_COLS = "id, account_id, external_post_id, platform, caption, post_type, published_at, url, thumbnail_url, duration_seconds, views, reach, impressions, likes, comments, shares, saves, engagement_rate, completion_rate, avg_watch_seconds, new_followers, script_id, script_link_source, extra";
-type RawPost = Omit<PostRow, "scriptTitle" | "manual" | "why"> & { account_id: string; external_post_id: string; extra: unknown };
+type RawPost = Omit<PostRow, "scriptTitle" | "manual" | "why" | "convos"> & { account_id: string; external_post_id: string; extra: unknown };
 
 export async function getSocialDashboard(opts: { ownerId: string; platform: Platform | null; days: number; sort: "vues" | "engagement" | "recent"; type: string | null }) {
   const admin = createAdminClient();
@@ -262,6 +263,7 @@ export async function getSocialDashboard(opts: { ownerId: string; platform: Plat
     ...p,
     manual: sourceOf.get(account_id) === "manuel" || external_post_id.startsWith("manuel:"),
     why: Array.isArray((extra as { why?: unknown } | null)?.why) ? ((extra as { why: unknown[] }).why.filter((x) => typeof x === "string") as string[]) : [],
+    convos: typeof (extra as { convos?: unknown } | null)?.convos === "number" ? (extra as { convos: number }).convos : null,
     // Script publié (donc retiré du Studio) : son titre est gardé sur la publication.
     scriptTitle: (p.script_id ? scriptTitle.get(p.script_id) : null) ?? (extra as { script?: { title?: string } } | null)?.script?.title ?? null,
     leads: p.script_id ? (leadsByScript as Record<string, { total: number }>)[p.script_id]?.total ?? null : null,

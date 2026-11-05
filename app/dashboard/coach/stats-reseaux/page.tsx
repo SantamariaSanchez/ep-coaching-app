@@ -138,6 +138,7 @@ export default async function WhatWorksPage() {
                 fmt(p.saves) && `${fmt(p.saves)} enregistrements`,
                 fmt(p.comments) && `${fmt(p.comments)} com.`,
                 fmt(p.new_followers) && `+${fmt(p.new_followers)} abonnés`,
+                p.convos != null && p.convos > 0 && `${p.convos} conversation${p.convos > 1 ? "s" : ""} qualifiée${p.convos > 1 ? "s" : ""}`,
               ].filter(Boolean);
               return (
                 <div key={p.id} className="ep-card" style={{ padding: "12px 14px" }}>
@@ -173,6 +174,11 @@ export default async function WhatWorksPage() {
                   {p.why.length > 0 && (
                     <p style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
                       {tr("Ce qui a marché, selon toi :")} {p.why.map((w) => tr(({ hook: "l'accroche", corps: "le contenu", concept: "le sujet", format: "le format", timing: "le moment" } as Record<string, string>)[w] ?? w)).join(", ")}
+                    </p>
+                  )}
+                  {p.platform === "youtube" && p.reading.verdict === "a_refaire" && p.published_at && Date.now() - new Date(p.published_at).getTime() > 180 * 86400000 && (
+                    <p style={{ margin: "8px 0 0", fontSize: 12, fontWeight: 700, color: "var(--ep-accent)" }}>
+                      {tr("Une de tes meilleures vidéos date de plus de 6 mois : change la miniature (très différente) pour la relancer comme une nouvelle vidéo.")}
                     </p>
                   )}
                   {p.reading.howTo.length > 0 && (
