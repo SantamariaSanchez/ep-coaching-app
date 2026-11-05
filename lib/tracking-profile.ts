@@ -129,6 +129,8 @@ export interface TrackingProfile {
   eatingSafety: EatingSafetyLevel;
   weighIn: { mode: WeighMode; perWeek: number; days: number[]; trend: boolean; weeklyAverage: boolean };
   nutrition: { detail: NutritionDetail; showNumbers: boolean };
+  /** Bague ou montre connectée : le sommeil se lit dans son appli, on ne demande que la durée et la qualité. */
+  wearable: boolean;
   /** Champs du bilan du jour, dans l'ordre d'affichage. */
   bilan: { fields: BilanField[]; minimum: BilanField[]; sleep: SleepDetail; targetSeconds: number };
   /** Les trois infos qui suffisent un jour chargé. */
@@ -401,6 +403,7 @@ export function deriveTrackingProfile(input: TrackingInput): TrackingProfile {
     reasons,
     safeguards,
     eatingSafety: eating,
+    wearable: !!input.hasWearable,
     weighIn,
     nutrition: { detail: nutritionDetail, showNumbers },
     bilan: { fields, minimum, sleep, targetSeconds: level === "simple" ? 10 : level === "standard" ? 20 : 45 },
@@ -489,7 +492,7 @@ export const CADENCE_LABEL: Record<Cadence, string> = { off: "aucune", monthly: 
  */
 export function bilanLayout(profile: TrackingProfile, modules: Modules | undefined): { fields: BilanField[]; extraFields: BilanField[]; minimum: BilanField[] } {
   const fields = profile.bilan.fields.filter((f) => fieldEnabled(modules, f));
-  const extra = FIELDS.avance.filter((f) => !fields.includes(f) && modules?.[FIELD_MODULE[f]] === true);
+  const extra = FIELDS.avance.filter((f) => !fields.includes(f) && modules?.[FIELD_MODULE[f]] === true && !(profile.wearable && f === "horaires_sommeil"));
   const minimum = profile.minimumViable.filter((f) => fields.includes(f));
   return { fields, extraFields: extra, minimum: minimum.length ? minimum : fields.slice(0, 3) };
 }

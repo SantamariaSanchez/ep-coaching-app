@@ -5904,4 +5904,7 @@ export const EN: Record<string, string> = {
   "Une de tes meilleures vidéos date de plus de 6 mois : change la miniature (très différente) pour la relancer comme une nouvelle vidéo.": "One of your best videos is over 6 months old: change the thumbnail (very different) to relaunch it as a new video.",
   "{name} souhaite {n} séances par semaine, le programme en compte {m}. À revoir avec {name} : rien n'a été changé.": "{name} wants {n} sessions per week, the program has {m}. Review it with {name}: nothing was changed.",
   "Split préféré par {name} : « {split} ». Compare avec le découpage actuel.": "{name}'s preferred split: “{split}”. Compare it with the current layout.",
+  "J'ai une bague ou une montre connectée": "I have a connected ring or watch",
+  "Le bilan ne demande alors que la durée de sommeil et sa qualité.": "The check-in then only asks for sleep duration and quality.",
+  "Recopie la durée et le score de ta bague. Rien d'autre à saisir.": "Copy the duration and score from your ring. Nothing else to enter.",
 };

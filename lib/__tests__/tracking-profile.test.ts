@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { deriveTrackingProfile, describeTracking, isWeighDay, levelFromScore, scoreTracking, type TrackingInput } from "../tracking-profile";
+import { bilanLayout, deriveTrackingProfile, describeTracking, isWeighDay, levelFromScore, scoreTracking, type TrackingInput } from "../tracking-profile";
 
 // Cas concret 1 : femme de 34 ans, perte de poids, jamais fait de sport (Inès).
 const ines: TrackingInput = {
@@ -198,4 +198,17 @@ test("Résumé lisible et sans tiret cadratin", () => {
   }
   const p = deriveTrackingProfile(ines);
   for (const r of [...p.reasons, ...p.safeguards]) assert.ok(!r.includes("—"), r);
+});
+
+test("Bague ou montre : plus d'horaires de coucher ni de lever, même si le module est activé", () => {
+  const base = { goal: "prise_muscle" as const, experience: "intermediaire" as const, practices: ["musculation"] };
+  const sans = deriveTrackingProfile({ ...base, override: { level: "avance", by: "client" } });
+  const avec = deriveTrackingProfile({ ...base, hasWearable: true, override: { level: "avance", by: "client" } });
+  assert.equal(sans.wearable, false);
+  assert.equal(avec.wearable, true);
+  assert.ok(avec.bilan.fields.includes("sommeil"));
+  assert.ok(avec.bilan.fields.includes("sommeil_qualite"));
+  assert.ok(!avec.bilan.fields.includes("horaires_sommeil"));
+  const layout = bilanLayout(avec, { ...({} as Record<string, boolean>), sommeil: true } as never);
+  assert.ok(!layout.extraFields.includes("horaires_sommeil"));
 });

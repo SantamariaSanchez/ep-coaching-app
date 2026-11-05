@@ -14,10 +14,11 @@ import QuickBilan from "@/components/tracking/QuickBilan";
 import BilanCollapse from "@/components/tracking/BilanCollapse";
 import { isBilanDone } from "@/lib/bilan-quick";
 import TrackingLevelPicker from "@/components/tracking/TrackingLevelPicker";
+import WearableToggle from "@/components/tracking/WearableToggle";
 import Link from "next/link";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
 import { bilanLayout, describeTracking, isWeighDay, nextWeighDayLabel } from "@/lib/tracking-profile";
-import { setTrackingLevelAction } from "@/app/actions/tracking";
+import { setTrackingLevelAction, setWearableAction } from "@/app/actions/tracking";
 import { nowInParis } from "@/lib/dates";
 import BilanProgressView from "@/components/ui/BilanProgressView";
 import BilanKpiBoard from "@/components/ui/BilanKpiBoard";
@@ -126,7 +127,7 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
     </div>
   ) : (
     <div className="animate-scale-in">
-      <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/client/nutrition" : `/dashboard/client/nutrition?jour=${date}`} setup={appSetup} />
+      <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/client/nutrition" : `/dashboard/client/nutrition?jour=${date}`} setup={appSetup} wearable={tracking.wearable} />
     </div>
   );
 
@@ -162,6 +163,7 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
             onPick={setTrackingLevelAction}
             compact
           />
+          <WearableToggle value={tracking.wearable} onSet={setWearableAction} />
         </div>
 
         <div className="order-3 lg:col-start-2 lg:row-start-2">

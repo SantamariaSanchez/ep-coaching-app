@@ -304,7 +304,7 @@ export function TrainingCard({ today, existing, action, onSaved, logbookHref = "
 // sleep_hours/sleep_rating n'ont plus leur place noyés dans LifestyleCard.
 // bedtime_actual/wake_time_actual sont optionnels (jamais bloquants), voir
 // lib/daily-gate.ts pour ce qui est réellement exigé. ──────────────────────
-export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dashboard/client/tracking" }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void; sleepHref?: string }) {
+export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dashboard/client/tracking", wearable = false }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void; sleepHref?: string; wearable?: boolean }) {
   const t = useT();
   const [state, formAction, pending] = useActionState(action, null);
   // L'horloge (coucher / lever) règle la durée toute seule.
@@ -329,8 +329,10 @@ export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dash
             </div>
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
-            {t("Lis-les dans l'app Santé de ton téléphone ou de ta montre. Sinon, estime.")}
+            {wearable ? t("Recopie la durée et le score de ta bague. Rien d'autre à saisir.") : t("Lis-les dans l'app Santé de ton téléphone ou de ta montre. Sinon, estime.")}
           </p>
+          {!wearable && (
+            <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label className={lbl}>{t("Coucher (hier soir)")}</label>
@@ -345,6 +347,8 @@ export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dash
             {t("Facultatif, sert juste à suivre ta régularité dans l'onglet")}{" "}
             <Link href={sleepHref} style={{ color: "var(--ep-accent)", fontWeight: 700 }}>{t("Sommeil")}</Link>.
           </p>
+            </>
+          )}
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
@@ -722,6 +726,7 @@ export default function DailyBilanForm({
   plan,
   trackerHref,
   setup,
+  wearable = false,
 }: {
   today: string;
   existing: DailyLog | null;
@@ -731,6 +736,8 @@ export default function DailyBilanForm({
   plan?: BilanPlan | null;
   trackerHref?: string;
   setup?: AppSetup | null;
+  /** Bague ou montre connectée : seulement la durée et la qualité du sommeil. */
+  wearable?: boolean;
 }) {
   // Personnalisation "Mon appli" : seuls les champs choisis sont demandés,
   // et "bilan fait" ne dépend que d'eux.
@@ -783,7 +790,7 @@ export default function DailyBilanForm({
       ) : (
         <>
           {on.poids && <WeightCard today={today} existing={existing} action={action} />}
-          {on.sommeil && <SleepCard today={today} existing={existing} action={action} sleepHref={sleepHref} />}
+          {on.sommeil && <SleepCard today={today} existing={existing} action={action} sleepHref={sleepHref} wearable={wearable} />}
         </>
       )}
 
