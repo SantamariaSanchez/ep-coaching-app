@@ -363,3 +363,9 @@ test("le prompt partagé cadre les abdos, le mode de stockage et le déficit con
   assert.match(COACHING_KNOWLEDGE_PROMPT, /10 à 15 jours/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé cadre la perception de sa sécheresse sans estimer de pourcentage", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Perception de sa sécheresse \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /photos de face, de dos et de profil/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
