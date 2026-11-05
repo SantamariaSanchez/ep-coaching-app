@@ -165,6 +165,29 @@ export function stagnantExercises(sessions: SessionWithSets[]): string[] {
   return out;
 }
 
+/**
+ * La comparaison entre séances est-elle fiable pour cet exercice ? Elle est
+ * fragile quand le score de standardisation (réglages, amplitude, technique)
+ * manque sur la moitié des séances récentes, est bas (< 3 sur 5), ou a changé
+ * d'au moins 1 point par rapport aux séances d'avant : une même charge ne
+ * veut alors pas dire la même chose (spec « Moteur de personnalisation réelle »).
+ */
+export function comparisonIsFragile(sessions: SessionWithSets[], exerciseName: string): boolean {
+  const n = PROGRESSION_RULES.stagnationSessions;
+  const perSession = sessions
+    .map((s) => s.sets.filter((x) => x.exercise_name === exerciseName && x.standardization_score != null).map((x) => x.standardization_score as number))
+    .filter((_, i) => sessions[i].sets.some((x) => x.exercise_name === exerciseName));
+  if (perSession.length === 0) return true;
+  const recent = perSession.slice(0, n);
+  const before = perSession.slice(n);
+  const recentScored = recent.filter((r) => r.length > 0);
+  if (recentScored.length * 2 < recent.length) return true;
+  const recentAvg = avg(recentScored.flat());
+  if (recentAvg == null || recentAvg < 3) return true;
+  const beforeAvg = avg(before.flat());
+  return beforeAvg != null && Math.abs(recentAvg - beforeAvg) >= 1;
+}
+
 /** Part des exercices dont la force estimée baisse nettement sur les deux dernières séances comparées aux précédentes. */
 export function performanceDeclineRatio(sessions: SessionWithSets[]): { ratio: number; tracked: number } {
   let tracked = 0;
@@ -483,13 +506,17 @@ export function computeAdjustments(input: AdjustmentInput): AdjustmentSuggestion
 
   const stagnant = stagnantExercises(sessions);
   if (stagnant.length > 0) {
-    const names = stagnant.slice(0, 2).join(" et ");
+    const shown = stagnant.slice(0, 2);
+    const names = shown.join(" et ");
+    const fragile = shown.some((name) => comparisonIsFragile(sessions, name));
     out.push({
       id: "adj-exercise-stagnant",
       kind: "exercise",
       severity: "info",
       audience: "both",
-      coachText: `Pas de progrès sur ${names} depuis ${PROGRESSION_RULES.stagnationSessions} séances : change la plage de répétitions, la variante ou le repos avant d'ajouter des séries.`,
+      coachText: fragile
+        ? `Pas de progrès apparent sur ${names}, mais la comparaison est fragile : l'exécution (réglages, amplitude) est peu notée ou a changé. Vérifie ça avant de conclure à une stagnation, et ne change pas l'exercice pour l'instant.`
+        : `Pas de progrès sur ${names} depuis ${PROGRESSION_RULES.stagnationSessions} séances. Avant de changer d'exercice, vérifie l'exécution, l'effort réel (RIR), les paliers de charge, le volume et la récupération. Un exercice apprécié et bien toléré se garde : essaie d'abord la plage de répétitions, la variante ou le repos.`,
       confidence: "decision",
       action: { type: "link", tab: "programme", label: "Voir le programme" },
     });

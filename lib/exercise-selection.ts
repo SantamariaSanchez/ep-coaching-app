@@ -158,7 +158,37 @@ const DIFFICULTY_ORDER: Record<string, number> = { debutant: 0, intermediaire: 1
  * d'abord, puis un bonus pour la position étirée et les charges ajustables,
  * et une pénalité quand l'exercice dépasse le niveau de la personne.
  */
-export function exerciseRank(ex: LibraryExercise, group: string, category: SlotCategory, level: TrainingLevel = "intermediaire"): number {
+/** Minuscules sans accents, pour comparer ce que le client a écrit aux noms d'exercices. */
+export function normalizeFr(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+/**
+ * Le texte libre « ce qui marche pour lui » (fiche client) cite-t-il cet
+ * exercice ? Comparaison par expression complète d'au moins 6 caractères
+ * (« chest press », « développé couché », « leg extension »), jamais par mot
+ * isolé, pour éviter qu'un seul mot comme « press » rattache tout.
+ */
+export function mentionedInText(exName: string, text: string | null | undefined): boolean {
+  if (!text || !text.trim()) return false;
+  const name = normalizeFr(exName);
+  return normalizeFr(text)
+    .split(/[,;\n\/]|\bet\b|\bou\b/)
+    .map((f) => f.trim())
+    .filter((f) => f.length >= 6)
+    .some((f) => name.includes(f));
+}
+
+/** Bonus de rang pour un exercice que le client fait déjà avec succès : il passe avant la liste de départ. */
+const KEEP_WHAT_WORKS_BONUS = 30;
+
+export function exerciseRank(
+  ex: LibraryExercise,
+  group: string,
+  category: SlotCategory,
+  level: TrainingLevel = "intermediaire",
+  keepText: string | null = null
+): number {
   const list = PREFERRED_EXERCISES[group]?.[category] ?? [];
   const idx = list.indexOf(ex.name);
   let rank = idx >= 0 ? idx : 40 + (DIFFICULTY_ORDER[ex.difficulty ?? "intermediaire"] ?? 1) * 3;
@@ -169,6 +199,9 @@ export function exerciseRank(ex: LibraryExercise, group: string, category: SlotC
 
   if (ex.position === "Étirée") rank -= 1.5;
   if (ex.microloadable === true) rank -= 0.5;
+  // Conserver ce qui fonctionne : un exercice cité dans « ce qui marche pour
+  // lui » n'est pas remplacé par la liste de départ.
+  if (mentionedInText(ex.name, keepText)) rank -= KEEP_WHAT_WORKS_BONUS;
   return rank;
 }
 
@@ -176,10 +209,11 @@ export function rankCandidates(
   candidates: LibraryExercise[],
   group: string,
   category: SlotCategory,
-  level: TrainingLevel = "intermediaire"
+  level: TrainingLevel = "intermediaire",
+  keepText: string | null = null
 ): LibraryExercise[] {
   return [...candidates].sort(
-    (a, b) => exerciseRank(a, group, category, level) - exerciseRank(b, group, category, level) || a.name.localeCompare(b.name, "fr")
+    (a, b) => exerciseRank(a, group, category, level, keepText) - exerciseRank(b, group, category, level, keepText) || a.name.localeCompare(b.name, "fr")
   );
 }
 

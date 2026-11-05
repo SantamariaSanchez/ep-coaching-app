@@ -132,7 +132,8 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
       intake.training_access,
       intake.injuries,
       level,
-      gymEquipment
+      gymEquipment,
+      intake.exercises_that_work
     );
     if (!intake.training_access) {
       warnings.push(

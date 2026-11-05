@@ -312,7 +312,7 @@ export default function ProgramBuilder({
       intake?.exercises_problematic ?? null,
       intake?.training_access ?? null,
       intake?.injuries ?? null,
-      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration), gymEquipment: equipmentFilterFor(defaultGym) }
+      { level: experienceLevel, recovery: recoveryFromIntake(intake), sessionMinutes: parseMinutes(intake?.session_duration), gymEquipment: equipmentFilterFor(defaultGym), keepText: intake?.exercises_that_work ?? null }
     );
     const draft = plan.days;
     setPlanNotes(plan.notes);
@@ -363,7 +363,8 @@ export default function ProgramBuilder({
       intake?.training_access ?? null,
       day.rows.map((r) => r.name),
       experienceLevel,
-      equipmentFilterFor(gyms.find((g) => g.id === day.gym_id))
+      equipmentFilterFor(gyms.find((g) => g.id === day.gym_id)),
+      intake?.exercises_that_work ?? null
     );
     if (next) patchRow(dayId, rowId, { name: next.name, muscle_group: next.muscle_group, muscle_subgroup: next.muscle_subgroup ?? "" });
   }

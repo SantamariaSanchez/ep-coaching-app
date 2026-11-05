@@ -183,3 +183,45 @@ test("niveau : « confirmé » du quiz devient avancé, inconnu devient intermé
   assert.equal(levelFromExperience(null), "intermediaire");
   void BIG;
 });
+
+// ── Personnalisation réelle (spec Notion « Moteur de personnalisation réelle ») ──
+
+const pectoralNames = (plan: ReturnType<typeof generateProgramPlan>) =>
+  plan.days.flatMap((d) => d.exercises).filter((e) => e.muscle_group === "Pectoraux").map((e) => e.name);
+
+test("ce qui marche pour lui : la chest press citée par le client passe avant le développé haltères de la liste de départ", () => {
+  const withKeep = generateProgramPlan(3, LIB, null, null, "salle", null, { level: "intermediaire", keepText: "Chest press, tirage vertical" });
+  assert.ok(pectoralNames(withKeep).includes("Développé à la machine (chest press)"), "la chest press doit être retenue");
+  assert.equal(pectoralNames(withKeep)[0], "Développé à la machine (chest press)", "elle passe en premier");
+  const without = generateProgramPlan(3, LIB, null, null, "salle", null, { level: "intermediaire" });
+  assert.equal(pectoralNames(without)[0], "Développé incliné haltères", "sans info, la liste de départ s'applique");
+});
+
+test("un seul mot ne suffit pas : « press » ne rattache pas toutes les presses", () => {
+  const plan = generateProgramPlan(3, LIB, null, null, "salle", null, { keepText: "press" });
+  assert.equal(pectoralNames(plan)[0], "Développé incliné haltères");
+});
+
+test("chest press absente de la salle : jamais proposée même si le client l'aime", () => {
+  const gym = ["dumbbells", "barbell", "bench", "cable_station", "lat_pulldown", "low_row"];
+  const plan = generateProgramPlan(3, LIB, null, null, "salle", null, { keepText: "chest press", gymEquipment: gym });
+  assert.ok(!pectoralNames(plan).includes("Développé à la machine (chest press)"));
+});
+
+test("exercice problématique déclaré : exclu même s'il est cité comme efficace", () => {
+  const plan = generateProgramPlan(3, LIB, null, "chest press", "salle", null, { keepText: "chest press" });
+  assert.ok(!pectoralNames(plan).includes("Développé à la machine (chest press)"));
+});
+
+test("salle inconnue : la note prévient que le matériel est supposé", () => {
+  const unknown = generateProgramPlan(3, LIB, null, null, "salle", null, {});
+  assert.ok(unknown.notes.some((n) => /Salle non confirmée/.test(n)));
+  const known = generateProgramPlan(3, LIB, null, null, "salle", null, { gymEquipment: ["dumbbells", "bench", "barbell"] });
+  assert.ok(!known.notes.some((n) => /Salle non confirmée/.test(n)));
+});
+
+test("les suggestions expliquent pourquoi un exercice est gardé", () => {
+  const sugg = buildProgramSuggestions(3, LIB, null, null, "salle", null, "intermediaire", null, "chest press");
+  const reasons = sugg.flatMap((d) => d.groups).flatMap((g) => [...g.compound, ...g.isolation]).filter((s) => s.name.includes("chest press")).map((s) => s.reason);
+  assert.ok(reasons.length > 0 && reasons.every((r) => /à garder/.test(r)));
+});

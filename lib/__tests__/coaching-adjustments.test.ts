@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   applyCalorieDelta,
   calorieStep,
+  comparisonIsFragile,
   computeAdjustments,
   performanceDeclineRatio,
   stagnantExercises,
@@ -223,4 +224,30 @@ test("propositions pour le coach : jamais de source ni de tiret cadratin, aucune
     assert.doesNotMatch(x.coachText, /étude|selon |mineur/i);
     assert.ok(x.action === null || x.action.type === "adjust_calories" || x.action.type === "link");
   }
+});
+
+const withScores = (list: SessionWithSets[], scoreOf: (i: number) => number | null): SessionWithSets[] =>
+  list.map((sess, i) => ({ ...sess, sets: sess.sets.map((st) => ({ ...st, standardization_score: scoreOf(i) })) }));
+
+test("stagnation sans score de standardisation : comparaison fragile, on ne conclut pas et on ne change pas l'exercice", () => {
+  const flat = sessions(() => 80);
+  assert.equal(comparisonIsFragile(flat, "Développé couché barre"), true);
+  const s = computeAdjustments(input({ phase: "maintenance", sessions: flat })).find((x) => x.id === "adj-exercise-stagnant");
+  assert.ok(s);
+  assert.match(s!.coachText, /comparaison est fragile/);
+  assert.match(s!.coachText, /ne change pas l'exercice/);
+});
+
+test("stagnation avec exécution standardisée stable : on vérifie effort et récupération avant de changer, sans remplacer mécaniquement", () => {
+  const flat = withScores(sessions(() => 80), () => 4);
+  assert.equal(comparisonIsFragile(flat, "Développé couché barre"), false);
+  const s = computeAdjustments(input({ phase: "maintenance", sessions: flat })).find((x) => x.id === "adj-exercise-stagnant");
+  assert.ok(s);
+  assert.match(s!.coachText, /vérifie l'exécution, l'effort réel/);
+  assert.match(s!.coachText, /se garde/);
+});
+
+test("le standard d'exécution a changé (score 4 puis 2) : comparaison fragile", () => {
+  const changed = withScores(sessions(() => 80), (i) => (i < 4 ? 2 : 4));
+  assert.equal(comparisonIsFragile(changed, "Développé couché barre"), true);
 });
