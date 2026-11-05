@@ -353,3 +353,13 @@ test("le prompt partagé ne moralise pas les aliments et ne diagnostique pas d'i
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne retire pas lait, gluten ou fruits sans raison médicale/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Pas de diagnostic d'intolérance/);
 });
+
+test("le prompt partagé cadre les abdos, le mode de stockage et le déficit confortable (repères du mentor)", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Abdominaux \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Ne promets jamais de les voir pour une date/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Mode de stockage \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /n'estime jamais le taux de masse grasse/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Déficit confortable \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /10 à 15 jours/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
