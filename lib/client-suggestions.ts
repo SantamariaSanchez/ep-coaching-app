@@ -275,6 +275,15 @@ export function generateClientSuggestions(
     });
   }
 
+  // ── Ce qui l'a convaincu : matière première pour le contenu ──
+  if (intake.why_joined) {
+    s.push({
+      id: "why-joined",
+      severity: "info",
+      text: `Ce qui lui a donné envie de te rejoindre : "${intake.why_joined}". À noter pour tes prochains contenus.`,
+    });
+  }
+
   // ── Fiche incomplète sur les objectifs — difficile de calibrer sans ça ──
   if (!intake.goal_3_months && !intake.goal_12_months) {
     s.push({

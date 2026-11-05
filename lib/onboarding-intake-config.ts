@@ -156,9 +156,10 @@ export const ONBOARDING_SECTIONS: SectionDef[] = [
     title: "Pour finir",
     kicker: "Section 9",
     fields: {
+      pourquoi: { type: "textarea", label: "Qu'est-ce qui t'a donné envie de me rejoindre ? Une vidéo, un contenu précis, une hésitation que tu avais...", required: false },
       autre: { type: "textarea", label: "Il y a autre chose que je dois savoir sur toi pour t'accompagner au mieux ?", required: false },
     },
-    groups: [["autre"]],
+    groups: [["pourquoi"], ["autre"]],
   },
 ];
 
@@ -205,6 +206,7 @@ export const INTAKE_FIELD_MAP: Record<string, string> = {
   lieu_entrainement: "training_access",
   nom_salle: "gym_name",
   autre: "additional_notes",
+  pourquoi: "why_joined",
 };
 
 const NUMERIC_INTAKE_COLUMNS = new Set([

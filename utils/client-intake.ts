@@ -53,6 +53,8 @@ export interface ClientIntake {
   gym_name: string | null;
   gym_link: string | null;
   additional_notes: string | null;
+  /** Ce qui a donné envie au client de rejoindre le coach (contenu, hésitation) : alimente la création de contenu. */
+  why_joined?: string | null;
   resting_heart_rate: number | null;
   cycle_length_days: number | null;
   hormonal_contraceptive: string | null;
