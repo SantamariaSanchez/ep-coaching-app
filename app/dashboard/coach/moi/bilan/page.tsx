@@ -15,10 +15,11 @@ import BilanCollapse from "@/components/tracking/BilanCollapse";
 import { ensureOuraNightSynced } from "@/lib/oura-sync";
 import { isBilanDone } from "@/lib/bilan-quick";
 import TrackingLevelPicker from "@/components/tracking/TrackingLevelPicker";
+import WearableToggle from "@/components/tracking/WearableToggle";
 import Link from "next/link";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
 import { bilanLayout, describeTracking, isWeighDay, nextWeighDayLabel } from "@/lib/tracking-profile";
-import { setTrackingLevelAction } from "@/app/actions/tracking";
+import { setTrackingLevelAction, setWearableAction } from "@/app/actions/tracking";
 import { nowInParis } from "@/lib/dates";
 import BilanProgressView from "@/components/ui/BilanProgressView";
 import BilanKpiBoard from "@/components/ui/BilanKpiBoard";
@@ -106,7 +107,7 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
     </div>
   ) : (
     <div className="ep-card animate-scale-in" style={{ padding: "20px 16px" }}>
-      <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertCoachDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`} setup={appSetup} />
+      <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertCoachDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`} setup={appSetup} wearable={tracking.wearable} />
     </div>
   );
 
@@ -131,6 +132,7 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
         <div className="order-1 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-4 flex flex-col gap-4">
           <BilanCollapse key={date} doneAtLoad={doneToday}>{formBlock}</BilanCollapse>
           <TrackingLevelPicker level={tracking.level} autoLevel={tracking.autoLevel} source={tracking.source} reasons={tracking.reasons} summary={describeTracking(tracking)} suggestion={tracking.suggestion} onPick={setTrackingLevelAction} compact />
+          <WearableToggle value={tracking.wearable} onSet={setWearableAction} />
         </div>
 
         <div className="order-3 lg:col-start-2 lg:row-start-2">

@@ -64,3 +64,28 @@ export async function saveTrackingParcoursAction(parcours: "aucun" | "phases" | 
   if (error) return { error: "Enregistrement impossible, réessaie." };
   return {};
 }
+
+/**
+ * « J'ai une bague ou une montre connectée » : le sommeil se lit déjà dans
+ * son appli (Oura, Apple Santé, Garmin, Whoop), donc le bilan ne demande plus
+ * que la durée et la qualité, jamais les horaires de coucher et de lever.
+ * Stocké dans user_app_setup.answers.wearable (aucune migration).
+ */
+export async function setWearableAction(has: boolean): Promise<{ error?: string }> {
+  const user = await getUser();
+  if (!user) return { error: "Non authentifié." };
+  const admin = createAdminClient();
+  const { data: row } = await admin.from("user_app_setup").select("answers, modules, completed_at").eq("user_id", user.id).maybeSingle();
+  const answers: Record<string, unknown> = { ...((row?.answers as Record<string, unknown>) ?? {}) };
+  if (has) answers.wearable = true;
+  else delete answers.wearable;
+  const { error } = await admin
+    .from("user_app_setup")
+    .upsert({ user_id: user.id, answers, modules: row?.modules ?? {}, completed_at: row?.completed_at ?? null, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  if (error) {
+    console.error("wearable error:", error);
+    return { error: "Enregistrement impossible, réessaie." };
+  }
+  revalidatePath("/dashboard", "layout");
+  return {};
+}
