@@ -5902,4 +5902,6 @@ export const EN: Record<string, string> = {
   "Conversations qualifiées reçues (DM, demandes, appels)": "Qualified conversations received (DMs, requests, calls)",
   "Un Reel à 2 000 vues avec 2 conversations qualifiées peut valoir plus qu'un Reel à 50 000 vues mal ciblées.": "A Reel with 2,000 views and 2 qualified conversations can be worth more than a Reel with 50,000 poorly targeted views.",
   "Une de tes meilleures vidéos date de plus de 6 mois : change la miniature (très différente) pour la relancer comme une nouvelle vidéo.": "One of your best videos is over 6 months old: change the thumbnail (very different) to relaunch it as a new video.",
+  "{name} souhaite {n} séances par semaine, le programme en compte {m}. À revoir avec {name} : rien n'a été changé.": "{name} wants {n} sessions per week, the program has {m}. Review it with {name}: nothing was changed.",
+  "Split préféré par {name} : « {split} ». Compare avec le découpage actuel.": "{name}'s preferred split: “{split}”. Compare it with the current layout.",
 };
