@@ -376,3 +376,10 @@ test("le prompt partagé refuse tout avis, dose ou protocole sur les peptides in
   assert.match(COACHING_KNOWLEDGE_PROMPT, /aucune dose, aucun fournisseur ni protocole/);
   assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
+
+test("le prompt partagé cadre les séries courtes sans en faire une obligation", () => {
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /Séries courtes \(repère du mentor\)/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /jamais une obligation/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /chez un débutant/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
+});
