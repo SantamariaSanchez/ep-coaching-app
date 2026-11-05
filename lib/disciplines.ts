@@ -509,7 +509,7 @@ const reeducation: Discipline = {
       { label: "Séances (7 j)", value: String(entries.filter((e) => e.kind === "seance" && daysAgo(e.performed_on) < 7).length) },
     ];
   },
-  tip: "Repère courant : si la douleur reste à 3/10 ou moins pendant l'effort et le lendemain, tu peux en général continuer à progresser. Au-delà, on lève le pied. Ton kiné ou ton médecin reste la référence.",
+  tip: "Note ta douleur zone par zone pour voir son évolution. L'appli ne dit jamais qu'une douleur est sans gravité : une douleur qui dure ou qui augmente se discute avec ton kiné, ton médecin ou ton coach.",
 };
 
 // ── Suivi santé renforcé ───────────────────────────────────────────────
@@ -568,7 +568,7 @@ const sante: Discipline = {
       { label: "Dernière prise de sang", value: sinceBlood == null ? "aucune" : sinceBlood === 0 ? "aujourd'hui" : `il y a ${sinceBlood} j` },
     ];
   },
-  tip: "Une tension régulièrement à 140/90 ou plus, ou une valeur d'analyse qui change beaucoup, mérite d'en parler à ton médecin. L'appli garde l'historique, elle ne pose pas de diagnostic.",
+  tip: "Une tension qui t'inquiète, ou une valeur d'analyse qui change beaucoup, mérite d'en parler à ton médecin. L'appli garde l'historique, elle ne pose aucun diagnostic et n'interprète aucune valeur.",
 };
 
 // ── Prépa compétition (bodybuilding) ───────────────────────────────────
