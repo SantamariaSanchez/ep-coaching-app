@@ -67,6 +67,7 @@ export default function AujourdhuiView({
   todayStr,
   toggleHabitLog,
   focusHabit,
+  weekIntention,
   setFocusHabit,
   addJournalEntry,
   todayWeight,
@@ -94,6 +95,8 @@ export default function AujourdhuiView({
   toggleHabitLog: (habitKey: string, date: string, checked: boolean) => Promise<{ error?: string }>;
   /** Habitude du moment (une seule à la fois, 14 jours), null tant qu'aucune n'est choisie. */
   focusHabit: { key: string; progress: FocusHabitProgress } | null;
+  /** Intention écrite lors de la dernière revue de la semaine, rappelée chaque jour (null si aucune récente). */
+  weekIntention?: string | null;
   setFocusHabit: (habitKey: string | null) => Promise<{ error?: string }>;
   addJournalEntry: (params: { promptKey: string | null; content: string; mood: number | null }) => Promise<{ error?: string; id?: string }>;
   todayWeight: number | null;
@@ -529,6 +532,17 @@ export default function AujourdhuiView({
           <p style={{ margin: "-4px 0 10px", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)" }}>
             {tr("Cette semaine :")}{" "}{weeklyConsistency}{tr("% de jours actifs")}
           </p>
+        )}
+        {weekIntention && (
+          <div className="ep-card" style={{ padding: 14, marginBottom: 12 }}>
+            <p style={{ margin: "0 0 4px", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+              {tr("Mon intention de la semaine")}
+            </p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--ep-strong)", whiteSpace: "pre-wrap" }}>{weekIntention}</p>
+            <Link href="/dashboard/client/semaine" style={{ display: "inline-block", marginTop: 8, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.45)", textDecoration: "underline" }}>
+              {tr("Voir ma revue")}
+            </Link>
+          </div>
         )}
         {/* Une seule chose à la fois : l'habitude du moment, 14 jours pour une
             première victoire. Les autres habitudes restent à un clic. */}
