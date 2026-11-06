@@ -335,3 +335,27 @@ export function parseReflectionContent(content: string): ReflectionAnswers {
   for (const f of REFLECTION_FIELDS) answers[f.key] = buf[f.key].join("\n").trim();
   return answers;
 }
+
+// Intention de la semaine, rappelée chaque jour sur l'onglet Aujourd'hui (idée
+// tirée des audits en direct de Marvin Ndiaye : un plan d'action ne sert que
+// s'il revient devant les yeux tous les jours, pas seulement le jour du bilan).
+// On prend la revue la plus récente enregistrée dans les 10 derniers jours et
+// on n'en garde que la ligne « intention » ; une revue sans intention, trop
+// ancienne ou vide ne produit rien.
+export const WEEK_INTENTION_MAX_AGE_DAYS = 10;
+
+export function pickWeekIntention(
+  entries: { content: string; entry_date: string }[],
+  today: string,
+): string | null {
+  if (!isValidDateStr(today)) return null;
+  const oldest = addDaysToDate(today, -WEEK_INTENTION_MAX_AGE_DAYS);
+  const recent = entries
+    .filter((e) => isValidDateStr(e.entry_date) && e.entry_date >= oldest && e.entry_date <= today)
+    .sort((a, b) => b.entry_date.localeCompare(a.entry_date));
+  for (const entry of recent) {
+    const intention = parseReflectionContent(entry.content).intention.trim();
+    if (intention) return intention.length > 280 ? `${intention.slice(0, 277).trimEnd()}...` : intention;
+  }
+  return null;
+}

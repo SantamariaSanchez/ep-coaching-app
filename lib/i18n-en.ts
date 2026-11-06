@@ -670,6 +670,8 @@ export const EN: Record<string, string> = {
   "Connecte ta bague Oura pour voir ton sommeil et ta récupération ici.": "Connect your Oura ring to see your sleep and recovery here.",
   "Habitudes du jour": "Today's habits",
   "Cette semaine :": "This week:",
+  "Mon intention de la semaine": "My intention for the week",
+  "Voir ma revue": "See my review",
   "% de jours actifs": "% active days",
   "Compléments du jour": "Today's supplements",
   "✓ Enregistré dans ton journal.": "✓ Saved to your journal.",

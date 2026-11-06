@@ -17,6 +17,7 @@ import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import { getWeeklyExtras } from "./actions";
 import AujourdhuiView from "@/components/client/AujourdhuiView";
 import { getEngagementProgress } from "@/lib/engagement-server";
+import { pickWeekIntention } from "@/lib/weekly-review-helpers";
 
 export default async function AujourdhuiPage() {
   const user = await getUser();
@@ -102,6 +103,21 @@ export default async function AujourdhuiPage() {
     focusHabit = null;
   }
 
+  // Intention de la dernière revue de la semaine, rappelée ici chaque jour.
+  let weekIntention: string | null = null;
+  try {
+    const { data: reflections } = await createAdminClient()
+      .from("mindset_journal_entries")
+      .select("content, entry_date")
+      .eq("client_id", user.id)
+      .eq("prompt_key", "bilan_semaine")
+      .order("entry_date", { ascending: false })
+      .limit(3);
+    weekIntention = pickWeekIntention((reflections as { content: string; entry_date: string }[] | null) ?? [], todayStr);
+  } catch {
+    weekIntention = null;
+  }
+
   const todayBlocks = allBlocks
     .filter((b) => isBlockOnDate(b, todayStr, isoDow))
     .sort((a, b) => a.start_time.localeCompare(b.start_time));
@@ -132,6 +148,7 @@ export default async function AujourdhuiPage() {
       todayStr={todayStr}
       toggleHabitLog={toggleHabitLog}
       focusHabit={focusHabit}
+      weekIntention={weekIntention}
       setFocusHabit={setFocusHabit}
       addJournalEntry={addJournalEntry}
       todayWeight={todayLog?.weight_morning ?? null}
