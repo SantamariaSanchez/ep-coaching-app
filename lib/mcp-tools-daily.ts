@@ -17,7 +17,8 @@ import { SCRIPT_CONTENT_MAX } from "@/lib/script-limits";
 import { isBlockTimeAlreadyPastToday } from "@/lib/schedule-time";
 import { getActivePlan } from "@/lib/nutrition-sync";
 import { MEAL_SLOTS, planItemsFor, slotLabel } from "@/lib/nutrition-engine";
-import { searchLeadMagnets, getCoachLeadMagnets } from "@/lib/lead-magnets";
+import { searchLeadMagnets, getCoachLeadMagnets, getLeadMagnetSlugByAnyKeyword } from "@/lib/lead-magnets";
+import { ctaKeywordWarning, findUnknownCtaKeywords } from "@/lib/cta-keywords";
 import { isRealAccount } from "@/lib/internal-accounts";
 import { CONTENT_FORMAT_IDS, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
 import { isMissingColumnError } from "@/lib/coach-ideation";
@@ -391,8 +392,12 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       const { error } = await admin.from("coach_scripts").update(patch).eq("id", script.id).eq("coach_id", ownerId);
       if (error && patch.content_format && isMissingColumnError(error)) return text("Les formats de contenu ne sont pas encore activés dans la base EP Coaching. Réessaie sans format_contenu.");
       if (error) return text("Modification impossible, réessaie.");
-      if (patch.content_format) return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)), format ${getContentFormat(patch.content_format).label}.`);
-      return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)).`);
+      // Un « commente XXX » sans guide derrière fait commenter des gens à qui on ne peut rien envoyer.
+      const ctaWarning = patch.cta !== undefined || patch.content !== undefined
+        ? ctaKeywordWarning(await findUnknownCtaKeywords([patch.cta, patch.content].filter(Boolean).join("\n"), async (k) => Boolean(await getLeadMagnetSlugByAnyKeyword(k))).catch(() => []))
+        : "";
+      if (patch.content_format) return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)), format ${getContentFormat(patch.content_format).label}.${ctaWarning}`);
+      return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)).${ctaWarning}`);
     }
 
     case "publier_script": {
