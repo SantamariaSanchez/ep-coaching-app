@@ -19,6 +19,8 @@ import { getLivedNotes, hasLivedThisWeek } from "@/lib/lived-content-server";
 import { STORY_RULES, LIVED_FORMAT_HINTS, WEEKLY_QUESTIONS } from "@/lib/lived-content";
 import { YOUTUBE_TOOLS, youtubeToolsForRole, callYoutubeTool } from "@/lib/mcp-tools-youtube";
 import { SCRIPT_CONTENT_MAX } from "@/lib/script-limits";
+import { getLeadMagnetSlugByAnyKeyword } from "@/lib/lead-magnets";
+import { ctaKeywordWarning, findUnknownCtaKeywords } from "@/lib/cta-keywords";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -451,7 +453,10 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       // Migration 20261021 pas encore passée : le script s'ajoute sans son format.
       if (isMissingColumnError(error)) ({ error } = await admin.from("coach_scripts").insert(row));
       if (error) return text("Ajout impossible, réessaie.");
-      return text(`Script « ${title} » (${getContentFormat(contentFormat).label}) ajouté dans ton Studio, à tourner.`);
+      const ctaWarning = ctaKeywordWarning(
+        await findUnknownCtaKeywords([row.cta, content].filter(Boolean).join("\n"), async (k) => Boolean(await getLeadMagnetSlugByAnyKeyword(k))).catch(() => [])
+      );
+      return text(`Script « ${title} » (${getContentFormat(contentFormat).label}) ajouté dans ton Studio, à tourner.${ctaWarning}`);
     }
 
     case "notes_vecues": {
