@@ -194,10 +194,10 @@ export default async function HomePage() {
           </div>
           <div className="lp-hero-copy">
             <h1 id="lp-h1" className="lp-h1 animate-fade-up">
-              Ton coach, ton programme et ta nutrition. <span>Dans une seule appli.</span>
+              Tu t&apos;entraînes sérieusement et ton physique ne bouge plus ? <span>On trouve ce qui bloque.</span>
             </h1>
             <p className="lp-sub animate-fade-up stagger-1">
-              Séances, repas, bilans et messages au même endroit, construits sur ta situation. Gratuit pour commencer, sans carte bancaire.
+              Ton programme, ta nutrition, tes bilans et ton coach dans une seule appli, construits sur ta situation et ajustés avec ton suivi. Gratuit pour commencer, sans carte bancaire.
             </p>
             <div className="animate-fade-up stagger-2">
               <GoogleAppleCta />
