@@ -26,6 +26,58 @@ export interface SalesCategory {
 
 export const SALES_CALL_LIBRARY: SalesCategory[] = [
   {
+    id: "dm",
+    label: "Conversation Instagram (avant l'appel)",
+    intro:
+      "Un DM n'est pas une vente. On comprend la personne, on l'aide, puis seulement on propose un appel. Messages courts, écrits pour elle, jamais copiés-collés. Public : débutants et intermédiaires de 18 à 25 ans qui veulent perdre du gras sans culpabiliser.",
+    questions: [
+      {
+        text: "Salut [prénom], merci pour ton commentaire. Voilà le guide : [lien]. Dis-moi ce que tu aimerais changer en premier, comme ça je te réponds avec quelque chose de vraiment utile pour toi.",
+        note: "Après un commentaire de mot-clé : donner d'abord exactement la ressource promise, puis poser une question ouverte. Quelqu'un qui demande une ressource doit la recevoir, pas une question.",
+      },
+      {
+        text: "Salut [prénom], content que tu m'écrives. Qu'est-ce qui te bloque le plus en ce moment : la régularité, savoir quoi manger, ou la culpabilité quand tu fais un écart ?",
+        note: "Après un DM spontané (COACHING, APPLI) : une question fermée à trois choix est plus facile à répondre qu'une question ouverte. Adapter les trois choix à ce que la personne a dit sur son profil ou en commentaire.",
+      },
+      {
+        text: "Et quand ça n'avance pas comme tu veux, tu le vis comment au quotidien ?",
+        note: "Comprendre l'émotion en plus de la situation (ce qu'elle ressent, ce qu'elle a déjà essayé). Sert à écrire un conseil juste, pas à appuyer là où ça fait mal.",
+      },
+      {
+        text: "Réponse courte avant toute proposition : une réponse de 2 à 4 lignes à la question posée, avec le geste le plus simple à faire dès aujourd'hui, puis : Si tu veux, je te montre comment on met ça en place pour toi.",
+        note: "Débloquer d'abord. Préparer 5 réponses types aux questions qui reviennent le plus (quoi manger, combien de séances, balance bloquée, craquage, salle ou maison) et les adapter à la personne.",
+      },
+      {
+        text: "Je peux te montrer concrètement comment on ferait pour toi en 10 minutes d'appel, sans engagement. Tu préfères plutôt en journée ou en soirée ?",
+        note: "Proposer l'appel seulement après avoir compris la situation et aidé. Proposer deux créneaux plutôt qu'une question ouverte sur la disponibilité.",
+      },
+      {
+        text: "Limite à respecter : si la personne décrit une relation très difficile avec la nourriture ou son corps (restriction extrême, crises, purges), ne rien vendre.",
+        note: "Répondre avec bienveillance et l'encourager à en parler à son médecin traitant. Aucun chiffre de déficit, aucune pression, aucun rappel de relance sur cette conversation.",
+      },
+    ],
+  },
+  {
+    id: "dm-relance",
+    label: "Relances en DM (sans réponse)",
+    intro:
+      "Une grande partie des réponses arrive après la deuxième ou la troisième relance : les gens sont occupés, pas désintéressés. On relance poliment, avec de la valeur, et on s'arrête après le dernier message.",
+    questions: [
+      {
+        text: "J+1 : Salut [prénom], j'espère que tu as pu regarder le guide. Y a un point qui t'a posé question ?",
+        note: "Première relance courte, une seule question, pas de pression. Peut aussi être un gif ou un emoji simple si la personne a l'habitude d'écrire comme ça.",
+      },
+      {
+        text: "J+3 : [Prénom], un truc que beaucoup de personnes me demandent à ce stade : [question fréquente + réponse en une phrase]. Ça te parle ?",
+        note: "Deuxième relance qui apporte une information utile au lieu de redemander. Tester l'heure d'envoi (pause du midi, début de soirée) et garder celle qui obtient le plus de réponses.",
+      },
+      {
+        text: "J+7, dernier message : Je ne veux pas t'embêter, donc je te laisse tranquille. Le guide reste à toi, et si tu veux qu'on en reparle, il suffit de m'écrire.",
+        note: "Porte de sortie honnête. Après ce message, on arrête : pas de relance supplémentaire, et aucune relance du tout si la personne a dit non.",
+      },
+    ],
+  },
+  {
     id: "ouverture",
     label: "Ouverture",
     intro:
