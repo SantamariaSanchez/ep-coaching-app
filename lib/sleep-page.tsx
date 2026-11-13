@@ -10,6 +10,7 @@ import SleepScheduleCard from "@/components/tracking/SleepScheduleCard";
 import SleepToolkit from "@/components/tracking/SleepToolkit";
 import SleepSummary, { SleepUnderstand, type SleepNight } from "@/components/tracking/SleepSummary";
 import { disconnectOura, acknowledgeBiometricInsight, updateSleepSchedule } from "@/app/dashboard/client/tracking/actions";
+import PageLinks from "@/components/ui/PageLinks";
 
 function shift(date: string, days: number) {
   const d = new Date(`${date}T12:00:00Z`);
@@ -62,10 +63,14 @@ export async function SleepPage({ userId, canConnectOura, ouraStatus, isCoachVie
   return (
     <div className="px-4 sm:px-6 py-6 max-w-3xl mx-auto pb-24 md:pb-8 page-transition space-y-5">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{t("Mon suivi")}</p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Sommeil")}</h1>
-        <p className="ep-tagline">{t("Comprendre tes nuits, et mieux dormir ce soir.")}</p>
       </div>
+      <PageLinks
+        links={[
+          { kind: "steps", label: "Steps", href: isCoachView ? "/dashboard/coach/moi/steps" : "/dashboard/client/steps" },
+          { kind: "mindset", label: "Mindset", href: isCoachView ? "/dashboard/coach/moi/mindset" : "/dashboard/client/mindset" },
+        ]}
+      />
 
       <SleepSummary nights={nights} />
 

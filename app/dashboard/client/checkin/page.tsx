@@ -21,6 +21,7 @@ import { resolveWeekStart, trainingSummary } from "@/lib/weekly-review-helpers";
 import { nowInParis, todayInParis } from "@/lib/dates";
 import CoachOnlyGate from "@/components/ui/CoachOnlyGate";
 import { CheckCircle2, Clock, Star, ExternalLink, CalendarDays } from "lucide-react";
+import PageLinks from "@/components/ui/PageLinks";
 
 const DAY_NAMES = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
@@ -231,6 +232,7 @@ export default async function CheckinPage() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Semaine")}{" "}{weekNum}</p>
         <h1 className="ep-h1">{t("Check-in")}</h1>
       </div>
+      <PageLinks links={[{ kind: "photos", label: "Photos", href: "/dashboard/client/photos" }]} />
 
       {existing ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

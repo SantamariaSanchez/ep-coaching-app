@@ -1,4 +1,3 @@
-import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser } from "@/utils/auth";
 import { getScheduleBlocks, getScheduleBlockTaskLog, getAgendaSettings } from "@/utils/agenda";
@@ -27,10 +26,9 @@ import {
   setScheduleBlockTasks,
   placeColumnBlocks,
 } from "./actions";
-import { CalendarDays } from "lucide-react";
+import PageLinks from "@/components/ui/PageLinks";
 
 export default async function ClientAgendaPage() {
-  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -46,16 +44,8 @@ export default async function ClientAgendaPage() {
   const streak = currentStreak(weeklyScores);
 
   return (
-    <div className="px-5 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1 flex items-center gap-1.5">
-          <CalendarDays size={11} />{" "}{t("Organisation")}
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mon agenda")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Ce que tu fais, et quand. Tape un bloc pour le changer ce jour-là. « Modifier » construit ta semaine type.")}
-        </p>
-      </div>
+    <div className="px-4 py-4 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
+      <PageLinks links={[{ kind: "roadmap", label: "Road map", href: "/dashboard/client/roadmap" }, { kind: "rappels", label: "Rappels", href: "/dashboard/client/reminders" }, { kind: "semaine", label: "Ma semaine", href: "/dashboard/client/semaine" }]} />
 
       <div className="mb-5 grid sm:grid-cols-2 gap-3">
         <HabitScoreCard habitScore={habitScore} />
