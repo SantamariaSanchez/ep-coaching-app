@@ -78,6 +78,7 @@ export default async function CoachStudioPage({
         realLeadsByScriptId={realLeadsByScriptId}
         leadTracking={{ slugByScriptId: leadSlugByScriptId, trackedByScriptId: trackedLeadsByScriptId }}
         platforms={appSetup.completed ? coachPlatforms(appSetup) : undefined}
+        montageProcesses={(appSetup.answers.montage_processes as Record<string, string> | undefined) ?? {}}
         initialTab={onglet}
         focusScriptId={focusScriptId}
         focusIdeaId={focusIdeaId}

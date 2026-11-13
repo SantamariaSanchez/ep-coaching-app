@@ -30,6 +30,8 @@ export async function saveAppSetupAction(answers: Record<string, unknown>): Prom
   const prev = (existing?.answers as Record<string, unknown> | undefined) ?? {};
   if (prev.tracking_level) clean.tracking_level = prev.tracking_level;
   if (prev.tracking_level_by) clean.tracking_level_by = prev.tracking_level_by;
+  // Process de montage écrits par le coach (Studio > Montage) : gardés aussi.
+  if (prev.montage_processes) clean.montage_processes = prev.montage_processes;
   const { error } = await admin
     .from("user_app_setup")
     .upsert({ user_id: user.id, answers: clean, modules, completed_at: now, updated_at: now }, { onConflict: "user_id" });
@@ -86,5 +88,27 @@ export async function updatePracticeAction(practices: string[]): Promise<{ error
     .upsert({ user_id: user.id, answers, modules, completed_at: row?.completed_at ?? null, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
   if (error) return { error: "Enregistrement impossible, réessaie." };
   revalidatePath("/dashboard", "layout");
+  return {};
+}
+
+// Process de montage du coach, un texte libre par format de contenu
+// (Studio > Scripts > Montage, audit 2026-11-13). Stocké dans les réponses
+// « Mon appli » pour ne pas créer de table.
+export async function saveMontageProcessAction(formatId: string, text: string): Promise<{ error?: string }> {
+  const user = await getUser();
+  if (!user) return { error: "Non authentifié." };
+  const { CONTENT_FORMATS } = await import("@/lib/content-formats");
+  if (!CONTENT_FORMATS.some((f) => f.id === formatId)) return { error: "Format inconnu." };
+  const clean = text.slice(0, 6000);
+  const admin = createAdminClient();
+  const { data: row } = await admin.from("user_app_setup").select("answers, modules, completed_at").eq("user_id", user.id).maybeSingle();
+  const answers = (row?.answers as Record<string, unknown>) ?? {};
+  const prev = (answers.montage_processes as Record<string, string> | undefined) ?? {};
+  const next = { ...prev, [formatId]: clean };
+  if (!clean.trim()) delete next[formatId];
+  const { error } = await admin
+    .from("user_app_setup")
+    .upsert({ user_id: user.id, answers: { ...answers, montage_processes: next }, modules: row?.modules ?? {}, completed_at: row?.completed_at ?? null, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  if (error) return { error: "Enregistrement impossible, réessaie." };
   return {};
 }
