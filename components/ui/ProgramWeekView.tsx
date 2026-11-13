@@ -9,7 +9,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Backpack, Check, Clock, Link2, MapPin, Play, RotateCw } from "lucide-react";
+import { Check, Clock, Link2, MapPin, Play, RotateCw } from "lucide-react";
 import { useLocale, useT } from "@/components/i18n/I18nProvider";
 import { intlLocale } from "@/lib/i18n";
 import type { Exercise, ProgramDay, ProgramWithDays } from "@/utils/programs";
@@ -23,7 +23,6 @@ import {
   isoWeekday,
   shortHour,
 } from "@/lib/program-week";
-import { accessoriesForSession, ALWAYS_ACCESSORIES } from "@/lib/session-accessories";
 import { formatRest, unitShort } from "@/lib/program-sheet";
 import { toBlocks } from "@/components/program-builder/ProgramExerciseList";
 import { withAlpha } from "@/lib/theme-color";
@@ -201,9 +200,6 @@ function SessionCard({
   const isFeatured = featured?.id === day.id;
   const date = isFeatured && featured?.kind === "nextweek" ? featured.date : info.date;
   const slot = ctx.slots[day.id] ?? null;
-  const bag = accessoriesForSession(day.exercises.map((e) => e.name), ctx.accessoriesByName, ctx.equipmentByName).filter(
-    (a) => !ALWAYS_ACCESSORIES.some((al) => al.accessory === a.accessory)
-  );
   // Salle de la séance : celle rattachée à la séance, sinon la salle de la fiche.
   const dayGym = day.gym_id ? ctx.trainingGyms.find((g) => g.id === day.gym_id) ?? null : null;
   const gymLabel = dayGym ? [dayGym.name, dayGym.city && !dayGym.name.toLowerCase().includes(dayGym.city.toLowerCase()) ? dayGym.city : null].filter(Boolean).join(", ") : ctx.gym?.name ?? null;
@@ -220,6 +216,7 @@ function SessionCard({
         : null;
 
   const factRow = "flex items-center gap-2 min-h-6 text-[12.5px] leading-snug";
+  const muscles = [...new Set(day.exercises.map((ex) => ex.muscle_group).filter(Boolean) as string[])];
 
   return (
     <section
@@ -282,20 +279,6 @@ function SessionCard({
             </>
           )}
         </p>
-        {bag.length > 0 && (
-          <p className={`${factRow} items-start`}>
-            <Backpack size={13} className="mt-0.5 shrink-0 text-(--ep-ink)/45" aria-hidden />
-            <span className="min-w-0 text-(--ep-ink)/85">
-              <span className="font-black uppercase tracking-wider text-[9.5px] text-(--ep-ink)/45 mr-1.5">{t("Accessoires")}</span>
-              {bag.map((a, i) => (
-                <span key={a.accessory}>
-                  {i > 0 && <span className="text-(--ep-ink)/35"> · </span>}
-                  <span className="font-bold">{t(a.accessory)}</span>
-                </span>
-              ))}
-            </span>
-          </p>
-        )}
       </div>
 
       {day.exercises.length > 0 && (
@@ -316,9 +299,21 @@ function SessionCard({
         </button>
       )}
 
-      <div className="mt-2 border-t border-(--ep-line)/15 pt-2">
+      {/* Compact (audit 2026-11-13) : les muscles en un coup d'œil, la liste
+          des exercices repliée. */}
+      {muscles.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {muscles.map((m) => (
+            <span key={m} className="rounded-full px-2.5 py-1 text-[11px] font-bold bg-(--ep-ink)/[0.06] text-(--ep-ink)/80">{t(m)}</span>
+          ))}
+        </div>
+      )}
+      <details className="mt-2 border-t border-(--ep-line)/15 pt-1">
+        <summary className="cursor-pointer min-h-10 flex items-center text-[11px] font-black uppercase tracking-wider text-(--ep-ink)/50">
+          {day.exercises.length} {day.exercises.length > 1 ? t("exos") : t("exo")}
+        </summary>
         {day.exercises.length === 0 ? <p className="text-[12px] italic text-(--ep-ink)/40">{t("Aucun exercice")}</p> : <ExerciseList day={day} />}
-      </div>
+      </details>
     </section>
   );
 }
@@ -471,7 +466,6 @@ export default function ProgramWeekView({
   ctx,
   sessionBasePath,
   gymsHref,
-  eyebrow,
   canMove = false,
 }: {
   program: ProgramWithDays;
@@ -551,13 +545,7 @@ export default function ProgramWeekView({
     <div>
       {/* En-tête : programme, fréquence, avancée du bloc */}
       <div className="mb-3">
-        <p className="ep-section-title" style={{ marginBottom: 2 }}>
-          {eyebrow}
-        </p>
-        <h1 className="ep-h1 uppercase" style={{ fontSize: 26 }}>
-          {t("Mon programme")}
-        </h1>
-        <p className="mt-1.5 text-[12.5px] leading-snug text-(--ep-ink)/55">
+        <p className="text-[12.5px] leading-snug text-(--ep-ink)/55">
           <span className="font-bold text-(--ep-ink)/85">{program.name}</span>
           {` · ${program.days.length} ${program.days.length > 1 ? t("séances") : t("séance")} ${t("par semaine")}`}
         </p>
