@@ -306,7 +306,7 @@ export default function CoachingPhasePanel({
                   : `${t("Passer en phase")} ${PHASE_LABELS[target]} ?`}
             </p>
             <p className="text-[11px] text-(--ep-ink)/50 leading-relaxed">
-              {t("La phase en cours sera clôturée à la date de début choisie. Le client ne voit jamais ces phases. Tu pourras annuler juste après, ou modifier et changer de phase librement ensuite.")}
+              {t("La phase en cours se clôt à cette date. Invisible pour le client, modifiable ensuite.")}
             </p>
             <div className="grid grid-cols-2 gap-2">
               <label className="block text-[10px] font-semibold uppercase tracking-wider text-(--ep-ink)/40">

@@ -182,7 +182,7 @@ export default async function OrganisationAdminPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Organisation")}</h1>
         <p className="text-sm text-(--ep-ink)/45 mt-2 leading-relaxed">
-          {t("Une structure de référence pour préparer les futures embauches : qui fait quoi, à qui chaque poste rapporte, comment on les forme avant même de les embaucher, et ce qu'il faudra régler légalement avant de signer qui que ce soit.")}
+          {t("Qui fait quoi, qui rapporte à qui, et ce qu'il faut régler avant d'embaucher.")}
         </p>
         <Link
           href="/carrieres"

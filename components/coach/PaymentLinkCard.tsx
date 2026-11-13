@@ -37,7 +37,7 @@ export default function PaymentLinkCard({ initialLink }: { initialLink: string |
         {t("Mon lien de paiement")}
       </p>
       <p className="text-sm text-(--ep-ink)/50 mb-4 leading-relaxed">
-        {t("Renseigne ton propre lien de paiement Stripe (ou tout autre lien de paiement) pour pouvoir l'envoyer facilement à tes clients. EP Coaching ne prélève aucune commission sur ce que tu factures toi-même.")}
+        {t("Ton lien de paiement, à envoyer en un tap. Aucune commission.")}
       </p>
       <div className="flex gap-2">
         <input

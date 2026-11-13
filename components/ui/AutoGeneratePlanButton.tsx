@@ -76,7 +76,7 @@ export default function AutoGeneratePlanButton({
               <div className="flex items-start gap-2 bg-(--ep-s2) border border-(--ep-line)/15 rounded-lg px-3 py-2.5">
                 <Info size={12} className="text-(--ep-ink)/30 flex-shrink-0 mt-0.5" />
                 <p className="text-[10px] text-(--ep-ink)/40 leading-relaxed">
-                  {t("Sélection basée sur la difficulté déclarée (débutant/intermédiaire d'abord) et la catégorie (composé/isolation) de chaque exercice de ta bibliothèque, filtrée sur le matériel détesté / problématique déclaré. Ce n'est pas une recherche dans la littérature scientifique, vérifie toujours la pertinence pour ce client précis.")}
+                  {t("Tiré de ta bibliothèque selon niveau, catégorie et matériel à éviter. Vérifie toujours pour ce client.")}
                 </p>
               </div>
 

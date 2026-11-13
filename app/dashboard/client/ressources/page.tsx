@@ -60,7 +60,7 @@ export default async function ClientRessourcesPage() {
           </div>
           <h2 className="text-lg font-black text-(--ep-strong) mb-2">{t("La bibliothèque est réservée aux clients accompagnés")}</h2>
           <p className="text-[12.5px] text-(--ep-ink)/50 leading-relaxed mb-5 max-w-sm mx-auto">
-            {t("Les guides que je t'envoie restent accessibles par leur lien. Le catalogue complet fait partie de l'accompagnement : un coach te dit lequel lire, et quand.")}
+            {t("Le catalogue complet fait partie de l'accompagnement.")}
           </p>
           <Link
             href="/dashboard/client/abonnement"

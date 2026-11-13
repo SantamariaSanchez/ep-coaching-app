@@ -76,7 +76,7 @@ export default function MemberPrivacyCard({ initialVisible }: { initialVisible: 
           <p role="alert" style={{ margin: "10px 0 0", fontSize: 11, color: "var(--ep-accent)" }}>{t(error)}</p>
         )}
         <p style={{ margin: "12px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.35)", lineHeight: 1.5 }}>
-          {t("Ce réglage concerne uniquement le classement. Tes publications dans la communauté restent signées de ton nom, et si tu es accompagné, ton coach voit toujours ton suivi.")}{" "}
+          {t("Uniquement le classement. Tes posts restent signés, ton coach voit ton suivi.")}{" "}
           <Link href="/dashboard/client/communaute/classement" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
             {t("Voir le classement")}
           </Link>

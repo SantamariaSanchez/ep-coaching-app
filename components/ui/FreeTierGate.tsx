@@ -55,7 +55,7 @@ export default function FreeTierGate() {
           {t("Ton accès gratuit est terminé")}
         </h1>
         <p className="text-[13px] text-(--ep-ink)/55 leading-relaxed mb-6">
-          {t("60 jours pour découvrir l'appli, c'est fait. Tes données sont gardées telles quelles, rien n'est perdu : prends un coach et tu retrouves tout instantanément.")}
+          {t("Tes 60 jours sont finis. Rien n'est perdu : prends un coach et tu retrouves tout.")}
         </p>
 
         <Link

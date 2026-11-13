@@ -111,7 +111,7 @@ export default function ClientPeriodTracking({
   return (
     <div className="space-y-4">
       <p className="text-xs text-(--ep-ink)/40 leading-relaxed">
-        {t("Suivi du cycle. Utile pour comprendre les fluctuations d'énergie, de poids d'eau et de performance au fil du mois. Log le début de chaque cycle, la durée moyenne se calcule automatiquement.")}
+        {t("Note le début de chaque cycle : la durée moyenne se calcule seule.")}
       </p>
 
       <div className="grid grid-cols-3 gap-2">

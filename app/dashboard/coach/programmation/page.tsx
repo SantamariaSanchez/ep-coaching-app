@@ -36,7 +36,7 @@ export default async function ProgrammationPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Bibliothèque de modèles")}</h1>
         <p className="mt-1 text-xs text-(--ep-ink)/30 max-w-2xl">
-          {t("Le stock de points de départ réutilisables : modèles de programme, de diète et de road map, indépendants de tout client. La conception au cas par cas, elle, se fait directement dans la fiche du client, où ces modèles sont proposés en point de départ et personnalisables à la volée.")}
+          {t("Tes modèles de programme, diète et road map, à reprendre dans chaque fiche client.")}
         </p>
         <Link
           href="/dashboard/coach/clients"

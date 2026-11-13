@@ -130,7 +130,7 @@ export default async function AbonnementPage() {
             borderRadius: "var(--radius-lg)", padding: "12px 16px", marginBottom: 14,
           }}>
             <p style={{ margin: 0, fontSize: 12.5, color: "var(--ep-warn)", fontWeight: 600, lineHeight: 1.5 }}>
-              {t("Ton coaching payant s'est arrêté. Tu gardes l'accès à tous les outils gratuits, pour réactiver le suivi avec ton coach, réserve un nouvel appel ci-dessous.")}
+              {t("Coaching arrêté. Les outils gratuits restent à toi. Réserve un appel pour reprendre.")}
             </p>
           </div>
         )}
