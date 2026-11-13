@@ -60,6 +60,8 @@ export const EN: Record<string, string> = {
   "Nutrition": "Nutrition",
   "Agenda": "Calendar",
   "Ma semaine": "My week",
+  "3 mois": "3 months",
+  "12 mois": "12 months",
   "Programme": "Program",
   "Logbook": "Logbook",
   "Performances": "Performance",

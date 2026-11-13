@@ -3,11 +3,12 @@ import Link from "next/link";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { isOn } from "@/lib/app-setup";
 import { redirect } from "next/navigation";
-import { CalendarCheck, AlertTriangle, ArrowRight } from "lucide-react";
+import { CalendarCheck, AlertTriangle, ArrowRight, Target } from "lucide-react";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { todayInParis } from "@/lib/dates";
 import { getWeeklyReview } from "@/lib/weekly-review";
-import { addDaysToDate, MAX_WEEKS_BACK, mondayOf, resolveWeekStart } from "@/lib/weekly-review-helpers";
+import { addDaysToDate, MAX_WEEKS_BACK, mondayOf, pickStartGoals, resolveWeekStart } from "@/lib/weekly-review-helpers";
 import WeeklyReview from "@/components/ui/WeeklyReview";
 import WeeklyReviewReflection from "@/components/ui/WeeklyReviewReflection";
 
@@ -33,7 +34,12 @@ export default async function ClientSemainePage({
   const today = todayInParis();
   const weekStart = resolveWeekStart(param, today);
   const currentMonday = mondayOf(today);
-  const [data, appSetup] = await Promise.all([getWeeklyReview(user.id, weekStart, today), getAppSetup(user.id)]);
+  const [data, appSetup, intakeRes] = await Promise.all([
+    getWeeklyReview(user.id, weekStart, today),
+    getAppSetup(user.id),
+    createAdminClient().from("client_intake").select("goal_3_months, goal_12_months").eq("client_id", user.id).maybeSingle().then((r) => r, () => ({ data: null })),
+  ]);
+  const goals = pickStartGoals((intakeRes?.data as { goal_3_months: string | null; goal_12_months: string | null } | null) ?? null);
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -46,6 +52,15 @@ export default async function ClientSemainePage({
 
       {data ? (
         <div className="flex flex-col gap-3">
+          {goals && (
+            <div className="ep-card" style={{ padding: 14 }}>
+              <p style={{ margin: "0 0 6px", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.4)", display: "flex", alignItems: "center", gap: 6 }}>
+                <Target size={11} />{" "}{t("Mes objectifs")}
+              </p>
+              {goals.short && <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "var(--ep-strong)" }}><span style={{ color: "var(--ep-accent)" }}>{t("3 mois")}</span>{" · "}{goals.short}</p>}
+              {goals.long && <p style={{ margin: goals.short ? "6px 0 0" : 0, fontSize: 13, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.7)" }}><span style={{ color: "var(--ep-accent)" }}>{t("12 mois")}</span>{" · "}{goals.long}</p>}
+            </div>
+          )}
           <WeeklyReview
             show={{ entrainement: isOn(appSetup, "entrainement"), nutrition: isOn(appSetup, "nutrition"), pas: isOn(appSetup, "pas"), sommeil: isOn(appSetup, "sommeil"), poids: isOn(appSetup, "poids") }}
             data={data}
