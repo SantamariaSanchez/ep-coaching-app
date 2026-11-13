@@ -3,7 +3,8 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { coachPlatforms } from "@/lib/app-setup";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
-import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
+import { getCoachScripts } from "@/lib/coach-ideation";
+import { getNotes } from "@/lib/notes";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import { getRealLeadsByScriptId, getLeadMagnetSlugByScriptId, getTrackedLeadsByScriptId } from "@/lib/content-leads-tracking";
 import IdeationHub from "@/components/coach/IdeationHub";
@@ -33,10 +34,9 @@ export default async function CoachStudioPage({
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, canvas, appSetup, livedNotes] = await Promise.all([
+  const [ideas, { notes, tags: noteTags }, scripts, canvas, appSetup, livedNotes] = await Promise.all([
     getCoachContentIdeas(user.id),
-    getIdeationNotes(user.id),
-    getInspirations(user.id),
+    getNotes(user.id),
     getCoachScripts(user.id),
     // Personnalisation de l'onglet Prompts (retour direct 2026-09-10) : le
     // Business Model Canvas du coach (déjà rempli dans "Développer mon
@@ -71,8 +71,8 @@ export default async function CoachStudioPage({
 
       <IdeationHub
         initialIdeas={ideas}
-        initialNotes={notes}
-        initialInspirations={inspirations}
+        notes={notes}
+        noteTags={noteTags}
         initialScripts={scripts}
         canvas={canvas}
         realLeadsByScriptId={realLeadsByScriptId}

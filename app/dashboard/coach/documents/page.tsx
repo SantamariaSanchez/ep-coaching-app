@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachPersonalFiles } from "@/lib/coach-personal-files";
-import { getCoachPersonalNotes } from "@/lib/coach-personal-notes";
 import CoachDocumentsSpace from "@/components/coach/CoachDocumentsSpace";
 
 // Axe 2 (VISION.md) : espace documents/productivité du coach — cadré le
@@ -14,14 +13,11 @@ export default async function CoachDocumentsPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [files, notes] = await Promise.all([
-    getCoachPersonalFiles(user.id),
-    getCoachPersonalNotes(user.id),
-  ]);
+  const files = await getCoachPersonalFiles(user.id);
 
   return (
     <div className="px-4 py-4 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
-      <CoachDocumentsSpace initialFiles={files} initialNotes={notes} />
+      <CoachDocumentsSpace initialFiles={files} />
     </div>
   );
 }

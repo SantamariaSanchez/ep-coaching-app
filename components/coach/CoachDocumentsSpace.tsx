@@ -1,22 +1,20 @@
 "use client";
 
+import Link from "next/link";
+
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Upload, Trash2, Download, Copy, Check, ChevronDown, Plus, StickyNote } from "lucide-react";
+import { FileText, Upload, Trash2, Download, Copy, Check, ChevronDown } from "lucide-react";
 import { DOCUMENT_TEMPLATES } from "@/lib/coach-document-templates";
 import type { CoachPersonalFile } from "@/lib/coach-personal-files";
-import type { CoachPersonalNote } from "@/lib/coach-personal-notes";
 import {
   uploadPersonalFile,
   deletePersonalFile,
-  createPersonalNote,
-  toggleNoteDone,
-  deletePersonalNote,
 } from "@/app/dashboard/coach/documents/actions";
 import { safeAction } from "@/lib/safe-action";
 
-type Tab = "modeles" | "fichiers" | "notes";
+type Tab = "modeles" | "fichiers";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`;
@@ -28,10 +26,8 @@ function formatSize(bytes: number): string {
 // répétée cette session ("pas trop de trucs d'un coup", voir Axes AC/AJ/AV).
 export default function CoachDocumentsSpace({
   initialFiles,
-  initialNotes,
 }: {
   initialFiles: CoachPersonalFile[];
-  initialNotes: CoachPersonalNote[];
 }) {
   const tr = useT();
   const [tab, setTab] = useState<Tab>("modeles");
@@ -43,7 +39,6 @@ export default function CoachDocumentsSpace({
           [
             { key: "modeles", label: tr("Modèles") },
             { key: "fichiers", label: tr("Mes fichiers") },
-            { key: "notes", label: tr("Notes") },
           ] as { key: Tab; label: string }[]
         ).map((t) => (
           <button
@@ -74,9 +69,10 @@ export default function CoachDocumentsSpace({
       <div hidden={tab !== "fichiers"}>
         <FilesTab initialFiles={initialFiles} />
       </div>
-      <div hidden={tab !== "notes"}>
-        <NotesTab initialNotes={initialNotes} />
-      </div>
+      {/* Notes : un seul bloc-notes dans l'appli (audit 2026-11-13). */}
+      <Link href="/dashboard/coach/notes" className="mt-6 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--ep-accent)" style={{ textDecoration: "none" }}>
+        {tr("Mes notes")} →
+      </Link>
     </div>
   );
 }
@@ -253,127 +249,6 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
                 disabled={isPending}
                 aria-label={tr("Supprimer")}
                 className="text-(--ep-ink)/25 hover:text-red-400 transition-colors flex-shrink-0 p-1 disabled:opacity-30"
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Notes ───────────────────────────────────────────────────────────────
-
-function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
-  const tr = useT();
-  const [notes, setNotes] = useState(initialNotes);
-  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
-  // initialNotes change (même piège que CoachFinanceTracker.tsx).
-  useEffect(() => setNotes(initialNotes), [initialNotes]);
-  const [content, setContent] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  function add() {
-    const trimmed = content.trim();
-    if (!trimmed) return;
-    setError(null);
-    startTransition(async () => {
-      const result = await safeAction(() => createPersonalNote(trimmed));
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-      setNotes((prev) => [
-        { id: `tmp-${Date.now()}`, coach_id: "", content: trimmed, done: false, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-        ...prev,
-      ]);
-      setContent("");
-    });
-  }
-
-  function toggle(id: string, wasDone: boolean) {
-    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, done: !wasDone } : n)));
-    startTransition(async () => {
-      const result = await safeAction(() => toggleNoteDone(id, !wasDone));
-      if (result.error) {
-        setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, done: wasDone } : n)));
-      }
-    });
-  }
-
-  function remove(id: string) {
-    const idx = notes.findIndex((n) => n.id === id);
-    const backup = notes[idx];
-    setNotes((prev) => prev.filter((n) => n.id !== id));
-    startTransition(async () => {
-      const result = await safeAction(() => deletePersonalNote(id));
-      if (result.error && backup) {
-        setNotes((prev) => {
-          const next = [...prev];
-          next.splice(Math.min(idx, next.length), 0, backup);
-          return next;
-        });
-        setError(result.error);
-      }
-    });
-  }
-
-  return (
-    <div>
-      <div className="flex gap-2 mb-4">
-        <input
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") add();
-          }}
-          placeholder={tr("Une note ou une tâche à ne pas oublier...")}
-          aria-label={tr("Nouvelle note")}
-          className="flex-1 bg-[rgba(var(--ep-shade-rgb),0.4)] border border-(--ep-line)/25 rounded-lg px-3.5 py-2.5 text-[13px] text-(--ep-strong) placeholder:text-(--ep-ink)/25 focus:outline-none focus:border-(--ep-accent)/50"
-        />
-        <button
-          type="button"
-          onClick={add}
-          disabled={isPending || !content.trim()}
-          aria-label={tr("Ajouter la note")}
-          className="flex items-center gap-1.5 bg-(--ep-accent) text-(--ep-strong) px-4 py-2.5 rounded-lg text-[12px] font-bold disabled:opacity-40"
-        >
-          <Plus size={14} />
-        </button>
-      </div>
-
-      {error && <p className="text-[12px] text-red-400 mb-3">{tr(error)}</p>}
-
-      {notes.length === 0 ? (
-        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
-          <StickyNote size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-(--ep-ink)/35">{tr("Rien encore. Note une idée, une tâche, un pense-bête.")}</p>
-        </div>
-      ) : (
-        <div className="space-y-1.5">
-          {notes.map((n) => (
-            <div key={n.id} className="flex items-start gap-3 bg-(--ep-s3) border border-(--ep-line)/20 rounded-xl px-4 py-3">
-              <button
-                type="button"
-                onClick={() => toggle(n.id, n.done)}
-                aria-label={n.done ? tr("Marquer non fait") : tr("Marquer fait")}
-                className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border flex items-center justify-center transition-colors ${
-                  n.done ? "bg-(--ep-ok) border-(--ep-ok)" : "border-(--ep-line)/40 bg-transparent"
-                }`}
-              >
-                {n.done && <Check size={12} className="text-(--ep-okbg)" strokeWidth={3} />}
-              </button>
-              <p className={`flex-1 min-w-0 text-[12.5px] leading-relaxed break-words ${n.done ? "text-(--ep-ink)/35 line-through" : "text-(--ep-ink)/85"}`}>
-                {n.content}
-              </p>
-              <button
-                type="button"
-                onClick={() => remove(n.id)}
-                aria-label={tr("Supprimer")}
-                className="text-(--ep-ink)/25 hover:text-red-400 transition-colors flex-shrink-0 p-1"
               >
                 <Trash2 size={13} />
               </button>
