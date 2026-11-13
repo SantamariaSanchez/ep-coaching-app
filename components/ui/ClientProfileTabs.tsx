@@ -187,7 +187,7 @@ function IntakeWaitingState({
           <>
             <p className="text-sm font-black text-(--ep-strong) mb-1.5">{t("En attente de")}{" "}{clientFirstName}</p>
             <p className="text-xs text-(--ep-ink)/45 leading-relaxed max-w-xs mb-4">
-              {t("Son questionnaire d'onboarding n'est pas encore rempli. Sa fiche se complètera automatiquement dès qu'il le fera, tu pourras alors la consulter et la corriger ici.")}
+              {t("Questionnaire pas encore rempli : la fiche se complète toute seule ensuite.")}
             </p>
             <button
               type="button"
@@ -639,8 +639,8 @@ export default function ClientProfileTabs({
             <Card title={t("Fiche client : l'essentiel")}>
               <p className="text-xs text-(--ep-ink)/40 mb-2">
                 {client.subscription_status === "active"
-                  ? t("En attente du questionnaire d'onboarding du client. Objectifs, régime, blessures : tout se remplira tout seul dès qu'il l'aura fait.")
-                  : t("Active le coaching payant de ce client pour débloquer son questionnaire d'onboarding. C'est lui qui remplit sa fiche, pas toi.")}
+                  ? t("En attente de son questionnaire.")
+                  : t("Active son coaching payant pour débloquer son questionnaire.")}
               </p>
               <button
                 type="button"
@@ -799,7 +799,7 @@ export default function ClientProfileTabs({
       {activeTab === "pas" && (
         <div>
           <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-4">
-            {t("Suivi de pas du client. Lecture seule, c'est lui qui coche sa routine et logue ses pas au quotidien. L'objectif se règle depuis l'onglet Fiche client.")}
+            {t("Lecture seule. L'objectif se règle dans Fiche client.")}
           </p>
           <StepsClient
             settings={{ client_id: client.id, daily_goal: stepGoal }}
@@ -820,7 +820,7 @@ export default function ClientProfileTabs({
       {activeTab === "sommeil" && (
         <div>
           <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-4">
-            {t("Sommeil et récupération du client. Lecture seule, c'est lui qui logue ses données ou connecte sa bague Oura depuis son espace.")}
+            {t("Lecture seule.")}
           </p>
           <TrackingClient logs={biometricLogs} insights={biometricInsights} ouraConnected={clientHasOura} readOnly />
         </div>
@@ -835,7 +835,7 @@ export default function ClientProfileTabs({
       {activeTab === "mindset" && (
         <div>
           <p className="text-xs text-(--ep-ink)/40 leading-relaxed mb-4">
-            {t("Profil mindset et habitudes du client. Lecture seule, c'est lui qui remplit son quiz et coche ses habitudes depuis son espace.")}
+            {t("Lecture seule.")}
           </p>
           <CoachClientMindsetView profile={mindsetProfile} habitLogs={mindsetHabitLogs} />
         </div>
