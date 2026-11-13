@@ -84,12 +84,7 @@ export default async function MyTeamPage() {
   );
 
   return (
-    <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{t("Mon business")}</p>
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{t("Mon équipe")}</h1>
-      <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: 16, margin: "0 0 20px" }}>
-        {t("Seul, en binôme, pour une marque ou à la tête d'une équipe : l'appli suit ton parcours.")}
-      </p>
+    <div className="px-4 sm:px-6 py-4 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
 
       {memberships.invites.length > 0 && (
         <section style={{ marginBottom: 18, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -99,10 +94,9 @@ export default async function MyTeamPage() {
         </section>
       )}
 
-      <section style={{ marginBottom: 20 }}>
-        <p className="ep-label" style={{ marginBottom: 8 }}>{t("Comment tu travailles")}</p>
+      <div style={{ marginBottom: 16 }}>
         <CareerPicker current={mode} options={options} />
-      </section>
+      </div>
 
       {(memberships.active.length > 0 || staffSelf) && (
         <section style={{ marginBottom: 20 }}>
@@ -131,12 +125,7 @@ export default async function MyTeamPage() {
       )}
 
       {!owner ? (
-        <section className="ep-card" style={{ padding: "16px 18px" }}>
-          <p style={{ fontSize: 14, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px" }}>{t("Tu veux recruter ?")}</p>
-          <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.6)", margin: 0, lineHeight: 1.6 }}>
-            {t("Choisis « Mon entreprise, avec une équipe » juste au-dessus : tu pourras inviter des coachs et donner des accès à ton staff (setter, closer, monteur, community manager...), chacun avec un espace adapté à son métier.")}
-          </p>
-        </section>
+        null
       ) : (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8, marginBottom: 14 }}>
