@@ -4,7 +4,6 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw, Wand2 } from "lucide-react";
 import { createScript, updateScript, deleteScript, publishScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
-import Teleprompter from "@/components/coach/Teleprompter";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import { VOCABULARY_PROMPT_BLOCK } from "@/lib/content-vocabulary";
@@ -17,7 +16,7 @@ import { safeAction } from "@/lib/safe-action";
 import { checkRotation } from "@/lib/studio-rotation";
 import { cleanVideoPlan } from "@/lib/youtube-studio";
 import YoutubeStudio from "@/components/coach/YoutubeStudio";
-import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript, prompterText } from "@/lib/content-formats";
+import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript } from "@/lib/content-formats";
 import { ContentFormatBadge, ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -320,14 +319,6 @@ function MyScripts({
     setScripts(initialScripts);
   }
 
-  // Tournage automatique (retour direct 2026-09-18 : "moi je veux pas un
-  // bouton Prompteur sur chaque script mais un seul bouton en haut et
-  // ensuite ça me fait tourner les scripts du plus ancien au plus récent")
-  // — un seul bouton lance une file (scripts filmables à tourner, du plus
-  // ancien au plus récent), le Prompteur s'enchaîne seul d'un script au
-  // suivant via onFinishedTake, voir Teleprompter.tsx.
-  const [filmQueueIds, setFilmQueueIds] = useState<string[] | null>(null);
-  const [filmQueueIndex, setFilmQueueIndex] = useState(0);
 
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -341,7 +332,6 @@ function MyScripts({
   // Mode tournage (texte en grand, plans B-roll à cocher) et prompteur lancé
   // pour un seul script, en plus du tournage automatique en file.
   const [shootingId, setShootingId] = useState<string | null>(null);
-  const [soloPrompter, setSoloPrompter] = useState<{ id: string; title: string; text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -580,46 +570,11 @@ function MyScripts({
     [scripts]
   );
 
+  // Prompteur caméra supprimé (audit 2026-11-13) : « Tourner » ouvre le mode
+  // tournage (texte en grand) sur le plus ancien script prêt.
   function startFilmingQueue() {
-    if (filmableScripts.length === 0) return;
-    setFilmQueueIds(filmableScripts.map((s) => s.id));
-    setFilmQueueIndex(0);
+    if (filmableScripts.length > 0) setShootingId(filmableScripts[0].id);
   }
-
-  // Appelé par le Prompteur une fois une prise sauvegardée (jamais sur un
-  // clic — voir Teleprompter.tsx) : marque le script courant "tourné" puis
-  // avance dans la file, sans aucune action de la personne entre deux
-  // prises. Referme elle-même la file une fois le dernier script atteint,
-  // plutôt que via un effet séparé qui devrait rejouer un setState en cascade.
-  function finishCurrentTake() {
-    const id = filmQueueIds?.[filmQueueIndex];
-    if (id) {
-      const backup = scripts;
-      setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, status: "tourne" } : s)));
-      startTransition(async () => {
-        const result = await safeAction(() => updateScript(id, { status: "tourne" }));
-        if (result.error) {
-          setScripts(backup);
-          setError(result.error);
-        }
-      });
-    }
-    const nextIndex = filmQueueIndex + 1;
-    if (!filmQueueIds || nextIndex >= filmQueueIds.length) {
-      setFilmQueueIds(null);
-      setFilmQueueIndex(0);
-    } else {
-      setFilmQueueIndex(nextIndex);
-    }
-  }
-
-  // Script introuvable (ex. supprimé entre-temps) : ne rend rien plutôt que
-  // de crasher — la personne referme via le X du Prompteur pour en relancer
-  // une nouvelle si besoin.
-  const currentFilmScript =
-    filmQueueIds && filmQueueIndex < filmQueueIds.length
-      ? scripts.find((s) => s.id === filmQueueIds[filmQueueIndex]) ?? null
-      : null;
 
   function submitNew() {
     setError(null);
@@ -783,7 +738,7 @@ function MyScripts({
             opacity: filmableScripts.length === 0 ? 0.4 : 1,
           }}
         >
-          <Camera size={14} />{" "}{tr("Lancer le tournage")}{filmableScripts.length > 0 ? ` (${filmableScripts.length})` : ""}
+          <Camera size={14} />{" "}{tr("Tourner")}{filmableScripts.length > 0 ? ` (${filmableScripts.length})` : ""}
         </button>
         <button
           type="button"
@@ -1144,16 +1099,6 @@ function MyScripts({
           </div>
         </div>
       )}
-      {currentFilmScript && filmQueueIds && (
-        <Teleprompter
-          scriptId={currentFilmScript.id}
-          title={currentFilmScript.title}
-          content={prompterText(currentFilmScript.content_format, currentFilmScript.content)}
-          queueProgress={{ index: filmQueueIndex + 1, total: filmQueueIds.length }}
-          onClose={() => setFilmQueueIds(null)}
-          onFinishedTake={finishCurrentTake}
-        />
-      )}
       {(() => {
         const shooting = shootingId ? scripts.find((s) => s.id === shootingId) : null;
         if (!shooting) return null;
@@ -1164,22 +1109,10 @@ function MyScripts({
             formatId={shooting.content_format}
             content={shooting.content ?? ""}
             onClose={() => setShootingId(null)}
-            onOpenPrompter={(text) => {
-              setShootingId(null);
-              setSoloPrompter({ id: shooting.id, title: shooting.title, text });
-            }}
             onShot={shooting.status === "a_tourner" ? () => { setShootingId(null); cycleStatus(shooting.id, "a_tourner"); } : undefined}
           />
         );
       })()}
-      {soloPrompter && !filmQueueIds && (
-        <Teleprompter
-          scriptId={soloPrompter.id}
-          title={soloPrompter.title}
-          content={soloPrompter.text}
-          onClose={() => setSoloPrompter(null)}
-        />
-      )}
     </div>
   );
 

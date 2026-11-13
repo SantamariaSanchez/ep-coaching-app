@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
-import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles, Send } from "lucide-react";
+import { Lightbulb, StickyNote, Clapperboard, Sparkles, Send } from "lucide-react";
 import WrittenPosts from "@/components/coach/WrittenPosts";
 import ContentStudio from "@/components/coach/ContentStudio";
 import IdeationNotes from "@/components/coach/IdeationNotes";
@@ -15,7 +15,7 @@ import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideatio
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
 
-type Tab = "idees" | "scripts" | "posts" | "notes" | "inspirations" | "generateur";
+type Tab = "idees" | "scripts" | "posts" | "notes" | "generateur";
 
 const WRITTEN = new Set(["linkedin", "threads"]);
 
@@ -25,7 +25,6 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "scripts", label: "Scripts", icon: Clapperboard },
   { id: "posts", label: "Posts à publier", icon: Send },
   { id: "notes", label: "Notes", icon: StickyNote },
-  { id: "inspirations", label: "Inspirations", icon: BookmarkPlus },
 ];
 
 // Idéation (ex "Idées & brouillons") — 2026-08-15, demande explicite d'un
@@ -70,7 +69,7 @@ export default function IdeationHub({
   const writtenPosts = useMemo(() => initialScripts.filter((s) => WRITTEN.has(s.platform)), [initialScripts]);
   const videoScripts = useMemo(() => initialScripts.filter((s) => !WRITTEN.has(s.platform)), [initialScripts]);
   const tabFromLink = (): Tab =>
-    TABS.some((t) => t.id === initialTab) ? (initialTab as Tab) : focusScriptId ? "scripts" : "idees";
+    initialTab === "inspirations" ? "notes" : TABS.some((t) => t.id === initialTab) ? (initialTab as Tab) : focusScriptId ? "scripts" : "idees";
   const [tab, setTab] = useState<Tab>(tabFromLink);
   // Nouvelle recherche alors qu'on est déjà sur Studio : même page, donc
   // l'état reste ; on suit le nouveau lien (ajustement pendant le rendu).
@@ -123,7 +122,7 @@ export default function IdeationHub({
         aria-label={tr("Sections Idéation")}
         className="flex gap-1.5 overflow-x-auto mb-5 border-b border-(--ep-line)/20 pb-0.5"
       >
-        {TABS.map(({ id, label, icon: Icon }) => {
+        {TABS.filter(({ id }) => id !== "posts" || writtenPosts.length > 0).map(({ id, label, icon: Icon }) => {
           const active = tab === id;
           return (
             <button
@@ -148,8 +147,7 @@ export default function IdeationHub({
               {id === "idees" && initialIdeas.length > 0 && <Count n={initialIdeas.length} active={active} />}
               {id === "scripts" && videoScripts.length > 0 && <Count n={videoScripts.length} active={active} />}
               {id === "posts" && writtenPosts.length > 0 && <Count n={writtenPosts.length} active={active} />}
-              {id === "notes" && initialNotes.length > 0 && <Count n={initialNotes.length} active={active} />}
-              {id === "inspirations" && initialInspirations.length > 0 && <Count n={initialInspirations.length} active={active} />}
+              {id === "notes" && initialNotes.length + initialInspirations.length > 0 && <Count n={initialNotes.length + initialInspirations.length} active={active} />}
             </button>
           );
         })}
@@ -178,10 +176,11 @@ export default function IdeationHub({
         <WrittenPosts initialPosts={writtenPosts} />
       </div>
       <div hidden={tab !== "notes"}>
+        {/* Notes et inspirations dans un seul onglet (audit 2026-11-13). */}
         <IdeationNotes initialNotes={initialNotes} />
-      </div>
-      <div hidden={tab !== "inspirations"}>
-        <IdeationInspirations initialInspirations={initialInspirations} />
+        <div style={{ marginTop: 24 }}>
+          <IdeationInspirations initialInspirations={initialInspirations} />
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition } from "react";
-import dynamic from "next/dynamic";
+import { ShootingMode } from "@/components/coach/ScriptFormatView";
 import { ChevronDown, ChevronRight, Clock, FileText, Clapperboard, PlayCircle, CheckCircle2, Film } from "lucide-react";
 import { updateVideoStatus, updateVideoYoutubeUrl, updateVideoNotes, updateVideoScript } from "@/app/dashboard/coach/admin/tournage/actions";
 import { STATUS_LABELS, VIDEO_STATUSES, type FormationGroup, type FounderVideoScript, type VideoStatus } from "@/lib/founder-video-scripts";
@@ -13,7 +13,6 @@ import { withAlpha } from "@/lib/theme-color";
 // par formation, des filtres par statut et des actions explicites (plus de
 // pastille qui change de statut au clic sans prévenir).
 
-const Teleprompter = dynamic(() => import("@/components/coach/Teleprompter"), { ssr: false });
 
 const STATUS_COLORS: Record<VideoStatus, string> = {
   a_ecrire: "rgba(var(--ep-ink-rgb),0.45)",
@@ -94,7 +93,7 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
       <p className="ep-label" style={{ marginBottom: 4 }}>{tr("Administration")}</p>
       <h1 style={{ fontSize: 26, fontWeight: 900, textTransform: "uppercase", letterSpacing: "-0.01em", margin: "0 0 4px" }}>{tr("Tournage des formations")}</h1>
       <p style={{ fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "0 0 18px", maxWidth: 640 }}>
-        {tr("Tes 5 formations, vidéo par vidéo : script mot pour mot, prompteur, puis lien YouTube une fois en ligne.")}
+        {tr("Tes 5 formations, vidéo par vidéo : script mot pour mot, puis lien YouTube une fois en ligne.")}
       </p>
 
       {/* Chiffres clés */}
@@ -124,14 +123,14 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button type="button" style={btn} onClick={() => setPrompter(next)}>
-              <Film size={14} />{" "}{tr("Lancer le prompteur")}
+              <Film size={14} />{" "}{tr("Tourner")}
             </button>
             <button type="button" style={ghost} onClick={() => setStatus(next.id, "tourne")}>
               <CheckCircle2 size={14} />{" "}{tr("Déjà tournée")}
             </button>
           </div>
           <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "10px 0 0" }}>
-            {queue.length}{" "}{tr("vidéo")}{queue.length > 1 ? "s" : ""}{" "}{tr("prête")}{queue.length > 1 ? "s" : ""}{" "}{tr("dans la file, environ")}{" "}{readyMinutes}{" "}{tr("min de tournage. Le prompteur enchaîne sur la suivante.")}
+            {queue.length}{" "}{tr("vidéo")}{queue.length > 1 ? "s" : ""}{" "}{tr("prête")}{queue.length > 1 ? "s" : ""}{" "}{tr("dans la file, environ")}{" "}{readyMinutes}{" "}{tr("min de tournage.")}
           </p>
         </section>
       ) : (
@@ -190,18 +189,16 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
       </div>
 
       {prompter && (
-        <Teleprompter
+        <ShootingMode
           scriptId={prompter.id}
           title={prompter.video_title}
+          formatId={null}
           content={prompter.script_content}
-          queueProgress={queue.findIndex((v) => v.id === prompter.id) >= 0 ? { index: queue.findIndex((v) => v.id === prompter.id) + 1, total: queue.length } : undefined}
           onClose={() => setPrompter(null)}
-          onFinishedTake={() => {
-            // Prise enregistrée : vidéo tournée, on enchaîne sur la suivante.
+          onShot={() => {
             const done = prompter;
             setStatus(done.id, "tourne");
-            const after = queue.filter((v) => v.id !== done.id)[0] ?? null;
-            setPrompter(after);
+            setPrompter(queue.filter((v) => v.id !== done.id)[0] ?? null);
           }}
         />
       )}
@@ -242,7 +239,7 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             {status === "pret_a_tourner" && (
               <button type="button" style={btn} onClick={onPrompter}>
-                <Film size={13} />{" "}{tr("Prompteur")}
+                <Film size={13} />{" "}{tr("Tourner")}
               </button>
             )}
             <select value={status} onChange={(e) => onStatus(e.target.value as VideoStatus)} aria-label={tr("Statut de la vidéo")} style={{ ...field, width: "auto", padding: "9px 10px", fontWeight: 700 }}>
