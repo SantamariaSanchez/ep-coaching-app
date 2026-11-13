@@ -2,7 +2,8 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition, useEffect } from "react";
-import { Plus, TrendingUp, TrendingDown, Wallet, Trash2, Download } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Wallet, Trash2, Download, ChevronLeft, ChevronRight, Repeat } from "lucide-react";
+import { monthTotals, monthSeries, categoryBreakdown, recurringToCarry, shiftMonth } from "@/lib/coach-finance-insights";
 import { createFinanceEntry, deleteFinanceEntry } from "@/app/dashboard/coach/compta/actions";
 import { categoriesFor } from "@/lib/coach-finance-categories";
 import type { FinanceEntry } from "@/lib/coach-finance";
@@ -50,9 +51,31 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
   const [isPending, startTransition] = useTransition();
 
   const currentMonth = todayStr().slice(0, 7);
-  const monthEntries = useMemo(() => entries.filter((e) => e.entry_date.startsWith(currentMonth)), [entries, currentMonth]);
-  const monthRevenue = monthEntries.filter((e) => e.kind === "revenu").reduce((s, e) => s + e.amount, 0);
-  const monthExpense = monthEntries.filter((e) => e.kind === "depense").reduce((s, e) => s + e.amount, 0);
+  const [month, setMonth] = useState(currentMonth);
+  const [filter, setFilter] = useState<"tout" | "revenu" | "depense">("tout");
+  const totals = useMemo(() => monthTotals(entries, month), [entries, month]);
+  const monthRevenue = totals.revenue;
+  const monthExpense = totals.expense;
+  const series = useMemo(() => monthSeries(entries, month, 6), [entries, month]);
+  const maxBar = Math.max(1, ...series.flatMap((x) => [x.revenue, x.expense]));
+  const expenseCats = useMemo(() => categoryBreakdown(entries, month, "depense"), [entries, month]);
+  const toCarry = useMemo(() => recurringToCarry(entries, month), [entries, month]);
+  const visible = useMemo(
+    () => entries.filter((e) => e.entry_date.startsWith(month) && (filter === "tout" || e.kind === filter)),
+    [entries, month, filter]
+  );
+  const monthLabel = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" }).format(new Date(`${month}-15T12:00:00`));
+
+  function carryRecurring() {
+    const items = toCarry;
+    startTransition(async () => {
+      for (const it of items) {
+        const r = await safeAction(() => createFinanceEntry({ kind: "depense", category: it.category, label: it.label, amount: it.amount, entryDate: it.entry_date, note: undefined }));
+        if (r.error) { setError(r.error); return; }
+        setEntries((prev) => [{ id: `tmp-${Date.now()}-${it.label}`, coach_id: "", entry_date: it.entry_date, kind: "depense", category: it.category, label: it.label, amount: it.amount, note: null, created_at: new Date().toISOString(), source: "manual" }, ...prev]);
+      }
+    });
+  }
 
   function changeKind(next: "revenu" | "depense") {
     setKind(next);
@@ -133,10 +156,71 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 20 }}>
-        <SummaryCard label={t("Revenus (mois)")} value={eur(monthRevenue)} color="var(--ep-ok)" Icon={TrendingUp} />
-        <SummaryCard label={t("Dépenses (mois)")} value={eur(monthExpense)} color="var(--ep-bad)" Icon={TrendingDown} />
-        <SummaryCard label={t("Solde (mois)")} value={eur(monthRevenue - monthExpense)} color="var(--ep-ink)" Icon={Wallet} />
+      {/* Mois affiché */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <button type="button" aria-label={t("Mois précédent")} onClick={() => setMonth((m) => shiftMonth(m, -1))} style={navBtn}><ChevronLeft size={18} /></button>
+        <p style={{ margin: 0, fontSize: 15, fontWeight: 900, textTransform: "capitalize", color: "var(--ep-ink)" }}>{monthLabel}</p>
+        <button type="button" aria-label={t("Mois suivant")} disabled={month >= currentMonth} onClick={() => setMonth((m) => shiftMonth(m, 1))} style={{ ...navBtn, opacity: month >= currentMonth ? 0.3 : 1 }}><ChevronRight size={18} /></button>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 14 }}>
+        <SummaryCard label={t("Revenus")} value={eur(monthRevenue)} color="var(--ep-ok)" Icon={TrendingUp} />
+        <SummaryCard label={t("Dépenses")} value={eur(monthExpense)} color="var(--ep-bad)" Icon={TrendingDown} />
+        <SummaryCard label={t("Bénéfice")} value={eur(monthRevenue - monthExpense)} color={monthRevenue - monthExpense >= 0 ? "var(--ep-ink)" : "var(--ep-bad)"} Icon={Wallet} />
+      </div>
+
+      {/* 6 derniers mois : revenus (vert) et dépenses (rouge) */}
+      <div className="ep-card" style={{ padding: "14px 14px 10px", marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 110 }}>
+          {series.map((x) => (
+            <button key={x.month} type="button" onClick={() => setMonth(x.month)} aria-label={x.month} style={{ flex: 1, height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 86, width: "100%", justifyContent: "center" }}>
+                <div style={{ width: "38%", maxWidth: 16, height: `${(x.revenue / maxBar) * 100}%`, minHeight: x.revenue ? 3 : 0, background: "var(--ep-ok)", borderRadius: 4 }} />
+                <div style={{ width: "38%", maxWidth: 16, height: `${(x.expense / maxBar) * 100}%`, minHeight: x.expense ? 3 : 0, background: "var(--ep-bad)", borderRadius: 4 }} />
+              </div>
+              <span style={{ fontSize: 10, fontWeight: x.month === month ? 900 : 600, color: x.month === month ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.45)" }}>
+                {new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(new Date(`${x.month}-15T12:00:00`))}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Où part l'argent ce mois-ci */}
+      {expenseCats.length > 0 && (
+        <div className="ep-card" style={{ padding: 14, marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+          {expenseCats.map((c) => (
+            <div key={c.category}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, marginBottom: 3 }}>
+                <span style={{ color: "var(--ep-ink)" }}>{c.category}</span>
+                <span style={{ color: "rgba(var(--ep-ink-rgb),0.6)", fontVariantNumeric: "tabular-nums" }}>{eur(c.amount)} · {Math.round(c.share * 100)} %</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 999, background: "rgba(var(--ep-ink-rgb),0.07)", overflow: "hidden" }}>
+                <div style={{ width: `${c.share * 100}%`, height: "100%", background: "var(--ep-bad)", borderRadius: 999 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {toCarry.length > 0 && (
+        <button
+          type="button"
+          onClick={carryRecurring}
+          disabled={isPending}
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 46, marginBottom: 14, borderRadius: 12, border: "1px dashed rgba(var(--ep-accent-rgb),0.45)", background: "rgba(var(--ep-accent-rgb),0.06)", color: "var(--ep-ink)", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+        >
+          <Repeat size={15} style={{ color: "var(--ep-accent)" }} />
+          {t("Reporter les dépenses fixes")} ({toCarry.length} · {eur(toCarry.reduce((s, x) => s + x.amount, 0))})
+        </button>
+      )}
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+        {(["tout", "revenu", "depense"] as const).map((f) => (
+          <button key={f} type="button" onClick={() => setFilter(f)} style={{ fontSize: 12, fontWeight: 800, padding: "7px 12px", borderRadius: 999, cursor: "pointer", border: filter === f ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.12)", background: filter === f ? "rgba(var(--ep-accent-rgb),0.16)" : "transparent", color: filter === f ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)" }}>
+            {f === "tout" ? t("Tout") : f === "revenu" ? t("Revenus") : t("Dépenses")}
+          </button>
+        ))}
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -217,14 +301,14 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
         </div>
       )}
 
-      {entries.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
           <Wallet size={22} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-(--ep-ink)/35">{t("Rien encore. Note tes revenus et dépenses au fil de l'eau.")}</p>
+          <p className="text-sm text-(--ep-ink)/35">{t("Rien ce mois-ci.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {entries.map((e) => (
+          {visible.map((e) => (
             <div key={e.id} className="ep-card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
               {e.kind === "revenu" ? (
                 <TrendingUp size={14} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
@@ -290,6 +374,11 @@ function toggleStyle(active: boolean, color: string): React.CSSProperties {
     color: active ? color : "rgba(var(--ep-ink-rgb),0.5)",
   };
 }
+
+const navBtn: React.CSSProperties = {
+  width: 40, height: 40, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
+  background: "rgba(var(--ep-ink-rgb),0.04)", border: "1px solid rgba(var(--ep-line-rgb),0.25)", color: "var(--ep-ink)", cursor: "pointer",
+};
 
 const inputStyle: React.CSSProperties = {
   width: "100%",

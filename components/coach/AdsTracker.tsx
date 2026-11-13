@@ -11,7 +11,7 @@ import {
 import {
   AD_PLATFORMS, AD_OBJECTIVES, AD_STATUSES, PLATFORM_LABELS, OBJECTIVE_LABELS, STATUS_LABELS,
   computeCampaignMetrics, aggregateCampaignTotals, isStagnant, daysSinceStart,
-  ctrSeverity, costPerLeadSeverity, roasSeverity,
+  ctrSeverity, costPerLeadSeverity, roasSeverity, campaignDecision,
   type AdCampaign, type AdStatus, type MetricSeverity,
 } from "@/lib/ad-campaigns";
 import { safeAction } from "@/lib/safe-action";
@@ -318,6 +318,9 @@ function MetricsEditForm({
 
 // ── Carte campagne ───────────────────────────────────────────────────────
 
+const DECISION_LABEL = { scaler: "Scaler", garder: "Garder", couper: "Couper", attendre: "Attendre" } as const;
+const DECISION_COLOR = { scaler: "var(--ep-ok)", garder: "var(--ep-info)", couper: "var(--ep-bad)", attendre: "rgba(var(--ep-ink-rgb),0.55)" } as const;
+
 function CampaignCard({
   campaign, avgCostPerLead, onUpdate, onDelete,
 }: {
@@ -327,6 +330,7 @@ function CampaignCard({
   onDelete: (id: string) => void;
 }) {
   const t = useT();
+  const decision = campaignDecision(campaign, avgCostPerLead);
   const [editingMetrics, setEditingMetrics] = useState(false);
   const [reasonOpen, setReasonOpen] = useState(false);
   const [reasonDraft, setReasonDraft] = useState(campaign.stopped_reason ?? "");
@@ -363,6 +367,11 @@ function CampaignCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <p className="text-sm font-bold text-(--ep-strong) truncate" style={{ margin: 0 }}>{campaign.name}</p>
+            {decision && (
+              <span title={decision.reason} className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0" style={{ color: DECISION_COLOR[decision.kind], background: `color-mix(in srgb, ${DECISION_COLOR[decision.kind]} 16%, transparent)` }}>
+                {DECISION_LABEL[decision.kind]}
+              </span>
+            )}
             <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-(--ep-s2) border border-(--ep-line)/25 text-(--ep-ink)/40 flex-shrink-0">
               {PLATFORM_LABELS[campaign.platform] ?? campaign.platform}
             </span>

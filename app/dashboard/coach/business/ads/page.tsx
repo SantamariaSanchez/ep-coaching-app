@@ -28,18 +28,8 @@ export default async function AdsTrackerPage() {
   const campaigns = await getCoachAdCampaigns(user.id);
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
+    <div className="px-4 py-4 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <BackButton fallbackHref="/dashboard/coach/business" label={t("Retour")} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-(--ep-ink)/40 hover:text-(--ep-ink)/70 transition-colors mb-6" />
-
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-          {t("Mon business")}
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Publicité")}</h1>
-        <p className="mt-2 text-sm text-(--ep-ink)/45">
-          {t("Saisis tes campagnes Google/Meta/TikTok Ads et leurs chiffres à jour. Pas de connexion aux régies, juste les métriques qui aident à décider quoi couper ou scaler.")}
-        </p>
-      </div>
 
       <AdsTracker initialCampaigns={campaigns} />
     </div>

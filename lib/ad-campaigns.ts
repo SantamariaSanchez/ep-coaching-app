@@ -224,3 +224,22 @@ export function aggregateCampaignTotals(campaigns: AdCampaign[]): CampaignTotals
     avgRoas: computeRoas(spend, revenue > 0 ? revenue : null),
   };
 }
+
+// ── Décision par campagne (audit 2026-11-13) ─────────────────────────────
+// Ce qu'on fait de la campagne, en une étiquette : on ne lit plus six
+// chiffres pour savoir quoi couper. Règles volontairement simples, fondées
+// uniquement sur les seuils déjà utilisés ci-dessus.
+export type AdDecision = { kind: "scaler" | "garder" | "couper" | "attendre"; reason: string };
+
+export function campaignDecision(campaign: AdCampaign, avgCostPerLead: number | null, today = todayInParis()): AdDecision | null {
+  if (campaign.status !== "active") return null;
+  const m = computeCampaignMetrics(campaign);
+  const days = daysSinceStart(campaign, today);
+  if (isStagnant(campaign, today)) return { kind: "couper", reason: "dépense sans aucun lead" };
+  if (m.roas !== null && m.roas < 1 && days >= 7) return { kind: "couper", reason: "rapporte moins qu'elle ne coûte" };
+  if (days < 3 || campaign.leads < 3) return { kind: "attendre", reason: "pas encore assez de données" };
+  const cpl = costPerLeadSeverity(m.costPerLead, avgCostPerLead);
+  if ((m.roas !== null && m.roas >= 3) || cpl === "good") return { kind: "scaler", reason: m.roas !== null && m.roas >= 3 ? "ROAS 3x ou plus" : "lead moins cher que ta moyenne" };
+  if (cpl === "bad") return { kind: "couper", reason: "lead bien plus cher que ta moyenne" };
+  return { kind: "garder", reason: "dans ta moyenne" };
+}

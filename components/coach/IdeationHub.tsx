@@ -5,13 +5,14 @@ import { useMemo, useState } from "react";
 import { Lightbulb, StickyNote, Clapperboard, Sparkles, Send } from "lucide-react";
 import WrittenPosts from "@/components/coach/WrittenPosts";
 import ContentStudio from "@/components/coach/ContentStudio";
-import IdeationNotes from "@/components/coach/IdeationNotes";
-import IdeationInspirations from "@/components/coach/IdeationInspirations";
+import { Suspense } from "react";
+import NotesApp from "@/components/notes/NotesApp";
+import type { Note, NoteTag } from "@/lib/notes";
 import IdeationScripts from "@/components/coach/IdeationScripts";
 import SocialGenerator from "@/components/coach/SocialGenerator";
 import type { ContentIdea } from "@/lib/content-ideas";
 import type { ScriptStatus } from "@/lib/coach-ideation";
-import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
+import type { CoachScript } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
 
@@ -39,8 +40,8 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 // chaque bouton (même motif que OutilsView.tsx).
 export default function IdeationHub({
   initialIdeas,
-  initialNotes,
-  initialInspirations,
+  notes,
+  noteTags,
   initialScripts,
   canvas,
   realLeadsByScriptId,
@@ -52,8 +53,9 @@ export default function IdeationHub({
   focusIdeaId,
 }: {
   initialIdeas: ContentIdea[];
-  initialNotes: IdeationNote[];
-  initialInspirations: Inspiration[];
+  /** Le bloc-notes unique de l'appli (table notes), affiché aussi ici. */
+  notes: Note[];
+  noteTags: NoteTag[];
   initialScripts: CoachScript[];
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
@@ -149,7 +151,7 @@ export default function IdeationHub({
               {id === "idees" && initialIdeas.length > 0 && <Count n={initialIdeas.length} active={active} />}
               {id === "scripts" && videoScripts.length > 0 && <Count n={videoScripts.length} active={active} />}
               {id === "posts" && writtenPosts.length > 0 && <Count n={writtenPosts.length} active={active} />}
-              {id === "notes" && initialNotes.length + initialInspirations.length > 0 && <Count n={initialNotes.length + initialInspirations.length} active={active} />}
+              {id === "notes" && notes.length > 0 && <Count n={notes.length} active={active} />}
             </button>
           );
         })}
@@ -178,11 +180,11 @@ export default function IdeationHub({
         <WrittenPosts initialPosts={writtenPosts} />
       </div>
       <div hidden={tab !== "notes"}>
-        {/* Notes et inspirations dans un seul onglet (audit 2026-11-13). */}
-        <IdeationNotes initialNotes={initialNotes} />
-        <div style={{ marginTop: 24 }}>
-          <IdeationInspirations initialInspirations={initialInspirations} />
-        </div>
+        {/* Un seul bloc-notes dans toute l'appli (audit 2026-11-13) : le même
+            que la page Notes, avec tags, épingles, tâches, liens et recherche. */}
+        <Suspense>
+          <NotesApp initialNotes={notes} tags={noteTags} />
+        </Suspense>
       </div>
     </div>
   );
