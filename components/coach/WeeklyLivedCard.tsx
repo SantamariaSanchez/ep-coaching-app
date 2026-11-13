@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Mic, Check, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { BookOpen, Mic, Check, ChevronDown, Sparkles } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { WEEKLY_QUESTIONS, type WeeklyAnswers } from "@/lib/lived-content";
 import { saveWeeklyLivedAction, livedNotesToIdeasAction } from "@/app/actions/lived";
@@ -16,7 +16,7 @@ type SpeechRec = { lang: string; continuous: boolean; interimResults: boolean; s
 export default function WeeklyLivedCard({ doneThisWeek, livedCount, pendingIdeas }: { doneThisWeek: boolean; livedCount: number; pendingIdeas: number }) {
   const t = useT();
   const router = useRouter();
-  const [open, setOpen] = useState(!doneThisWeek);
+  const [open, setOpen] = useState(false);
   const [answers, setAnswers] = useState<WeeklyAnswers>({});
   const [listeningId, setListeningId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -74,19 +74,26 @@ export default function WeeklyLivedCard({ doneThisWeek, livedCount, pendingIdeas
     });
   }
 
+  // Petit bouton discret (audit 2026-11-13) ; les questions s'ouvrent en
+  // panneau par-dessus au lieu de prendre toute la page.
   return (
-    <section className="ep-card" style={{ padding: 14, marginBottom: 16 }}>
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", background: "none", border: "none", cursor: "pointer", color: "var(--ep-ink)", textAlign: "left", padding: 0 }}>
-        <BookOpen size={18} style={{ color: "var(--ep-violet)", flexShrink: 0 }} />
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 14, fontWeight: 800 }}>{t("Ta semaine en une minute")}</span>
-          <span style={{ display: "block", fontSize: 12, opacity: 0.55 }}>
-            {doneThisWeek ? t("Semaine racontée ✓ Ton vécu nourrit tes histoires.") : t("Qu'est-ce qui s'est passé cette semaine ? Tes histoires partent de là, rien n'est inventé.")}
-          </span>
-        </span>
-        {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 36, padding: "0 12px", marginBottom: 12, borderRadius: 999, border: "1px solid rgba(var(--ep-line-rgb),0.35)", background: "transparent", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+      >
+        {doneThisWeek ? <Check size={14} style={{ color: "var(--ep-violet)" }} /> : <BookOpen size={14} style={{ color: "var(--ep-violet)" }} />}
+        {t("Ma semaine")}
       </button>
-
+      {message && !open && <p role="status" style={{ margin: "-6px 0 10px", fontSize: 12, color: "var(--ep-violet)" }}>{message}</p>}
+      {open && (
+      <div role="dialog" aria-modal="true" onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <section className="ep-card" onClick={(e) => e.stopPropagation()} style={{ padding: 16, width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", borderRadius: "18px 18px 0 0" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 15, fontWeight: 900 }}>{t("Ma semaine")}</span>
+        <button type="button" onClick={() => setOpen(false)} aria-label={t("Fermer")} style={{ background: "none", border: "none", color: "var(--ep-ink)", cursor: "pointer", padding: 6 }}><ChevronDown size={18} /></button>
+      </div>
       {open && (
         <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
           {WEEKLY_QUESTIONS.map((q) => (
@@ -123,6 +130,9 @@ export default function WeeklyLivedCard({ doneThisWeek, livedCount, pendingIdeas
 
       {message && <p role="status" style={{ marginTop: 8, fontSize: 12.5, color: "var(--ep-violet)" }}>{message}</p>}
       {error && <p role="alert" style={{ marginTop: 8, fontSize: 12.5, color: "#fca5a5" }}>{error}</p>}
-    </section>
+      </section>
+      </div>
+      )}
+    </>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Copy, Check, Wand2 } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import type { GuideMagnet } from "@/lib/lead-magnets";
 import { fetchGuidesForGenerator } from "@/app/dashboard/coach/studio/actions";
 import { CONTENT_FORMATS, formatPromptBlock, getContentFormat } from "@/lib/content-formats";
@@ -150,8 +150,7 @@ CONCLUSION : ${guide.conclusion}
 À partir de ce contenu, crée-moi :
 ${liste}
 
-Sujet : ${sujet || "(à préciser)"}
-Angle : ${angle || "(à préciser)"}`;
+Sujet et angle : ${[sujet, angle].filter(Boolean).join(", ") || "(à toi de choisir le plus fort)"}`;
 }
 
 // Retour direct 2026-09-18 ("j'ai mis 30s pour aller sur le prompteur") :
@@ -176,9 +175,8 @@ export default function SocialGenerator({ active }: { active: boolean }) {
   // (effectiveSlug ci-dessous) plutôt que synchronisé depuis un effet une
   // fois les guides arrivés (guides est chargé après le premier rendu,
   // contrairement à l'ancienne version qui les recevait déjà en prop).
-  const [slug, setSlug] = useState("");
+  const [keyword, setKeyword] = useState("");
   const [sujet, setSujet] = useState("");
-  const [angle, setAngle] = useState("");
   const [copied, setCopied] = useState(false);
   const [platformIds, setPlatformIds] = useState<string[]>(
     PLATFORM_SPECS.filter((p) => p.defaultOn).map((p) => p.id)
@@ -190,11 +188,12 @@ export default function SocialGenerator({ active }: { active: boolean }) {
     setPlatformIds((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
   }
 
-  const effectiveSlug = slug || guides?.[0]?.slug || "";
-  const selected = (guides ?? []).find((g) => g.slug === effectiveSlug) ?? guides?.[0] ?? null;
+  // Un mot-clé (le numéro du guide, ex : 123) au lieu d'une liste sans fin.
+  const kw = keyword.trim().replace(/^0+(?=\d)/, "");
+  const selected = kw ? (guides ?? []).find((g) => g.keyword.replace(/^0+(?=\d)/, "") === kw || g.keyword.toLowerCase() === kw.toLowerCase()) ?? null : null;
   const prompt = useMemo(
-    () => (selected ? buildPrompt(selected, sujet, angle, platformIds, scriptFormatId) : ""),
-    [selected, sujet, angle, platformIds, scriptFormatId]
+    () => (selected ? buildPrompt(selected, sujet, "", platformIds, scriptFormatId) : ""),
+    [selected, sujet, platformIds, scriptFormatId]
   );
 
   async function copy() {
@@ -224,41 +223,30 @@ export default function SocialGenerator({ active }: { active: boolean }) {
 
   return (
     <div>
-      <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed mb-4">
-        {t("Choisis un guide déjà publié, précise le sujet et l'angle si tu veux orienter le résultat, puis copie le prompt et colle-le dans Claude (ici ou ailleurs) pour obtenir carrousel, légende et post LinkedIn.")}
-      </p>
-
       <div className="bg-(--ep-s1) border border-(--ep-line)/25 rounded-xl p-4 mb-4 space-y-2.5">
-        <select
-          value={effectiveSlug}
-          onChange={(e) => setSlug(e.target.value)}
-          aria-label={t("Guide déjà publié")}
-          className={inputCls}
-        >
-          {guides.map((g) => (
-            <option key={g.slug} value={g.slug}>
-              {g.title}
-            </option>
-          ))}
-        </select>
-        <div className="grid sm:grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-[110px_1fr] gap-2.5">
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            inputMode="numeric"
+            placeholder="123"
+            aria-label={t("Mot-clé du guide")}
+            className={inputCls}
+          />
           <input
             value={sujet}
             onChange={(e) => setSujet(e.target.value)}
-            placeholder={t("Sujet (optionnel, ex : la créatine chez les végétariens)")} aria-label={t("Sujet (optionnel, ex : la créatine chez les végétariens)")}
-            className={inputCls}
-          />
-          <input
-            value={angle}
-            onChange={(e) => setAngle(e.target.value)}
-            placeholder={t("Angle (optionnel, ex : mythe vs réalité)")} aria-label={t("Angle (optionnel, ex : mythe vs réalité)")}
+            placeholder={t("Sujet et angle")}
+            aria-label={t("Sujet et angle")}
             className={inputCls}
           />
         </div>
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-widest text-(--ep-ink)/35 mb-1.5">
-            {t("Formats à générer")}
+        {kw && (
+          <p className="text-[11.5px] font-bold" style={{ color: selected ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.4)" }}>
+            {selected ? selected.title : t("Aucun guide avec ce mot-clé")}
           </p>
+        )}
+        <div>
           <div className="flex flex-wrap gap-1.5">
             {PLATFORM_SPECS.map((p) => {
               const active = platformIds.includes(p.id);
@@ -299,21 +287,16 @@ export default function SocialGenerator({ active }: { active: boolean }) {
         </div>
       </div>
 
-      <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 flex items-center gap-1.5">
-            <Wand2 size={12} className="text-(--ep-accent)" />{" "}{t("Prompt prêt à coller dans Claude")}
-          </p>
-          <button
-            onClick={copy}
-            className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border border-(--ep-line)/30 text-(--ep-ink)/50 hover:text-(--ep-strong) hover:border-(--ep-accent)/50 transition-colors"
-          >
-            {copied ? <Check size={10} className="text-green-400" /> : <Copy size={10} />}
-            {copied ? t("Copié") : t("Copier")}
-          </button>
-        </div>
-        <p className="text-[11.5px] text-(--ep-ink)/55 leading-relaxed whitespace-pre-wrap">{prompt}</p>
-      </div>
+      <button
+        type="button"
+        onClick={copy}
+        disabled={!selected}
+        className="w-full inline-flex items-center justify-center gap-2 rounded-xl font-extrabold text-sm"
+        style={{ minHeight: 48, border: "none", cursor: selected ? "pointer" : "default", background: selected ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.07)", color: selected ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.35)" }}
+      >
+        {copied ? <Check size={16} /> : <Copy size={16} />}
+        {copied ? t("Copié") : t("Copier le prompt")}
+      </button>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAppSetup } from "@/lib/app-setup-server";
@@ -7,8 +6,6 @@ import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import { getRealLeadsByScriptId, getLeadMagnetSlugByScriptId, getTrackedLeadsByScriptId } from "@/lib/content-leads-tracking";
-import { getPositioning } from "@/lib/positioning-server";
-import PositioningSummaryCard from "@/components/coach/PositioningSummaryCard";
 import IdeationHub from "@/components/coach/IdeationHub";
 import WeeklyLivedCard from "@/components/coach/WeeklyLivedCard";
 import { getLivedNotes } from "@/lib/lived-content-server";
@@ -27,7 +24,6 @@ export default async function CoachStudioPage({
 }: {
   searchParams: Promise<{ onglet?: string; script?: string; idee?: string }>;
 }) {
-  const t = await getT();
   // Liens profonds (recherche globale, voir CommandPalette.tsx) : ouvre le
   // bon onglet et met en avant le script ou l'idée trouvés.
   const { onglet, script: focusScriptId, idee: focusIdeaId } = await searchParams;
@@ -37,7 +33,7 @@ export default async function CoachStudioPage({
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, canvas, appSetup, livedNotes, { data: positioning }] = await Promise.all([
+  const [ideas, notes, inspirations, scripts, canvas, appSetup, livedNotes] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
@@ -49,7 +45,6 @@ export default async function CoachStudioPage({
     getBusinessCanvas(user.id),
     getAppSetup(user.id),
     getLivedNotes(user.id, 90, 40),
-    getPositioning(user.id),
   ]);
   const weekStart = mondayStart(new Date()).getTime();
   const livedDoneThisWeek = livedNotes.some((n) => new Date(n.created_at).getTime() >= weekStart);
@@ -71,18 +66,7 @@ export default async function CoachStudioPage({
   ]);
 
   return (
-    <div className="px-4 sm:px-6 py-8 max-w-6xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-          {t("Business")}
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Studio créatif")}</h1>
-        <p className="mt-2 text-sm text-(--ep-ink)/45">
-          {t("De l'idée à la vidéo publiée : idées, scripts prêts à tourner, prompteur, puis ce qui marche dans tes vidéos.")}
-        </p>
-      </div>
-
-      <PositioningSummaryCard positioning={positioning} />
+    <div className="px-4 sm:px-6 py-4 max-w-6xl mx-auto pb-24 md:pb-8 page-transition">
       <WeeklyLivedCard doneThisWeek={livedDoneThisWeek} livedCount={livedNotes.length} pendingIdeas={livedPendingIdeas} />
 
       <IdeationHub

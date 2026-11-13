@@ -396,7 +396,6 @@ export function ShootingMode({
   formatId,
   content,
   onClose,
-  onOpenPrompter,
   onShot,
 }: {
   scriptId: string;
@@ -404,8 +403,6 @@ export function ShootingMode({
   formatId: string | null | undefined;
   content: string;
   onClose: () => void;
-  /** Ouvre le prompteur caméra avec le texte à lire (déjà adapté au format). */
-  onOpenPrompter?: (text: string) => void;
   /** « J'ai tourné » : passe le script en tourné. */
   onShot?: () => void;
 }) {
@@ -611,15 +608,6 @@ export function ShootingMode({
       </div>
 
       <div style={{ display: "flex", gap: 8, padding: "10px 16px calc(env(safe-area-inset-bottom, 0px) + 12px)", borderTop: "1px solid rgba(var(--ep-line-rgb),0.2)", flexWrap: "wrap" }}>
-        {f.filmed && onOpenPrompter && (
-          <button
-            type="button"
-            onClick={() => onOpenPrompter(readText)}
-            style={{ flex: 1, minWidth: 150, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 14px", borderRadius: 12, border: "1px solid rgba(var(--ep-accent-rgb),0.45)", background: "rgba(var(--ep-accent-rgb),0.14)", color: "var(--ep-ink)", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
-          >
-            <Camera size={15} /> {isBroll ? tr("Enregistrer la voix off") : tr("Filmer avec le prompteur")}
-          </button>
-        )}
         {onShot && (
           <button
             type="button"
