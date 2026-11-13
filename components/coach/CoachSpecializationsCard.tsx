@@ -56,7 +56,7 @@ export default function CoachSpecializationsCard({
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <Tags size={18} style={{ color: "var(--ep-accent)", flexShrink: 0, marginTop: 1 }} />
           <p style={{ margin: 0, fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.5 }}>
-            {t("Choisis ce qui te correspond. Un membre pourra te trouver dans l'annuaire public selon ces critères (objectif, blessure, TCA...). Aucune sélection = affiché comme généraliste par défaut.")}
+            {t("Sert à te trouver dans l'annuaire. Rien coché = généraliste.")}
             {saved && (
               <span style={{ color: "var(--ep-ok)", fontWeight: 700, marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 3 }}>
                 <Check size={11} />{" "}{t("Enregistré")}

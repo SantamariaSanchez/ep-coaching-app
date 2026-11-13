@@ -83,7 +83,7 @@ export default function OutilsView() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Outils gratuits")}</h1>
         <p className="mt-2 text-sm text-(--ep-ink)/45">
-          {t("Deux calculateurs rapides, sans compte. Pour un suivi qui s'ajuste vraiment à toi dans la durée, un coaching complet fait bien plus qu'une formule figée.")}
+          {t("Deux calculateurs, sans compte.")}
         </p>
       </div>
 

@@ -267,7 +267,7 @@ export default function TrainingGymsManager({ ownerId, gyms }: { ownerId: string
   return (
     <div className="space-y-3">
       <p className="text-[12.5px] leading-snug text-(--ep-ink)/60">
-        {t("Une salle, son matériel et ses photos. Chaque séance du programme peut être rattachée à une salle : seuls les exercices faisables avec son matériel sont proposés.")}
+        {t("Une salle, son matériel, ses photos. Les séances rattachées ne proposent que les exercices faisables.")}
       </p>
       {gyms.map((g) => (
         <GymCard key={g.id + g.equipment.join(",") + g.photos.length} gym={g} onChanged={refresh} />

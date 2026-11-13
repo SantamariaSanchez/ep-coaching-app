@@ -109,7 +109,7 @@ export default function BulkCalorieAdjustModal({
                 className={inputCls}
               />
               <p className="text-[10px] text-(--ep-ink)/25 mt-1.5">
-                {t("Les glucides absorbent l'écart, protéines et lipides restent inchangés. Le plan de diète actif de chaque client sélectionné est réajusté automatiquement.")}
+                {t("Seuls les glucides bougent. Plan actif de chaque client réajusté.")}
               </p>
             </div>
 

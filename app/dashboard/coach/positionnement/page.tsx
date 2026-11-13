@@ -29,7 +29,7 @@ export default async function PositioningPage() {
       <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{t("Business")}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{t("Ma niche et mon avatar")}</h1>
       <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.6)", margin: "0 0 18px", lineHeight: 1.6 }}>
-        {t("Ton positionnement en 4 étapes : qui tu aides, ce que tu promets, ton client idéal et ton offre. Tout s'enregistre seul et sert ensuite à tes scripts, ta bio et à Claude.")}
+        {t("4 étapes : qui tu aides, ta promesse, ton client idéal, ton offre. Enregistré automatiquement.")}
       </p>
       <PositioningBuilder initial={data} hasClaudeKey={(count ?? 0) > 0} />
     </div>

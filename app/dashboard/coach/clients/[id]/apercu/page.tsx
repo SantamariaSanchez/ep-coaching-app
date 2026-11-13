@@ -120,7 +120,7 @@ export default async function ClientPreviewPage({
         />
       );
     } else if (!intake) {
-      notice = t("Sa fiche de départ n'est pas encore remplie : en ouvrant l'appli, il tombe d'abord sur ce questionnaire, l'accueil ci-dessous ne s'affiche qu'ensuite.");
+      notice = t("Fiche de départ pas encore remplie : il verra d'abord le questionnaire.");
       content = (
         <div style={{ padding: "40px 20px", textAlign: "center", fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
           {t("Questionnaire de départ : objectifs, santé, disponibilités, photos.")}

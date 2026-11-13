@@ -49,7 +49,7 @@ export default async function CoachFormationsPage() {
         </p>
         {!isFounder && (
           <p style={{ marginTop: 8, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.6 }}>
-            {t("Tes propres formations : vidéos YouTube (même non répertoriées), rangées en sections et modules. Inclus-les à ton coaching ou vends-les avec ton lien de paiement. L'Académie EP reste disponible dans ton espace Moi.")}
+            {t("Tes vidéos YouTube rangées en modules, incluses au coaching ou vendues à part.")}
           </p>
         )}
       </div>
@@ -69,7 +69,7 @@ export default async function CoachFormationsPage() {
           </p>
           <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", margin: 0, lineHeight: 1.5 }}>
             {totalPublished === 0
-              ? t("Aucune vidéo n'est visible côté membre pour l'instant, même si l'URL YouTube est déjà renseignée. Publie-les (dans chaque leçon, ou d'un coup par module) pour que ce contenu serve enfin.")
+              ? t("Aucune vidéo publiée : les membres ne voient encore rien.")
               : t("Une URL YouTube renseignée sur une leçon ne suffit pas à la rendre visible, pense à la publier.")}
           </p>
         </div>

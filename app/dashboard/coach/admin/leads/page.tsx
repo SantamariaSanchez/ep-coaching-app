@@ -119,7 +119,7 @@ export default async function LeadsAdminPage() {
       <section className="ep-card mb-8" style={{ padding: "18px 18px 16px" }} aria-labelledby="leads-origine">
         <h2 id="leads-origine" className="text-sm font-black uppercase tracking-wide mb-1">{t("D'où viennent tes leads")}</h2>
         <p className="text-[11.5px] text-(--ep-ink)/45 mb-4">
-          {t("Plateforme détectée à l'arrivée, et contenu exact quand le visiteur est passé par le lien suivi d'un script (bouton « Lien suivi du guide » dans Studio créatif, à coller en description ou en bio).")}
+          {t("Plateforme d'arrivée, et contenu exact si le visiteur vient d'un lien suivi du Studio.")}
         </p>
 
         {leads.length === 0 ? (

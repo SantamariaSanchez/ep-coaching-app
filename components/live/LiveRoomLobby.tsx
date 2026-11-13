@@ -262,7 +262,7 @@ export default function LiveRoomLobby({
 
             <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.6, margin: "16px 0 0" }}>
               {isHost
-                ? t("meet.jit.si peut te demander de te connecter (Google ou GitHub) pour ouvrir la salle en tant qu'hôte. Tes clients patientent dans le hall jusqu'à ton arrivée.")
+                ? t("Jitsi peut te demander de te connecter pour ouvrir la salle. Tes clients attendent dans le hall.")
                 : t("La visio s'ouvre dans un nouvel onglet. Si la salle affiche \"en attente de l'hôte\", ton coach arrive : reste connecté.")}
             </p>
 

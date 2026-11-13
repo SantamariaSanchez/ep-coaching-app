@@ -110,7 +110,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
         </button>
       </div>
       <p className="text-[11px] text-(--ep-ink)/35 mb-4">
-        {t("En plus du catalogue EP Coaching ci-dessus (déjà accessible à tous les coachs), tu peux ajouter tes propres guides ou checklists. Ils apparaissent au même endroit, pour toi et tes clients.")}
+        {t("Ajoute tes propres guides : ils s'affichent avec le catalogue.")}
       </p>
 
       {open && (

@@ -281,7 +281,7 @@ export default function ClientMedicalConstraintsPanel({
 
       {activeConstraints.length === 0 ? (
         <p className="text-[11.5px] text-(--ep-ink)/25 leading-relaxed">
-          {t("Aucune contrainte rattachée. Ajoute une fiche ci-dessus si ce client a une blessure, une pathologie, un handicap ou une situation qui demande d'adapter son programme.")}
+          {t("Aucune contrainte. Ajoute une fiche si une blessure ou une pathologie impose d'adapter.")}
         </p>
       ) : (
         <div className="space-y-2.5">

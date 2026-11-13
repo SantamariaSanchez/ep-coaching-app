@@ -270,7 +270,7 @@ export default function StudiesView({
     <div className="space-y-4">
       <div className="bg-(--ep-s1) border border-(--ep-line)/20 rounded-xl p-4">
         <p className="text-sm text-(--ep-ink)/55 leading-relaxed">
-          {t("Nos propres études, menées à l'échelle de la communauté EP Coaching : on teste des protocoles sur nos membres pour valider (ou réfuter) ce que dit la littérature dans des conditions réelles.")}
+          {t("Nos protocoles testés sur la communauté, en conditions réelles.")}
         </p>
       </div>
 
@@ -350,7 +350,7 @@ export default function StudiesView({
             <FlaskConical size={26} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
             <p className="text-sm text-(--ep-ink)/40 max-w-md mx-auto">
               {isCoach
-                ? t("Aucune étude interne pour l'instant. Une question précise sur tes clients, formalisée en protocole, vaut souvent plus qu'une méta-analyse générique.")
+                ? t("Aucune étude interne pour l'instant.")
                 : t("Ton coach n'a pas encore lancé d'étude interne.")}
             </p>
             {isCoach && (

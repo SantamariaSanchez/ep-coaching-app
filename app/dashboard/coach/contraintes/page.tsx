@@ -34,7 +34,7 @@ export default async function CoachContraintesPage() {
       <div className="flex items-start gap-3 bg-amber-500/5 border border-amber-500/25 rounded-xl px-4 py-3.5 mt-6 mb-8">
         <ShieldAlert size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
         <p className="text-[11.5px] text-amber-300/85 leading-relaxed">
-          {t("Ce contenu est un repère pour construire un programme, jamais un substitut à un avis médical individualisé. Face à un signal d'alerte listé dans une fiche, oriente toujours vers un professionnel de santé avant d'ajuster le programme toi-même.")}
+          {t("Un repère, pas un avis médical. Signal d'alerte : oriente vers un professionnel de santé avant d'ajuster.")}
         </p>
       </div>
 
