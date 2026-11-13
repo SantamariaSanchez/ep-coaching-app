@@ -50,10 +50,20 @@ export default async function CoachMoiAgendaPage() {
     <div className="px-4 py-4 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <PageLinks links={[{ kind: "roadmap", label: "Road map", href: "/dashboard/coach/moi/roadmap" }, { kind: "rappels", label: "Rappels", href: "/dashboard/coach/moi/reminders" }, { kind: "semaine", label: "Ma semaine", href: "/dashboard/coach/moi/semaine" }]} />
 
-      <div className="mb-5 grid sm:grid-cols-2 gap-3">
-        <HabitScoreCard habitScore={habitScore} />
-        <HabitScoreTrend points={weeklyScores} streak={streak} />
-      </div>
+      {/* Score replié (audit 2026-11-13) : l'agenda d'abord. */}
+      {habitScore.components.length > 0 && (
+        <details className="mb-4 rounded-xl border border-(--ep-line)/20 px-3">
+          <summary className="cursor-pointer min-h-11 flex items-center gap-2 text-[12px] font-black text-(--ep-ink)/70">
+            <span className="tabular-nums text-(--ep-strong)">{habitScore.score}</span>
+            <span className="text-(--ep-ink)/45 font-bold">/ 100</span>
+            {streak > 0 && <span className="ml-auto text-(--ep-ink)/50 font-bold">{streak} j d&apos;affilée</span>}
+          </summary>
+          <div className="grid sm:grid-cols-2 gap-3 pb-3">
+            <HabitScoreCard habitScore={habitScore} />
+            <HabitScoreTrend points={weeklyScores} streak={streak} />
+          </div>
+        </details>
+      )}
 
       <PushDeliveryAlert />
 
