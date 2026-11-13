@@ -54,9 +54,6 @@ export default async function BusinessPilotagePage() {
           {t("Mon business")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Pilotage")}</h1>
-        <p className="mt-2 text-sm text-(--ep-ink)/45">
-          {t("Tes non-négociables quotidiens, tes objectifs du mois, et les chiffres de la semaine (audience, contenu, leads, ventes).")}
-        </p>
       </div>
 
       <NonNegotiablesTracker

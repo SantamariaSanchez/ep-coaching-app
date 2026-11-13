@@ -53,9 +53,6 @@ export default async function CoachPrioritairesPage() {
           {t("Espace Coach")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Qui a besoin de moi")}</h1>
-        <p className="mt-2 text-sm text-(--ep-ink)/45">
-          {t("Tous les signaux, en une seule vue triée par priorité.")}
-        </p>
       </div>
 
       {flagged.length === 0 && quiet.length === 0 && onTrack.length === 0 ? (

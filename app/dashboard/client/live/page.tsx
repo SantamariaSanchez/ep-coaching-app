@@ -80,9 +80,6 @@ export default async function ClientLivePage() {
           {tr("Live")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Coaching live")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {tr("Tout ton accompagnement en direct avec ton coach : 1:1, suivi hebdo, points flash, ateliers.")}
-        </p>
       </div>
 
       <div className="mb-6">

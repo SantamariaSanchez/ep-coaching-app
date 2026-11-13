@@ -38,9 +38,6 @@ export default async function ClientRecettesPage({
           {t("Contenu")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Recettes & idées repas")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Les recettes triées par régime, phase, macros, allergènes et goûts. Ajoute les tiennes ou crée une recette sur mesure.")}
-        </p>
       </div>
 
       <RecipesClient

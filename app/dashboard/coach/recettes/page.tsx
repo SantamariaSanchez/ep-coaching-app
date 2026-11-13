@@ -35,9 +35,6 @@ export default async function CoachRecettesPage({
           {t("Contenu")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Recettes & idées repas")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Base de recettes à partager avec tes clients, triée par régime, phase, macros, allergènes, saison et goûts. Les membres peuvent aussi ajouter les leurs.")}
-        </p>
       </div>
 
       <RecipesClient

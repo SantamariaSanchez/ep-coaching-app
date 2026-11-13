@@ -41,9 +41,6 @@ export default async function CoachMoiSemainePage({
           <CalendarCheck size={11} />{" "}{t("Mon suivi")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ma semaine")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Ta semaine en chiffres, à partir de ce que tu as déjà noté. Puis 2 minutes de recul pour caler la suivante.")}
-        </p>
       </div>
 
       {data ? (

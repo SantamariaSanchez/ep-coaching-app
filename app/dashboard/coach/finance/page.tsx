@@ -123,9 +123,6 @@ export default async function CoachFinancePage() {
           {t("Administration")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Finance")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Revenus réels traités par Stripe. Abonnements plateforme des coachs tiers et abonnements directs des clients. Les paiements gérés hors app (lien externe d'un coach, virement) n'y figurent pas.")}
-        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-6">

@@ -34,9 +34,6 @@ export default async function CoachAvailabilityPage() {
           {t("Live")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mes disponibilités")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Définis tes créneaux récurrents : tes clients réservent directement un appel 1:1 dans un créneau libre, sans que tu aies à le programmer toi-même. Toutes les heures sont en heure de Paris, et un créneau qui chevauche un live déjà au planning n'est jamais proposé.")}
-        </p>
       </div>
 
       {rules.length > 0 && (

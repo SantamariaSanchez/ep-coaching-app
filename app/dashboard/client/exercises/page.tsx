@@ -55,9 +55,6 @@ export default async function ClientExercisesPage({
           <Dumbbell size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {tr("Bibliothèque")}
         </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40">
-          {tr("Exercices et salles de musculation, dans un seul endroit. Le matériel d'une salle détermine ce qui y est réalisable.")}
-        </p>
       </div>
 
       <LibraryHub

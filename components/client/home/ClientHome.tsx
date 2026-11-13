@@ -1,7 +1,6 @@
 import { getT } from "@/lib/i18n-server";
 import { intlLocale, type Locale } from "@/lib/i18n";
 import { INSTAGRAM_URL } from "@/lib/brand-links";
-import { timeAwareGreeting } from "@/lib/dates";
 import { isOn, type AppSetup } from "@/lib/app-setup";
 import Link from "next/link";
 import type { Profile } from "@/utils/auth";
@@ -275,10 +274,6 @@ function dateLabel(date: string, locale: Locale): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function niceFirstName(raw: string): string {
-  return raw ? raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase() : "";
-}
-
 async function StreakMeta({ streakDays }: { streakDays: number }) {
   const t = await getT();
   if (streakDays <= 0) return null;
@@ -362,7 +357,6 @@ async function PremiumCta({ pitch }: { pitch: { title: string; subtitle: string 
 // ── Membre gratuit ──────────────────────────────────────────────────────────
 
 export async function WelcomeGuide({
-  firstName,
   hasCoach,
   personalization,
   checklist,
@@ -396,14 +390,11 @@ export async function WelcomeGuide({
   // pas lui proposer deux fois les mêmes premières actions.
   const hasStarted =
     checklist.some((i) => i.done) || day.blocks.length > 0 || day.training.hasProgram || day.nutrition.hasPlan;
-  const name = niceFirstName(firstName);
-  const hour = Number(day.now.slice(0, 2));
   return (
     <div className="page-transition ep-page-medium" style={{ padding: "20px 16px 100px" }}>
       {!preview && <HomeAutoRefresh />}
       <HomeHeader
         eyebrow={dateLabel(day.date, locale)}
-        title={`${t(timeAwareGreeting(hour))}${name ? `, ${name}` : ""}`}
         meta={hasStarted ? <StreakMeta streakDays={activityStreak} /> : <span>{personalization.welcomeSubtitle}</span>}
         tools={<HomeHeaderTools />}
       />
@@ -601,8 +592,6 @@ export async function CoachedHome({
   preview?: boolean;
 }) {
   const t = await getT();
-  const name = niceFirstName(profile?.full_name?.split(" ")[0] ?? "");
-  const hour = Number(day.now.slice(0, 2));
   const weeksSinceStart = profile?.start_date
     ? Math.max(0, Math.floor((new Date(`${day.date}T12:00:00`).getTime() - new Date(`${profile.start_date}T12:00:00`).getTime()) / (7 * 86400000)))
     : null;
@@ -614,7 +603,6 @@ export async function CoachedHome({
       {!preview && <HomeAutoRefresh />}
       <HomeHeader
         eyebrow={dateLabel(day.date, locale)}
-        title={`${t(timeAwareGreeting(hour))}${name ? `, ${name}` : ""}`}
         meta={
           <>
             <StreakMeta streakDays={activityStreak} />

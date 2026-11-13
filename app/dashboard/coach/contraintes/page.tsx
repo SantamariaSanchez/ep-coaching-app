@@ -29,9 +29,6 @@ export default async function CoachContraintesPage() {
           <HeartPulse size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Contraintes & populations spécifiques")}
         </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40 leading-relaxed max-w-xl">
-          {t("Blessures, maladies chroniques, handicap, grossesse, ménopause, TCA, véganisme, Ramadan, obésité : comment adapter un programme, et surtout quand orienter vers un professionnel plutôt que d'essayer de gérer la situation seul.")}
-        </p>
       </div>
 
       <div className="flex items-start gap-3 bg-amber-500/5 border border-amber-500/25 rounded-xl px-4 py-3.5 mt-6 mb-8">

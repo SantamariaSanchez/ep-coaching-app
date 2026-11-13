@@ -66,9 +66,6 @@ export default async function LeadsAdminPage() {
             {t("Marketing")}
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">{t("Leads")}</h1>
-          <p className="text-sm text-(--ep-ink)/45 mt-2">
-            {t("Emails et numéros captés sur les lead magnets de /ressources.")}
-          </p>
         </div>
         <LeadsExportButton leads={leads} originLabelById={origin.labelById} />
       </div>

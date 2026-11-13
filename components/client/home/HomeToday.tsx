@@ -64,7 +64,8 @@ export function HomeHeader({
   tools,
 }: {
   eyebrow: string;
-  title: string;
+  /** Facultatif (audit 2026-11-13) : plus de « Bonjour + prénom », la date suffit. */
+  title?: string;
   meta?: React.ReactNode;
   tools?: React.ReactNode;
 }) {
@@ -77,7 +78,7 @@ export function HomeHeader({
         <p className="ep-section-title" style={{ margin: 0, flex: 1, minWidth: 0, lineHeight: "16px" }}>{eyebrow}</p>
         {tools && <div style={{ marginRight: -8 }}>{tools}</div>}
       </div>
-      <h1 className="ep-h1" style={{ fontSize: 26, overflowWrap: "anywhere", lineHeight: 1.12, marginTop: tools ? -2 : 4 }}>{title}</h1>
+      {title && <h1 className="ep-h1" style={{ fontSize: 26, overflowWrap: "anywhere", lineHeight: 1.12, marginTop: tools ? -2 : 4 }}>{title}</h1>}
       {meta && (
         <div style={{ marginTop: 5, display: "flex", flexWrap: "wrap", alignItems: "center", gap: "2px 10px", fontSize: 12, fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
           {meta}

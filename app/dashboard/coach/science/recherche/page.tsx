@@ -32,11 +32,6 @@ export default async function CoachScienceRecherchePage() {
           <FlaskConical size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Science")}
         </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40">
-          {canCurate
-            ? t("Recherche un sujet et ajoute les meilleurs résultats à la bibliothèque ou à l'actualité.")
-            : t("Recherche un sujet directement dans PubMed.")}
-        </p>
       </div>
 
       <ScienceSubNav base="/dashboard/coach/science" counts={counts} />

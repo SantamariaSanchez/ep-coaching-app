@@ -55,9 +55,6 @@ export default async function CoachAdminPage() {
           {t("Administration")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Coachs")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Coachs tiers inscrits sur la plateforme. Chacun ne voit que ses propres clients, toi seul peux consulter la liste de chacun ci-dessous (lecture seule, sans y accéder toi-même).")}
-        </p>
       </div>
 
       <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 24, marginBottom: 24 }}>
