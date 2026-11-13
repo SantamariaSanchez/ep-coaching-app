@@ -1,4 +1,3 @@
-import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
 import { getPointsMap } from "@/lib/gamification";
@@ -8,10 +7,15 @@ import { getClientsLastActivity, getClientsWeeklyConsistency } from "@/lib/clien
 import { getClientsIntakeCompletion } from "@/utils/client-intake";
 import { relaunchMember } from "@/app/dashboard/coach/communaute/membres/actions";
 import ClientsSection from "@/components/ui/ClientsSection";
-import InviteFirstClientCard from "@/components/coach/InviteFirstClientCard";
+import Link from "next/link";
+import { ClipboardCheck, Dumbbell, Camera, ChevronRight } from "lucide-react";
+import ClientsHubBar from "@/components/coach/ClientsHubBar";
+import { getCoachInbox } from "@/lib/coach-inbox";
+import { createServerSupabase } from "@/lib/supabase-server";
+
+const TYPE_ICON = { checkin: ClipboardCheck, correction: Dumbbell, photo: Camera } as const;
 
 export default async function ClientsPage() {
-  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -23,6 +27,11 @@ export default async function ClientsPage() {
   if (profile?.role === "client") redirect("/dashboard/client");
 
   const clientIds = clients.map((c) => c.id);
+  const supabase = await createServerSupabase();
+  const [inbox, unread] = await Promise.all([
+    getCoachInbox(user.id),
+    supabase.from("messages").select("id", { count: "exact", head: true }).eq("receiver_id", user.id).eq("is_read", false),
+  ]);
   const [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency] = await Promise.all([
     getPointsMap(clientIds),
     // Coach exclusivement — repère qui décroche ou est prêt à changer de
@@ -42,16 +51,39 @@ export default async function ClientsPage() {
     .map((c) => c.id);
 
   return (
-    <div className="page-transition ep-page-wide" style={{ padding: "32px 24px 48px" }}>
-      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Gestion")}</p>
-        <h1 className="ep-h1">{t("Mes clients")}</h1>
-      </div>
+    <div className="page-transition ep-page-wide" style={{ padding: "16px 16px 48px" }}>
+      <ClientsHubBar inviteCode={profile?.invite_code ?? null} coachFirstName={profile?.full_name?.split(" ")[0] ?? null} unread={unread.count ?? 0} />
 
-      {/* Peu de clients : le lien d'invitation en tête de page, avec ce que
-          le client verra en l'ouvrant (retour direct 2026-10-20). */}
-      {clients.length < 3 && (
-        <InviteFirstClientCard inviteCode={profile?.invite_code ?? null} coachFirstName={profile?.full_name?.split(" ")[0] ?? null} clientCount={clients.length} />
+      {/* À traiter : bilans, corrections et photos en attente (ex-Boîte de réception). */}
+      {inbox.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18 }}>
+          {inbox.slice(0, 5).map((item) => {
+            const Icon = TYPE_ICON[item.type];
+            return (
+              <Link
+                key={`${item.type}-${item.id}`}
+                href={item.href}
+                className="ep-press"
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, minHeight: 48, padding: "8px 12px", borderRadius: 12,
+                  background: "var(--ep-s2)", border: "1px solid rgba(var(--ep-accent-rgb),0.12)", textDecoration: "none",
+                }}
+              >
+                <Icon size={15} style={{ color: "var(--ep-accent)", flexShrink: 0 }} strokeWidth={1.8} />
+                <p style={{ margin: 0, flex: 1, minWidth: 0, fontSize: 12.5, color: "var(--ep-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <strong style={{ fontWeight: 800 }}>{item.clientName}</strong>
+                  <span style={{ color: "rgba(var(--ep-ink-rgb),0.5)" }}> · {item.detail}</span>
+                </p>
+                <ChevronRight size={14} style={{ color: "rgba(var(--ep-ink-rgb),0.25)", flexShrink: 0 }} />
+              </Link>
+            );
+          })}
+          {inbox.length > 5 && (
+            <Link href="/dashboard/coach/inbox" style={{ fontSize: 12, fontWeight: 700, color: "var(--ep-accent)", textDecoration: "none", padding: "4px 2px" }}>
+              +{inbox.length - 5}
+            </Link>
+          )}
+        </div>
       )}
 
       <ClientsSection

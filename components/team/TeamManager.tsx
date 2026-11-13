@@ -62,45 +62,23 @@ export interface CareerOption {
 }
 
 export function CareerPicker({ current, options }: { current: string | null; options: CareerOption[] }) {
-  const tr = useT();
   const { pending, run, note } = useAction();
-  const active = options.find((o) => o.value === current) ?? null;
+  // Compact (audit 2026-11-13) : un seul sélecteur au lieu de quatre gros blocs.
   return (
-    <div className="ep-card" style={{ padding: 12 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 6 }}>
-        {options.map((o) => {
-          const on = current === o.value;
-          return (
-            <button
-              key={o.value}
-              type="button"
-              disabled={pending || on}
-              onClick={() => run(() => updateCareerModeAction(o.value), "Mode mis à jour.")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                textAlign: "left",
-                padding: "10px 11px",
-                minHeight: 48,
-                borderRadius: 12,
-                cursor: on ? "default" : "pointer",
-                border: `1px solid ${on ? "rgba(var(--ep-accent-rgb),0.7)" : "rgba(var(--ep-line-rgb),0.3)"}`,
-                background: on ? "rgba(var(--ep-accent-rgb),0.14)" : "rgba(var(--ep-shade-rgb),0.25)",
-                color: "var(--ep-ink)",
-                fontSize: 12.5,
-                fontWeight: 800,
-                lineHeight: 1.25,
-              }}
-            >
-              {on && <Check size={13} color="var(--ep-accent)" style={{ flexShrink: 0 }} />} {o.label}
-            </button>
-          );
-        })}
-      </div>
-      <p style={{ fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)", margin: "10px 2px 0", lineHeight: 1.5 }}>
-        {active ? active.unlocks : tr("Choisis comment tu travailles : l'appli s'adapte, et tu peux changer à tout moment.")}
-      </p>
+    <div style={{ display: "inline-flex", flexDirection: "column", gap: 4 }}>
+      <select
+        aria-label="Mode de travail"
+        value={current ?? ""}
+        disabled={pending}
+        onChange={(e) => e.target.value && run(() => updateCareerModeAction(e.target.value), "Mode mis à jour.")}
+        style={{
+          minHeight: 40, padding: "0 12px", borderRadius: 10, fontSize: 13, fontWeight: 700,
+          border: "1px solid rgba(var(--ep-line-rgb),0.35)", background: "var(--ep-s2)", color: "var(--ep-ink)",
+        }}
+      >
+        {!current && <option value="">Mode de travail</option>}
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
       {note}
     </div>
   );

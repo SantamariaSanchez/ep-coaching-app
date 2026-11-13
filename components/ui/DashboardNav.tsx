@@ -14,9 +14,9 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound, LayoutGrid, NotebookPen, LifeBuoy,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
-  BookOpenCheck, Gauge, Award, CalendarCheck, Crosshair, BrainCircuit, PanelLeftClose, PanelLeftOpen,
+  ArrowLeftRight, Settings, Shield, Mail, Sparkles,
+  Wallet, Network, HeartPulse, Rocket, FileText, PhoneCall, Megaphone,
+  BookOpenCheck, Award, CalendarCheck, Crosshair, BrainCircuit, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -138,13 +138,8 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Clients",
     items: [
       { label: "Clients",  icon: Users,          segment: "clients",   badge: "pending" },
-      { label: "Priorités", icon: AlertTriangle, segment: "prioritaires" },
       { label: "Messages", icon: MessageCircle,  segment: "messages",  badge: "messages" },
-      { label: "Boîte de réception", icon: Inbox, segment: "inbox" },
       { label: "Coaching live", icon: Video, segment: "live" },
-      { label: "Modèles",  icon: LayoutTemplate, segment: "programmation" },
-      { label: "Mon assistant", icon: Bot, segment: "assistant" },
-      { label: "Mailing", icon: Mail, segment: "mailing" },
     ],
   },
   {
@@ -159,7 +154,6 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
       { label: "Ce qui marche", icon: BarChart3, segment: "stats-reseaux" },
       { label: "Appels de vente", icon: PhoneCall, segment: "admin/ventes" },
-      { label: "Pilotage", icon: Gauge, segment: "business/pilotage" },
       { label: "Mes formations", icon: GraduationCap, segment: "formations" },
       { label: "Mon équipe", icon: UsersRound, segment: "mon-equipe" },
       { label: "Publicité", icon: Megaphone, segment: "business/ads" },
@@ -373,9 +367,6 @@ export const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   // explicite du 2026-08-15 : "faut y pousser dans l'appli, je vois aucun
   // nouvel onglet". Vivait avant uniquement dans un artifact externe.
   { label: "Organisation", icon: Network, segment: "admin/organisation" },
-  // Pilotage de l'équipe recrutée (2026-09-25) : pipeline, RDV du jour,
-  // rapports et automatisations, voir app/dashboard/coach/admin/equipe.
-  { label: "Équipe", icon: Users, segment: "admin/equipe" },
   // Espace personnel de production video (scripts mot pour mot des 5
   // formations qu'il filme lui-meme, statut de tournage, lien YouTube) —
   // demande du 2026-09-23. Nom "Tournage" plutot que "Formations" pour ne
