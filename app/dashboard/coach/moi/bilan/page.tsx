@@ -115,7 +115,7 @@ export default async function CoachMonBilanPage({ searchParams }: { searchParams
     <div className="page-transition mx-auto px-4 pt-8 pb-24 md:pb-10" style={{ maxWidth: 1120 }}>
       <div className="animate-fade-up" style={{ marginBottom: 18 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{date === today ? fmt(today) : `Rattrapage · ${fmt(date)}`}</p>
-        <h1 className="ep-h1">{t("Mon bilan & ma progression")}</h1>
+        <h1 className="ep-h1">{t("Bilan")}</h1>
       </div>
 
       <div style={{ marginBottom: 14 }}>

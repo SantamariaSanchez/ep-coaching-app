@@ -1657,34 +1657,11 @@ export default function ClientNutritionView({
   const isFreeTracking = planMode === "flexible";
 
   return (
-    <div className="px-4 pt-5 pb-8 ep-page-medium">
-      {/* En-tête : même typographie que l'onglet Programme */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="min-w-0">
-          <p className="ep-section-title first-letter:uppercase" style={{ marginBottom: 2 }}>
-            {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(today + "T12:00:00"))}
-          </p>
-          <h1 className="ep-h1 uppercase" style={{ fontSize: 30 }}>
-            {tr("Nutrition")}
-          </h1>
-          {seasonMode && (
-            <div className="mt-1.5">
-              <SeasonModeBadge mode={seasonMode} />
-            </div>
-          )}
-        </div>
-        <button
-          onClick={() => openCreateFood("", null)}
-          aria-label={tr("Créer un aliment")}
-          className="flex-shrink-0 mt-1 inline-flex items-center gap-1 min-h-[36px] border border-(--ep-line)/35 text-(--ep-ink)/65 hover:text-(--ep-strong) text-[11px] font-bold px-2.5 rounded-xl transition-colors"
-        >
-          <Plus size={13} />
-          {tr("Aliment")}
-        </button>
-      </div>
-
-      {/* Onglets */}
-      <div role="tablist" aria-label={tr("Nutrition")} className="flex gap-1 mb-3 rounded-xl border border-(--ep-line)/25 bg-(--ep-s1) p-1">
+    <div className="px-4 pt-3 pb-8 ep-page-medium">
+      {/* Une seule ligne (audit 2026-11-13) : onglets + ajout d'aliment, plus
+          de date ni de titre « Nutrition » en double. */}
+      <div className="flex items-center gap-2 mb-3">
+      <div role="tablist" aria-label={tr("Nutrition")} className="flex flex-1 gap-1 rounded-xl border border-(--ep-line)/25 bg-(--ep-s1) p-1">
         {(["today", "history", "courses"] as const).map((tab) => (
           <button
             key={tab}
@@ -1700,6 +1677,19 @@ export default function ClientNutritionView({
           </button>
         ))}
       </div>
+        <button
+          onClick={() => openCreateFood("", null)}
+          aria-label={tr("Créer un aliment")}
+          className="flex-shrink-0 inline-flex items-center justify-center w-[46px] h-[46px] border border-(--ep-line)/35 text-(--ep-ink)/65 hover:text-(--ep-strong) rounded-xl transition-colors"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+      {seasonMode && (
+        <div className="mb-3">
+          <SeasonModeBadge mode={seasonMode} />
+        </div>
+      )}
 
       {/* ── TODAY TAB ─────────────────────────────────────────────────────── */}
       {activeTab === "today" && (

@@ -9,14 +9,14 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
-  ClipboardList, TrendingUp, User, Image, BookOpen,
-  MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
+  ClipboardList, TrendingUp, User, BookOpen,
+  MessageCircle, GraduationCap, Activity, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound, LayoutGrid, NotebookPen, LifeBuoy,
-  Brain, MessageSquareText, LibraryBig,
-  Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
+  MessageSquareText, LibraryBig,
+  Search, Newspaper, FlaskConical, Microscope, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, Mail, Sparkles,
   Wallet, Network, HeartPulse, Rocket, FileText, PhoneCall, Megaphone,
-  BookOpenCheck, Award, CalendarCheck, Crosshair, BrainCircuit, PanelLeftClose, PanelLeftOpen,
+  BookOpenCheck, Award, Crosshair, BrainCircuit, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -76,13 +76,13 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/bilan",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda", "cycle", "semaine"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda", "cycle", "semaine", "checkin"],
   },
   {
     label: "Coach",
     icon: MessageCircle,
     href: "/dashboard/client/messages",
-    matchSegments: ["messages", "checkin", "reminders", "tasks", "coach", "live"],
+    matchSegments: ["messages", "reminders", "tasks", "coach", "live"],
     badge: "messages",
   },
   {
@@ -206,7 +206,7 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Mon Suivi",
     items: [
-      { label: "Bilan & progression", icon: ClipboardCheck, segment: "moi/bilan" },
+      { label: "Bilan", icon: ClipboardCheck, segment: "moi/bilan" },
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
       // Remonté ici (retour direct 2026-09-22 : "l'agenda c'est important
       // alors en max 2 clics à accéder") — en 7e position sur 12, la
@@ -216,31 +216,13 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
       // techniquement accessible en 2 taps. 3e position = visible d'emblée,
       // juste après Bilan et Nutrition, sans scroll.
       { label: "Agenda",         icon: CalendarDays,   segment: "moi/agenda" },
-      // Revue de la semaine (audit 2026-09-29) : le rituel de pilotage perso
-      // du dimanche, placé juste après l'agenda pour rester visible sans
-      // scroll sur mobile, comme lui.
-      { label: "Ma semaine",     icon: CalendarCheck,  segment: "moi/semaine" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
-      { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
-      // Performances par discipline (2026-10-07) : masqué tant qu'aucune
-      // discipline n'est choisie dans Mon appli (hiddenSegments).
-      { label: "Performances",   icon: Trophy,         segment: "moi/performances" },
       // Manquait entièrement (trouvé en audit 2026-08-19) : un coach était
       // redirigé hors de toute page de lecture de formation, aucun moyen
       // de suivre son propre contenu (dont ENTREPRENARIAL SECRET, écrit
       // pour un coach). Voir app/dashboard/coach/moi/formations/page.tsx.
       { label: "Formations",     icon: GraduationCap,  segment: "moi/formations" },
-      { label: "Road Map",       icon: Map,            segment: "moi/roadmap" },
-      { label: "Steps",          icon: Footprints,     segment: "moi/steps" },
       { label: "Sommeil",        icon: Watch,          segment: "moi/tracking" },
-      { label: "Photos",         icon: Image,          segment: "moi/photos" },
-      { label: "Mindset",        icon: Brain,          segment: "moi/mindset" },
-      // Manquait entièrement côté coach (trouvé en creusant Steps : le
-      // bouton "créer un rappel depuis une habitude de routine" n'apparaît
-      // jamais faute de page/route "Mes rappels" côté coach, alors que
-      // RemindersView est déjà 100% générique — voir
-      // app/dashboard/coach/moi/reminders/page.tsx).
-      { label: "Rappels",        icon: Bell,           segment: "moi/reminders" },
     ],
   },
   {
@@ -265,27 +247,19 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
     group: "Training",
     items: [
       { label: "Programme", icon: Dumbbell,  segment: "program" },
-      { label: "Logbook",   icon: BookOpen,  segment: "logbook" },
-      { label: "Performances", icon: Trophy, segment: "performances" },
     ],
   },
   {
     group: "Suivi",
     items: [
-      { label: "Bilan & progression", icon: ClipboardCheck, segment: "bilan" },
+      { label: "Bilan", icon: ClipboardCheck, segment: "bilan" },
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
       // Remonté ici (retour direct 2026-09-22 : "l'agenda c'est important
       // alors en max 2 clics à accéder") — même correctif que côté coach
       // ci-dessus : 4e pastille sur 9 = hors écran, scroll nécessaire.
       { label: "Agenda",         icon: CalendarDays,    segment: "agenda" },
-      // Revue de la semaine, ouverte à tous (gratuit compris) : contrairement
-      // au check-in, personne n'a besoin d'un coach pour la lire.
-      { label: "Ma semaine",     icon: CalendarCheck,   segment: "semaine" },
-      { label: "Road Map",       icon: Map,             segment: "roadmap" },
-      { label: "Steps",          icon: Footprints,      segment: "steps" },
       { label: "Sommeil",       icon: Watch,           segment: "tracking" },
-      { label: "Photos",         icon: Image,           segment: "photos" },
-      { label: "Mindset",        icon: Brain,           segment: "mindset" },
+      { label: "Check-in", icon: ClipboardList, segment: "checkin", freeLocked: true },
       // N'apparaît que pour les clientes dont la fiche client indique le
       // genre "Femme" — filtré dynamiquement dans useNavState (showCycle).
       { label: "Cycle",          icon: Droplet,         segment: "cycle" },
@@ -302,8 +276,6 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
       // "reserve aux membres coaching" (CoachOnlyGate) plutot que du contenu
       // vide — voir app/dashboard/client/{tasks,checkin,live}/page.tsx.
       { label: "Mes tâches", icon: ListChecks,  segment: "tasks", freeLocked: true },
-      { label: "Rappels", icon: Bell,           segment: "reminders" },
-      { label: "Check-in", icon: ClipboardList, segment: "checkin", freeLocked: true },
       { label: "Coaching live", icon: Video,   segment: "live", freeLocked: true },
     ],
   },

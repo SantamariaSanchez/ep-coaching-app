@@ -18,6 +18,7 @@ import { trainingStyleFromPractices } from "@/lib/training-styles";
 import { saveOwnProgram } from "./actions";
 import Link from "next/link";
 import { Dumbbell, Play, MessageCircle } from "lucide-react";
+import PageLinks from "@/components/ui/PageLinks";
 
 const SESSION_BASE_PATH = "/dashboard/client/logbook";
 
@@ -107,6 +108,7 @@ export default async function ClientProgramPage() {
 
   return (
     <div className="page-transition px-4 pt-5 pb-24 md:pb-8 max-w-2xl lg:max-w-4xl mx-auto">
+      <PageLinks links={[{ kind: "logbook", label: "Logbook", href: "/dashboard/client/logbook" }, { kind: "performances", label: "Performances", href: "/dashboard/client/performances" }]} />
       {(!program || !weekCtx) && (
         <div className="animate-fade-up" style={{ marginBottom: 28 }}>
           <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Entraînement")}</p>

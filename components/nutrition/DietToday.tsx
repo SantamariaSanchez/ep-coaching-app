@@ -285,9 +285,9 @@ export default function DietToday({
   // Grand écran : semaine en haut, repas du moment à gauche, journée à droite.
   return (
     <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_auto_auto_auto_auto] lg:gap-x-4 lg:gap-y-3 lg:items-start">
-      {/* Ordre mobile : d'abord les kcal et macros du jour (ce que l'on veut voir en ouvrant Nutrition), puis le jour choisi, le repas à manger, la liste des repas. */}
+      {/* Ordre mobile (audit 2026-11-13) : kcal et macros, le repas du moment, la liste des repas, puis la semaine. */}
       {/* 1. La semaine en un coup d'œil, et le choix du jour */}
-      <section aria-label={t("Ma semaine")} className="order-2 lg:order-none lg:col-span-2 lg:row-start-1 rounded-2xl border border-(--ep-line)/25 bg-(--ep-s1) px-1.5 pt-2 pb-1.5">
+      <section aria-label={t("Ma semaine")} className="order-5 lg:order-none lg:col-span-2 lg:row-start-1 rounded-2xl border border-(--ep-line)/25 bg-(--ep-s1) px-1.5 pt-2 pb-1.5">
         <div className="flex items-center gap-1 px-1 mb-1">
           {onShiftWeek && (
             <button type="button" aria-label={t("Semaine précédente")} disabled={!canPrevWeek} onClick={() => onShiftWeek(-7)} className="w-8 h-8 -my-1 rounded-lg flex items-center justify-center text-(--ep-ink)/55 disabled:opacity-25">
@@ -346,7 +346,7 @@ export default function DietToday({
       {isToday && focusMeal && focus && focusTag && (
         <section
           aria-label={t("Repas du moment")}
-          className="order-4 lg:order-none lg:col-start-1 lg:row-start-4 rounded-2xl border bg-(--ep-s1) p-3.5"
+          className="order-2 lg:order-none lg:col-start-1 lg:row-start-4 rounded-2xl border bg-(--ep-s1) p-3.5"
           style={{ borderColor: "rgba(var(--ep-accent-rgb),0.45)", boxShadow: "0 0 28px rgba(var(--ep-accent-rgb),0.10)" }}
         >
           <div className="flex items-start gap-2">
@@ -434,7 +434,7 @@ export default function DietToday({
       )}
 
       {isToday && !focus && plannedMeals.length > 0 && (
-        <section className="order-4 lg:order-none lg:col-start-1 lg:row-start-4 rounded-2xl border border-(--ep-ok)/30 bg-(--ep-ok)/[0.06] p-3.5 flex items-center gap-3">
+        <section className="order-2 lg:order-none lg:col-start-1 lg:row-start-4 rounded-2xl border border-(--ep-ok)/30 bg-(--ep-ok)/[0.06] p-3.5 flex items-center gap-3">
           <span className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-(--ep-ok)/15 text-(--ep-ok)">
             <Check size={20} strokeWidth={3} />
           </span>
@@ -498,9 +498,6 @@ export default function DietToday({
                   </div>
                 ))}
               </div>
-              {toCome.calories > 0 && (
-                <p className="mt-2 text-[10.5px] text-(--ep-ink)/40 leading-snug">{t("Plein : mangé. Pâle : encore prévu aujourd'hui.")}</p>
-              )}
             </>
           ) : (
             <p className="mt-1.5 text-[12px] text-(--ep-ink)/50 leading-snug">
@@ -525,7 +522,7 @@ export default function DietToday({
       </section>
 
       {/* 4. La liste des repas du jour */}
-      <section aria-label={t("Mes repas")} className={`order-5 lg:order-none ${sideCol ? "lg:col-start-2 lg:row-start-3 lg:row-span-2" : "lg:col-span-2 lg:row-start-4"} rounded-2xl border border-(--ep-line)/25 bg-(--ep-s1) overflow-hidden`}>
+      <section aria-label={t("Mes repas")} className={`order-4 lg:order-none ${sideCol ? "lg:col-start-2 lg:row-start-3 lg:row-span-2" : "lg:col-span-2 lg:row-start-4"} rounded-2xl border border-(--ep-line)/25 bg-(--ep-s1) overflow-hidden`}>
         <div className="flex items-center gap-2 px-3.5 pb-2 pt-3">
           <p className="flex-1 text-[10px] font-black uppercase tracking-widest text-(--ep-ink)/50">{t("Mes repas")}</p>
           <p className="text-[11px] text-(--ep-ink)/55">

@@ -13,6 +13,7 @@ import ProgramWeekView from "@/components/ui/ProgramWeekView";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { getProgramWeekContext } from "@/utils/program-week";
 import { saveOwnCoachProgram } from "./actions";
+import PageLinks from "@/components/ui/PageLinks";
 
 export default async function CoachMonProgrammePage() {
   const t = await getT();
@@ -34,6 +35,7 @@ export default async function CoachMonProgrammePage() {
 
   return (
     <div className="px-4 pt-5 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <PageLinks links={[{ kind: "logbook", label: "Logbook", href: "/dashboard/coach/moi/logbook" }, { kind: "performances", label: "Performances", href: "/dashboard/coach/moi/performances" }]} />
       {/* Refonte 2026-10-20 (retour direct : « qu'on voie bien le jour,
           l'heure, les accessoires, quelle salle et quels exos ») : même vue
           que le client, voir components/ui/ProgramWeekView (séries par muscle
