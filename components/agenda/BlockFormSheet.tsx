@@ -23,6 +23,7 @@ export default function BlockFormSheet({
   editing,
   allowRepeat,
   overlapsFor,
+  freeSlotFor,
   onSave,
   onDelete,
   onClose,
@@ -31,6 +32,8 @@ export default function BlockFormSheet({
   editing: boolean;
   allowRepeat: boolean;
   overlapsFor: (f: BlockFormData) => string[];
+  /** Premier créneau libre de même durée ce jour-là (null : journée pleine). */
+  freeSlotFor?: (f: BlockFormData) => { start: string; end: string } | null;
   onSave: (data: BlockFormData, repeatDays: number[]) => Promise<string | null>;
   onDelete?: () => void;
   onClose: () => void;
@@ -43,6 +46,10 @@ export default function BlockFormSheet({
   const [err, setErr] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState(false);
   const ov = overlapsFor(form);
+  const slot = ov.length > 0 && freeSlotFor ? freeSlotFor(form) : null;
+  // Pas de chevauchement possible (audit 2026-11-13) : tant qu'il en reste
+  // un et qu'un créneau libre existe, on propose de s'y placer.
+  const blocked = ov.length > 0 && !!slot;
 
   async function save() {
     if (!form.label.trim()) return setErr(t("Nom du bloc obligatoire."));
@@ -73,7 +80,7 @@ export default function BlockFormSheet({
             </button>
           )}
           <div className="flex-1">
-            <PrimaryButton onClick={save} disabled={busy}>{busy ? t("Enregistrement…") : t("Enregistrer")}</PrimaryButton>
+            <PrimaryButton onClick={save} disabled={busy || blocked}>{busy ? t("Enregistrement…") : t("Enregistrer")}</PrimaryButton>
           </div>
         </div>
       }
@@ -146,12 +153,25 @@ export default function BlockFormSheet({
         </section>
 
         {ov.length > 0 && (
-          <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ border: "1px solid rgba(var(--ep-warn-rgb),0.3)", background: "rgba(var(--ep-warn-rgb),0.1)" }}>
-            <AlertTriangle size={13} style={{ color: "var(--ep-warn)", flexShrink: 0, marginTop: 1 }} />
-            <p style={{ fontSize: 11, color: "var(--ep-warn)", margin: 0, lineHeight: 1.4 }}>{t("Chevauche")} {ov.join(", ")}.</p>
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ border: "1px solid rgba(var(--ep-warn-rgb),0.3)", background: "rgba(var(--ep-warn-rgb),0.1)" }}>
+            <AlertTriangle size={13} style={{ color: "var(--ep-warn)", flexShrink: 0 }} />
+            <p style={{ flex: 1, fontSize: 11, color: "var(--ep-warn)", margin: 0, lineHeight: 1.4 }}>{t("Chevauche")} {ov.join(", ")}.</p>
+            {slot && (
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, start_time: slot.start, end_time: slot.end }))}
+                className="flex-shrink-0 rounded-lg px-2.5 min-h-9 text-[11px] font-black"
+                style={{ background: "var(--ep-warn)", color: "var(--ep-bg)", border: "none" }}
+              >
+                {slot.start}
+              </button>
+            )}
           </div>
         )}
 
+        <details>
+          <summary className="cursor-pointer text-[11px] font-black uppercase tracking-wider text-(--ep-ink)/45 min-h-9 flex items-center">{t("Plus")}</summary>
+          <div className="space-y-4 pt-2">
         <section>
           <SectionLabel>{t("Couleur")}</SectionLabel>
           <div className="flex gap-2 flex-wrap">
@@ -203,6 +223,9 @@ export default function BlockFormSheet({
           <SectionLabel>{t("Notes (optionnel)")}</SectionLabel>
           <textarea aria-label={t("Notes (optionnel)")} rows={2} value={form.notes ?? ""} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value || null }))} className={`${inputClass} resize-none`} />
         </section>
+
+          </div>
+        </details>
 
         <ToggleRow on={form.notify} onChange={(v) => setForm((f) => ({ ...f, notify: v }))} label={t("Me notifier au début de ce bloc")} />
         <ErrorText>{err}</ErrorText>

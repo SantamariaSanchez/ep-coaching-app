@@ -153,6 +153,9 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
 
         <div className="order-1 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-4 flex flex-col gap-4">
           <BilanCollapse key={date} doneAtLoad={doneToday}>{formBlock}</BilanCollapse>
+          <details className="rounded-xl border border-(--ep-line)/20 px-3">
+            <summary className="cursor-pointer min-h-11 flex items-center text-[11px] font-black uppercase tracking-wider text-(--ep-ink)/45">{t("Réglages")}</summary>
+            <div className="flex flex-col gap-3 pb-3">
           <TrackingLevelPicker
             level={tracking.level}
             autoLevel={tracking.autoLevel}
@@ -164,6 +167,8 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
             compact
           />
           <WearableToggle value={tracking.wearable} onSet={setWearableAction} />
+            </div>
+          </details>
         </div>
 
         <div className="order-3 lg:col-start-2 lg:row-start-2">

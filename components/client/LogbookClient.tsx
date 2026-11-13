@@ -410,7 +410,7 @@ export default function LogbookClient({
         <section className="mb-8">
           <SectionLabel>{showingAllHistory ? t("Tout mon historique") : t("Mes dernières séances")}</SectionLabel>
           <div className="space-y-2">
-            {sessions.map((s) => (
+            {(showingAllHistory ? sessions : sessions.slice(0, 3)).map((s) => (
               <SessionHistoryCard
                 key={s.id}
                 session={s}
@@ -439,7 +439,7 @@ export default function LogbookClient({
               </div>
             </div>
           )}
-          {!showingAllHistory && !historyError && sessions.length >= historyLimit && (
+          {!showingAllHistory && !historyError && sessions.length > 3 && (
             <Link
               href={`${sessionBasePath}?historique=tout`}
               className="mt-3 w-full flex items-center justify-center gap-1.5 border border-dashed border-(--ep-line)/30 hover:border-(--ep-line)/60 rounded-xl px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-(--ep-ink)/45 hover:text-(--ep-ink)/75 transition-colors"
@@ -467,16 +467,21 @@ export default function LogbookClient({
       )}
 
       {/* ── Ma progression ── */}
-      <section className="mb-8">
-        <SectionLabel>{t("Ma progression : par exercice")}</SectionLabel>
-        <ExerciseProgressionChart sessions={sessions} records={records} />
-      </section>
+      {/* Replié (audit 2026-11-13) : la progression ne s'ouvre qu'à la demande. */}
+      <details className="mb-4 rounded-xl border border-(--ep-line)/25 bg-(--ep-s1) px-4">
+        <summary className="cursor-pointer min-h-12 flex items-center text-[12px] font-black uppercase tracking-wider text-(--ep-ink)/60">{t("Progression par exercice")}</summary>
+        <div className="pb-4">
+          <ExerciseProgressionChart sessions={sessions} records={records} />
+        </div>
+      </details>
 
       {checkins.length > 0 && (
-        <section>
-          <SectionLabel>{t("Ma progression : poids & nutrition")}</SectionLabel>
-          <ClientProgressCharts checkins={checkins} />
-        </section>
+        <details className="rounded-xl border border-(--ep-line)/25 bg-(--ep-s1) px-4">
+          <summary className="cursor-pointer min-h-12 flex items-center text-[12px] font-black uppercase tracking-wider text-(--ep-ink)/60">{t("Poids et nutrition")}</summary>
+          <div className="pb-4">
+            <ClientProgressCharts checkins={checkins} />
+          </div>
+        </details>
       )}
     </div>
   );

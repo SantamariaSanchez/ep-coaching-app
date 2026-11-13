@@ -80,7 +80,9 @@ export default function CheckinForm({
 }) {
   const t = useT();
   const [showAll, setShowAll] = useState(false);
-  const compact = depth === "short" && !showAll;
+  // Sans friction (audit 2026-11-13 : « 0 check-in fait ») : version courte
+  // par défaut, sauf si le coach a choisi le bilan complet.
+  const compact = depth !== "full" && !showAll;
   const [state, formAction, isPending] = useActionState(submitCheckin, null);
   const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [videos, setVideos] = useState<(MediaItem & { label: string; tooBig?: boolean })[]>([]);
@@ -343,13 +345,12 @@ export default function CheckinForm({
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                   <AlertCircle size={12} style={{ color: "var(--ep-accent)" }} />
                   <label className={lbl} style={{ marginBottom: 0 }}>
-                    {t("Explique-nous pourquoi")}{" "}<span className="text-(--ep-accent)">*</span>
+                    {t("Explique-nous pourquoi")}
                   </label>
                 </div>
                 <textarea
                   name="attitude_explanation"
                   rows={2}
-                  required
                   placeholder={isLowAttitude
                     ? t("Qu'est-ce qui a pesé sur ton attitude cette semaine ?")
                     : t("Qu'est-ce qui t'a mis dans cet état d'esprit ?")}
@@ -401,7 +402,7 @@ export default function CheckinForm({
             question="7. Événements prévus la semaine prochaine"
             placeholder={t("Déplacement, week-end spécial, repas de famille…")}
           />
-          {depth === "short" && (
+          {depth !== "full" && (
             <button
               type="button"
               onClick={() => setShowAll((v) => !v)}
