@@ -359,3 +359,19 @@ export function pickWeekIntention(
   }
   return null;
 }
+
+// Objectifs chiffrés de la fiche de départ, rappelés dans la revue de la
+// semaine (chantier C83) : un objectif qu'on ne relit qu'au démarrage ne
+// permet jamais de dire si on avance. Champs vides ignorés, texte borné.
+export function pickStartGoals(
+  intake: { goal_3_months?: string | null; goal_12_months?: string | null } | null,
+): { short: string | null; long: string | null } | null {
+  const clean = (v?: string | null) => {
+    const s = (v ?? "").trim();
+    if (!s) return null;
+    return s.length > 200 ? `${s.slice(0, 197).trimEnd()}...` : s;
+  };
+  const short = clean(intake?.goal_3_months);
+  const long = clean(intake?.goal_12_months);
+  return short || long ? { short, long } : null;
+}
