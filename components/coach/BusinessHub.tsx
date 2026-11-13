@@ -76,19 +76,19 @@ export default function BusinessHub({
 
   return (
     <div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 mb-6">
+      <div className="flex gap-1.5 overflow-x-auto pb-1 mb-5">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
+            className={`flex-shrink-0 inline-flex items-center gap-1.5 min-h-10 px-3 rounded-full border whitespace-nowrap transition-colors ${
               activeTab === key
                 ? "bg-(--ep-accent)/12 border-(--ep-accent)/40 text-(--ep-accent)"
                 : "bg-(--ep-s1) border-(--ep-line)/20 text-(--ep-ink)/45 hover:border-(--ep-line)/40 hover:text-(--ep-ink)/70"
             }`}
           >
-            <Icon size={17} strokeWidth={activeTab === key ? 2.2 : 1.7} />
-            <span className="text-[9px] font-bold uppercase tracking-wider leading-tight">{label}</span>
+            <Icon size={14} strokeWidth={activeTab === key ? 2.2 : 1.7} />
+            <span className="text-[12px] font-bold">{label}</span>
           </button>
         ))}
       </div>
@@ -123,24 +123,16 @@ export default function BusinessHub({
       </div>
 
       <div hidden={activeTab !== "roadmap"}>
-        <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed mb-4 max-w-xl">
-          {t("Un horizon différent appelle une question différente : dans 1 an c'est l'exécution, dans 20 c'est ce qui reste si tu t'arrêtes. Écris, coche des jalons, révise régulièrement.")}
-        </p>
         <RoadmapPlanner initialVisions={initialVisions} initialMilestones={initialMilestones} />
       </div>
 
       <div hidden={activeTab !== "canvas"}>
-        <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed mb-4 max-w-xl">
-          {t("Les 9 blocs classiques du Business Model Canvas, adaptés à un business de coach individuel. Chaque bloc s'enregistre tout seul quand tu cliques ailleurs.")}
-        </p>
         <BusinessCanvasEditor canvas={canvas} />
       </div>
 
       <div hidden={activeTab !== "funnel"}>
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed max-w-xl">
-            {t("Une idée qui te plaît ? Ajoute-la directement à ton Studio créatif pour la transformer en script.")}
-          </p>
+          <span />
           <Link
             href="/dashboard/coach/studio"
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) flex-shrink-0"
@@ -151,8 +143,7 @@ export default function BusinessHub({
         <div className="space-y-3">
           {FUNNEL_STAGES.map((stage) => (
             <div key={stage.key} className="ep-card" style={{ padding: "18px 20px" }}>
-              <p className="text-sm font-black text-(--ep-strong) mb-1">{stage.label}</p>
-              <p className="text-[11.5px] text-(--ep-ink)/45 leading-relaxed mb-3">{stage.goal}</p>
+              <p className="text-sm font-black text-(--ep-strong) mb-3">{stage.label}</p>
               <div className="grid sm:grid-cols-3 gap-2">
                 {stage.formats.map((f, i) => (
                   <FunnelIdeaCard key={i} stage={stage.key} platform={f.platform} format={f.format} idea={f.idea} />
@@ -170,9 +161,7 @@ export default function BusinessHub({
       <div hidden={activeTab !== "checklist"}>
         <div>
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <p className="text-[12px] text-(--ep-ink)/40 leading-relaxed max-w-xl">
-              {t("Construis ta base : positionnement, personal branding, contenu, preuve sociale, conversion.")}
-            </p>
+            <span />
             <Link
               href="/dashboard/coach/moi/formations"
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--ep-accent) hover:text-(--ep-accent-hi) flex-shrink-0"

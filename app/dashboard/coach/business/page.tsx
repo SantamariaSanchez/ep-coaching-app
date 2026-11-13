@@ -1,4 +1,3 @@
-import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -9,7 +8,6 @@ import { getNetworkContacts } from "@/lib/coach-network";
 import { todayInParis } from "@/lib/dates";
 import BusinessHub from "@/components/coach/BusinessHub";
 import type { RoadmapMilestone } from "@/components/coach/RoadmapPlanner";
-import { Rocket } from "lucide-react";
 
 // Axe 6 (VISION.md) — demande directe 2026-08-19 : "un autre espace pour
 // tout ce qui est entreprenariat donc la construction de sa propre
@@ -19,7 +17,6 @@ import { Rocket } from "lucide-react";
 // réelles (tableau de bord, objectifs, roadmap, modèle économique, funnel,
 // réseau, checklist) plutôt qu'une page qui défile, voir BusinessHub.
 export default async function CoachBusinessPage() {
-  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -73,20 +70,7 @@ export default async function CoachBusinessPage() {
   const newClientsThisMonth = clients.filter((c) => c.start_date?.startsWith(monthPrefix)).length;
 
   return (
-    <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-          {t("Mon espace")}
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <Rocket size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
-          {t("Développer mon business")}
-        </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40 leading-relaxed max-w-xl">
-          {t("Suivre tes clients, c'est déjà couvert partout ailleurs dans l'appli. Ici, c'est ton propre business de coach : où tu en es, où tu vas, et un système pour y arriver.")}
-        </p>
-      </div>
-
+    <div className="px-4 py-4 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
       <BusinessHub
         activeClientsCount={activeClientsCount}
         newClientsThisMonth={newClientsThisMonth}
