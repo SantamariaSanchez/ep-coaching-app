@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw, Wand2 } from "lucide-react";
 import { createScript, updateScript, deleteScript, publishScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
+import { saveMontageProcessAction } from "@/app/actions/app-setup";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import { VOCABULARY_PROMPT_BLOCK } from "@/lib/content-vocabulary";
@@ -17,7 +18,7 @@ import { checkRotation } from "@/lib/studio-rotation";
 import { cleanVideoPlan } from "@/lib/youtube-studio";
 import YoutubeStudio from "@/components/coach/YoutubeStudio";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript } from "@/lib/content-formats";
-import { ContentFormatBadge, ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
+import { ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
   a_tourner: { label: "À tourner", color: "var(--ep-yellow)" },
@@ -115,20 +116,6 @@ function isNotFilmed(script: Pick<CoachScript, "platform" | "content_format">): 
   return WRITTEN_PLATFORMS.has(script.platform) || !getContentFormat(script.content_format).filmed;
 }
 
-// Libellé du bloc de texte selon la forme du format.
-function bodyLabel(script: CoachScript): string {
-  if (WRITTEN_PLATFORMS.has(script.platform) && getContentFormat(script.content_format).shape !== "slides") return "Texte du post";
-  const f = getContentFormat(script.content_format);
-  switch (f.shape) {
-    case "points": return "Accroche et points à aborder";
-    case "broll": return "Plans, texte à l'écran et voix off";
-    case "dialogue": return "Dialogue (A / B)";
-    case "tier": return "Tier list";
-    case "paires": return `${f.pairLabels?.[0] ?? ""} / ${f.pairLabels?.[1] ?? ""}`;
-    case "slides": return "Slides";
-    default: return "Script (mot pour mot)";
-  }
-}
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
 
@@ -154,7 +141,10 @@ export default function IdeationScripts({
   leadTracking,
   platforms,
   presetStatus,
+  montageProcesses,
 }: {
+  /** Process de montage écrits par le coach, par format. */
+  montageProcesses?: Record<string, string>;
   initialScripts: CoachScript[];
   /** Script à mettre en avant (lien depuis la recherche globale). */
   focusScriptId?: string;
@@ -227,7 +217,7 @@ export default function IdeationScripts({
         <CTALibrary />
       </div>
       <div hidden={subTab !== "technique"}>
-        <TechnicalLibrary />
+        <TechnicalLibrary initial={montageProcesses ?? {}} />
       </div>
     </div>
   );
@@ -1158,17 +1148,9 @@ function MyScripts({
                 >
                   {platformInfo?.label ?? script.platform}
                 </span>
-                {/* Format de contenu (2026-10-21) : face caméra, clone, tier
-                    list... La durée court/long passe en petit texte à côté. */}
-                <ContentFormatBadge formatId={script.content_format} />
                 <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
                   {script.format === "long" ? tr("long") : tr("court")}{duration ? ` · ${duration}` : ""}
                 </span>
-                {script.pillar && (
-                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.4)", padding: "3px 8px", borderRadius: 999, border: "1px solid rgba(var(--ep-ink-rgb),0.12)" }}>
-                    {script.pillar}
-                  </span>
-                )}
                 <button
                   type="button"
                   onClick={() => toggleExpanded(script.id)}
@@ -1243,8 +1225,7 @@ function MyScripts({
               {/* Format de contenu modifiable, et mode tournage pour ce
                   script (texte en grand, plans B-roll à cocher, rôle A/B). */}
               <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)" }}>
-                  {tr("Format")}
+                <label style={{ display: "inline-flex", alignItems: "center" }}>
                   <select
                     value={getContentFormat(script.content_format).id}
                     onChange={(e) => changeContentFormat(script.id, e.target.value)}
@@ -1277,11 +1258,7 @@ function MyScripts({
                   premier, en entier, clairement identifié. */}
               <div style={{ marginTop: 10, background: "rgba(var(--ep-accent-rgb),0.06)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)", borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-accent)" }}>
-                    {/* Retour direct 2026-09-18 : LinkedIn/Threads sont du
-                        texte posté tel quel, jamais lu à voix haute. */}
-                    {tr(bodyLabel(script))}
-                  </span>
+                  <span />
                   {script.content && (
                     <div style={{ display: "flex", gap: 6 }}>
                       <CopyButton text={script.content} />
@@ -1383,25 +1360,6 @@ function MyScripts({
                 </details>
               )}
 
-              {(script.hook || script.cta || script.source_reference) && (
-                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
-                  {script.hook && (
-                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.35)" }}>{tr("Hook")}{" "}</span>{script.hook}
-                    </p>
-                  )}
-                  {script.cta && (
-                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.35)" }}>{tr("CTA parlé")}{" "}</span>{script.cta}
-                    </p>
-                  )}
-                  {script.source_reference && (
-                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)", fontStyle: "italic" }}>
-                      {tr("Source :")}{" "}{script.source_reference}
-                    </p>
-                  )}
-                </div>
-              )}
 
               {/* Signal réel (retour direct 2026-09-17, inspiré du SaaS
                   "Insider" cité par le coach) : contrairement aux vues/likes
@@ -1844,101 +1802,151 @@ function FormatScriptGenerator({ context }: { context: string | null }) {
 
 // ── Banque de hooks ────────────────────────────────────────────────────────
 
-function HookLibrary() {
-  const tr = useT();
-  const [query, setQuery] = useState("");
-  const [kindFilter, setKindFilter] = useState<"all" | "visuel" | "texte">("all");
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return HOOK_BANK.filter((h) => {
-      if (kindFilter !== "all" && h.kind !== kindFilter) return false;
-      if (!q) return true;
-      return fuzzyMatchAny([h.text, h.category], q);
-    });
-  }, [query, kindFilter]);
-
+// Hooks et CTA (audit 2026-11-13) : une catégorie à la fois, un tap copie.
+function ChipGroups({ groups }: { groups: { name: string; items: string[] }[] }) {
+  const [active, setActive] = useState(groups[0]?.name ?? "");
+  const [copied, setCopied] = useState<string | null>(null);
+  const current = groups.find((g) => g.name === active) ?? groups[0];
+  async function copy(t: string) {
+    try { await navigator.clipboard.writeText(t); setCopied(t); setTimeout(() => setCopied(null), 1500); } catch { /* refusé */ }
+  }
   return (
     <div>
-      <LibrarySearch query={query} onChange={setQuery} placeholder={tr("Chercher un hook...")} />
-      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-        {(["all", "texte", "visuel"] as const).map((k) => (
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 12 }}>
+        {groups.map((g) => (
           <button
-            key={k}
+            key={g.name}
             type="button"
-            onClick={() => setKindFilter(k)}
+            onClick={() => setActive(g.name)}
             style={{
-              fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer",
-              border: kindFilter === k ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
-              background: kindFilter === k ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
-              color: kindFilter === k ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
+              flexShrink: 0, fontSize: 12, fontWeight: 800, padding: "7px 12px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap",
+              border: g.name === current?.name ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.12)",
+              background: g.name === current?.name ? "rgba(var(--ep-accent-rgb),0.16)" : "transparent",
+              color: g.name === current?.name ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
             }}
           >
-            {k === "all" ? tr("Tous") : k === "texte" ? tr("Texte") : tr("Visuel")}
+            {g.name}
           </button>
         ))}
-        <span style={{ marginLeft: "auto", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", alignSelf: "center" }}>
-          {filtered.length}{" "}{tr("hook")}{filtered.length > 1 ? "s" : ""}
-        </span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {filtered.map((h, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-line-rgb),0.15)", borderRadius: 10, padding: "10px 12px" }}>
-            <span style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0, width: 46 }}>
-              {h.kind}
-            </span>
-            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.75)", flex: 1, lineHeight: 1.5 }}>{h.text}</p>
-            <CopyButton text={h.text} />
-          </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {current?.items.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => copy(t)}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, textAlign: "left", cursor: "pointer", width: "100%",
+              padding: "11px 12px", borderRadius: 12, border: "1px solid rgba(var(--ep-line-rgb),0.15)",
+              background: copied === t ? "rgba(var(--ep-ok-rgb),0.1)" : "rgba(var(--ep-shade-rgb),0.25)", color: "var(--ep-ink)",
+            }}
+          >
+            <span style={{ flex: 1, fontSize: 13, lineHeight: 1.45, whiteSpace: "pre-line" }}>{t}</span>
+            {copied === t ? <Check size={14} style={{ color: "var(--ep-ok)", flexShrink: 0 }} /> : <Copy size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />}
+          </button>
         ))}
       </div>
     </div>
   );
 }
 
-// ── Exemples de CTA ────────────────────────────────────────────────────────
+function groupBy<T>(items: T[], key: (x: T) => string, text: (x: T) => string) {
+  const m = new Map<string, string[]>();
+  for (const x of items) m.set(key(x), [...(m.get(key(x)) ?? []), text(x)]);
+  return [...m.entries()].map(([name, list]) => ({ name, items: list }));
+}
+
+function HookLibrary() {
+  const groups = useMemo(() => groupBy(HOOK_BANK, (h) => h.category, (h) => h.text), []);
+  return <ChipGroups groups={groups} />;
+}
 
 function CTALibrary() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {CTA_EXAMPLES.map((c, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(var(--ep-shade-rgb),0.25)", border: "1px solid rgba(var(--ep-line-rgb),0.15)", borderRadius: 10, padding: "10px 12px" }}>
-          <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.75)", lineHeight: 1.5 }}>{c.text}</p>
-            <p style={{ margin: "3px 0 0", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)" }}>{c.goal}</p>
-          </div>
-          <CopyButton text={c.text} />
-        </div>
-      ))}
-    </div>
-  );
+  const groups = useMemo(() => groupBy(CTA_EXAMPLES, (c) => c.goal.split(" · ")[0], (c) => c.text), []);
+  return <ChipGroups groups={groups} />;
 }
 
 // ── Fiches techniques de montage ───────────────────────────────────────────
 
-function TechnicalLibrary() {
+// Montage (audit 2026-11-13) : chaque coach écrit son propre process, un par
+// format de contenu. Les fiches de référence restent en exemples repliés.
+function TechnicalLibrary({ initial }: { initial: Record<string, string> }) {
+  const tr = useT();
+  const [formatId, setFormatId] = useState(CONTENT_FORMATS[0].id);
+  const [texts, setTexts] = useState<Record<string, string>>(initial);
+  const [saved, setSaved] = useState<Record<string, string>>(initial);
+  const [pending, startSave] = useTransition();
+  const [err, setErr] = useState<string | null>(null);
+  const value = texts[formatId] ?? "";
+  const dirty = value !== (saved[formatId] ?? "");
+  function save() {
+    setErr(null);
+    startSave(async () => {
+      const res = await saveMontageProcessAction(formatId, value);
+      if (res.error) setErr(res.error);
+      else setSaved((p) => ({ ...p, [formatId]: value }));
+    });
+  }
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {TECHNICAL_SHEETS.map((sheet, i) => (
-        <div key={i} className="ep-card" style={{ padding: 18 }}>
-          <p style={{ margin: "0 0 4px", fontSize: 14.5, fontWeight: 800, color: "var(--ep-ink)" }}>{sheet.title}</p>
-          <p style={{ margin: "0 0 12px", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", lineHeight: 1.6 }}>{sheet.summary}</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {sheet.steps.map((step, j) => (
-              <div key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <span
-                  style={{
-                    flexShrink: 0, width: 20, height: 20, borderRadius: "50%", background: "var(--ep-accent)", color: "#fff",
-                    fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1,
-                  }}
+    <div>
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 10 }}>
+        {CONTENT_FORMATS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => setFormatId(f.id)}
+            style={{
+              flexShrink: 0, fontSize: 12, fontWeight: 800, padding: "7px 12px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap",
+              border: f.id === formatId ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.12)",
+              background: f.id === formatId ? "rgba(var(--ep-accent-rgb),0.16)" : "transparent",
+              color: f.id === formatId ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
+            }}
+          >
+            {tr(f.label)}{saved[f.id] ? " ✓" : ""}
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={value}
+        onChange={(e) => setTexts((p) => ({ ...p, [formatId]: e.target.value }))}
+        rows={10}
+        placeholder={"1. \n2. \n3. "}
+        aria-label={tr("Mon process de montage")}
+        style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6 }}
+      />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+        <button
+          type="button"
+          onClick={save}
+          disabled={!dirty || pending}
+          style={{ padding: "9px 18px", borderRadius: "var(--radius-lg)", border: "none", fontWeight: 800, fontSize: 12.5, cursor: dirty ? "pointer" : "default", background: dirty ? "var(--ep-accent)" : "rgba(var(--ep-ink-rgb),0.07)", color: dirty ? "#fff" : "rgba(var(--ep-ink-rgb),0.35)" }}
+        >
+          {pending ? tr("Enregistrement...") : tr("Enregistrer")}
+        </button>
+        {err && <span style={{ fontSize: 12, color: "var(--ep-bad)" }}>{err}</span>}
+      </div>
+      <details style={{ marginTop: 18 }}>
+        <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 800, color: "rgba(var(--ep-ink-rgb),0.5)" }}>{tr("Exemples")}</summary>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
+          {TECHNICAL_SHEETS.map((sheet) => (
+            <div key={sheet.title} className="ep-card" style={{ padding: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800 }}>{sheet.title}</p>
+                <button
+                  type="button"
+                  onClick={() => setTexts((p) => ({ ...p, [formatId]: [p[formatId]?.trimEnd(), sheet.steps.map((x, j) => `${j + 1}. ${x}`).join("\n")].filter(Boolean).join("\n\n") }))}
+                  style={{ fontSize: 11, fontWeight: 800, color: "var(--ep-accent)", background: "none", border: "1px dashed rgba(var(--ep-accent-rgb),0.4)", borderRadius: 8, padding: "5px 9px", cursor: "pointer", flexShrink: 0 }}
                 >
-                  {j + 1}
-                </span>
-                <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: 1.6 }}>{step}</p>
+                  {tr("Ajouter")}
+                </button>
               </div>
-            ))}
-          </div>
+              <ol style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.6 }}>
+                {sheet.steps.map((x) => <li key={x}>{x}</li>)}
+              </ol>
+            </div>
+          ))}
         </div>
-      ))}
+      </details>
     </div>
   );
 }

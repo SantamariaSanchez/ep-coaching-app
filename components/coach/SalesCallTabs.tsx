@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
-import { ListChecks, MessageCircleQuestion, PhoneCall } from "lucide-react";
+import { ListChecks, MessageCircleQuestion } from "lucide-react";
 import type { SalesCall } from "@/lib/sales-calls";
 import SalesCallsTable from "@/components/coach/SalesCallsTable";
 import SalesCallScripts from "@/components/coach/SalesCallScripts";
@@ -22,8 +22,8 @@ export default function SalesCallTabs({ calls }: { calls: SalesCall[] }) {
       <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
         {(
           [
-            { id: "suivi", label: t("Suivi"), icon: ListChecks },
-            { id: "closing", label: t("Questions de closing"), icon: MessageCircleQuestion },
+            { id: "suivi", label: t("Mes appels"), icon: ListChecks },
+            { id: "closing", label: t("Closing"), icon: MessageCircleQuestion },
           ] as const
         ).map(({ id, label, icon: Icon }) => (
           <button
@@ -46,12 +46,6 @@ export default function SalesCallTabs({ calls }: { calls: SalesCall[] }) {
       </div>
 
       <div hidden={tab !== "suivi"}>
-        {calls.length === 0 ? (
-          <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
-            <PhoneCall size={26} className="text-(--ep-ink)/15 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-sm text-(--ep-ink)/35">{t("Aucun appel enregistré pour l'instant.")}</p>
-          </div>
-        ) : null}
         <SalesCallsTable calls={calls} />
       </div>
       <div hidden={tab !== "closing"}>

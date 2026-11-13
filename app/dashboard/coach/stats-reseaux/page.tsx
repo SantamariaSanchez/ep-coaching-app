@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { ExternalLink, Zap, Repeat2 } from "lucide-react";
@@ -33,7 +34,8 @@ const VERDICT: Record<Verdict, { label: string; color: string; bg: string }> = {
 const fmt = (n: number | null | undefined) => (n === null || n === undefined ? null : Math.round(n).toLocaleString("fr-FR"));
 const times = (r: number) => `×${(Math.round(r * 10) / 10).toLocaleString("fr-FR")}`;
 
-export default async function WhatWorksPage() {
+export default async function WhatWorksPage({ searchParams }: { searchParams: Promise<{ tout?: string }> }) {
+  const showAll = (await searchParams).tout === "1";
   const tr = await getT();
   const user = await getUser();
   if (!user) redirect("/");
@@ -58,27 +60,18 @@ export default async function WhatWorksPage() {
   ].filter((g) => g.rows.length > 0);
 
   return (
-    <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">{tr("Business")}</p>
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-1">{tr("Ce qui marche")}</h1>
-      <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.6)", fontSize: 16, margin: "0 0 18px" }}>
-        {tr("Envoie une capture de tes stats : l'appli te dit ce qui marche et comment le refaire.")}
-      </p>
+    <div className="px-4 sm:px-6 py-4 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
 
       {inbound && (
         <section className="ep-card" style={{ padding: "12px 14px", marginBottom: 18 }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 800 }}>{tr("Demandes reçues")}</p>
           <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: 1.5 }}>{inbound.summary}</p>
-          <p style={{ margin: "4px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{tr("Les vues mesurent la visibilité. Ce qui compte, ce sont les demandes.")}</p>
         </section>
       )}
 
       {/* 1. Analyser une publication */}
       <section style={{ marginBottom: 18 }}>
         <PostEntryForm platforms={formPlatforms} scripts={data.scripts} nowLocal={nowLocal} label="Analyser une publication" />
-        <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", margin: "6px 2px 0", lineHeight: 1.5 }}>
-          {tr("Relie la publication à son script du Studio : l'appli saura quels formats et quels piliers marchent chez toi.")}
-        </p>
       </section>
 
       {/* 2. Ce qui marche chez toi */}
@@ -111,11 +104,6 @@ export default async function WhatWorksPage() {
               ))}
             </div>
           )}
-          {comparable.length > 0 && (
-            <p style={{ fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "10px 0 0" }}>
-              {tr("×1 = ta moyenne. ×1,5 = moitié mieux que d'habitude chez toi.")}
-            </p>
-          )}
         </div>
       </section>
 
@@ -130,7 +118,7 @@ export default async function WhatWorksPage() {
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {data.posts.map((p) => {
+            {data.posts.slice(0, showAll ? undefined : 6).map((p) => {
               const v = VERDICT[p.reading.verdict];
               const numbers = [
                 fmt(p.views ?? p.reach) && `${fmt(p.views ?? p.reach)} ${p.views !== null ? "vues" : "portée"}`,
@@ -199,13 +187,18 @@ export default async function WhatWorksPage() {
                 </div>
               );
             })}
+            {!showAll && data.posts.length > 6 && (
+              <Link href="?tout=1" style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-accent)", textDecoration: "none", padding: "4px 2px" }}>
+                +{data.posts.length - 6}
+              </Link>
+            )}
           </div>
         )}
       </section>
 
-      {/* 4. Les stats complètes restent sur chaque réseau */}
-      <section style={{ marginBottom: 18 }}>
-        <p className="ep-label" style={{ marginBottom: 8 }}>{tr("Tes stats complètes, sur chaque réseau")}</p>
+      {/* 4. Les stats complètes restent sur chaque réseau (replié). */}
+      <details style={{ marginBottom: 18 }}>
+        <summary className="ep-label" style={{ marginBottom: 8, cursor: "pointer" }}>{tr("Stats sur chaque réseau")}</summary>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8 }}>
           {shown.map((pl) => {
             const l = nativeStatsLink(pl, data.handles[pl]);
@@ -219,7 +212,7 @@ export default async function WhatWorksPage() {
             );
           })}
         </div>
-      </section>
+      </details>
     </div>
   );
 }

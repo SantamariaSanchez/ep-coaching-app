@@ -46,6 +46,7 @@ export default function IdeationHub({
   realLeadsByScriptId,
   leadTracking,
   platforms,
+  montageProcesses,
   initialTab,
   focusScriptId,
   focusIdeaId,
@@ -58,6 +59,7 @@ export default function IdeationHub({
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
   leadTracking?: LeadTracking;
   platforms?: string[];
+  montageProcesses?: Record<string, string>;
   /** Onglet ouvert à l'arrivée (?onglet=, lien depuis la recherche globale). */
   initialTab?: string;
   focusScriptId?: string;
@@ -170,7 +172,7 @@ export default function IdeationHub({
         <SocialGenerator active={hasOpenedGenerator} />
       </div>
       <div hidden={tab !== "scripts"}>
-        <IdeationScripts presetStatus={presetStatus} initialScripts={videoScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
+        <IdeationScripts montageProcesses={montageProcesses} presetStatus={presetStatus} initialScripts={videoScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={tab !== "posts"}>
         <WrittenPosts initialPosts={writtenPosts} />

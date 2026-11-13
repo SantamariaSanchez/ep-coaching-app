@@ -1,10 +1,8 @@
 "use client";
 
-import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
-import { Copy, Check, Search } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { SALES_CALL_LIBRARY } from "@/lib/sales-call-library";
-import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 // Bibliothèque de questions de closing (retour direct 2026-09-18 : "met
 // du contenu et plein de question à poser selon les situations, des
@@ -13,130 +11,52 @@ import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 // même logique que la bibliothèque Hooks/CTA de Studio créatif : une
 // question = une carte copiable, jamais un script à lire en continu.
 
-function CopyButton({ text }: { text: string }) {
-  const t = useT();
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        } catch {
-          // Presse-papier indisponible, le texte reste sélectionnable à la main.
-        }
-      }}
-      aria-label={t("Copier")}
-      style={{
-        display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-        background: copied ? "rgba(var(--ep-ok-rgb),0.15)" : "rgba(var(--ep-shade-rgb),0.3)",
-        border: `1px solid ${copied ? "rgba(var(--ep-ok-rgb),0.4)" : "rgba(var(--ep-ink-rgb),0.15)"}`,
-        borderRadius: 8, padding: "6px 10px", fontSize: 10.5, fontWeight: 700,
-        color: copied ? "var(--ep-ok)" : "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer",
-      }}
-    >
-      {copied ? <Check size={12} /> : <Copy size={12} />}
-      {copied ? t("Copié") : t("Copier")}
-    </button>
-  );
-}
-
+// Version courte (audit 2026-11-13) : une catégorie à la fois, la question
+// seule, un tap copie. L'explication reste en infobulle.
 export default function SalesCallScripts() {
-  const t = useT();
-  const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string | "all">("all");
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return SALES_CALL_LIBRARY
-      .filter((cat) => activeCategory === "all" || cat.id === activeCategory)
-      .map((cat) => ({
-        ...cat,
-        questions: cat.questions.filter(
-          (question) =>
-            !q ||
-            fuzzyMatchAny([question.text, question.note], q)
-        ),
-      }))
-      .filter((cat) => cat.questions.length > 0);
-  }, [query, activeCategory]);
-
+  const [active, setActive] = useState(SALES_CALL_LIBRARY[0]?.id ?? "");
+  const [copied, setCopied] = useState<string | null>(null);
+  const cat = useMemo(() => SALES_CALL_LIBRARY.find((c) => c.id === active) ?? SALES_CALL_LIBRARY[0], [active]);
+  async function copy(t: string) {
+    try { await navigator.clipboard.writeText(t); setCopied(t); setTimeout(() => setCopied(null), 1500); } catch { /* refusé */ }
+  }
   return (
     <div>
-      <div style={{ position: "relative", marginBottom: 14 }}>
-        <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("Chercher une question (ex. prix, réfléchir, conjoint...)")}
-          aria-label={t("Chercher une question de closing")}
-          style={{
-            width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-accent-rgb),0.2)",
-            borderRadius: "var(--radius-lg)", color: "var(--ep-ink)", padding: "12px 16px 12px 32px",
-            fontSize: 13, outline: "none",
-          }}
-        />
-      </div>
-
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-        <button
-          type="button"
-          onClick={() => setActiveCategory("all")}
-          style={{
-            fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer",
-            border: activeCategory === "all" ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
-            background: activeCategory === "all" ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
-            color: activeCategory === "all" ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
-          }}
-        >
-          {t("Tout")}
-        </button>
-        {SALES_CALL_LIBRARY.map((cat) => (
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 12 }}>
+        {SALES_CALL_LIBRARY.map((c) => (
           <button
-            key={cat.id}
+            key={c.id}
             type="button"
-            onClick={() => setActiveCategory(cat.id)}
+            onClick={() => setActive(c.id)}
             style={{
-              fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer",
-              border: activeCategory === cat.id ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.15)",
-              background: activeCategory === cat.id ? "rgba(var(--ep-accent-rgb),0.16)" : "rgba(var(--ep-shade-rgb),0.25)",
-              color: activeCategory === cat.id ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
+              flexShrink: 0, whiteSpace: "nowrap", fontSize: 12, fontWeight: 800, padding: "7px 12px", borderRadius: 999, cursor: "pointer",
+              border: c.id === cat?.id ? "1px solid var(--ep-accent)" : "1px solid rgba(var(--ep-ink-rgb),0.12)",
+              background: c.id === cat?.id ? "rgba(var(--ep-accent-rgb),0.16)" : "transparent",
+              color: c.id === cat?.id ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.55)",
             }}
           >
-            {cat.label}
+            {c.label}
           </button>
         ))}
       </div>
-
-      {filtered.length === 0 ? (
-        <div className="bg-(--ep-s1) border border-dashed border-(--ep-line)/25 rounded-xl py-16 text-center">
-          <p className="text-sm text-(--ep-ink)/35">{t("Aucune question ne correspond à \"")}{query}&quot;.</p>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-          {filtered.map((cat) => (
-            <div key={cat.id}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "var(--ep-ink)", margin: "0 0 4px" }}>{cat.label}</p>
-              <p style={{ fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.4)", margin: "0 0 12px", lineHeight: 1.5 }}>{cat.intro}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {cat.questions.map((q, i) => (
-                  <div key={i} className="ep-card" style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                      <p style={{ margin: 0, fontSize: 13, color: "var(--ep-ink)", lineHeight: 1.55, flex: 1 }}>{q.text}</p>
-                      <CopyButton text={q.text} />
-                    </div>
-                    <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.5, fontStyle: "italic" }}>
-                      {q.note}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {cat?.questions.map((q) => (
+          <button
+            key={q.text}
+            type="button"
+            title={q.note}
+            onClick={() => copy(q.text)}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, textAlign: "left", width: "100%", cursor: "pointer",
+              padding: "11px 12px", borderRadius: 12, border: "1px solid rgba(var(--ep-line-rgb),0.15)",
+              background: copied === q.text ? "rgba(var(--ep-ok-rgb),0.1)" : "rgba(var(--ep-shade-rgb),0.25)", color: "var(--ep-ink)",
+            }}
+          >
+            <span style={{ flex: 1, fontSize: 13, lineHeight: 1.45 }}>{q.text}</span>
+            {copied === q.text ? <Check size={14} style={{ color: "var(--ep-ok)", flexShrink: 0 }} /> : <Copy size={13} style={{ color: "rgba(var(--ep-ink-rgb),0.3)", flexShrink: 0 }} />}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
