@@ -585,6 +585,7 @@ const PREQUAL_LABELS: Record<string, string> = {
   motivation: "Engagement",
   pourquoi_ep_coaching: "Pourquoi EP Coaching",
   lead_qualification_signal: "Déclencheur",
+  blocage: "Ce qui bloque",
   timeline: "Démarrage",
   budget: "Budget mensuel",
   source_decouverte: "Découverte",
