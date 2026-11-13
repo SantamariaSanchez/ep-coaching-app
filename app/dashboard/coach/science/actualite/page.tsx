@@ -36,9 +36,6 @@ export default async function CoachScienceActualitePage() {
           <FlaskConical size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Science")}
         </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40">
-          {t("Synchronisé automatiquement depuis PubMed chaque jour, plus ce que tu ajoutes depuis Recherche.")}
-        </p>
       </div>
 
       <ScienceSubNav base="/dashboard/coach/science" counts={counts} />

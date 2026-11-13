@@ -121,9 +121,6 @@ export default async function CoachLivePage({
           {tr("Live")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Coaching live")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {tr("1:1, audits, suivi hebdo, accès direct, ateliers... tout ton accompagnement en direct, réuni ici.")}
-        </p>
         <Link
           href="/dashboard/coach/live/disponibilites"
           className="inline-flex items-center gap-1.5 text-[11px] font-bold text-(--ep-accent) mt-2"

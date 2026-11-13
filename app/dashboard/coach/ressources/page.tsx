@@ -40,9 +40,6 @@ export default async function CoachRessourcesPage() {
           {t("Contenu")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ressources")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Bibliothèque ouverte à tes clients accompagnés. Les membres gratuits y accèdent seulement par lien direct.")}
-        </p>
       </div>
 
       {/* Les guides/checklists/quiz publics de /ressources, aussi accessibles

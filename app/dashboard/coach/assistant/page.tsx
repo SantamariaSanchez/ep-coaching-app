@@ -36,9 +36,6 @@ export default async function CoachAssistantPage() {
           <Bot size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Mon assistant")}
         </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40 leading-relaxed max-w-xl">
-          {t("Chaque jour, ton assistant vérifie tes clients : ceux dont le bilan est à l'arrêt reçoivent une relance automatiquement, et tout problème réel trouvé apparaît ici.")}
-        </p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3 my-6">

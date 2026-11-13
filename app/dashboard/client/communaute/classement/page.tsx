@@ -72,9 +72,6 @@ export default async function ClassementPage() {
           <Trophy size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Classement")}
         </h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Séances, repas notés, bilans : chaque action réelle rapporte des points. Un seul classement pour tous. Tu peux t'en retirer dans les paramètres.")}
-        </p>
       </div>
 
       {meHidden && (

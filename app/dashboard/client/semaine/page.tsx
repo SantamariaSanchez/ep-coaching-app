@@ -42,9 +42,6 @@ export default async function ClientSemainePage({
           <CalendarCheck size={11} />{" "}{t("Suivi")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Ma semaine")}</h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {t("Tout ce que tu as noté cette semaine, en un coup d'œil. Puis 2 minutes de recul pour préparer la suivante.")}
-        </p>
       </div>
 
       {data ? (

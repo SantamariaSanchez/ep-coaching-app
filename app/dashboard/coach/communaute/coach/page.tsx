@@ -28,9 +28,6 @@ export default async function CoachPostsPage() {
           {t("Communauté")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mot du coach")}</h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40">
-          {t("Réflexions, conseils, retours d'expérience, visibles par tous les membres.")}
-        </p>
       </div>
 
       <CoachPostsManager

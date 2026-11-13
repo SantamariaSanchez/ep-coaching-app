@@ -33,9 +33,6 @@ export default async function CoachScienceBibliothequePage() {
           <FlaskConical size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Science")}
         </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40">
-          {t("Toutes les études, méta-analyses et revues archivées, issues de PubMed.")}
-        </p>
       </div>
 
       <ScienceSubNav base="/dashboard/coach/science" counts={counts} />

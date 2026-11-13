@@ -28,11 +28,6 @@ export default async function CoachMembresPage() {
           <Heart size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {t("Membres")}
         </h1>
-        <p className="text-sm text-(--ep-ink)/45 mt-2">
-          {platformView
-            ? t("Toutes les personnes inscrites sur l'appli : clients suivis, membres gratuits et coachs. Les coachs IA ne sont pas comptés.")
-            : t("Membres gratuits de la communauté, autonomes, sans suivi coaching. Ils n'apparaissent pas dans tes clients.")}
-        </p>
       </div>
 
       <MembresView members={members} relaunchMember={relaunchMember} platformView={platformView} />

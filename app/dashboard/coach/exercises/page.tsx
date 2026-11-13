@@ -65,9 +65,6 @@ export default async function CoachExercisesPage({
           <Dumbbell size={26} className="text-(--ep-accent)" strokeWidth={1.8} />
           {tr("Bibliothèque")}
         </h1>
-        <p className="mt-1 text-sm text-(--ep-ink)/40 mb-3">
-          {tr("Exercices et salles de musculation, dans un seul endroit. Le matériel d'une salle détermine ce qui y est réalisable. Tes membres peuvent aussi enrichir les deux listes.")}
-        </p>
         <div className="flex flex-wrap gap-2">
           <SeedLibraryButton label={tr("Importer la bibliothèque officielle")} action={seedOfficialExercises} />
           <SeedLibraryButton label={tr("Importer les enseignes officielles")} action={seedOfficialGyms} />

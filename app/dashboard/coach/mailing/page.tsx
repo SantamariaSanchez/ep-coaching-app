@@ -33,9 +33,6 @@ export default async function CoachMailingPage() {
           {t("Mon activité")}
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{t("Mailing")}</h1>
-        <p className="mt-2 text-sm text-(--ep-ink)/45">
-          {t("Ta newsletter : annonce un contenu, un event, un appel, une relance. Teste-le d'abord sur toi-même pour vérifier le rendu.")}
-        </p>
       </div>
 
       <CoachMailingComposer initialHistory={history} brevoLists={brevoLists} isPlatformOwner={isPlatformOwner} />
