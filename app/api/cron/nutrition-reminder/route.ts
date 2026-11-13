@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
 import { todayInParis, nowInParis, addMinutesToHhmm } from "@/lib/dates";
+import { DAILY_BILAN_REMINDER_HHMM, whoNeedsBilanReminder, bilanReminderUrl } from "@/lib/daily-bilan-reminder";
 
 // Cible 20h00 (Europe/Paris). Ancien fonctionnement : cron pg_cron déclenché
 // une seule fois par jour à un décalage UTC fixe ('0 19 * * *', "19h UTC =
@@ -27,6 +28,11 @@ export async function GET(req: Request) {
   }
 
   const { hhmm } = nowInParis();
+  // Deuxième créneau de la même tâche (toutes les 15 min) : le bilan du jour,
+  // sans nouvelle tâche planifiée à créer.
+  if (hhmm >= DAILY_BILAN_REMINDER_HHMM && hhmm < addMinutesToHhmm(DAILY_BILAN_REMINDER_HHMM, WINDOW_MINUTES)) {
+    return NextResponse.json(await sendDailyBilanReminders());
+  }
   const windowEnd = addMinutesToHhmm(TARGET_HHMM, WINDOW_MINUTES);
   if (hhmm < TARGET_HHMM || hhmm >= windowEnd) {
     return NextResponse.json({ ok: true, skipped: true, reason: "hors créneau", hhmm });
@@ -89,6 +95,25 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({ ok: true, notified, checked: profiles.length });
+}
+
+async function sendDailyBilanReminders() {
+  const supabase = createAdminClient();
+  const today = todayInParis();
+  const since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+  const { data: recent } = await supabase.from("daily_logs").select("client_id, log_date").gte("log_date", since);
+  const ids = whoNeedsBilanReminder((recent ?? []) as { client_id: string; log_date: string }[], today);
+  if (ids.length === 0) return { ok: true, bilanReminders: 0 };
+  const { data: profiles } = await supabase.from("profiles").select("id, role").in("id", ids);
+  const roleById = new Map((profiles ?? []).map((p) => [p.id as string, p.role as string | null]));
+  const title = "Ton bilan du jour";
+  const body = "30 secondes : sommeil, faim, énergie. Ta progression se voit là-dessus.";
+  for (const id of ids) {
+    const url = bilanReminderUrl(roleById.get(id));
+    await insertNotification({ userId: id, type: "bilan_reminder", title, body, url }).catch(() => {});
+    await sendPushToUser(id, title, body, url).catch(() => {});
+  }
+  return { ok: true, bilanReminders: ids.length };
 }
 
 // La tâche planifiée Supabase appelle cette route en POST (net.http_post) :
