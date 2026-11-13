@@ -5,7 +5,7 @@
 export const HOOK_VARIANTS: Record<string, string[]> = {
   ad9af5c7: ["Tu cours et tu évites la muscu de peur de devenir lourd ? Regarde ce que ça change vraiment.", "Le coureur qui évite la muscu ne se protège de rien. Il se prive d'un outil.", "Si j'étais coureur, voici les deux séances de muscu que je ferais."],
   "29d7b85f": ["Tu ne peux t'entraîner que le week-end ? Deux séances suffisent, si tu les construis comme ça.", "Trois réglages pour progresser avec deux séances par semaine.", "Si je n'avais que le samedi et le dimanche, voilà comment je m'entraînerais."],
-  "0a6351a4": ["Tu changes tes exercices toutes les semaines ? Ton carnet ne peut plus rien te dire.", "Ce qui fait grossir ton muscle, ce n'est pas la surprise. C'est la progression.", "Avant de changer un exercice, pose-toi une seule question."],
+  "0a6351a4": ["Tu changes tes exercices toutes les semaines ? Ton logbook ne peut plus rien te dire.", "Ce qui fait grossir ton muscle, ce n'est pas la surprise. C'est la progression.", "Avant de changer un exercice, pose-toi une seule question."],
   aadc6673: ["Ton sac est déjà prêt avant même que tu y penses ? C'est le vrai signal que tu as gagné.", "La motivation monte et descend. Voilà ce qui reste quand elle part.", "Douze signes que ton habitude de salle est en train de s'installer."],
   "83220ace": ["La créatine fait tomber les cheveux ? Voilà ce que montre vraiment ce qu'on sait.", "Avant d'arrêter la créatine à cause d'une rumeur, lis ça.", "Un des rares compléments qui marchent, et tu l'évites pour une rumeur."],
   c521914c: ["Coach, la partie de ton métier que personne ne montre te prend tes soirées.", "Une relance oubliée, c'est un paiement en retard. Voilà comment je trie.", "Si je devais reprendre ton administratif de coach, voici ce que j'automatiserais en premier."],
@@ -74,7 +74,7 @@ export const HOOK_VARIANTS: Record<string, string[]> = {
   bc26e671: ["Coach, personne ne sait que tu es bon parce que tu ne te filmes pas.", "Une question de client, trente secondes, une prise.", "Ta première vidéo sera moyenne. La dixième sera meilleure."],
   d830ff28: ["Tu changes de programme toutes les trois semaines ? C'est pour ça que rien ne bouge.", "Avant de changer de programme, fais mieux celui que tu as.", "Pas le meilleur programme. Celui que tu tiens."],
   "60a832f5": ["Quarante-cinq minutes au lieu d'une heure et demie ? Ne coupe pas ça.", "L'échauffement, tu le gardes. Toujours.", "Moins de séries, même intensité."],
-  da168658: ["Les courbatures ne prouvent rien.", "Au lieu de te demander si tu as mal, ouvre ton carnet.", "Les courbatures, c'est une sensation. Ton carnet, c'est une preuve."],
+  da168658: ["Les courbatures ne prouvent rien.", "Au lieu de te demander si tu as mal, ouvre ton logbook.", "Les courbatures, c'est une sensation. Ton logbook, c'est une preuve."],
   f2e4992e: ["Tu ne descends pas au squat ? Ce n'est peut-être pas ta mobilité.", "Baisse la charge et refais le test.", "La mobilité, c'est souvent l'excuse. La charge, c'est souvent le problème."],
   "0b783219": ["Repas de famille dimanche : ta semaine n'est pas foutue.", "Trois choses simples avant un repas de famille.", "Le vrai problème, c'est le « tant pis, je recommence lundi »."],
   "6615379c": ["Sans pré-workout, plus de séance ? Tu fais les choses à l'envers.", "Dans un pré-workout, le coup de fouet, c'est la caféine.", "Sommeil, repas, un chiffre à battre : la vraie base."],
@@ -101,5 +101,5 @@ export const HOOK_VARIANTS: Record<string, string[]> = {
   fc7a6b39: ["Ton torse reste plat malgré le développé couché ? Ce n'est pas l'exercice.", "Une série de développé couché, ce n'est pas une séance de pecs.", "Tu penses être à 2 répétitions de l'échec. Tu es souvent plus loin."],
   "86d2d5c2": ["Peser chaque aliment pendant des mois n'est pas obligatoire.", "Les premières semaines tu traques, ensuite des repères simples.", "Le meilleur plan, c'est celui que tu suis."],
   "27495a1b": ["Cardio à jeun pour brûler plus de gras ? Ce qui décide, c'est ton déficit.", "À quelle heure arrives-tu à le faire, et à tenir longtemps ?", "Le meilleur cardio, c'est celui que tu arriveras à suivre."],
-  "0ebfa29e": ["Charges légères ou lourdes ? Ça dépend de ce que tu veux.", "Pour la force, le choix de la charge n'est pas neutre.", "Sans carnet, tu ne sais pas si tu progresses."],
+  "0ebfa29e": ["Charges légères ou lourdes ? Ça dépend de ce que tu veux.", "Pour la force, le choix de la charge n'est pas neutre.", "Sans logbook, tu ne sais pas si tu progresses."],
 };

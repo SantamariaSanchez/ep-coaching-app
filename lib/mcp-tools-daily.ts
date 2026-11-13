@@ -164,7 +164,7 @@ export const DAILY_TOOLS: ToolDef[] = [
   {
     name: "enregistrer_serie",
     roles: ALL,
-    description: "Enregistre une série dans la séance du jour EP Coaching (la séance est démarrée si besoin). La séance se termine ensuite dans l'appli pour compter dans le carnet et les records.",
+    description: "Enregistre une série dans la séance du jour EP Coaching (la séance est démarrée si besoin). La séance se termine ensuite dans l'appli pour compter dans le logbook et les records.",
     inputSchema: {
       type: "object",
       properties: {
@@ -592,7 +592,7 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
         ? await admin.from("session_sets").update(row).eq("id", (existing as { id: string }).id).eq("session_id", sessionId)
         : await admin.from("session_sets").insert(row);
       if (error) return text("Enregistrement impossible, réessaie.");
-      return text(`${exercise}, série ${row.set_number} : ${fr(row.weight_kg, 1)} kg × ${row.reps_actual}${row.rir_actual != null ? ` (RIR ${row.rir_actual})` : ""}, notée dans « ${dayLabel} ». Termine la séance dans l'appli pour qu'elle compte dans ton carnet et tes records.`);
+      return text(`${exercise}, série ${row.set_number} : ${fr(row.weight_kg, 1)} kg × ${row.reps_actual}${row.rir_actual != null ? ` (RIR ${row.rir_actual})` : ""}, notée dans « ${dayLabel} ». Termine la séance dans l'appli pour qu'elle compte dans ton logbook et tes records.`);
     }
 
     case "mes_progres": {

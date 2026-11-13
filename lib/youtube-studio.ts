@@ -137,7 +137,7 @@ export function scoreTitle(raw: string): TitleScore {
   add("sentence", "Vraie phrase ou vraie question, sans deux-points", !/:/.test(title) && /[a-zéèêàùç]{3,}\s+[a-zéèêàùç]{2,}/i.test(title), 15, "Pas de fragment coupé par deux-points : écris une phrase que tu dirais à voix haute.");
   add("you", "Parle à « tu » ou pose une question", /\b(tu|ton|ta|tes|t'|toi|te)\b/i.test(title) || /\?\s*$/.test(title), 15, "Le titre doit parler à une personne précise.");
   add("curiosity", "Un contraste ou un manque à combler", CONTRAST.test(title) || /\?\s*$/.test(title), 15, "Ajoute une tension : un « mais », un « pourquoi », un « pas X, mais Y ».");
-  add("specific", "Un élément concret (chiffre ou objet du quotidien)", /\d/.test(title) || /\b(balance|assiette|ventre|week-end|carnet|séance|séries?|protéines?|créatine|muscle|gras|poids|salle|diète|sèche|pas|repas|soir|matin)\b/i.test(title), 10, "Un chiffre ou un objet du quotidien rend le titre précis.");
+  add("specific", "Un élément concret (chiffre ou objet du quotidien)", /\d/.test(title) || /\b(balance|assiette|ventre|week-end|carnet|logbook|séance|séries?|protéines?|créatine|muscle|gras|poids|salle|diète|sèche|pas|repas|soir|matin)\b/i.test(title), 10, "Un chiffre ou un objet du quotidien rend le titre précis.");
   add("simple_words", "Mots simples, aucun mot technique en tête", !TECH_WORDS.test(title) && !JARGON_BANNED.test(title), 10, "Remplace le mot technique par le mot du quotidien.");
   add("no_clickbait", "Aucune promesse mensongère ni mot d'appât", !CLICKBAIT.test(title), 10, "Retire les mots d'appât : le titre doit être tenu dans la vidéo.");
   add("clean", "Pas de tiret cadratin, pas de MAJUSCULES criées", !/[—–]/.test(title) && !/\b[A-ZÉÈÀ]{6,}\b/.test(title), 0, "Pas de tiret cadratin, pas de mot entier en majuscules.");
@@ -277,7 +277,7 @@ const OBJECTS: [RegExp, string][] = [
   [/ventre|taille|abdos/i, "un mètre ruban autour de la taille, en gros plan"],
   [/prot[ée]ine|whey|assiette|manger|repas|diète|calorie|week-end|écart/i, "une assiette vue de dessus, avec un seul aliment bien lisible"],
   [/cr[ée]atine|compl[ée]ment|shaker/i, "un pot de poudre et un shaker, sans marque visible"],
-  [/carnet|s[ée]rie|s[ée]ance|charge|force|stagn/i, "un carnet d'entraînement ouvert avec les chiffres qui se répètent"],
+  [/carnet|logbook|s[ée]rie|s[ée]ance|charge|force|stagn/i, "un logbook ouvert avec les chiffres qui se répètent"],
   [/sommeil|fatigue|motivation|craque|soir/i, "un frigo ou un placard ouvert dans la pénombre"],
 ];
 
