@@ -280,7 +280,7 @@ export default function ExerciseDetailPanel({
                 {t("Décisions pour cette séance")}
               </p>
               <p className="text-[10.5px] text-(--ep-ink)/35 leading-relaxed mb-4">
-                {t("Rien ici n'est déduit automatiquement, c'est ce que toi tu choisis pour ce client précis, à cette place précise du programme. La classification ci-dessous est une référence générale sur l'exercice ; ça, c'est la mise en œuvre réelle.")}
+                {t("Tes choix pour ce client, à cette place du programme.")}
               </p>
 
               <div className="space-y-4">
@@ -373,7 +373,7 @@ export default function ExerciseDetailPanel({
               )}
             </p>
             <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed mb-2">
-              {t("Ce que tu choisis ici s'affiche pour tous les clients qui font cet exercice, dans « à prévoir » (programme, logbook, séance en cours). Plusieurs accessoires possibles à la fois.")}
+              {t("Affiché à tous les clients qui font cet exercice.")}
             </p>
             {(() => {
               // Suggestion (jamais auto-appliquée, voir lib/session-accessories.ts)
@@ -468,7 +468,7 @@ export default function ExerciseDetailPanel({
               {t("Adaptations & accessoires (fiche générale de l'exercice)")}
             </p>
             <p className="text-[10.5px] text-(--ep-ink)/40 leading-relaxed mb-2">
-              {t("Astuces d'installation valables pour tous les clients sur cet exercice, pas propre à celui-ci (ça, c'est la section décisions plus haut) : élastique pour garder la tension en position raccourcie, sangles si la prise devient limitante, ajustement si une machine manque d'amplitude...")}
+              {t("Astuces valables pour tous les clients sur cet exercice.")}
             </p>
             {onUpdate ? (
               <>

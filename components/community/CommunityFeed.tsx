@@ -711,8 +711,8 @@ export default function CommunityFeed({
           </p>
           <p className="text-sm text-(--ep-ink)/45 max-w-sm mx-auto leading-relaxed">
             {type === "victory"
-              ? t("Une séance réussie, un kilo de perdu, un nouveau record : ta victoire motive toute la communauté et reste visible sur ton profil.")
-              : t("Aucune question n'est trop basique : celle que tu n'oses pas poser, quelqu'un d'autre se la pose aussi. Ton coach et toute la communauté peuvent y répondre ici.")}
+              ? t("Une séance réussie, un kilo perdu, un record : partage-le.")
+              : t("Aucune question n'est trop basique.")}
           </p>
           <div className="inline-flex items-center gap-1.5 mt-4 text-[10px] font-bold uppercase tracking-widest text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-full px-3 py-1.5">
             <Trophy size={11} strokeWidth={2} />
