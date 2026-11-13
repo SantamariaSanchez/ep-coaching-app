@@ -52,6 +52,8 @@ import {
   formatSteps,
   isOvernight,
   mealSlotOf,
+  firstFreeSlot,
+  hhmm,
   placeAll,
   placeBlock,
   prevDay,
@@ -1783,6 +1785,15 @@ export default function WeeklyAgenda({
             return relevant
               .filter((b) => b.day_of_week === f.day_of_week && b.id !== form.editingId && !isReveilLabel(b.label) && toMin(b.start_time) < e && toMin(b.end_time) > s)
               .map((b) => `${b.label} (${b.start_time.slice(0, 5)} à ${b.end_time.slice(0, 5)})`);
+          }}
+          freeSlotFor={(f) => {
+            const s = toMin(f.start_time);
+            const e = f.end_time === "00:00" ? 1440 : toMin(f.end_time);
+            const busy = relevant
+              .filter((b) => b.day_of_week === f.day_of_week && b.id !== form.editingId && !isReveilLabel(b.label))
+              .map((b) => ({ s: toMin(b.start_time), e: b.end_time.startsWith("24") || b.end_time.startsWith("00:00") ? 1440 : toMin(b.end_time) }));
+            const r = firstFreeSlot({ s, e }, busy);
+            return r ? { start: hhmm(r.s), end: hhmm(r.e) } : null;
           }}
           onClose={() => setForm(null)}
           onDelete={form.editingId ? () => { const b = blocks.find((x) => x.id === form.editingId); if (b) void removeBlock(b); } : undefined}

@@ -294,6 +294,25 @@ export function overlaps(a: { s: number; e: number }, b: { s: number; e: number 
   return a.s < b.e && b.s < a.e;
 }
 
+/**
+ * Premier créneau libre de même durée, à partir de l'heure voulue puis plus
+ * tard dans la journée, sinon plus tôt (audit 2026-11-13 : « pas de
+ * chevauchement possible, ça s'ajuste tout seul »). null si la journée est
+ * pleine. Minutes depuis minuit, fin exclusive, 1440 max.
+ */
+export function firstFreeSlot(want: { s: number; e: number }, busy: { s: number; e: number }[], step = 5): { s: number; e: number } | null {
+  const dur = want.e - want.s;
+  if (dur <= 0 || dur > 1440) return null;
+  const free = (s: number) => s >= 0 && s + dur <= 1440 && !busy.some((b) => overlaps({ s, e: s + dur }, b));
+  if (free(want.s)) return want;
+  // Candidats naturels : juste après chaque bloc occupé, puis balayage.
+  const after = busy.map((b) => b.e).filter((x) => x > want.s).sort((a, b) => a - b);
+  for (const s of after) if (free(s)) return { s, e: s + dur };
+  for (let s = want.s; s + dur <= 1440; s += step) if (free(s)) return { s, e: s + dur };
+  for (let s = want.s - step; s >= 0; s -= step) if (free(s)) return { s, e: s + dur };
+  return null;
+}
+
 // ── Réglages / préférences du générateur ──────────────────────────────────
 
 export type WorkWhen = "matin" | "apres-midi" | "soir" | "libre";
