@@ -94,7 +94,7 @@ export default function NewsletterSignupForm({
           style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
         />
         <input
-          type="email"
+          type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none"
           required
           placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
           value={email}

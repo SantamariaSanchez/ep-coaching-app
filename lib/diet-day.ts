@@ -385,14 +385,15 @@ export function roundUpForShopping(g: number): number {
 
 /** Recette de l'appli qui utilise le plus d'aliments du repas (au moins 2), pour la vue cuisine. */
 export function matchRecipe<R extends { ingredients: string[] }>(recipes: R[], foods: Pick<Food, "name">[]): R | null {
-  const keys = [...new Set(foods.map((f) => normalize(f.name).replace(/[(),].*$/, "").split(/\s+/)[0]).filter((k) => k.length >= 4))];
+  const keys = [...new Set(foods.map((f) => normalize(f.name).replace(/[(),].*$/, "").split(/\s+/)[0]).filter((k) => k.length >= 3))];
   if (keys.length < 2) return null;
   let best: R | null = null;
   let bestScore = 1;
   for (const r of recipes) {
     const text = normalize(r.ingredients.join(" "));
     let score = 0;
-    for (const k of keys) if (text.includes(k)) score++;
+    // Début de mot uniquement : « riz » compte (3 lettres), mais pas dans « chorizo ».
+    for (const k of keys) if (new RegExp(`(^|[^a-z])${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(text)) score++;
     if (score > bestScore || (score === bestScore && best && r.ingredients.length < best.ingredients.length)) {
       if (score >= 2) {
         best = r;

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, Heart, PhoneCall } from "lucide-react";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { selfSignup } from "./actions";
+import { prequalPrefill } from "@/lib/prequal-prefill";
 
 // Avant de reserver un appel, le prospect passe par un questionnaire de
 // prequalification — plus de lien Calendly direct.
@@ -109,7 +110,9 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   function handleChoice(choice: "free" | "coaching") {
     setSubmitting(choice);
     if (choice === "coaching") {
-      window.location.href = PREQUALIFICATION_URL;
+      // Coordonnées déjà saisies : transmises dans le fragment (jamais envoyé
+      // à un serveur ni journalisé) pour ne pas les redemander au formulaire.
+      window.location.href = `${PREQUALIFICATION_URL}#${prequalPrefill(fullName, email, phone)}`;
     } else {
       router.push("/dashboard/client");
       router.refresh();
@@ -130,15 +133,15 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           </div>
           <div>
             <label style={labelStyle}>{t("Prénom et nom")}</label>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder={t("Ton prénom et nom")} aria-label={t("Ton prénom et nom")} style={inputStyle} />
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" name="name" autoComplete="name" autoCapitalize="words" placeholder={t("Ton prénom et nom")} aria-label={t("Ton prénom et nom")} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>{t("Email")}</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder={t("ton@email.com")} aria-label={t("ton@email.com")} style={inputStyle} />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none" placeholder={t("ton@email.com")} aria-label={t("ton@email.com")} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>{t("Téléphone")}</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="06 12 34 56 78" aria-label="06 12 34 56 78" style={inputStyle} />
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" name="tel" autoComplete="tel" inputMode="tel" placeholder="06 12 34 56 78" aria-label="06 12 34 56 78" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>{t("Mot de passe")}</label>

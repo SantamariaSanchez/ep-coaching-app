@@ -57,12 +57,37 @@ export default async function CoachDashboard() {
   // Sans aucun client (2026-10-08) : on n'affiche ni alertes « tout va
   // bien », ni tuiles à zéro, ni grille vide. Seulement ce qui sert.
   const hasClients = clients.length > 0;
-  const [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency] = await Promise.all([
-    getPointsMap(clientIds),
-    getCoachingPhaseOverview(clientIds),
-    getClientsLastActivity(clientIds),
-    getClientsIntakeCompletion(clientIds),
-    getClientsWeeklyConsistency(clientIds),
+  const todayStr = todayInParis();
+  const { isoDow, hhmm } = nowInParis();
+  const supabase = await createServerSupabase();
+  // Un seul aller-retour pour les clients ET « ma journée » (perf 2026-11-14 :
+  // les deux lots étaient indépendants mais attendus l'un après l'autre).
+  const [
+    [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency],
+    [nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, unreadMsgs, messageable],
+  ] = await Promise.all([
+    Promise.all([
+      getPointsMap(clientIds),
+      getCoachingPhaseOverview(clientIds),
+      getClientsLastActivity(clientIds),
+      getClientsIntakeCompletion(clientIds),
+      getClientsWeeklyConsistency(clientIds),
+    ]),
+    Promise.all([
+      getNutritionProfile(user.id),
+      getTodayLogs(user.id, todayStr),
+      getScheduleBlocks(user.id),
+      getAllLiveEventsForCoach(user.id),
+      supabase
+        .from("messages")
+        .select("id, conversation_id, content, type, created_at")
+        .eq("receiver_id", user.id)
+        .eq("is_read", false)
+        .order("created_at", { ascending: false }),
+      // Membres gratuits compris : sinon leur message non lu s'affichait
+      // "Membre" au lieu de leur nom.
+      getAllMessageableMembers(user.id).catch(() => []),
+    ]),
   ]);
   const ouraEligibleIds = clients
     .filter((c) => isEligibleForLegendReward(pointsMap[c.id] ?? 0, isSubscribed(c)))
@@ -81,24 +106,6 @@ export default async function CoachDashboard() {
   // que le coach s'entraîne et se suit lui-même au quotidien (voir Moi >
   // Nutrition, Sommeil, Agenda). Même sources de données déjà utilisées par
   // ces pages, agrégées ici pour un coup d'oeil sans naviguer.
-  const todayStr = todayInParis();
-  const { isoDow, hhmm } = nowInParis();
-  const supabase = await createServerSupabase();
-  const [nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, unreadMsgs, messageable] = await Promise.all([
-    getNutritionProfile(user.id),
-    getTodayLogs(user.id, todayStr),
-    getScheduleBlocks(user.id),
-    getAllLiveEventsForCoach(user.id),
-    supabase
-      .from("messages")
-      .select("id, conversation_id, content, type, created_at")
-      .eq("receiver_id", user.id)
-      .eq("is_read", false)
-      .order("created_at", { ascending: false }),
-    // Membres gratuits compris : sinon leur message non lu s'affichait
-    // "Membre" au lieu de leur nom.
-    getAllMessageableMembers(user.id).catch(() => []),
-  ]);
 
   // Repas déjà commencés seulement (journée pré-remplie avec le plan).
   const started = todayFoodLogs.filter((l) => isSlotStarted(l.meal_slot ?? "breakfast", hhmm));

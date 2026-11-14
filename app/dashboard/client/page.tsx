@@ -50,17 +50,20 @@ export default async function ClientDashboard({
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (getAccessType(profile) === "membre_gratuit") {
-    const [preferences, checklist, activityStreak, appSetup, day] = await Promise.all([
+    // Données rapides chaînées sur les réglages au lieu d'attendre tout le
+    // lot puis de repartir pour un aller-retour de plus.
+    const appSetupP = getAppSetup(user.id);
+    const [preferences, checklist, activityStreak, appSetup, day, quick] = await Promise.all([
       getMemberPreferences(user.id),
       getOnboardingChecklist(user.id),
       // Item 42 : signal de constance déjà calculé pour item 20, réutilisé
       // ici pour rendre la relance premium contextuelle plutôt que générique.
       getClientActivityStreak(user.id),
-      getAppSetup(user.id),
+      appSetupP,
       // Membre gratuit : pas de messages, tâches ni check-in du coach.
       getClientHomeDay(user.id, { coached: false, checkinDone: true }),
+      appSetupP.then((a) => getHomeQuickData(user.id, a)),
     ]);
-    const quick = await getHomeQuickData(user.id, appSetup);
     return (
       <>
         <PushPermission userId={user.id} />
@@ -116,7 +119,7 @@ export default async function ClientDashboard({
 
   // Premières semaines : la checklist de départ, puis plus jamais.
   const weeks = weeksSince(profile?.start_date, todayInParis());
-  const [day, checklist] = await Promise.all([
+  const [day, checklist, quick] = await Promise.all([
     getClientHomeDay(user.id, {
       coached: true,
       checkinDone: !!thisWeekCheckin,
@@ -127,9 +130,9 @@ export default async function ClientDashboard({
       showCycle: intake.gender === "Femme" && periodLogsCount === 0 && isOn(appSetup, "cycle"),
     }),
     weeks < 4 ? getOnboardingChecklist(user.id) : Promise.resolve([]),
+    getHomeQuickData(user.id, appSetup),
   ]);
 
-  const quick = await getHomeQuickData(user.id, appSetup);
   return (
     <>
       <PushPermission userId={user.id} />
