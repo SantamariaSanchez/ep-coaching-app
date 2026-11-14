@@ -163,7 +163,9 @@ export function buildMessage(step: number, ctx: ReengagementContext): Reengageme
         subject: "Ce qui bloque presque tout le monde au début",
         pushTitle: "Le vrai blocage du début",
         pushBody: "Ce n'est pas la motivation. Explication en 5 min.",
-        pushUrl: "/dashboard/client/ressources",
+        // Le catalogue de guides n'est pas ouvert aux membres gratuits dans
+        // l'appli (lib/free-tier.ts) : la notification mène au guide offert.
+        pushUrl: guide ? `/ressources/${encodeURIComponent(guide.slug)}` : "/dashboard/client",
         html: wrapBrandedEmail(`
           <h2 style="color:#E01E1E;margin:0 0 14px;font-size:20px;">${hi}</h2>
           <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">La plupart des gens qui décrochent au début ne manquent pas de motivation. Ils manquent d'un point de repère : ils ne savent pas si ce qu'ils font marche, donc ils arrêtent.</p>
@@ -185,7 +187,7 @@ export function buildMessage(step: number, ctx: ReengagementContext): Reengageme
           <ul style="margin:0 0 16px;padding-left:18px;font-size:15px;line-height:1.8;color:rgba(245,237,237,0.75);">
             <li>Un calcul de tes besoins caloriques et protéiques, adapté à ton objectif</li>
             <li>Un suivi de séances qui garde tes charges et te montre si tu progresses</li>
-            <li>Une bibliothèque de guides clairs, écrits par un coach</li>
+            <li>Des guides choisis selon ton objectif, que je t'envoie au fil des semaines</li>
             <li>Un bilan hebdo qui te dit où tu en es, sans te juger</li>
           </ul>
           <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">Tout ça est déjà actif sur ton compte, gratuitement pendant tes ${FREE_TIER_DAYS} premiers jours. Et si tu veux qu'un coach ajuste tout ça pour toi, tu peux réserver un appel depuis ton espace.</p>
