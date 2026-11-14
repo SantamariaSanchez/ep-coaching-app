@@ -3,6 +3,7 @@
 import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Mail, Check } from "lucide-react";
+import { readRememberedContact, rememberContact } from "@/lib/lead-contact";
 
 // Inscription newsletter Brevo (POST /api/newsletter/subscribe, voir cette
 // route pour le detail : liste "Newsletter EP Coaching" id 6, deja
@@ -33,6 +34,9 @@ export default function NewsletterSignupForm({
         body: JSON.stringify({ email, source, website }),
       });
       const data = (await res.json()) as { ok: boolean };
+      // Email gardé pour pré-remplir un guide ou l'inscription ensuite, sans
+      // écraser un numéro déjà connu.
+      if (data.ok && !website) rememberContact(email.trim(), readRememberedContact()?.phone ?? "");
       setState(data.ok ? "done" : "error");
     } catch {
       setState("error");

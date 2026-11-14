@@ -1,12 +1,13 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, Heart, PhoneCall } from "lucide-react";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { selfSignup } from "./actions";
 import { prequalPrefill } from "@/lib/prequal-prefill";
+import { readRememberedContact } from "@/lib/lead-contact";
 
 // Avant de reserver un appel, le prospect passe par un questionnaire de
 // prequalification — plus de lien Calendly direct.
@@ -51,6 +52,16 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  // Email et numéro déjà laissés pour débloquer un guide : pré-remplis ici,
+  // après le montage (le stockage du navigateur n'existe pas côté serveur),
+  // sans jamais écraser ce que la personne a commencé à taper.
+  useEffect(() => {
+    const known = readRememberedContact();
+    if (!known) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- lecture unique du stockage local au montage
+    setEmail((v) => v || known.email);
+    setPhone((v) => v || known.phone);
+  }, []);
   // Acceptation explicite des conditions : jamais pré-cochée, et vérifiée aussi
   // côté serveur (voir selfSignup) — une case cochée dans le navigateur ne
   // prouve rien face à une requête forgée.
