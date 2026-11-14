@@ -1,3 +1,4 @@
+import { storageFileHeaders } from "@/lib/untrusted-html";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { escapeHtml, escapeLikePattern } from "@/lib/sanitize";
@@ -68,19 +69,11 @@ export async function GET(
         let htmlContent = await blob.text();
         htmlContent = htmlContent.replace("</head>", `${HTML_FIX_CSS}</head>`);
         return new NextResponse(htmlContent, {
-                headers: {
-                          "Content-Type": "text/html; charset=utf-8",
-                          "Content-Disposition": "inline",
-                          "Cache-Control": "no-cache",
-                },
+                headers: storageFileHeaders("text/html; charset=utf-8", "no-cache"),
         });
   }
 
   return new NextResponse(blob, {
-        headers: {
-                "Content-Type": blob.type || "application/octet-stream",
-                "Content-Disposition": "inline",
-                "Cache-Control": "public, max-age=3600",
-        },
+        headers: storageFileHeaders(blob.type || "application/octet-stream", "public, max-age=3600"),
   });
 }

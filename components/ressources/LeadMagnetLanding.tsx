@@ -11,20 +11,9 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import type { LeadMagnet, LeadMagnetSummary, GuideMagnet, ChecklistMagnet, QuizMagnet } from "@/lib/lead-magnets";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 import { normalizeLeadPlatform, UUID_RE, type LeadOriginInput } from "@/lib/lead-origin";
+import { readRememberedContact, rememberContact } from "@/lib/lead-contact";
 
 const UNLOCK_PREFIX = "ep-unlocked-";
-// Retour d'usage attendu (jamais mesuré jusqu'ici, mais visible dans le
-// code) : le déblocage était mémorisé PAR guide (UNLOCK_PREFIX + slug), donc
-// un visiteur qui a déjà laissé son email pour un premier guide devait
-// retaper email/téléphone pour CHAQUE guide suivant qu'il ouvrait — alors
-// que ce sont justement les leads qui en consultent plusieurs qui sont les
-// plus qualifiés. Mémorise maintenant le contact une fois donné (clé
-// partagée, pas par slug) pour débloquer automatiquement, en silence, les
-// guides suivants — sans jamais sauter l'appel `submitLead` par guide : la
-// ligne `leads` par (slug, email) reste écrite normalement, c'est la seule
-// donnée qui dit vraiment quels guides intéressent ce contact.
-const CONTACT_KEY = "ep-lead-contact";
-
 function readUnlocked(slug: string): boolean {
   if (typeof window === "undefined") return false;
   try {
@@ -42,27 +31,6 @@ function markUnlocked(slug: string) {
   }
 }
 
-function readRememberedContact(): { email: string; phone: string } | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(CONTACT_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { email?: unknown; phone?: unknown };
-    const email = typeof parsed.email === "string" ? parsed.email : "";
-    const phone = typeof parsed.phone === "string" ? parsed.phone : "";
-    return email || phone ? { email, phone } : null;
-  } catch {
-    return null;
-  }
-}
-
-function rememberContact(email: string, phone: string) {
-  try {
-    localStorage.setItem(CONTACT_KEY, JSON.stringify({ email, phone }));
-  } catch {
-    // stockage indisponible, tant pis, juste pas de déblocage auto la prochaine fois
-  }
-}
 
 // Origine du visiteur (voir lib/lead-origin.ts), mémorisée pour la session :
 // quelqu'un arrivé par le lien suivi d'une vidéo puis qui ouvre un guide
