@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { clientIp, enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { storageFileHeaders } from "@/lib/untrusted-html";
 
 // Resources are public lead-magnet content (see /ressources), so this route
 // intentionally has no auth check — same exposure as the direct Supabase
@@ -59,19 +60,11 @@ export async function GET(
         let htmlContent = await blob.text();
         htmlContent = htmlContent.replace("</head>", `${HTML_FIX_CSS}</head>`);
         return new NextResponse(htmlContent, {
-                headers: {
-                          "Content-Type": contentType,
-                          "Content-Disposition": "inline",
-                          "Cache-Control": "public, max-age=3600",
-},
+                headers: storageFileHeaders(contentType, "public, max-age=3600"),
         });
 }
 
   return new NextResponse(blob, {
-    headers: {
-        "Content-Type": contentType,
-            "Content-Disposition": "inline",
-        "Cache-Control": "public, max-age=3600",
-          },
+    headers: storageFileHeaders(contentType, "public, max-age=3600"),
   });
           }
