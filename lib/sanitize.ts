@@ -102,7 +102,9 @@ export function safeExternalUrl(value: unknown): string | null {
   const trimmed = value.trim();
   if (!trimmed || trimmed.length > LIMITS.url) return null;
   // Un chemin interne relatif est sûr et fréquent (notifications, ressources).
-  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return trimmed;
+  // "/\evil.com" est lu "//evil.com" par les navigateurs (lien vers un autre
+  // site) : un antislash n'a rien à faire dans un chemin interne.
+  if (trimmed.startsWith("/")) return trimmed.startsWith("//") || trimmed.includes("\\") ? null : trimmed;
   try {
     const parsed = new URL(trimmed);
     if (!SAFE_URL_SCHEMES.has(parsed.protocol)) return null;

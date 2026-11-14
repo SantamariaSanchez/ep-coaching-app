@@ -65,7 +65,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            type="email"
+            type="email" autoComplete="email" inputMode="email" autoCapitalize="none"
             placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
             style={{ ...inputStyle, marginBottom: 10 }}
           />
@@ -112,7 +112,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
           <label style={labelStyle}>{t("Email")}</label>
           <input
             name="email"
-            type="email"
+            type="email" autoComplete="email" inputMode="email" autoCapitalize="none"
             required
             placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
             style={inputStyle}

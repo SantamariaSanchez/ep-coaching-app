@@ -208,7 +208,13 @@ export default async function CheckinPage() {
     getClientDailyLogs(user.id, 7),
   ]);
 
-  const trackingDepth = (await getTrackingProfile(user.id).catch(() => null))?.checkin.depth ?? "standard";
+  const today = todayInParis();
+  const reviewWeekStart = resolveWeekStart(null, today);
+  const [trackingProfile, weekReview] = await Promise.all([
+    getTrackingProfile(user.id).catch(() => null),
+    !existing ? getWeeklyReview(user.id, reviewWeekStart, today) : Promise.resolve(null),
+  ]);
+  const trackingDepth = trackingProfile?.checkin.depth ?? "standard";
   const weekNum = getISOWeek(new Date(getWeekStart()));
   const avgWeight = computeWeeklyAverages(recentLogs).weight;
   const checkinDay = profile?.checkin_day ?? 1;
@@ -220,9 +226,6 @@ export default async function CheckinPage() {
   // check-in seulement : le membre a ses chiffres sous les yeux au moment
   // de répondre, au lieu de devoir les retrouver de mémoire. Le lundi,
   // c'est la semaine qui vient de se terminer qui compte.
-  const today = todayInParis();
-  const reviewWeekStart = resolveWeekStart(null, today);
-  const weekReview = !existing ? await getWeeklyReview(user.id, reviewWeekStart, today) : null;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 560, margin: "0 auto" }}>

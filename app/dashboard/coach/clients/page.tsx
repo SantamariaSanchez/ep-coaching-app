@@ -28,11 +28,10 @@ export default async function ClientsPage() {
 
   const clientIds = clients.map((c) => c.id);
   const supabase = await createServerSupabase();
-  const [inbox, unread] = await Promise.all([
+  // Boîte de réception et signaux clients lus ensemble (perf 2026-11-14).
+  const [inbox, unread, pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency] = await Promise.all([
     getCoachInbox(user.id),
     supabase.from("messages").select("id", { count: "exact", head: true }).eq("receiver_id", user.id).eq("is_read", false),
-  ]);
-  const [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency] = await Promise.all([
     getPointsMap(clientIds),
     // Coach exclusivement — repère qui décroche ou est prêt à changer de
     // phase sans avoir à ouvrir chaque fiche (voir ClientCard alerts).

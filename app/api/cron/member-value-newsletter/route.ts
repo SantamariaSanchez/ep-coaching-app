@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/sanitize";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendCoachCampaign, wrapBrandedEmail } from "@/lib/brevo-mailing";
@@ -145,10 +146,10 @@ function featureEmailBody(f: FeatureSpot): string {
 }
 
 function leadMagnetEmailBody(lm: LeadMagnetRow): string {
-  return `<p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E01E1E;">${lm.category}</p>
-<h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">${lm.title}</h1>
-<p style="margin:0 0 4px;color:rgba(245,237,237,0.75);">${lm.hook}</p>
-<div style="text-align:center;">${ctaButton("Lire le guide gratuit", `${APP_URL}/ressources/${lm.slug}`)}</div>`;
+  return `<p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E01E1E;">${escapeHtml(lm.category)}</p>
+<h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">${escapeHtml(lm.title)}</h1>
+<p style="margin:0 0 4px;color:rgba(245,237,237,0.75);">${escapeHtml(lm.hook)}</p>
+<div style="text-align:center;">${ctaButton("Lire le guide gratuit", `${APP_URL}/ressources/${encodeURIComponent(lm.slug)}`)}</div>`;
 }
 
 function coachingNudgeBody(): string {

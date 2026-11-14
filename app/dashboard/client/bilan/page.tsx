@@ -20,7 +20,7 @@ import { getTrackingProfile } from "@/lib/tracking-profile-server";
 import { bilanLayout, describeTracking, isWeighDay, nextWeighDayLabel } from "@/lib/tracking-profile";
 import { setTrackingLevelAction, setWearableAction } from "@/app/actions/tracking";
 import { nowInParis } from "@/lib/dates";
-import BilanProgressView from "@/components/ui/BilanProgressView";
+import BilanProgressView from "@/components/ui/BilanProgressLazy";
 import BilanKpiBoard from "@/components/ui/BilanKpiBoard";
 import { computeLogStreak } from "@/lib/daily-logs-helpers";
 import { upsertDailyLog } from "./actions";

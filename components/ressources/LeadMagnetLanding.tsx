@@ -247,7 +247,7 @@ function CaptureForm({
       <div style={{ position: "relative" }}>
         <Mail size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
         <input
-          type="email"
+          type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none" enterKeyHint="go"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t("Ton email")} aria-label={t("Ton email")}
@@ -258,7 +258,7 @@ function CaptureForm({
       <div style={{ position: "relative" }}>
         <Phone size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
         <input
-          type="tel"
+          type="tel" name="tel" autoComplete="tel" inputMode="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder={t("Ou ton numéro (optionnel si email rempli)")} aria-label={t("Ou ton numéro (optionnel si email rempli)")}

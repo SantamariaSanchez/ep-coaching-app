@@ -86,7 +86,9 @@ export function pickSessionBlock(
   const label = norm(dayLabel);
   const byName = candidates.filter((b) => {
     const bl = norm(b.label);
-    return label.length > 1 && (bl.includes(label) || label.includes(bl));
+    // Un libellé d'une seule lettre (« A », « B ») ne « contient » rien d'utile :
+    // sans ce garde, un bloc nommé « A » s'accrochait à n'importe quelle séance.
+    return label.length > 1 && (bl.includes(label) || (bl.length > 1 && label.includes(bl)));
   });
   const sport = strict ? [] : candidates.filter((b) => SPORT_BLOCK.test(b.label));
   const pool = byName.length ? byName : sport;

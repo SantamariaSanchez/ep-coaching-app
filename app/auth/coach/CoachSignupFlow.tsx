@@ -125,7 +125,7 @@ export default function CoachSignupFlow() {
         <input
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          type="text"
+          type="text" name="name" autoComplete="name" autoCapitalize="words"
           placeholder={t("Ton nom")} aria-label={t("Ton nom")}
           style={inputStyle}
         />
@@ -136,7 +136,7 @@ export default function CoachSignupFlow() {
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          type="email"
+          type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none"
           placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
           style={inputStyle}
         />
@@ -149,6 +149,7 @@ export default function CoachSignupFlow() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
           inputStyle={inputStyle}
+          autoComplete="new-password"
         />
         <p style={{ fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.3)", margin: "6px 0 0" }}>
           {t("8 caractères minimum.")}
