@@ -47,10 +47,53 @@ export default async function AujourdhuiPage() {
   // chargés après coup côté client (voir getWeeklyExtras dans ./actions.ts,
   // appelé depuis AujourdhuiView). Ce Promise.all attend donc 2 requêtes
   // serveur de moins avant de pouvoir rendre la page.
+  // Habitude du moment (une seule à la fois, 14 jours) : sa clé, son départ
+  // et les jours déjà cochés depuis. Lancée en même temps que le reste
+  // (perf 2026-11-14 : trois lectures attendaient la fin du lot principal).
+  const focusHabitPromise = (async (): Promise<{ key: string; progress: ReturnType<typeof focusHabitProgress> } | null> => {
+    try {
+      const admin = createAdminClient();
+      const { data: focusRow } = await admin
+        .from("profiles")
+        .select("focus_habit_key, focus_habit_since")
+        .eq("id", user.id)
+        .maybeSingle();
+      const key = (focusRow?.focus_habit_key as string | null) ?? null;
+      const since = (focusRow?.focus_habit_since as string | null) ?? null;
+      if (!key || !since) return null;
+      const { data: doneRows } = await admin
+        .from("mindset_habit_logs")
+        .select("logged_at")
+        .eq("client_id", user.id)
+        .eq("habit_key", key)
+        .gte("logged_at", since)
+        .limit(60);
+      return { key, progress: focusHabitProgress(since, todayStr, ((doneRows as { logged_at: string }[] | null) ?? []).map((r) => r.logged_at)) };
+    } catch {
+      return null;
+    }
+  })();
+
+  // Intention de la dernière revue de la semaine, rappelée ici chaque jour.
+  const weekIntentionPromise = (async (): Promise<string | null> => {
+    try {
+      const { data: reflections } = await createAdminClient()
+        .from("mindset_journal_entries")
+        .select("content, entry_date")
+        .eq("client_id", user.id)
+        .eq("prompt_key", "bilan_semaine")
+        .order("entry_date", { ascending: false })
+        .limit(3);
+      return pickWeekIntention((reflections as { content: string; entry_date: string }[] | null) ?? [], todayStr);
+    } catch {
+      return null;
+    }
+  })();
+
   const engagementPromise = subscribed ? getEngagementProgress(user.id) : Promise.resolve(null);
   const [
     allBlocks, habitLogs, biometricLogs, insights, todayLog, allSupplements,
-    nutritionProfile, todayFoodLogs, stepSettings, todaySteps,
+    nutritionProfile, todayFoodLogs, stepSettings, todaySteps, focusHabit, weekIntention,
   ] = await Promise.all([
     subscribed ? getScheduleBlocks(user.id) : Promise.resolve([]),
     getHabitLogs(user.id, todayStr),
@@ -74,49 +117,10 @@ export default async function AujourdhuiPage() {
     getTodayLogs(user.id, todayStr),
     getStepSettings(user.id),
     getTodayStepsActual(user.id),
+    focusHabitPromise,
+    weekIntentionPromise,
   ]);
   const activeSupplements = allSupplements.filter((s) => s.status === "active");
-
-  // Habitude du moment (une seule à la fois, 14 jours) : sa clé, son départ
-  // et les jours déjà cochés depuis.
-  let focusHabit: { key: string; progress: ReturnType<typeof focusHabitProgress> } | null = null;
-  try {
-    const admin = createAdminClient();
-    const { data: focusRow } = await admin
-      .from("profiles")
-      .select("focus_habit_key, focus_habit_since")
-      .eq("id", user.id)
-      .maybeSingle();
-    const key = (focusRow?.focus_habit_key as string | null) ?? null;
-    const since = (focusRow?.focus_habit_since as string | null) ?? null;
-    if (key && since) {
-      const { data: doneRows } = await admin
-        .from("mindset_habit_logs")
-        .select("logged_at")
-        .eq("client_id", user.id)
-        .eq("habit_key", key)
-        .gte("logged_at", since)
-        .limit(60);
-      focusHabit = { key, progress: focusHabitProgress(since, todayStr, ((doneRows as { logged_at: string }[] | null) ?? []).map((r) => r.logged_at)) };
-    }
-  } catch {
-    focusHabit = null;
-  }
-
-  // Intention de la dernière revue de la semaine, rappelée ici chaque jour.
-  let weekIntention: string | null = null;
-  try {
-    const { data: reflections } = await createAdminClient()
-      .from("mindset_journal_entries")
-      .select("content, entry_date")
-      .eq("client_id", user.id)
-      .eq("prompt_key", "bilan_semaine")
-      .order("entry_date", { ascending: false })
-      .limit(3);
-    weekIntention = pickWeekIntention((reflections as { content: string; entry_date: string }[] | null) ?? [], todayStr);
-  } catch {
-    weekIntention = null;
-  }
 
   const todayBlocks = allBlocks
     .filter((b) => isBlockOnDate(b, todayStr, isoDow))

@@ -65,11 +65,13 @@ export default async function EditProgramPage({ params }: { params: Promise<{ id
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
 
-  const gyms = await getTrainingGyms(id);
   // Récupération : tendance des bilans des 14 derniers jours (la fiche d'onboarding sert de repli).
-  const recentLogs = await getClientDailyLogs(id, 14);
+  const [gyms, recentLogs, photos] = await Promise.all([
+    getTrainingGyms(id),
+    getClientDailyLogs(id, 14),
+    signedPhotos(intake?.gym_photo_paths ?? [], intake?.physique_photo_paths ?? []),
+  ]);
   const recovery = recoveryFromLogs(recentLogs, intake);
-  const photos = await signedPhotos(intake?.gym_photo_paths ?? [], intake?.physique_photo_paths ?? []);
   const clientName = client.full_name ?? t("Client");
 
   return (
