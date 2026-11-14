@@ -1,5 +1,7 @@
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import type { PrimaryGoal } from "@/lib/personalization";
+import { FREE_TIER_DAYS, INACTIVITY_DELETE_DAYS } from "@/lib/free-tier";
+import { escapeHtml } from "@/lib/sanitize";
 
 // ── Séquence de relance des membres dormants ────────────────────────────────
 // Contexte réel (constaté le 2026-09-08) : sur 15 comptes clients, 14 n'ont
@@ -101,9 +103,9 @@ function guideBlock(guide: GuideRef | null, appUrl: string): string {
   return `
     <div style="background:#1f0101;border:1px solid rgba(137,4,4,0.35);border-radius:12px;padding:16px;margin:0 0 20px;">
       <p style="margin:0 0 6px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(245,237,237,0.45);">Pour toi, à lire en 5 minutes</p>
-      <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">${guide.title}</p>
-      ${guide.hook ? `<p style="margin:0 0 14px;font-size:14px;line-height:1.5;color:rgba(245,237,237,0.65);">${guide.hook}</p>` : ""}
-      <a href="${appUrl}/ressources/${guide.slug}" style="background:#E01E1E;color:#ffffff;padding:11px 22px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;font-size:14px;">
+      <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">${escapeHtml(guide.title)}</p>
+      ${guide.hook ? `<p style="margin:0 0 14px;font-size:14px;line-height:1.5;color:rgba(245,237,237,0.65);">${escapeHtml(guide.hook)}</p>` : ""}
+      <a href="${appUrl}/ressources/${encodeURIComponent(guide.slug)}" style="background:#E01E1E;color:#ffffff;padding:11px 22px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;font-size:14px;">
         Lire le guide
       </a>
     </div>`;
@@ -132,9 +134,11 @@ export interface ReengagementMessage {
  */
 export function buildMessage(step: number, ctx: ReengagementContext): ReengagementMessage {
   const { firstName, goal, guide, appUrl } = ctx;
-  const hi = firstName ? `Salut ${firstName}` : "Salut";
+  // Prénom, objectif et guide viennent de saisies libres : échappés avant
+  // d'entrer dans le HTML de l'email.
+  const hi = firstName ? `Salut ${escapeHtml(firstName)}` : "Salut";
   const goalLine = goal?.trim()
-    ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.75);">Tu avais noté ton objectif : <strong style="color:#ffffff;">${goal.trim()}</strong>. C'est là-dessus que tout ce qui suit est calibré.</p>`
+    ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.75);">Tu avais noté ton objectif : <strong style="color:#ffffff;">${escapeHtml(goal.trim())}</strong>. C'est là-dessus que tout ce qui suit est calibré.</p>`
     : "";
 
   switch (step) {
@@ -149,7 +153,7 @@ export function buildMessage(step: number, ctx: ReengagementContext): Reengageme
           <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">Tu as créé ton compte, et je ne t'ai pas encore montré grand-chose. Je répare ça tout de suite, sans rien te demander en retour.</p>
           ${goalLine}
           ${guideBlock(guide, appUrl)}
-          <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">Quand tu veux passer à ton propre suivi : ton espace calcule tes besoins, garde tes séances et suit ta progression. Tout est gratuit.</p>
+          <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">Quand tu veux passer à ton propre suivi : ton espace calcule tes besoins, garde tes séances et suit ta progression. C'est gratuit pendant ${FREE_TIER_DAYS} jours.</p>
           ${ctaBlock(appUrl, "Ouvrir mon espace", "/dashboard/client")}
         `),
       };
@@ -172,7 +176,7 @@ export function buildMessage(step: number, ctx: ReengagementContext): Reengageme
     case 3:
       return {
         subject: "Ce que je fais concrètement pour toi",
-        pushTitle: "Ce que tu as déjà, gratuitement",
+        pushTitle: "Ce que tu as déjà",
         pushBody: "Programme, nutrition, suivi : tout est déjà là.",
         pushUrl: "/dashboard/client",
         html: wrapBrandedEmail(`
@@ -181,10 +185,10 @@ export function buildMessage(step: number, ctx: ReengagementContext): Reengageme
           <ul style="margin:0 0 16px;padding-left:18px;font-size:15px;line-height:1.8;color:rgba(245,237,237,0.75);">
             <li>Un calcul de tes besoins caloriques et protéiques, adapté à ton objectif</li>
             <li>Un suivi de séances qui garde tes charges et te montre si tu progresses</li>
-            <li>Une bibliothèque de guides vérifiés sur des vraies études, pas des posts Instagram</li>
+            <li>Une bibliothèque de guides clairs, écrits par un coach</li>
             <li>Un bilan hebdo qui te dit où tu en es, sans te juger</li>
           </ul>
-          <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">Tout ça est gratuit et déjà actif sur ton compte. Il n'y a rien à acheter pour t'en servir.</p>
+          <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">Tout ça est déjà actif sur ton compte, gratuitement pendant tes ${FREE_TIER_DAYS} premiers jours. Et si tu veux qu'un coach ajuste tout ça pour toi, tu peux réserver un appel depuis ton espace.</p>
           ${guideBlock(guide, appUrl)}
           ${ctaBlock(appUrl, "Voir mon espace", "/dashboard/client")}
         `),
@@ -209,11 +213,11 @@ export function buildMessage(step: number, ctx: ReengagementContext): Reengageme
       return {
         subject: "Je te laisse tranquille",
         pushTitle: "Dernier message",
-        pushBody: "Ton compte reste ouvert quand tu veux.",
+        pushBody: "Reconnecte-toi une fois pour garder ton compte.",
         pushUrl: "/dashboard/client",
         html: wrapBrandedEmail(`
           <h2 style="color:#E01E1E;margin:0 0 14px;font-size:20px;">${hi}</h2>
-          <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">C'est mon dernier message de relance, je ne vais pas t'écrire toutes les semaines pour rien. Ton compte reste ouvert et gratuit, tu peux revenir quand ça te va, dans un mois ou dans un an.</p>
+          <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">C'est mon dernier message de relance, je ne vais pas t'écrire toutes les semaines pour rien. Ton compte reste ouvert pour l'instant : un compte laissé ${INACTIVITY_DELETE_DAYS} jours sans aucune connexion est supprimé, et tu es prévenu avant. Pour garder tes données, il suffit de te reconnecter une fois.</p>
           <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:rgba(245,237,237,0.8);">Je te laisse avec un dernier truc utile, même si tu ne remets jamais les pieds dans l'appli :</p>
           ${guideBlock(guide, appUrl)}
           <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(245,237,237,0.55);">Bon courage pour la suite, sincèrement.</p>
