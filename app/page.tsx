@@ -20,6 +20,7 @@ import { COACH_PLATFORM_PLANS, COACH_PLAN_DETAILS, COACH_TESTER_PLAN } from "@/l
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/brand-links";
 import { entityGraph, faqNode, SHOWCASE_URL } from "@/lib/seo-entity";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
+import { FREE_TIER_DAYS } from "@/lib/free-tier";
 import "./landing.css";
 
 const TITLE = "EP Coaching : coach sportif à Annecy et en ligne, appli musculation et nutrition";
@@ -93,7 +94,7 @@ const FAQS = [
   },
   {
     q: "Est-ce qu'EP Coaching est gratuit ?",
-    a: "Oui, l'accès à EP Coaching est gratuit dès l'inscription, sans engagement.",
+    a: `Oui, l'accès à EP Coaching est gratuit pendant ${FREE_TIER_DAYS} jours dès l'inscription, sans engagement et sans carte bancaire. Ensuite, l'accès continue avec un accompagnement.`,
   },
   {
     q: "Qui est Emmanuel Santamaria Sanchéz ?",
