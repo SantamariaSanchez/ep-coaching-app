@@ -176,6 +176,7 @@ export default async function HomePage() {
           <nav className="lp-nav" aria-label="Sections">
             <a href="#fonctionnalites">Fonctionnalités</a>
             <a href="#demo">Démo</a>
+            {guides.length > 0 && <a href="#guides">Guides gratuits</a>}
             <a href="#coachs">Pour les coachs</a>
             <a href="#faq">Questions</a>
           </nav>
@@ -235,6 +236,25 @@ export default async function HomePage() {
             Et aussi : {FEATURES.filter((f) => ["Coaching live", "Logbook séances", "Tracker quotidien", "Road map", "Recettes"].includes(f.title)).map((f) => f.title.toLowerCase()).join(", ")}. Les formations arrivent bientôt.
           </p>
         </section>
+
+        {/* Guides gratuits remontés juste après les bénéfices (2026-11-14) :
+            le goulot mesuré est la capture de leads, pas l'offre. Le visiteur
+            pas prêt à s'inscrire croise un guide avant de quitter la page. */}
+        {guides.length > 0 && (
+          <section id="guides" className="lp-wrap lp-section" aria-labelledby="lp-guides">
+            <h2 id="lp-guides" className="lp-h2">Pas encore prêt ? Commence par un guide gratuit</h2>
+            <p className="lp-lead">Un email, et tu le reçois tout de suite. Sans compte, sans engagement.</p>
+            <div className="lp-plans" style={{ marginTop: 20 }}>
+              {guides.map((g) => (
+                <Link key={g.slug} href={`/ressources/${g.slug}?src=site`} className="lp-card" style={{ textDecoration: "none", display: "block" }}>
+                  <h3>{g.title}</h3>
+                  <p>{g.hook}</p>
+                </Link>
+              ))}
+            </div>
+            <p style={{ marginTop: 16 }}><Link className="lp-link" href="/ressources">Voir tous les guides</Link></p>
+          </section>
+        )}
 
         {/* ── Démonstration ── */}
         <section id="demo" className="lp-wrap lp-section" aria-labelledby="lp-demo">
@@ -319,22 +339,6 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
-
-        {guides.length > 0 && (
-          <section className="lp-wrap lp-section" aria-labelledby="lp-guides">
-            <h2 id="lp-guides" className="lp-h2">Pas encore prêt ? Commence par un guide gratuit</h2>
-            <p className="lp-lead">Un email, et tu le reçois tout de suite. Sans compte, sans engagement.</p>
-            <div className="lp-plans" style={{ marginTop: 20 }}>
-              {guides.map((g) => (
-                <Link key={g.slug} href={`/ressources/${g.slug}?src=site`} className="lp-card" style={{ textDecoration: "none", display: "block" }}>
-                  <h3>{g.title}</h3>
-                  <p>{g.hook}</p>
-                </Link>
-              ))}
-            </div>
-            <p style={{ marginTop: 16 }}><Link className="lp-link" href="/ressources">Voir tous les guides</Link></p>
-          </section>
-        )}
 
         {/* ── Appel final ── */}
         <section className="lp-wrap lp-section" aria-labelledby="lp-final">
