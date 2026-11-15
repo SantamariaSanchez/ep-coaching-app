@@ -176,7 +176,7 @@ export default function BilanProgressView({
         >
           <AlertTriangle size={15} style={{ color: "var(--ep-warn)", flexShrink: 0, marginTop: 1 }} />
           <p style={{ fontSize: 12.5, color: "var(--ep-ink)", margin: 0, lineHeight: 1.5 }}>
-            <strong>{t("Dette de sommeil")}</strong> : {shortNights}{" "}{t("nuit")}{shortNights > 1 ? "s" : ""}{" "}{t("à moins de 6h sur tes")}{" "}{last4Sleep.length}{" "}{t("derniers bilans. Réduis le volume d'entraînement de 10-20% cette semaine et priorise le sommeil avant tout, la récupération ne suivra pas sinon.")}
+            <strong>{t("Dette de sommeil")}</strong> : {shortNights}{" "}{t("nuit")}{shortNights > 1 ? "s" : ""}{" "}{t("à moins de 6h sur tes")}{" "}{last4Sleep.length}{" "}{t("derniers bilans. Priorise ton sommeil cette semaine, et parles-en à ton coach si ça dure.")}
           </p>
         </div>
       )}

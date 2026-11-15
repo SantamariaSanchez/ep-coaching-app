@@ -82,52 +82,45 @@ export default function ContentTargetsCard({
     </label>
   );
 
+  // Vue compacte (2026-11-15, « arrête d'être trop verbeux ») : une ligne de
+  // pastilles « Reels 3/72 », un crayon pour régler. Rien de plus.
   return (
-    <section className="ep-card" style={{ padding: "12px 14px", marginBottom: 14 }} aria-label={t("Objectifs du jour")}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Target size={14} style={{ color: "var(--ep-accent)" }} />
-        <p style={{ margin: 0, flex: 1, fontSize: 13, fontWeight: 900, color: "var(--ep-ink)" }}>{t("Objectifs du jour")}</p>
-        {!editing && (
-          <button type="button" onClick={open} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 9, border: "1px solid rgba(var(--ep-ink-rgb),0.14)", background: "transparent", color: "var(--ep-ink)", fontSize: 11.5, fontWeight: 800, cursor: "pointer" }}>
-            <Pencil size={12} /> {set.length ? t("Modifier") : t("Fixer mes objectifs")}
-          </button>
-        )}
-      </div>
-
-      {!editing && set.length === 0 && (
-        <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.5 }}>
-          {t("Choisis combien de contenus tu veux publier chaque jour. Le Studio te montre où tu en es, et Claude (connecteur EP Coaching) prépare ce qu'il manque.")}
-        </p>
-      )}
-
-      {!editing && set.length > 0 && (
-        <div style={{ marginTop: 10, display: "grid", gap: 8 }} className="sm:grid-cols-2">
-          {set.map((d) => {
-            const target = targets[d.key]!;
-            const done = doneToday[d.key] ?? 0;
-            const s = stock[d.key] ?? 0;
-            const missing = Math.max(0, target - done - s);
-            const pct = Math.min(100, Math.round((done / target) * 100));
-            return (
-              <div key={d.key}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                  <span style={{ flex: 1, fontSize: 12, fontWeight: 800, color: "var(--ep-ink)" }}>{t(d.label)}</span>
-                  <span style={{ fontSize: 12, fontWeight: 900, color: done >= target ? "var(--ep-ok)" : "var(--ep-ink)" }}>{done} / {target}</span>
-                </div>
-                <div style={{ marginTop: 4, height: 5, borderRadius: 999, background: "rgba(var(--ep-ink-rgb),0.08)", overflow: "hidden" }} aria-hidden>
-                  <div style={{ width: `${pct}%`, height: "100%", background: done >= target ? "var(--ep-ok)" : "var(--ep-accent)", transition: "width 240ms ease" }} />
-                </div>
-                <p style={{ margin: "3px 0 0", fontSize: 10.5, color: missing ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.45)" }}>
-                  {s} {t("prêts")}{missing ? ` · ${t("il en manque")} ${missing}` : ""}
-                </p>
-              </div>
-            );
-          })}
+    <section style={{ marginBottom: 12 }} aria-label={t("Objectifs du jour")}>
+      {!editing && (
+        <div className="flex items-center gap-1.5 overflow-x-auto">
+          <Target size={13} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+          {set.length === 0 ? (
+            <button type="button" onClick={open} className="flex-shrink-0 h-8 px-3 rounded-full text-[11.5px] font-bold" style={{ border: "1px dashed rgba(var(--ep-accent-rgb),0.5)", color: "var(--ep-ink)", background: "transparent", cursor: "pointer" }}>
+              {t("Fixer mes objectifs du jour")}
+            </button>
+          ) : (
+            <>
+              {set.map((d) => {
+                const target = targets[d.key]!;
+                const done = doneToday[d.key] ?? 0;
+                const s = stock[d.key] ?? 0;
+                const missing = Math.max(0, target - done - s);
+                return (
+                  <span
+                    key={d.key}
+                    title={`${s} ${t("prêts")}${missing ? ` · ${t("il en manque")} ${missing}` : ""}`}
+                    className="flex-shrink-0 inline-flex items-baseline gap-1 h-8 px-2.5 rounded-full text-[11.5px] font-bold"
+                    style={{ border: `1px solid ${done >= target ? "rgba(var(--ep-ok-rgb),0.5)" : missing ? "rgba(var(--ep-warn-rgb),0.45)" : "rgba(var(--ep-ink-rgb),0.12)"}`, color: "rgba(var(--ep-ink-rgb),0.65)", lineHeight: "30px" }}
+                  >
+                    {t(d.label)} <b style={{ color: done >= target ? "var(--ep-ok)" : "var(--ep-ink)", fontWeight: 900 }}>{done}/{target}</b>
+                  </span>
+                );
+              })}
+              <button type="button" onClick={open} aria-label={t("Modifier mes objectifs")} className="flex-shrink-0 h-8 w-8 rounded-full inline-flex items-center justify-center" style={{ border: "1px solid rgba(var(--ep-ink-rgb),0.12)", background: "transparent", color: "rgba(var(--ep-ink-rgb),0.6)", cursor: "pointer" }}>
+                <Pencil size={12} />
+              </button>
+            </>
+          )}
         </div>
       )}
 
       {editing && (
-        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="ep-card" style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "grid", gap: 8 }} className="sm:grid-cols-2">
             {defs.map((d) => (
               <label key={d.key} style={{ display: "flex", alignItems: "center", gap: 8 }} title={t(d.hint)}>
