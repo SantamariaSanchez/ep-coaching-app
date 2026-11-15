@@ -9,10 +9,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Camera, Check, ChevronDown, Clapperboard, Mic, Minus, Pause, Play, Plus, Type, X } from "lucide-react";
+import { Camera, Check, ChevronDown, Clapperboard, Copy, Image as ImageIcon, Link2, Mic, Minus, Pause, Play, Plus, Type, X } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { withAlpha } from "@/lib/theme-color";
-import { CONTENT_FORMATS, getContentFormat, parseScript, prompterText, type ContentFormat, type ParsedScript } from "@/lib/content-formats";
+import { CONTENT_FORMATS, getContentFormat, parseScript, prompterText, type ContentFormat, type ParsedScript, type StickerKind, type StoryFrame } from "@/lib/content-formats";
 
 const TIER_COLORS: Record<string, string> = {
   S: "var(--ep-bad)",
@@ -52,11 +52,11 @@ export function ContentFormatBadge({ formatId, title }: { formatId: string | nul
 
 // ── Choix du format ──────────────────────────────────────────────────────
 
-export function ContentFormatPicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+export function ContentFormatPicker({ value, onChange, formats }: { value: string; onChange: (id: string) => void; formats?: ContentFormat[] }) {
   const tr = useT();
   return (
     <div role="radiogroup" aria-label={tr("Format du contenu")} style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-      {CONTENT_FORMATS.map((f) => {
+      {(formats ?? CONTENT_FORMATS).map((f) => {
         const active = f.id === value;
         const Icon = f.icon;
         return (
@@ -345,7 +345,64 @@ function ParsedView({ parsed, format, tr }: { parsed: ParsedScript; format: Cont
           ))}
         </div>
       );
+
+    case "frames":
+      return (
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 4 }}>
+          {parsed.frames.map((fr, i) => <StoryCard key={i} frame={fr} color={format.color} first={i === 0} tr={tr} />)}
+        </div>
+      );
   }
+}
+
+const STICKER_LABELS: Record<StickerKind, string> = {
+  sondage: "Sondage", question: "Question", curseur: "Curseur", quiz: "Quiz", lien: "Lien", autre: "Sticker",
+};
+
+// Story en 9:16 (2026-11-15) : le texte affiché, ce qu'on montre, le
+// sticker et le lien, chacun à part, avec « Copier » pour coller le texte
+// de cette story seule dans Instagram.
+function StoryCard({ frame, color, first, tr }: { frame: StoryFrame; color: string; first: boolean; tr: (s: string) => string }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard?.writeText(frame.text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    }).catch(() => {});
+  }
+  return (
+    <div
+      style={{
+        flex: "0 0 auto", width: 158, aspectRatio: "9 / 16", scrollSnapAlign: "start",
+        borderRadius: 14, padding: 10, display: "flex", flexDirection: "column", gap: 6,
+        background: first ? withAlpha(color, "22") : "rgba(var(--ep-shade-rgb),0.35)",
+        border: `1px solid ${first ? withAlpha(color, "55") : "rgba(var(--ep-line-rgb),0.25)"}`,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <span style={{ ...microLabel, color: first ? color : faint, flex: 1 }}>{tr("Story")} {frame.n}</span>
+        <button type="button" onClick={copy} aria-label={tr("Copier le texte de cette story")} style={{ width: 26, height: 26, borderRadius: 8, border: "none", background: "rgba(var(--ep-ink-rgb),0.06)", color: "rgba(var(--ep-ink-rgb),0.6)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+        </button>
+      </div>
+      <p style={{ margin: 0, fontSize: first ? 13.5 : 12.5, fontWeight: first ? 900 : 700, color: "var(--ep-ink)", lineHeight: 1.35, whiteSpace: "pre-wrap", overflow: "hidden", flex: 1 }}>{frame.text}</p>
+      {frame.visuel && (
+        <p style={{ margin: 0, fontSize: 10.5, color: muted, lineHeight: 1.35, display: "flex", gap: 4 }}>
+          <ImageIcon size={11} style={{ flexShrink: 0, marginTop: 1 }} /><span style={{ whiteSpace: "pre-wrap" }}>{frame.visuel}</span>
+        </p>
+      )}
+      {frame.sticker && (
+        <span style={{ alignSelf: "flex-start", fontSize: 10.5, fontWeight: 800, padding: "4px 8px", borderRadius: 8, background: "var(--ep-ink)", color: "var(--ep-bg)", lineHeight: 1.3 }}>
+          {tr(STICKER_LABELS[frame.sticker.kind])}{frame.sticker.detail ? ` : ${frame.sticker.detail}` : ""}
+        </span>
+      )}
+      {frame.lien && (
+        <span style={{ fontSize: 10.5, fontWeight: 700, color, display: "inline-flex", alignItems: "center", gap: 4, wordBreak: "break-all" }}>
+          <Link2 size={11} style={{ flexShrink: 0 }} />{frame.lien}
+        </span>
+      )}
+    </div>
+  );
 }
 
 function BrollCell({ icon, label, text, strong }: { icon: React.ReactNode; label: string; text: string; strong?: boolean }) {

@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import { Lightbulb, StickyNote, Clapperboard, Sparkles, Send } from "lucide-react";
 import WrittenPosts from "@/components/coach/WrittenPosts";
+import { isWrittenPlatform } from "@/lib/written-content";
 import ContentStudio from "@/components/coach/ContentStudio";
 import { Suspense } from "react";
 import NotesApp from "@/components/notes/NotesApp";
@@ -18,7 +19,8 @@ import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking"
 
 type Tab = "idees" | "scripts" | "posts" | "notes" | "generateur";
 
-const WRITTEN = new Set(["linkedin", "threads"]);
+// Plateformes écrites : source unique dans lib/written-content.ts.
+const WRITTEN = { has: (p: string) => isWrittenPlatform(p) };
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "idees", label: "Idées", icon: Lightbulb },
@@ -51,6 +53,7 @@ export default function IdeationHub({
   initialTab,
   focusScriptId,
   focusIdeaId,
+  publishedToday,
 }: {
   initialIdeas: ContentIdea[];
   /** Le bloc-notes unique de l'appli (table notes), affiché aussi ici. */
@@ -66,9 +69,11 @@ export default function IdeationHub({
   initialTab?: string;
   focusScriptId?: string;
   focusIdeaId?: string;
+  /** Posts écrits publiés aujourd'hui, par plateforme (objectifs du jour). */
+  publishedToday?: Record<string, number>;
 }) {
   const tr = useT();
-  // Posts écrits (LinkedIn, Threads) à part : ils se copient et se postent,
+  // Posts écrits (stories et posts Insta, LinkedIn, Threads) à part : ils se copient et se postent,
   // ils ne se tournent pas.
   const writtenPosts = useMemo(() => initialScripts.filter((s) => WRITTEN.has(s.platform)), [initialScripts]);
   const videoScripts = useMemo(() => initialScripts.filter((s) => !WRITTEN.has(s.platform)), [initialScripts]);
@@ -126,7 +131,7 @@ export default function IdeationHub({
         aria-label={tr("Sections Idéation")}
         className="flex gap-1.5 overflow-x-auto mb-5 border-b border-(--ep-line)/20 pb-0.5"
       >
-        {TABS.filter(({ id }) => id !== "posts" || writtenPosts.length > 0).map(({ id, label, icon: Icon }) => {
+        {TABS.map(({ id, label, icon: Icon }) => {
           const active = tab === id;
           return (
             <button
@@ -177,7 +182,7 @@ export default function IdeationHub({
         <IdeationScripts montageProcesses={montageProcesses} presetStatus={presetStatus} initialScripts={videoScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={tab !== "posts"}>
-        <WrittenPosts initialPosts={writtenPosts} />
+        <WrittenPosts initialPosts={writtenPosts} publishedToday={publishedToday} />
       </div>
       <div hidden={tab !== "notes"}>
         {/* Un seul bloc-notes dans toute l'appli (audit 2026-11-13) : le même
