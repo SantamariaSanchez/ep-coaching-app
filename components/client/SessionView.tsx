@@ -72,6 +72,8 @@ import { useTypingInSession } from "@/components/client/session/useTypingInSessi
 import SwapSheet from "@/components/client/session/SwapSheet";
 import VideoSheet, { MAX_VIDEO_BYTES, formatBytes } from "@/components/client/session/VideoSheet";
 import type { ExerciseState, LibraryTip, PrevWeight, SetState, VideoState } from "@/components/client/session/types";
+import ShortSessionSheet from "@/components/client/session/ShortSessionSheet";
+import type { ShortSessionPlan } from "@/lib/short-session";
 
 // Texte pré-rempli du post Victoire depuis un PR détecté en fin de séance
 // (voir le bouton "Partager en Victoire") : le client reste libre de le
@@ -874,6 +876,7 @@ export default function SessionView({
   const [notice, setNotice] = useState<string | null>(null);
   const [accessoriesOpen, setAccessoriesOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shortOpen, setShortOpen] = useState(false);
   // Clavier ouvert sur un champ de la séance (note, charge, reps) : avec
   // l'appli native (Keyboard resize "body"), la barre de repos et la nav du
   // bas remontaient au-dessus du clavier et recouvraient le champ en cours
@@ -1699,28 +1702,48 @@ export default function SessionView({
     router.push(returnPath);
   }, [sessionId, returnPath, router, confirm]);
 
-  // Semaine chargée : on garde tous les exercices et on ramène chaque exercice
-  // à 2 séries au plus (les séries déjà validées restent). Pas de culpabilité,
-  // pas de séance perdue : une séance courte vaut mieux qu'une séance sautée.
-  const handleShortenSession = useCallback(() => {
-    for (const ex of exercises) {
-      let kept = 0;
-      for (const set of ex.sets) {
-        if (set.validated || kept < 2) {
-          kept += 1;
-          continue;
+  // Peu de temps (C62, remplace « 2 séries max ») : le pratiquant dit combien
+  // de minutes il lui reste, lib/short-session.ts propose quoi garder, et on
+  // applique seulement ce qu'il a validé. Les séries déjà faites restent ;
+  // le programme n'est pas touché. Pas de culpabilité : une séance courte
+  // vaut mieux qu'une séance sautée.
+  const handleApplyShortPlan = useCallback(
+    (plan: ShortSessionPlan) => {
+      const byKey = new Map(plan.lines.map((l) => [l.key, l]));
+      const drop = new Set(plan.lines.filter((l) => l.action === "retirer").map((l) => l.key));
+      for (const ex of exercises) {
+        const line = byKey.get(ex.key);
+        if (!line || line.action === "garder") continue;
+        let open = 0;
+        for (const set of ex.sets) {
+          if (set.validated) continue;
+          open += 1;
+          if (open <= line.remainingAfter) continue;
+          if (set.dbId) fetch(`/api/client/sessions/${sessionId}/sets/${set.dbId}`, { method: "DELETE" }).catch(() => {});
+          if (savingSetsRef.current.has(set.localId)) removedWhileSavingRef.current.add(set.localId);
         }
-        if (set.dbId) fetch(`/api/client/sessions/${sessionId}/sets/${set.dbId}`, { method: "DELETE" }).catch(() => {});
-        if (savingSetsRef.current.has(set.localId)) removedWhileSavingRef.current.add(set.localId);
       }
-    }
-    setExercises((prev) =>
-      prev.map((ex) => {
-        let kept = 0;
-        return { ...ex, sets: ex.sets.filter((set) => (set.validated || kept < 2 ? (kept++, true) : false)) };
-      })
-    );
-  }, [exercises, sessionId]);
+      const next = exercises
+        .filter((ex) => !drop.has(ex.key))
+        .map((ex) => {
+          const line = byKey.get(ex.key);
+          if (!line || line.action === "garder") return ex;
+          let open = 0;
+          return { ...ex, sets: ex.sets.filter((set) => set.validated || ++open <= line.remainingAfter) };
+        });
+      setExercises(next);
+      if (drop.size) {
+        const dropped = exercises.filter((ex) => drop.has(ex.key));
+        setRemoved((r) => [...r, ...dropped.map((d) => d.key).filter((k) => !r.includes(k))]);
+        setRemovedNames((n) => [...n, ...dropped.map((d) => d.exercise.name).filter((nm) => !n.includes(nm))]);
+        setDeferred((d) => d.filter((k) => !drop.has(k)));
+        if (focus && drop.has(focus)) setFocus(next.find(hasOpenSet)?.key ?? null);
+      }
+      setShortOpen(false);
+      showNotice(tr("Séance adaptée à ton temps. Ton programme ne change pas."));
+    },
+    [exercises, sessionId, focus, showNotice, tr]
+  );
 
   const goToRecap = useCallback(() => {
     // Referme le repos du dernier set : sans set suivant, sa durée ne serait
@@ -2246,12 +2269,12 @@ export default function SessionView({
                       role="menuitem"
                       onClick={() => {
                         setMenuOpen(false);
-                        handleShortenSession();
+                        setShortOpen(true);
                       }}
                       className="w-full min-h-11 px-3 flex items-center gap-2 rounded-lg text-left text-[13px] font-bold text-(--ep-strong) active:bg-(--ep-line)/15"
                     >
                       <Scissors size={15} className="text-(--ep-accent)" />
-                      {tr("Séance courte (2 séries max)")}
+                      {tr("Peu de temps ? Adapter la séance")}
                     </button>
                     <button
                       type="button"
@@ -2386,6 +2409,20 @@ export default function SessionView({
         )}
       </div>
 
+      {shortOpen && (
+        <ShortSessionSheet
+          exercises={exercises.map((ex) => ({
+            key: ex.key,
+            name: ex.exercise.name,
+            remainingSets: ex.sets.filter((st) => !st.validated).length,
+            doneSets: ex.sets.filter((st) => st.validated).length,
+            restSeconds: ex.exercise.rest_seconds ?? null,
+            muscleGroup: ex.exercise.muscle_group ?? null,
+          }))}
+          onApply={handleApplyShortPlan}
+          onClose={() => setShortOpen(false)}
+        />
+      )}
       {notice && (
         <div className="fixed left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+150px)] md:bottom-24 z-[60] px-4 pointer-events-none">
           <p
