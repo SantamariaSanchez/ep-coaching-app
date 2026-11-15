@@ -24,10 +24,11 @@ import type { LucideIcon } from "lucide-react";
 import {
   Video, Film, Mic, Trophy, Users, MessageCircleQuestion, UserCheck, MonitorPlay,
   Scale, BookOpen, GalleryHorizontal, MessageSquareReply, ListOrdered, Sun, Dumbbell, Clapperboard,
+  AlignLeft, Image as ImageIcon, Smartphone,
 } from "lucide-react";
 import { VOCABULARY_PROMPT_BLOCK } from "@/lib/content-vocabulary";
 
-export type ScriptShape = "texte" | "points" | "dialogue" | "broll" | "tier" | "paires" | "sections" | "etapes" | "slides";
+export type ScriptShape = "texte" | "points" | "dialogue" | "broll" | "tier" | "paires" | "sections" | "etapes" | "slides" | "frames";
 
 export interface ContentFormat {
   id: string;
@@ -57,6 +58,12 @@ export interface ContentFormat {
   sectionLabels?: string[];
   /** Règle à respecter absolument (rappelée à l'écran et dans les prompts). */
   rule?: string;
+  /**
+   * Réservé à ces plateformes écrites (voir lib/written-content.ts) : le
+   * format n'est pas proposé pour un reel ou une vidéo YouTube. Absent =
+   * format vidéo, proposé partout sauf sur les plateformes écrites.
+   */
+  onlyFor?: string[];
 }
 
 export const DEFAULT_CONTENT_FORMAT = "face_cam";
@@ -286,6 +293,85 @@ export const CONTENT_FORMATS: ContentFormat[] = [
     shapeHint: "Une slide par ligne : « Slide 1 : ... », « Slide 2 : ... » (7 slides maximum, la dernière = appel à l'action).",
     template: "Slide 1 : [l'accroche]\nSlide 2 : [idée 1]\nSlide 3 : [idée 2]\nSlide 4 : [idée 3]\nSlide 5 : [appel à l'action]",
     filmed: false,
+    onlyFor: ["post_insta", "linkedin"],
+  },
+  // Formats écrits (2026-11-15, demande d'Emmanuel : « des story insta, des
+  // post LinkedIn, des post insta, ne bâcle pas »). Règles tirées de la
+  // Bible (D3 structure LinkedIn), du Guide de production des Stories et du
+  // framework Stories du Mastermind (une idée par séquence, au moins un
+  // élément interactif, CTA au fil du récit et non en conclusion).
+  {
+    id: "post_texte",
+    label: "Post texte",
+    icon: AlignLeft,
+    color: "var(--ep-info)",
+    description: "Un post écrit, sans visuel obligatoire (LinkedIn, Threads). La 1re ligne fait tout : c'est elle qu'on voit avant « voir plus ».",
+    structure: [
+      "1re ligne : paradoxe, faux problème, phrase de l'avatar ou scène. Jamais une intro",
+      "2 à 3 lignes : la scène que la personne reconnaît",
+      "Le vrai problème, en une phrase isolée",
+      "3 à 5 lignes courtes, sans puces",
+      "La nuance",
+      "Fin : une question facile OU le lien seul sur la dernière ligne",
+    ],
+    tips: [
+      "Une phrase par ligne, une ligne vide entre les blocs.",
+      "Alterner les posts humains, expertise et promotion.",
+      "Répondre en message, à la main, aux personnes qui réagissent.",
+    ],
+    shape: "texte",
+    shapeHint: "Le post tel qu'il sera publié : phrases courtes, une ligne vide entre les blocs, jamais de tiret cadratin.",
+    template: "[1re ligne : le paradoxe ou la phrase de l'avatar]\n\n[La scène, 2 à 3 lignes]\n\n[Le vrai problème, une phrase]\n\n[3 à 5 lignes courtes]\n\n[La nuance]\n\n[Une question facile, ou le lien seul]",
+    filmed: false,
+    onlyFor: ["linkedin", "threads"],
+  },
+  {
+    id: "image_unique",
+    label: "Image unique",
+    short: "Image",
+    icon: ImageIcon,
+    color: "var(--ep-violet)",
+    description: "Un post Instagram d'une seule image : une photo réelle ou un visuel avec une phrase forte, et la légende qui développe.",
+    structure: ["Visuel : ce qu'on voit (photo réelle de préférence)", "Texte sur l'image : une phrase, 12 mots maximum", "Légende : l'idée développée et un seul appel à l'action"],
+    tips: [
+      "Une preuve réelle vaut mieux qu'un beau visuel : séance, assiette, écran de l'appli.",
+      "Le texte sur l'image se lit en une seconde, sinon il est trop long.",
+      "Jamais de résultat client inventé ni de photo d'un client sans son accord.",
+    ],
+    shape: "sections",
+    sectionLabels: ["Visuel", "Texte sur l'image"],
+    shapeHint: "« Visuel : ce qu'on voit » puis « Texte sur l'image : la phrase ». La légende va dans le champ description.",
+    template: "Visuel : [photo réelle ou visuel à créer]\nTexte sur l'image : [une phrase, 12 mots maximum]",
+    filmed: false,
+    onlyFor: ["post_insta"],
+    rule: "Aucune fausse preuve : pas de résultat, de témoignage ni de photo de client inventés.",
+  },
+  {
+    id: "sequence_stories",
+    label: "Séquence de stories",
+    short: "Stories",
+    icon: Smartphone,
+    color: "var(--ep-orange)",
+    description: "Une suite de stories Instagram sur UNE seule idée : le moment fort d'abord, le contexte, la preuve, puis la suite. Chaque story donne envie de voir la suivante.",
+    structure: [
+      "Story 1 : le moment fort ou la question (pas d'intro)",
+      "Stories 2 et 3 : contexte et preuve réelle montrée",
+      "Une story interactive : sondage, question ou curseur, avec une consigne claire",
+      "Le CTA discret au fil du récit (vers la 4e), jamais en conclusion de vente",
+      "Les dernières : la suite et la résolution",
+    ],
+    tips: [
+      "Une seule idée sur toute la séquence, sans changer de sujet.",
+      "Montrer avant d'expliquer : écran, séance, préparation.",
+      "« Vote pour l'option qui te ressemble » marche mieux qu'un sondage sans consigne.",
+      "Publier la séquence d'un coup, pas au compte-gouttes.",
+    ],
+    shape: "frames",
+    shapeHint: "Une story par bloc : « Story 1 : le texte affiché », puis si besoin « Visuel : ce qu'on montre », « Sticker : sondage | Oui / Non » (ou question, curseur, quiz), « Lien : l'adresse ».",
+    template: "Story 1 : [le moment fort]\nVisuel : [ce qu'on montre]\n\nStory 2 : [le contexte]\nVisuel : [la preuve réelle]\n\nStory 3 : [la question]\nSticker : sondage | [option 1] / [option 2]\n\nStory 4 : [le CTA discret]\nLien : [lien vers le guide ou l'appli]\n\nStory 5 : [la suite et la résolution]",
+    filmed: false,
+    onlyFor: ["story_insta"],
+    rule: "Une seule idée par séquence, au moins un élément interactif, aucune coulisse ni preuve inventée, aucun DM sortant.",
   },
 ];
 
@@ -301,6 +387,9 @@ export function isContentFormatId(v: unknown): v is string {
 export function getContentFormat(id: string | null | undefined): ContentFormat {
   return (id && BY_ID.get(id)) || BY_ID.get(DEFAULT_CONTENT_FORMAT)!;
 }
+
+/** Formats vidéo (sans plateforme réservée), pour les reels et YouTube. */
+export const VIDEO_CONTENT_FORMATS = CONTENT_FORMATS.filter((f) => !f.onlyFor);
 
 /** Résumé « id (libellé) : forme » pour la description des outils du connecteur. */
 export function contentFormatsToolHint(): string {
@@ -324,7 +413,18 @@ export type ParsedScript =
   | { shape: "paires"; labels: [string, string]; intro: string; pairs: { a: string; b: string }[]; outro: string }
   | { shape: "sections"; intro: string; sections: { label: string; text: string }[] }
   | { shape: "etapes"; intro: string; steps: string[]; outro: string }
-  | { shape: "slides"; slides: { n: number; text: string }[] };
+  | { shape: "slides"; slides: { n: number; text: string }[] }
+  | { shape: "frames"; frames: StoryFrame[] };
+
+export type StickerKind = "sondage" | "question" | "curseur" | "quiz" | "lien" | "autre";
+
+export interface StoryFrame {
+  n: number;
+  text: string;
+  visuel: string;
+  sticker: { kind: StickerKind; detail: string } | null;
+  lien: string;
+}
 
 function joinLines(lines: string[]): string {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
@@ -570,6 +670,74 @@ function parseSlides(content: string): ParsedScript | null {
   return { shape: "slides", slides };
 }
 
+const STICKER_KINDS: { kind: StickerKind; aliases: string[] }[] = [
+  { kind: "sondage", aliases: ["sondage", "poll", "vote"] },
+  { kind: "question", aliases: ["question", "boite a questions", "questions"] },
+  { kind: "curseur", aliases: ["curseur", "slider", "emoji slider", "jauge"] },
+  { kind: "quiz", aliases: ["quiz", "qcm"] },
+  { kind: "lien", aliases: ["lien", "link"] },
+];
+
+/** « sondage | Oui / Non » → { kind: "sondage", detail: "Oui / Non" }. */
+export function parseSticker(raw: string): { kind: StickerKind; detail: string } | null {
+  const v = raw.trim();
+  if (!v) return null;
+  const sep = v.search(/[|:：]/);
+  const head = norm(sep >= 0 ? v.slice(0, sep) : v);
+  const detail = sep >= 0 ? v.slice(sep + 1).trim() : "";
+  const found = STICKER_KINDS.find((k) => k.aliases.includes(head));
+  if (found) return { kind: found.kind, detail };
+  // Pas de type reconnu : on garde le texte tel quel, rien ne se perd.
+  return { kind: "autre", detail: v };
+}
+
+function parseFrames(content: string): ParsedScript | null {
+  const frames: StoryFrame[] = [];
+  let cur: StoryFrame | null = null;
+  let last: "text" | "visuel" | "lien" | null = null;
+  for (const raw of content.split("\n")) {
+    const head = raw.match(/^\s*story\s*(\d{1,2})\s*[:：.)\-]?\s*(.*)$/i);
+    if (head) {
+      if (cur) frames.push(cur);
+      cur = { n: Number(head[1]), text: head[2].trim(), visuel: "", sticker: null, lien: "" };
+      last = "text";
+      continue;
+    }
+    if (!cur) continue;
+    const m = raw.match(LABEL_SEP);
+    const label = m ? norm(m[1]) : "";
+    if (m && ["visuel", "image", "a montrer", "fond", "plan"].includes(label)) {
+      cur.visuel = m[2].trim();
+      last = "visuel";
+      continue;
+    }
+    if (m && ["sticker", "interaction", "element interactif"].includes(label)) {
+      cur.sticker = parseSticker(m[2]);
+      last = null;
+      continue;
+    }
+    if (m && ["sondage", "question", "curseur", "quiz"].includes(label)) {
+      cur.sticker = parseSticker(`${label} | ${m[2]}`);
+      last = null;
+      continue;
+    }
+    if (m && ["lien", "link", "url"].includes(label)) {
+      cur.lien = m[2].trim();
+      last = "lien";
+      continue;
+    }
+    if (!raw.trim()) {
+      last = null;
+      continue;
+    }
+    if (last) cur[last] = `${cur[last]}\n${raw.trim()}`.trim();
+    else cur.text = `${cur.text}\n${raw.trim()}`.trim();
+  }
+  if (cur) frames.push(cur);
+  if (frames.length === 0) return null;
+  return { shape: "frames", frames };
+}
+
 /** Lit le script selon la forme de son format ; texte brut si elle n'est pas suivie. */
 export function parseScript(formatId: string | null | undefined, content: string | null | undefined): ParsedScript {
   const text = (content ?? "").replace(/\r\n/g, "\n");
@@ -585,6 +753,7 @@ export function parseScript(formatId: string | null | undefined, content: string
       case "etapes": parsed = parseSteps(text); break;
       case "points": parsed = parsePoints(text); break;
       case "slides": parsed = parseSlides(text); break;
+      case "frames": parsed = parseFrames(text); break;
       default: parsed = null;
     }
   }
@@ -619,7 +788,7 @@ export function formatPromptBlock(formatId: string): string {
     `Forme EXACTE du script (le Studio le lit ligne par ligne, respecte les libellés) : ${f.shapeHint}`,
     `Modèle à suivre :\n${f.template}`,
     f.rule ? `RÈGLE ABSOLUE : ${f.rule}` : null,
-    f.filmed ? null : "Rien à filmer : pas de texte parlé, seulement le texte des slides.",
+    f.filmed ? null : "Rien à filmer : pas de texte parlé, seulement le texte à publier.",
   ].filter(Boolean).join("\n");
 }
 
@@ -629,6 +798,8 @@ export function buildFormatScriptPrompt(input: {
   plateforme?: string;
   duree?: string;
   contexte?: string | null;
+  /** Règles propres à la plateforme écrite (voir writtenPromptRules). */
+  regles?: string | null;
 }): string {
   const f = getContentFormat(input.formatId);
   const plateforme = input.plateforme || "reel";
@@ -640,15 +811,15 @@ Tu écris un script pour mon Studio créatif EP Coaching (coaching bodybuilding 
 
 ${formatPromptBlock(f.id)}
 
-Plateforme : ${plateforme}${input.duree ? `, durée visée : ${input.duree}` : ""}.
+Plateforme : ${plateforme}${input.duree ? `, durée visée : ${input.duree}` : ""}.${input.regles ? `\n${input.regles}` : ""}
 Sujet : ${input.sujet?.trim() || "(à préciser)"}
 
 Rends-moi, dans cet ordre :
 1. Titre (court, pour m'y retrouver)
 2. Accroche (la première phrase, ou le premier texte à l'écran)
 3. Script complet, dans la forme exacte ci-dessus
-4. Appel à l'action parlé
-5. Description du post${f.filmed ? "" : " (légende du carrousel)"}
+4. ${f.filmed ? "Appel à l'action parlé" : "Appel à l'action (un seul)"}
+5. ${f.shape === "frames" ? "Rien d'autre : une séquence de stories n'a pas de légende" : `Description du post${f.filmed ? "" : " (la légende publiée sous le visuel)"}`}
 
 Si tu as accès au connecteur EP Coaching, propose-moi le script d'abord, puis quand je valide ajoute-le avec l'outil ajouter_script (format_contenu = "${f.id}", plateforme = "${plateforme}").`;
 }

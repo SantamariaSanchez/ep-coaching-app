@@ -1,102 +1,274 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Copy, Check, Send, Trash2 } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { Copy, Check, Send, Trash2, AlertTriangle, Lightbulb } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { publishScript, deleteScript } from "@/app/dashboard/coach/studio/actions";
 import type { CoachScript } from "@/lib/coach-ideation";
 import { getContentFormat } from "@/lib/content-formats";
+import { WRITTEN_PLATFORMS, checkWrittenPost, effectiveFormat, foldPreview, getWrittenPlatform, type WrittenPlatform } from "@/lib/written-content";
+import { withAlpha } from "@/lib/theme-color";
 import { ContentFormatBadge, ScriptBody } from "@/components/coach/ScriptFormatView";
-
-const LABELS: Record<string, string> = { linkedin: "LinkedIn", threads: "Threads" };
 
 // Posts écrits à publier (2026-10-08) : retour direct, « ça sert à rien de
 // laisser les posts LinkedIn dans les scripts ». Ils ne se tournent pas : on
 // copie, on poste, on touche « Publié » et le post sort de l'appli (son sujet
 // reste mémorisé pour ne pas le refaire).
-export default function WrittenPosts({ initialPosts }: { initialPosts: CoachScript[] }) {
+//
+// 2026-11-15 : un onglet par type (Stories Insta, Posts Insta, LinkedIn,
+// Threads), l'objectif du jour en tête (lib/content-cadence.ts), et pour
+// chaque post ce qui sera vraiment vu : la séquence story par story, les
+// slides et la légende à part, l'aperçu LinkedIn avant « voir plus ». Les
+// contrôles (lib/written-content.ts) préviennent sans jamais bloquer.
+export default function WrittenPosts({ initialPosts, publishedToday = {} }: { initialPosts: CoachScript[]; publishedToday?: Record<string, number> }) {
   const t = useT();
   const [posts, setPosts] = useState(initialPosts);
   const [seen, setSeen] = useState(initialPosts);
+  const [today, setToday] = useState(publishedToday);
+  const [seenToday, setSeenToday] = useState(publishedToday);
   if (initialPosts !== seen) {
     setSeen(initialPosts);
     setPosts(initialPosts);
   }
+  if (publishedToday !== seenToday) {
+    setSeenToday(publishedToday);
+    setToday(publishedToday);
+  }
   const [copied, setCopied] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>("all");
   const [error, setError] = useState<string | null>(null);
   const [, start] = useTransition();
 
-  const platforms = [...new Set(posts.map((p) => p.platform))];
-  const shown = posts.filter((p) => filter === "all" || p.platform === filter);
+  // Onglets : chaque type qui a un objectif du jour ou des posts en stock.
+  const tabs = useMemo(
+    () => WRITTEN_PLATFORMS.filter((w) => w.dailyTarget !== null || posts.some((p) => p.platform === w.id)),
+    [posts]
+  );
+  const firstWithPosts = tabs.find((w) => posts.some((p) => p.platform === w.id))?.id ?? tabs[0]?.id ?? "linkedin";
+  const [tab, setTab] = useState<string>(firstWithPosts);
+  const active = getWrittenPlatform(tab) ?? tabs[0];
+  // Le plus ancien d'abord : on vide le stock dans l'ordre.
+  const shown = posts
+    .filter((p) => p.platform === active?.id)
+    .slice()
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-  function copy(p: CoachScript) {
-    navigator.clipboard?.writeText(p.content ?? "").then(() => {
-      setCopied(p.id);
+  function copy(key: string, value: string) {
+    navigator.clipboard?.writeText(value).then(() => {
+      setCopied(key);
       setTimeout(() => setCopied(null), 1600);
     }).catch(() => {});
   }
 
   function done(p: CoachScript, remove: boolean) {
     const backup = posts;
+    const backupToday = today;
     setPosts((prev) => prev.filter((x) => x.id !== p.id));
+    if (!remove) setToday((prev) => ({ ...prev, [p.platform]: (prev[p.platform] ?? 0) + 1 }));
     setError(null);
     start(async () => {
       const res = remove ? await deleteScript(p.id, "autre", "Post écrit retiré sans être publié") : await publishScript(p.id);
       if (res.error) {
         setPosts(backup);
+        setToday(backupToday);
         setError(res.error);
       }
     });
   }
 
+  if (!active) return null;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <p style={{ margin: 0, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.55 }}>
-        {t("Copie, poste, puis touche « Publié » : le post sort d'ici et son sujet est mémorisé pour ne pas être refait.")}
-      </p>
-      {platforms.length > 1 && (
-        <div style={{ display: "flex", gap: 6 }}>
-          {["all", ...platforms].map((p) => (
-            <button key={p} type="button" onClick={() => setFilter(p)} style={{ padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: "pointer", border: `1px solid ${filter === p ? "rgba(var(--ep-accent-rgb),0.6)" : "rgba(var(--ep-ink-rgb),0.1)"}`, background: filter === p ? "rgba(var(--ep-accent-rgb),0.15)" : "transparent", color: filter === p ? "var(--ep-accent-hi2)" : "rgba(var(--ep-ink-rgb),0.6)" }}>
-              {p === "all" ? t("Tous") : LABELS[p] ?? p} ({p === "all" ? posts.length : posts.filter((x) => x.platform === p).length})
+      <div role="tablist" aria-label={t("Type de post")} style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
+        {tabs.map((w) => {
+          const on = w.id === active.id;
+          const stock = posts.filter((p) => p.platform === w.id).length;
+          return (
+            <button
+              key={w.id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              onClick={() => setTab(w.id)}
+              style={{
+                flexShrink: 0, padding: "7px 12px", borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: "pointer",
+                border: `1px solid ${on ? withAlpha(w.color, "99") : "rgba(var(--ep-ink-rgb),0.1)"}`,
+                background: on ? withAlpha(w.color, "22") : "transparent",
+                color: on ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.6)",
+              }}
+            >
+              {t(w.plural)} ({stock})
             </button>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
+
+      <DailyGoal platform={active} done={today[active.id] ?? 0} stock={shown.length} />
+
+      <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.55 }}>
+        {active.id === "story_insta"
+          ? t("Poste la séquence d'un coup, story par story (bouton copier sur chaque story), puis touche « Publié ».")
+          : active.hasCaption
+            ? t("Crée le visuel ou les slides, copie la légende, poste, puis touche « Publié ».")
+            : t("Copie, poste, puis touche « Publié » : le post sort d'ici et son sujet est mémorisé pour ne pas être refait.")}
+      </p>
       {error && <p style={{ margin: 0, fontSize: 12.5, color: "#fca5a5" }}>{t(error)}</p>}
       {shown.length === 0 && (
         <p className="ep-card" style={{ margin: 0, padding: "16px", fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", textAlign: "center" }}>
-          {t("Aucun post à publier. Les nouveaux arrivent ici chaque jour.")}
+          {t("Rien à publier ici pour l'instant. Les nouveaux arrivent chaque jour.")}
         </p>
       )}
       {shown.map((p) => (
-        <article key={p.id} className="ep-card" style={{ padding: "14px 14px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", padding: "3px 8px", borderRadius: 999, background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-accent-hi2)" }}>{LABELS[p.platform] ?? p.platform}</span>
-            {getContentFormat(p.content_format).id !== "face_cam" && <ContentFormatBadge formatId={p.content_format} />}
-            <span style={{ flex: 1, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</span>
-          </div>
-          {/* Carrousel LinkedIn (ou autre format structuré) : slides visibles ;
-              un post texte classique reste affiché tel quel. */}
-          {getContentFormat(p.content_format).shape !== "texte" ? (
-            <div className="ep-selectable"><ScriptBody formatId={p.content_format} content={p.content} /></div>
-          ) : (
-            <p className="ep-selectable" style={{ margin: 0, fontSize: 13.5, color: "var(--ep-ink)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{p.content}</p>
-          )}
-          <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-            <button type="button" onClick={() => copy(p)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.14)", background: "rgba(var(--ep-ink-rgb),0.05)", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 800, cursor: "pointer", minHeight: 40 }}>
-              {copied === p.id ? <Check size={14} /> : <Copy size={14} />} {copied === p.id ? t("Copié") : t("Copier")}
-            </button>
-            <button type="button" onClick={() => done(p, false)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 10, border: "none", background: "var(--ep-ok)", color: "var(--ep-bg)", fontSize: 12.5, fontWeight: 900, cursor: "pointer", minHeight: 40 }}>
-              <Send size={14} /> {t("Publié")}
-            </button>
-            <button type="button" onClick={() => { if (window.confirm(t("Retirer ce post sans le publier ?"))) done(p, true); }} aria-label={t("Retirer ce post")} style={{ marginLeft: "auto", width: 40, height: 40, borderRadius: 10, border: "none", background: "none", color: "rgba(var(--ep-ink-rgb),0.4)", cursor: "pointer" }}>
-              <Trash2 size={15} />
-            </button>
-          </div>
-        </article>
+        <PostCard
+          key={p.id}
+          post={p}
+          platform={active}
+          copied={copied}
+          onCopy={copy}
+          onPublished={() => done(p, false)}
+          onRemove={() => { if (window.confirm(t("Retirer ce post sans le publier ?"))) done(p, true); }}
+        />
       ))}
     </div>
+  );
+}
+
+function DailyGoal({ platform, done, stock }: { platform: WrittenPlatform; done: number; stock: number }) {
+  const t = useT();
+  if (platform.dailyTarget === null) {
+    return (
+      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
+        {t("Publié aujourd'hui")} : {done}
+      </p>
+    );
+  }
+  const target = platform.dailyTarget;
+  const pct = Math.min(100, Math.round((done / target) * 100));
+  const missing = Math.max(0, target - done);
+  return (
+    <div className="ep-card" style={{ padding: "12px 14px" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 900, color: "var(--ep-ink)", flex: 1 }}>
+          {t("Aujourd'hui")} : {done} / {target}
+        </p>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: stock < missing ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.5)" }}>
+          {stock} {t("en stock")}{stock < missing ? ` · ${t("il en manque")} ${missing - stock}` : ""}
+        </span>
+      </div>
+      <div style={{ marginTop: 8, height: 6, borderRadius: 999, background: "rgba(var(--ep-ink-rgb),0.08)", overflow: "hidden" }} aria-hidden>
+        <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: done >= target ? "var(--ep-ok)" : platform.color, transition: "width 240ms ease" }} />
+      </div>
+    </div>
+  );
+}
+
+function CopyBtn({ id, label, value, copied, onCopy, primary }: { id: string; label: string; value: string; copied: string | null; onCopy: (k: string, v: string) => void; primary?: boolean }) {
+  const t = useT();
+  const on = copied === id;
+  return (
+    <button
+      type="button"
+      onClick={() => onCopy(id, value)}
+      disabled={!value}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 10, minHeight: 40,
+        border: "1px solid rgba(var(--ep-ink-rgb),0.14)", background: primary ? "rgba(var(--ep-ink-rgb),0.08)" : "rgba(var(--ep-ink-rgb),0.04)",
+        color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 800, cursor: value ? "pointer" : "default", opacity: value ? 1 : 0.5,
+      }}
+    >
+      {on ? <Check size={14} /> : <Copy size={14} />} {on ? t("Copié") : t(label)}
+    </button>
+  );
+}
+
+function PostCard({ post, platform, copied, onCopy, onPublished, onRemove }: {
+  post: CoachScript;
+  platform: WrittenPlatform;
+  copied: string | null;
+  onCopy: (k: string, v: string) => void;
+  onPublished: () => void;
+  onRemove: () => void;
+}) {
+  const t = useT();
+  const formatId = effectiveFormat(post.platform, post.content_format);
+  const f = getContentFormat(formatId);
+  const content = (post.content ?? "").trim();
+  const caption = (post.instagram_caption ?? "").trim();
+  const checks = useMemo(
+    () => checkWrittenPost({ platform: post.platform, content_format: post.content_format, content: post.content, instagram_caption: post.instagram_caption }),
+    [post.platform, post.content_format, post.content, post.instagram_caption]
+  );
+  const isText = f.shape === "texte";
+  const fold = isText && platform.foldChars ? foldPreview(content, platform.foldChars) : null;
+
+  return (
+    <article className="ep-card" style={{ padding: "14px 14px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <ContentFormatBadge formatId={formatId} />
+        <span style={{ flex: 1, fontSize: 12, color: "rgba(var(--ep-ink-rgb),0.45)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{post.title}</span>
+        {isText && platform.maxChars && (
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: content.length > platform.maxChars ? "var(--ep-bad)" : "rgba(var(--ep-ink-rgb),0.4)", whiteSpace: "nowrap" }}>
+            {content.length} / {platform.maxChars}
+          </span>
+        )}
+      </div>
+
+      {checks.length > 0 && (
+        <ul style={{ listStyle: "none", margin: "0 0 10px", padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+          {checks.map((c) => (
+            <li key={c.message} style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 11.5, lineHeight: 1.45, color: c.level === "erreur" ? "var(--ep-bad)" : "var(--ep-warn)" }}>
+              {c.level === "erreur" ? <AlertTriangle size={12} style={{ flexShrink: 0, marginTop: 2 }} /> : <Lightbulb size={12} style={{ flexShrink: 0, marginTop: 2 }} />}
+              <span>{t(c.message)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {fold && fold.cut && (
+        <div style={{ marginBottom: 10, padding: "10px 12px", borderRadius: 10, background: withAlpha(platform.color, "12"), border: `1px solid ${withAlpha(platform.color, "33")}` }}>
+          <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.45)" }}>{t("Ce qu'on voit avant « voir plus »")}</p>
+          <p style={{ margin: 0, fontSize: 13, color: "var(--ep-ink)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+            {fold.visible}<span style={{ color: "rgba(var(--ep-ink-rgb),0.45)", fontWeight: 700 }}> … {t("voir plus")}</span>
+          </p>
+        </div>
+      )}
+
+      {isText ? (
+        <p className="ep-selectable" style={{ margin: 0, fontSize: 13.5, color: "var(--ep-ink)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{content}</p>
+      ) : (
+        <div className="ep-selectable"><ScriptBody formatId={formatId} content={content} /></div>
+      )}
+
+      {platform.hasCaption && (
+        <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: "rgba(var(--ep-shade-rgb),0.3)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+            <p style={{ margin: 0, flex: 1, fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.45)" }}>{t("Légende")}</p>
+            {platform.maxChars && caption && (
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: caption.length > platform.maxChars ? "var(--ep-bad)" : "rgba(var(--ep-ink-rgb),0.4)" }}>{caption.length} / {platform.maxChars}</span>
+            )}
+          </div>
+          <p className="ep-selectable" style={{ margin: 0, fontSize: 13, color: caption ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.4)", lineHeight: 1.55, whiteSpace: "pre-wrap" }}>
+            {caption || t("Pas encore de légende.")}
+          </p>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+        {platform.hasCaption ? (
+          <>
+            <CopyBtn id={`${post.id}:caption`} label="Copier la légende" value={caption} copied={copied} onCopy={onCopy} primary />
+            <CopyBtn id={`${post.id}:content`} label={f.shape === "slides" ? "Copier les slides" : "Copier le visuel"} value={content} copied={copied} onCopy={onCopy} />
+          </>
+        ) : (
+          <CopyBtn id={`${post.id}:content`} label={f.shape === "frames" ? "Copier la séquence" : "Copier"} value={content} copied={copied} onCopy={onCopy} primary />
+        )}
+        <button type="button" onClick={onPublished} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 10, border: "none", background: "var(--ep-ok)", color: "var(--ep-bg)", fontSize: 12.5, fontWeight: 900, cursor: "pointer", minHeight: 40 }}>
+          <Send size={14} /> {t("Publié")}
+        </button>
+        <button type="button" onClick={onRemove} aria-label={t("Retirer ce post")} style={{ marginLeft: "auto", width: 40, height: 40, borderRadius: 10, border: "none", background: "none", color: "rgba(var(--ep-ink-rgb),0.4)", cursor: "pointer" }}>
+          <Trash2 size={15} />
+        </button>
+      </div>
+    </article>
   );
 }

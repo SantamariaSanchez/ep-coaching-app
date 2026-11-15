@@ -19,6 +19,7 @@ import { cleanVideoPlan } from "@/lib/youtube-studio";
 import YoutubeStudio from "@/components/coach/YoutubeStudio";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript } from "@/lib/content-formats";
 import { ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
+import { defaultFormatFor, formatsForPlatform, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
   a_tourner: { label: "À tourner", color: "var(--ep-yellow)" },
@@ -97,6 +98,8 @@ export const PLATFORM_LABELS: Record<string, { label: string; color: string }> =
   youtube: { label: "YouTube", color: "#FF0000" },
   tiktok: { label: "TikTok", color: "#25F4EE" },
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
+  post_insta: { label: "Post Insta", color: "#E1306C" },
+  story_insta: { label: "Story Insta", color: "#F77737" },
 };
 
 // Retour direct 2026-09-18 : LinkedIn et Threads sont du contenu ÉCRIT
@@ -105,10 +108,16 @@ export const PLATFORM_LABELS: Record<string, { label: string; color: string }> =
 // pas de bouton Prompteur (rien à filmer), et un nouveau script sur ces
 // plateformes se crée directement en statut "publié" (voir submitNew),
 // jamais à_tourner/tourné qui n'a pas de sens ici.
-const WRITTEN_PLATFORMS = new Set(["linkedin", "threads"]);
+// 2026-11-15 : posts Instagram et stories Instagram rejoignent les formats
+// écrits (lib/written-content.ts, source unique). Un post écrit se crée
+// « à publier » (statut a_tourner) et part dans l'onglet Posts à publier :
+// le créer en « publié » faussait le compte des contenus publiés.
+const WRITTEN_PLATFORMS = { has: (p: string) => isWrittenPlatform(p) };
 // Ce qu'on peut créer : le reel (format court, tous réseaux, Instagram
-// compris), la vidéo YouTube longue, le post LinkedIn et le post Threads.
-const CREATABLE = ["reel", "youtube", "linkedin", "threads"];
+// compris), la vidéo YouTube longue, et les posts écrits.
+const CREATABLE = ["reel", "youtube", "post_insta", "story_insta", "linkedin", "threads"];
+// Posts et stories Insta : proposés dès que le coach publie sur Instagram.
+const PLATFORM_SETTING: Record<string, string> = { post_insta: "instagram", story_insta: "instagram" };
 
 // Rien à filmer : post écrit (LinkedIn, Threads) ou format sans vidéo
 // (carrousel, voir lib/content-formats.ts). Une seule étape, « J'ai posté ».
@@ -301,7 +310,7 @@ function MyScripts({
 }) {
   const tr = useT();
   // Seules les plateformes où le coach publie (réglage "Mon appli").
-  const platformOptions = Object.entries(PLATFORM_LABELS).filter(([id]) => CREATABLE.includes(id) && (id === "reel" || !platforms?.length || platforms.includes(id)));
+  const platformOptions = Object.entries(PLATFORM_LABELS).filter(([id]) => CREATABLE.includes(id) && (id === "reel" || !platforms?.length || platforms.includes(PLATFORM_SETTING[id] ?? id)));
   const [scripts, setScripts] = useState(initialScripts);
   const [seenInitial, setSeenInitial] = useState(initialScripts);
   if (initialScripts !== seenInitial) {
@@ -574,8 +583,8 @@ function MyScripts({
       return;
     }
     startTransition(async () => {
-      // Écrit (LinkedIn/Threads) : direct en publié, jamais à_tourner.
-      const initialStatus: ScriptStatus = WRITTEN_PLATFORMS.has(newPlatform) ? "publie" : "a_tourner";
+      // Écrit ou filmé : « à tourner » (pour un post écrit, « à publier »).
+      const initialStatus: ScriptStatus = "a_tourner";
       const result = await safeAction(() => createScript({ title: t, format, platform: newPlatform, status: initialStatus, contentFormat: newContentFormat }));
       if (result.error) {
         setError(result.error);
@@ -756,7 +765,7 @@ function MyScripts({
           <p style={{ margin: "14px 0 6px", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.4)" }}>
             {tr("Format du contenu")}
           </p>
-          <ContentFormatPicker value={newContentFormat} onChange={setNewContentFormat} />
+          <ContentFormatPicker value={newContentFormat} onChange={setNewContentFormat} formats={formatsForPlatform(newPlatform)} />
           <div style={{ marginTop: 10 }}>
             <FormatGuide formatId={newContentFormat} />
           </div>
@@ -781,7 +790,10 @@ function MyScripts({
             ))}
             <select
               value={newPlatform}
-              onChange={(e) => setNewPlatform(e.target.value)}
+              onChange={(e) => {
+                setNewPlatform(e.target.value);
+                setNewContentFormat((cur) => defaultFormatFor(e.target.value, cur));
+              }}
               aria-label={tr("Plateforme du script")}
               style={{ ...inputStyle, width: "auto", padding: "7px 10px" }}
             >
@@ -1232,9 +1244,15 @@ function MyScripts({
                     aria-label={tr("Format du contenu")}
                     style={{ ...selectStyle, width: "auto", maxWidth: 200 }}
                   >
-                    {CONTENT_FORMATS.map((f) => (
-                      <option key={f.id} value={f.id}>{tr(f.label)}</option>
-                    ))}
+                    {(() => {
+                      // Formats permis pour la plateforme du script, plus
+                      // son format actuel s'il n'y est plus (anciens scripts).
+                      const list = formatsForPlatform(script.platform);
+                      const cur = getContentFormat(script.content_format);
+                      return (list.some((f) => f.id === cur.id) ? list : [cur, ...list]).map((f) => (
+                        <option key={f.id} value={f.id}>{tr(f.label)}</option>
+                      ));
+                    })()}
                   </select>
                 </label>
                 {!isNotFilmed(script) && script.status !== "publie" && !!script.content && (
@@ -1726,6 +1744,8 @@ const GENERATOR_DURATIONS = ["30 s", "45 s", "60 s", "90 s", "8 à 12 min"];
 const GENERATOR_PLATFORMS: { id: string; label: string }[] = [
   { id: "reel", label: "Reel" },
   { id: "youtube", label: "YouTube" },
+  { id: "post_insta", label: "Post Insta" },
+  { id: "story_insta", label: "Story Insta" },
   { id: "linkedin", label: "LinkedIn" },
   { id: "threads", label: "Threads" },
 ];
@@ -1739,7 +1759,7 @@ function FormatScriptGenerator({ context }: { context: string | null }) {
   const [showPrompt, setShowPrompt] = useState(false);
   const f = getContentFormat(formatId);
   const prompt = useMemo(
-    () => buildFormatScriptPrompt({ formatId, sujet, plateforme, duree: f.filmed ? duree : undefined, contexte: context }),
+    () => buildFormatScriptPrompt({ formatId, sujet, plateforme, duree: f.filmed ? duree : undefined, contexte: context, regles: writtenPromptRules(plateforme) }),
     [formatId, sujet, plateforme, duree, context, f.filmed]
   );
   return (
@@ -1752,7 +1772,7 @@ function FormatScriptGenerator({ context }: { context: string | null }) {
       <p style={{ margin: "0 0 10px", fontSize: 11.5, color: "rgba(var(--ep-ink-rgb),0.5)", lineHeight: 1.5 }}>
         {tr("Choisis le format, le sujet, copie : Claude écrit le script dans la bonne forme, et le Studio l'affiche et le prépare au tournage tout seul.")}
       </p>
-      <ContentFormatPicker value={formatId} onChange={setFormatId} />
+      <ContentFormatPicker value={formatId} onChange={setFormatId} formats={formatsForPlatform(plateforme)} />
       <div style={{ marginTop: 10 }}>
         <FormatGuide formatId={formatId} />
       </div>
@@ -1764,7 +1784,7 @@ function FormatScriptGenerator({ context }: { context: string | null }) {
         style={{ ...inputStyle, marginTop: 10 }}
       />
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
-        <select value={plateforme} onChange={(e) => setPlateforme(e.target.value)} aria-label={tr("Plateforme")} style={selectStyle}>
+        <select value={plateforme} onChange={(e) => { setPlateforme(e.target.value); setFormatId((cur) => defaultFormatFor(e.target.value, cur)); }} aria-label={tr("Plateforme")} style={selectStyle}>
           {GENERATOR_PLATFORMS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
         </select>
         {f.filmed && GENERATOR_DURATIONS.map((d) => (
@@ -1873,6 +1893,8 @@ function CTALibrary() {
 function TechnicalLibrary({ initial }: { initial: Record<string, string> }) {
   const tr = useT();
   const [formatId, setFormatId] = useState(CONTENT_FORMATS[0].id);
+  // Montage : seulement ce qui se filme (et le carrousel, déjà proposé avant).
+  const montageFormats = CONTENT_FORMATS.filter((f) => f.filmed || f.id === "carrousel");
   const [texts, setTexts] = useState<Record<string, string>>(initial);
   const [saved, setSaved] = useState<Record<string, string>>(initial);
   const [pending, startSave] = useTransition();
@@ -1890,7 +1912,7 @@ function TechnicalLibrary({ initial }: { initial: Record<string, string> }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 10 }}>
-        {CONTENT_FORMATS.map((f) => (
+        {montageFormats.map((f) => (
           <button
             key={f.id}
             type="button"

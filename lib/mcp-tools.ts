@@ -12,6 +12,7 @@ import { DISCIPLINE_BY_KEY, bestRecords, type PerformanceEntry } from "@/lib/dis
 import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioning } from "@/lib/positioning";
 import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
 import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
+import { WRITTEN_PLATFORMS, checkWrittenPost, defaultFormatFor, getWrittenPlatform, isFormatAllowed, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 import { isMissingColumnError } from "@/lib/coach-ideation";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
 import { describeTracking, TRACKING_LEVEL_LABEL } from "@/lib/tracking-profile";
@@ -108,7 +109,7 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "ajouter_script",
     roles: ["coach"],
-    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach ; pour une histoire du quotidien, lis d'abord notes_vecues et n'utilise que ce qu'il y a dedans. Écris comme les vraies références : ouverture sur une question qui revient ou un faux problème (jamais une scène inventée), parties annoncées à l'oral, exemple chiffré refaisable, nuance, règle courte ; jamais de chapitre ni de timecode, ni de tiret cadratin ; dis adhésion (pas adhérence) et Road map.",
+    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Formats permis par plateforme écrite : " + WRITTEN_PLATFORMS.map((w) => `${w.id} = ${w.formats.join(" ou ")}`).join(" ; ") + ". Un post écrit arrive dans l'onglet « Posts à publier », jamais dans la file du tournage. Règles des posts écrits : " + WRITTEN_PLATFORMS.map((w) => writtenPromptRules(w.id)).filter(Boolean).join(" ") + " Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach ; pour une histoire du quotidien, lis d'abord notes_vecues et n'utilise que ce qu'il y a dedans. Écris comme les vraies références : ouverture sur une question qui revient ou un faux problème (jamais une scène inventée), parties annoncées à l'oral, exemple chiffré refaisable, nuance, règle courte ; jamais de chapitre ni de timecode, ni de tiret cadratin ; dis adhésion (pas adhérence) et Road map.",
     inputSchema: {
       type: "object",
       properties: {
@@ -117,7 +118,8 @@ export const EXTRA_TOOLS: ToolDef[] = [
         contenu: { type: "string", description: "Le script complet, dans la forme du format choisi" },
         format_contenu: { type: "string", enum: CONTENT_FORMAT_IDS, description: "Format de contenu, face_cam par défaut" },
         cta: { type: "string", description: "L'appel à l'action de fin" },
-        plateforme: { type: "string", enum: ["reel", "youtube", "linkedin", "threads"], description: "reel = format court (Instagram, TikTok, Facebook), par défaut" },
+        plateforme: { type: "string", enum: ["reel", "youtube", "linkedin", "threads", "post_insta", "story_insta"], description: "reel = format court (Instagram, TikTok, Facebook), par défaut. post_insta = post Instagram (carrousel ou image_unique, légende dans description). story_insta = séquence de stories (format sequence_stories). linkedin/threads = post écrit (post_texte ou carrousel)." },
+        description: { type: "string", description: "Légende publiée sous un post Instagram (post_insta) ou sous un reel" },
         pilier: { type: "string" },
       },
       required: ["titre", "contenu"],
@@ -437,25 +439,44 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       // Mêmes plateformes que le Studio (IdeationScripts) : un seul « reel »
       // pour tout le format court, quel que soit le réseau.
       const asked = String(args.plateforme ?? "");
-      const platform = ["youtube", "linkedin", "threads"].includes(asked) ? asked : "reel";
+      const platform = asked === "youtube" || isWrittenPlatform(asked) ? asked : "reel";
       if (args.format_contenu !== undefined && args.format_contenu !== null && args.format_contenu !== "" && !isContentFormatId(args.format_contenu)) {
         return text(`Format de contenu inconnu. Valeurs possibles : ${CONTENT_FORMAT_IDS.join(", ")}.`);
       }
-      const contentFormat = isContentFormatId(args.format_contenu) ? args.format_contenu : DEFAULT_CONTENT_FORMAT;
+      const written = getWrittenPlatform(platform);
+      // Plateforme écrite : seulement ses formats (un reel « face caméra » sur
+      // une story n'a pas de sens) ; sans format donné, celui de la plateforme.
+      if (written && isContentFormatId(args.format_contenu) && !isFormatAllowed(platform, args.format_contenu)) {
+        return text(`Le format ${args.format_contenu} n'est pas prévu pour ${written.label}. Formats possibles : ${written.formats.join(", ")}.`);
+      }
+      if (!written && isContentFormatId(args.format_contenu) && getContentFormat(args.format_contenu).onlyFor) {
+        return text(`Le format ${args.format_contenu} est réservé aux plateformes ${getContentFormat(args.format_contenu).onlyFor!.join(", ")}.`);
+      }
+      const contentFormat = written
+        ? defaultFormatFor(platform, isContentFormatId(args.format_contenu) ? args.format_contenu : null)
+        : isContentFormatId(args.format_contenu) ? args.format_contenu : DEFAULT_CONTENT_FORMAT;
+      const caption = typeof args.description === "string" && args.description.trim() ? args.description.trim().slice(0, SCRIPT_CONTENT_MAX) : null;
+      // Écrit : « à publier » (statut a_tourner), il sort du Studio quand le
+      // coach touche « Publié » (journal content_published_log).
       const row = {
-        coach_id: ownerId, title, content, status: platform === "linkedin" || platform === "threads" ? "publie" : "a_tourner", platform, format: platform === "youtube" ? "long" : "court",
+        coach_id: ownerId, title, content, status: "a_tourner", platform, format: platform === "youtube" ? "long" : "court",
         hook: typeof args.accroche === "string" ? args.accroche.slice(0, 500) : null,
         cta: typeof args.cta === "string" ? args.cta.slice(0, 500) : null,
         pillar: typeof args.pilier === "string" ? args.pilier.slice(0, 100) : null,
         source_reference: "Claude",
       };
-      let { error } = await admin.from("coach_scripts").insert({ ...row, content_format: contentFormat });
+      let { error } = await admin.from("coach_scripts").insert({ ...row, content_format: contentFormat, ...(caption ? { instagram_caption: caption } : {}) });
       // Migration 20261021 pas encore passée : le script s'ajoute sans son format.
       if (isMissingColumnError(error)) ({ error } = await admin.from("coach_scripts").insert(row));
       if (error) return text("Ajout impossible, réessaie.");
       const ctaWarning = ctaKeywordWarning(
         await findUnknownCtaKeywords([row.cta, content].filter(Boolean).join("\n"), async (k) => Boolean(await getLeadMagnetSlugByAnyKeyword(k))).catch(() => [])
       );
+      if (written) {
+        const checks = checkWrittenPost({ platform, content_format: contentFormat, content, instagram_caption: caption });
+        const warn = checks.length ? `\nÀ revoir avant de publier :\n${checks.map((c) => `- ${c.message}`).join("\n")}` : "";
+        return text(`${written.label} « ${title} » (${getContentFormat(contentFormat).label}) ajouté dans Posts à publier.${warn}${ctaWarning}`);
+      }
       return text(`Script « ${title} » (${getContentFormat(contentFormat).label}) ajouté dans ton Studio, à tourner.${ctaWarning}`);
     }
 
