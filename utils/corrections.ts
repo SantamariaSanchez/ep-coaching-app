@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import type { Db } from "@/lib/db-types";
 
 export interface VideoAnnotation {
@@ -38,17 +39,39 @@ export type ExerciseCorrectionResolved = ExerciseCorrection & {
   coach_video_url: string | null;
 };
 
+/** Préfixe d'une vidéo de série (bucket set-videos) dans exercise_corrections.video_path. */
+export const SET_VIDEO_PREFIX = "set-videos:";
+
+/**
+ * Chemin set-videos d'une correction, seulement s'il est dans le dossier du
+ * client lui-même (le bucket range chaque vidéo sous « {id du client}/ »).
+ * La colonne est écrite par le client : sans ce contrôle, il pourrait faire
+ * signer la vidéo de quelqu'un d'autre.
+ */
+export function setVideoPathOf(row: { video_path: string | null; client_id?: string | null }): string | null {
+  if (!row.video_path?.startsWith(SET_VIDEO_PREFIX) || !row.client_id) return null;
+  const path = row.video_path.slice(SET_VIDEO_PREFIX.length);
+  if (!path.startsWith(`${row.client_id}/`) || path.includes("..")) return null;
+  return path;
+}
+
 // Transforme video_path/coach_video_path (upload natif) en URLs signées.
 // Les dépôts d'avant ce changement n'ont que video_link/coach_video_link
 // (lien Drive externe) et n'ont donc rien à résoudre ici.
-async function attachCorrectionVideoUrls<T extends { video_path: string | null; coach_video_path: string | null }>(
+async function attachCorrectionVideoUrls<T extends { video_path: string | null; coach_video_path: string | null; client_id?: string | null }>(
   rows: T[]
 ): Promise<(T & { video_url: string | null; coach_video_url: string | null })[]> {
   const supabase = await createServerSupabase();
   return Promise.all(
     rows.map(async (row) => {
+      // « set-videos:… » : vidéo d'une série envoyée depuis la séance
+      // (route send-video), rangée dans le bucket privé set-videos. La ligne
+      // a déjà été lue sous RLS (coach du client ou client lui-même), la
+      // signature passe donc par le client admin.
       const video_url = row.video_path
-        ? (await supabase.storage.from("correction-videos").createSignedUrl(row.video_path, 3600)).data?.signedUrl ?? null
+        ? row.video_path.startsWith(SET_VIDEO_PREFIX)
+          ? setVideoPathOf(row) ? (await createAdminClient().storage.from("set-videos").createSignedUrl(setVideoPathOf(row)!, 3600)).data?.signedUrl ?? null : null
+          : (await supabase.storage.from("correction-videos").createSignedUrl(row.video_path, 3600)).data?.signedUrl ?? null
         : null;
       const coach_video_url = row.coach_video_path
         ? (await supabase.storage.from("coach-videos").createSignedUrl(row.coach_video_path, 3600)).data?.signedUrl ?? null

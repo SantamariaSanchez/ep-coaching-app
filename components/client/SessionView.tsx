@@ -1536,6 +1536,9 @@ export default function SessionView({
 
   // ── Vidéo d'une série ───────────────────────────────────────────────────────
   const videoFilesRef = useRef<Map<string, { file: File; sendToCoach: boolean }>>(new Map());
+  // Question facultative jointe à la vidéo (« mon dos s'arrondit ? »), gardée
+  // jusqu'à l'envoi au coach, y compris pour un nouvel essai.
+  const videoQuestionsRef = useRef<Map<string, string>>(new Map());
   const setVideo = useCallback((localId: string, patch: Partial<VideoState> | null) => {
     setVideoStates((cur) => {
       if (patch === null) {
@@ -1585,14 +1588,15 @@ export default function SessionView({
         const res = await fetch(`/api/client/sessions/${sessionId}/sets/${found.set.dbId}/send-video`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ position: found.position }),
+          body: JSON.stringify({ position: found.position, question: videoQuestionsRef.current.get(localId) ?? null }),
         });
         const json = (await res.json().catch(() => ({}))) as { error?: string; sentAt?: string };
         if (!res.ok) throw new Error(json.error || tr("Envoi au coach impossible, réessaie."));
         setExercises((prev) => patchSetIn(prev, localId, { videoSentAt: json.sentAt ?? new Date().toISOString() }));
         setVideo(localId, { status: "sent", error: undefined });
         videoFilesRef.current.delete(localId);
-        showNotice(tr("Vidéo envoyée à ton coach."));
+        videoQuestionsRef.current.delete(localId);
+        showNotice(tr("Vidéo envoyée à ton coach. Sa correction arrivera dans Programme, « Corrections & Questions »."));
       } catch (e) {
         const msg = e instanceof Error ? e.message : tr("Envoi au coach impossible, réessaie.");
         setVideo(localId, { status: "error", error: msg });
@@ -1640,9 +1644,10 @@ export default function SessionView({
   );
 
   const confirmVideo = useCallback(
-    (sendToCoach: boolean) => {
+    (sendToCoach: boolean, question?: string) => {
       if (!videoDraft) return;
       videoFilesRef.current.set(videoDraft.localId, { file: videoDraft.file, sendToCoach });
+      if (sendToCoach && question?.trim()) videoQuestionsRef.current.set(videoDraft.localId, question.trim().slice(0, 500));
       const { key, localId } = videoDraft;
       closeVideoDraft();
       void uploadVideo(key, localId);

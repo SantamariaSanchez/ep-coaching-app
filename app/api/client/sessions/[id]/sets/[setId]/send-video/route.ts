@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { getProfile } from "@/utils/auth";
 import { sendPushToUser } from "@/lib/push";
+import { SET_VIDEO_PREFIX } from "@/utils/corrections";
 
 // « Envoyer au coach » (logbook en séance) : la vidéo d'une série, déjà
 // rangée dans le bucket set-videos, part dans la messagerie coach/client
@@ -38,7 +39,10 @@ export async function POST(
   if (limited) return limited;
 
   const { id: sessionId, setId } = await params;
-  const body = (await req.json().catch(() => ({}))) as { position?: unknown };
+  const body = (await req.json().catch(() => ({}))) as { position?: unknown; question?: unknown };
+  // Question facultative du client (« mon dos s'arrondit ? ») : elle part avec
+  // la vidéo et s'affiche dans la correction côté coach.
+  const question = typeof body.question === "string" && body.question.trim() ? body.question.trim().slice(0, 500) : null;
   const position =
     typeof body.position === "number" && Number.isInteger(body.position) && body.position > 0 && body.position < 100
       ? body.position
@@ -57,7 +61,7 @@ export async function POST(
 
   const { data: setRow } = await supabase
     .from("session_sets")
-    .select("id, exercise_name, set_number, weight_kg, reps_actual, rir_actual, video_url")
+    .select("id, exercise_name, set_number, weight_kg, reps_actual, rir_actual, video_url, video_sent_at")
     .eq("id", setId)
     .eq("session_id", sessionId)
     .maybeSingle();
@@ -95,7 +99,7 @@ export async function POST(
   else if (set.weight_kg != null) parts.push(`${kg(set.weight_kg)} kg`);
   else if (set.reps_actual != null) parts.push(`${set.reps_actual} reps`);
   if (set.rir_actual != null) parts.push(`RIR ${set.rir_actual}`);
-  const caption = `🎥 ${parts.join(" · ")}`;
+  const caption = `🎥 ${parts.join(" · ")}${question ? `\n${question}` : ""}`;
 
   const { data: message, error: insertError } = await supabase
     .from("messages")
@@ -133,6 +137,23 @@ export async function POST(
     .eq("session_id", sessionId);
   if (markError && markError.code !== "PGRST204" && markError.code !== "42703") {
     console.error("send-video: marquage impossible:", markError);
+  }
+
+  // Correction à traiter (C61, 2026-11-15) : la vidéo envoyée depuis la
+  // séance apparaît aussi dans les corrections du coach (boîte « à traiter »,
+  // fiche client, outil d'annotation) avec le statut En attente / Corrigé
+  // côté client, au lieu de se perdre dans le fil des messages. Une seule
+  // fois par série. Best-effort : le message est déjà parti.
+  if (!(setRow as { video_sent_at?: string | null } | null)?.video_sent_at) {
+    const objective = parts.slice(1).join(" · ") + " (vidéo envoyée depuis la séance)";
+    const { error: corrError } = await supabase.from("exercise_corrections").insert({
+      client_id: guard.userId,
+      exercise_name: set.exercise_name,
+      objective: objective.slice(0, 300),
+      video_path: `${SET_VIDEO_PREFIX}${set.video_url}`,
+      client_question: question,
+    });
+    if (corrError) console.error("send-video: correction non créée:", corrError);
   }
 
   const firstName = (profile?.full_name ?? "").trim().split(/\s+/)[0] || "Ton client";
