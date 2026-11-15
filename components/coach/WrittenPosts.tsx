@@ -20,7 +20,14 @@ import { ContentFormatBadge, ScriptBody } from "@/components/coach/ScriptFormatV
 // chaque post ce qui sera vraiment vu : la séquence story par story, les
 // slides et la légende à part, l'aperçu LinkedIn avant « voir plus ». Les
 // contrôles (lib/written-content.ts) préviennent sans jamais bloquer.
-export default function WrittenPosts({ initialPosts, publishedToday = {} }: { initialPosts: CoachScript[]; publishedToday?: Record<string, number> }) {
+export default function WrittenPosts({ initialPosts, publishedToday = {}, targets = {}, platforms }: {
+  initialPosts: CoachScript[];
+  publishedToday?: Record<string, number>;
+  /** Objectifs du jour fixés par le coach (lib/content-targets.ts). */
+  targets?: Partial<Record<string, number>>;
+  /** Plateformes du coach (réglage « Mon appli »), toutes si absent. */
+  platforms?: string[];
+}) {
   const t = useT();
   const [posts, setPosts] = useState(initialPosts);
   const [seen, setSeen] = useState(initialPosts);
@@ -38,10 +45,11 @@ export default function WrittenPosts({ initialPosts, publishedToday = {} }: { in
   const [error, setError] = useState<string | null>(null);
   const [, start] = useTransition();
 
-  // Onglets : chaque type qui a un objectif du jour ou des posts en stock.
+  // Onglets : les types des plateformes du coach, plus tout type qui a un
+  // objectif ou des posts en stock.
   const tabs = useMemo(
-    () => WRITTEN_PLATFORMS.filter((w) => w.dailyTarget !== null || posts.some((p) => p.platform === w.id)),
-    [posts]
+    () => WRITTEN_PLATFORMS.filter((w) => !platforms?.length || platforms.includes(w.setting) || !!targets[w.id] || posts.some((p) => p.platform === w.id)),
+    [posts, platforms, targets]
   );
   const firstWithPosts = tabs.find((w) => posts.some((p) => p.platform === w.id))?.id ?? tabs[0]?.id ?? "linkedin";
   const [tab, setTab] = useState<string>(firstWithPosts);
@@ -103,7 +111,7 @@ export default function WrittenPosts({ initialPosts, publishedToday = {} }: { in
         })}
       </div>
 
-      <DailyGoal platform={active} done={today[active.id] ?? 0} stock={shown.length} />
+      <DailyGoal platform={active} target={targets[active.id] ?? null} done={today[active.id] ?? 0} stock={shown.length} />
 
       <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.55 }}>
         {active.id === "story_insta"
@@ -133,16 +141,15 @@ export default function WrittenPosts({ initialPosts, publishedToday = {} }: { in
   );
 }
 
-function DailyGoal({ platform, done, stock }: { platform: WrittenPlatform; done: number; stock: number }) {
+function DailyGoal({ platform, target, done, stock }: { platform: WrittenPlatform; target: number | null; done: number; stock: number }) {
   const t = useT();
-  if (platform.dailyTarget === null) {
+  if (!target) {
     return (
       <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
-        {t("Publié aujourd'hui")} : {done}
+        {t("Publié aujourd'hui")} : {done} · {stock} {t("en stock")} · {t("pas d'objectif fixé (Objectifs du jour, en haut)")}
       </p>
     );
   }
-  const target = platform.dailyTarget;
   const pct = Math.min(100, Math.round((done / target) * 100));
   const missing = Math.max(0, target - done);
   return (

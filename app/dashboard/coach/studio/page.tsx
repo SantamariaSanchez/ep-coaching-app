@@ -13,7 +13,8 @@ import { getLivedNotes } from "@/lib/lived-content-server";
 import { hasLivedMarker, mondayStart } from "@/lib/lived-content";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { startOfTodayInParis } from "@/lib/dates";
-import { WRITTEN_PLATFORM_IDS, countByPlatform } from "@/lib/written-content";
+import { countByPlatform } from "@/lib/written-content";
+import { cleanProductionTime, targetsFromAnswers } from "@/lib/content-targets";
 
 // Idéation (ex "Idées & brouillons", renommé le 2026-08-15) : espace de
 // création de contenu du coach — poser des idées Insta/YouTube/LinkedIn
@@ -49,14 +50,13 @@ export default async function CoachStudioPage({
     getAppSetup(user.id),
     getLivedNotes(user.id, 90, 40),
   ]);
-  // Objectifs du jour des posts écrits : ce qui est déjà parti aujourd'hui
-  // (journal rempli par publishScript). Lecture best-effort : sans elle,
-  // les compteurs partent de zéro, rien d'autre ne casse.
+  // Objectifs du jour : ce qui est déjà parti aujourd'hui (journal rempli
+  // par publishScript). Lecture best-effort : sans elle, les compteurs
+  // partent de zéro, rien d'autre ne casse.
   const publishedToday = await createAdminClient()
     .from("content_published_log")
     .select("platform")
     .eq("coach_id", user.id)
-    .in("platform", WRITTEN_PLATFORM_IDS)
     .gte("published_at", startOfTodayInParis().toISOString())
     .then((r) => countByPlatform((r.data ?? []) as { platform: string | null }[]), () => ({}));
   const weekStart = mondayStart(new Date()).getTime();
@@ -96,6 +96,8 @@ export default async function CoachStudioPage({
         focusScriptId={focusScriptId}
         focusIdeaId={focusIdeaId}
         publishedToday={publishedToday}
+        contentTargets={targetsFromAnswers(appSetup.answers)}
+        productionTime={cleanProductionTime(appSetup.answers.production_time)}
       />
     </div>
   );

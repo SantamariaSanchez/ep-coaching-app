@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { Lightbulb, StickyNote, Clapperboard, Sparkles, Send } from "lucide-react";
 import WrittenPosts from "@/components/coach/WrittenPosts";
 import { isWrittenPlatform } from "@/lib/written-content";
+import ContentTargetsCard from "@/components/coach/ContentTargetsCard";
+import { CONTENT_TARGET_DEFS, progressByTarget, type ContentTargets, type ProductionTime } from "@/lib/content-targets";
 import ContentStudio from "@/components/coach/ContentStudio";
 import { Suspense } from "react";
 import NotesApp from "@/components/notes/NotesApp";
@@ -54,6 +56,8 @@ export default function IdeationHub({
   focusScriptId,
   focusIdeaId,
   publishedToday,
+  contentTargets = {},
+  productionTime = null,
 }: {
   initialIdeas: ContentIdea[];
   /** Le bloc-notes unique de l'appli (table notes), affiché aussi ici. */
@@ -69,8 +73,11 @@ export default function IdeationHub({
   initialTab?: string;
   focusScriptId?: string;
   focusIdeaId?: string;
-  /** Posts écrits publiés aujourd'hui, par plateforme (objectifs du jour). */
+  /** Contenus publiés aujourd'hui, par plateforme (objectifs du jour). */
   publishedToday?: Record<string, number>;
+  /** Objectifs du jour fixés par le coach. */
+  contentTargets?: ContentTargets;
+  productionTime?: ProductionTime | null;
 }) {
   const tr = useT();
   // Posts écrits (stories et posts Insta, LinkedIn, Threads) à part : ils se copient et se postent,
@@ -107,6 +114,23 @@ export default function IdeationHub({
     { label: "Publié", n: count("publie"), go: () => { setPresetStatus((p) => ({ value: "publie", n: p.n + 1 })); setTab("scripts"); } },
   ];
   const [hasOpenedGenerator, setHasOpenedGenerator] = useState(initialTab === "generateur");
+
+  // Objectifs du jour : ce qui est prêt (à tourner, tourné ou à publier)
+  // et ce qui est déjà publié, par type d'objectif.
+  const doneToday = useMemo(() => progressByTarget(publishedToday ?? {}), [publishedToday]);
+  const stock = useMemo(() => {
+    const out: Record<string, number> = {};
+    for (const d of CONTENT_TARGET_DEFS) {
+      out[d.key] = initialScripts.filter((s) => d.platforms.includes(s.platform) && s.status !== "publie").length;
+    }
+    return out;
+  }, [initialScripts]);
+  // Types proposés : ceux des plateformes du coach (réglage « Mon appli »).
+  const targetKeys = useMemo(() => {
+    if (!platforms?.length) return CONTENT_TARGET_DEFS.map((d) => d.key);
+    const setting: Record<string, string | null> = { reel: null, youtube: "youtube", story_insta: "instagram", post_insta: "instagram", linkedin: "linkedin", threads: "threads" };
+    return CONTENT_TARGET_DEFS.map((d) => d.key).filter((k) => !setting[k] || platforms.includes(setting[k]!));
+  }, [platforms]);
 
   return (
     <div>
@@ -172,6 +196,9 @@ export default function IdeationHub({
         rien n'est encore enregistré. Les 5 sous-espaces restent désormais
         montés en permanence, seule la visibilité change.
       */}
+      {(tab === "scripts" || tab === "posts") && (
+        <ContentTargetsCard initialTargets={contentTargets} initialTime={productionTime} doneToday={doneToday} stock={stock} keys={targetKeys} />
+      )}
       <div hidden={tab !== "idees"}>
         <ContentStudio initialIdeas={initialIdeas} platforms={platforms} focusIdeaId={focusIdeaId} />
       </div>
@@ -182,7 +209,7 @@ export default function IdeationHub({
         <IdeationScripts montageProcesses={montageProcesses} presetStatus={presetStatus} initialScripts={videoScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={tab !== "posts"}>
-        <WrittenPosts initialPosts={writtenPosts} publishedToday={publishedToday} />
+        <WrittenPosts initialPosts={writtenPosts} publishedToday={publishedToday} targets={contentTargets} platforms={platforms} />
       </div>
       <div hidden={tab !== "notes"}>
         {/* Un seul bloc-notes dans toute l'appli (audit 2026-11-13) : le même
