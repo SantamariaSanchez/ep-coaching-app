@@ -21,6 +21,7 @@ import { todayInParis } from "@/lib/dates";
 import { getHomeQuickData } from "@/lib/tracking-home-server";
 import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import { CoachedHome, WelcomeGuide } from "@/components/client/home/ClientHome";
+import { shouldAskFeedback } from "@/lib/app-feedback";
 
 // Le rendu de l'accueil vit dans components/client/home/ClientHome.tsx
 // (partagé avec l'aperçu « Voir comme mon client » de la fiche coach).
@@ -53,7 +54,7 @@ export default async function ClientDashboard({
     // Données rapides chaînées sur les réglages au lieu d'attendre tout le
     // lot puis de repartir pour un aller-retour de plus.
     const appSetupP = getAppSetup(user.id);
-    const [preferences, checklist, activityStreak, appSetup, day, quick] = await Promise.all([
+    const [preferences, checklist, activityStreak, appSetup, day, quick, askFeedback] = await Promise.all([
       getMemberPreferences(user.id),
       getOnboardingChecklist(user.id),
       // Item 42 : signal de constance déjà calculé pour item 20, réutilisé
@@ -63,6 +64,17 @@ export default async function ClientDashboard({
       // Membre gratuit : pas de messages, tâches ni check-in du coach.
       getClientHomeDay(user.id, { coached: false, checkinDone: true }),
       appSetupP.then((a) => getHomeQuickData(user.id, a)),
+      // Avis volontaire (C78) : après 3 jours, au plus tous les 60 jours.
+      (async () => {
+        try {
+          const supabase = await createServerSupabase();
+          const { data: last } = await supabase.from("app_feedback").select("created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+          // Les 3 jours comptent depuis la fin de l'onboarding (profiles n'a pas de created_at).
+          return shouldAskFeedback(profile?.onboarding_completed_at ?? null, (last as { created_at?: string } | null)?.created_at);
+        } catch {
+          return false;
+        }
+      })(),
     ]);
     return (
       <>
@@ -78,6 +90,7 @@ export default async function ClientDashboard({
           show={{ nutrition: isOn(appSetup, "nutrition"), entrainement: isOn(appSetup, "entrainement") }}
           day={day}
           locale={locale}
+          askFeedback={askFeedback}
         />
       </>
     );
