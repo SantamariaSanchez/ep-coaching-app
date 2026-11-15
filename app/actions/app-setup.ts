@@ -112,3 +112,26 @@ export async function saveMontageProcessAction(formatId: string, text: string): 
   if (error) return { error: "Enregistrement impossible, réessaie." };
   return {};
 }
+
+// Objectifs de contenu du jour (2026-11-15) : chaque coach fixe les siens
+// dans le Studio, plus aucun quota écrit dans le code. Voir
+// lib/content-targets.ts. Le temps de production sert seulement au calcul
+// proposé pour les reels.
+export async function saveContentTargetsAction(targets: unknown, productionTime: unknown): Promise<{ error?: string }> {
+  const user = await getUser();
+  if (!user) return { error: "Non authentifié." };
+  const { cleanTargets, cleanProductionTime } = await import("@/lib/content-targets");
+  const clean = cleanTargets(targets);
+  const time = cleanProductionTime(productionTime);
+  const admin = createAdminClient();
+  const { data: row } = await admin.from("user_app_setup").select("answers, modules, completed_at").eq("user_id", user.id).maybeSingle();
+  const answers: Record<string, unknown> = { ...((row?.answers as Record<string, unknown>) ?? {}), content_targets: clean };
+  if (time) answers.production_time = time;
+  else delete answers.production_time;
+  const { error } = await admin
+    .from("user_app_setup")
+    .upsert({ user_id: user.id, answers, modules: row?.modules ?? {}, completed_at: row?.completed_at ?? null, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  if (error) return { error: "Enregistrement impossible, réessaie." };
+  revalidatePath("/dashboard/coach/studio");
+  return {};
+}

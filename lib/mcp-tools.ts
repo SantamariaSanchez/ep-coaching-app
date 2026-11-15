@@ -3,7 +3,7 @@
 // code. Chaque outil n'agit que sur les données du propriétaire de la clé
 // (et, pour un coach, sur ses propres clients).
 import { createAdminClient } from "@/lib/supabase-admin";
-import { todayInParis } from "@/lib/dates";
+import { startOfTodayInParis, todayInParis } from "@/lib/dates";
 import { engagementProgress, reviewDate, reviewState, type RenewalStatus } from "@/lib/engagement";
 import { fuzzyScore } from "@/lib/fuzzy-search";
 import { syncDailyNutrition } from "@/lib/nutrition-sync";
@@ -12,6 +12,7 @@ import { DISCIPLINE_BY_KEY, bestRecords, type PerformanceEntry } from "@/lib/dis
 import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioning } from "@/lib/positioning";
 import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
 import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
+import { CONTENT_TARGET_DEFS, progressByTarget, targetsFromAnswers, targetsSummary } from "@/lib/content-targets";
 import { WRITTEN_PLATFORMS, checkWrittenPost, defaultFormatFor, getWrittenPlatform, isFormatAllowed, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 import { isMissingColumnError } from "@/lib/coach-ideation";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
@@ -105,6 +106,12 @@ export const EXTRA_TOOLS: ToolDef[] = [
     roles: ["coach"],
     description: "Scripts du Studio créatif du coach (identifiant court, statut, titre, plateforme, format de contenu, accroche). L'identifiant sert à modifier_script et publier_script.",
     inputSchema: { type: "object", properties: { statut: { type: "string", enum: ["a_tourner", "tourne", "publie"] }, nombre: { type: "number" } } },
+  },
+  {
+    name: "mes_objectifs_contenu",
+    roles: ["coach"],
+    description: "Objectifs de contenu du jour fixés par le coach dans son Studio (reels, YouTube, stories et posts Insta, LinkedIn, Threads), ce qui est déjà publié aujourd'hui et ce qui est prêt en stock. À lire AVANT de produire du contenu : produis ce qui manque, jamais au-delà, et rien pour un type sans objectif sauf demande explicite.",
+    inputSchema: { type: "object", properties: {} },
   },
   {
     name: "ajouter_script",
@@ -430,6 +437,23 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       if (isMissingColumnError(error)) ({ data, error } = await query(base));
       const rows = (data ?? []) as unknown as { id: string; title: string; hook: string | null; status: string; platform: string | null; pillar: string | null; content_format?: string | null }[];
       return text(rows.length ? rows.map((r) => `- ${r.id.slice(0, 8)} [${r.status}] ${r.title}${r.platform ? ` (${r.platform}, ${getContentFormat(r.content_format).label})` : ` (${getContentFormat(r.content_format).label})`}${r.hook ? ` : « ${r.hook} »` : ""}`).join("\n") : "Aucun script.");
+    }
+
+    case "mes_objectifs_contenu": {
+      const [setupRes, logRes, scriptsRes] = await Promise.all([
+        admin.from("user_app_setup").select("answers").eq("user_id", ownerId).maybeSingle(),
+        admin.from("content_published_log").select("platform").eq("coach_id", ownerId).gte("published_at", startOfTodayInParis().toISOString()),
+        admin.from("coach_scripts").select("platform, status").eq("coach_id", ownerId).neq("status", "publie"),
+      ]);
+      const targets = targetsFromAnswers((setupRes.data?.answers as Record<string, unknown> | null) ?? null);
+      const counts: Record<string, number> = {};
+      for (const r of (logRes.data ?? []) as { platform: string | null }[]) if (r.platform) counts[r.platform] = (counts[r.platform] ?? 0) + 1;
+      const stock: Record<string, number> = {};
+      for (const d of CONTENT_TARGET_DEFS) stock[d.key] = ((scriptsRes.data ?? []) as { platform: string }[]).filter((r) => d.platforms.includes(r.platform)).length;
+      const head = Object.keys(targets).length
+        ? "Objectifs du jour fixés par le coach (Studio créatif) :"
+        : "Aucun objectif fixé dans le Studio. Ne produis pas en volume : demande au coach ses objectifs (Studio créatif, Objectifs du jour) ou produis seulement ce qu'il demande.";
+      return text(`${head}\n${targetsSummary(targets, progressByTarget(counts), stock)}`);
     }
 
     case "ajouter_script": {

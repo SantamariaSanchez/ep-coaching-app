@@ -1,6 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { computeCadence, PRODUCTION_DAY, WRITTEN_DAILY_TARGETS } from "../content-cadence";
+import { computeCadence } from "../content-cadence";
+import { CONTENT_TARGET_KEYS, cleanProductionTime, cleanTargets, progressByTarget, reelsFromTime, targetsFromAnswers, targetsSummary } from "../content-targets";
+
+// Exemple : la journée qu'Emmanuel a décrite le 15/11 (pas un défaut du code).
+const PRODUCTION_DAY = {
+  filmingMinutes: 240, editingMinutes: 240, reelMinutes: 5, youtubeMinutes: 120, youtubePerDay: 1,
+  youtubeClipsPerDay: 30, shortVideoPlatforms: ["Instagram Reels", "TikTok", "YouTube Shorts", "Facebook Reels", "Threads"],
+};
+const WRITTEN_DAILY_TARGETS = { story_insta: 50, story_facebook: 50, post_insta: 25, relais: 50, linkedin: 50, mails: 10 };
 import { CONTENT_FORMATS, VIDEO_CONTENT_FORMATS, parseScript, parseSticker } from "../content-formats";
 import {
   checkWrittenPost, copyText, countByPlatform, defaultFormatFor, effectiveFormat, foldPreview,
@@ -10,7 +18,7 @@ import {
 // ── Cadence ─────────────────────────────────────────────────────────────
 
 test("cadence : 8 h de production, YouTube 2 h, reel 5 min → 72 reels par jour", () => {
-  const c = computeCadence();
+  const c = computeCadence(PRODUCTION_DAY, WRITTEN_DAILY_TARGETS);
   assert.equal(c.reelsPerDay, 72);
   assert.equal(c.shortVideosPerDay, 72 + PRODUCTION_DAY.youtubeClipsPerDay);
   assert.equal(c.shortPostsPerDay, (72 + PRODUCTION_DAY.youtubeClipsPerDay) * 5);
@@ -173,4 +181,35 @@ test("aucun tiret cadratin dans les nouveaux formats", () => {
     const f = CONTENT_FORMATS.find((x) => x.id === id)!;
     assert.doesNotMatch([f.description, f.shapeHint, f.template, f.rule ?? "", ...f.structure, ...f.tips].join(" "), /[—–]/, id);
   }
+});
+
+// ── Objectifs réglés par le coach ───────────────────────────────────────
+
+test("objectifs : aucun défaut, clés inconnues et valeurs absurdes écartées", () => {
+  assert.deepEqual(targetsFromAnswers({}), {});
+  assert.deepEqual(targetsFromAnswers(null), {});
+  assert.deepEqual(cleanTargets({ reel: "72", linkedin: 50.4, story_insta: -3, threads: 0, inconnu: 9, post_insta: 99999 }), { reel: 72, linkedin: 50, post_insta: 500 });
+  assert.deepEqual(cleanTargets("n'importe quoi"), {});
+  assert.ok(CONTENT_TARGET_KEYS.includes("story_insta"));
+});
+
+test("temps de production : calcul des reels proposés", () => {
+  const t = cleanProductionTime({ filmingMinutes: 240, editingMinutes: 240, reelMinutes: 5, youtubeMinutes: 120, youtubePerDay: 1 })!;
+  assert.equal(reelsFromTime(t), 72);
+  assert.equal(cleanProductionTime({}), null);
+  assert.equal(reelsFromTime({ ...t, reelMinutes: 0 }), 0);
+});
+
+test("progression : un reel posté depuis l'ancienne plateforme instagram compte comme reel", () => {
+  const p = progressByTarget({ reel: 3, instagram: 1, linkedin: 2 });
+  assert.equal(p.reel, 4);
+  assert.equal(p.linkedin, 2);
+  assert.equal(p.youtube, 0);
+});
+
+test("résumé pour le connecteur : ce qui manque, sans tiret cadratin", () => {
+  const txt = targetsSummary({ linkedin: 50 }, { linkedin: 10 }, { linkedin: 5 });
+  assert.match(txt, /Posts LinkedIn : objectif 50 par jour, publié aujourd'hui 10, en stock 5, il en manque 35/);
+  assert.match(txt, /Reels : pas d'objectif fixé/);
+  assert.doesNotMatch(txt, /[—–]/);
 });

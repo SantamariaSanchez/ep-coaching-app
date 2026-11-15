@@ -4,7 +4,8 @@
 // jamais dans la file du tournage.
 //
 // Une seule définition par plateforme : libellé, couleur, formats permis,
-// format par défaut, objectif du jour (lib/content-cadence.ts) et limites.
+// format par défaut et limites. Les objectifs du jour sont réglés par chaque
+// coach (lib/content-targets.ts), jamais écrits ici.
 // Les contrôles (checkWrittenPost) sont des AVERTISSEMENTS : ils n'empêchent
 // jamais de publier, ils signalent ce qui va probablement mal passer.
 //
@@ -16,7 +17,6 @@
 // Fichier partagé client/serveur, sans import serveur.
 
 import { CONTENT_FORMATS, VIDEO_CONTENT_FORMATS, getContentFormat, parseScript, type ContentFormat, type StoryFrame } from "@/lib/content-formats";
-import { WRITTEN_DAILY_TARGETS } from "@/lib/content-cadence";
 
 export type WrittenPlatformId = "linkedin" | "threads" | "post_insta" | "story_insta";
 
@@ -28,8 +28,8 @@ export interface WrittenPlatform {
   color: string;
   formats: string[];
   defaultFormat: string;
-  /** Objectif par jour, null quand aucun objectif n'est fixé. */
-  dailyTarget: number | null;
+  /** Réglage « Mes plateformes » qui fait apparaître ce type (Instagram, LinkedIn...). */
+  setting: string;
   /** Taille maximale du texte publié (corps du post ou légende). */
   maxChars: number | null;
   /** Caractères visibles avant « voir plus ». */
@@ -46,7 +46,7 @@ export const WRITTEN_PLATFORMS: WrittenPlatform[] = [
     color: "#F77737",
     formats: ["sequence_stories"],
     defaultFormat: "sequence_stories",
-    dailyTarget: WRITTEN_DAILY_TARGETS.story_insta,
+    setting: "instagram",
     maxChars: null,
     foldChars: null,
     hasCaption: false,
@@ -58,7 +58,7 @@ export const WRITTEN_PLATFORMS: WrittenPlatform[] = [
     color: "#E1306C",
     formats: ["carrousel", "image_unique"],
     defaultFormat: "carrousel",
-    dailyTarget: WRITTEN_DAILY_TARGETS.post_insta,
+    setting: "instagram",
     maxChars: 2200,
     foldChars: 125,
     hasCaption: true,
@@ -70,7 +70,7 @@ export const WRITTEN_PLATFORMS: WrittenPlatform[] = [
     color: "#0A66C2",
     formats: ["post_texte", "carrousel"],
     defaultFormat: "post_texte",
-    dailyTarget: WRITTEN_DAILY_TARGETS.linkedin,
+    setting: "linkedin",
     maxChars: 3000,
     foldChars: 210,
     hasCaption: false,
@@ -82,7 +82,7 @@ export const WRITTEN_PLATFORMS: WrittenPlatform[] = [
     color: "var(--ep-ink)",
     formats: ["post_texte"],
     defaultFormat: "post_texte",
-    dailyTarget: null,
+    setting: "threads",
     maxChars: 500,
     foldChars: null,
     hasCaption: false,
