@@ -105,25 +105,16 @@ export default function WrittenPosts({ initialPosts, publishedToday = {}, target
                 color: on ? "var(--ep-ink)" : "rgba(var(--ep-ink-rgb),0.6)",
               }}
             >
-              {t(w.plural)} ({stock})
+              {t(w.plural)} {stock}{targets[w.id] ? ` · ${today[w.id] ?? 0}/${targets[w.id]}` : ""}
             </button>
           );
         })}
       </div>
 
-      <DailyGoal platform={active} target={targets[active.id] ?? null} done={today[active.id] ?? 0} stock={shown.length} />
-
-      <p style={{ margin: 0, fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.55)", lineHeight: 1.55 }}>
-        {active.id === "story_insta"
-          ? t("Poste la séquence d'un coup, story par story (bouton copier sur chaque story), puis touche « Publié ».")
-          : active.hasCaption
-            ? t("Crée le visuel ou les slides, copie la légende, poste, puis touche « Publié ».")
-            : t("Copie, poste, puis touche « Publié » : le post sort d'ici et son sujet est mémorisé pour ne pas être refait.")}
-      </p>
       {error && <p style={{ margin: 0, fontSize: 12.5, color: "#fca5a5" }}>{t(error)}</p>}
       {shown.length === 0 && (
         <p className="ep-card" style={{ margin: 0, padding: "16px", fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", textAlign: "center" }}>
-          {t("Rien à publier ici pour l'instant. Les nouveaux arrivent chaque jour.")}
+          {t("Rien à publier ici.")}
         </p>
       )}
       {shown.map((p) => (
@@ -137,34 +128,6 @@ export default function WrittenPosts({ initialPosts, publishedToday = {}, target
           onRemove={() => { if (window.confirm(t("Retirer ce post sans le publier ?"))) done(p, true); }}
         />
       ))}
-    </div>
-  );
-}
-
-function DailyGoal({ platform, target, done, stock }: { platform: WrittenPlatform; target: number | null; done: number; stock: number }) {
-  const t = useT();
-  if (!target) {
-    return (
-      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
-        {t("Publié aujourd'hui")} : {done} · {stock} {t("en stock")} · {t("pas d'objectif fixé (Objectifs du jour, en haut)")}
-      </p>
-    );
-  }
-  const pct = Math.min(100, Math.round((done / target) * 100));
-  const missing = Math.max(0, target - done);
-  return (
-    <div className="ep-card" style={{ padding: "12px 14px" }}>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 900, color: "var(--ep-ink)", flex: 1 }}>
-          {t("Aujourd'hui")} : {done} / {target}
-        </p>
-        <span style={{ fontSize: 11.5, fontWeight: 700, color: stock < missing ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.5)" }}>
-          {stock} {t("en stock")}{stock < missing ? ` · ${t("il en manque")} ${missing - stock}` : ""}
-        </span>
-      </div>
-      <div style={{ marginTop: 8, height: 6, borderRadius: 999, background: "rgba(var(--ep-ink-rgb),0.08)", overflow: "hidden" }} aria-hidden>
-        <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: done >= target ? "var(--ep-ok)" : platform.color, transition: "width 240ms ease" }} />
-      </div>
     </div>
   );
 }

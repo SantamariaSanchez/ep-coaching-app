@@ -134,28 +134,27 @@ export default function IdeationHub({
 
   return (
     <div>
-      <div className="grid grid-cols-4 gap-2 mb-4" aria-label={tr("Parcours de création")}>
-        {steps.map((st, i) => (
+      {/* Parcours de création sur une seule ligne (2026-11-15, « trop de
+          scroll ») : idées → à tourner → tourné → publié. */}
+      <div className="flex gap-1.5 overflow-x-auto mb-3" aria-label={tr("Parcours de création")}>
+        {steps.map((st) => (
           <button
             key={st.label}
             type="button"
             onClick={st.go}
-            className="ep-card text-left px-3 py-2.5 rounded-xl"
-            style={{ border: "1px solid rgba(var(--ep-ink-rgb),0.1)", cursor: "pointer" }}
+            className="flex-shrink-0 inline-flex items-baseline gap-1.5 h-8 px-3 rounded-full text-[11.5px] font-bold"
+            style={{ border: "1px solid rgba(var(--ep-ink-rgb),0.12)", cursor: "pointer", color: "rgba(var(--ep-ink-rgb),0.6)" }}
           >
-            <span className="block text-[9.5px] font-extrabold uppercase tracking-wider text-(--ep-ink)/40">
-              {i + 1}. {tr(st.label)}
-            </span>
-            <span className="block text-xl font-black leading-tight">{st.n}</span>
+            {tr(st.label)} <b className="text-[13px] font-black text-(--ep-ink)">{st.n}</b>
           </button>
         ))}
       </div>
       <div
         role="tablist"
         aria-label={tr("Sections Idéation")}
-        className="flex gap-1.5 overflow-x-auto mb-5 border-b border-(--ep-line)/20 pb-0.5"
+        className="flex gap-1.5 overflow-x-auto mb-3 border-b border-(--ep-line)/20 pb-0.5"
       >
-        {TABS.map(({ id, label, icon: Icon }) => {
+        {TABS.filter(({ id }) => id !== "posts" || writtenPosts.length > 0).map(({ id, label, icon: Icon }) => {
           const active = tab === id;
           return (
             <button

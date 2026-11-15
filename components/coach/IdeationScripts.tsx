@@ -825,68 +825,6 @@ function MyScripts({
         </div>
       ) : (
         <>
-          {rotation.length > 0 && (
-            <FoldCard
-              title={tr("Variété")}
-              summary={rotation.some((c) => !c.ok)
-                ? `${rotation.filter((c) => !c.ok).length} ${tr("point à corriger")}`
-                : tr("Tout est varié")}
-              warn={rotation.some((c) => !c.ok)}
-              defaultOpen={false}
-            >
-              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
-                {rotation.map((c) => (
-                  <li key={c.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12, lineHeight: 1.45, color: c.ok ? "rgba(var(--ep-ink-rgb),0.55)" : "var(--ep-ink)" }}>
-                    <span aria-hidden style={{ color: c.ok ? "var(--ep-ok)" : "var(--ep-warn)", fontWeight: 900, flexShrink: 0 }}>{c.ok ? "✓" : "!"}</span>
-                    <span>{tr(c.text)}</span>
-                  </li>
-                ))}
-              </ul>
-            </FoldCard>
-          )}
-          {weeklyPerf && (
-            <FoldCard
-              title={tr("Performance de la semaine")}
-              summary={`${weeklyPerf.publishedCount} ${tr("publié")}${weeklyPerf.publishedCount > 1 ? "s" : ""} · ${weeklyPerf.views.toLocaleString("fr-FR")} ${tr("vues")}`}
-              warn={weeklyPerf.missingViews > 0}
-              defaultOpen={false}
-            >
-              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: weeklyPerf.missingViews > 0 ? 8 : 0 }}>
-                <div>
-                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ink)" }}>{weeklyPerf.publishedCount}</p>
-                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{tr("publié")}{weeklyPerf.publishedCount > 1 ? "s" : ""}{" "}{tr("cette semaine")}</p>
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ink)" }}>
-                    {weeklyPerf.views.toLocaleString("fr-FR")}
-                    {weeklyPerf.lastWeekViews > 0 && (
-                      <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 6, color: weeklyPerf.views >= weeklyPerf.lastWeekViews ? "var(--ep-ok)" : "var(--ep-bad)" }}>
-                        {weeklyPerf.views >= weeklyPerf.lastWeekViews ? "▲" : "▼"}{" "}
-                        {Math.abs(Math.round(((weeklyPerf.views - weeklyPerf.lastWeekViews) / weeklyPerf.lastWeekViews) * 100))}%
-                      </span>
-                    )}
-                  </p>
-                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
-                    {tr("vues loguées")}{" "}{weeklyPerf.lastWeekViews > 0 ? `(vs ${weeklyPerf.lastWeekViews.toLocaleString("fr-FR")} la semaine passée)` : tr("cette semaine")}
-                  </p>
-                </div>
-                {weeklyPerf.best && (
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ok)" }}>{weeklyPerf.best.views!.toLocaleString("fr-FR")}</p>
-                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
-                      {tr("🔥 meilleur :")}{" "}{weeklyPerf.best.title}
-                    </p>
-                  </div>
-                )}
-              </div>
-              {weeklyPerf.missingViews > 0 && (
-                <p style={{ margin: 0, fontSize: 11, color: "var(--ep-yellow)" }}>
-                  {weeklyPerf.missingViews}{" "}{tr("script")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("publié")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("cette semaine sans vues loguées, ces chiffres restent incomplets tant qu'ils ne sont pas remplis (bouton « Loguer les résultats » sur chaque script publié).")}
-                </p>
-              )}
-            </FoldCard>
-          )}
-
           <div style={{ position: "relative", marginBottom: 10 }}>
             <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.3)" }} />
             <input
@@ -1030,6 +968,72 @@ function MyScripts({
               )}
             </div>
           )}
+          {/* Variété et performance sous la liste (2026-11-15, « trop de scroll
+              pour l'essentiel ») : les scripts d'abord. */}
+          <div style={{ marginTop: 16 }}>
+          {rotation.length > 0 && (
+            <FoldCard
+              title={tr("Variété")}
+              summary={rotation.some((c) => !c.ok)
+                ? `${rotation.filter((c) => !c.ok).length} ${tr("point à corriger")}`
+                : tr("Tout est varié")}
+              warn={rotation.some((c) => !c.ok)}
+              defaultOpen={false}
+            >
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+                {rotation.map((c) => (
+                  <li key={c.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12, lineHeight: 1.45, color: c.ok ? "rgba(var(--ep-ink-rgb),0.55)" : "var(--ep-ink)" }}>
+                    <span aria-hidden style={{ color: c.ok ? "var(--ep-ok)" : "var(--ep-warn)", fontWeight: 900, flexShrink: 0 }}>{c.ok ? "✓" : "!"}</span>
+                    <span>{tr(c.text)}</span>
+                  </li>
+                ))}
+              </ul>
+            </FoldCard>
+          )}
+          {weeklyPerf && (
+            <FoldCard
+              title={tr("Performance de la semaine")}
+              summary={`${weeklyPerf.publishedCount} ${tr("publié")}${weeklyPerf.publishedCount > 1 ? "s" : ""} · ${weeklyPerf.views.toLocaleString("fr-FR")} ${tr("vues")}`}
+              warn={weeklyPerf.missingViews > 0}
+              defaultOpen={false}
+            >
+              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: weeklyPerf.missingViews > 0 ? 8 : 0 }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ink)" }}>{weeklyPerf.publishedCount}</p>
+                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>{tr("publié")}{weeklyPerf.publishedCount > 1 ? "s" : ""}{" "}{tr("cette semaine")}</p>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ink)" }}>
+                    {weeklyPerf.views.toLocaleString("fr-FR")}
+                    {weeklyPerf.lastWeekViews > 0 && (
+                      <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 6, color: weeklyPerf.views >= weeklyPerf.lastWeekViews ? "var(--ep-ok)" : "var(--ep-bad)" }}>
+                        {weeklyPerf.views >= weeklyPerf.lastWeekViews ? "▲" : "▼"}{" "}
+                        {Math.abs(Math.round(((weeklyPerf.views - weeklyPerf.lastWeekViews) / weeklyPerf.lastWeekViews) * 100))}%
+                      </span>
+                    )}
+                  </p>
+                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)" }}>
+                    {tr("vues loguées")}{" "}{weeklyPerf.lastWeekViews > 0 ? `(vs ${weeklyPerf.lastWeekViews.toLocaleString("fr-FR")} la semaine passée)` : tr("cette semaine")}
+                  </p>
+                </div>
+                {weeklyPerf.best && (
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ep-ok)" }}>{weeklyPerf.best.views!.toLocaleString("fr-FR")}</p>
+                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
+                      {tr("🔥 meilleur :")}{" "}{weeklyPerf.best.title}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {weeklyPerf.missingViews > 0 && (
+                <p style={{ margin: 0, fontSize: 11, color: "var(--ep-yellow)" }}>
+                  {weeklyPerf.missingViews}{" "}{tr("script")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("publié")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("cette semaine sans vues loguées, ces chiffres restent incomplets tant qu'ils ne sont pas remplis (bouton « Loguer les résultats » sur chaque script publié).")}
+                </p>
+              )}
+            </FoldCard>
+          )}
+
+          </div>
           </>
           )}
         </>
