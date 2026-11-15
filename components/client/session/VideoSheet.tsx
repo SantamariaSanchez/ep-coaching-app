@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
+import { useState } from "react";
 import { Send, Save } from "lucide-react";
 import Sheet from "@/components/nutrition/Sheet";
 
@@ -28,10 +29,11 @@ export default function VideoSheet({
   url: string;
   caption: string;
   hasCoach: boolean;
-  onConfirm: (sendToCoach: boolean) => void;
+  onConfirm: (sendToCoach: boolean, question?: string) => void;
   onClose: () => void;
 }) {
   const t = useT();
+  const [question, setQuestion] = useState("");
 
   return (
     <Sheet
@@ -43,7 +45,7 @@ export default function VideoSheet({
           {hasCoach && (
             <button
               type="button"
-              onClick={() => onConfirm(true)}
+              onClick={() => onConfirm(true, question)}
               className="w-full min-h-12 rounded-xl flex items-center justify-center gap-2 text-sm font-black uppercase tracking-wider text-(--ep-strong) bg-(--ep-accent)"
             >
               <Send size={16} />
@@ -72,6 +74,19 @@ export default function VideoSheet({
         preload="metadata"
         className="w-full max-h-[52dvh] rounded-xl bg-(--ep-shade) object-contain"
       />
+      {hasCoach && (
+        <label className="block mt-3">
+          <span className="text-[11px] font-bold text-(--ep-ink)/60">{t("Une question pour ton coach ? (facultatif)")}</span>
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            maxLength={500}
+            rows={2}
+            placeholder={t("Ex : mon dos s'arrondit en bas ?")}
+            className="mt-1 w-full rounded-xl bg-(--ep-s2) border border-(--ep-line)/30 px-3 py-2 text-[13px] text-(--ep-ink)"
+          />
+        </label>
+      )}
       <p className="text-[11px] text-(--ep-ink)/50 mt-2 leading-snug">
         {t("L'envoi continue pendant que tu reprends ta séance.")}
       </p>

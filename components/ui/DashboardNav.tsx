@@ -17,6 +17,7 @@ import {
   ArrowLeftRight, Settings, Shield, Mail, Sparkles,
   Wallet, Network, HeartPulse, Rocket, FileText, PhoneCall, Megaphone,
   BookOpenCheck, Award, Crosshair, BrainCircuit, PanelLeftClose, PanelLeftOpen,
+  MessageSquareHeart,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -335,6 +336,8 @@ export const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   // — donnée plateforme, pas des clients d'un coach en particulier, donc
   // réservée au propriétaire comme le reste de ce groupe.
   { label: "Leads", icon: Mail, segment: "admin/leads" },
+  // Avis volontaires des membres sur l'appli (C78, lib/app-feedback.ts).
+  { label: "Avis membres", icon: MessageSquareHeart, segment: "admin/retours" },
   // Organigramme, formation avant embauche, fiches techniques — demande
   // explicite du 2026-08-15 : "faut y pousser dans l'appli, je vois aucun
   // nouvel onglet". Vivait avant uniquement dans un artifact externe.

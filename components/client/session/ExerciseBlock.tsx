@@ -20,7 +20,9 @@ import {
   Timer,
   Trash2,
   ExternalLink,
+  HeartPulse,
 } from "lucide-react";
+import { PAIN_NOTE, PAIN_RED_FLAGS, PAIN_GUIDANCE } from "@/lib/session-pain";
 import Stepper from "./Stepper";
 import type { ExerciseState, LibraryTip, PrevWeight, SetState, VideoState } from "./types";
 import {
@@ -827,6 +829,8 @@ export default function ExerciseBlock({
 }) {
   const t = useT();
   const [panel, setPanel] = useState<Panel>(null);
+  const [painOpen, setPainOpen] = useState(false);
+  const [painNoted, setPainNoted] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -1229,6 +1233,54 @@ export default function ExerciseBlock({
                 <Trash2 size={13} />
                 {t("Retirer")}
               </button>
+              <button
+                type="button"
+                onClick={() => setPainOpen((v) => !v)}
+                aria-expanded={painOpen}
+                className="col-span-3 min-h-11 rounded-xl border border-(--ep-warn)/40 bg-(--ep-warn)/10 text-[11px] font-black uppercase text-(--ep-warn) flex items-center justify-center gap-1.5"
+              >
+                <HeartPulse size={14} />
+                {t("J'ai mal")}
+              </button>
+            </div>
+          )}
+          {/* Douleur pendant l'exercice (C63) : réponse sûre, jamais de
+              diagnostic ni de « force », jamais de remplacement automatique
+              (règle Douleur de lib/coaching-knowledge.ts). La personne
+              arrête l'exercice ou note la gêne pour son coach. */}
+          {panel === "more" && painOpen && (
+            <div className="rounded-xl border border-(--ep-warn)/40 bg-(--ep-s2) p-3 space-y-2.5" role="region" aria-label={t("Douleur pendant l'exercice")}>
+              <p className="text-[12px] font-bold leading-snug" style={{ color: "var(--ep-bad)" }}>{t(PAIN_RED_FLAGS)}</p>
+              <p className="text-[12px] text-(--ep-ink)/70 leading-snug">{t(PAIN_GUIDANCE)}</p>
+              <div className="grid grid-cols-1 gap-1.5">
+                <button
+                  type="button"
+                  disabled={painNoted}
+                  onClick={() => {
+                    // Arrête l'exercice : les séries pas encore faites sont retirées
+                    // (de la dernière à la première), les séries faites restent.
+                    for (let i = ex.sets.length - 1; i >= 0; i--) if (!ex.sets[i].validated) onRemoveSet(i);
+                    if (!ex.clientNotes.includes(PAIN_NOTE)) onNotesChange(ex.clientNotes ? `${ex.clientNotes}\n${PAIN_NOTE}` : PAIN_NOTE);
+                    setPainNoted(true);
+                  }}
+                  className="min-h-11 rounded-xl text-[12px] font-black disabled:opacity-50"
+                  style={{ background: "var(--ep-warn)", color: "var(--ep-bg)" }}
+                >
+                  {painNoted ? t("Exercice arrêté, gêne notée pour ton coach") : t("Arrêter cet exercice et le noter pour mon coach")}
+                </button>
+                {!painNoted && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!ex.clientNotes.includes(PAIN_NOTE)) onNotesChange(ex.clientNotes ? `${ex.clientNotes}\n${PAIN_NOTE}` : PAIN_NOTE);
+                      setPainNoted(true);
+                    }}
+                    className="min-h-11 rounded-xl border border-(--ep-line)/35 text-[12px] font-bold text-(--ep-strong)"
+                  >
+                    {t("Juste le noter pour mon coach")}
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>

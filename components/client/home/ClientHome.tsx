@@ -1,4 +1,5 @@
 import { getT } from "@/lib/i18n-server";
+import AppFeedbackCard from "@/components/client/AppFeedbackCard";
 import { intlLocale, type Locale } from "@/lib/i18n";
 import { INSTAGRAM_URL } from "@/lib/brand-links";
 import { isOn, type AppSetup } from "@/lib/app-setup";
@@ -367,7 +368,10 @@ export async function WelcomeGuide({
   preview = false,
   quick = null,
   quickAction,
+  askFeedback = false,
 }: {
+  /** Avis volontaire sur l'appli (C78), voir lib/app-feedback.ts. */
+  askFeedback?: boolean;
   quick?: HomeQuickData | null;
   quickAction?: QuickAction;
   firstName: string;
@@ -452,6 +456,7 @@ export async function WelcomeGuide({
       </details>
 
       {!hasStarted && <PremiumCta pitch={pitch} />}
+      {askFeedback && !preview && <AppFeedbackCard />}
     </div>
   );
 }

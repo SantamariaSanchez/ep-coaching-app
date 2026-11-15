@@ -87,27 +87,6 @@ export default function BlockFormSheet({
     >
       <div className="space-y-4 pb-2">
         <section>
-          <SectionLabel>{t("Type")}</SectionLabel>
-          <div className="flex flex-wrap gap-1.5">
-            {AGENDA_PRESETS.map((p) => {
-              const PIcon = p.icon;
-              const active = form.icon === p.key;
-              return (
-                <button
-                  key={p.key}
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, icon: p.key, color: p.color, label: f.label.trim() ? f.label : p.label }))}
-                  className="inline-flex items-center gap-1.5 min-h-9 px-2.5 rounded-lg text-[11px] font-bold border"
-                  style={{ background: active ? withAlpha(p.color, "22") : "transparent", borderColor: active ? withAlpha(p.color, "88") : "rgba(var(--ep-line-rgb),0.25)", color: active ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.55)" }}
-                >
-                  <PIcon size={12} strokeWidth={2.2} style={{ color: p.color }} /> {t(p.label)}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section>
           <SectionLabel>{t("Nom")}</SectionLabel>
           <input value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} placeholder={t("Ex. Montage vidéo, Séance, Déjeuner...")} aria-label={t("Nom")} className={inputClass} />
         </section>
@@ -170,8 +149,29 @@ export default function BlockFormSheet({
         )}
 
         <details>
-          <summary className="cursor-pointer text-[11px] font-black uppercase tracking-wider text-(--ep-ink)/45 min-h-9 flex items-center">{t("Plus")}</summary>
+          <summary className="cursor-pointer text-[11px] font-black uppercase tracking-wider text-(--ep-ink)/45 min-h-9 flex items-center">{t("Plus : type, couleur, tâches, notes")}</summary>
           <div className="space-y-4 pt-2">
+        <section>
+          <SectionLabel>{t("Type")}</SectionLabel>
+          <div className="flex flex-wrap gap-1.5">
+            {AGENDA_PRESETS.map((p) => {
+              const PIcon = p.icon;
+              const active = form.icon === p.key;
+              return (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, icon: p.key, color: p.color, label: f.label.trim() ? f.label : p.label }))}
+                  className="inline-flex items-center gap-1.5 min-h-9 px-2.5 rounded-lg text-[11px] font-bold border"
+                  style={{ background: active ? withAlpha(p.color, "22") : "transparent", borderColor: active ? withAlpha(p.color, "88") : "rgba(var(--ep-line-rgb),0.25)", color: active ? "var(--ep-strong)" : "rgba(var(--ep-ink-rgb),0.55)" }}
+                >
+                  <PIcon size={12} strokeWidth={2.2} style={{ color: p.color }} /> {t(p.label)}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
         <section>
           <SectionLabel>{t("Couleur")}</SectionLabel>
           <div className="flex gap-2 flex-wrap">
