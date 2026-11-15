@@ -28,7 +28,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  AlarmClock, Check, ChevronLeft, ChevronRight, Clock, Copy, Footprints, GripVertical, Layers, Minus, MoreHorizontal, Pencil, Plus, Timer, Trash2, Wand2,
+  AlarmClock, Check, ChevronLeft, ChevronRight, Clock, Copy, Footprints, GripVertical, Layers, Minus, MoreHorizontal, Pencil, Phone, Plus, Timer, Trash2, Wand2,
   Car, Bike, TramFront, CircleCheck,
 } from "lucide-react";
 import type { ScheduleBlock } from "@/utils/agenda";
@@ -87,6 +87,7 @@ import {
 import { EMPTY_CONTEXT, dietSlotsForDay, sessionForDay, type AgendaContext } from "@/lib/agenda-links";
 import QuickAddSheet, { type RecentBlock } from "@/components/agenda/QuickAddSheet";
 import BlockSheet from "@/components/agenda/BlockSheet";
+import AgendaPushBanner from "@/components/agenda/AgendaPushBanner";
 import BlockFormSheet from "@/components/agenda/BlockFormSheet";
 import WeekBuilderSheet from "@/components/agenda/WeekBuilderSheet";
 import AgendaSettingsSheet from "@/components/agenda/AgendaSettingsSheet";
@@ -262,7 +263,7 @@ export default function WeeklyAgenda({
   const [now, setNow] = useState<Date | null>(null);
   const [selectedCol, setSelectedCol] = useState(1);
 
-  const [quickAdd, setQuickAdd] = useState<{ col: number; start: number; gapEnd: number | null; once: boolean; replace?: Placed<ScheduleBlock> } | null>(null);
+  const [quickAdd, setQuickAdd] = useState<{ col: number; start: number; gapEnd: number | null; once: boolean; replace?: Placed<ScheduleBlock>; preset?: "appel" } | null>(null);
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [form, setForm] = useState<{ initial: BlockFormData; editingId: string | null; replace?: Placed<ScheduleBlock> | null } | null>(null);
   const [builder, setBuilder] = useState<{ scopeCol: number | null } | null>(null);
@@ -733,6 +734,16 @@ export default function WeeklyAgenda({
    * imprévu (ce jour seulement par défaut) ; en mode « Modifier », on
    * construit la semaine type. Le choix reste visible dans le panneau.
    */
+  /** Bouton Ajouter / Appel : jour affiché, prochaine heure ronde si c'est aujourd'hui. */
+  function openQuickNow(call: boolean) {
+    if (!editable || !actions.addScheduleBlock) return;
+    const col = viewMode === "day" ? sel : nowCol ?? sel;
+    const base = col === nowCol && nowAbs !== null ? Math.ceil((nowAbs + 1) / 15) * 15 : Math.max(ws, 9 * 60);
+    const gaps = findGaps(colPlaced(col), win, 5);
+    const gap = gaps.find((g) => base >= g.s && base < g.e) ?? null;
+    setQuickAdd({ col, start: base, gapEnd: gap?.e ?? null, once: !!weekBounds && (call || !editing), ...(call ? { preset: "appel" as const } : {}) });
+  }
+
   function openAddAt(col: number, abs: number) {
     if (!editable || !actions.addScheduleBlock) return;
     const once = !editing && !!weekBounds;
@@ -1378,6 +1389,7 @@ export default function WeeklyAgenda({
 
   return (
     <div className="space-y-3" onPointerDownCapture={editing ? () => { editSeenRef.current = Date.now(); } : undefined}>
+      {editable && <AgendaPushBanner />}
       {/* Bloc en cours : ce que je suis censé faire là, avec ses cases. */}
       {currentPlaced && (() => {
         const b = currentPlaced.block;
@@ -1455,6 +1467,20 @@ export default function WeeklyAgenda({
           ))}
         </div>
         <div className="ml-auto flex items-center gap-1.5">
+          {/* Ajouter / Appel (2026-11-15, « se mettre un appel à une heure doit
+              être hyper simple ») : toujours visibles, un tap ouvre la
+              création sur le jour affiché, à la prochaine heure ronde si
+              c'est aujourd'hui. Un appel est ponctuel par défaut. */}
+          {editable && actions.addScheduleBlock && !editing && (
+            <>
+              <button type="button" onClick={() => openQuickNow(false)} className="flex items-center gap-1 h-9 px-2.5 rounded-lg text-[11px] font-black uppercase tracking-wider whitespace-nowrap" style={{ background: "var(--ep-accent)", color: "var(--ep-strong)" }} aria-label={t("Ajouter un bloc")}>
+                <Plus size={13} /> {t("Ajouter")}
+              </button>
+              <button type="button" onClick={() => openQuickNow(true)} className="flex items-center gap-1 h-9 px-2.5 rounded-lg text-[11px] font-black uppercase tracking-wider whitespace-nowrap" style={{ border: "1px solid rgba(var(--ep-pink-rgb),0.55)", color: "var(--ep-strong)" }} aria-label={t("Ajouter un appel")}>
+                <Phone size={13} /> {t("Appel")}
+              </button>
+            </>
+          )}
           {editable && editing && (
             <button type="button" onClick={() => setSettingsOpen(true)} className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-(--ep-line)/30 text-[11px] font-bold text-(--ep-ink)/70 whitespace-nowrap" aria-label={t("Mes heures")}>
               <Clock size={13} /> {clockLabel(ws)} – {clockLabel(we)}
@@ -1663,6 +1689,7 @@ export default function WeeklyAgenda({
           onceLabel={weekBounds && actions.addScheduleBlock ? (quickAdd.col === nowCol ? t("Aujourd'hui seulement") : `${t(DAY_LABELS[quickAdd.col])} ${t("seulement")}`) : undefined}
           defaultOnce={quickAdd.once}
           lockOnce={!!quickAdd.replace}
+          initialPreset={quickAdd.preset}
           onClose={() => setQuickAdd(null)}
           onCreate={(tb, once) => {
             const { col, replace } = quickAdd;
@@ -1740,6 +1767,17 @@ export default function WeeklyAgenda({
                       }
                     : undefined,
                   onCopy: actions.placeColumnBlocks ? (cols) => copyBlockTo(sheetPlaced, cols) : undefined,
+                  // Dupliquer juste après (2026-11-15, « dupliquer un bloc en 3 s ») :
+                  // même bloc, même durée, collé derrière, ponctuel s'il l'était.
+                  onDuplicateAfter: actions.addScheduleBlock
+                    ? async () => {
+                        const p = sheetPlaced;
+                        const b = p.block;
+                        const dur = p.e - p.s;
+                        const ok = await createInColumn(p.col, { s: p.e, e: p.e + dur, label: b.label, icon: b.icon, color: b.color, tasks: b.tasks ?? [], notes: b.notes, notify: b.notify, link_ref: b.link_ref ?? null }, { once: !!b.specific_date, toast: false });
+                        return ok ? null : t("Duplication impossible, réessaie.");
+                      }
+                    : undefined,
                   onShift:
                     actions.shiftDayFromBlock && weekBounds
                       ? async (delta, scope, withFollowing) => {

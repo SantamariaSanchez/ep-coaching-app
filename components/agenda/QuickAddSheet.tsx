@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { useT } from "@/components/i18n/I18nProvider";
 import Sheet from "@/components/nutrition/Sheet";
-import { Clock, MoreHorizontal, Plus, Minus } from "lucide-react";
+import { ChevronDown, Clock, MoreHorizontal, Phone, Plus, Minus } from "lucide-react";
 import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
 import {
   KIND_STYLE,
@@ -87,7 +87,10 @@ export default function QuickAddSheet({
   onceLabel,
   defaultOnce = false,
   lockOnce = false,
+  initialPreset,
 }: {
+  /** « appel » : ouvre directement la saisie d'un appel (bouton Appel de l'agenda). */
+  initialPreset?: "appel";
   /** Titre du panneau (« Remplacer … aujourd'hui »). */
   title?: string;
   /** Libellé du choix ponctuel (« Aujourd'hui seulement ») ; absent = pas de choix. */
@@ -121,6 +124,13 @@ export default function QuickAddSheet({
   const [work, setWork] = useState(0);
   const [mode, setMode] = useState<TravelMode>("marche");
   const [once, setOnce] = useState(lockOnce || defaultOnce);
+  // Création en un tap (2026-11-15, retour d'Emmanuel : « des blocs déjà
+  // configurés, pas des réglages de partout, 2 secondes ») : les blocs du
+  // quotidien sont posés d'un seul geste avec leur durée habituelle ; le
+  // choix type puis durée reste replié sous « Autre chose ».
+  const [callOpen, setCallOpen] = useState(initialPreset === "appel");
+  const [callWith, setCallWith] = useState("");
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const free = gapEnd !== null && gapEnd > start ? gapEnd - start : null;
 
@@ -149,6 +159,19 @@ export default function QuickAddSheet({
         return { ...base, label: "", icon: null, color: "var(--ep-info)", notify: false };
     }
   }
+
+  function callBlock(minutes: number): TemplateBlock {
+    const who = callWith.trim().slice(0, 80);
+    return { s: start, e: start + minutes, label: who ? `Appel : ${who}` : "Appel", icon: "rendezvous", color: "var(--ep-pink)", tasks: [], notes: null, notify: true, link_ref: null };
+  }
+
+  const oneTap: { key: string; label: string; icon: string; color: string; minutes: number; make: () => TemplateBlock }[] = [
+    ...(sessionLabels.length ? [{ key: "seance", label: sessionLabel ? `Séance : ${sessionLabel}` : "Séance", icon: "salle", color: KIND_STYLE.seance.color, minutes: prefs.sessionMinutes, make: () => blockFor("seance", prefs.sessionMinutes) }] : []),
+    { key: "repas", label: MEAL_SLOT_NAMES[slot] ?? "Repas", icon: "repas", color: KIND_STYLE.repas.color, minutes: prefs.mealMinutes, make: () => blockFor("repas", prefs.mealMinutes) },
+    { key: "travail", label: workChoices[0]?.label ?? "Travail", icon: "travail", color: KIND_STYLE.travail.color, minutes: 60, make: () => blockFor("travail", 60) },
+    { key: "marche", label: "Marche", icon: "pas", color: KIND_STYLE.trajet.color, minutes: 30, make: () => ({ ...blockFor("trajet", 30), label: "Marche" }) },
+    { key: "pause", label: "Pause", icon: "pause", color: KIND_STYLE.pause.color, minutes: 15, make: () => blockFor("pause", 15) },
+  ];
 
   const durations = type ? DURATIONS[type] : [];
   const defaultDuration = type === "seance" ? prefs.sessionMinutes : type === "repas" ? prefs.mealMinutes : null;
@@ -180,6 +203,60 @@ export default function QuickAddSheet({
           </div>
         )}
 
+        {/* Appel : qui (facultatif) puis la durée, et c'est posé avec un rappel. */}
+        <div className="rounded-2xl border p-3" style={{ borderColor: callOpen ? "rgba(var(--ep-accent-rgb),0.55)" : "rgba(var(--ep-line-rgb),0.3)" }}>
+          <button type="button" onClick={() => setCallOpen((v) => !v)} aria-expanded={callOpen} className="w-full flex items-center gap-2 text-left min-h-9">
+            <Phone size={16} style={{ color: "var(--ep-pink)" }} />
+            <span className="flex-1 text-[14px] font-black text-(--ep-strong)">{t("Appel")}</span>
+            <span className="text-[11px] font-bold text-(--ep-ink)/45">{t("avec rappel")}</span>
+          </button>
+          {callOpen && (
+            <div className="mt-2 space-y-2">
+              <input
+                value={callWith}
+                onChange={(e) => setCallWith(e.target.value)}
+                placeholder={t("Avec qui ? (facultatif)")}
+                aria-label={t("Avec qui")}
+                autoFocus={initialPreset === "appel"}
+                className="w-full bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) outline-none"
+              />
+              <div className="grid grid-cols-4 gap-1.5">
+                {[15, 30, 45, 60].map((m) => (
+                  <button key={m} type="button" onClick={() => onCreate(callBlock(m), once)} className="h-11 rounded-xl text-sm font-black tabular-nums" style={{ background: m === 30 ? "var(--ep-accent)" : "transparent", color: "var(--ep-strong)", border: m === 30 ? "none" : "1px solid rgba(var(--ep-line-rgb),0.35)" }}>
+                    {durationLabel(m)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {!type && (
+          <div>
+            <SectionLabel>{t("En un tap")}</SectionLabel>
+            <div className="grid grid-cols-2 gap-1.5">
+              {oneTap.map((p) => {
+                const Icon = AGENDA_ICON_MAP[p.icon];
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => onCreate(p.make(), once)}
+                    className="flex items-center gap-2 min-h-12 px-3 rounded-xl border text-left"
+                    style={{ borderColor: "rgba(var(--ep-line-rgb),0.35)" }}
+                  >
+                    {Icon && <Icon size={16} style={{ color: p.color, flexShrink: 0 }} />}
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[12.5px] font-black text-(--ep-strong) truncate">{t(p.label)}</span>
+                      <span className="block text-[10.5px] font-semibold text-(--ep-ink)/45">{durationLabel(p.minutes)}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {recents.length > 0 && !type && (
           <div>
             <SectionLabel>{t("Récents, en un tap")}</SectionLabel>
@@ -204,6 +281,11 @@ export default function QuickAddSheet({
           </div>
         )}
 
+        {!moreOpen && !type ? (
+          <button type="button" onClick={() => setMoreOpen(true)} className="w-full flex items-center justify-center gap-1.5 min-h-10 rounded-xl text-[12px] font-bold text-(--ep-ink)/60 border border-dashed border-(--ep-line)/35">
+            {t("Autre chose ou durée précise")} <ChevronDown size={14} />
+          </button>
+        ) : (
         <div>
           <SectionLabel>{t("Type")}</SectionLabel>
           <div className="grid grid-cols-4 gap-1.5">
@@ -233,6 +315,7 @@ export default function QuickAddSheet({
             })}
           </div>
         </div>
+        )}
 
         {type === "seance" && sessionLabels.length > 0 && (
           <div>

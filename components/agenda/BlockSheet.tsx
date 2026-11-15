@@ -16,9 +16,8 @@ import Link from "next/link";
 import { useT } from "@/components/i18n/I18nProvider";
 import Sheet from "@/components/nutrition/Sheet";
 import {
-  AlertTriangle, CalendarPlus, CalendarX, Check, ChevronDown, ChevronRight, Copy, Dumbbell, Footprints, MapPin, Pencil, Play, Plus, Replace, Trash2, UtensilsCrossed, X,
+  AlertTriangle, CalendarPlus, CalendarX, Check, ChevronRight, Clock3, Copy, Dumbbell, Footprints, MapPin, Pencil, Play, Plus, Replace, Trash2, UtensilsCrossed, X,
 } from "lucide-react";
-import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
 import {
   DAY_LABELS,
   MEAL_SLOT_NAMES,
@@ -37,12 +36,14 @@ import {
 import { mealItemsFor, resolveSession, type AgendaContext } from "@/lib/agenda-links";
 import { useStartSession } from "@/hooks/useStartSession";
 import type { ScheduleBlock } from "@/utils/agenda";
-import { Chip, DayPicker, ErrorText, SectionLabel } from "./ui";
+import { Chip, ErrorText, SectionLabel } from "./ui";
 
 export interface BlockSheetHandlers {
   onSetTasks?: (tasks: string[], removedIndex?: number) => Promise<string | null>;
   onToggleTask?: (key: string) => void;
   onCopy?: (days: number[]) => Promise<string>;
+  /** Dupliquer juste après, le même jour (même durée). */
+  onDuplicateAfter?: () => Promise<string | null>;
   onShift?: (delta: number, scope: "jour" | "toujours", withFollowing: boolean) => Promise<string | null>;
   /** « Pas aujourd'hui » : retire ce bloc récurrent de cette date seulement. */
   onSkipDay?: () => void;
@@ -100,7 +101,6 @@ export default function BlockSheet({
   const t = useT();
   const b = placed.block;
   const kind = blockKind(b);
-  const Icon = b.icon ? AGENDA_ICON_MAP[b.icon] : null;
   const me = space === "coach" ? "/dashboard/coach/moi" : "/dashboard/client";
   const programHref = space === "coach" ? `${me}/programme` : "/dashboard/client/program";
   const logbookBase = space === "coach" ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
@@ -110,14 +110,12 @@ export default function BlockSheet({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [copyDays, setCopyDays] = useState<number[]>([]);
-  const [showCopy, setShowCopy] = useState(false);
   const [scope, setScope] = useState<"jour" | "toujours">("jour");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [withFollowing, setWithFollowing] = useState(false);
-  const [showWeek, setShowWeek] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+  const [panel, setPanel] = useState<"dup" | "shift" | null>(null);
   const oneOff = !!b.specific_date;
-  const dayName = isToday ? t("aujourd'hui") : `${t("ce")} ${t(DAY_LABELS[placed.col]).toLowerCase()}`;
 
   const tasks = b.tasks ?? [];
   const done = tasks.filter((_, i) => completedKeys.has(`${b.id}:${i}`)).length;
@@ -169,7 +167,7 @@ export default function BlockSheet({
                 </div>
               </div>
             )}
-            {(ctx.gymName || session.accessories.length > 0) && (
+            {showDetail && (ctx.gymName || session.accessories.length > 0) && (
               <div className="mt-2.5 space-y-1">
                 {ctx.gymName && (
                   <p className="flex items-center gap-1.5 text-[11.5px] text-(--ep-ink)/70"><MapPin size={12} /> {ctx.gymName}</p>
@@ -179,8 +177,8 @@ export default function BlockSheet({
                 )}
               </div>
             )}
-            {session.notes && <p className="text-[11.5px] text-(--ep-ink)/60 mt-2 whitespace-pre-wrap">{session.notes}</p>}
-            <ol className="mt-2.5 space-y-1.5">
+            {showDetail && session.notes && <p className="text-[11.5px] text-(--ep-ink)/60 mt-2 whitespace-pre-wrap">{session.notes}</p>}
+            {showDetail && <ol className="mt-2.5 space-y-1.5">
               {session.exercises.map((ex, i) => (
                 <li key={i} className="flex gap-2 text-[12px] leading-snug">
                   <span className="w-4 text-right text-(--ep-ink)/35 font-bold tabular-nums flex-shrink-0">{i + 1}</span>
@@ -194,7 +192,12 @@ export default function BlockSheet({
                   </span>
                 </li>
               ))}
-            </ol>
+            </ol>}
+            {session.exercises.length > 0 && (
+              <button type="button" onClick={() => setShowDetail((v) => !v)} className="mt-1.5 text-[11px] font-bold text-(--ep-ink)/50 underline underline-offset-2">
+                {showDetail ? t("Masquer les exercices") : t("Voir les exercices")}
+              </button>
+            )}
             {editable && ctx.programId && (
               <button
                 type="button"
@@ -233,22 +236,25 @@ export default function BlockSheet({
         </p>
         {items.length > 0 ? (
           <>
-            <ul className="mt-2 space-y-1">
+            {showDetail && <ul className="mt-2 space-y-1">
               {items.map((it, i) => (
                 <li key={i} className="flex items-baseline justify-between gap-3 text-[12.5px]">
                   <span className="text-(--ep-strong) min-w-0 truncate">{it.name}</span>
                   <span className="tabular-nums text-(--ep-ink)/60 flex-shrink-0"><b className="text-(--ep-strong)">{Math.round(it.grams)} g</b> · {it.kcal} kcal</span>
                 </li>
               ))}
-            </ul>
-            <p className="text-[11px] text-(--ep-ink)/50 mt-2 tabular-nums">{t("Total")} : {kcal} kcal · {prot} g {t("de protéines")}</p>
+            </ul>}
+            <p className="text-[12px] text-(--ep-ink)/60 mt-1.5 tabular-nums">
+              {kcal} kcal · {prot} g {t("de protéines")} ·{" "}
+              <button type="button" onClick={() => setShowDetail((v) => !v)} className="font-bold underline underline-offset-2">{showDetail ? t("masquer") : `${items.length} ${t("aliments")}`}</button>
+            </p>
           </>
         ) : (
           <p className="text-xs text-(--ep-ink)/55 mt-1">
             {ctx.diet ? t("Ce repas n'est pas dans ta diète ce jour-là.") : t("Pas encore de diète active : tu peux quand même noter ce que tu manges.")}
           </p>
         )}
-        {editable && handlers.onSetLink && (
+        {editable && handlers.onSetLink && showDetail && (
           <div className="mt-2.5">
             <p className="text-[10px] font-bold text-(--ep-ink)/40 mb-1.5">{t("Ce bloc correspond à")}</p>
             <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
@@ -299,18 +305,129 @@ export default function BlockSheet({
     );
   }
 
+  const dayCols = [1, 2, 3, 4, 5, 6, 7].filter((d) => d !== placed.col);
+  const DAY_SHORT_1 = ["", "L", "M", "M", "J", "V", "S", "D"];
+  async function copyTo(days: number[]) {
+    if (!handlers.onCopy) return;
+    const m = await run(() => handlers.onCopy!(days));
+    setMsg(m ?? null);
+  }
+  const actionBtn = "flex flex-col items-center justify-center gap-1 h-14 rounded-xl border text-[11px] font-bold text-(--ep-strong) disabled:opacity-40";
+
   return (
     <Sheet
       title={b.label}
-      subtitle={`${DAY_LABELS[placed.col]} · ${clockLabel(placed.s)} à ${clockLabel(placed.e)} · ${durationLabel(placed.e - placed.s)}${b.specific_date ? ` · ${t("ce jour seulement")}` : ""}`}
+      subtitle={`${DAY_LABELS[placed.col]} · ${clockLabel(placed.s)} – ${clockLabel(placed.e)}${b.specific_date ? ` · ${t("ce jour seulement")}` : ""}`}
       onClose={onClose}
     >
-      <div className="space-y-4 pb-2">
-        {Icon && !linked && (
-          <div className="flex items-center gap-2 text-xs text-(--ep-ink)/55">
-            <Icon size={14} style={{ color: b.color }} /> {b.notes ? null : t("Bloc libre : ajoute des sous-tâches pour savoir quoi faire en y arrivant.")}
+      <div className="space-y-3 pb-2">
+        {/* Actions principales (2026-11-15, « quand je clique sur un bloc je
+            comprends rien ») : 4 gros boutons, le détail s'ouvre sur place. */}
+        {editable && (
+          <div className="grid grid-cols-4 gap-1.5">
+            {(handlers.onCopy || handlers.onDuplicateAfter) && (
+              <button type="button" onClick={() => setPanel(panel === "dup" ? null : "dup")} aria-pressed={panel === "dup"} className={actionBtn} style={{ borderColor: panel === "dup" ? "var(--ep-accent)" : "rgba(var(--ep-line-rgb),0.35)" }}>
+                <Copy size={16} /> {t("Dupliquer")}
+              </button>
+            )}
+            {(handlers.onShift || handlers.onResize) && (
+              <button type="button" onClick={() => setPanel(panel === "shift" ? null : "shift")} aria-pressed={panel === "shift"} className={actionBtn} style={{ borderColor: panel === "shift" ? "var(--ep-accent)" : "rgba(var(--ep-line-rgb),0.35)" }}>
+                <Clock3 size={16} /> {t("Décaler")}
+              </button>
+            )}
+            {!oneOff && handlers.onSkipDay ? (
+              <button type="button" disabled={busy} onClick={handlers.onSkipDay} className={actionBtn} style={{ borderColor: "rgba(var(--ep-line-rgb),0.35)" }}>
+                <CalendarX size={16} /> {isToday ? t("Pas aujourd'hui") : t("Pas ce jour")}
+              </button>
+            ) : handlers.onDelete ? (
+              <button type="button" onClick={() => (confirmDelete ? handlers.onDelete!() : setConfirmDelete(true))} className={actionBtn} style={{ borderColor: "rgba(var(--ep-bad-rgb),0.45)", color: "var(--ep-bad)" }}>
+                <Trash2 size={16} /> {confirmDelete ? t("Confirmer") : t("Supprimer")}
+              </button>
+            ) : null}
+            {handlers.onEdit && (
+              <button type="button" onClick={handlers.onEdit} className={actionBtn} style={{ borderColor: "rgba(var(--ep-line-rgb),0.35)" }}>
+                <Pencil size={16} /> {t("Modifier")}
+              </button>
+            )}
           </div>
         )}
+
+        {editable && panel === "dup" && (
+          <div className="rounded-xl bg-(--ep-s1) border border-(--ep-line)/25 p-3 space-y-2">
+            {handlers.onDuplicateAfter && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => run(() => handlers.onDuplicateAfter!()).then((e) => (e ? setErr(e) : setMsg(t("Dupliqué juste après."))))}
+                className="w-full h-11 rounded-xl text-[12.5px] font-black disabled:opacity-40"
+                style={{ background: "var(--ep-accent)", color: "var(--ep-strong)" }}
+              >
+                {t("Juste après")} ({clockLabel(placed.e)} – {clockLabel(placed.e + (placed.e - placed.s))})
+              </button>
+            )}
+            {handlers.onCopy && (
+              <>
+                <p className="text-[11px] font-bold text-(--ep-ink)/50">{oneOff ? t("Même heure, toutes les semaines, le :") : t("Même heure, le :")}</p>
+                <div className="grid grid-cols-6 gap-1">
+                  {dayCols.map((d) => (
+                    <button key={d} type="button" disabled={busy} onClick={() => void copyTo([d])} aria-label={t(DAY_LABELS[d])} className="h-10 rounded-lg border border-(--ep-line)/35 text-[13px] font-black text-(--ep-strong) disabled:opacity-40">
+                      {DAY_SHORT_1[d]}
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  <button type="button" disabled={busy} onClick={() => void copyTo([1, 2, 3, 4, 5].filter((d) => d !== placed.col))} className="h-10 rounded-lg border border-(--ep-line)/35 text-[12px] font-bold text-(--ep-strong) disabled:opacity-40">{t("Lun → Ven")}</button>
+                  <button type="button" disabled={busy} onClick={() => void copyTo(dayCols)} className="h-10 rounded-lg border border-(--ep-line)/35 text-[12px] font-bold text-(--ep-strong) disabled:opacity-40">{t("Tous les jours")}</button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {editable && panel === "shift" && (
+          <div className="rounded-xl bg-(--ep-s1) border border-(--ep-line)/25 p-3 space-y-2">
+            {handlers.onShift && (
+              <>
+                <div className="grid grid-cols-4 gap-1">
+                  {[-30, -15, 15, 30].map((d) => (
+                    <button key={d} type="button" disabled={busy} onClick={() => run(() => handlers.onShift!(d, oneOff ? "jour" : scope, withFollowing)).then((e) => e && setErr(e))} className="h-11 rounded-lg border border-(--ep-line)/35 text-[13px] font-black tabular-nums text-(--ep-strong) disabled:opacity-40">
+                      {d > 0 ? "+" : "−"}{Math.abs(d)}
+                    </button>
+                  ))}
+                </div>
+                {isToday && startNowDelta !== 0 && Math.abs(startNowDelta) <= 3 * 60 && (
+                  <button type="button" disabled={busy} onClick={() => run(() => handlers.onShift!(startNowDelta, oneOff ? "jour" : scope, withFollowing)).then((e) => e && setErr(e))} className="w-full h-10 rounded-lg text-[12px] font-bold" style={{ border: "1px solid rgba(var(--ep-accent-rgb),0.6)", background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-strong)" }}>
+                    {t("Commencer maintenant")}
+                  </button>
+                )}
+                <label className="flex items-center gap-2 min-h-9 text-[12px] text-(--ep-ink)/75 cursor-pointer select-none">
+                  <input type="checkbox" checked={withFollowing} onChange={(e) => setWithFollowing(e.target.checked)} className="w-4 h-4 accent-(--ep-accent)" />
+                  {t("Toute la suite de la journée aussi")}
+                </label>
+                {!oneOff && (
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <Chip active={scope === "jour"} onClick={() => setScope("jour")}><span className="w-full text-center">{isToday ? t("Aujourd'hui") : t("Ce jour-là")}</span></Chip>
+                    <Chip active={scope === "toujours"} onClick={() => setScope("toujours")}><span className="w-full text-center">{t("Toutes les semaines")}</span></Chip>
+                  </div>
+                )}
+              </>
+            )}
+            {handlers.onResize && (
+              <div className="flex items-center gap-2 pt-1">
+                <span className="flex-1 text-[12px] font-bold text-(--ep-ink)/60">{t("Durée")} · {durationLabel(placed.e - placed.s)}</span>
+                {[-15, 15].map((d) => (
+                  <button key={d} type="button" onClick={() => handlers.onResize!(d)} disabled={placed.e + d - placed.s < 5} className="h-10 px-3 rounded-lg border border-(--ep-line)/35 text-[12px] font-black text-(--ep-strong) disabled:opacity-35">
+                    {d > 0 ? "+" : "−"}15
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {msg && <p role="status" className="text-xs font-bold" style={{ color: "var(--ep-ok)" }}>{msg}</p>}
+        <ErrorText>{err}</ErrorText>
+
         {b.notes && <p className="text-[12.5px] text-(--ep-ink)/70 whitespace-pre-wrap">{b.notes}</p>}
 
         {linked}
@@ -323,8 +440,8 @@ export default function BlockSheet({
         {/* Sous-tâches cochables (mêmes clés que la carte « En ce moment ») */}
         {(tasks.length > 0 || (editable && handlers.onSetTasks)) && (
           <section>
-            <div className="flex items-center justify-between mb-2">
-              <SectionLabel className="mb-0">{t("À faire dans ce bloc")}</SectionLabel>
+            <div className="flex items-center justify-between mb-1.5">
+              <SectionLabel className="mb-0">{t("À faire")}</SectionLabel>
               {tasks.length > 0 && <span className="text-[11px] font-black tabular-nums text-(--ep-ink)/50">{done}/{tasks.length}</span>}
             </div>
             {tasks.length > 0 && (
@@ -359,10 +476,9 @@ export default function BlockSheet({
                 })}
               </ul>
             )}
-            {!canCheck && tasks.length > 0 && <p className="text-[10.5px] text-(--ep-ink)/40 mt-1">{t("Les cases se cochent le jour du bloc.")}</p>}
             {editable && handlers.onSetTasks && (
               <form
-                className="flex gap-1.5 mt-2"
+                className="flex gap-1.5 mt-1.5"
                 onSubmit={(e) => {
                   e.preventDefault();
                   addTask();
@@ -371,11 +487,11 @@ export default function BlockSheet({
                 <input
                   value={newTask}
                   onChange={(e) => setNewTask(e.target.value)}
-                  placeholder={t("Ex. Monter un reel")}
+                  placeholder={t("Ajouter une tâche")}
                   aria-label={t("Nouvelle sous-tâche")}
-                  className="flex-1 min-w-0 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) outline-none"
+                  className="flex-1 min-w-0 bg-(--ep-s2) border border-(--ep-line)/30 rounded-lg px-3 py-2 text-sm text-(--ep-strong) outline-none"
                 />
-                <button type="submit" disabled={busy || !newTask.trim()} aria-label={t("Ajouter la sous-tâche")} className="w-11 rounded-lg border border-(--ep-line)/35 flex items-center justify-center text-(--ep-strong) disabled:opacity-40">
+                <button type="submit" disabled={busy || !newTask.trim()} aria-label={t("Ajouter la sous-tâche")} className="w-10 rounded-lg border border-(--ep-line)/35 flex items-center justify-center text-(--ep-strong) disabled:opacity-40">
                   <Plus size={16} />
                 </button>
               </form>
@@ -383,179 +499,27 @@ export default function BlockSheet({
           </section>
         )}
 
-        {editable && (
-          <>
-            {/* Imprévu ce jour-là : rien ici ne touche la semaine type, sauf
-                « Toutes les semaines » choisi explicitement pour le décalage. */}
-            {(handlers.onShift || handlers.onSkipDay || handlers.onReplaceDay || handlers.onAddOnce) && (
-              <section className="rounded-2xl border border-(--ep-line)/25 bg-(--ep-s1) p-3.5 space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-widest text-(--ep-ink)/45">
-                  {oneOff ? t("Rendez-vous de ce jour") : `${t("Imprévu")} ${dayName}`}
-                </p>
-
-                {handlers.onShift && (
-                  <div>
-                    <p className="text-[12px] font-bold text-(--ep-strong) mb-1.5">{t("Décaler")}</p>
-                    <div className="grid grid-cols-6 gap-1">
-                      {[-30, -15, -5, 5, 15, 30].map((d) => (
-                        <button
-                          key={d}
-                          type="button"
-                          disabled={busy}
-                          onClick={() => run(() => handlers.onShift!(d, oneOff ? "jour" : scope, withFollowing)).then((e) => e && setErr(e))}
-                          className="h-10 rounded-lg border border-(--ep-line)/35 text-[11.5px] font-bold tabular-nums text-(--ep-strong) disabled:opacity-40"
-                        >
-                          {d > 0 ? "+" : "−"}{Math.abs(d)}
-                        </button>
-                      ))}
-                    </div>
-                    <label className="flex items-center gap-2 mt-2 min-h-9 text-[12px] text-(--ep-ink)/75 cursor-pointer select-none">
-                      <input type="checkbox" checked={withFollowing} onChange={(e) => setWithFollowing(e.target.checked)} className="w-4 h-4 accent-(--ep-accent)" />
-                      {t("Décaler aussi la suite de la journée")}
-                    </label>
-                    {!oneOff && (
-                      <div className="grid grid-cols-2 gap-1.5 mt-1">
-                        <Chip active={scope === "jour"} onClick={() => setScope("jour")}><span className="w-full text-center">{isToday ? t("Aujourd'hui") : t("Ce jour-là")}</span></Chip>
-                        <Chip active={scope === "toujours"} onClick={() => setScope("toujours")}><span className="w-full text-center">{t("Toutes les semaines")}</span></Chip>
-                      </div>
-                    )}
-                    {isToday && startNowDelta !== 0 && Math.abs(startNowDelta) <= 3 * 60 && (
-                      <button type="button" disabled={busy} onClick={() => run(() => handlers.onShift!(startNowDelta, oneOff ? "jour" : scope, withFollowing)).then((e) => e && setErr(e))} className="w-full rounded-lg border text-xs font-bold py-2.5 mt-2" style={{ borderColor: "rgba(var(--ep-accent-rgb),0.6)", background: "rgba(var(--ep-accent-rgb),0.12)", color: "var(--ep-strong)" }}>
-                        {t("Commencer maintenant")} ({startNowDelta > 0 ? "+" : "−"}{Math.abs(startNowDelta)} min)
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {(handlers.onSkipDay || handlers.onReplaceDay) && (
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {handlers.onSkipDay && (
-                      <button type="button" disabled={busy} onClick={handlers.onSkipDay} className="flex items-center justify-center gap-1.5 h-11 rounded-xl border border-(--ep-line)/35 text-[12px] font-bold text-(--ep-strong) disabled:opacity-40">
-                        <CalendarX size={14} /> {isToday ? t("Pas aujourd'hui") : t("Pas ce jour-là")}
-                      </button>
-                    )}
-                    {handlers.onReplaceDay && (
-                      <button type="button" disabled={busy} onClick={handlers.onReplaceDay} className="flex items-center justify-center gap-1.5 h-11 rounded-xl border border-(--ep-line)/35 text-[12px] font-bold text-(--ep-strong) disabled:opacity-40">
-                        <Replace size={14} /> {t("Remplacer par…")}
-                      </button>
-                    )}
-                  </div>
-                )}
-                {handlers.onAddOnce && (
-                  <button type="button" onClick={handlers.onAddOnce} className="w-full flex items-center justify-center gap-1.5 h-10 rounded-xl text-[12px] font-bold" style={{ border: "1px dashed rgba(var(--ep-accent-rgb),0.5)", color: "var(--ep-strong)" }}>
-                    <CalendarPlus size={14} /> {t("Ajouter un rdv")} {dayName}
-                  </button>
-                )}
-                {oneOff && (
-                  <p className="text-[11px] text-(--ep-ink)/45">{t("Bloc ponctuel : il ne revient pas les autres semaines.")}</p>
-                )}
-              </section>
+        {/* Le reste, discret : remplacer ce jour, ajouter un rdv, supprimer de toutes les semaines. */}
+        {editable && (handlers.onReplaceDay || handlers.onAddOnce || (!oneOff && handlers.onDelete)) && (
+          <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 border-t border-(--ep-line)/15">
+            {handlers.onReplaceDay && (
+              <button type="button" onClick={handlers.onReplaceDay} className="flex items-center gap-1 min-h-9 text-[11.5px] font-bold text-(--ep-ink)/55">
+                <Replace size={12} /> {t("Remplacer ce jour")}
+              </button>
             )}
-
-            {msg && <p role="status" className="text-xs" style={{ color: "var(--ep-ok)" }}>{msg}</p>}
-            <ErrorText>{err}</ErrorText>
-
-            {/* Semaine type : replié, pour ne pas la changer sans le vouloir. */}
-            {!oneOff && (handlers.onResize || handlers.onCopy || handlers.onEdit || handlers.onDelete) && (
-              <section className="border-t border-(--ep-line)/15 pt-3">
-                <button type="button" onClick={() => setShowWeek((v) => !v)} aria-expanded={showWeek} className="w-full flex items-center justify-between min-h-10 text-left">
-                  <span>
-                    <span className="block text-[12px] font-bold text-(--ep-strong)">{t("Changer toutes les semaines")}</span>
-                    <span className="block text-[11px] text-(--ep-ink)/45">{t("Heure, durée, copie sur d'autres jours, suppression")}</span>
-                  </span>
-                  <ChevronDown size={16} className="text-(--ep-ink)/45 transition-transform" style={{ transform: showWeek ? "rotate(180deg)" : undefined }} />
-                </button>
-                {showWeek && (
-                  <div className="space-y-4 mt-3">
-                    {handlers.onResize && (
-                      <div>
-                        <SectionLabel>{t("Fin du bloc")} · {clockLabel(placed.e)}</SectionLabel>
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {[-15, -5, 5, 15].map((d) => (
-                            <button key={d} type="button" onClick={() => handlers.onResize!(d)} disabled={placed.e + d - placed.s < 5} className="h-10 rounded-lg border border-(--ep-line)/35 text-xs font-bold text-(--ep-strong) disabled:opacity-35">
-                              {d > 0 ? "+" : "−"}{Math.abs(d)} min
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {handlers.onCopy && (
-                      <div>
-                        <SectionLabel>{t("Copier sur d'autres jours")}</SectionLabel>
-                        {!showCopy ? (
-                          <div className="flex flex-wrap gap-1.5">
-                            <Chip onClick={() => run(() => handlers.onCopy!([1, 2, 3, 4, 5].filter((d) => d !== placed.col))).then((m) => setMsg(m ?? null))} disabled={busy}>
-                              <Copy size={12} /> {t("Lun → Ven")}
-                            </Chip>
-                            <Chip onClick={() => run(() => handlers.onCopy!([1, 2, 3, 4, 5, 6, 7].filter((d) => d !== placed.col))).then((m) => setMsg(m ?? null))} disabled={busy}>
-                              <Copy size={12} /> {t("Toute la semaine")}
-                            </Chip>
-                            <Chip onClick={() => setShowCopy(true)}>{t("Choisir les jours…")}</Chip>
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            <DayPicker value={copyDays} onChange={setCopyDays} exclude={placed.col} shortcuts={false} />
-                            <button
-                              type="button"
-                              disabled={busy || copyDays.length === 0}
-                              onClick={() => run(() => handlers.onCopy!(copyDays)).then((m) => { setMsg(m ?? null); setShowCopy(false); setCopyDays([]); })}
-                              className="w-full h-10 rounded-lg text-xs font-black uppercase tracking-widest disabled:opacity-40"
-                              style={{ background: "rgba(var(--ep-accent-rgb),0.16)", border: "1px solid rgba(var(--ep-accent-rgb),0.55)", color: "var(--ep-strong)" }}
-                            >
-                              {t("Copier")} ({copyDays.length})
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <EditDeleteRow onEdit={handlers.onEdit} onDelete={handlers.onDelete} confirmDelete={confirmDelete} setConfirmDelete={setConfirmDelete} deleteLabel={t("Supprimer")} />
-                  </div>
-                )}
-              </section>
+            {handlers.onAddOnce && (
+              <button type="button" onClick={handlers.onAddOnce} className="flex items-center gap-1 min-h-9 text-[11.5px] font-bold text-(--ep-ink)/55">
+                <CalendarPlus size={12} /> {t("Ajouter un rdv")}
+              </button>
             )}
-
-            {oneOff && <EditDeleteRow onEdit={handlers.onEdit} onDelete={handlers.onDelete} confirmDelete={confirmDelete} setConfirmDelete={setConfirmDelete} deleteLabel={t("Supprimer ce rdv")} />}
-          </>
+            {!oneOff && handlers.onDelete && (
+              <button type="button" onClick={() => (confirmDelete ? handlers.onDelete!() : setConfirmDelete(true))} className="flex items-center gap-1 min-h-9 text-[11.5px] font-bold ml-auto" style={{ color: "var(--ep-bad)" }}>
+                <Trash2 size={12} /> {confirmDelete ? t("Confirmer : toutes les semaines") : t("Supprimer")}
+              </button>
+            )}
+          </div>
         )}
       </div>
     </Sheet>
-  );
-}
-
-function EditDeleteRow({
-  onEdit,
-  onDelete,
-  confirmDelete,
-  setConfirmDelete,
-  deleteLabel,
-}: {
-  onEdit?: () => void;
-  onDelete?: () => void;
-  confirmDelete: boolean;
-  setConfirmDelete: (v: boolean) => void;
-  deleteLabel: string;
-}) {
-  const t = useT();
-  if (!onEdit && !onDelete) return null;
-  return (
-    <div className="flex gap-2">
-      {onEdit && (
-        <button type="button" onClick={onEdit} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-(--ep-line)/40 text-(--ep-ink)/80 text-xs font-bold uppercase tracking-widest py-3">
-          <Pencil size={13} /> {t("Modifier")}
-        </button>
-      )}
-      {onDelete && (
-        <button
-          type="button"
-          onClick={() => (confirmDelete ? onDelete() : setConfirmDelete(true))}
-          className="flex items-center justify-center gap-1.5 rounded-xl text-xs font-bold uppercase tracking-widest py-3 px-4"
-          style={{ border: "1px solid rgba(var(--ep-bad-rgb),0.4)", color: "var(--ep-bad)", background: confirmDelete ? "rgba(var(--ep-bad-rgb),0.1)" : "transparent" }}
-        >
-          <Trash2 size={13} /> {confirmDelete ? t("Confirmer") : deleteLabel}
-        </button>
-      )}
-    </div>
   );
 }
