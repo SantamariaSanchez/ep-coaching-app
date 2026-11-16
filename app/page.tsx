@@ -98,7 +98,7 @@ const FAQS = [
   },
   {
     q: "Qui est Emmanuel Santamaria Sanchéz ?",
-    a: "Emmanuel Santamaria Sanchéz est le fondateur d'EP Coaching, coach en musculation et nutrition basé à Annecy, athlète naturel (objectif Heroes Cup WNBF France en Classic Physique) et coach pour les coachs.",
+    a: "Emmanuel Santamaria Sanchéz (Emmanuel Peccoux) est le fondateur d'EP Coaching : coach sportif de 17 ans né à Girardota en Colombie, basé à Annecy et bientôt à Paris. Il aide les débutantes à perdre du gras en 6 mois et prépare la WNBF Classic 2027.",
   },
   {
     q: "Où est basé EP Coaching ?",

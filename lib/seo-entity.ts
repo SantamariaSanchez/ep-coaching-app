@@ -12,11 +12,17 @@ export const SHOWCASE_URL = "https://santamariasanchez.github.io/EPCoaching/";
 
 // Nom public : « Emmanuel Santamaria Sanchéz » (avec l'accent). Le nom légal
 // n'apparaît que dans les mentions légales, CGU, CGV et factures.
+// Faits publics (2026-11-16, demande d'Emmanuel : être trouvé sur son nom,
+// « Emmanuel Peccoux » compris, et qu'on sache qu'il est colombien, a 17 ans,
+// vit à Annecy et part bientôt à Paris).
 export const FOUNDER = {
   name: "Emmanuel Santamaria Sanchéz",
-  alternateName: "Santamaria Sanchéz",
+  alternateName: ["Emmanuel Santamaria Sanchez", "Emmanuel Santamaria", "Santamaria Sanchéz", "Santamaria Sanchez", "Emmanuel Peccoux", "Peccoux Emmanuel"],
   jobTitle: "Coach sportif en musculation et nutrition, fondateur d'EP Coaching",
-  bio: "Athlète naturel, objectif Heroes Cup WNBF France en Classic Physique. Accompagne des personnes qui veulent progresser en musculation et des coachs qui veulent structurer leur activité.",
+  age: 17,
+  birthPlace: { city: "Girardota", region: "Antioquia", country: "Colombie", countryCode: "CO" },
+  nextCity: "Paris",
+  bio: "Coach sportif de 17 ans né à Girardota (Colombie), basé à Annecy et bientôt à Paris. Il aide les débutantes à perdre du gras et à atteindre leurs objectifs en 6 mois, et prépare la WNBF Classic 2027 en fédération naturelle testée.",
 };
 
 export const PLACE = {
@@ -57,6 +63,14 @@ const founderNode = {
   description: FOUNDER.bio,
   url: `${SITE_URL}/a-propos`,
   homeLocation: { "@type": "Place", name: `${PLACE.city}, ${PLACE.region}`, address },
+  birthPlace: {
+    "@type": "Place",
+    name: `${FOUNDER.birthPlace.city}, ${FOUNDER.birthPlace.region}, ${FOUNDER.birthPlace.country}`,
+    address: { "@type": "PostalAddress", addressLocality: FOUNDER.birthPlace.city, addressRegion: FOUNDER.birthPlace.region, addressCountry: FOUNDER.birthPlace.countryCode },
+  },
+  nationality: { "@type": "Country", name: FOUNDER.birthPlace.country },
+  knowsLanguage: ["fr", "es"],
+  worksFor: { "@id": `${SITE_URL}/#entreprise` },
   knowsAbout: ["Musculation", "Bodybuilding naturel", "Nutrition sportive", "Coaching en ligne", "Prise de masse", "Perte de gras"],
   sameAs: [...SANTAMARIA_SOCIALS],
 };
@@ -70,16 +84,17 @@ export function entityGraph(extra: object[] = []) {
         "@type": ["Organization", "ProfessionalService"],
         "@id": `${SITE_URL}/#entreprise`,
         name: "EP Coaching",
-        alternateName: ["EP Coaching Annecy", "EP Coaching Santamaria Sanchéz"],
-        slogan: "Un accompagnement qui s'adapte à toi.",
+        alternateName: ["EP Coaching Annecy", "EP Coaching Santamaria Sanchéz", "EP Coaching Emmanuel Peccoux"],
+        slogan: "Perds du gras et atteins tes objectifs en 6 mois.",
         url: SITE_URL,
         logo: `${SITE_URL}/icon-512.png`,
         image: `${SITE_URL}/og-image.jpg`,
         description:
-          "EP Coaching, coaching sportif en musculation et nutrition basé à Annecy, accompagnement en ligne partout en France via l'appli EP Coaching. Fondé par Emmanuel Santamaria Sanchéz.",
+          "EP Coaching, l'entreprise de coaching sportif d'Emmanuel Santamaria Sanchéz (Emmanuel Peccoux), basée à Annecy : coaching en ligne de 6 mois pour les débutantes qui veulent perdre du gras, et l'appli EP Coaching.",
         address,
         areaServed: [
           { "@type": "City", name: "Annecy" },
+          { "@type": "City", name: "Paris" },
           { "@type": "AdministrativeArea", name: "Haute-Savoie" },
           { "@type": "Country", name: "France" },
         ],

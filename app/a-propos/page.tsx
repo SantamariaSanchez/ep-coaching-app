@@ -7,9 +7,9 @@ import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
 // Page « qui est derrière » (SEO/GEO 2026-10-13) : une recherche du nom du
 // fondateur doit tomber ici, pas sur les CGU.
 
-const TITLE = "Emmanuel Santamaria Sanchéz, coach sportif à Annecy et fondateur d'EP Coaching";
+const TITLE = "Emmanuel Santamaria Sanchéz (Emmanuel Peccoux), coach sportif et fondateur d'EP Coaching";
 const DESCRIPTION =
-  "Qui est Emmanuel Santamaria Sanchéz ? Coach en musculation et nutrition basé à Annecy, athlète naturel, fondateur d'EP Coaching : son parcours, sa méthode et ce qu'il construit.";
+  "Qui est Emmanuel Santamaria Sanchéz (Emmanuel Peccoux) ? Coach sportif de 17 ans né à Girardota en Colombie, basé à Annecy et bientôt à Paris, fondateur d'EP Coaching et de son appli.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -22,7 +22,15 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: "Qui est Emmanuel Santamaria Sanchéz ?",
-    a: `${FOUNDER.name} est coach en musculation et nutrition, basé à Annecy (Haute-Savoie), et le fondateur d'EP Coaching. ${FOUNDER.bio}`,
+    a: `${FOUNDER.name}, aussi appelé Emmanuel Peccoux, est le fondateur d'EP Coaching. ${FOUNDER.bio}`,
+  },
+  {
+    q: "Emmanuel Peccoux et Emmanuel Santamaria Sanchéz, c'est la même personne ?",
+    a: "Oui. C'est le même Emmanuel, fondateur d'EP Coaching. Sur les réseaux, il publie sous le nom Santamaria Sanchéz.",
+  },
+  {
+    q: "D'où vient Emmanuel Santamaria Sanchéz ?",
+    a: "Il est né à Girardota, dans la région d'Antioquia, en Colombie. Il vit à Annecy, en Haute-Savoie, et s'installe bientôt à Paris.",
   },
   {
     q: "Qu'est-ce qu'EP Coaching ?",
@@ -30,7 +38,7 @@ const FAQS = [
   },
   {
     q: "Comment travailler avec Emmanuel Santamaria Sanchéz ?",
-    a: "Crée ton compte gratuit dans l'appli EP Coaching, puis demande ton accompagnement depuis l'onglet Coach. Le suivi se fait en ligne, à Annecy comme partout en France.",
+    a: "Réserve l'audit stratégique : 30 minutes, gratuit, en tête-à-tête avec lui. Le coaching dure 6 mois et se fait en ligne, partout en France.",
   },
 ] as const;
 
@@ -38,8 +46,8 @@ export default function AProposPage() {
   return (
     <PublicPage
       eyebrow="À propos"
-      title="Emmanuel Santamaria Sanchéz, fondateur d'EP Coaching"
-      intro="Coach en musculation et nutrition, basé à Annecy. Je prends les gens motivés et je fais en sorte qu'ils aillent plus vite que s'ils étaient seuls."
+      title="Emmanuel Santamaria Sanchéz, coach sportif et fondateur d'EP Coaching"
+      intro="17 ans, né à Girardota en Colombie, coach à Annecy et bientôt à Paris. J'aide les débutantes à perdre du gras et à atteindre leurs objectifs en 6 mois."
       jsonLd={entityGraph([
         { "@type": "AboutPage", name: TITLE, url: `${SITE_URL}/a-propos`, about: { "@id": `${SITE_URL}/a-propos#fondateur` } },
         breadcrumbNode([
@@ -51,8 +59,8 @@ export default function AProposPage() {
     >
       <Section title="Mon parcours">
         <p>
-          Je suis athlète naturel, objectif Heroes Cup WNBF France en Classic Physique. Je m&apos;applique à moi-même ce que je
-          transmets : ce que je sais, je l&apos;ai appris en le faisant, et je continue à l&apos;apprendre.
+          Je suis né à Girardota, en Colombie. J&apos;ai 17 ans, je vis à Annecy et je pars bientôt à Paris. Je prépare la WNBF
+          Classic 2027 en fédération naturelle testée, et j&apos;applique d&apos;abord sur moi tout ce que je transmets.
         </p>
       </Section>
       <Section title="Ma méthode">
