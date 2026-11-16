@@ -6,6 +6,9 @@ import { defaultAnswers } from "@/lib/app-setup-defaults";
 import { getClientIntake } from "@/utils/client-intake";
 import AppSetupWizard from "@/components/setup/AppSetupWizard";
 import BackLink from "@/components/ui/BackLink";
+import BrandingCard from "@/components/coach/BrandingCard";
+import { getCoachTier } from "@/lib/coach-tier";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +20,13 @@ export default async function CoachAppSetupPage() {
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client/mon-appli");
-  const [setup, intake] = await Promise.all([getAppSetup(user.id), getClientIntake(user.id)]);
+  const [setup, intake, tier, brandRow] = await Promise.all([
+    getAppSetup(user.id),
+    getClientIntake(user.id),
+    getCoachTier(user.id),
+    createAdminClient().from("profiles").select("brand_name, brand_color, brand_logo_url").eq("id", user.id).maybeSingle(),
+  ]);
+  const brand = (brandRow.data ?? {}) as { brand_name?: string | null; brand_color?: string | null; brand_logo_url?: string | null };
   const initial = defaultAnswers(setup, { role: "coach", isWoman: intake?.gender === "Femme" });
   return (
     <div className="page-transition" style={{ maxWidth: 560, margin: "0 auto", padding: "28px 16px 90px" }}>
@@ -26,6 +35,9 @@ export default async function CoachAppSetupPage() {
       <p style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.55)", margin: "0 0 18px", lineHeight: 1.6 }}>
         {t("Ta façon de travailler, tes objectifs et tes plateformes : l'appli s'adapte et évolue avec toi. Tu peux changer à tout moment.")}
       </p>
+      {!profile.is_platform_owner && (
+        <BrandingCard premium={tier === "premium"} initial={{ name: brand.brand_name ?? null, color: brand.brand_color ?? null, logoUrl: brand.brand_logo_url ?? null }} />
+      )}
       <AppSetupWizard role="coach" initialAnswers={initial} doneHref="/dashboard/coach" />
     </div>
   );

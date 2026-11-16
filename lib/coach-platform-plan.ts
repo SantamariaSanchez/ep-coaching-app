@@ -103,8 +103,12 @@ export const COACH_PLAN_DETAILS: Record<"standard" | "premium", CoachPlanDetails
     includesIntro: "Tout Standard, plus :",
     includes: [
       {
+        title: "Ta marque dans l'appli",
+        detail: "Ton nom, ta couleur et ton logo à la place d'EP Coaching : tes clients ouvrent ton appli.",
+      },
+      {
         title: "Toute ta création de contenu",
-        detail: "Studio créatif, scripts et prompteur, ta niche et ton avatar, et tes stats Instagram reliées à tes scripts.",
+        detail: "Studio créatif, scripts et posts, ta niche et ton avatar, et tes stats réseaux reliées à tes scripts.",
       },
       {
         title: "Les 5 formations EP",
