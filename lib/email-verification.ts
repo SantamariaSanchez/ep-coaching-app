@@ -39,7 +39,7 @@ export function verificationEmailHtml(firstName: string, link: string): string {
 <p style="margin:0 0 6px;color:rgba(245,237,237,0.8);">1. Fais ton premier bilan du jour, deux minutes, ça donne à ton coach une vraie photo de départ au lieu de deviner.</p>
 <p style="margin:0 0 6px;color:rgba(245,237,237,0.8);">2. Jette un oeil à la bibliothèque de ressources gratuites, sourcée sur la vraie littérature scientifique, pas sur ce qui tourne sur les réseaux.</p>
 <p style="margin:0 0 16px;color:rgba(245,237,237,0.8);">3. Complète ta fiche (objectif, matériel, salle) pour que ton programme colle à ta situation, pas à une moyenne.</p>
-<p style="margin:0 0 16px;color:rgba(245,237,237,0.6);font-size:13px;font-style:italic;">Ce que j'enseigne, je me l'applique d'abord à moi même, en préparation pour la Heroes Cup WNBF France.</p>
+<p style="margin:0 0 16px;color:rgba(245,237,237,0.6);font-size:13px;font-style:italic;">Ce que j'enseigne, je me l'applique d'abord à moi même, en préparation pour la WNBF Classic 2027.</p>
 <p style="margin:0;font-size:12px;color:rgba(245,237,237,0.4);">Si tu n'es pas à l'origine de cette inscription, ignore simplement ce message.</p>`;
   return wrapBrandedEmail(body);
 }

@@ -64,7 +64,7 @@ export const TEMPLATES: Record<string, StaffTemplate[]> = {
     T("Légende de reel", "dm", "Publication Instagram", "[Accroche qui reprend la première phrase de la vidéo]\n\n[Le point clé en 2 phrases]\n\n[Question pour faire commenter]"),
   ],
   "personal-brand-manager": [
-    T("Demande d'intervention", "email", "Premier contact avec un podcast ou un média", "Bonjour [prénom],\n\nJe m'occupe de l'image d'Emmanuel Santamaria Sanchéz, fondateur d'EP Coaching. Il prépare actuellement la Heroes Cup WNBF France en naturel et partage ce qu'il applique à lui-même : comprendre son corps plutôt que suivre des méthodes à l'aveugle.\n\nIl pourrait apporter à votre audience [angle précis pour ce média]. Seriez-vous ouvert à en parler ?\n\n[ton nom]"),
+    T("Demande d'intervention", "email", "Premier contact avec un podcast ou un média", "Bonjour [prénom],\n\nJe m'occupe de l'image d'Emmanuel Santamaria Sanchéz, fondateur d'EP Coaching. Il prépare actuellement la WNBF Classic 2027 en naturel et partage ce qu'il applique à lui-même : comprendre son corps plutôt que suivre des méthodes à l'aveugle.\n\nIl pourrait apporter à votre audience [angle précis pour ce média]. Seriez-vous ouvert à en parler ?\n\n[ton nom]"),
     T("Validation d'une prise de parole", "interne", "Avant de confirmer une intervention", "Opportunité : [nom]\nFormat et date : [format, date]\nAudience : [taille, profil]\nAngle proposé : [sujet]\nRisque éventuel : [s'il y en a]\nÀ valider par Santamaria avant le : [date]"),
   ],
   "growth-traffic-manager": [
