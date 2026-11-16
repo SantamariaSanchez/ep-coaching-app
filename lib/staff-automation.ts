@@ -255,6 +255,17 @@ export interface Booking {
 export async function syncBooking(b: Booking): Promise<"created" | "canceled" | "unchanged" | "skipped"> {
   try {
     const admin = createAdminClient();
+    // Chaque audit est gardé, même sans closer en poste : les rappels
+    // J-10 à 30 min (lib/sequences.ts) partent de cette table.
+    await admin.from("prospect_bookings").upsert({
+      event_uri: b.eventUri,
+      starts_at: b.startsAt,
+      status: b.status,
+      name: b.inviteeName,
+      email: b.inviteeEmail?.toLowerCase() ?? null,
+      join_url: b.joinUrl,
+      updated_at: new Date().toISOString(),
+    });
     const existingAppt = await findByExternalId(admin, `calendly:${b.eventUri}`);
 
     if (b.status === "canceled") {
