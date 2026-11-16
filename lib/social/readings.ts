@@ -63,7 +63,7 @@ export async function getReadings(ownerId: string): Promise<Readings> {
   type Raw = PostNumbers & { id: string; account_id: string; external_post_id: string; platform: Platform; caption: string | null; post_type: string | null; published_at: string | null; url: string | null; script_id: string | null; extra: unknown };
   // Seules les publications avec au moins une audience (vues ou portée) se comparent.
   const raws = ((postRows ?? []) as Raw[]).filter((p) => (p.views ?? p.reach) !== null);
-  const read = readAll(raws);
+  const read = readAll(raws, (p) => p.platform);
   const posts: ReadPost[] = read.map(({ post: p, reading }) => {
     const sc = p.script_id ? byId.get(p.script_id) : undefined;
     const kept = (p.extra as { script?: { title?: string } } | null)?.script?.title ?? null;
