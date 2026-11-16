@@ -10,6 +10,7 @@ import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
+import { funnelSteps, visitGroup } from "@/lib/visit-tracking";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { updateLeadStatus, updateLeadNote } from "./actions";
 import { todayInParis } from "@/lib/dates";
@@ -36,6 +37,26 @@ export default async function LeadsAdminPage() {
       .limit(100),
   ]);
   const prequals = (prequalRes.data ?? []) as PrequalRow[];
+
+  // Tunnel des 30 derniers jours (C64) : visites publiques (lib/visit-tracking.ts),
+  // emails laissés, candidatures, inscriptions et onboarding, même fenêtre.
+  const since30 = new Date(new Date(`${todayInParis()}T00:00:00Z`).getTime() - 30 * 86_400_000).toISOString();
+  const admin = createAdminClient();
+  const [visitRows, signups30, onboarded30] = await Promise.all([
+    admin.from("page_visits").select("path").gte("created_at", since30).limit(50_000),
+    admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_platform_owner", false).not("email", "ilike", "%@epcoaching.app").gte("terms_accepted_at", since30),
+    admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_platform_owner", false).not("email", "ilike", "%@epcoaching.app").gte("onboarding_completed_at", since30),
+  ]);
+  const paths = ((visitRows.data ?? []) as { path: string }[]).map((v) => v.path);
+  const funnel = funnelSteps({
+    visits: paths.length,
+    resourceVisits: paths.filter((p) => visitGroup(p) === "ressources").length,
+    signupPageVisits: paths.filter((p) => visitGroup(p) === "inscription").length,
+    leads: leads.filter((l) => l.created_at >= since30).length,
+    candidatures: prequals.filter((r) => r.created_at >= since30).length,
+    signups: signups30.count ?? 0,
+    onboarded: onboarded30.count ?? 0,
+  });
   const magnetsBySlug = new Map(leadMagnets.map((m) => [m.slug, m]));
   // Origine en un écran (LANCEMENT.md semaine 2) : plateformes, contenus
   // crédités par leur lien suivi, et pistes pour le reste.
@@ -126,6 +147,20 @@ export default async function LeadsAdminPage() {
           );
         })}
       </div>
+
+      <section className="ep-card mb-6" style={{ padding: "14px 16px" }} aria-labelledby="tunnel-titre">
+        <h2 id="tunnel-titre" className="text-sm font-black uppercase tracking-wide mb-2">{t("Tunnel des 30 derniers jours")}</h2>
+        <ul className="flex flex-col gap-1">
+          {funnel.map((f) => (
+            <li key={f.label} className="flex items-baseline gap-2 text-[12.5px]">
+              <span className="flex-1 text-(--ep-ink)/70">{t(f.label)}</span>
+              <b className="text-(--ep-ink)">{f.n}</b>
+              <span className="w-28 text-right text-[11px] text-(--ep-ink)/45">{f.rate === null ? "" : `${f.rate} % ${t(f.of ?? "")}`}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-[10.5px] text-(--ep-ink)/40">{t("Visites comptées depuis le 16/11, une par page et par onglet, sans cookie.")}</p>
+      </section>
 
       <PrequalInbox rows={prequals} coachName={(profile.full_name ?? "").split(" ")[0] || null} />
 
