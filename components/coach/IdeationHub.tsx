@@ -28,7 +28,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "idees", label: "Idées", icon: Lightbulb },
   { id: "generateur", label: "Générateur", icon: Sparkles },
   { id: "scripts", label: "Scripts", icon: Clapperboard },
-  { id: "posts", label: "Posts à publier", icon: Send },
+  { id: "posts", label: "Posts", icon: Send },
   { id: "notes", label: "Notes", icon: StickyNote },
 ];
 
@@ -154,7 +154,7 @@ export default function IdeationHub({
         aria-label={tr("Sections Idéation")}
         className="flex gap-1.5 overflow-x-auto mb-3 border-b border-(--ep-line)/20 pb-0.5"
       >
-        {TABS.filter(({ id }) => id !== "posts" || writtenPosts.length > 0).map(({ id, label, icon: Icon }) => {
+        {TABS.map(({ id, label, icon: Icon }) => {
           const active = tab === id;
           return (
             <button

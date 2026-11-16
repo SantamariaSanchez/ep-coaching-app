@@ -205,7 +205,7 @@ export function checkWrittenPost(post: WrittenPostInput): WrittenCheck[] {
       out.push({ level: "conseil", message: "1re ligne longue : une accroche se lit d'un coup d'œil." });
     }
     if (/^\s*[-•*]\s+/m.test(content) && f.id === "post_texte") {
-      out.push({ level: "conseil", message: "Des puces : la structure LinkedIn de la Bible préfère des lignes courtes sans puces." });
+      out.push({ level: "conseil", message: "Des puces : sur LinkedIn, des lignes courtes sans puces se lisent mieux." });
     }
     const urls = content.match(/https?:\/\/\S+/g) ?? [];
     if (urls.length > 1) out.push({ level: "conseil", message: "Plusieurs liens : un post, un seul appel à l'action." });

@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Copy, Check, Send, Trash2, AlertTriangle, Lightbulb } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Copy, Check, Send, Trash2, AlertTriangle, Lightbulb, Pencil, ChevronDown } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
-import { publishScript, deleteScript } from "@/app/dashboard/coach/studio/actions";
+import { publishScript, deleteScript, updateScript } from "@/app/dashboard/coach/studio/actions";
+import PostComposer from "@/components/coach/PostComposer";
 import type { CoachScript } from "@/lib/coach-ideation";
 import { getContentFormat } from "@/lib/content-formats";
 import { WRITTEN_PLATFORMS, checkWrittenPost, effectiveFormat, foldPreview, getWrittenPlatform, type WrittenPlatform } from "@/lib/written-content";
@@ -14,6 +16,11 @@ import { ContentFormatBadge, ScriptBody } from "@/components/coach/ScriptFormatV
 // laisser les posts LinkedIn dans les scripts ». Ils ne se tournent pas : on
 // copie, on poste, on touche « Publié » et le post sort de l'appli (son sujet
 // reste mémorisé pour ne pas le refaire).
+//
+// 2026-11-16 : pensé pour un coach sans IA. En tête, « Écrire un post »
+// (components/coach/PostComposer.tsx) : réseau, structure de départ,
+// aperçu « voir plus », compteur et conseils en direct. Dessous, la liste à
+// publier : chaque post replié sur ce qui se voit, modifiable sur place.
 //
 // 2026-11-15 : un onglet par type (Stories Insta, Posts Insta, LinkedIn,
 // Threads), l'objectif du jour en tête (lib/content-cadence.ts), et pour
@@ -29,6 +36,7 @@ export default function WrittenPosts({ initialPosts, publishedToday = {}, target
   platforms?: string[];
 }) {
   const t = useT();
+  const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [seen, setSeen] = useState(initialPosts);
   const [today, setToday] = useState(publishedToday);
@@ -51,6 +59,8 @@ export default function WrittenPosts({ initialPosts, publishedToday = {}, target
     () => WRITTEN_PLATFORMS.filter((w) => !platforms?.length || platforms.includes(w.setting) || !!targets[w.id] || posts.some((p) => p.platform === w.id)),
     [posts, platforms, targets]
   );
+  // Réseaux où l'on écrit soi-même un post texte (le coach sans IA).
+  const writable = WRITTEN_PLATFORMS.filter((w) => w.formats.includes("post_texte") && (!platforms?.length || platforms.includes(w.setting) || !!targets[w.id]));
   const firstWithPosts = tabs.find((w) => posts.some((p) => p.platform === w.id))?.id ?? tabs[0]?.id ?? "linkedin";
   const [tab, setTab] = useState<string>(firstWithPosts);
   const active = getWrittenPlatform(tab) ?? tabs[0];
@@ -83,11 +93,16 @@ export default function WrittenPosts({ initialPosts, publishedToday = {}, target
     });
   }
 
-  if (!active) return null;
+  function edited(id: string, content: string) {
+    setPosts((prev) => prev.map((x) => (x.id === id ? { ...x, content } : x)));
+  }
+
+  const tabsWithStock = tabs.filter((w) => posts.some((p) => p.platform === w.id));
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div role="tablist" aria-label={t("Type de post")} style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
+      {writable.length > 0 && <PostComposer platforms={writable} onSaved={() => router.refresh()} />}
+      {active && tabsWithStock.length > 1 && <div role="tablist" aria-label={t("Type de post")} style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
         {tabs.map((w) => {
           const on = w.id === active.id;
           const stock = posts.filter((p) => p.platform === w.id).length;
@@ -109,19 +124,21 @@ export default function WrittenPosts({ initialPosts, publishedToday = {}, target
             </button>
           );
         })}
-      </div>
+      </div>}
 
       {error && <p style={{ margin: 0, fontSize: 12.5, color: "#fca5a5" }}>{t(error)}</p>}
-      {shown.length === 0 && (
-        <p className="ep-card" style={{ margin: 0, padding: "16px", fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", textAlign: "center" }}>
-          {t("Rien à publier ici.")}
+      {posts.length > 0 && <p style={{ margin: "4px 0 0", fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.45)" }}>{t("À publier")} · {shown.length}</p>}
+      {posts.length === 0 && (
+        <p style={{ margin: 0, padding: "4px 2px", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.5)" }}>
+          {t("Rien en attente. Les posts gardés pour plus tard arrivent ici.")}
         </p>
       )}
-      {shown.map((p) => (
+      {active && shown.map((p) => (
         <PostCard
           key={p.id}
           post={p}
           platform={active}
+          onEdited={(c) => edited(p.id, c)}
           copied={copied}
           onCopy={copy}
           onPublished={() => done(p, false)}
@@ -151,9 +168,10 @@ function CopyBtn({ id, label, value, copied, onCopy, primary }: { id: string; la
   );
 }
 
-function PostCard({ post, platform, copied, onCopy, onPublished, onRemove }: {
+function PostCard({ post, platform, copied, onCopy, onPublished, onRemove, onEdited }: {
   post: CoachScript;
   platform: WrittenPlatform;
+  onEdited: (content: string) => void;
   copied: string | null;
   onCopy: (k: string, v: string) => void;
   onPublished: () => void;
@@ -170,6 +188,28 @@ function PostCard({ post, platform, copied, onCopy, onPublished, onRemove }: {
   );
   const isText = f.shape === "texte";
   const fold = isText && platform.foldChars ? foldPreview(content, platform.foldChars) : null;
+  const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(content);
+  const [saving, startSave] = useTransition();
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  function saveEdit() {
+    const next = draft.trim();
+    if (!next || next === content) {
+      setEditing(false);
+      return;
+    }
+    setSaveError(null);
+    startSave(async () => {
+      const res = await updateScript(post.id, { content: next });
+      if (res.error) setSaveError(res.error);
+      else {
+        onEdited(next);
+        setEditing(false);
+      }
+    });
+  }
 
   return (
     <article className="ep-card" style={{ padding: "14px 14px" }}>
@@ -194,17 +234,23 @@ function PostCard({ post, platform, copied, onCopy, onPublished, onRemove }: {
         </ul>
       )}
 
-      {fold && fold.cut && (
-        <div style={{ marginBottom: 10, padding: "10px 12px", borderRadius: 10, background: withAlpha(platform.color, "12"), border: `1px solid ${withAlpha(platform.color, "33")}` }}>
-          <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(var(--ep-ink-rgb),0.45)" }}>{t("Ce qu'on voit avant « voir plus »")}</p>
-          <p style={{ margin: 0, fontSize: 13, color: "var(--ep-ink)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
-            {fold.visible}<span style={{ color: "rgba(var(--ep-ink-rgb),0.45)", fontWeight: 700 }}> … {t("voir plus")}</span>
-          </p>
+      {editing ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={10} aria-label={t("Texte du post")} style={{ width: "100%", minHeight: 180, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.14)", background: "rgba(var(--ep-shade-rgb),0.3)", color: "var(--ep-ink)", fontSize: 14.5, lineHeight: 1.6, resize: "vertical", fontFamily: "inherit" }} />
+          {saveError && <p style={{ margin: 0, fontSize: 12, color: "var(--ep-bad)" }}>{t(saveError)}</p>}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" disabled={saving} onClick={saveEdit} style={{ padding: "9px 14px", borderRadius: 10, border: "none", background: "var(--ep-accent)", color: "#fff", fontSize: 12.5, fontWeight: 900, cursor: "pointer" }}>{t("Enregistrer")}</button>
+            <button type="button" onClick={() => { setDraft(content); setEditing(false); }} style={{ padding: "9px 12px", borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.14)", background: "transparent", color: "var(--ep-ink)", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>{t("Annuler")}</button>
+          </div>
         </div>
-      )}
-
-      {isText ? (
-        <p className="ep-selectable" style={{ margin: 0, fontSize: 13.5, color: "var(--ep-ink)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{content}</p>
+      ) : isText ? (
+        <button type="button" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded} style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+          <p className="ep-selectable" style={{ margin: 0, fontSize: 13.5, color: "var(--ep-ink)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+            {expanded || !fold?.cut ? content : fold.visible}
+            {!expanded && fold?.cut && <span style={{ color: "rgba(var(--ep-ink-rgb),0.45)", fontWeight: 700 }}> … {t("voir plus")}</span>}
+          </p>
+          {expanded && fold?.cut && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, fontSize: 11, fontWeight: 700, color: "rgba(var(--ep-ink-rgb),0.45)" }}><ChevronDown size={12} style={{ transform: "rotate(180deg)" }} /> {t("Réduire")}</span>}
+        </button>
       ) : (
         <div className="ep-selectable"><ScriptBody formatId={formatId} content={content} /></div>
       )}
@@ -235,6 +281,11 @@ function PostCard({ post, platform, copied, onCopy, onPublished, onRemove }: {
         <button type="button" onClick={onPublished} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 10, border: "none", background: "var(--ep-ok)", color: "var(--ep-bg)", fontSize: 12.5, fontWeight: 900, cursor: "pointer", minHeight: 40 }}>
           <Send size={14} /> {t("Publié")}
         </button>
+        {isText && !editing && (
+          <button type="button" onClick={() => { setDraft(content); setEditing(true); }} aria-label={t("Modifier ce post")} style={{ width: 40, height: 40, borderRadius: 10, border: "1px solid rgba(var(--ep-ink-rgb),0.14)", background: "transparent", color: "var(--ep-ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <Pencil size={14} />
+          </button>
+        )}
         <button type="button" onClick={onRemove} aria-label={t("Retirer ce post")} style={{ marginLeft: "auto", width: 40, height: 40, borderRadius: 10, border: "none", background: "none", color: "rgba(var(--ep-ink-rgb),0.4)", cursor: "pointer" }}>
           <Trash2 size={15} />
         </button>
