@@ -73,3 +73,17 @@ test("peu de vues : on garde le format et on ne change que le hook", () => {
   assert.ok(r.weaknesses.includes("vues"));
   assert.ok(r.howTo.some((t) => /hook/.test(t) && /format/.test(t)));
 });
+
+test("readAll par plateforme : une plateforme n'est jamais comparée à une autre", () => {
+  const mk = (views: number, likes: number, platform: string) => ({ views, reach: null, likes, comments: 0, shares: 0, saves: 0, new_followers: 0, avg_watch_seconds: null, completion_rate: null, duration_seconds: null, platform });
+  const posts = [mk(100, 10, "tiktok"), mk(100, 10, "tiktok"), mk(100, 10, "tiktok"), mk(100, 10, "tiktok"), mk(100, 10, "tiktok"), mk(100, 1, "youtube")];
+  const mixed = readAll(posts);
+  const split = readAll(posts, (p) => p.platform);
+  assert.ok((mixed[5].reading.ratios.jaime ?? 1) < 0.2);
+  assert.equal(split[5].reading.verdict, "pas_assez");
+});
+
+test("rétention plafonnée à 1 même si Windsor renvoie une valeur aberrante", () => {
+  const r = postRates({ views: 10, reach: null, likes: 0, comments: 0, shares: 0, saves: 0, new_followers: 0, avg_watch_seconds: null, completion_rate: 4741, duration_seconds: null });
+  assert.equal(r.retention, 1);
+});

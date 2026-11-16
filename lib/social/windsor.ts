@@ -80,6 +80,16 @@ async function getJson(url: string, timeoutMs = 90_000): Promise<unknown> {
   throw lastError ?? new WindsorError("network", "Windsor injoignable.");
 }
 
+const PAUSED = /not your real numbers|reads are paused/i;
+
+/** Message de pause Windsor trouvé dans les lignes, sinon null. */
+export function pausedMessage(rows: WindsorRow[]): string | null {
+  for (const r of rows.slice(0, 20)) {
+    for (const v of Object.values(r)) if (typeof v === "string" && PAUSED.test(v)) return v.slice(0, 300);
+  }
+  return null;
+}
+
 function extractError(body: unknown): string | null {
   if (!body || typeof body !== "object") return null;
   const b = body as Record<string, unknown>;
@@ -131,11 +141,14 @@ export async function queryConnector(
   if (opts.maxRows) q.set("_max_rows", String(opts.maxRows));
   const body = await getJson(`${BASE}/${connector}?${q.toString()}`);
   const data = body && typeof body === "object" ? (body as { data?: unknown }).data : null;
-  if (!Array.isArray(data)) {
-    if (Array.isArray(body)) return body as WindsorRow[];
-    throw new WindsorError("request", "Réponse Windsor inattendue (pas de tableau data).");
-  }
-  return data as WindsorRow[];
+  const rows = Array.isArray(data) ? (data as WindsorRow[]) : Array.isArray(body) ? (body as WindsorRow[]) : null;
+  if (!rows) throw new WindsorError("request", "Réponse Windsor inattendue (pas de tableau data).");
+  // Windsor met les lectures en pause (trop de comptes pour la formule) en
+  // renvoyant des lignes factices dont les valeurs contiennent le message :
+  // ne jamais les écrire comme de vraies stats.
+  const paused = pausedMessage(rows);
+  if (paused) throw new WindsorError("config", `Windsor a mis les lectures en pause : ${paused}`);
+  return rows;
 }
 
 /**

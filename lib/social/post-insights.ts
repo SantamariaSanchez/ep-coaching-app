@@ -60,7 +60,9 @@ export function postRates(p: PostNumbers): Partial<Record<Signal, number>> {
   const completion = n(p.completion_rate);
   const watch = n(p.avg_watch_seconds);
   const duration = n(p.duration_seconds);
-  if (completion !== null) out.retention = completion / 100;
+  // Taux de complétion en pourcentage ; plafonné à 1 (une valeur aberrante
+  // de Windsor ne doit jamais produire un « x4741 »).
+  if (completion !== null) out.retention = Math.min(1, Math.max(0, completion / 100));
   else if (watch !== null && duration && duration > 0) out.retention = Math.min(1, watch / duration);
   return out;
 }
@@ -177,7 +179,16 @@ export function bestGroups(items: { key: string | null; reading: PostReading }[]
     .sort((a, b) => b.score - a.score);
 }
 
-/** Lit chaque publication contre toutes les autres (laisser-une-de-côté). */
-export function readAll<T extends PostNumbers>(posts: T[]): { post: T; reading: PostReading }[] {
-  return posts.map((p, i) => ({ post: p, reading: readPost(p, posts.filter((_, j) => j !== i)) }));
+/**
+ * Lit chaque publication contre toutes les autres (laisser-une-de-côté).
+ * Avec `groupOf`, seulement contre celles du même groupe (la même
+ * plateforme) : comparer un short YouTube à une vidéo TikTok mélange des
+ * mesures qui n'ont pas la même échelle.
+ */
+export function readAll<T extends PostNumbers>(posts: T[], groupOf?: (p: T) => string | null): { post: T; reading: PostReading }[] {
+  return posts.map((p, i) => {
+    const g = groupOf ? groupOf(p) : null;
+    const others = posts.filter((q, j) => j !== i && (!groupOf || groupOf(q) === g));
+    return { post: p, reading: readPost(p, others) };
+  });
 }
