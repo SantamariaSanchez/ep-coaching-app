@@ -27,6 +27,8 @@ import { getAccessType } from "@/utils/auth-client";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { getLocale } from "@/lib/i18n-server";
 import { LocaleSync } from "@/components/i18n/LocaleSync";
+import { getCoachBrand } from "@/lib/coach-branding-server";
+import { brandCssVars } from "@/lib/coach-branding";
 
 // Double authentification : le mot de passe seul ne donne accès à aucune page
 // du dashboard tant que la session n'est pas passée en aal2.
@@ -148,6 +150,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // vérifiés, seules les nouvelles inscriptions le voient.
   const showEmailBanner = !!profile && !isEmailVerified(profile);
   const isCoach = profile?.role === "coach";
+  // Marque du coach Premium (lib/coach-branding.ts) : sa couleur et son
+  // logo remplacent ceux d'EP Coaching pour ses clients.
+  const brand = profile?.role === "client" ? await getCoachBrand(profile.coach_id) : null;
+  const brandCss = brand ? brandCssVars(brand.color) : null;
   // Suspense fallback={null} : rien ne s'affiche tant que le calcul n'est
   // pas prêt (la carte n'apparaissait déjà qu'après coup dans l'ancien
   // comportement bloquant, ce n'est donc pas une régression visuelle,
@@ -162,6 +168,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <I18nProvider locale={locale}>
     <div style={{ minHeight: "100vh", background: "var(--ep-bg)" }}>
+      {brandCss && <style>{`:root { ${brandCss} }`}</style>}
       <ServiceWorkerRegister />
       <TimezoneSync />
       {user && <LocaleSync locale={locale} />}
@@ -190,6 +197,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* Item 47 : pousse sans forcer, voir requireStrongSessionIfNeeded
             ci-dessus pour pourquoi le blocage dur reste désactivé. */}
         {!!profile?.is_platform_owner && !profile.mfa_enabled && <TwoFactorNudgeBanner />}
+        {brand && (brand.logoUrl || brand.name) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px 0" }}>
+            {brand.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={brand.logoUrl} alt={brand.name ?? ""} style={{ height: 30, maxWidth: 140, objectFit: "contain" }} />
+            )}
+            {brand.name && <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.02em", color: "var(--ep-ink)" }}>{brand.name}</span>}
+          </div>
+        )}
         {children}
       </DashboardNav>
     </div>
