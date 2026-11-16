@@ -17,7 +17,9 @@ export default function VisitBeacon() {
     } catch {
       // stockage bloqué : on compte quand même
     }
-    const utm = new URLSearchParams(window.location.search).get("utm_source");
+    // Même paramètre que les liens suivis des leads (lib/lead-origin.ts : ?src=).
+    const q = new URLSearchParams(window.location.search);
+    const utm = q.get("src") ?? q.get("utm_source");
     const body = JSON.stringify({ path, ref: document.referrer || null, utm });
     try {
       if (!navigator.sendBeacon?.("/api/public/visit", new Blob([body], { type: "application/json" }))) {
