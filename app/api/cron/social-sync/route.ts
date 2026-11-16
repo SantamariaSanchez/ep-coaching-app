@@ -10,11 +10,9 @@ import type { Platform } from "@/lib/social/platforms";
 //   ?platform=instagram|tiktok|youtube|facebook|linkedin|threads  une seule plateforme
 //   ?days=90                                    fenêtre récente (30 minimum)
 //   ?backfill=1                                 continue la remontée historique
-//   ?auto=1                                     appel du cron quotidien :
+//   ?auto=1                                     appel du cron hebdo (lundi) :
 //     ne tourne que s'il est 6h à Paris (le job est planifié à 4h et 5h UTC
-//     pour couvrir l'heure d'été et d'hiver). Synchro tous les jours (les
-//     routines de contenu lisent ces stats chaque matin), backfill et récap
-//     de la semaine le lundi seulement.
+//     pour couvrir l'heure d'été et d'hiver), fait le backfill et le récap.
 // La réponse part tout de suite, la synchro continue avec after() dans la
 // limite de maxDuration.
 
@@ -32,17 +30,18 @@ export async function GET(req: Request) {
   const auto = url.searchParams.get("auto") === "1";
   const days = Math.min(365, Math.max(30, Number(url.searchParams.get("days")) || 30));
 
-  const { isoDow, hhmm } = nowInParis();
-  const monday = isoDow === 1;
-  if (auto && Number(hhmm.slice(0, 2)) !== 6) {
-    return NextResponse.json({ ok: true, skipped: `pas 6h à Paris (${hhmm})` });
+  if (auto) {
+    const { isoDow, hhmm } = nowInParis();
+    if (isoDow !== 1 || Number(hhmm.slice(0, 2)) !== 6) {
+      return NextResponse.json({ ok: true, skipped: `pas lundi 6h à Paris (${hhmm})` });
+    }
   }
-  const backfill = (auto && monday) || url.searchParams.get("backfill") === "1";
+  const backfill = auto || url.searchParams.get("backfill") === "1";
 
   after(async () => {
     try {
       const res = await runSocialSync({ platform, trigger: auto ? "cron" : backfill ? "backfill" : "cron", days, backfill, budgetMs: 230_000 });
-      if (auto && monday) {
+      if (auto) {
         // Récap de la semaine qui vient de se terminer (lundi précédent).
         const admin = createAdminClient();
         const lastMonday = mondayOf(todayInParis());
