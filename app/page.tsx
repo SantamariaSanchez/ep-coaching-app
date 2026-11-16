@@ -25,7 +25,7 @@ import "./landing.css";
 
 const TITLE = "EP Coaching : coach sportif à Annecy et en ligne, appli musculation et nutrition";
 const DESCRIPTION =
-  "EP Coaching, coaching sportif en musculation et nutrition fondé à Annecy par Emmanuel Santamaria Sanchéz : programme sur mesure, plan alimentaire, bilans et suivi dans l'appli, partout en France. Gratuit pour commencer.";
+  "EP Coaching aide les débutantes à perdre du gras et atteindre leurs objectifs en 6 mois : programme sur mesure, alimentation sans privation, check-in chaque semaine et suivi dans l'appli. 60 jours gratuits, audit offert.";
 
 // Sans openGraph/twitter dédiés ici, un partage de la page d'accueil (lien
 // en bio Instagram, la destination la plus partagée du site) retombait sur
@@ -52,7 +52,7 @@ const FEATURES = [
   { title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A" },
   // Pas de "5 formations complètes" (audit de cohérence 2026-09-01) : aucune
   // n'est publiée, on annonce le statut réel ("à venir").
-  { title: "Formations (à venir)", desc: "Bodybuilding, nutrition, training, business, psychologie" },
+  { title: "Formations (à venir)", desc: "Nutrition, entraînement, régularité" },
   { title: "Messagerie coach", desc: "Contact direct, réponses personnalisées" },
   { title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
   { title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
@@ -196,14 +196,17 @@ export default async function HomePage() {
           </div>
           <div className="lp-hero-copy">
             <h1 id="lp-h1" className="lp-h1 animate-fade-up">
-              Perds du gras sans culpabiliser à chaque écart. <span>Avec un coach qui ajuste.</span>
+              Perds du gras et atteins tes objectifs en 6 mois. <span>Même si tu pars de zéro.</span>
             </h1>
             <p className="lp-sub animate-fade-up stagger-1">
-              Ton programme, ta nutrition, tes bilans et ton coach dans une seule appli, construits sur ta situation. Un resto ou une séance ratée ne remettent pas tout en cause. Gratuit pour commencer, sans carte bancaire.
+              Pour les débutantes qui veulent aimer leur corps et le développer. Un programme qui tient dans ta semaine, une alimentation sans privation, et un coach qui t&apos;explique tout et ajuste avec toi. 60 jours gratuits, sans carte bancaire.
             </p>
             <div className="animate-fade-up stagger-2">
               <GoogleAppleCta />
             </div>
+            <p className="lp-already">
+              <a href="https://calendly.com/peccoux-manu/audit-strategique" target="_blank" rel="noopener noreferrer">Réserver mon audit gratuit de 30 minutes</a>
+            </p>
             <p className="lp-already">
               Déjà un compte ? <Link href="/auth/client?mode=login">Se connecter</Link>
             </p>
@@ -221,7 +224,7 @@ export default async function HomePage() {
             <p className="lp-eyebrow">Ce que tu y trouves</p>
             <h2 id="lp-feat" className="lp-h2">Tout ce qu&apos;il faut pour progresser, au même endroit</h2>
             <p className="lp-lead">
-              Tu t&apos;entraînes, tu fais attention à ce que tu manges, et les résultats ne suivent pas ? Ici tu comprends chaque choix, et ton suivi se construit sur ta situation. Pas une appli de plus.
+              Tu as déjà essayé, puis arrêté faute de temps ? Ici tu sais quoi faire à chaque séance et à chaque repas, et ton suivi se construit sur ta vraie semaine.
             </p>
           </div>
           <div className="lp-bento">
