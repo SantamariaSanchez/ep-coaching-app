@@ -1,3 +1,4 @@
+import VisitBeacon from "@/components/VisitBeacon";
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
 import AccessibilityMotionConfig from "@/components/ui/AccessibilityMotionConfig";
@@ -106,6 +107,8 @@ export default function RootLayout({
             est activé dans Paramètres > Accessibilité. */}
         {/* Fil des pages vues dans l'onglet, pour les boutons « Retour » (lib/nav-trail.ts). */}
         <NavTrailTracker />
+        {/* Visites des pages publiques, sans cookie (lib/visit-tracking.ts). */}
+        <VisitBeacon />
         <AccessibilityMotionConfig>
           <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
         </AccessibilityMotionConfig>
