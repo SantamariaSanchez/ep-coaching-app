@@ -1,4 +1,7 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { PhoneCall } from "lucide-react";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { isBlockOnDate } from "@/lib/agenda-day";
 import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
 import { getPointsMap } from "@/lib/gamification";
@@ -65,6 +68,7 @@ export default async function CoachDashboard() {
   const [
     [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency],
     [nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, unreadMsgs, messageable],
+    prequalOpen,
   ] = await Promise.all([
     Promise.all([
       getPointsMap(clientIds),
@@ -88,6 +92,11 @@ export default async function CoachDashboard() {
       // "Membre" au lieu de leur nom.
       getAllMessageableMembers(user.id).catch(() => []),
     ]),
+    // Candidatures (formulaire) pas encore rappelées : sans setter en poste,
+    // c'est au fondateur de les traiter (lib/prequal-inbox.ts).
+    profile?.is_platform_owner
+      ? createAdminClient().from("prequalification_responses").select("id", { count: "exact", head: true }).eq("status", "nouveau").then((r) => r.count ?? 0, () => 0)
+      : Promise.resolve(0),
   ]);
   const ouraEligibleIds = clients
     .filter((c) => isEligibleForLegendReward(pointsMap[c.id] ?? 0, isSubscribed(c)))
@@ -180,6 +189,20 @@ export default async function CoachDashboard() {
           l'information la plus critique du tableau de bord d'un coach qui a
           peu de temps — elle ne doit pas attendre après ses propres infos
           personnelles (nutrition, sommeil) pour apparaître. */}
+      {prequalOpen > 0 && (
+        <Link
+          href="/dashboard/coach/admin/leads#candidatures"
+          className="ep-card flex items-center gap-2.5"
+          style={{ padding: "11px 14px", marginBottom: 12, border: "1px solid rgba(var(--ep-accent-rgb),0.45)", color: "var(--ep-ink)", textDecoration: "none" }}
+        >
+          <PhoneCall size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 13.5, fontWeight: 800 }}>
+            {prequalOpen} {prequalOpen > 1 ? "candidatures à rappeler" : "candidature à rappeler"}
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-accent-hi2)" }}>Voir</span>
+        </Link>
+      )}
+
       {hasClients && <UrgentAlertsSection />}
 
       {/* ── Ma journée ───────────────────────────────────────────────────────

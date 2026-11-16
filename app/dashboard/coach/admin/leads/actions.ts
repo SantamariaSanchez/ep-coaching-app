@@ -4,6 +4,7 @@ import { requirePlatformOwner } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { LeadStatus } from "@/utils/leads";
 import { revalidatePath } from "next/cache";
+import { isPrequalStatus } from "@/lib/prequal-inbox";
 
 // Pipeline de suivi manuel des leads (20260909b_leads_pipeline.sql) — voir
 // components/coach/LeadsPipeline.tsx. Réservé au propriétaire de la
@@ -68,6 +69,24 @@ export async function deleteLead(leadId: string): Promise<{ error?: string }> {
     return {};
   } catch (e) {
     console.error("deleteLead error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Candidatures (formulaires de préqualification) : le fondateur les traite
+// lui-même tant qu'aucun setter n'est en poste (voir lib/prequal-inbox.ts).
+export async function updatePrequalStatus(id: string, status: string): Promise<{ error?: string }> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { error: guard.error };
+  if (!isPrequalStatus(status)) return { error: "Statut invalide." };
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.from("prequalification_responses").update({ status }).eq("id", id);
+    if (error) return { error: "Erreur lors de la mise à jour." };
+    revalidatePath("/dashboard/coach/admin/leads");
+    return {};
+  } catch (e) {
+    console.error("updatePrequalStatus error:", e);
     return { error: "Erreur inattendue." };
   }
 }
