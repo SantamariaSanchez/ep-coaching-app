@@ -9,6 +9,8 @@ import { getLeadOriginReport } from "@/lib/content-leads-tracking";
 import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
+import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { updateLeadStatus, updateLeadNote } from "./actions";
 import { todayInParis } from "@/lib/dates";
 import { ArrowUp, ArrowDown, Minus, Link2 } from "lucide-react";
@@ -24,7 +26,16 @@ export default async function LeadsAdminPage() {
   const profile = await getProfile(user.id);
   if (!profile?.is_platform_owner) redirect("/dashboard/coach");
 
-  const [leads, leadMagnets] = await Promise.all([getAllLeads(), getAllLeadMagnets()]);
+  const [leads, leadMagnets, prequalRes] = await Promise.all([
+    getAllLeads(),
+    getAllLeadMagnets(),
+    createAdminClient()
+      .from("prequalification_responses")
+      .select("id, form_type, first_name, last_name, phone, email, answers, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100),
+  ]);
+  const prequals = (prequalRes.data ?? []) as PrequalRow[];
   const magnetsBySlug = new Map(leadMagnets.map((m) => [m.slug, m]));
   // Origine en un écran (LANCEMENT.md semaine 2) : plateformes, contenus
   // crédités par leur lien suivi, et pistes pour le reste.
@@ -115,6 +126,8 @@ export default async function LeadsAdminPage() {
           );
         })}
       </div>
+
+      <PrequalInbox rows={prequals} coachName={(profile.full_name ?? "").split(" ")[0] || null} />
 
       <section className="ep-card mb-8" style={{ padding: "18px 18px 16px" }} aria-labelledby="leads-origine">
         <h2 id="leads-origine" className="text-sm font-black uppercase tracking-wide mb-1">{t("D'où viennent tes leads")}</h2>

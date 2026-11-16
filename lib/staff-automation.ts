@@ -14,6 +14,7 @@
 // paiement, candidature), qui reste prioritaire.
 
 import { createAdminClient } from "@/lib/supabase-admin";
+import { PREQUAL_LABELS } from "@/lib/prequal-inbox";
 import { notifyUser } from "@/lib/notify";
 import { runAfterResponse } from "@/lib/after-response";
 import { applyStageHistory, funnelRank, parisToday } from "@/lib/staff-stages";
@@ -578,24 +579,17 @@ export async function syncCalendly(): Promise<{ ok: boolean; reason?: string; cr
 
 // ── 7. Préqualifications (écrites par ep-coaching-formulaires) ──────────
 
-const PREQUAL_LABELS: Record<string, string> = {
-  objectif: "Objectif",
-  pourquoi: "Pourquoi",
-  niveau: "Ancienneté d'entraînement",
-  motivation: "Engagement",
-  pourquoi_ep_coaching: "Pourquoi EP Coaching",
-  lead_qualification_signal: "Déclencheur",
-  blocage: "Ce qui bloque",
-  timeline: "Démarrage",
-  budget: "Budget mensuel",
-  source_decouverte: "Découverte",
-  anciennete: "Ancienneté comme coach",
-  nb_clients: "Clients actuels",
-  gestion_actuelle: "Gestion actuelle",
-  blocage_principal: "Blocage principal",
-  objectif_business: "Objectif business",
-  disponibilite: "Disponibilité",
-};
+
+async function notifyOwnerOfPrequal(admin: Admin, firstName: string | null) {
+  const { data: owner } = await admin.from("profiles").select("id").eq("is_platform_owner", true).limit(1).maybeSingle();
+  if (!owner) return;
+  await notifyUser((owner as { id: string }).id, {
+    type: "staff",
+    title: "Nouvelle candidature",
+    body: `${firstName?.trim() || "Quelqu'un"} a rempli le formulaire : à rappeler.`,
+    url: "/dashboard/coach/admin/leads#candidatures",
+  }).catch(() => {});
+}
 
 export async function syncPrequalifications(): Promise<number> {
   const admin = createAdminClient();
@@ -609,7 +603,7 @@ export async function syncPrequalifications(): Promise<number> {
     .limit(50);
   if (error || !data) return 0;
   let routed = 0;
-  for (const r of data as { id: string; form_type: string; first_name: string; last_name: string; phone: string; email: string | null; answers: Record<string, string> }[]) {
+  for (const r of data as { id: string; form_type: string; first_name: string; last_name: string; phone: string; email: string | null; answers: Record<string, string>; created_at: string }[]) {
     const lines = Object.entries(r.answers ?? {})
       .filter(([, v]) => typeof v === "string" && v.trim())
       .map(([k, v]) => `${PREQUAL_LABELS[k] ?? k} : ${v}`);
@@ -625,7 +619,14 @@ export async function syncPrequalifications(): Promise<number> {
     });
     // Marquée traitée seulement si quelqu'un l'a vraiment reçue : sans
     // équipe, elle attend la première recrue (rattrapage, voir plus bas).
-    if (result === "no_staff" || result === "error") continue;
+    if (result === "no_staff") {
+      // Personne dans l'équipe : le fondateur est prévenu, une seule fois
+      // (cron toutes les 5 min, on ne signale que ce qui vient d'arriver).
+      // La candidature l'attend dans Leads, statut « À rappeler ».
+      if (Date.now() - new Date(r.created_at).getTime() < 5 * 60_000) await notifyOwnerOfPrequal(admin, r.first_name);
+      continue;
+    }
+    if (result === "error") continue;
     await admin.from("prequalification_responses").update({ staff_routed_at: new Date().toISOString() }).eq("id", r.id);
     routed++;
   }
