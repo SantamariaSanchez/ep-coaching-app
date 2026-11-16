@@ -7,9 +7,9 @@ import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
 // Page « qui est derrière » (SEO/GEO 2026-10-13) : une recherche du nom du
 // fondateur doit tomber ici, pas sur les CGU.
 
-const TITLE = "Emmanuel Santamaria Sanchéz (Emmanuel Peccoux), coach sportif et fondateur d'EP Coaching";
+const TITLE = "Emmanuel Santamaria Sanchéz, coach sportif et fondateur d'EP Coaching";
 const DESCRIPTION =
-  "Qui est Emmanuel Santamaria Sanchéz (Emmanuel Peccoux) ? Coach sportif de 17 ans né à Girardota en Colombie, basé à Annecy et bientôt à Paris, fondateur d'EP Coaching et de son appli.";
+  "Coach sportif de 17 ans né à Girardota en Colombie, basé à Annecy et bientôt à Paris, fondateur d'EP Coaching et de son appli.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -22,14 +22,10 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: "Qui est Emmanuel Santamaria Sanchéz ?",
-    a: `${FOUNDER.name}, aussi appelé Emmanuel Peccoux, est le fondateur d'EP Coaching. ${FOUNDER.bio}`,
+    a: `Le fondateur d'EP Coaching. ${FOUNDER.bio}`,
   },
   {
-    q: "Emmanuel Peccoux et Emmanuel Santamaria Sanchéz, c'est la même personne ?",
-    a: "Oui. C'est le même Emmanuel, fondateur d'EP Coaching. Sur les réseaux, il publie sous le nom Santamaria Sanchéz.",
-  },
-  {
-    q: "D'où vient Emmanuel Santamaria Sanchéz ?",
+    q: "D'où vient-il ?",
     a: "Il est né à Girardota, dans la région d'Antioquia, en Colombie. Il vit à Annecy, en Haute-Savoie, et s'installe bientôt à Paris.",
   },
   {
@@ -37,7 +33,7 @@ const FAQS = [
     a: "Un accompagnement humain et une appli : programme d'entraînement sur mesure, plan alimentaire, bilans, messages avec ton coach et suivi de tes progrès. L'appli sert aussi aux coachs pour suivre leurs clients.",
   },
   {
-    q: "Comment travailler avec Emmanuel Santamaria Sanchéz ?",
+    q: "Comment commencer ?",
     a: "Réserve l'audit stratégique : 30 minutes, gratuit, en tête-à-tête avec lui. Le coaching dure 6 mois et se fait en ligne, partout en France.",
   },
 ] as const;

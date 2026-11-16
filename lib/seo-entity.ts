@@ -84,13 +84,13 @@ export function entityGraph(extra: object[] = []) {
         "@type": ["Organization", "ProfessionalService"],
         "@id": `${SITE_URL}/#entreprise`,
         name: "EP Coaching",
-        alternateName: ["EP Coaching Annecy", "EP Coaching Santamaria Sanchéz", "EP Coaching Emmanuel Peccoux"],
+        alternateName: ["EP Coaching Annecy", "EP Coaching Santamaria Sanchéz"],
         slogan: "Perds du gras et atteins tes objectifs en 6 mois.",
         url: SITE_URL,
         logo: `${SITE_URL}/icon-512.png`,
         image: `${SITE_URL}/og-image.jpg`,
         description:
-          "EP Coaching, l'entreprise de coaching sportif d'Emmanuel Santamaria Sanchéz (Emmanuel Peccoux), basée à Annecy : coaching en ligne de 6 mois pour les débutantes qui veulent perdre du gras, et l'appli EP Coaching.",
+          "EP Coaching, l'entreprise de coaching sportif d'Emmanuel Santamaria Sanchéz, basée à Annecy : coaching en ligne de 6 mois pour les débutantes qui veulent perdre du gras, et l'appli EP Coaching.",
         address,
         areaServed: [
           { "@type": "City", name: "Annecy" },
