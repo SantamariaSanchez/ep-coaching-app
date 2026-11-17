@@ -112,7 +112,7 @@ async function countPublishedLessons(supabase: ServerSupabase, formationId: stri
     .select("id", { count: "exact", head: true })
     .in("section_id", sectionIds)
     .eq("is_published", true)
-    .not("youtube_id", "is", null);
+    .eq("has_video", true);
   return count ?? 0;
 }
 
@@ -475,7 +475,7 @@ export async function publishSectionLessons(sectionId: string, publish: boolean)
   const before = publish ? await publishedSnapshot(supabase, await formationIdForSection(supabase, sectionId)) : null;
 
   let query = supabase.from("formation_lessons").update({ is_published: publish === true }).eq("section_id", sectionId);
-  if (publish) query = query.not("youtube_id", "is", null);
+  if (publish) query = query.eq("has_video", true);
   const { error } = await query;
 
   if (error) return { error: error.message };
@@ -672,7 +672,7 @@ export async function duplicateModule(moduleId: string) {
 
   const { data: source } = await supabase
     .from("formation_modules")
-    .select("*, formation_sections(*, formation_lessons(*))")
+    .select("*, formation_sections(*, formation_lessons(id, title, description, duration_min, order_index))")
     .eq("id", moduleId)
     .single();
   if (!source) return { error: "Section introuvable." };
