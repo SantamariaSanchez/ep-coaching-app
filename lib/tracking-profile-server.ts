@@ -39,7 +39,7 @@ export async function loadTrackingInputs(userIds: string[]): Promise<Map<string,
     const since28 = addDaysIso(today, -27);
     const since14 = addDaysIso(today, -13);
     const [profiles, setups, prefs, intakes, logs] = await Promise.all([
-      admin.from("profiles").select("id, coach_id, start_date, eating_relationship, target_bedtime, target_wake_time, competition_date, created_at").in("id", userIds),
+      admin.from("profiles").select("id, coach_id, start_date, eating_relationship, target_bedtime, target_wake_time, competition_date, onboarding_completed_at").in("id", userIds),
       admin.from("user_app_setup").select("user_id, answers, modules, completed_at").in("user_id", userIds),
       admin.from("member_preferences").select("id, experience_level, primary_goal, training_frequency, tracks_nutrition, biggest_obstacle").in("id", userIds),
       admin.from("client_intake").select("client_id, gender, sessions_current, sessions_desired, injuries, wearable_device").in("client_id", userIds),
@@ -59,7 +59,7 @@ export async function loadTrackingInputs(userIds: string[]): Promise<Map<string,
       const practices = arr(answers.pratique);
       const history = arr(answers.historique).filter((h): h is HistoryFlag => (HISTORY_FLAGS as readonly string[]).includes(h));
       const yearsRaw = str(answers.annees);
-      const startDate = str(p?.start_date) ?? str(p?.created_at)?.slice(0, 10) ?? null;
+      const startDate = str(p?.start_date) ?? str(p?.onboarding_completed_at)?.slice(0, 10) ?? null;
       const set = days28.get(id);
       const compDate = str(p?.competition_date);
       const weeksToComp = compDate ? Math.floor(diffDaysIso(today, compDate) / 7) : null;

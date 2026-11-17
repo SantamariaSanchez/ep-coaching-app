@@ -44,7 +44,14 @@ export async function updateMyProfile(data: UpdateProfileInput): Promise<{ error
       update.website = site;
     }
 
-    const { error } = await supabase.from("profiles").update(update).eq("id", user.id);
+    let { error } = await supabase.from("profiles").update(update).eq("id", user.id);
+    // Colonne "website" absente tant que la migration 20261117180000 n'a pas
+    // tourné : sans ce repli, toute sauvegarde du profil échouait.
+    if (error && "website" in update && /website/i.test(error.message ?? "")) {
+      const { website: _omit, ...rest } = update;
+      void _omit;
+      ({ error } = await supabase.from("profiles").update(rest).eq("id", user.id));
+    }
     if (error) return { error: "Erreur lors de la mise à jour." };
 
     revalidatePath("/dashboard/client/profile");
