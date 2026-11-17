@@ -5,6 +5,7 @@ import { afterClientSignup, resolveCoachId, resolveReferrer } from "@/lib/client
 import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { classifyLoginError, LOGIN_MESSAGES } from "@/lib/login-error";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { cleanText, LIMITS } from "@/lib/sanitize";
@@ -228,6 +229,8 @@ export async function loginClient(
   const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !authData.user) {
+    const kind = classifyLoginError(error);
+    if (kind !== "credentials") return { error: LOGIN_MESSAGES[kind] };
     const nowLocked = await registerFailedLogin(email);
     return { error: nowLocked ?? "Email ou mot de passe incorrect." };
   }
