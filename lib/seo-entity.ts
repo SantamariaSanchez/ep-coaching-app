@@ -22,7 +22,7 @@ export const FOUNDER = {
   age: 17,
   birthPlace: { city: "Girardota", region: "Antioquia", country: "Colombie", countryCode: "CO" },
   nextCity: "Paris",
-  bio: "Coach sportif de 17 ans né à Girardota (Colombie), basé à Annecy et bientôt à Paris. Il aide les débutantes à perdre du gras et à atteindre leurs objectifs en 6 mois, et prépare la WNBF Classic 2027 en fédération naturelle testée.",
+  bio: "Coach sportif de 17 ans né à Girardota (Colombie), basé à Annecy et bientôt à Paris. Il aide les débutantes à perdre du gras et à atteindre leurs objectifs en 6 mois, et prépare la WNBF Classic 2027.",
 };
 
 export const PLACE = {

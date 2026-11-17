@@ -56,7 +56,7 @@ export default function AProposPage() {
       <Section title="Mon parcours">
         <p>
           Je suis né à Girardota, en Colombie. J&apos;ai 17 ans, je vis à Annecy et je pars bientôt à Paris. Je prépare la WNBF
-          Classic 2027 en fédération naturelle testée, et j&apos;applique d&apos;abord sur moi tout ce que je transmets.
+          Classic 2027.
         </p>
       </Section>
       <Section title="Ma méthode">
