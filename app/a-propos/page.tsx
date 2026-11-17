@@ -62,7 +62,7 @@ export default function AProposPage() {
       <Section title="Ma méthode">
         <p>
           Un programme construit pour toi, une nutrition que tu peux tenir, et des bilans réguliers pour ajuster sur tes vrais
-          résultats. Tu comprends chaque choix au lieu de suivre un plan recopié.
+          résultats. Tu comprends chaque choix.
         </p>
       </Section>
       <Section title="EP Coaching, né à Annecy">

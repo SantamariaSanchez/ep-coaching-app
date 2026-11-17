@@ -121,12 +121,12 @@ const STRUCTURED_DATA = entityGraph([faqNode(FAQS)]);
 
 
 const BENEFITS = [
-  { n: "01", t: "Un programme fait pour toi", d: "Séances, exercices et progression adaptés à ton niveau, ton matériel et le temps que tu as. Tu sais quoi faire en ouvrant l'appli." },
-  { n: "02", t: "Une nutrition qui se calcule", d: "Tes cibles de calories et de protéines, ton plan alimentaire, le prochain repas : plus de calculs à la main." },
-  { n: "03", t: "Un suivi en deux minutes", d: "Bilan du jour, poids lissé, photos, mesures. Tu vois si ça avance, et ton coach aussi." },
-  { n: "04", t: "Ton coach, dans la même appli", d: "Messagerie, check-in de la semaine, retours personnalisés. Un vrai humain derrière, pas un robot." },
-  { n: "05", t: "Comprendre, pas juste suivre", d: "Guides et études sourcés, expliqués simplement. Tu comprends chaque choix au lieu de copier un plan." },
-  { n: "06", t: "Une communauté qui avance", d: "Victoires, questions, classement : des membres aussi motivés que toi, sans pression." },
+  { n: "01", t: "Un programme fait pour toi", d: "Adapté à ton niveau, ton matériel et ton temps." },
+  { n: "02", t: "Une nutrition calculée", d: "Calories, protéines et repas prévus pour toi." },
+  { n: "03", t: "Un suivi en deux minutes", d: "Bilan du jour, poids, photos, mesures." },
+  { n: "04", t: "Ton coach dans l'appli", d: "Messages et check-in chaque semaine." },
+  { n: "05", t: "Tu comprends chaque choix", d: "Des guides simples, expliqués pour débuter." },
+  { n: "06", t: "Une communauté qui avance", d: "Victoires et questions, sans pression." },
 ] as const;
 
 const PLAN_PICKS = { standard: [0, 1, 2], premium: [0, 3, 4] } as const;
@@ -336,7 +336,7 @@ export default async function HomePage() {
         <section id="coaching" className="lp-wrap lp-section" aria-labelledby="lp-coaching">
           <div className="lp-offer lp-reveal">
             <div>
-              <h2 id="lp-coaching" className="lp-h2">Six mois avec un coach, pas un plan copié</h2>
+              <h2 id="lp-coaching" className="lp-h2">Six mois avec un coach</h2>
               <p className="lp-lead">On commence par un audit de 30 minutes, offert.</p>
               <div className="lp-hero-actions lp-hero-actions--left">
                 <a href={AUDIT_URL} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn--primary lp-btn--lg">Réserver mon audit offert</a>
@@ -394,7 +394,7 @@ export default async function HomePage() {
           <div className="lp-founder lp-reveal">
             <h2 id="lp-founder">Fondé à Annecy par Emmanuel Santamaria Sanchéz</h2>
             <p>
-              Coach en musculation et nutrition, athlète naturel. EP Coaching est né à Annecy, en Haute-Savoie, et accompagne en ligne partout en France : programme, nutrition, bilans et messages, dans une seule appli.
+              Coach en musculation et nutrition. EP Coaching est né à Annecy et accompagne en ligne partout en France.
             </p>
             <div className="lp-founder-links">
               <Link href="/a-propos">Qui suis-je →</Link>
