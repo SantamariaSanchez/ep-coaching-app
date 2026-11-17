@@ -36,7 +36,7 @@ def main():
     for repo in REPOS:
         d = os.path.join(base, repo.replace("/", "__"))
         if not os.path.isdir(d):
-            r = subprocess.run(["git", "clone", "-q", "--depth", "1", f"https://github.com/{repo}", d])
+            r = subprocess.run(["git", "clone", "-q", "--depth", "1", "--filter=blob:limit=5m", f"https://github.com/{repo}", d])
             if r.returncode:
                 print(f"! clone impossible : {repo}"); continue
         found = []
