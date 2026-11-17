@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import { AUTH_COOKIE_OPTIONS, hardenAuthCookie } from "@/lib/auth-cookies";
+import { safeNext } from "@/lib/safe-next";
 
 // Concurrent requests sharing the same (soon-to-be-rotated) refresh token
 // race to refresh it: the loser gets an "already used" error and its stale
@@ -59,8 +60,26 @@ async function resolveRole(userId: string): Promise<{ role: string; coachId: str
   return { role, coachId };
 }
 
+// Une seule adresse publique. L'alias d'équipe Vercel
+// (ep-coaching-ep-coaching.vercel.app) sert la même production, mais les
+// cookies de session sont propres à chaque adresse : passer de l'une à
+// l'autre (lien d'email, notification, appli installée) déconnectait. On
+// renvoie toujours vers l'adresse principale. Les previews (autres
+// sous-domaines) ne sont pas touchées.
+const CANONICAL_HOST = "ep-coaching.vercel.app";
+const ALIAS_HOSTS = new Set(["ep-coaching-ep-coaching.vercel.app"]);
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const host = request.headers.get("host")?.toLowerCase() ?? "";
+  if (ALIAS_HOSTS.has(host) && (request.method === "GET" || request.method === "HEAD")) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.host = CANONICAL_HOST;
+    url.port = "";
+    return NextResponse.redirect(url, 308);
+  }
 
   // Next.js fires speculative prefetch requests for every link that scrolls
   // into view (and via router.prefetch()). Running Supabase's session refresh
@@ -152,8 +171,16 @@ export async function proxy(request: NextRequest) {
 
   // Unauthenticated on protected route → appropriate login page
   if (!user && isDashboard) {
-    const dest = isCoachDashboard ? "/auth/coach" : "/auth/client";
-    const res = NextResponse.redirect(new URL(dest, request.url));
+    const dest = new URL(isCoachDashboard ? "/auth/coach" : "/auth/client", request.url);
+    // Retour sur la page demandée après connexion (lien de notification,
+    // email) au lieu de l'accueil du dashboard. Validé à l'arrivée (safeNext).
+    // Une personne renvoyée ici avait déjà un compte : formulaire de
+    // connexion, pas d'inscription.
+    dest.searchParams.set("mode", "login");
+    if (pathname !== "/dashboard/client" && pathname !== "/dashboard/coach") {
+      dest.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+    }
+    const res = NextResponse.redirect(dest);
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
   }
@@ -166,7 +193,7 @@ export async function proxy(request: NextRequest) {
   // marketing (retour d'Emmanuel 04/11/2026 : une personne qui installe l'appli
   // doit voir directement la connexion, pas la page de présentation).
   if (!user && isLaunch) {
-    const res = NextResponse.redirect(new URL("/auth/client", request.url));
+    const res = NextResponse.redirect(new URL("/auth/client?mode=login", request.url));
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
   }
@@ -237,6 +264,8 @@ export async function proxy(request: NextRequest) {
     }
 
     let dest = role === "coach" ? "/dashboard/coach" : role === "staff" ? "/equipe" : "/dashboard/client";
+    const wanted = isAuthPage ? safeNext(request.nextUrl.searchParams.get("next"), role) : null;
+    if (wanted) dest = wanted;
     // Page d'ouverture choisie dans les paramètres (cookie posé par
     // lib/device-settings.ts) : seulement au lancement de l'appli, et
     // seulement une page de son propre espace.

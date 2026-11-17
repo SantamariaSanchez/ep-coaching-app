@@ -71,7 +71,7 @@ const founderNode = {
   nationality: { "@type": "Country", name: FOUNDER.birthPlace.country },
   knowsLanguage: ["fr", "es"],
   worksFor: { "@id": `${SITE_URL}/#entreprise` },
-  knowsAbout: ["Musculation", "Bodybuilding naturel", "Nutrition sportive", "Coaching en ligne", "Prise de masse", "Perte de gras"],
+  knowsAbout: ["Musculation", "Bodybuilding", "Nutrition sportive", "Coaching en ligne", "Prise de masse", "Perte de gras"],
   sameAs: [...SANTAMARIA_SOCIALS],
 };
 

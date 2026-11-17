@@ -2,6 +2,7 @@
 
 import { requestPasswordReset } from "@/app/auth/password-reset-action";
 import { useT } from "@/components/i18n/I18nProvider";
+import NextField from "@/components/auth/NextField";
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Shield } from "lucide-react";
@@ -184,6 +185,7 @@ export default function CoachLoginPage() {
             className="animate-fade-up stagger-3"
             style={{ display: "flex", flexDirection: "column", gap: 18 }}
           >
+            <NextField />
             <div>
               <label style={{
                 display: "block",

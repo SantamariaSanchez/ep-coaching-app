@@ -1,4 +1,5 @@
 "use client";
+import NextField from "@/components/auth/NextField";
 
 import { requestPasswordReset } from "@/app/auth/password-reset-action";
 import { useT } from "@/components/i18n/I18nProvider";
@@ -107,7 +108,12 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
       <h2 style={{ fontWeight: 800, fontSize: 20, color: "var(--ep-ink)", letterSpacing: "-0.03em", margin: "0 0 20px" }}>
         {t("Me connecter")}
       </h2>
-      <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <form
+        action={formAction}
+        onSubmit={() => { try { localStorage.setItem("ep-has-account", "1"); } catch { /* navigation privée */ } }}
+        style={{ display: "flex", flexDirection: "column", gap: 16 }}
+      >
+        <NextField />
         <div>
           <label style={labelStyle}>{t("Email")}</label>
           <input
@@ -184,11 +190,17 @@ export default function ClientAuthPage() {
   // Lead-magnet links can deep-link straight to the login tab (?mode=login)
   // — read synchronously via a lazy initializer instead of an effect, no
   // Suspense boundary needed since this skips useSearchParams() entirely.
-  const [tab, setTab] = useState<"inscription" | "connexion">(() =>
-    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "login"
-      ? "connexion"
-      : "inscription"
-  );
+  // Un appareil qui s'est déjà connecté ouvre aussi la connexion (marque
+  // posée à l'envoi du formulaire de connexion, voir LoginForm).
+  const [tab, setTab] = useState<"inscription" | "connexion">(() => {
+    if (typeof window === "undefined") return "inscription";
+    if (new URLSearchParams(window.location.search).get("mode") === "login") return "connexion";
+    try {
+      return localStorage.getItem("ep-has-account") === "1" ? "connexion" : "inscription";
+    } catch {
+      return "inscription";
+    }
+  });
 
   return (
     <div
