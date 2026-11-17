@@ -174,6 +174,9 @@ export async function proxy(request: NextRequest) {
     const dest = new URL(isCoachDashboard ? "/auth/coach" : "/auth/client", request.url);
     // Retour sur la page demandée après connexion (lien de notification,
     // email) au lieu de l'accueil du dashboard. Validé à l'arrivée (safeNext).
+    // Une personne renvoyée ici avait déjà un compte : formulaire de
+    // connexion, pas d'inscription.
+    dest.searchParams.set("mode", "login");
     if (pathname !== "/dashboard/client" && pathname !== "/dashboard/coach") {
       dest.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     }
@@ -190,7 +193,7 @@ export async function proxy(request: NextRequest) {
   // marketing (retour d'Emmanuel 04/11/2026 : une personne qui installe l'appli
   // doit voir directement la connexion, pas la page de présentation).
   if (!user && isLaunch) {
-    const res = NextResponse.redirect(new URL("/auth/client", request.url));
+    const res = NextResponse.redirect(new URL("/auth/client?mode=login", request.url));
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
   }
