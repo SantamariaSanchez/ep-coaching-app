@@ -23,7 +23,7 @@ export default async function CoachFormationDetailPage({
   if (profile?.role !== "coach") redirect("/dashboard/client");
   const { formationId } = await params;
 
-  const formation = await getFormationWithModules(formationId);
+  const formation = await getFormationWithModules(formationId, { withVideoIds: true });
   if (!formation) notFound();
   // Éditeur : le propriétaire de la formation, ou le fondateur pour
   // l'Académie EP (même règle que actions.ts et la RLS). Sinon, vue lecture.

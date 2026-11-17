@@ -2,7 +2,7 @@ import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { getLesson, getFormationWithModules, getUserProgress, recordLessonView, isLessonWatchable } from "@/utils/formations";
+import { getLesson, getFormationWithModules, getUserProgress, recordLessonView, isLessonWatchable, getLessonVideoId, hasFormationAccess } from "@/utils/formations";
 import VideoPlayer, { VideoComingSoon } from "@/components/formations/VideoPlayer";
 import { ChevronLeft, ChevronRight, ListVideo } from "lucide-react";
 
@@ -46,7 +46,12 @@ export default async function CoachMoiLessonPage({
   );
   if (!belongsToFormation) notFound();
 
+  // Formation d'un autre coach (incluse ou vendue) : mêmes droits qu'un
+  // membre. L'Académie EP reste ouverte aux coachs.
+  if (formation.owner_id && !(await hasFormationAccess(formation, { id: user.id, coach_id: profile?.coach_id ?? null, subscription_status: profile?.subscription_status ?? null }))) notFound();
   if (isLessonWatchable(lesson)) await recordLessonView(user.id, lessonId);
+  // Vidéo lue seulement maintenant, une fois le droit de regarder vérifié.
+  const videoId = isLessonWatchable(lesson) ? await getLessonVideoId(lessonId) : null;
 
   const allLessons = formation.modules
     .flatMap((m) => m.sections.flatMap((s) => s.lessons))
@@ -103,9 +108,9 @@ export default async function CoachMoiLessonPage({
       )}
 
       <div className="animate-scale-in" style={{ marginBottom: 24 }}>
-        {lesson.youtube_id && lesson.is_published ? (
+        {videoId && lesson.is_published ? (
           <VideoPlayer
-            youtubeId={lesson.youtube_id}
+            youtubeId={videoId}
             title={lesson.title}
             lessonId={lessonId}
             isCompleted={isCompleted}
@@ -253,7 +258,7 @@ export default async function CoachMoiLessonPage({
           {currentUiModule.lessons.map((l, i) => {
             const isCurrent = l.id === lessonId;
             const isDone = completed.has(l.id);
-            const isAvail = !!(l.is_published && l.youtube_id);
+            const isAvail = !!(l.is_published && l.has_video);
 
             return (
               <div key={l.id}>

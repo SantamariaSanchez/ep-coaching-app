@@ -50,12 +50,12 @@ export async function markLessonComplete(lessonId: string) {
   const [context, profile] = await Promise.all([getLessonWithContext(lessonId), getProfile(guard.userId)]);
   const lesson = context as unknown as {
     is_published: boolean;
-    youtube_id: string | null;
+    has_video: boolean;
     formation_sections?: { formation_modules?: { formations?: { is_published: boolean } } };
   } | null;
   const formation = lesson?.formation_sections?.formation_modules?.formations;
   const isOwner = profile?.is_platform_owner === true;
-  if (!lesson || !lesson.is_published || !lesson.youtube_id || !formation) {
+  if (!lesson || !lesson.is_published || !lesson.has_video || !formation) {
     return { error: "Leçon indisponible." };
   }
   if (!formation.is_published && !isOwner) return { error: "Leçon indisponible." };

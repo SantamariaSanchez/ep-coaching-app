@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export interface Formation {
   id: string;
@@ -40,11 +41,22 @@ export interface FormationLesson {
   section_id: string;
   title: string;
   description: string | null;
+  /**
+   * Identifiant de la vidéo : rempli seulement après contrôle d'accès
+   * (getLessonVideoId) ou pour l'éditeur (withVideoIds). Les lectures avec
+   * la session de l'utilisateur ne le voient jamais : la colonne n'est pas
+   * lisible par les rôles anon/authenticated (migration 20261117200000).
+   */
   youtube_id: string | null;
+  /** Vrai si une vidéo est renseignée (colonne générée, lisible par tous). */
+  has_video: boolean;
   duration_min: number;
   order_index: number;
   is_published: boolean;
 }
+
+/** Colonnes lisibles par la session de l'utilisateur (sans youtube_id). */
+const LESSON_COLS = "id, section_id, title, description, has_video, duration_min, order_index, is_published";
 
 export interface FormationProgress {
   user_id: string;
@@ -110,7 +122,10 @@ export async function getFormation(id: string): Promise<Formation | null> {
   return (data ?? null) as Formation | null;
 }
 
-export async function getFormationWithModules(formationId: string): Promise<FormationWithModules | null> {
+export async function getFormationWithModules(
+  formationId: string,
+  opts: { withVideoIds?: boolean } = {}
+): Promise<FormationWithModules | null> {
   const supabase = await createServerSupabase();
 
   const { data: formation } = await supabase
@@ -127,7 +142,7 @@ export async function getFormationWithModules(formationId: string): Promise<Form
       *,
       formation_sections (
         *,
-        formation_lessons (*)
+        formation_lessons (${LESSON_COLS})
       )
     `)
     .eq("formation_id", formationId)
@@ -137,6 +152,17 @@ export async function getFormationWithModules(formationId: string): Promise<Form
   type RawSection = Omit<FormationSection, "lessons"> & { formation_lessons: RawLesson[] };
   type RawModule = Omit<FormationModule, "sections"> & { formation_sections: RawSection[] };
 
+  // Éditeur seulement (l'appelant a vérifié qu'il peut modifier) : les
+  // identifiants de vidéo, lus avec le client admin.
+  let videoIds = new Map<string, string | null>();
+  if (opts.withVideoIds) {
+    const ids = ((modules ?? []) as RawModule[]).flatMap((m) => (m.formation_sections ?? []).flatMap((s) => (s.formation_lessons ?? []).map((l) => l.id)));
+    if (ids.length) {
+      const { data: vids } = await createAdminClient().from("formation_lessons").select("id, youtube_id").in("id", ids);
+      videoIds = new Map(((vids ?? []) as { id: string; youtube_id: string | null }[]).map((v) => [v.id, v.youtube_id]));
+    }
+  }
+
   return {
     ...(formation as Formation),
     modules: ((modules ?? []) as RawModule[]).map((m) => ({
@@ -145,7 +171,9 @@ export async function getFormationWithModules(formationId: string): Promise<Form
         .sort((a, b) => a.order_index - b.order_index)
         .map((s) => ({
           ...s,
-          lessons: (s.formation_lessons ?? []).sort((a, b) => a.order_index - b.order_index),
+          lessons: (s.formation_lessons ?? [])
+            .map((l) => ({ ...l, youtube_id: videoIds.get(l.id) ?? null }))
+            .sort((a, b) => a.order_index - b.order_index),
         })),
     })),
   };
@@ -155,17 +183,26 @@ export async function getLesson(lessonId: string): Promise<FormationLesson | nul
   const supabase = await createServerSupabase();
   const { data } = await supabase
     .from("formation_lessons")
-    .select("*")
+    .select(LESSON_COLS)
     .eq("id", lessonId)
     .single();
-  return (data ?? null) as FormationLesson | null;
+  return data ? ({ ...(data as Omit<FormationLesson, "youtube_id">), youtube_id: null } as FormationLesson) : null;
+}
+
+/**
+ * Identifiant de la vidéo d'une leçon. À n'appeler qu'APRÈS avoir vérifié
+ * le droit de regarder (hasFormationAccess) : lecture avec le client admin.
+ */
+export async function getLessonVideoId(lessonId: string): Promise<string | null> {
+  const { data } = await createAdminClient().from("formation_lessons").select("youtube_id").eq("id", lessonId).maybeSingle();
+  return (data as { youtube_id: string | null } | null)?.youtube_id ?? null;
 }
 
 export async function getLessonWithContext(lessonId: string) {
   const supabase = await createServerSupabase();
   const { data: lesson } = await supabase
     .from("formation_lessons")
-    .select("*, formation_sections!inner(*, formation_modules!inner(*, formations!inner(*)))")
+    .select(`${LESSON_COLS}, formation_sections!inner(*, formation_modules!inner(*, formations!inner(*)))`)
     .eq("id", lessonId)
     .single();
   if (!lesson) return null;
@@ -229,12 +266,12 @@ export async function getResumeLesson(
         id: string;
         title: string;
         is_published: boolean;
-        youtube_id: string | null;
+        has_video: boolean;
         formation_sections: {
           formation_modules: { formations: { id: string; title: string; emoji: string; is_published: boolean } };
         };
       };
-      if (!lesson.is_published || !lesson.youtube_id) continue;
+      if (!lesson.is_published || !lesson.has_video) continue;
       const formation = lesson.formation_sections?.formation_modules?.formations;
       if (!formation) continue;
       if (!formation.is_published && !options.includeDrafts) continue;
@@ -263,8 +300,8 @@ export async function getUserProgress(userId: string): Promise<Set<string>> {
 
 // Une leçon n'est regardable que publiée ET avec une vidéo : même règle
 // partout (catalogue, détail, page leçon, progression).
-export function isLessonWatchable(lesson: Pick<FormationLesson, "is_published" | "youtube_id">): boolean {
-  return !!(lesson.is_published && lesson.youtube_id);
+export function isLessonWatchable(lesson: Pick<FormationLesson, "is_published" | "has_video">): boolean {
+  return !!(lesson.is_published && lesson.has_video);
 }
 
 // publishedMin ne cumule QUE les leçons regardables. L'ancien totalMin
