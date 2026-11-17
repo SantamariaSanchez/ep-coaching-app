@@ -5,7 +5,7 @@
 // Pourquoi (audit 2026-09-28) : la road map n'était qu'une frise statique.
 // La barre des objectifs montrait le TEMPS écoulé, jamais le réel, et
 // personne ne disait au fondateur (PDM démarrée le 2026-08-17, compétition
-// WNBF le 2027-12-06) s'il était sur la bonne trajectoire alors que toutes
+// le 2027-12-06) s'il était sur la bonne trajectoire alors que toutes
 // les données existaient déjà dans l'appli.
 //
 // Module PUR (aucun import serveur) : calculable côté serveur
