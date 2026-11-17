@@ -10,6 +10,8 @@
 //  2. le bloc de règles collé devant chaque prompt copié depuis le Studio.
 // Fichier pur (aucun import serveur), utilisable côté client.
 
+import { findAiTics } from "./ai-tics";
+
 export interface VocabularyIssue {
   /** Ce qui a été trouvé dans le texte (tel quel). */
   found: string;
@@ -46,7 +48,7 @@ const RULES: Rule[] = [
   { re: /\bhacks?\b/gi, why: "Jargon", fix: "« une astuce », « un truc simple »" },
   { re: /\bscal(?:er|e|ing)\b/gi, why: "Jargon business", fix: "« faire grandir ton activité », « avoir plus de clients »" },
   { re: /\bhigh ticket\b|\bclos(?:er|ing)\b|\bsett(?:er|ing)\b|\bfunnel\b|\bnurturing\b|\bshow-?up\b/gi, why: "Jargon de vente", fix: "« appel », « offre », « prendre un appel »" },
-  { re: /\bm[ée]thode miracle\b/gi, why: "Interdit (sauf pour la dénoncer)", fix: "« c'est pas de la magie, c'est de l'arithmétique »" },
+  { re: /\bm[ée]thode miracle\b/gi, why: "Interdit (sauf pour la dénoncer)", fix: "« c'est de l'arithmétique »" },
   { re: /\bapporter de la valeur\b|\bproposition de valeur\b|\bsynergie\b|\boptimiser (?:son|ton|votre) potentiel\b/gi, why: "Mot corporate", fix: "« t'aider », « te faire gagner du temps »" },
   { re: /\brevenus? passifs?\b|\bz[oô]ne de g[ée]nie\b/gi, why: "Jargon", fix: "À retirer." },
   // Mots trop savants : les créateurs les traduisent quand ils les disent.
@@ -82,6 +84,7 @@ export function checkVocabulary(text: string | null | undefined): VocabularyIssu
       out.push({ found: m[0], why: rule.why, fix: rule.fix });
     }
   }
+  for (const tic of findAiTics(text)) out.push({ found: tic.found, why: tic.why, fix: "Réécris avec une tournure lue dans les transcripts." });
   return out;
 }
 
@@ -99,7 +102,7 @@ export const DICTIONARY_HOOKS = [
   "La majorité des gens pensent qu'ils ont un problème de [X]. C'est pas du tout le cas.",
   "Tu peux [faire X] et ne jamais [obtenir Y]. Pourquoi ?",
   "J'aimerais casser un petit peu un mythe : [mythe].",
-  "Tu ne manques pas d'infos. Tu manques de priorités.",
+  "Tu as trop d'infos, et aucune priorité.",
   "Si tu as [situation], écoute bien cette vidéo jusqu'au bout.",
   "[A] et [B], c'est pas la même chose. Et je vais t'expliquer pourquoi.",
   "Tout le monde s'est fait avoir au moins une fois, et moi le premier.",

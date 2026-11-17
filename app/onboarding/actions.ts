@@ -200,7 +200,7 @@ async function announceOnboardingDone(userId: string): Promise<void> {
         ${checkinDay ? `<p style="margin:0 0 14px;">Et chaque ${checkinDay}, ton check-in de la semaine : 5 minutes pour faire le point, ton coach s'en sert pour ajuster la suite.</p>` : ""}
         <p style="margin:0 0 18px;">Le meilleur plan, c'est celui que tu suis. Pas besoin d'être parfait, juste régulier.</p>
         <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 18px;"><tr><td style="border-radius:10px;background:#E01E1E;"><a href="${appUrl}/dashboard/client" style="display:inline-block;padding:13px 30px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;border-radius:10px;">Ouvrir mon espace</a></td></tr></table>
-        <p style="margin:0;">Santamaria</p>
+        <p style="margin:0;">Emmanuel</p>
       `),
     }));
   }

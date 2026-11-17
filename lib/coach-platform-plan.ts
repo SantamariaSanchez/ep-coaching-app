@@ -82,7 +82,7 @@ export const COACH_PLAN_DETAILS: Record<"standard" | "premium", CoachPlanDetails
       },
       {
         title: "Tout le suivi d'un client sur une seule fiche",
-        detail: "Bilans du jour, check-ins, photos, mensurations, carnet de séances et records.",
+        detail: "Bilans du jour, check-ins, photos, mensurations, logbook et records.",
       },
       {
         title: "Messagerie, agenda et check-ins guidés",
