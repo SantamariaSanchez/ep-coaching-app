@@ -217,7 +217,10 @@ export default async function HomePage() {
           <div className="lp-hero-copy">
             <p className="lp-pill animate-fade-up">Coaching 6 mois · Appli de suivi · Annecy</p>
             <h1 id="lp-h1" className="lp-h1 animate-fade-up">
-              Perds du gras et atteins tes objectifs en 6 mois. <span>Même si tu pars de zéro.</span>
+              {["Perds", "du", "gras", "et", "atteins", "tes", "objectifs", "en", "6\u00a0mois."].map((w, k) => (
+                <span key={k} className="lp-w" style={{ ["--k" as string]: k }}><span>{w}</span></span>
+              ))}
+              <span>Même si tu pars de zéro.</span>
             </h1>
             <p className="lp-sub animate-fade-up stagger-1">
               Pour les débutantes qui veulent aimer leur corps et le développer. Un programme qui tient dans ta semaine, une alimentation sans privation, et un coach qui ajuste avec toi.
@@ -251,7 +254,6 @@ export default async function HomePage() {
         {/* ── Comment ça marche ── */}
         <section id="comment" className="lp-wrap lp-section" aria-labelledby="lp-how">
           <div className="lp-center lp-reveal">
-            <p className="lp-eyebrow">Comment ça marche</p>
             <h2 id="lp-how" className="lp-h2">Trois étapes, et tu sais quoi faire</h2>
           </div>
           <ol className="lp-steps">
@@ -269,7 +271,6 @@ export default async function HomePage() {
         <section id="pour-toi" className="lp-wrap lp-section" aria-labelledby="lp-foryou">
           <div className="lp-foryou lp-reveal">
             <div>
-              <p className="lp-eyebrow">C&apos;est pour toi si</p>
               <h2 id="lp-foryou" className="lp-h2">Tu as déjà commencé. Plusieurs fois.</h2>
               <p className="lp-lead">Et à chaque fois, une semaine chargée a tout arrêté. Il te faut un plan qui tient dans ta vraie vie.</p>
             </div>
@@ -282,7 +283,6 @@ export default async function HomePage() {
         {/* ── Ce qu'on t'a fait croire ── */}
         <section className="lp-wrap lp-section" aria-labelledby="lp-myths">
           <div className="lp-center lp-reveal">
-            <p className="lp-eyebrow">Ce qu&apos;on t&apos;a fait croire</p>
             <h2 id="lp-myths" className="lp-h2">Trois idées qui te freinent</h2>
           </div>
           <div className="lp-myths">
@@ -298,7 +298,6 @@ export default async function HomePage() {
         {/* ── Ce que tu y trouves ── */}
         <section id="fonctionnalites" className="lp-wrap lp-section" aria-labelledby="lp-feat">
           <div className="lp-reveal">
-            <p className="lp-eyebrow">Ce que tu y trouves</p>
             <h2 id="lp-feat" className="lp-h2">Tout ce qu&apos;il faut pour progresser, au même endroit</h2>
             <p className="lp-lead">
               Tu as déjà essayé, puis arrêté faute de temps ? Ici tu sais quoi faire à chaque séance et à chaque repas, et ton suivi se construit sur ta vraie semaine.
@@ -321,14 +320,12 @@ export default async function HomePage() {
         {/* ── L'appli, écran par écran (façon Glasp / Notion) ── */}
         <section id="demo" className="lp-wrap lp-section" aria-labelledby="lp-demo">
           <div className="lp-center lp-reveal">
-            <p className="lp-eyebrow">En vrai, ça donne quoi</p>
             <h2 id="lp-demo" className="lp-h2">Une journée dans l&apos;appli</h2>
           </div>
           <div className="lp-rows">
             {ROWS.map((r, i) => (
               <article key={r.img} className={`lp-row lp-reveal${i % 2 ? " lp-row--rev" : ""}`}>
                 <div className="lp-row-text">
-                  <p className="lp-eyebrow">{r.kicker}</p>
                   <h3>{r.t}</h3>
                   <p>{r.d}</p>
                   <ul>{r.pts.map((pt) => <li key={pt}>{pt}</li>)}</ul>
@@ -343,7 +340,6 @@ export default async function HomePage() {
         <section id="coaching" className="lp-wrap lp-section" aria-labelledby="lp-coaching">
           <div className="lp-offer lp-reveal">
             <div>
-              <p className="lp-eyebrow">Le coaching EP</p>
               <h2 id="lp-coaching" className="lp-h2">Six mois avec un coach, pas un plan copié</h2>
               <p className="lp-lead">On commence par un audit de 30 minutes, gratuit, en tête-à-tête. On regarde ta situation, ton objectif et ton emploi du temps. Tu repars avec un plan clair, que tu travailles avec nous ou non.</p>
               <div className="lp-hero-actions lp-hero-actions--left">
@@ -359,7 +355,6 @@ export default async function HomePage() {
         {/* ── Pour les coachs : les offres réelles, depuis la source unique ── */}
         <section id="coachs" className="lp-wrap lp-section" aria-labelledby="lp-coach">
           <div className="lp-reveal">
-            <p className="lp-eyebrow">Pour les coachs</p>
             <h2 id="lp-coach" className="lp-h2">Tu es coach ? Suis tous tes clients au même endroit</h2>
             <p className="lp-lead">
               Gratuit pour les membres. Pour les coachs : un accès gratuit en échange de tes retours, ou une formule sans engagement et sans limite de clients.
@@ -417,7 +412,6 @@ export default async function HomePage() {
         {/* ── FAQ : texte visible identique au JSON-LD FAQPage ── */}
         <section id="faq" className="lp-wrap lp-section" aria-labelledby="lp-faq">
           <div className="lp-reveal">
-            <p className="lp-eyebrow">Questions fréquentes</p>
             <h2 id="lp-faq" className="lp-h2">Tout ce qu&apos;on te demande avant de commencer</h2>
           </div>
           <div className="lp-faq">
