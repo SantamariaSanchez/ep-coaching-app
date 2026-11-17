@@ -73,7 +73,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
   // Qui est actif : un bilan récent, ou inscrit récemment.
   const [{ data: recentLogs }, { data: newcomers }] = await Promise.all([
     admin.from("daily_logs").select("client_id").gte("log_date", sinceDate).limit(5000),
-    admin.from("profiles").select("id").eq("role", "client").gte("onboarding_completed_at", since.toISOString()).limit(2000),
+    admin.from("profiles").select("id").eq("role", "client").gte("terms_accepted_at", since.toISOString()).limit(2000),
   ]);
   const ids = [...new Set([...(recentLogs ?? []).map((r) => r.client_id as string), ...(newcomers ?? []).map((r) => r.id as string)])];
   if (!ids.length) return sent;

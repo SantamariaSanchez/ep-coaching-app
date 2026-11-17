@@ -266,8 +266,8 @@ export async function loadDesk(userId: string, isOwner: boolean, includeDemo = f
       ? admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client").not("email", "ilike", DEMO)
       : admin.from("profiles").select("id", { count: "exact", head: true }).eq("coach_id", userId).neq("id", userId).not("email", "ilike", DEMO);
     const fresh = isOwner
-      ? admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client").not("email", "ilike", DEMO).gte("onboarding_completed_at", since)
-      : admin.from("profiles").select("id", { count: "exact", head: true }).eq("coach_id", userId).neq("id", userId).not("email", "ilike", DEMO).gte("onboarding_completed_at", since);
+      ? admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "client").not("email", "ilike", DEMO).gte("terms_accepted_at", since)
+      : admin.from("profiles").select("id", { count: "exact", head: true }).eq("coach_id", userId).neq("id", userId).not("email", "ilike", DEMO).gte("terms_accepted_at", since);
     const [m, n, leads, leadsAll, unread, mine] = await Promise.all([
       members,
       fresh,
