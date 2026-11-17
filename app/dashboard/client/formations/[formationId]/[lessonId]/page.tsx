@@ -2,7 +2,7 @@ import { getT } from "@/lib/i18n-server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { getLesson, getFormationWithModules, getUserProgress, recordLessonView, isLessonWatchable, hasFormationAccess } from "@/utils/formations";
+import { getLesson, getFormationWithModules, getUserProgress, recordLessonView, isLessonWatchable, hasFormationAccess, getLessonVideoId } from "@/utils/formations";
 import VideoPlayer, { VideoComingSoon } from "@/components/formations/VideoPlayer";
 import { ChevronLeft, ChevronRight, ListVideo } from "lucide-react";
 
@@ -51,6 +51,8 @@ export default async function LessonPage({
   // avant qu'une promesse non attendue ait fini d'écrire. La fonction
   // elle-même ne lève jamais (best-effort interne).
   if (isLessonWatchable(lesson)) await recordLessonView(user.id, lessonId);
+  // Vidéo lue seulement maintenant, une fois le droit de regarder vérifié.
+  const videoId = isLessonWatchable(lesson) ? await getLessonVideoId(lessonId) : null;
 
   // Flatten all lessons across modules → sections. Précédent/Suivant ne
   // doit sauter que vers des leçons réellement accessibles — même règle
@@ -117,9 +119,9 @@ export default async function LessonPage({
 
       {/* Video player or placeholder */}
       <div className="animate-scale-in" style={{ marginBottom: 24 }}>
-        {lesson.youtube_id && lesson.is_published ? (
+        {videoId && lesson.is_published ? (
           <VideoPlayer
-            youtubeId={lesson.youtube_id}
+            youtubeId={videoId}
             title={lesson.title}
             lessonId={lessonId}
             isCompleted={isCompleted}
@@ -269,7 +271,7 @@ export default async function LessonPage({
           {currentUiModule.lessons.map((l, i) => {
             const isCurrent = l.id === lessonId;
             const isDone = completed.has(l.id);
-            const isAvail = !!(l.is_published && l.youtube_id);
+            const isAvail = !!(l.is_published && l.has_video);
 
             return (
               <div key={l.id}>

@@ -26,7 +26,7 @@ export default async function CoachFormationsPage() {
       // Vidéo renseignée mais pas encore publiée : du contenu prêt qui reste
       // invisible pour les membres, souvent juste oublié.
       const readyNotPublished = withModules
-        ? withModules.modules.flatMap((m) => m.sections.flatMap((s) => s.lessons)).filter((l) => l.youtube_id && !l.is_published).length
+        ? withModules.modules.flatMap((m) => m.sections.flatMap((s) => s.lessons)).filter((l) => l.has_video && !l.is_published).length
         : 0;
       return { formation: f, ...counts, moduleCount: withModules?.modules.length ?? 0, readyNotPublished };
     })

@@ -192,7 +192,7 @@ export default async function FormationDetailPage({
           formation.modules.map((mod, mi) => {
             const allModLessons = mod.sections.flatMap((s) => s.lessons);
             const modCompleted = allModLessons.filter((l) => isLessonWatchable(l) && completed.has(l.id)).length;
-            const modPublished = allModLessons.filter((l) => l.is_published && l.youtube_id).length;
+            const modPublished = allModLessons.filter((l) => l.is_published && l.has_video).length;
 
             return (
               <div
@@ -241,7 +241,7 @@ export default async function FormationDetailPage({
                     </div>
                   )}
                   {mod.sections.map((sec, si) => {
-                    const secPublished = sec.lessons.filter((l) => l.is_published && l.youtube_id);
+                    const secPublished = sec.lessons.filter((l) => l.is_published && l.has_video);
                     if (secPublished.length === 0 && sec.lessons.length > 0) {
                       return (
                         <div key={sec.id} style={{ padding: "10px 18px", borderTop: si > 0 ? "1px solid rgba(var(--ep-accent-rgb),0.05)" : "none" }}>
@@ -271,7 +271,7 @@ export default async function FormationDetailPage({
 
                         {/* Lessons */}
                         {sec.lessons.map((lesson, li) => {
-                          const isPublished = !!(lesson.is_published && lesson.youtube_id);
+                          const isPublished = !!(lesson.is_published && lesson.has_video);
                           const isAvailable = isPublished && !locked;
                           const isPremiumLocked = isPublished && locked;
                           const isDone = completed.has(lesson.id);
