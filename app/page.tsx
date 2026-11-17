@@ -271,7 +271,7 @@ export default async function HomePage() {
             <div>
               <p className="lp-eyebrow">C&apos;est pour toi si</p>
               <h2 id="lp-foryou" className="lp-h2">Tu as déjà commencé. Plusieurs fois.</h2>
-              <p className="lp-lead">Et à chaque fois, une semaine chargée a tout arrêté. Le problème n&apos;est pas ta motivation : c&apos;est un plan qui ne tenait pas dans ta vraie vie.</p>
+              <p className="lp-lead">Et à chaque fois, une semaine chargée a tout arrêté. Il te faut un plan qui tient dans ta vraie vie.</p>
             </div>
             <ul className="lp-checks">
               {FOR_YOU.map((x, i) => <li key={x} style={{ ["--i" as string]: i }}>{x}</li>)}

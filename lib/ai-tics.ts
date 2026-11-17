@@ -35,7 +35,7 @@ const PATTERNS: Pattern[] = [
   },
   {
     // « Tu ne manques pas de X. Tu manques de Y. »
-    re: /\btu ne manques pas d[e'’][^.!?\n]{1,40}[.!,]\s*(?:tu manques|il te manque)\b/gi,
+    re: /\btu ne manques pas d[e'’](?:\s*volont[ée]|\s*motivation|\s*discipline|\s*temps|\s*d['’]efforts|[^.!?\n]{1,40}[.!,]\s*(?:tu manques|il te manque))/gi,
     why: "« Tu ne manques pas de X, tu manques de Y » : tournure d'IA, absente des transcripts",
   },
   {

@@ -11,6 +11,7 @@ test("tics d'IA : les tournures signalées par Emmanuel sont trouvées", () => {
     "Tu ne manques pas de volonté. Tu manques d'un plan.",
     "Le souci c'est pas ta diète mais ta régularité.",
     "Note tout dans ton carnet.",
+    "Tu ne manques pas de volonté.",
   ];
   for (const c of cas) assert.ok(findAiTics(c).length > 0, c);
 });
