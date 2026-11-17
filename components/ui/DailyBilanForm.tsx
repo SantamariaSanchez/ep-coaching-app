@@ -204,11 +204,11 @@ export function WeightCard({ today, existing, action, onSaved }: { today: string
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <div>
             <label className={lbl}>{t("Poids à jeun (kg)")}</label>
-            <input name="weight_morning" type="number" step="0.1" min="30" max="300" defaultValue={existing?.weight_morning ?? ""} placeholder="82.5" aria-label="82.5" className={inp} autoFocus />
+            <input name="weight_morning" type="number" step="0.1" min="30" max="300" defaultValue={existing?.weight_morning ?? ""} placeholder="82.5" aria-label="Poids à jeun (kg)" className={inp} autoFocus />
           </div>
           <div>
             <label className={lbl}>{t("Heure de pesée")}</label>
-            <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07:00" aria-label="07:00" className={inp} />
+            <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07:00" aria-label="Heure de pesée" className={inp} />
           </div>
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "var(--ep-pink)", marginTop: 8 }}>{state.error}</p>}
@@ -282,7 +282,7 @@ export function TrainingCard({ today, existing, action, onSaved, logbookHref = "
               </div>
               <div style={{ width: 80 }}>
                 <label className={lbl}>{t("Cardio")}</label>
-                <input name="cardio" defaultValue={existing?.cardio ?? ""} placeholder="10'" aria-label="10'" className={inp} />
+                <input name="cardio" defaultValue={existing?.cardio ?? ""} placeholder="10'" aria-label="Cardio" className={inp} />
               </div>
             </div>
             <p className={hint}>
@@ -325,7 +325,7 @@ export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dash
             <SleepDurationInput key={auto ?? "manuel"} defaultValue={auto ?? existing?.sleep_hours} />
             <div>
               <label className={lbl}>{t("Qualité sommeil (%)")}</label>
-              <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" aria-label="80" className={inp} />
+              <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" aria-label="Qualité sommeil (%)" className={inp} />
             </div>
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
@@ -392,7 +392,7 @@ export function LifestyleCard({
           {show.pas && (
           <div>
             <label className={lbl}>{t("Pas dans la journée")}</label>
-            <input name="steps" type="number" min="0" max="100000" defaultValue={prefillSteps ?? ""} placeholder="8500" aria-label="8500" className={inp} />
+            <input name="steps" type="number" min="0" max="100000" defaultValue={prefillSteps ?? ""} placeholder="8500" aria-label="Pas dans la journée" className={inp} />
             <p className={hint}>
               <Footprints size={10} style={{ display: "inline", marginRight: 3, verticalAlign: -1 }} />
               {existing?.steps == null && autoSteps != null

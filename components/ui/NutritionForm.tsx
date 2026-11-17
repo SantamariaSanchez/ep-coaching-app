@@ -518,7 +518,7 @@ export default function NutritionForm({
               type="number"
               value={form.weight}
               onChange={(e) => set("weight", e.target.value)}
-              placeholder="80" aria-label="80"
+              placeholder="62" aria-label="Poids (kg)"
               className={inputCls}
             />
             {clientWeight != null && String(clientWeight) !== form.weight && (
@@ -537,7 +537,7 @@ export default function NutritionForm({
               type="number"
               value={form.height}
               onChange={(e) => set("height", e.target.value)}
-              placeholder="175" aria-label="175"
+              placeholder="165" aria-label="Taille (cm)"
               className={inputCls}
             />
           </div>
@@ -547,7 +547,7 @@ export default function NutritionForm({
               type="number"
               value={form.age}
               onChange={(e) => set("age", e.target.value)}
-              placeholder="30" aria-label="30"
+              placeholder="22" aria-label="Âge"
               className={inputCls}
             />
           </div>
@@ -584,7 +584,7 @@ export default function NutritionForm({
               max="14"
               value={form.sessionsPerWeek}
               onChange={(e) => set("sessionsPerWeek", e.target.value)}
-              placeholder="4" aria-label="4"
+              placeholder="4" aria-label="Séances / semaine"
               className={inputCls}
             />
           </div>
@@ -595,7 +595,7 @@ export default function NutritionForm({
               min="0"
               value={form.sessionDuration}
               onChange={(e) => set("sessionDuration", e.target.value)}
-              placeholder="60" aria-label="60"
+              placeholder="60" aria-label="Durée séance (min)"
               className={inputCls}
             />
           </div>
@@ -617,7 +617,7 @@ export default function NutritionForm({
               min="0"
               value={form.stepsPerDay}
               onChange={(e) => set("stepsPerDay", e.target.value)}
-              placeholder="8000" aria-label="8000"
+              placeholder="8000" aria-label="Pas par jour"
               className={inputCls}
             />
           </div>

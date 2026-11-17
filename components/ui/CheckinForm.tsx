@@ -208,7 +208,7 @@ export default function CheckinForm({
               step="0.1"
               min="30"
               max="300"
-              placeholder="82.5" aria-label="82.5"
+              placeholder="82.5" aria-label="Poids fin de semaine (kg)"
               style={{ width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "var(--ep-ink)", outline: "none" }}
             />
           </div>
@@ -226,7 +226,7 @@ export default function CheckinForm({
               min="30"
               max="300"
               defaultValue={weightAvgFromLogs ?? ""}
-              placeholder="83.0" aria-label="83.0"
+              placeholder="63.0" aria-label="Poids moyen de la semaine (kg)"
               style={{ width: "100%", background: "rgba(var(--ep-shade-rgb),0.4)", border: "1px solid rgba(var(--ep-line-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "var(--ep-ink)", outline: "none" }}
             />
           </div>
