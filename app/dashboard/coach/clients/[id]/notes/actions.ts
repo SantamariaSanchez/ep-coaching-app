@@ -4,6 +4,7 @@ import { requireOwnClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { CoachNoteInput, KeyDecisionInput } from "@/utils/notes";
+import { stripProtected } from "@/lib/safe-row";
 
 export async function saveCoachNote(
   clientId: string,
@@ -18,14 +19,14 @@ export async function saveCoachNote(
     if (noteId) {
       const { error } = await supabase
         .from("coach_notes")
-        .update({ ...data, updated_at: new Date().toISOString() })
+        .update({ ...stripProtected(data), updated_at: new Date().toISOString() })
         .eq("id", noteId)
         .eq("client_id", clientId);
       if (error) return { error: "Erreur lors de la mise à jour." };
     } else {
       const { error } = await supabase
         .from("coach_notes")
-        .insert({ client_id: clientId, ...data });
+        .insert({ ...stripProtected(data), client_id: clientId });
       if (error) return { error: "Erreur lors de l'enregistrement." };
     }
 
@@ -47,7 +48,7 @@ export async function saveKeyDecision(
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     const { error } = await supabase
       .from("key_decisions")
-      .insert({ client_id: clientId, ...data });
+      .insert({ ...stripProtected(data), client_id: clientId });
     if (error) return { error: "Erreur lors de l'enregistrement." };
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/notes`);

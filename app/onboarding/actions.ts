@@ -14,6 +14,7 @@ import { categoryForPrimaryGoal, pickGuide, type GuideCategory, type GuideRef } 
 import { PRESET_PROGRAMS } from "@/lib/preset-programs";
 import { getAccessType } from "@/utils/auth-client";
 import { getActiveProgram, saveProgramForClient } from "@/utils/programs";
+import { stripProtected } from "@/lib/safe-row";
 
 // Labels historiques utilisés côté fiche client coach (profiles.goal /
 // profiles.level), conservés tels quels pour ne rien casser à l'affichage.
@@ -40,8 +41,8 @@ export async function saveMemberPreferences(
     const supabase = await createServerSupabase();
 
     const { error } = await supabase.from("member_preferences").upsert({
+      ...stripProtected(input),
       id: guard.userId,
-      ...input,
       completed_at: new Date().toISOString(),
     });
 

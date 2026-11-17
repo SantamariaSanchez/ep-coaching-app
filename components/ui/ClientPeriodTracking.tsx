@@ -4,13 +4,14 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Droplet } from "lucide-react";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
+import { PERIOD_SYMPTOMS } from "@/lib/period-input";
 
 const inputClass =
   "w-full bg-(--ep-s2) border border-(--ep-line)/30 focus:border-(--ep-accent)/60 rounded-lg px-3 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 outline-none transition-colors";
 const labelClass = "block text-[9px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5";
 
 const FLOW_LABELS: Record<string, string> = { leger: "Léger", moyen: "Moyen", abondant: "Abondant" };
-const SYMPTOM_OPTIONS = ["Douleurs", "Fatigue", "Ballonnements", "Sautes d'humeur", "Fringales", "Migraines"];
+const SYMPTOM_OPTIONS = PERIOD_SYMPTOMS;
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (

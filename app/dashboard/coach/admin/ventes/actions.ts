@@ -7,6 +7,7 @@ import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { todayInParis } from "@/lib/dates";
 import { SALES_CALL_KIND_LABEL, type SalesCallKind } from "@/lib/sales-call-kinds";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { stripProtected } from "@/lib/safe-row";
 
 const PATH = "/dashboard/coach/admin/ventes";
 
@@ -56,7 +57,7 @@ export async function updateSalesCall(
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
 
-  const clean = { ...patch };
+  const clean = { ...stripProtected(patch) } as typeof patch;
   // Liens d'enregistrement et de retour d'appel : https uniquement.
   for (const key of ["recording_url", "followup_url"] as const) {
     const v = clean[key];
