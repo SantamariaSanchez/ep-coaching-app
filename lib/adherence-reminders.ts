@@ -73,7 +73,7 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
   // Qui est actif : un bilan récent, ou inscrit récemment.
   const [{ data: recentLogs }, { data: newcomers }] = await Promise.all([
     admin.from("daily_logs").select("client_id").gte("log_date", sinceDate).limit(5000),
-    admin.from("profiles").select("id").eq("role", "client").gte("created_at", since.toISOString()).limit(2000),
+    admin.from("profiles").select("id").eq("role", "client").gte("terms_accepted_at", since.toISOString()).limit(2000),
   ]);
   const ids = [...new Set([...(recentLogs ?? []).map((r) => r.client_id as string), ...(newcomers ?? []).map((r) => r.id as string)])];
   if (!ids.length) return sent;
@@ -144,11 +144,11 @@ export async function runAdherenceReminders(now = new Date()): Promise<{ morning
   if (progressIds.length) {
     const [{ data: ph }, { data: ci }, { data: me }] = await Promise.all([
       admin.from("photo_updates").select("client_id, submitted_at").in("client_id", progressIds).order("submitted_at", { ascending: false }).limit(2000),
-      admin.from("check_ins").select("client_id, week_start, photo_urls").in("client_id", progressIds).order("week_start", { ascending: false }).limit(2000),
+      admin.from("check_ins").select("client_id, week_start, photo_paths").in("client_id", progressIds).order("week_start", { ascending: false }).limit(2000),
       admin.from("measurements").select("client_id, measured_at").in("client_id", progressIds).order("measured_at", { ascending: false }).limit(2000),
     ]);
     for (const r of ph ?? []) if (!lastPhoto.has(r.client_id as string)) lastPhoto.set(r.client_id as string, String(r.submitted_at).slice(0, 10));
-    for (const r of ci ?? []) if (((r.photo_urls as string[] | null)?.length ?? 0) > 0) {
+    for (const r of ci ?? []) if (((r.photo_paths as string[] | null)?.length ?? 0) > 0) {
       const cur = lastPhoto.get(r.client_id as string);
       const d0 = String(r.week_start).slice(0, 10);
       if (!cur || d0 > cur) lastPhoto.set(r.client_id as string, d0);
