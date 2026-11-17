@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
 import { COACH_PLATFORM_PLANS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { classifyLoginError, LOGIN_MESSAGES } from "@/lib/login-error";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
@@ -184,6 +185,8 @@ export async function loginCoach(
   });
 
   if (error || !authData.user) {
+    const kind = classifyLoginError(error);
+    if (kind !== "credentials") return { error: LOGIN_MESSAGES[kind] };
     const nowLocked = await registerFailedLogin(email);
     return { error: nowLocked ?? "Identifiants incorrects." };
   }
