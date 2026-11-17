@@ -5,14 +5,15 @@ import { SHOWCASE_URL } from "@/lib/seo-entity";
 
 // Gabarit des pages publiques de contenu (À propos, pages locales) :
 // lisible sur téléphone, un seul appel à l'action, maillage vers l'accueil.
+// L'étiquette au-dessus du titre n'est plus affichée (2026-11-17) : le titre parle seul.
+// La prop reste acceptée pour ne pas casser les pages qui la passent encore.
 export default function PublicPage({
-  eyebrow,
   title,
   intro,
   children,
   jsonLd,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   intro: string;
   children: React.ReactNode;
@@ -24,9 +25,6 @@ export default function PublicPage({
     <main style={{ minHeight: "100vh", padding: "32px 20px 64px", position: "relative", zIndex: 1 }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <article style={{ maxWidth: 640, margin: "0 auto" }}>
-        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ep-accent)", margin: "0 0 10px" }}>
-          {eyebrow}
-        </p>
         <h1 style={{ fontSize: "clamp(28px, 7vw, 40px)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.08, color: "var(--ep-strong)", margin: "0 0 14px" }}>
           {title}
         </h1>

@@ -91,9 +91,6 @@ export default function PublicRessourcesClient({
 
       <div className="px-6 py-8 max-w-2xl mx-auto pb-24">
         <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
-            {tr("EP Coaching")}
-          </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Ressources")}</h1>
         </div>
 
