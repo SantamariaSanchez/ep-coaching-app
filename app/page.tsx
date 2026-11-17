@@ -157,7 +157,7 @@ const STEPS = [
 
 // Écrans réels de l'appli (comptes de démonstration, données d'exemple).
 const ROWS = [
-  { img: "entrainement", alt: "Écran Mon programme de l'appli EP Coaching", kicker: "Entraînement", t: "La séance du jour, prête à lancer", d: "Ton programme, tes exercices et tes charges de la dernière fois. Tu notes chaque série, le carnet se remplit tout seul.", pts: ["Programme adapté à ton niveau et à ton matériel", "Exercices expliqués pour débuter", "Progression visible séance après séance"] },
+  { img: "entrainement", alt: "Écran Mon programme de l'appli EP Coaching", kicker: "Entraînement", t: "La séance du jour, prête à lancer", d: "Ton programme, tes exercices et tes charges de la dernière fois. Tu notes chaque série, ton logbook se remplit tout seul.", pts: ["Programme adapté à ton niveau et à ton matériel", "Exercices expliqués pour débuter", "Progression visible séance après séance"] },
   { img: "nutrition", alt: "Écran Nutrition de l'appli EP Coaching", kicker: "Nutrition", t: "Manger à ta faim, et perdre du gras", d: "Ton plan du jour avec des repas que tu aimes déjà. Calories et protéines se calculent seules.", pts: ["Repas prévus, alternatives et recettes", "Pas besoin de tout peser", "Un repas raté ? Le suivant s'adapte"] },
   { img: "road-map", alt: "Écran Road Map de l'appli EP Coaching", kicker: "Roadmap", t: "Six mois, découpés en étapes", d: "Tu sais où tu en es, ce qui vient ensuite, et pourquoi. La tendance compte, pas la balance d'un matin.", pts: ["Phases claires du début à l'objectif", "Tendance sur plusieurs semaines", "Ajustée à chaque check-in"] },
   { img: "messages", alt: "Écran Messages avec le coach dans l'appli EP Coaching", kicker: "Ton coach", t: "Quelqu'un te répond, vraiment", d: "Messages, check-in de la semaine, corrections de tes exercices en vidéo. Au même endroit que ton suivi.", pts: ["Check-in chaque semaine, photos comprises", "Corrections en vidéo", "Réponse à toute heure"] },
@@ -271,7 +271,7 @@ export default async function HomePage() {
             <div>
               <p className="lp-eyebrow">C&apos;est pour toi si</p>
               <h2 id="lp-foryou" className="lp-h2">Tu as déjà commencé. Plusieurs fois.</h2>
-              <p className="lp-lead">Et à chaque fois, une semaine chargée a tout arrêté. Le problème n&apos;est pas ta motivation : c&apos;est un plan qui ne tenait pas dans ta vraie vie.</p>
+              <p className="lp-lead">Et à chaque fois, une semaine chargée a tout arrêté. Il te faut un plan qui tient dans ta vraie vie.</p>
             </div>
             <ul className="lp-checks">
               {FOR_YOU.map((x, i) => <li key={x} style={{ ["--i" as string]: i }}>{x}</li>)}

@@ -2,6 +2,7 @@
 // un client ou un membre peut faire en parlant à Claude, sans clé d'API ni
 // code. Chaque outil n'agit que sur les données du propriétaire de la clé
 // (et, pour un coach, sur ses propres clients).
+import { aiTicsRefusal, findAiTics } from "@/lib/ai-tics";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { startOfTodayInParis, todayInParis } from "@/lib/dates";
 import { engagementProgress, reviewDate, reviewState, type RenewalStatus } from "@/lib/engagement";
@@ -460,6 +461,9 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const title = String(args.titre ?? "").trim().slice(0, 200);
       const content = String(args.contenu ?? "").trim().slice(0, SCRIPT_CONTENT_MAX);
       if (!title || !content) return text("Titre et contenu obligatoires.");
+      // Tournures d'IA absentes des transcripts : refusées, rien n'est enregistré.
+      const tics = findAiTics([title, content, args.accroche, args.description].filter((x) => typeof x === "string").join("\n"));
+      if (tics.length) return text(aiTicsRefusal(tics));
       // Mêmes plateformes que le Studio (IdeationScripts) : un seul « reel »
       // pour tout le format court, quel que soit le réseau.
       const asked = String(args.plateforme ?? "");

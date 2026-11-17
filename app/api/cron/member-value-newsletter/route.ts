@@ -23,7 +23,7 @@ import { sendCoachCampaign, wrapBrandedEmail } from "@/lib/brevo-mailing";
 
 const APP_URL = "https://ep-coaching.vercel.app";
 const OWNER_ID = "845b826a-0e2f-4c44-8130-a8fe1e925351";
-const OWNER_NAME = "Santamaria";
+const OWNER_NAME = "Emmanuel";
 
 function dayOfYear(d: Date): number {
   const start = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -104,9 +104,9 @@ const FEATURES: FeatureSpot[] = [
   },
   {
     path: "/dashboard/client/mindset",
-    subject: "Ton problème n'est pas ton programme",
+    subject: "Tu sais quoi faire, et tu ne le fais pas",
     eyebrow: "Le mental",
-    hook: "Tu sais quoi faire. Tu ne le fais pas. Ce n'est pas un problème d'info, c'est un problème de tête.",
+    hook: "Tu sais quoi faire. Tu ne le fais pas. Le blocage est dans ta tête.",
     body: "La section mental est là pour ça : discipline, rechutes, motivation qui disparaît. Règle ça et le reste suit.",
     cta: "Travailler mon mental",
   },

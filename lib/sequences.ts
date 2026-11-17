@@ -89,7 +89,7 @@ function esc(s: string): string {
 
 const P = (t: string) => `<p style="margin:0 0 14px;">${t}</p>`;
 const LINK = (href: string, label: string) => `<p style="margin:18px 0;"><a href="${href}" style="color:#E01E1E;font-weight:700;text-decoration:underline;">${label}</a></p>`;
-const SIGN = `<p style="margin:18px 0 0;">Santamaria</p>`;
+const SIGN = `<p style="margin:18px 0 0;">Emmanuel</p>`;
 
 export interface MailContent {
   subject: string;
@@ -117,12 +117,12 @@ export function leadMail(i: LeadMailInput): MailContent | null {
     case "j4":
       return {
         subject: "le plan qui tient, pas le plan parfait",
-        html: P("Salut,") + P("Ce qui fait perdre du gras, ce n'est pas le plan le plus strict. C'est celui que tu tiens encore dans trois semaines, même avec un resto ou une soirée au milieu.") + P("Pour le tenir, il faut voir où tu en es. L'appli EP Coaching te sert à ça : tes repas, tes séances et ta semaine au même endroit. La version gratuite suffit pour commencer.") + LINK(`${i.appUrl}/auth/client?src=email`, "Créer mon compte gratuit") + SIGN + stop,
+        html: P("Salut,") + P("Ce qui fait perdre du gras, c'est le plan que tu tiens encore dans trois semaines, même avec un resto ou une soirée au milieu.") + P("Pour le tenir, il faut voir où tu en es. L'appli EP Coaching te sert à ça : tes repas, tes séances et ta semaine au même endroit. La version gratuite suffit pour commencer.") + LINK(`${i.appUrl}/auth/client?src=email`, "Créer mon compte gratuit") + SIGN + stop,
       };
     case "j8":
       return {
-        subject: "tu fais ça seul(e) ?",
-        html: P("Salut,") + P("Une semaine que tu as le guide. Si tu avances, garde le rythme.") + P("Si tu bloques toujours au même endroit, ce n'est pas un manque de volonté. C'est souvent qu'il manque quelqu'un pour adapter le plan à ta vraie semaine.") + P("C'est ce que je fais en coaching. Tu remplis un court formulaire, je le lis moi-même, et je te dis honnêtement si je peux t'aider.") + LINK(`${i.candidatureUrl}?src=email`, "Remplir le formulaire") + SIGN + stop,
+        subject: "tu fais ça seule ?",
+        html: P("Salut,") + P("Une semaine que tu as le guide. Si tu avances, garde le rythme.") + P("Si tu bloques toujours au même endroit, il manque souvent quelqu'un pour adapter le plan à ta vraie semaine.") + P("C'est ce que je fais en coaching. Tu remplis un court formulaire, je le lis moi-même, et je te dis honnêtement si je peux t'aider.") + LINK(`${i.candidatureUrl}?src=email`, "Remplir le formulaire") + SIGN + stop,
       };
     case "j16":
       return {
@@ -193,7 +193,7 @@ export function onboardingMail(i: OnboardingMailInput): MailContent | null {
     case "j3":
       return { subject: "ton plan attend tes réponses", html: P(hi) + P("Ton plan se construit à partir de quelques réponses : ton objectif, ton matériel, le temps que tu as vraiment.") + P("Tant qu'elles manquent, tu n'as qu'un plan générique. Termine-les et tout s'adapte.") + go + SIGN };
     case "j7":
-      return { subject: "on reprend ?", html: P(hi) + P("Ça fait une semaine. Si ce n'était pas le bon moment, aucun souci, ton compte reste là.") + P("Quand tu veux reprendre, tout est gardé là où tu t'es arrêté(e).") + go + SIGN };
+      return { subject: "on reprend ?", html: P(hi) + P("Ça fait une semaine. Si ce n'était pas le bon moment, aucun souci, ton compte reste là.") + P("Quand tu veux reprendre, tout est gardé là où tu t'es arrêtée.") + go + SIGN };
     default:
       return null;
   }

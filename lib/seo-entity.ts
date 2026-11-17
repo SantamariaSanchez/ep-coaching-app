@@ -40,7 +40,7 @@ export const APP_FEATURES = [
   "Plan nutrition et calcul des macros",
   "Bilans quotidiens et check-ins hebdomadaires",
   "Messagerie et appels avec le coach",
-  "Carnet de séances et records",
+  "Logbook et records",
   "Suivi du poids, des photos et des mensurations",
   "Guides gratuits sur l'entraînement et la nutrition",
   "Espace coach : suivi des clients, Studio de contenu, stats réseaux, ventes et équipe",

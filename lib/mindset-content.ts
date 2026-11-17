@@ -260,7 +260,7 @@ export const TIPS: Tip[] = [
   { id: "soc-3", category: "social", title: "Le regard des autres sur ton physique ne t'appartient pas", body: "Remarques bienveillantes ou non, elles disent souvent plus sur celui qui les fait que sur toi. Ton objectif reste le tien." },
 
   // Alimentation / mindset
-  { id: "ali-1", category: "alimentation", title: "Sépare 'manger pour la performance' de 'manger pour gérer une émotion'", body: "Les deux sont légitimes, mais les confondre brouille le suivi. Si tu manges sous stress, nomme-le : ce n'est pas un échec nutritionnel, c'est une info sur ton état." },
+  { id: "ali-1", category: "alimentation", title: "Sépare 'manger pour la performance' de 'manger pour gérer une émotion'", body: "Les deux sont légitimes, mais les confondre brouille le suivi. Si tu manges sous stress, nomme-le : c'est une info sur ton état." },
   { id: "ali-2", category: "alimentation", title: "Aucun aliment n'est une erreur", body: "Un écart au plan est une donnée, pas une faute. Le mindset 'tout est permis avec modération' tient mieux sur la durée que le tout-ou-rien." },
 
   // Récupération
@@ -309,7 +309,7 @@ export const DAILY_QUOTES: string[] = [
   "Tu ne rates pas une séance, tu choisis simplement de la reporter, à toi de décider quand.",
   "Le respect de soi se construit dans les petites promesses qu'on se tient.",
   "On surestime ce qu'on peut faire en un jour, on sous-estime ce qu'on peut faire en un an de constance.",
-  "Ce n'est pas le poids sur la barre qui définit ta valeur, c'est ta présence régulière sous la barre.",
+  "Ta valeur se voit dans ta présence régulière à la salle.",
   "Apprendre à se reposer sans culpabiliser est aussi une compétence d'athlète.",
 ];
 

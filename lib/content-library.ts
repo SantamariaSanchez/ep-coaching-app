@@ -290,7 +290,7 @@ export const HOOK_BANK: Hook[] = [
   // Faux problème, mythe
   { text: "Tu penses que t'as un problème de [motivation]. C'est pas du tout le cas.", kind: "texte", category: "Faux problème" },
   { text: "La majorité des gens pensent qu'ils ont un problème de [génétique]. C'est pas du tout le cas.", kind: "texte", category: "Faux problème" },
-  { text: "Tu ne manques pas d'infos sur la muscu. Tu manques de priorités.", kind: "texte", category: "Faux problème" },
+  { text: "Tu as trop d'infos sur la muscu, et aucune priorité.", kind: "texte", category: "Faux problème" },
   { text: "J'aimerais casser un petit peu un mythe : [tu vas détruire ton métabolisme].", kind: "texte", category: "Mythe" },
   { text: "Et si ce qu'on te répète sur [la sèche] était faux ? Pas un peu faux. Complètement faux.", kind: "texte", category: "Mythe" },
   { text: "C'est probablement la phrase la plus répétée dans le coaching : [phrase].", kind: "texte", category: "Mythe" },

@@ -65,7 +65,7 @@ export interface HookType {
 export const HOOK_TYPES: HookType[] = [
   { id: "FP", label: "Faux problème", example: "La majorité des gens pensent qu'ils ont un problème de X. C'est pas du tout le cas." },
   { id: "PX", label: "Paradoxe", example: "Tu peux t'entraîner 5 fois par semaine et ne rien prendre." },
-  { id: "VD", label: "Vérité qui dérange", example: "On va pas se mentir : ton cheat meal, c'est pas un repas, c'est un week-end." },
+  { id: "VD", label: "Vérité qui dérange", example: "On va pas se mentir : ton cheat meal dure un week-end entier." },
   { id: "MY", label: "Mythe", example: "J'aimerais casser un petit peu un mythe." },
   { id: "CO", label: "Ciblage", example: "Si tu fais attention à ce que tu manges mais que ton ventre part pas, t'es sur la bonne vidéo." },
   { id: "QD", label: "Question directe", example: "C'est une question qui revient extrêmement souvent." },

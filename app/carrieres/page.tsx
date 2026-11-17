@@ -97,7 +97,7 @@ export default async function CarrieresPage() {
         <ul className="space-y-2.5">
           {[
             "Clients illimités, et ils restent les tiens, jamais visibles par un autre coach",
-            "Programmes, diètes au gramme près, carnet d'entraînement",
+            "Programmes, diètes au gramme près, logbook",
             "Bilans, check-ins, photos et mesures de tes clients au même endroit",
             "Messagerie, agenda avec rappels, lives",
             "Plus de 1000 guides gratuits à envoyer à tes clients",

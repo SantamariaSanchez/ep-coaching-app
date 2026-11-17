@@ -6,7 +6,7 @@ import { useId, useState } from "react";
 // par moment de la journée. Clavier : flèches gauche/droite entre les onglets.
 
 const TABS = [
-  { key: "training", label: "Training", title: "La séance du jour, prête à lancer", text: "Ton programme, tes exercices et tes charges précédentes. Tu notes chaque série pendant la séance, le carnet se remplit tout seul." },
+  { key: "training", label: "Training", title: "La séance du jour, prête à lancer", text: "Ton programme, tes exercices et tes charges précédentes. Tu notes chaque série pendant la séance, ton logbook se remplit tout seul." },
   { key: "nutrition", label: "Nutrition", title: "Ce que tu manges, sans prise de tête", text: "Tes cibles de calories et de protéines, le prochain repas et ce qu'il te reste pour la journée." },
   { key: "suivi", label: "Suivi", title: "Tu vois ta progression", text: "Bilan du jour en deux minutes, poids lissé sur la semaine, photos et mesures au même endroit." },
   { key: "coach", label: "Coach", title: "Ton coach, dans la même appli", text: "Messages, check-in de la semaine et retours personnalisés, sans jongler entre trois applis." },
