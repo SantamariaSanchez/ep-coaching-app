@@ -19,7 +19,6 @@ import AppMock from "@/components/landing/AppMock";
 import { COACH_PLATFORM_PLANS, COACH_PLAN_DETAILS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/brand-links";
 import { entityGraph, faqNode, SHOWCASE_URL } from "@/lib/seo-entity";
-import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import { FREE_TIER_DAYS } from "@/lib/free-tier";
 import "./landing.css";
 
@@ -134,6 +133,21 @@ const PLAN_PICKS = { standard: [0, 1, 2], premium: [0, 3, 4] } as const;
 
 const AUDIT_URL = "https://calendly.com/peccoux-manu/audit-strategique";
 
+// Page Cible (Notion) : ce qu'elle vit, dit avec ses mots.
+const FOR_YOU = [
+  "La salle t'intimide, tu ne sais pas par où commencer",
+  "Tu veux perdre du ventre sans passer ta vie sur le tapis",
+  "Tu veux des formes, pas devenir massive",
+  "Tu manques de temps, et ta semaine bouge tout le temps",
+  "Un écart, et tu as l'impression d'avoir tout gâché",
+] as const;
+
+const MYTHS = [
+  { faux: "Il faut des heures de cardio pour perdre du ventre", vrai: "La musculation dessine tes formes. Le cardio aide, il ne fait pas tout." },
+  { faux: "La musculation va me rendre trop musclée", vrai: "Elle te donne des fessiers, des épaules, une silhouette plus équilibrée." },
+  { faux: "Il faut manger très peu pour maigrir", vrai: "Tu manges à ta faim, avec des protéines à chaque repas. C'est ce qui tient." },
+] as const;
+
 // Comment ça marche (façon Calendly) : trois étapes, rien de plus.
 const STEPS = [
   { n: "1", t: "Crée ton compte", d: "Gratuit pendant 60 jours, sans carte bancaire. Avec Google, Apple ou ton e-mail." },
@@ -166,20 +180,7 @@ function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
   );
 }
 
-// Guides gratuits montrés sur l'accueil : le visiteur pas prêt à s'inscrire
-// repart avec quelque chose (et devient un lead). Les guides pour coachs
-// restent hors de cette liste. Base injoignable : la section disparaît.
-async function homeGuides() {
-  try {
-    const all = await getAllLeadMagnets();
-    return all.filter((m) => m.category !== "Entrepreneuriat").slice(0, 3);
-  } catch {
-    return [];
-  }
-}
-
 export default async function HomePage() {
-  const guides = await homeGuides();
   return (
     <div className="lp">
       <StandaloneRedirect />
@@ -195,7 +196,6 @@ export default async function HomePage() {
             <a href="#comment">Comment ça marche</a>
             <a href="#demo">L&apos;appli</a>
             <a href="#coaching">Coaching</a>
-            {guides.length > 0 && <a href="#guides">Guides gratuits</a>}
             <a href="#coachs">Pour les coachs</a>
             <a href="#faq">Questions</a>
           </nav>
@@ -265,6 +265,36 @@ export default async function HomePage() {
           </ol>
         </section>
 
+        {/* ── C'est pour toi si… (page Cible, Notion) ── */}
+        <section id="pour-toi" className="lp-wrap lp-section" aria-labelledby="lp-foryou">
+          <div className="lp-foryou lp-reveal">
+            <div>
+              <p className="lp-eyebrow">C&apos;est pour toi si</p>
+              <h2 id="lp-foryou" className="lp-h2">Tu as déjà commencé. Plusieurs fois.</h2>
+              <p className="lp-lead">Et à chaque fois, une semaine chargée a tout arrêté. Le problème n&apos;est pas ta motivation : c&apos;est un plan qui ne tenait pas dans ta vraie vie.</p>
+            </div>
+            <ul className="lp-checks">
+              {FOR_YOU.map((x, i) => <li key={x} style={{ ["--i" as string]: i }}>{x}</li>)}
+            </ul>
+          </div>
+        </section>
+
+        {/* ── Ce qu'on t'a fait croire ── */}
+        <section className="lp-wrap lp-section" aria-labelledby="lp-myths">
+          <div className="lp-center lp-reveal">
+            <p className="lp-eyebrow">Ce qu&apos;on t&apos;a fait croire</p>
+            <h2 id="lp-myths" className="lp-h2">Trois idées qui te freinent</h2>
+          </div>
+          <div className="lp-myths">
+            {MYTHS.map((m) => (
+              <article key={m.faux} className="lp-myth lp-reveal">
+                <p className="lp-myth-faux"><s>{m.faux}</s></p>
+                <p className="lp-myth-vrai">{m.vrai}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         {/* ── Ce que tu y trouves ── */}
         <section id="fonctionnalites" className="lp-wrap lp-section" aria-labelledby="lp-feat">
           <div className="lp-reveal">
@@ -287,25 +317,6 @@ export default async function HomePage() {
             Et aussi : {FEATURES.filter((f) => ["Coaching live", "Logbook séances", "Tracker quotidien", "Road map", "Recettes"].includes(f.title)).map((f) => f.title.toLowerCase()).join(", ")}. Les formations arrivent bientôt.
           </p>
         </section>
-
-        {/* Guides gratuits remontés juste après les bénéfices (2026-11-14) :
-            le goulot mesuré est la capture de leads, pas l'offre. Le visiteur
-            pas prêt à s'inscrire croise un guide avant de quitter la page. */}
-        {guides.length > 0 && (
-          <section id="guides" className="lp-wrap lp-section" aria-labelledby="lp-guides">
-            <h2 id="lp-guides" className="lp-h2">Pas encore prêt ? Commence par un guide gratuit</h2>
-            <p className="lp-lead">Un email, et tu le reçois tout de suite. Sans compte, sans engagement.</p>
-            <div className="lp-plans" style={{ marginTop: 20 }}>
-              {guides.map((g) => (
-                <Link key={g.slug} href={`/ressources/${g.slug}?src=site`} className="lp-card" style={{ textDecoration: "none", display: "block" }}>
-                  <h3>{g.title}</h3>
-                  <p>{g.hook}</p>
-                </Link>
-              ))}
-            </div>
-            <p style={{ marginTop: 16 }}><Link className="lp-link" href="/ressources">Voir tous les guides</Link></p>
-          </section>
-        )}
 
         {/* ── L'appli, écran par écran (façon Glasp / Notion) ── */}
         <section id="demo" className="lp-wrap lp-section" aria-labelledby="lp-demo">

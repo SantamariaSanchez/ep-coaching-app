@@ -260,7 +260,7 @@ function Header({ magnet, Icon, showKeyword }: { magnet: LeadMagnet; Icon: Lucid
       <nav aria-label={t("Fil d'Ariane")} style={{ display: "flex", flexWrap: "wrap", gap: 6, fontSize: 12, fontWeight: 600, marginBottom: 16 }}>
         <Link href="/" style={{ color: "rgba(var(--ep-ink-rgb),0.5)", textDecoration: "none", padding: "6px 0" }}>{t("Accueil")}</Link>
         <span aria-hidden style={{ color: "rgba(var(--ep-ink-rgb),0.3)", padding: "6px 0" }}>/</span>
-        <Link href="/ressources" style={{ color: "var(--ep-accent)", textDecoration: "none", padding: "6px 0" }}>{t("Ressources gratuites")}</Link>
+        <Link href="/ressources" style={{ color: "var(--ep-accent)", textDecoration: "none", padding: "6px 0" }}>{t("Guides")}</Link>
       </nav>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
         <div

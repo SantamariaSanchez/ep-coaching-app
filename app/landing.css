@@ -301,3 +301,38 @@
   #fonctionnalites > .lp-lead { text-align: center; margin-left: auto; margin-right: auto; }
   .lp-shot img { max-height: 560px; object-fit: cover; object-position: top; }
 }
+
+/* ═══ Accueil v3 (2026-11-17) : plus doux, plus vivant, pour une débutante ═══ */
+.lp-foryou { display: grid; gap: 22px; padding: 28px 22px; border-radius: var(--radius-2xl); background: linear-gradient(140deg, rgba(var(--ep-accent-rgb), 0.12), rgba(var(--ep-s1-rgb), 0.8) 55%); border: 1px solid rgba(var(--ep-accent-rgb), 0.22); }
+.lp-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.lp-checks li { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: rgba(var(--ep-bg-rgb), 0.55); border: 1px solid rgba(var(--ep-ink-rgb), 0.08); font-size: 15.5px; font-weight: 700; color: var(--ep-ink); }
+.lp-checks li::before { content: ""; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--ep-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 13px no-repeat; box-shadow: 0 4px 14px rgba(var(--ep-accent-rgb), 0.4); }
+.lp-myths { display: grid; gap: 14px; margin-top: 8px; }
+.lp-myth { padding: 24px; border-radius: var(--radius-lg); background: rgba(var(--ep-s1-rgb), 0.72); border: 1px solid rgba(var(--ep-ink-rgb), 0.1); }
+.lp-myth-faux { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: rgba(var(--ep-ink-rgb), 0.5); }
+.lp-myth-faux s { text-decoration-color: var(--ep-accent); text-decoration-thickness: 2.5px; }
+.lp-myth-vrai { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.4; letter-spacing: -0.01em; color: var(--ep-ink); }
+
+/* Mouvement : doux, rapide, jamais gênant. */
+@keyframes lpFloatA { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes lpShine { 0% { background-position: -160% 0; } 60%, 100% { background-position: 260% 0; } }
+@keyframes lpIn { from { opacity: 0; transform: translateY(18px) scale(0.98); } to { opacity: 1; transform: none; } }
+.lp-btn--primary.lp-btn--lg { background-image: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.28) 50%, transparent 65%); background-size: 220% 100%; background-repeat: no-repeat; animation: lpShine 4.5s ease-in-out 1.2s infinite; }
+.lp-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 12px 36px rgba(var(--ep-accent-rgb), 0.45); }
+@supports (animation-timeline: view()) {
+  .lp-checks li { animation: lpIn linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
+  .lp-row-shot { animation: lpIn linear both; animation-timeline: view(); animation-range: entry 0% entry 45%; }
+}
+
+@media (min-width: 900px) {
+  .lp-foryou { grid-template-columns: 1fr 1fr; align-items: center; gap: 48px; padding: 56px; }
+  .lp-myths { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .lp-myth { padding: 30px 28px; }
+  .lp-shot--c { animation: lpFloatA 6s ease-in-out infinite; }
+  .lp-shot--l { animation: lpFloatA 7s ease-in-out -2s infinite; }
+  .lp-shot--r { animation: lpFloatA 7.5s ease-in-out -4s infinite; }
+  .lp .lp-h1 span { background: linear-gradient(120deg, var(--ep-accent) 0%, var(--ep-pink) 50%, var(--ep-accent) 100%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; animation: lpShine 6s ease-in-out infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-shot--c, .lp-shot--l, .lp-shot--r, .lp-btn--primary.lp-btn--lg, .lp .lp-h1 span, .lp-checks li, .lp-row-shot { animation: none !important; }
+}
