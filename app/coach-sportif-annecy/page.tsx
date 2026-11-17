@@ -81,7 +81,7 @@ export default function CoachAnnecyPage() {
       </Section>
       <Section title="Qui va t'accompagner">
         <p>
-          Emmanuel Santamaria Sanchéz, coach en musculation et nutrition, athlète naturel.{" "}
+          Emmanuel Santamaria Sanchéz, coach en musculation et nutrition.{" "}
           <Link href="/a-propos" style={{ color: "var(--ep-accent)", fontWeight: 700 }}>
             Son parcours et sa méthode
           </Link>
