@@ -2220,7 +2220,7 @@ export default function ClientNutritionView({
                     step="0.5"
                     value={recipeServings}
                     onChange={(e) => setRecipeServings(e.target.value)}
-                    placeholder="1" aria-label="1"
+                    placeholder="1" aria-label="Portions"
                     className={inputCls}
                   />
                 </div>
@@ -2285,7 +2285,7 @@ export default function ClientNutritionView({
                       min="1"
                       value={quantityInput}
                       onChange={(e) => setQuantityInput(e.target.value)}
-                      placeholder="100" aria-label="100"
+                      placeholder="100" aria-label="Quantité"
                       className={`${inputCls} text-center`}
                     />
                     <button

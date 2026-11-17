@@ -221,7 +221,7 @@ function WeeklyNoteForm({
             step="0.1"
             value={form.weight}
             onChange={(e) => set("weight", e.target.value)}
-            placeholder="80.0" aria-label="80.0"
+            placeholder="80.0" aria-label="Poids observé (kg)"
             className={inputCls}
           />
         </div>

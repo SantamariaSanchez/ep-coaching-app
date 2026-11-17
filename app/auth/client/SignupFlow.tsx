@@ -152,7 +152,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           </div>
           <div>
             <label style={labelStyle}>{t("Téléphone")}</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" name="tel" autoComplete="tel" inputMode="tel" placeholder="06 12 34 56 78" aria-label="06 12 34 56 78" style={inputStyle} />
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" name="tel" autoComplete="tel" inputMode="tel" placeholder="06 12 34 56 78" aria-label="Téléphone" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>{t("Mot de passe")}</label>

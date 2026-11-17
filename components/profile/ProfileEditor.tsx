@@ -123,7 +123,7 @@ export default function ProfileEditor({
             type="tel"
             value={phoneVal}
             onChange={(e) => setPhoneVal(e.target.value)}
-            placeholder="06 12 34 56 78" aria-label="06 12 34 56 78"
+            placeholder="06 12 34 56 78" aria-label="Téléphone"
             className="w-full bg-(--ep-shade)/30 border border-(--ep-line)/30 focus:border-(--ep-accent)/50 rounded-lg px-3.5 py-2.5 text-sm text-(--ep-strong) placeholder-(--ep-ink)/20 focus:outline-none transition-colors"
           />
         </div>
