@@ -1,4 +1,5 @@
 "use client";
+import NextField from "@/components/auth/NextField";
 
 import { requestPasswordReset } from "@/app/auth/password-reset-action";
 import { useT } from "@/components/i18n/I18nProvider";
@@ -108,6 +109,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
         {t("Me connecter")}
       </h2>
       <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <NextField />
         <div>
           <label style={labelStyle}>{t("Email")}</label>
           <input

@@ -1,4 +1,5 @@
 "use server";
+import { safeNext } from "@/lib/safe-next";
 
 import { todayInParis } from "@/lib/dates";
 
@@ -167,8 +168,9 @@ export async function loginCoach(
   _prev: { error?: string } | null,
   formData: FormData
 ): Promise<{ error: string }> {
-  const email = (formData.get("email") as string).trim();
-  const password = formData.get("password") as string;
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const next = formData.get("next");
 
   // Verrouillage temporaire après plusieurs échecs sur le même email : évite
   // qu'un robot teste des mots de passe à l'infini.
@@ -194,13 +196,17 @@ export async function loginCoach(
     .eq("id", authData.user.id)
     .single();
 
-  if (profile?.role !== "coach") {
-    // Sign out — not a coach
+  if (!profile) {
     await supabase.auth.signOut();
-    return { error: "Accès non autorisé. Ce compte n'est pas un compte coach." };
+    return { error: "Ton accès n'est pas encore créé." };
   }
 
   await clearLoginAttempts(email);
 
-  redirect("/dashboard/coach");
+  // Bon mot de passe mais pas un compte coach (une cliente ou une recrue qui
+  // passe par cette page) : on l'emmène dans son espace au lieu de refuser
+  // la connexion et de la faire recommencer ailleurs.
+  const wanted = safeNext(next, profile.role);
+  if (wanted) redirect(wanted);
+  redirect(profile.role === "coach" ? "/dashboard/coach" : profile.role === "staff" ? "/equipe" : "/dashboard/client");
 }

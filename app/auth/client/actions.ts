@@ -1,4 +1,5 @@
 ﻿"use server";
+import { safeNext } from "@/lib/safe-next";
 
 import { afterClientSignup, resolveCoachId, resolveReferrer } from "@/lib/client-signup-core";
 import { todayInParis } from "@/lib/dates";
@@ -214,8 +215,9 @@ export async function loginClient(
   _prev: { error?: string } | null,
   formData: FormData
 ): Promise<{ error: string }> {
-  const email    = (formData.get("email")    as string).trim();
-  const password = formData.get("password") as string;
+  const email    = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const next     = formData.get("next");
 
   // Verrouillage temporaire après plusieurs échecs sur le même email : évite
   // qu'un robot teste des mots de passe à l'infini.
@@ -236,11 +238,13 @@ export async function loginClient(
 
   if (!profile) {
     await supabase.auth.signOut();
-    return { error: "Ton acces n est pas encore cree. Contacte ton coach." };
+    return { error: "Ton accès n'est pas encore créé. Contacte ton coach." };
   }
 
   await clearLoginAttempts(email);
 
+  const wanted = safeNext(next, profile.role);
+  if (wanted) redirect(wanted);
   if (profile.role === "coach") redirect("/dashboard/coach");
   redirect("/dashboard/client");
 }
