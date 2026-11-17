@@ -10,12 +10,12 @@
 import StandaloneRedirect from "@/components/landing/StandaloneRedirect";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import AppMock from "@/components/landing/AppMock";
-import DemoTabs from "@/components/landing/DemoTabs";
 import { COACH_PLATFORM_PLANS, COACH_PLAN_DETAILS, COACH_TESTER_PLAN } from "@/lib/coach-platform-plan";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/brand-links";
 import { entityGraph, faqNode, SHOWCASE_URL } from "@/lib/seo-entity";
@@ -98,7 +98,7 @@ const FAQS = [
   },
   {
     q: "Qui est Emmanuel Santamaria Sanchéz ?",
-    a: "Emmanuel Santamaria Sanchéz (Emmanuel Peccoux) est le fondateur d'EP Coaching : coach sportif de 17 ans né à Girardota en Colombie, basé à Annecy et bientôt à Paris. Il aide les débutantes à perdre du gras en 6 mois et prépare la WNBF Classic 2027.",
+    a: "Emmanuel Santamaria Sanchéz est le fondateur d'EP Coaching, coach sportif de 17 ans né à Girardota en Colombie, basé à Annecy et bientôt à Paris. Il aide les débutantes à perdre du gras en 6 mois et prépare la WNBF Classic 2027.",
   },
   {
     q: "Où est basé EP Coaching ?",
@@ -131,6 +131,23 @@ const BENEFITS = [
 ] as const;
 
 const PLAN_PICKS = { standard: [0, 1, 2], premium: [0, 3, 4] } as const;
+
+const AUDIT_URL = "https://calendly.com/peccoux-manu/audit-strategique";
+
+// Comment ça marche (façon Calendly) : trois étapes, rien de plus.
+const STEPS = [
+  { n: "1", t: "Crée ton compte", d: "Gratuit pendant 60 jours, sans carte bancaire. Avec Google, Apple ou ton e-mail." },
+  { n: "2", t: "Réponds à quelques questions", d: "Ton objectif, ton temps, ton matériel. L'appli se règle sur ta vraie semaine." },
+  { n: "3", t: "Suis ton plan du jour", d: "Ta séance, tes repas, ton bilan en deux minutes. Tu ouvres, tu sais quoi faire." },
+] as const;
+
+// Écrans réels de l'appli (comptes de démonstration, données d'exemple).
+const ROWS = [
+  { img: "entrainement", alt: "Écran Mon programme de l'appli EP Coaching", kicker: "Entraînement", t: "La séance du jour, prête à lancer", d: "Ton programme, tes exercices et tes charges de la dernière fois. Tu notes chaque série, le carnet se remplit tout seul.", pts: ["Programme adapté à ton niveau et à ton matériel", "Exercices expliqués pour débuter", "Progression visible séance après séance"] },
+  { img: "nutrition", alt: "Écran Nutrition de l'appli EP Coaching", kicker: "Nutrition", t: "Manger à ta faim, et perdre du gras", d: "Ton plan du jour avec des repas que tu aimes déjà. Calories et protéines se calculent seules.", pts: ["Repas prévus, alternatives et recettes", "Pas besoin de tout peser", "Un repas raté ? Le suivant s'adapte"] },
+  { img: "road-map", alt: "Écran Road Map de l'appli EP Coaching", kicker: "Roadmap", t: "Six mois, découpés en étapes", d: "Tu sais où tu en es, ce qui vient ensuite, et pourquoi. La tendance compte, pas la balance d'un matin.", pts: ["Phases claires du début à l'objectif", "Tendance sur plusieurs semaines", "Ajustée à chaque check-in"] },
+  { img: "messages", alt: "Écran Messages avec le coach dans l'appli EP Coaching", kicker: "Ton coach", t: "Quelqu'un te répond, vraiment", d: "Messages, check-in de la semaine, corrections de tes exercices en vidéo. Au même endroit que ton suivi.", pts: ["Check-in chaque semaine, photos comprises", "Corrections en vidéo", "Réponse à toute heure"] },
+] as const;
 
 function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
   return (
@@ -175,8 +192,9 @@ export default async function HomePage() {
             <EPLogo size="sm" showCoaching={false} />
           </Link>
           <nav className="lp-nav" aria-label="Sections">
-            <a href="#fonctionnalites">Fonctionnalités</a>
-            <a href="#demo">Démo</a>
+            <a href="#comment">Comment ça marche</a>
+            <a href="#demo">L&apos;appli</a>
+            <a href="#coaching">Coaching</a>
             {guides.length > 0 && <a href="#guides">Guides gratuits</a>}
             <a href="#coachs">Pour les coachs</a>
             <a href="#faq">Questions</a>
@@ -189,33 +207,62 @@ export default async function HomePage() {
       </header>
 
       <main>
-        {/* ── Hero : un écran, une promesse, trois façons d'entrer ── */}
+        {/* ── Hero (2026-11-17, inspiré Notion / Calendly) : une promesse centrée,
+            deux actions claires, puis la vitrine de l'appli avec de vrais écrans.
+            Téléphone : la colonne d'entrée (Google, Apple, e-mail) reste la même. ── */}
         <section className="lp-wrap lp-hero" aria-labelledby="lp-h1">
           <div className="lp-hero-visual animate-fade-up">
             <AppMock />
           </div>
           <div className="lp-hero-copy">
+            <p className="lp-pill animate-fade-up">Coaching 6 mois · Appli de suivi · Annecy</p>
             <h1 id="lp-h1" className="lp-h1 animate-fade-up">
               Perds du gras et atteins tes objectifs en 6 mois. <span>Même si tu pars de zéro.</span>
             </h1>
             <p className="lp-sub animate-fade-up stagger-1">
-              Pour les débutantes qui veulent aimer leur corps et le développer. Un programme qui tient dans ta semaine, une alimentation sans privation, et un coach qui t&apos;explique tout et ajuste avec toi. 60 jours gratuits, sans carte bancaire.
+              Pour les débutantes qui veulent aimer leur corps et le développer. Un programme qui tient dans ta semaine, une alimentation sans privation, et un coach qui ajuste avec toi.
             </p>
-            <div className="animate-fade-up stagger-2">
-              <GoogleAppleCta />
+            <div className="lp-hero-actions animate-fade-up stagger-2">
+              <Link href="/auth/client" className="lp-btn lp-btn--primary lp-btn--lg">Commencer gratuitement</Link>
+              <a href={AUDIT_URL} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn--ghost lp-btn--lg">Réserver mon audit offert</a>
             </div>
-            <p className="lp-already">
-              <a href="https://calendly.com/peccoux-manu/audit-strategique" target="_blank" rel="noopener noreferrer">Réserver mon audit gratuit de 30 minutes</a>
-            </p>
-            <p className="lp-already">
-              Déjà un compte ? <Link href="/auth/client?mode=login">Se connecter</Link>
-            </p>
-            <ul className="lp-proof">
-              <li>Fondée à Annecy par Emmanuel Santamaria Sanchéz</li>
-              <li>iPhone, Android et ordinateur</li>
-            </ul>
-            <Link href="/auth/coach" className="lp-coach-link">Tu es coach ? Ouvre ton espace gratuit</Link>
+            <p className="lp-hero-note animate-fade-up stagger-2">60 jours gratuits · sans carte bancaire · audit de 30 min en tête-à-tête</p>
+            <div className="lp-hero-mobile animate-fade-up stagger-2">
+              <GoogleAppleCta />
+              <p className="lp-already">
+                <a href={AUDIT_URL} target="_blank" rel="noopener noreferrer">Réserver mon audit gratuit de 30 minutes</a>
+              </p>
+              <p className="lp-already">
+                Déjà un compte ? <Link href="/auth/client?mode=login">Se connecter</Link>
+              </p>
+              <Link href="/auth/coach" className="lp-coach-link">Tu es coach ? Ouvre ton espace gratuit</Link>
+            </div>
           </div>
+        </section>
+
+        {/* ── Vitrine : trois vrais écrans (ordinateur) ── */}
+        <section className="lp-wrap lp-showcase" aria-label="Aperçu de l'appli EP Coaching">
+          <figure className="lp-shot lp-shot--l"><Image sizes="320px" src="/landing/nutrition.webp" alt="Écran Nutrition de l'appli EP Coaching" width={780} height={1328} loading="lazy" /></figure>
+          <figure className="lp-shot lp-shot--c"><Image sizes="320px" src="/landing/aujourdhui.webp" alt="Écran Aujourd'hui de l'appli EP Coaching" width={780} height={1328} priority /></figure>
+          <figure className="lp-shot lp-shot--r"><Image sizes="320px" src="/landing/road-map.webp" alt="Écran Road Map de l'appli EP Coaching" width={780} height={1328} loading="lazy" /></figure>
+          <p className="lp-shot-note">Écrans réels de l&apos;appli, comptes de démonstration.</p>
+        </section>
+
+        {/* ── Comment ça marche ── */}
+        <section id="comment" className="lp-wrap lp-section" aria-labelledby="lp-how">
+          <div className="lp-center lp-reveal">
+            <p className="lp-eyebrow">Comment ça marche</p>
+            <h2 id="lp-how" className="lp-h2">Trois étapes, et tu sais quoi faire</h2>
+          </div>
+          <ol className="lp-steps">
+            {STEPS.map((s) => (
+              <li key={s.n} className="lp-step lp-reveal">
+                <span className="lp-step-n" aria-hidden="true">{s.n}</span>
+                <h3>{s.t}</h3>
+                <p>{s.d}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
         {/* ── Ce que tu y trouves ── */}
@@ -260,14 +307,42 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── Démonstration ── */}
+        {/* ── L'appli, écran par écran (façon Glasp / Notion) ── */}
         <section id="demo" className="lp-wrap lp-section" aria-labelledby="lp-demo">
-          <div className="lp-reveal">
+          <div className="lp-center lp-reveal">
             <p className="lp-eyebrow">En vrai, ça donne quoi</p>
             <h2 id="lp-demo" className="lp-h2">Une journée dans l&apos;appli</h2>
-            <p className="lp-lead">Quatre écrans, un par moment de ta journée. Tu ouvres, tu sais quoi faire.</p>
           </div>
-          <div className="lp-reveal"><DemoTabs /></div>
+          <div className="lp-rows">
+            {ROWS.map((r, i) => (
+              <article key={r.img} className={`lp-row lp-reveal${i % 2 ? " lp-row--rev" : ""}`}>
+                <div className="lp-row-text">
+                  <p className="lp-eyebrow">{r.kicker}</p>
+                  <h3>{r.t}</h3>
+                  <p>{r.d}</p>
+                  <ul>{r.pts.map((pt) => <li key={pt}>{pt}</li>)}</ul>
+                </div>
+                <figure className="lp-row-shot"><Image sizes="330px" src={`/landing/${r.img}.webp`} alt={r.alt} width={780} height={1328} loading="lazy" /></figure>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Le coaching 6 mois ── */}
+        <section id="coaching" className="lp-wrap lp-section" aria-labelledby="lp-coaching">
+          <div className="lp-offer lp-reveal">
+            <div>
+              <p className="lp-eyebrow">Le coaching EP</p>
+              <h2 id="lp-coaching" className="lp-h2">Six mois avec un coach, pas un plan copié</h2>
+              <p className="lp-lead">On commence par un audit de 30 minutes, gratuit, en tête-à-tête. On regarde ta situation, ton objectif et ton emploi du temps. Tu repars avec un plan clair, que tu travailles avec nous ou non.</p>
+              <div className="lp-hero-actions lp-hero-actions--left">
+                <a href={AUDIT_URL} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn--primary lp-btn--lg">Réserver mon audit offert</a>
+              </div>
+            </div>
+            <ul className="lp-offer-list">
+              {["Programme, diète et roadmap faits pour toi", "Un check-in chaque semaine, photos et corrections vidéo", "Un suivi à toute heure", "7 formats de live à réserver", "5 formations", "Toute l'appli EP Coaching"].map((x) => <li key={x}>{x}</li>)}
+            </ul>
+          </div>
         </section>
 
         {/* ── Pour les coachs : les offres réelles, depuis la source unique ── */}
@@ -347,9 +422,13 @@ export default async function HomePage() {
         {/* ── Appel final ── */}
         <section className="lp-wrap lp-section" aria-labelledby="lp-final">
           <div className="lp-final lp-reveal">
-            <h2 id="lp-final" className="lp-h2" style={{ marginBottom: 6 }}>Prêt à commencer ?</h2>
-            <p className="lp-lead" style={{ margin: "0 auto" }}>Gratuit, sans engagement, en moins d&apos;une minute.</p>
-            <GoogleAppleCta />
+            <h2 id="lp-final" className="lp-h2" style={{ marginBottom: 6 }}>Cette fois, on le fait bien</h2>
+            <p className="lp-lead" style={{ margin: "0 auto" }}>60 jours gratuits, sans carte bancaire. Ou un audit de 30 minutes pour poser ton plan.</p>
+            <div className="lp-hero-actions lp-final-desk">
+              <Link href="/auth/client" className="lp-btn lp-btn--primary lp-btn--lg">Commencer gratuitement</Link>
+              <a href={AUDIT_URL} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn--ghost lp-btn--lg">Réserver mon audit offert</a>
+            </div>
+            <div className="lp-final-mobile"><GoogleAppleCta /></div>
           </div>
         </section>
       </main>
