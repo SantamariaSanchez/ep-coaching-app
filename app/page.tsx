@@ -135,32 +135,31 @@ const AUDIT_URL = "https://calendly.com/peccoux-manu/audit-strategique";
 
 // Page Cible (Notion) : ce qu'elle vit, dit avec ses mots.
 const FOR_YOU = [
-  "La salle t'intimide, tu ne sais pas par où commencer",
-  "Tu veux perdre du ventre sans passer ta vie sur le tapis",
-  "Tu veux des formes, pas devenir massive",
-  "Tu manques de temps, et ta semaine bouge tout le temps",
-  "Un écart, et tu as l'impression d'avoir tout gâché",
+  "La salle t'intimide",
+  "Tu veux perdre du ventre",
+  "Tu manques de temps",
+  "Un écart, et tout est gâché",
 ] as const;
 
 const MYTHS = [
-  { faux: "Il faut des heures de cardio pour perdre du ventre", vrai: "La musculation dessine tes formes. Le cardio aide, il ne fait pas tout." },
-  { faux: "La musculation va me rendre trop musclée", vrai: "Elle te donne des fessiers, des épaules, une silhouette plus équilibrée." },
-  { faux: "Il faut manger très peu pour maigrir", vrai: "Tu manges à ta faim, avec des protéines à chaque repas. C'est ce qui tient." },
+  { faux: "Des heures de cardio", vrai: "La musculation dessine tes formes." },
+  { faux: "Trop musclée", vrai: "Des fessiers, des épaules, une silhouette équilibrée." },
+  { faux: "Manger très peu", vrai: "Tu manges à ta faim." },
 ] as const;
 
 // Comment ça marche (façon Calendly) : trois étapes, rien de plus.
 const STEPS = [
-  { n: "1", t: "Crée ton compte", d: "Gratuit pendant 60 jours, sans carte bancaire. Avec Google, Apple ou ton e-mail." },
-  { n: "2", t: "Réponds à quelques questions", d: "Ton objectif, ton temps, ton matériel. L'appli se règle sur ta vraie semaine." },
-  { n: "3", t: "Suis ton plan du jour", d: "Ta séance, tes repas, ton bilan en deux minutes. Tu ouvres, tu sais quoi faire." },
+  { n: "1", t: "Crée ton compte", d: "Gratuit 60 jours, sans carte." },
+  { n: "2", t: "Réponds à quelques questions", d: "Ton objectif, ton temps, ton matériel." },
+  { n: "3", t: "Suis ton plan du jour", d: "Séance, repas, bilan." },
 ] as const;
 
 // Écrans réels de l'appli (comptes de démonstration, données d'exemple).
 const ROWS = [
-  { img: "entrainement", alt: "Écran Mon programme de l'appli EP Coaching", kicker: "Entraînement", t: "La séance du jour, prête à lancer", d: "Ton programme, tes exercices et tes charges de la dernière fois. Tu notes chaque série, ton logbook se remplit tout seul.", pts: ["Programme adapté à ton niveau et à ton matériel", "Exercices expliqués pour débuter", "Progression visible séance après séance"] },
-  { img: "nutrition", alt: "Écran Nutrition de l'appli EP Coaching", kicker: "Nutrition", t: "Manger à ta faim, et perdre du gras", d: "Ton plan du jour avec des repas que tu aimes déjà. Calories et protéines se calculent seules.", pts: ["Repas prévus, alternatives et recettes", "Pas besoin de tout peser", "Un repas raté ? Le suivant s'adapte"] },
-  { img: "road-map", alt: "Écran Road Map de l'appli EP Coaching", kicker: "Roadmap", t: "Six mois, découpés en étapes", d: "Tu sais où tu en es, ce qui vient ensuite, et pourquoi. La tendance compte, pas la balance d'un matin.", pts: ["Phases claires du début à l'objectif", "Tendance sur plusieurs semaines", "Ajustée à chaque check-in"] },
-  { img: "messages", alt: "Écran Messages avec le coach dans l'appli EP Coaching", kicker: "Ton coach", t: "Quelqu'un te répond, vraiment", d: "Messages, check-in de la semaine, corrections de tes exercices en vidéo. Au même endroit que ton suivi.", pts: ["Check-in chaque semaine, photos comprises", "Corrections en vidéo", "Réponse à toute heure"] },
+  { img: "entrainement", alt: "Écran Mon programme de l'appli EP Coaching", kicker: "Entraînement", t: "La séance du jour, prête à lancer", d: "Tu notes chaque série, ton logbook se remplit tout seul.", pts: ["Adapté à ton niveau", "Exercices expliqués"] },
+  { img: "nutrition", alt: "Écran Nutrition de l'appli EP Coaching", kicker: "Nutrition", t: "Manger à ta faim, et perdre du gras", d: "Des repas que tu aimes déjà, calculés pour toi.", pts: ["Pas besoin de tout peser", "Un repas raté ? Le suivant s'adapte"] },
+  { img: "road-map", alt: "Écran Road Map de l'appli EP Coaching", kicker: "Roadmap", t: "Six mois, découpés en étapes", d: "Tu sais où tu en es et ce qui vient ensuite.", pts: ["Tendance sur plusieurs semaines", "Ajustée à chaque check-in"] },
+  { img: "messages", alt: "Écran Messages avec le coach dans l'appli EP Coaching", kicker: "Ton coach", t: "Quelqu'un te répond, vraiment", d: "Check-in chaque semaine, corrections en vidéo.", pts: ["Réponse à toute heure"] },
 ] as const;
 
 function GoogleAppleCta({ coach = false }: { coach?: boolean }) {
@@ -217,7 +216,10 @@ export default async function HomePage() {
           <div className="lp-hero-copy">
             <p className="lp-pill animate-fade-up">Coaching 6 mois · Appli de suivi · Annecy</p>
             <h1 id="lp-h1" className="lp-h1 animate-fade-up">
-              Perds du gras et atteins tes objectifs en 6 mois. <span>Même si tu pars de zéro.</span>
+              {["Perds", "du", "gras", "et", "atteins", "tes", "objectifs", "en", "6\u00a0mois."].map((w, k) => (
+                <span key={k} className="lp-w" style={{ ["--k" as string]: k }}><span>{w}</span></span>
+              ))}
+              <span>Même si tu pars de zéro.</span>
             </h1>
             <p className="lp-sub animate-fade-up stagger-1">
               Pour les débutantes qui veulent aimer leur corps et le développer. Un programme qui tient dans ta semaine, une alimentation sans privation, et un coach qui ajuste avec toi.
@@ -251,7 +253,6 @@ export default async function HomePage() {
         {/* ── Comment ça marche ── */}
         <section id="comment" className="lp-wrap lp-section" aria-labelledby="lp-how">
           <div className="lp-center lp-reveal">
-            <p className="lp-eyebrow">Comment ça marche</p>
             <h2 id="lp-how" className="lp-h2">Trois étapes, et tu sais quoi faire</h2>
           </div>
           <ol className="lp-steps">
@@ -269,9 +270,8 @@ export default async function HomePage() {
         <section id="pour-toi" className="lp-wrap lp-section" aria-labelledby="lp-foryou">
           <div className="lp-foryou lp-reveal">
             <div>
-              <p className="lp-eyebrow">C&apos;est pour toi si</p>
               <h2 id="lp-foryou" className="lp-h2">Tu as déjà commencé. Plusieurs fois.</h2>
-              <p className="lp-lead">Et à chaque fois, une semaine chargée a tout arrêté. Il te faut un plan qui tient dans ta vraie vie.</p>
+              <p className="lp-lead">Une semaine chargée, et tout s&apos;arrête.</p>
             </div>
             <ul className="lp-checks">
               {FOR_YOU.map((x, i) => <li key={x} style={{ ["--i" as string]: i }}>{x}</li>)}
@@ -282,8 +282,7 @@ export default async function HomePage() {
         {/* ── Ce qu'on t'a fait croire ── */}
         <section className="lp-wrap lp-section" aria-labelledby="lp-myths">
           <div className="lp-center lp-reveal">
-            <p className="lp-eyebrow">Ce qu&apos;on t&apos;a fait croire</p>
-            <h2 id="lp-myths" className="lp-h2">Trois idées qui te freinent</h2>
+            <h2 id="lp-myths" className="lp-h2">Trois idées fausses</h2>
           </div>
           <div className="lp-myths">
             {MYTHS.map((m) => (
@@ -298,11 +297,7 @@ export default async function HomePage() {
         {/* ── Ce que tu y trouves ── */}
         <section id="fonctionnalites" className="lp-wrap lp-section" aria-labelledby="lp-feat">
           <div className="lp-reveal">
-            <p className="lp-eyebrow">Ce que tu y trouves</p>
-            <h2 id="lp-feat" className="lp-h2">Tout ce qu&apos;il faut pour progresser, au même endroit</h2>
-            <p className="lp-lead">
-              Tu as déjà essayé, puis arrêté faute de temps ? Ici tu sais quoi faire à chaque séance et à chaque repas, et ton suivi se construit sur ta vraie semaine.
-            </p>
+            <h2 id="lp-feat" className="lp-h2">Tout au même endroit</h2>
           </div>
           <div className="lp-bento">
             {BENEFITS.map((b) => (
@@ -321,14 +316,12 @@ export default async function HomePage() {
         {/* ── L'appli, écran par écran (façon Glasp / Notion) ── */}
         <section id="demo" className="lp-wrap lp-section" aria-labelledby="lp-demo">
           <div className="lp-center lp-reveal">
-            <p className="lp-eyebrow">En vrai, ça donne quoi</p>
             <h2 id="lp-demo" className="lp-h2">Une journée dans l&apos;appli</h2>
           </div>
           <div className="lp-rows">
             {ROWS.map((r, i) => (
               <article key={r.img} className={`lp-row lp-reveal${i % 2 ? " lp-row--rev" : ""}`}>
                 <div className="lp-row-text">
-                  <p className="lp-eyebrow">{r.kicker}</p>
                   <h3>{r.t}</h3>
                   <p>{r.d}</p>
                   <ul>{r.pts.map((pt) => <li key={pt}>{pt}</li>)}</ul>
@@ -343,9 +336,8 @@ export default async function HomePage() {
         <section id="coaching" className="lp-wrap lp-section" aria-labelledby="lp-coaching">
           <div className="lp-offer lp-reveal">
             <div>
-              <p className="lp-eyebrow">Le coaching EP</p>
               <h2 id="lp-coaching" className="lp-h2">Six mois avec un coach, pas un plan copié</h2>
-              <p className="lp-lead">On commence par un audit de 30 minutes, gratuit, en tête-à-tête. On regarde ta situation, ton objectif et ton emploi du temps. Tu repars avec un plan clair, que tu travailles avec nous ou non.</p>
+              <p className="lp-lead">On commence par un audit de 30 minutes, offert.</p>
               <div className="lp-hero-actions lp-hero-actions--left">
                 <a href={AUDIT_URL} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn--primary lp-btn--lg">Réserver mon audit offert</a>
               </div>
@@ -359,7 +351,6 @@ export default async function HomePage() {
         {/* ── Pour les coachs : les offres réelles, depuis la source unique ── */}
         <section id="coachs" className="lp-wrap lp-section" aria-labelledby="lp-coach">
           <div className="lp-reveal">
-            <p className="lp-eyebrow">Pour les coachs</p>
             <h2 id="lp-coach" className="lp-h2">Tu es coach ? Suis tous tes clients au même endroit</h2>
             <p className="lp-lead">
               Gratuit pour les membres. Pour les coachs : un accès gratuit en échange de tes retours, ou une formule sans engagement et sans limite de clients.
@@ -417,7 +408,6 @@ export default async function HomePage() {
         {/* ── FAQ : texte visible identique au JSON-LD FAQPage ── */}
         <section id="faq" className="lp-wrap lp-section" aria-labelledby="lp-faq">
           <div className="lp-reveal">
-            <p className="lp-eyebrow">Questions fréquentes</p>
             <h2 id="lp-faq" className="lp-h2">Tout ce qu&apos;on te demande avant de commencer</h2>
           </div>
           <div className="lp-faq">
@@ -434,7 +424,7 @@ export default async function HomePage() {
         <section className="lp-wrap lp-section" aria-labelledby="lp-final">
           <div className="lp-final lp-reveal">
             <h2 id="lp-final" className="lp-h2" style={{ marginBottom: 6 }}>Cette fois, on le fait bien</h2>
-            <p className="lp-lead" style={{ margin: "0 auto" }}>60 jours gratuits, sans carte bancaire. Ou un audit de 30 minutes pour poser ton plan.</p>
+            <p className="lp-lead" style={{ margin: "0 auto" }}>60 jours gratuits, sans carte. Ou un audit de 30 minutes offert.</p>
             <div className="lp-hero-actions lp-final-desk">
               <Link href="/auth/client" className="lp-btn lp-btn--primary lp-btn--lg">Commencer gratuitement</Link>
               <a href={AUDIT_URL} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn--ghost lp-btn--lg">Réserver mon audit offert</a>
