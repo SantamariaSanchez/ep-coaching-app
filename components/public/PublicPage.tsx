@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { EPLogo } from "@/components/ui/EPLogo";
+import PublicTopBar from "@/components/public/PublicTopBar";
 import { SHOWCASE_URL } from "@/lib/seo-entity";
 
 // Gabarit des pages publiques de contenu (À propos, pages locales) :
@@ -19,12 +19,11 @@ export default function PublicPage({
   jsonLd: object;
 }) {
   return (
-    <main style={{ minHeight: "100vh", padding: "40px 20px 64px", position: "relative", zIndex: 1 }}>
+    <>
+    <PublicTopBar />
+    <main style={{ minHeight: "100vh", padding: "32px 20px 64px", position: "relative", zIndex: 1 }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <article style={{ maxWidth: 640, margin: "0 auto" }}>
-        <Link href="/" aria-label="EP Coaching, accueil" style={{ display: "inline-flex", marginBottom: 28 }}>
-          <EPLogo size="sm" showCoaching />
-        </Link>
         <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ep-accent)", margin: "0 0 10px" }}>
           {eyebrow}
         </p>
@@ -53,6 +52,7 @@ export default function PublicPage({
         </nav>
       </article>
     </main>
+    </>
   );
 }
 
