@@ -38,7 +38,7 @@ const OBJ_KINDS = [
   { type: "weight", label: "Poids", unit: "kg", placeholder: "Atteindre 72 kg" },
   { type: "performance", label: "Performance", unit: "kg", placeholder: "100 kg au développé couché" },
   { type: "measurement", label: "Mensuration", unit: "cm", placeholder: "Tour de taille 80 cm" },
-  { type: "competition", label: "Compétition", unit: "", placeholder: "Heroes Cup WNBF" },
+  { type: "competition", label: "Compétition", unit: "", placeholder: "Nom de la compétition" },
   { type: "custom", label: "Autre", unit: "", placeholder: "10 000 pas par jour" },
 ] as const;
 

@@ -12,7 +12,7 @@ import type { RoadmapPageData } from "@/utils/phase-pilot";
 
 // Retour "travaille sur tout, coach client membre" (2026-09-09) : le coach
 // sur SA PROPRE Road Map n'avait droit qu'à l'éditeur brut, sans jamais voir
-// sa propre progression en un coup d'œil (préparation WNBF Classic Physique,
+// sa propre progression en un coup d'œil (préparation Classic Physique,
 // compétition le 06/12/2027, 6 phases construites, jamais résumée nulle
 // part). Le résumé est au-dessus de l'éditeur, le coach garde l'édition.
 //

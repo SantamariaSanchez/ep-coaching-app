@@ -29,7 +29,7 @@ export default async function CoachMonPhotosPage() {
     getPersonalPhotos(user.id).catch(() => []),
     // Nouveau (retour direct 2026-09-09, "moi" — "prends et fais ce que tu
     // veux") : competition_category/competition_date sont déjà remplis via
-    // Ma Road Map (compétition WNBF), mais n'étaient exploités que sur
+    // Ma Road Map (compétition), mais n'étaient exploités que sur
     // ClientPhotosView (jamais rendue pour un coach — voir commentaire plus
     // bas) — PersonalPhotosView n'affichait donc jamais le compte à rebours
     // ni le guide de posing correspondant. Lecture ciblée (pas dans

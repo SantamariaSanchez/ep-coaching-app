@@ -108,7 +108,7 @@ export const NICHE_PRESETS: NichePreset[] = [
     key: "bodybuilding_compet",
     label: "Bodybuilding de compétition",
     example: {
-      niche: "Préparation à la compétition de bodybuilding natural, première prépa",
+      niche: "Préparation à la compétition de bodybuilding, première prépa",
       result: "Monter sur scène sec, plein et confiant, avec un posing maîtrisé",
       timeframe: "16 à 24 semaines de prépa",
       mechanism: "Sèche progressive suivie chaque semaine, posing hebdo en vidéo, peak week planifiée",

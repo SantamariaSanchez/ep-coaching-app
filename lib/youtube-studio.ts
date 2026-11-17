@@ -468,7 +468,7 @@ export const YT_LINKS = {
 };
 
 export const YT_WHO =
-  "Je suis Emmanuel Santamaria Sanchéz, coach en bodybuilding natural et fondateur d'EP Coaching. J'accompagne des gens qui veulent transformer leur physique avec un vrai suivi dans la durée, et je suis aussi coach pour les coachs qui veulent développer leur activité. Progresser plus vite, avec quelqu'un qui bosse avec toi.";
+  "Je suis Emmanuel Santamaria Sanchéz, coach et fondateur d'EP Coaching. J'accompagne des gens qui veulent transformer leur physique avec un vrai suivi dans la durée. Progresser plus vite, avec quelqu'un qui bosse avec toi.";
 
 export interface DescriptionInput {
   /** Slug réel du guide qui prolonge la vidéo (lead_magnets). */
