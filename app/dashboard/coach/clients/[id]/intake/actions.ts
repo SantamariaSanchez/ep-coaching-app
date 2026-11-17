@@ -4,6 +4,9 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ClientIntakeInput } from "@/utils/client-intake";
 import { notifyUser } from "@/lib/notify";
+import { sanitizePeriodInput } from "@/lib/period-input";
+import { todayInParis } from "@/lib/dates";
+import { stripProtected } from "@/lib/safe-row";
 
 export async function saveClientIntake(
   clientId: string,
@@ -15,9 +18,9 @@ export async function saveClientIntake(
   const supabase = createAdminClient();
   const { error } = await supabase
     .from("client_intake")
-    .upsert({ client_id: clientId, ...data, updated_at: new Date().toISOString() }, { onConflict: "client_id" });
+    .upsert({ ...stripProtected(data), client_id: clientId, updated_at: new Date().toISOString() }, { onConflict: "client_id" });
 
-  if (error) return { error: error.message };
+  if (error) return { error: "Impossible d'enregistrer la fiche. Réessaie." };
 
   // clientId est parfois l'id du coach lui-meme (fiche perso, voir
   // /dashboard/coach/profile) — les deux chemins sont revalidated sans
@@ -44,7 +47,7 @@ export async function updateClientStepGoal(
     .from("step_settings")
     .upsert({ client_id: clientId, daily_goal: dailyGoal, updated_at: new Date().toISOString() });
 
-  if (error) return { error: error.message };
+  if (error) return { error: "Impossible de supprimer ce cycle. Réessaie." };
 
   revalidatePath(`/dashboard/coach/clients/${clientId}`);
   revalidatePath("/dashboard/client/steps");
@@ -75,14 +78,17 @@ export async function addPeriodLog(
   const guard = await requireOwnClientOrSelf(clientId);
   if (!guard.ok) return { error: guard.error };
 
+  const clean = sanitizePeriodInput(data, todayInParis());
+  if (!clean.ok) return { error: clean.error };
+
   const supabase = createAdminClient();
   const { data: row, error } = await supabase
     .from("period_logs")
-    .insert({ client_id: clientId, ...data })
+    .insert({ ...clean.value, client_id: clientId })
     .select()
     .single();
 
-  if (error || !row) return { error: error?.message ?? "Erreur." };
+  if (error || !row) return { error: "Impossible d'enregistrer ce cycle. Réessaie." };
 
   revalidatePath(`/dashboard/coach/clients/${clientId}`);
   return { id: row.id };
@@ -95,7 +101,7 @@ export async function deletePeriodLog(clientId: string, logId: string): Promise<
   const supabase = createAdminClient();
   const { error } = await supabase.from("period_logs").delete().eq("id", logId).eq("client_id", clientId);
 
-  if (error) return { error: error.message };
+  if (error) return { error: "Impossible de supprimer ce cycle. Réessaie." };
 
   revalidatePath(`/dashboard/coach/clients/${clientId}`);
   return {};

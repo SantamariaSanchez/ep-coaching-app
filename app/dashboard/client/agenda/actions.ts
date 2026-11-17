@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getAgendaSettings, type ScheduleBlock } from "@/utils/agenda";
 import { isBlockTimeAlreadyPastToday } from "@/lib/schedule-time";
 import { isBlockOnDate } from "@/lib/agenda-day";
+import { stripProtected } from "@/lib/safe-row";
 import {
   blockKind,
   mealSlotOf,
@@ -110,8 +111,8 @@ export async function addScheduleBlock(
   const supabase = createAdminClient();
   const { data: rows, error } = await insertRows(supabase, [
     {
+      ...stripProtected(data),
       owner_id: guard.userId,
-      ...data,
       link_ref: cleanLinkRef(data.link_ref),
       specific_date: cleanDate(data.specific_date),
       last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
@@ -171,7 +172,7 @@ export async function updateScheduleBlock(
 
   const supabase = createAdminClient();
   const patch: Record<string, unknown> = {
-    ...data,
+    ...stripProtected(data),
     // Recalculé à chaque modification (nouveau jour/heure ou juste un
     // autre champ) : voir initialLastNotifiedAt plus haut. Idempotent et
     // sans risque de double envoi — au pire ça avance l'horodatage
@@ -468,8 +469,8 @@ export async function replaceBlockOnDate(
 
   const { data: rows, error: insErr } = await insertRows(supabase, [
     {
+      ...stripProtected(data),
       owner_id: guard.userId,
-      ...data,
       link_ref: cleanLinkRef(data.link_ref),
       specific_date: date,
       last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),

@@ -8,6 +8,7 @@ import { SCIENCE_LIBRARY_SEED } from "@/lib/science-library-seed";
 import { getProfile, isSubscribed } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
 import { hasUnlocked } from "@/lib/gamification-types";
+import { stripProtected } from "@/lib/safe-row";
 
 function revalidateScience() {
   revalidatePath("/dashboard/client/science", "layout");
@@ -204,7 +205,7 @@ export async function createStudy(input: StudyInput): Promise<{ error?: string; 
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("science_studies")
-      .insert({ ...input, title: input.title.trim(), created_by: guard.userId })
+      .insert({ ...stripProtected(input), title: input.title.trim(), created_by: guard.userId })
       .select("id")
       .single();
     if (error || !data) return { error: "Erreur lors de la création." };
@@ -232,7 +233,7 @@ export async function updateStudy(id: string, input: Partial<StudyInput>): Promi
 
     const { error } = await supabase
       .from("science_studies")
-      .update({ ...input, updated_at: new Date().toISOString() })
+      .update({ ...stripProtected(input), updated_at: new Date().toISOString() })
       .eq("id", id);
     if (error) return { error: "Erreur lors de la mise à jour." };
 
