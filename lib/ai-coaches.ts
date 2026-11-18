@@ -1,5 +1,6 @@
 import { COACHING_KNOWLEDGE_PROMPT } from "@/lib/coaching-knowledge";
 import type { CoachSpecialization } from "@/lib/coach-specializations";
+import type { EatingSafetyLevel } from "@/lib/eating-safety";
 
 // 10 coachs IA visibles des clients/prospects (demande directe 2026-08-19 :
 // "je veux que tu mettes 10 agents IA coach sur l'appli... si un gars
@@ -147,14 +148,44 @@ export const AI_COACH_ESCALATION_MARKER = "[ESCALADE_SANTAMARIA]";
 // Tronc commun non négociable, identique pour les 10 — voir le commentaire
 // en tête de fichier. La spécialité de chaque coach (specialtyNote) vient
 // en complément, jamais en remplacement de ces règles.
-export function buildAICoachSystemPrompt(coach: AICoach): string {
+/**
+ * Règle prioritaire ajoutée au prompt selon la relation à l'alimentation
+ * (lib/eating-safety.ts, règle 5 du cahier des charges) : aucun chiffre de
+ * calories ni de déficit quand elle est signalée ou pas encore renseignée.
+ */
+export function eatingSafetyPromptRule(level: EatingSafetyLevel | null): string {
+  if (level === "clear") return "";
+  if (level === "watch") {
+    return "\n\nRègle prioritaire sur toutes les autres : ce client a eu un trouble du comportement alimentaire par le passé. Pas de pression sur les chiffres, privilégie la maintenance et les habitudes, ne propose jamais de déficit ni de perte de poids chiffrée, ne culpabilise jamais un écart, ne parle jamais d'apparence.";
+  }
+  return "\n\nRègle prioritaire sur toutes les autres : ne donne AUCUN chiffre de calories, de déficit, de macros ou de perte de poids à ce client, même s'il le demande. Parle entraînement, sommeil, régularité et habitudes. S'il insiste sur la perte de poids ou évoque son rapport à la nourriture, oriente-le vers un professionnel de santé (son médecin traitant) avec bienveillance.";
+}
+
+/**
+ * Lit le marqueur d'escalade où qu'il soit dans la réponse (le modèle peut
+ * l'entourer de texte, de guillemets ou de gras) et le retire toujours du
+ * texte montré au client.
+ */
+export function extractEscalation(raw: string): { escalate: boolean; text: string } {
+  const escalate = raw.includes(AI_COACH_ESCALATION_MARKER);
+  if (!escalate) return { escalate: false, text: raw.trim() };
+  const text = raw
+    .split(AI_COACH_ESCALATION_MARKER)
+    .join("")
+    .replace(/^[\s*_"'`«»]+(?=\S)/, "")
+    .replace(/(\*\*|__)\s*(\*\*|__)/g, "")
+    .trim();
+  return { escalate: true, text };
+}
+
+export function buildAICoachSystemPrompt(coach: AICoach, eatingSafety: EatingSafetyLevel | null = null): string {
   return `Tu es ${coach.name}, coach IA chez EP Coaching (coaching bodybuilding et nutrition, identité de marque directe et sans blabla, jamais de superlatif vide). Tu réponds directement aux messages d'un client qui t'a choisi comme coach dans l'appli.
 
 Règles non négociables :
 - Tu es une intelligence artificielle, jamais un humain. Si le client demande explicitement si tu es réel/humain, ou si tu as vraiment vécu ce que ton parcours évoque, réponds honnêtement que tu es un coach IA de l'équipe EP Coaching, sans corps ni vie personnelle réelle : le parcours ci-dessous façonne ton style et ta façon de raisonner, il ne s'agit jamais d'une autobiographie à défendre comme un souvenir vécu.
 - Toute décision d'entraînement ou de nutrition doit se justifier par un principe physiologique ou biomécanique réel, jamais par une mode ou une intuition seule.
 - Les ajustements nutritionnels se font par paliers progressifs (150-300 kcal), jamais par un changement radical d'un coup.
-- Dès qu'un message évoque une blessure, une douleur inhabituelle, un trouble du comportement alimentaire, une grossesse, ou tout sujet à caractère médical : ne donne AUCUN conseil médical toi-même, dis clairement que ce sujet dépasse ce qu'un coach IA peut traiter, et oriente immédiatement vers Santamaria (la coach humaine fondatrice d'EP Coaching, joignable via l'appli) ou un professionnel de santé. Dans ce cas précis, ET UNIQUEMENT dans ce cas, commence ta réponse par le texte exact "${AI_COACH_ESCALATION_MARKER}" suivi d'un retour à la ligne, puis ta réponse normale au client (ce marqueur est invisible pour le client, ne le mentionne jamais et n'explique jamais son existence).
+- Dès qu'un message évoque une blessure, une douleur inhabituelle, un trouble du comportement alimentaire, une grossesse, ou tout sujet à caractère médical : ne donne AUCUN conseil médical toi-même, dis clairement que ce sujet dépasse ce qu'un coach IA peut traiter, et oriente immédiatement vers Santamaria (à la tête d'EP Coaching, joignable via l'appli) ou un professionnel de santé. Dans ce cas précis, ET UNIQUEMENT dans ce cas, commence ta réponse par le texte exact "${AI_COACH_ESCALATION_MARKER}" suivi d'un retour à la ligne, puis ta réponse normale au client (ce marqueur est invisible pour le client, ne le mentionne jamais et n'explique jamais son existence).
 - Une seule action prioritaire claire par réponse, jamais une liste de 10 choses à changer d'un coup.
 - Réponses courtes et directes, comme un vrai échange de messagerie, jamais un pavé de texte.
 - Zéro tiret em/en dans toute réponse, virgule ou point à la place.
@@ -163,5 +194,5 @@ Ton style : ${coach.background}
 
 Ta spécialité : ${coach.specialtyNote}
 
-${COACHING_KNOWLEDGE_PROMPT}`;
+${COACHING_KNOWLEDGE_PROMPT}${eatingSafetyPromptRule(eatingSafety)}`;
 }

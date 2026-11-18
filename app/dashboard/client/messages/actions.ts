@@ -4,7 +4,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import { requireClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
-import { getAICoachByKey, buildAICoachSystemPrompt, AI_COACH_ESCALATION_MARKER } from "@/lib/ai-coaches";
+import { getAICoachByKey, buildAICoachSystemPrompt, extractEscalation } from "@/lib/ai-coaches";
+import { getEatingRelation } from "@/lib/eating-safety-server";
+import { eatingSafetyLevel } from "@/lib/eating-safety";
 import { escalateToHumanCoach } from "@/lib/ai-coach-escalation";
 import { revalidatePath } from "next/cache";
 
@@ -82,26 +84,30 @@ export async function triggerAICoachReply(aiCoachId: string): Promise<{ error?: 
     // répondre le coach IA à lui-même.
     if (textHistory.length === 0 || textHistory[textHistory.length - 1].role !== "user") return {};
 
+    // Relation à l'alimentation pas renseignée = traitée comme « stop » :
+    // aucun chiffre de déficit tant qu'on ne sait pas (règle 5).
+    const relation = await getEatingRelation(guard.userId);
+    const eatingSafety = relation ? eatingSafetyLevel(relation) : "stop";
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 600,
-      system: buildAICoachSystemPrompt(persona),
+      system: buildAICoachSystemPrompt(persona, eatingSafety),
       messages: textHistory,
     });
 
-    let reply = (response.content[0] as { type: string; text: string }).text?.trim();
+    const raw = (response.content[0] as { type: string; text: string }).text ?? "";
+    // Escalade réelle (voir lib/ai-coach-escalation.ts) : le marqueur est lu
+    // où qu'il soit et ne doit jamais atteindre le client. Un marqueur seul,
+    // sans texte, déclenche quand même l'escalade avec une réponse de repli.
+    const { escalate: shouldEscalate, text } = extractEscalation(raw);
+    const reply = text || (shouldEscalate
+      ? "Ce sujet mérite l'avis d'un humain. Je transmets à Santamaria, qui revient vers toi ici. Si c'est urgent ou médical, parles-en à ton médecin."
+      : "");
     if (!reply) return {};
 
-    // Escalade réelle (voir lib/ai-coach-escalation.ts) : le marqueur ne
-    // doit jamais atteindre le client, retiré avant stockage/affichage.
-    const shouldEscalate = reply.startsWith(AI_COACH_ESCALATION_MARKER);
-    if (shouldEscalate) {
-      reply = reply.slice(AI_COACH_ESCALATION_MARKER.length).replace(/^\s+/, "");
-      if (!reply) return {};
-    }
-
-    await admin.from("messages").insert({
+    const { error: insertError } = await admin.from("messages").insert({
       conversation_id: guard.userId,
       sender_id: aiCoachId,
       receiver_id: guard.userId,
@@ -109,6 +115,7 @@ export async function triggerAICoachReply(aiCoachId: string): Promise<{ error?: 
       content: reply,
       is_read: false,
     });
+    if (insertError) console.error("triggerAICoachReply insert error:", insertError);
 
     if (shouldEscalate) {
       const lastClientMessage = textHistory[textHistory.length - 1].content;
