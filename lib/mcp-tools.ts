@@ -14,6 +14,7 @@ import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioni
 import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
 import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
 import { CONTENT_TARGET_DEFS, progressByTarget, targetsFromAnswers, targetsSummary } from "@/lib/content-targets";
+import { shootingOrder } from "@/lib/shooting-session";
 import { WRITTEN_PLATFORMS, checkWrittenPost, defaultFormatFor, getWrittenPlatform, isFormatAllowed, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 import { isMissingColumnError } from "@/lib/coach-ideation";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
@@ -107,6 +108,12 @@ export const EXTRA_TOOLS: ToolDef[] = [
     roles: ["coach"],
     description: "Scripts du Studio créatif du coach (identifiant court, statut, titre, plateforme, format de contenu, accroche). L'identifiant sert à modifier_script et publier_script.",
     inputSchema: { type: "object", properties: { statut: { type: "string", enum: ["a_tourner", "tourne", "publie"] }, nombre: { type: "number" } } },
+  },
+  {
+    name: "plan_de_tournage",
+    roles: ["coach"],
+    description: "Ce que le coach a à tourner, dans l'ordre de la session de tournage du Studio : scripts vidéo prêts (statut à tourner, avec contenu), regroupés par format pour ne régler le téléphone qu'une fois par type de plan, du plus ancien au plus récent dans chaque groupe. Donne le format, le titre et l'accroche. Pour lancer la session : Studio créatif, Scripts, bouton « Tourner ».",
+    inputSchema: { type: "object", properties: { nombre: { type: "number", description: "Nombre maximum de scripts (défaut 30)" } } },
   },
   {
     name: "mes_objectifs_contenu",
@@ -438,6 +445,31 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       if (isMissingColumnError(error)) ({ data, error } = await query(base));
       const rows = (data ?? []) as unknown as { id: string; title: string; hook: string | null; status: string; platform: string | null; pillar: string | null; content_format?: string | null }[];
       return text(rows.length ? rows.map((r) => `- ${r.id.slice(0, 8)} [${r.status}] ${r.title}${r.platform ? ` (${r.platform}, ${getContentFormat(r.content_format).label})` : ` (${getContentFormat(r.content_format).label})`}${r.hook ? ` : « ${r.hook} »` : ""}`).join("\n") : "Aucun script.");
+    }
+
+    case "plan_de_tournage": {
+      const limit = numArg(args.nombre, 1, 200) ?? 30;
+      const { data } = await admin
+        .from("coach_scripts")
+        .select("id, title, hook, platform, content_format, content, created_at")
+        .eq("coach_id", ownerId)
+        .eq("status", "a_tourner");
+      const rows = ((data ?? []) as { id: string; title: string; hook: string | null; platform: string | null; content_format: string | null; content: string | null; created_at: string }[])
+        .filter((r) => !!r.content?.trim() && !isWrittenPlatform(r.platform) && getContentFormat(r.content_format).filmed);
+      if (rows.length === 0) return text("Rien à tourner : aucun script vidéo prêt (statut à tourner avec un contenu).");
+      const ordered = shootingOrder(rows).slice(0, limit);
+      const lines: string[] = [`${rows.length} script(s) vidéo à tourner. Ordre de la session :`];
+      let current: string | null = null;
+      ordered.forEach((r, i) => {
+        const label = getContentFormat(r.content_format).label;
+        if (label !== current) {
+          lines.push(`\n${label} :`);
+          current = label;
+        }
+        lines.push(`${i + 1}. ${r.title}${r.hook ? ` : « ${r.hook} »` : ""} (${r.id.slice(0, 8)})`);
+      });
+      if (rows.length > ordered.length) lines.push(`\n… et ${rows.length - ordered.length} de plus.`);
+      return text(lines.join("\n"));
     }
 
     case "mes_objectifs_contenu": {
