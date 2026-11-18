@@ -5,6 +5,7 @@ import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { INACTIVITY_DELETE_DAYS, INACTIVITY_WARN_DAYS } from "@/lib/free-tier";
 import { cronBearer } from "@/lib/cron-auth";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Suppression des comptes gratuits abandonnés (voir lib/free-tier.ts et CGU
 // article 5). Distinct du verrou à 60 jours calculé dans le layout (celui-là
@@ -93,7 +94,7 @@ export async function GET(req: Request) {
         subject,
         htmlContent: wrapBrandedEmail(`
           <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${subject}</h2>
-          <p style="margin:0 0 12px;">Salut ${row.full_name?.split(" ")[0] ?? ""},</p>
+          <p style="margin:0 0 12px;">Salut ${escapeHtml(row.full_name?.split(" ")[0] ?? "")},</p>
           <p style="margin:0 0 12px;">
             Ça fait ${inactiveDays} jours que tu n'as pas ouvert l'appli. Dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""},
             ton compte et tout ton historique seront définitivement supprimés.
@@ -119,7 +120,7 @@ export async function GET(req: Request) {
         subject,
         htmlContent: wrapBrandedEmail(`
           <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${subject}</h2>
-          <p style="margin:0 0 12px;">Salut ${row.full_name?.split(" ")[0] ?? ""},</p>
+          <p style="margin:0 0 12px;">Salut ${escapeHtml(row.full_name?.split(" ")[0] ?? "")},</p>
           <p style="margin:0 0 16px;">
             Ça fait ${inactiveDays} jours que tu n'as pas ouvert l'appli. Un compte laissé sans
             connexion pendant ${INACTIVITY_DELETE_DAYS} jours est supprimé automatiquement, avec

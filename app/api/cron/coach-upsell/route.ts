@@ -5,6 +5,7 @@ import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { insertNotification } from "@/utils/insert-notification";
 import { cronBearer } from "@/lib/cron-auth";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Déclenché par Supabase pg_cron les 1er et 15 de chaque mois, voir
 // supabase/migrations/20260809_coach_upsell_notifications.sql.
@@ -28,7 +29,7 @@ function emailBody(firstName: string) {
   const url = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
   return wrapBrandedEmail(`
     <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${TITLE}</h2>
-    <p style="margin:0 0 12px;">Salut ${firstName},</p>
+    <p style="margin:0 0 12px;">Salut ${escapeHtml(firstName)},</p>
     <p style="margin:0 0 16px;">${BODY}</p>
     <a href="${url}${URL}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;">
       Découvrir le coaching
