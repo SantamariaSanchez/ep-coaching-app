@@ -165,6 +165,9 @@ export default function AujourdhuiView({
     fd.set("log_date", todayStr);
     fd.set("weight_morning", weightValue);
     fd.set("weight_time", new Date().toTimeString().slice(0, 5));
+    // Le poids seul n'est pas le bilan du jour : pas de points ni de « bilan
+    // fait » envoyé au coach tant que le reste n'est pas rempli.
+    fd.set("autosave", "1");
     const res = await logWeight(null, fd);
     setWeightSaving(false);
     if (res.error) setWeightError(res.error);

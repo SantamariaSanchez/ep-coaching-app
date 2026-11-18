@@ -1,7 +1,6 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { createServerSupabase } from "@/lib/supabase-server";
 import { alreadyNotifiedToday, getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
 import { after } from "next/server";
@@ -10,7 +9,7 @@ import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
 import { revalidatePath } from "next/cache";
 import { requireClient } from "@/lib/auth-guards";
 import { isWithinBilanBackfillWindow, BILAN_BACKFILL_DAYS } from "@/lib/dates";
-import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
+import { celebrateFirstAction } from "@/lib/first-action-celebration";
 import { afterBilanSaved } from "@/lib/nutrition-sync";
 
 // Forme du jour (2026-09-30) : bornes identiques aux contraintes SQL
@@ -22,7 +21,15 @@ const FORME_RANGES: Record<string, [number, number]> = {
   water_l: [0, 15],
   resting_hr: [25, 220],
   hrv: [5, 300],
+  // Une faute de frappe (« 7 » au lieu de « 77 ») passait et pouvait marquer
+  // un objectif de poids « atteint » pour de bon : valeur ignorée.
+  weight_morning: [25, 350],
+  steps: [0, 150000],
+  sleep_hours: [0, 24],
 };
+
+// Champs entiers en base : une saisie à virgule faisait échouer tout le bilan.
+const INTEGER_FIELDS = new Set(["steps", "proteins_g", "carbs_g", "fats_g", "calories_kcal"]);
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -46,15 +53,14 @@ export async function upsertDailyLog(
     const guard = await requireClient();
     if (!guard.ok) return { error: guard.error };
 
-    const serverClient = await createServerSupabase();
-    const { data: profile } = await serverClient
-      .from("profiles")
-      .select("full_name")
-      .eq("id", guard.userId)
-      .single();
-
-    const log_date = formData.get("log_date") as string;
+    const log_date = String(formData.get("log_date") ?? "");
     if (!log_date) return { error: "Date manquante." };
+    // Format strict AAAA-MM-JJ et vraie date : « 2026-11-018 » visait la même
+    // journée en base mais une autre clé de points (points en double).
+    const [ly, lm, ld] = log_date.split("-").map(Number);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(log_date) || new Date(Date.UTC(ly, lm - 1, ld)).toISOString().slice(0, 10) !== log_date) {
+      return { error: "Date invalide." };
+    }
 
     // Fenêtre de rattrapage (30 jours, en heure de Paris, voir lib/dates.ts)
     // plutôt qu'une simple tolérance "aujourd'hui ou hier" : la tolérance
@@ -106,6 +112,7 @@ export async function upsertDailyLog(
     for (const f of FIELD_SPEC) {
       if (formData.has(f.key)) {
         payload[f.key] = f.kind === "num" ? num(formData.get(f.key)) : txt(formData.get(f.key));
+        if (INTEGER_FIELDS.has(f.key) && typeof payload[f.key] === "number") payload[f.key] = Math.round(payload[f.key] as number);
         const range = FORME_RANGES[f.key];
         const v = payload[f.key];
         if (range && typeof v === "number" && (v < range[0] || v > range[1])) payload[f.key] = null;
@@ -114,12 +121,9 @@ export async function upsertDailyLog(
 
     // Bilan rapide : « autosave » = enregistrement partiel (sans points ni
     // message au coach) ; l'envoi qui complète le bilan arrive sans ce
-    // drapeau et déclenche tout cela. « autosave_done » reste accepté.
+    // drapeau et déclenche tout cela.
     const silent = formData.get("autosave") === "1";
-    const doneOnly = formData.get("autosave_done") === "1";
 
-    // Vérifié AVANT l'upsert (voir lib/first-action-celebration.ts).
-    let isFirstBilan = silent ? false : await isFirstEverAction(guard.userId, "daily_logs", "client_id");
 
     const { error } = await supabase.from("daily_logs").upsert(payload, { onConflict: "client_id,log_date" });
 
@@ -143,15 +147,24 @@ export async function upsertDailyLog(
     // correction partielle à fusionner.
     const stepsSubmitted = payload.steps as number | null | undefined;
     if (stepsSubmitted != null) {
-      supabase
-        .from("step_logs")
-        .upsert(
-          { client_id: guard.userId, log_date, steps_actual: stepsSubmitted },
-          { onConflict: "client_id,log_date" }
-        )
-        .then(({ error: stepsError }) => {
-          if (stepsError) console.error("bilan->step_logs sync error:", stepsError);
-        });
+      // after() : sans lui, la fonction pouvait s'arrêter avant l'écriture.
+      after(async () => {
+        const { error: stepsError } = await supabase
+          .from("step_logs")
+          .upsert(
+            { client_id: guard.userId, log_date, steps_actual: stepsSubmitted },
+            { onConflict: "client_id,log_date" }
+          );
+        if (stepsError) console.error("bilan->step_logs sync error:", stepsError);
+      });
+    }
+
+    // Un objectif de road map ("Poids") peut passer "atteint" tout seul dès
+    // que ce bilan (même partiel) contient un poids du matin — fire-and-forget, ne doit
+    // jamais faire échouer la sauvegarde du bilan.
+    const weightLogged = payload.weight_morning as number | null | undefined;
+    if (weightLogged != null) {
+      after(() => checkWeightObjectiveAchievements(guard.userId, weightLogged, log_date).catch(() => {}));
     }
 
     if (silent) {
@@ -159,14 +172,18 @@ export async function upsertDailyLog(
       // points ni message au coach tant que le bilan n'est pas complet.
       revalidatePath("/dashboard/client/bilan");
       revalidatePath("/dashboard/client/nutrition");
+      revalidatePath("/dashboard/client");
       return { success: true };
     }
-    if (doneOnly) {
-      // Les réponses sont déjà enregistrées une à une : c'est le premier bilan
-      // si cette journée est la seule ligne de la personne.
-      const { count } = await supabase.from("daily_logs").select("log_date", { count: "exact", head: true }).eq("client_id", guard.userId);
-      isFirstBilan = (count ?? 0) <= 1;
-    }
+    // Premier bilan complet : compté APRÈS l'enregistrement. Les sauvegardes
+    // partielles du bilan rapide créent la ligne du jour avant l'envoi final,
+    // donc un test « aucune ligne avant » ne voyait jamais le premier bilan.
+    // Une seule journée en base et aucun encouragement déjà envoyé.
+    const [{ count: days }, { count: already }] = await Promise.all([
+      supabase.from("daily_logs").select("log_date", { count: "exact", head: true }).eq("client_id", guard.userId),
+      supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", guard.userId).eq("type", "first_daily_bilan"),
+    ]);
+    const isFirstBilan = (days ?? 0) <= 1 && (already ?? 0) === 0;
     after(() => awardPoints(guard.userId, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date));
 
     // Encouragement immédiat au membre lui-même, uniquement la toute
@@ -181,28 +198,22 @@ export async function upsertDailyLog(
       }).catch(() => {}));
     }
 
-    // Un objectif de road map ("Poids") peut passer "atteint" tout seul dès
-    // que ce bilan contient un poids du matin — fire-and-forget, ne doit
-    // jamais faire échouer la sauvegarde du bilan.
-    const weightLogged = payload.weight_morning as number | null | undefined;
-    if (weightLogged != null) {
-      after(() => checkWeightObjectiveAchievements(guard.userId, weightLogged, log_date).catch(() => {}));
-    }
 
     // Coach prévenu (cloche + push) une seule fois par client et par jour :
     // le bilan se remplit souvent en deux fois (matin puis soir), le coach
     // n'a besoin de savoir qu'une chose, que c'est fait. after() : l'envoi
     // n'est jamais coupé par la fin de la requête.
-    const clientName = profile?.full_name ?? "Un client";
     const clientId = guard.userId;
     after(async () => {
+      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", clientId).maybeSingle();
+      const clientName = (profile as { full_name?: string | null } | null)?.full_name ?? "Un client";
       const coach = await getCoachForClient(clientId).catch(() => null);
       if (!coach || coach.id === clientId) return;
       if (await alreadyNotifiedToday(coach.id, "new_daily_log", clientId).catch(() => false)) return;
       await notifyUser(coach.id, {
         type: "new_daily_log",
         title: `✅ ${clientName} a fait son bilan`,
-        body: `Bilan du jour rempli${log_date ? ` (${log_date.split("-").reverse().join("/")})` : ""}.`,
+        body: `Bilan du jour rempli (${log_date.split("-").reverse().join("/")}).`,
         url: `/dashboard/coach/clients/${clientId}/bilan`,
         senderId: clientId,
       }).catch(() => {});
@@ -211,6 +222,8 @@ export async function upsertDailyLog(
     revalidatePath("/dashboard/client/bilan");
     revalidatePath("/dashboard/client/nutrition");
     revalidatePath("/dashboard/coach/moi/nutrition");
+    revalidatePath("/dashboard/client");
+    revalidatePath("/dashboard/client/aujourdhui");
     return { success: true };
   } catch (e) {
     console.error("upsertDailyLog error:", e);
