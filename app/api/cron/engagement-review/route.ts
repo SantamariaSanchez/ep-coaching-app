@@ -4,6 +4,7 @@ import { notifyUser } from "@/lib/notify";
 import { todayInParis } from "@/lib/dates";
 import { reviewDate, reviewState } from "@/lib/engagement";
 import { addDaysIso, isoDayOfWeek } from "@/lib/roadmap-weeks";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Un mois avant la fin d'engagement (6 mois par défaut, voir lib/engagement.ts),
 // prévient le coach de proposer l'appel bilan et lui crée un rappel dans son
@@ -20,7 +21,7 @@ interface EngagementRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -5,6 +5,7 @@ import { runSocialSync } from "@/lib/social/sync";
 import { mondayOf, saveWeeklyRecap } from "@/lib/social/recap";
 import { notifyUser } from "@/lib/notify";
 import type { Platform } from "@/lib/social/platforms";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Synchro des stats réseaux (Windsor -> Supabase), protégée par CRON_SECRET.
 //   ?platform=instagram|tiktok|youtube|facebook|linkedin|threads  une seule plateforme
@@ -21,7 +22,7 @@ export const maxDuration = 300;
 const PLATFORMS = ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads"];
 
 export async function GET(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (req.headers.get("authorization") !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const url = new URL(req.url);

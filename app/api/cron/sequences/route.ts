@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { runSequences } from "@/lib/sequences-run";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Séquences de mails automatiques (lib/sequences.ts) : relances lead,
 // rappels d'audit, onboarding. Déclenché toutes les 10 minutes par pg_cron
@@ -7,7 +8,7 @@ import { runSequences } from "@/lib/sequences-run";
 export const maxDuration = 120;
 
 export async function GET(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (req.headers.get("authorization") !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const result = await runSequences();

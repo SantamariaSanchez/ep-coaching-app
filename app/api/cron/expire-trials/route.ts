@@ -4,6 +4,7 @@ import { endCoachingPhaseTracking } from "@/lib/coaching-phase";
 import { notifyUser } from "@/lib/notify";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Item 43 (chantier 50 idées) : repasse automatiquement en gratuit les
 // essais coaching arrivés à échéance (trial_ends_at dépassé). Tourne une
@@ -13,7 +14,7 @@ import { wrapBrandedEmail } from "@/lib/mailing-audience";
 // l'authentification se fait via CRON_SECRET comme les autres crons.
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

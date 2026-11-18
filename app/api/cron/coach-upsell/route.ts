@@ -4,6 +4,7 @@ import { sendPushToUser } from "@/lib/push";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { insertNotification } from "@/utils/insert-notification";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Déclenché par Supabase pg_cron les 1er et 15 de chaque mois, voir
 // supabase/migrations/20260809_coach_upsell_notifications.sql.
@@ -37,7 +38,7 @@ function emailBody(firstName: string) {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

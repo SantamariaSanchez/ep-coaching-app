@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { alreadyNotifiedToday } from "@/utils/insert-notification";
 import { hasLivedThisWeek } from "@/lib/lived-content-server";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Relance hebdomadaire « raconte ta semaine » : le contenu storytelling ne
 // vient que du vécu du fondateur (règle du Studio : rien d'inventé). Une fois
@@ -13,7 +14,7 @@ import { hasLivedThisWeek } from "@/lib/lived-content-server";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (req.headers.get("authorization") !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const admin = createAdminClient();

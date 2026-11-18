@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { searchPubMedIds, fetchPubMedSummaries } from "@/lib/pubmed";
 import { guessArticleType } from "@/utils/science-types";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Alimente automatiquement l'onglet "Actualité" avec les dernières études
 // publiées sur les sujets suivis par l'app. Déclenché une fois par jour par
@@ -28,7 +29,7 @@ const RECENT_DAYS = 60;
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

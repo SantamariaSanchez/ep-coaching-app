@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { getWeekStart } from "@/utils/checkins";
 import { nowInParis, addMinutesToHhmm } from "@/lib/dates";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Lutte active contre la stagnation : contrairement aux rappels existants
 // (nutrition-reminder, missed-session-check, nag-tasks...) qui relancent le
@@ -59,7 +60,7 @@ interface ClientRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

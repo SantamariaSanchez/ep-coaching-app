@@ -454,6 +454,8 @@ export function ShootingMode({
   content,
   onClose,
   onShot,
+  session,
+  onSkip,
 }: {
   scriptId: string;
   title: string;
@@ -462,6 +464,10 @@ export function ShootingMode({
   onClose: () => void;
   /** « J'ai tourné » : passe le script en tourné. */
   onShot?: () => void;
+  /** Session de tournage : position dans la file et nombre déjà tournés. */
+  session?: { index: number; total: number; shot: number };
+  /** Session : passer au script suivant sans le marquer tourné. */
+  onSkip?: () => void;
 }) {
   const tr = useT();
   const f = getContentFormat(formatId);
@@ -505,6 +511,36 @@ export function ShootingMode({
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [playing, speed]);
+
+  // Écran allumé pendant le tournage : sur iPhone, l'écran se mettait en
+  // veille au milieu d'une lecture. Repris au retour sur l'onglet (le
+  // verrou saute quand la page passe en arrière-plan). Sans support : rien.
+  useEffect(() => {
+    type Sentinel = { release: () => Promise<void> };
+    const nav = navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<Sentinel> } };
+    if (!nav.wakeLock) return;
+    let lock: Sentinel | null = null;
+    let alive = true;
+    let pending = false;
+    const acquire = () => {
+      if (document.visibilityState !== "visible" || pending) return;
+      pending = true;
+      const previous = lock;
+      lock = null;
+      void previous?.release().catch(() => {});
+      nav.wakeLock!.request("screen")
+        .then((l) => { if (alive) lock = l; else void l.release().catch(() => {}); })
+        .catch(() => {})
+        .finally(() => { pending = false; });
+    };
+    acquire();
+    document.addEventListener("visibilitychange", acquire);
+    return () => {
+      alive = false;
+      document.removeEventListener("visibilitychange", acquire);
+      void lock?.release().catch(() => {});
+    };
+  }, []);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -551,6 +587,11 @@ export function ShootingMode({
             <Clapperboard size={12} style={{ color: "var(--ep-accent)" }} />
             <span style={{ ...microLabel, color: "var(--ep-accent)" }}>{tr("Mode tournage")}</span>
             <ContentFormatBadge formatId={f.id} />
+            {session && (
+              <span style={{ ...microLabel, color: faint }}>
+                {session.index + 1} / {session.total}{session.shot > 0 ? ` · ${session.shot} ${tr("tourné(s)")}` : ""}
+              </span>
+            )}
           </div>
           <p style={{ margin: 0, fontSize: 15, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</p>
         </div>
@@ -671,7 +712,16 @@ export function ShootingMode({
             onClick={onShot}
             style={{ flex: 1, minWidth: 130, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 14px", borderRadius: 12, border: "none", background: "var(--ep-info)", color: "var(--ep-bg)", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
           >
-            <Clapperboard size={15} /> {tr("J'ai tourné")}
+            <Clapperboard size={15} /> {session && session.index + 1 < session.total ? tr("Tourné, suivant") : tr("J'ai tourné")}
+          </button>
+        )}
+        {onSkip && (
+          <button
+            type="button"
+            onClick={onSkip}
+            style={{ minWidth: 100, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 14px", borderRadius: 12, border: "1px solid rgba(var(--ep-ink-rgb),0.2)", background: "transparent", color: "var(--ep-ink)", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+          >
+            {tr("Passer")}
           </button>
         )}
       </div>

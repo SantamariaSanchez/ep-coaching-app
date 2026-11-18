@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
 import type { ClientTask } from "@/utils/tasks";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Re-notifies clients about pending tasks every `nag_minutes`, until checked
 // off as done. Triggered every 10 min by Supabase pg_cron (see
@@ -11,7 +12,7 @@ import type { ClientTask } from "@/utils/tasks";
 // shared secret so it can't be hit by randoms to spam push notifications.
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

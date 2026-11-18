@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { freeTierStatus, EXPIRY_WARN_DAYS, FREE_TIER_DAYS } from "@/lib/free-tier";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Prévient un membre gratuit ACTIF avant que son accès se verrouille — voir
 // lib/free-tier.ts. Distinct de app/api/cron/free-tier-inactivity, qui cible
@@ -33,7 +34,7 @@ interface CandidateRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

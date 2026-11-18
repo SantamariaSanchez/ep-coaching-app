@@ -6,6 +6,7 @@ import {
 } from "@/lib/oura";
 import { syncOuraNightToDailyLog } from "@/lib/oura-sync";
 import { generateInsightsForLatest, type BiometricLogInput } from "@/lib/biometric-rules";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Synchro quotidienne Oura Ring — voir supabase/migrations/20260717f_oura_integration.sql
 // pour la planification pg_cron. Ne touche que sommeil/récupération/HRV/FC
@@ -13,7 +14,7 @@ import { generateInsightsForLatest, type BiometricLogInput } from "@/lib/biometr
 // hors-sujet dans l'onglet Sommeil.
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

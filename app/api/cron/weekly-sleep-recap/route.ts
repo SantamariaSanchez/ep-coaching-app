@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { nowInParis, addMinutesToHhmm } from "@/lib/dates";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Récap hebdo sommeil/récupération — cible chaque dimanche 19h00
 // (Europe/Paris). Ferme la boucle : la tendance de la semaine vient au
@@ -41,7 +42,7 @@ interface LogRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -138,3 +138,8 @@ export function isWithinBilanBackfillWindow(logDate: string, maxDaysBack: number
   const daysBack = Math.round((todayUtc - logUtc) / 86_400_000);
   return daysBack >= 0 && daysBack <= maxDaysBack;
 }
+
+/** Date (AAAA-MM-JJ) à Paris d'un instant ISO. */
+export function parisDateOf(iso: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
+}

@@ -255,9 +255,12 @@ export interface Booking {
 export async function syncBooking(b: Booking): Promise<"created" | "canceled" | "unchanged" | "skipped"> {
   try {
     const admin = createAdminClient();
+    // Première fois qu'on voit ce RDV ? (la synchro repasse sur chaque
+    // réservation à chaque exécution : on ne prévient qu'une fois).
+    const { data: known, error: knownError } = await admin.from("prospect_bookings").select("event_uri").eq("event_uri", b.eventUri).maybeSingle();
     // Chaque audit est gardé, même sans closer en poste : les rappels
     // J-10 à 30 min (lib/sequences.ts) partent de cette table.
-    await admin.from("prospect_bookings").upsert({
+    const { error: saveError } = await admin.from("prospect_bookings").upsert({
       event_uri: b.eventUri,
       starts_at: b.startsAt,
       status: b.status,
@@ -266,6 +269,13 @@ export async function syncBooking(b: Booking): Promise<"created" | "canceled" | 
       join_url: b.joinUrl,
       updated_at: new Date().toISOString(),
     });
+    // Nouveau RDV actif : le fondateur fait les audits lui-même tant
+    // qu'aucun closer n'est en poste, il doit le voir dans l'appli.
+    // Seulement si la lecture et l'écriture ont réussi : sinon la synchro
+    // suivante reverrait le RDV comme nouveau et renverrait la notification.
+    if (!known && !knownError && !saveError && b.status === "active") {
+      void runAfterResponse(() => notifyOwnerOfBooking(admin, b.inviteeName, b.startsAt));
+    }
     const existingAppt = await findByExternalId(admin, `calendly:${b.eventUri}`);
 
     if (b.status === "canceled") {
@@ -590,6 +600,18 @@ export async function syncCalendly(): Promise<{ ok: boolean; reason?: string; cr
 
 // ── 7. Préqualifications (écrites par ep-coaching-formulaires) ──────────
 
+
+async function notifyOwnerOfBooking(admin: Admin, name: string | null, startsAt: string) {
+  const { data: owner } = await admin.from("profiles").select("id").eq("is_platform_owner", true).limit(1).maybeSingle();
+  if (!owner) return;
+  const when = new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(startsAt));
+  await notifyUser((owner as { id: string }).id, {
+    type: "staff",
+    title: "Audit stratégique réservé",
+    body: `${name?.trim().split(" ")[0] || "Quelqu'un"} a réservé son audit : ${when}.`,
+    url: "/dashboard/coach/admin/leads",
+  }).catch(() => {});
+}
 
 async function notifyOwnerOfPrequal(admin: Admin, firstName: string | null) {
   const { data: owner } = await admin.from("profiles").select("id").eq("is_platform_owner", true).limit(1).maybeSingle();

@@ -61,6 +61,10 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
   );
   const [filter, setFilter] = useState<Filter>("a_tourner");
   const [prompter, setPrompter] = useState<FounderVideoScript | null>(null);
+  // Session figée à l'ouverture depuis « Prochaine vidéo » : la file vivante
+  // rétrécit à chaque vidéo tournée, le compteur et « Passer » partent donc
+  // de cette liste-là (sinon « Passer » était annulé au clic suivant).
+  const [session, setSession] = useState<{ ids: string[]; index: number; shot: number } | null>(null);
   const [, start] = useTransition();
 
   const all = useMemo(() => formations.flatMap((f) => f.videos), [formations]);
@@ -76,6 +80,25 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
   };
   const readyMinutes = Math.round(queue.reduce((s, v) => s + minutesOf(v.word_count), 0));
   const [open, setOpen] = useState<number | null>(next?.formation_num ?? formations[0]?.formation_num ?? null);
+
+  // Vidéo suivante de la session (ou fermeture en fin de liste). Hors session
+  // (vidéo ouverte depuis sa ligne), on ferme après « J'ai tourné ».
+  function advance(markedShot: boolean) {
+    if (!session) {
+      setPrompter(null);
+      return;
+    }
+    const index = session.index + 1;
+    const nextId = session.ids[index];
+    const nextVideo = nextId ? all.find((v) => v.id === nextId) ?? null : null;
+    if (!nextVideo) {
+      setPrompter(null);
+      setSession(null);
+      return;
+    }
+    setSession({ ...session, index, shot: session.shot + (markedShot ? 1 : 0) });
+    setPrompter(nextVideo);
+  }
 
   function setStatus(id: string, status: VideoStatus) {
     const prev = statusById[id];
@@ -122,7 +145,7 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
             {tr("Formation")}{" "}{next.formation_num} · {next.section_title}{" "}{tr("· environ")}{" "}{minutesOf(next.word_count)}{" "}{tr("min")}
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button type="button" style={btn} onClick={() => setPrompter(next)}>
+            <button type="button" style={btn} onClick={() => { setSession({ ids: queue.map((v) => v.id), index: 0, shot: 0 }); setPrompter(next); }}>
               <Film size={14} />{" "}{tr("Tourner")}
             </button>
             <button type="button" style={ghost} onClick={() => setStatus(next.id, "tourne")}>
@@ -179,7 +202,7 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
                   {videos.length === 0 ? (
                     <p style={{ fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.45)", margin: "6px 4px" }}>{tr("Aucune vidéo «")}{" "}{f.label.toLowerCase()}{" "}{tr("» dans cette formation.")}</p>
                   ) : (
-                    videos.map((v) => <VideoRow key={v.id} video={v} status={statusOf(v)} onStatus={(s) => setStatus(v.id, s)} onPrompter={() => setPrompter(v)} />)
+                    videos.map((v) => <VideoRow key={v.id} video={v} status={statusOf(v)} onStatus={(s) => setStatus(v.id, s)} onPrompter={() => { setSession(null); setPrompter(v); }} />)
                   )}
                 </div>
               )}
@@ -190,16 +213,18 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
 
       {prompter && (
         <ShootingMode
+          key={prompter.id}
           scriptId={prompter.id}
           title={prompter.video_title}
           formatId={null}
           content={prompter.script_content}
-          onClose={() => setPrompter(null)}
+          onClose={() => { setPrompter(null); setSession(null); }}
           onShot={() => {
-            const done = prompter;
-            setStatus(done.id, "tourne");
-            setPrompter(queue.filter((v) => v.id !== done.id)[0] ?? null);
+            setStatus(prompter.id, "tourne");
+            advance(true);
           }}
+          session={session ? { index: session.index, total: session.ids.length, shot: session.shot } : undefined}
+          onSkip={session ? () => advance(false) : undefined}
         />
       )}
     </div>

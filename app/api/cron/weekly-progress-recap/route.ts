@@ -4,6 +4,7 @@ import { notifyUser } from "@/lib/notify";
 import { formatWeeklyRecapLine } from "@/lib/weekly-recap-format";
 import { nowInParis, addMinutesToHhmm, todayInParis } from "@/lib/dates";
 import { addDaysToDate, countDistinctSessions } from "@/lib/weekly-review-helpers";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Item 23 (récap hebdo personnalisé) : cible chaque dimanche 18h00
 // (Europe/Paris). Ferme la boucle sur séances + nutrition + poids en un
@@ -39,7 +40,7 @@ function avg(vals: (number | null)[]): number | null {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

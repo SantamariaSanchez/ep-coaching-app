@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { nowInParis, addMinutesToHhmm } from "@/lib/dates";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Relance en douceur si une séance était prévue dans l'agenda aujourd'hui
 // (bloc icon="salle", voir lib/agenda-presets.ts) et qu'elle n'a jamais été
@@ -50,7 +51,7 @@ function parisTimeStr(date: Date): string {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

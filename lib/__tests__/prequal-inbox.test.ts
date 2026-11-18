@@ -38,3 +38,27 @@ test("premier message : prénom, nom du coach, pas de tiret cadratin", () => {
   assert.ok(!m.includes("—"));
   assert.match(firstContactMessage(null, null), /^Salut, c'est l'équipe/);
 });
+
+test("audit : retrouve la candidature la plus récente par email, sans tenir compte de la casse", async () => {
+  const { prequalForEmail, auditWhen } = await import("../prequal-inbox");
+  const rows = [
+    { id: "a", email: "Lea@Mail.fr", created_at: "2026-11-01T10:00:00Z" },
+    { id: "b", email: "lea@mail.fr", created_at: "2026-11-10T10:00:00Z" },
+    { id: "c", email: "autre@mail.fr", created_at: "2026-11-12T10:00:00Z" },
+  ];
+  assert.equal(prequalForEmail(" LEA@mail.fr ", rows)?.id, "b");
+  assert.equal(prequalForEmail(null, rows), null);
+  assert.equal(prequalForEmail("inconnue@mail.fr", rows), null);
+  assert.match(auditWhen("2026-11-26T23:30:00Z"), /27 nov\.?,? 00:30/);
+});
+
+test("date de Paris d'un audit à 00:30 heure de Paris (23:30 UTC la veille)", async () => {
+  const { parisDateOf } = await import("../dates");
+  assert.equal(parisDateOf("2026-11-26T23:30:00Z"), "2026-11-27");
+  assert.equal(parisDateOf("2026-07-01T22:30:00Z"), "2026-07-02");
+});
+
+test("fenêtre des audits : commence 2 h avant maintenant", async () => {
+  const { auditsWindowStart } = await import("../prequal-inbox");
+  assert.equal(auditsWindowStart(Date.parse("2026-11-27T10:00:00Z")), "2026-11-27T08:00:00.000Z");
+});

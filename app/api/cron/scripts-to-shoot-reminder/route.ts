@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Rappel "autour de" Studio créatif (2026-09-10, retour direct : "pense à
 // tout, les notifs, les rappels"). Depuis les Axes BJ/BM, jusqu'à 6
@@ -15,7 +16,7 @@ const SEUIL_SCRIPTS_EN_ATTENTE = 5;
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -10,6 +10,7 @@ import {
   pickGuide,
   type GuideRef,
 } from "@/lib/reengagement";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Relance des membres dormants, en séquence (voir lib/reengagement.ts
 // pour le contenu et le raisonnement derrière chaque étape). Le nom de la
@@ -60,7 +61,7 @@ interface ClientRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { syncCalendly, syncCatchUp, syncPrequalifications } from "@/lib/staff-automation";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Déclenché toutes les 5 minutes par pg_cron (migration
 // 20260925b_staff_automation.sql). Fait entrer dans l'espace équipe ce qui
 // arrive d'ailleurs : préqualifications (écrites par ep-coaching-formulaires)
 // vers le CRM d'un setter, RDV Calendly vers l'agenda d'un closer.
 export async function GET(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (req.headers.get("authorization") !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const prequalifications = await syncPrequalifications().catch(() => 0);

@@ -76,9 +76,14 @@ const VICTORIES_LINK: BioLink = {
   desc: "Ce que les membres partagent eux-mêmes",
 };
 
-export default async function BioPage() {
+export default async function BioPage({ searchParams }: { searchParams: Promise<{ src?: string }> }) {
   const victories = await getPublicVictories(1);
-  const links = victories.length > 0 ? [...LINKS, VICTORIES_LINK] : LINKS;
+  const base = victories.length > 0 ? [...LINKS, VICTORIES_LINK] : LINKS;
+  // Source du lien suivi (/s/instagram/bio) gardée sur la page suivante :
+  // sinon le réseau d'origine se perdait au clic sur « Rejoindre ».
+  const { src } = await searchParams;
+  const tag = typeof src === "string" && /^[a-z0-9_.-]{1,40}$/i.test(src) ? `?src=${src.toLowerCase()}` : "";
+  const links = base.map((l) => ({ ...l, href: `${l.href}${tag}` }));
 
   return (
     <div

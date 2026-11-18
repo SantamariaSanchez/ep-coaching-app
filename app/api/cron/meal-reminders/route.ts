@@ -5,6 +5,7 @@ import { insertNotification } from "@/utils/insert-notification";
 import { MEAL_SLOT_TIMES as DEFAULT_SLOT_TIMES, MEAL_SLOT_LABELS as SLOT_LABELS, timeToMinutes, parisNow as parisNowBase } from "@/lib/meal-slots";
 import { todayInParis } from "@/lib/dates";
 import { runAdherenceReminders } from "@/lib/adherence-reminders";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Rappel automatique à l'heure habituelle de chaque repas — zéro
 // configuration : des horaires usuels par créneau (pas par client), voir
@@ -33,7 +34,7 @@ interface PlanRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

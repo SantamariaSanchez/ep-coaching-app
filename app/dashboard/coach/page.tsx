@@ -14,7 +14,8 @@ import { getNutritionProfile, getTodayLogs } from "@/utils/nutrition";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { todayInParis, nowInParis } from "@/lib/dates";
+import { todayInParis, nowInParis, parisDateOf } from "@/lib/dates";
+import { auditWhen } from "@/lib/prequal-inbox";
 import { isSlotStarted } from "@/lib/nutrition-engine";
 import ClientsSection from "@/components/ui/ClientsSection";
 import DashboardStats from "@/components/coach/DashboardStats";
@@ -69,6 +70,7 @@ export default async function CoachDashboard() {
     [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency],
     [nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, unreadMsgs, messageable],
     prequalOpen,
+    auditsToday,
   ] = await Promise.all([
     Promise.all([
       getPointsMap(clientIds),
@@ -97,7 +99,20 @@ export default async function CoachDashboard() {
     profile?.is_platform_owner
       ? createAdminClient().from("prequalification_responses").select("id", { count: "exact", head: true }).eq("status", "nouveau").then((r) => r.count ?? 0, () => 0)
       : Promise.resolve(0),
+    // Audits stratégiques réservés aujourd'hui (fuseau Paris, marge d'un jour
+    // UTC filtrée ensuite) : sans closer, personne d'autre ne les voit.
+    profile?.is_platform_owner
+      ? createAdminClient()
+          .from("prospect_bookings")
+          .select("starts_at, name")
+          .eq("status", "active")
+          .gte("starts_at", `${todayStr}T00:00:00+02:00`)
+          .lte("starts_at", `${todayStr}T23:59:59+01:00`)
+          .order("starts_at")
+          .then((r) => (r.data ?? []) as { starts_at: string; name: string | null }[], () => [])
+      : Promise.resolve([] as { starts_at: string; name: string | null }[]),
   ]);
+  const auditsTodayParis = auditsToday.filter((a) => parisDateOf(a.starts_at) === todayStr);
   const ouraEligibleIds = clients
     .filter((c) => isEligibleForLegendReward(pointsMap[c.id] ?? 0, isSubscribed(c)))
     .map((c) => c.id);
@@ -189,6 +204,20 @@ export default async function CoachDashboard() {
           l'information la plus critique du tableau de bord d'un coach qui a
           peu de temps — elle ne doit pas attendre après ses propres infos
           personnelles (nutrition, sommeil) pour apparaître. */}
+      {auditsTodayParis.length > 0 && (
+        <Link
+          href="/dashboard/coach/admin/leads"
+          className="ep-card flex items-center gap-2.5"
+          style={{ padding: "11px 14px", marginBottom: 12, border: "1px solid rgba(var(--ep-accent-rgb),0.6)", color: "var(--ep-ink)", textDecoration: "none" }}
+        >
+          <PhoneCall size={16} style={{ color: "var(--ep-accent)", flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 13.5, fontWeight: 800 }}>
+            {auditsTodayParis.length > 1 ? `${auditsTodayParis.length} audits aujourd'hui` : "Audit aujourd'hui"} · {auditsTodayParis.map((a) => `${auditWhen(a.starts_at).split(", ").pop()}${a.name ? ` ${a.name.split(" ")[0]}` : ""}`).join(", ")}
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ep-accent-hi2)" }}>Préparer</span>
+        </Link>
+      )}
+
       {prequalOpen > 0 && (
         <Link
           href="/dashboard/coach/admin/leads#candidatures"

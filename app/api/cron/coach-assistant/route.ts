@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { runCoachAssistantSweep } from "@/lib/coach-assistant-sweep";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Assistant coach quotidien (Axe 10, VISION.md) — voir
 // lib/coach-assistant-sweep.ts pour la logique. Déclenché via Supabase
@@ -9,7 +10,7 @@ import { runCoachAssistantSweep } from "@/lib/coach-assistant-sweep";
 // sur le plan Vercel utilisé ici.
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

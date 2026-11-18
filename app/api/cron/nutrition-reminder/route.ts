@@ -4,6 +4,7 @@ import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
 import { todayInParis, nowInParis, addMinutesToHhmm } from "@/lib/dates";
 import { DAILY_BILAN_REMINDER_HHMM, whoNeedsBilanReminder, bilanReminderUrl } from "@/lib/daily-bilan-reminder";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Cible 20h00 (Europe/Paris). Ancien fonctionnement : cron pg_cron déclenché
 // une seule fois par jour à un décalage UTC fixe ('0 19 * * *', "19h UTC =
@@ -23,7 +24,7 @@ const WINDOW_MINUTES = 15;
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
