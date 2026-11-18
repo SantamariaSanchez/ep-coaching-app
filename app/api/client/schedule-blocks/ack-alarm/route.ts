@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { parisDateStr } from "@/lib/schedule-time";
+import { dbErrorResult } from "@/lib/db-error";
 
 // Arrête l'escalade d'un réveil (voir app/api/cron/schedule-block-notify) :
 // appelé par le bouton "Arrêter" d'AlarmPlayer.tsx et par l'action "stop-alarm"
@@ -23,6 +24,6 @@ export async function POST(request: Request) {
     .eq("id", blockId)
     .eq("owner_id", guard.userId); // jamais acquitter le bloc de quelqu'un d'autre
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json(dbErrorResult(error, "ack-alarm"), { status: 500 });
   return NextResponse.json({ ok: true });
 }

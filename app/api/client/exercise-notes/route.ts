@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { cleanText, LIMITS } from "@/lib/sanitize";
+import { dbErrorResult } from "@/lib/db-error";
 
 
 
@@ -35,6 +36,6 @@ export async function PATCH(req: Request) {
       { onConflict: "client_id,exercise_name" }
     );
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json(dbErrorResult(error, "exercise-notes"), { status: 500 });
   return NextResponse.json({ ok: true });
 }
