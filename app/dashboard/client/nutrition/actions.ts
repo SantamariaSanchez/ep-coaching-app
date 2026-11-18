@@ -13,9 +13,10 @@ import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notifica
 import { notifyUser } from "@/lib/notify";
 import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
 import { after } from "next/server";
-import { eatingSafetyLevel, parseEatingRelation, type EatingSafetyLevel } from "@/lib/eating-safety";
-import { recordEatingRelation } from "@/lib/eating-safety-server";
+import { eatingSafetyLevel, parseEatingRelation, selfServeDeficitBlocked, type EatingSafetyLevel } from "@/lib/eating-safety";
+import { getEatingRelation, recordEatingRelation } from "@/lib/eating-safety-server";
 import { dbErrorResult } from "@/lib/db-error";
+import { foodLogInputError } from "@/lib/food-log-input";
 
 // Relation à l'alimentation, posée avant tout calcul de déficit (voir
 // lib/eating-safety.ts). Prévient la coach si la réponse l'exige.
@@ -39,6 +40,20 @@ export async function saveOwnNutritionProfile(
   const guard = await requireClient();
   if (!guard.ok) return { error: guard.error };
   if (guard.userId !== clientId) return { error: "Accès refusé." };
+
+  // Réservé aux membres gratuits : chez un client coaché, les objectifs sont
+  // ceux du coach. Vérifié ici, pas seulement en masquant le formulaire.
+  if (isSubscribed(await getProfile(clientId))) {
+    return { error: "Tes objectifs sont fixés par ton coach. Écris-lui pour les ajuster." };
+  }
+
+  // Règle 5 (AGENTS.md, lib/eating-safety.ts) : aucun déficit chiffré quand
+  // la relation à l'alimentation est signalée ou pas encore renseignée. Le
+  // formulaire le cache déjà ; le serveur le refuse aussi, sinon un appel
+  // direct (ou un vieil onglet) enregistrait quand même un déficit.
+  if (selfServeDeficitBlocked(await getEatingRelation(clientId), data)) {
+    return { error: "On ne te propose pas d'objectif en déficit pour l'instant. Garde la maintenance, et parles-en à un professionnel de santé si l'alimentation est un sujet difficile." };
+  }
 
   const supabase = await createServerSupabase();
 
@@ -189,6 +204,8 @@ export async function addFoodLog(params: {
     // accepterait un id de client tiers.
     const guard = await requireAuth();
     if (!guard.ok) return { error: guard.error };
+    const invalid = foodLogInputError(params);
+    if (invalid) return { error: invalid };
 
     const supabase = await createServerSupabase();
 
@@ -369,8 +386,15 @@ export async function createCustomFood(params: {
     const { data, error } = await supabase
       .from("foods")
       .insert({
-        ...params,
+        // Colonnes listées une à une (client admin, sans RLS) : un appel direct
+        // ne doit pas pouvoir écrire d'autres champs de la table partagée.
         name,
+        category: String(params.category ?? "").slice(0, 60) || "Autre",
+        calories_per_100: Number(params.calories_per_100),
+        proteins_per_100: Number(params.proteins_per_100),
+        carbs_per_100: Number(params.carbs_per_100),
+        fats_per_100: Number(params.fats_per_100),
+        fibers_per_100: Number(params.fibers_per_100 ?? 0),
         is_custom: true,
         created_by: guard.userId,
       })
@@ -495,6 +519,15 @@ export async function activateOwnDietPlan(planId: string): Promise<{ error?: str
 
   try {
     const supabase = await createServerSupabase();
+    // Le plan doit exister et être le sien AVANT de désactiver l'actuel :
+    // sinon un identifiant périmé laissait la personne sans plan actif.
+    const { data: target } = await supabase
+      .from("diet_plans")
+      .select("id")
+      .eq("id", planId)
+      .eq("client_id", guard.userId)
+      .maybeSingle();
+    if (!target) return { error: "Ce plan n'existe plus. Recharge la page." };
     // Les deux résultats sont désormais vérifiés (audit nutrition
     // 2026-09-16) : ni l'un ni l'autre ne l'était, donc "Activer" pouvait
     // échouer entièrement côté serveur (le 2e update, celui qui compte

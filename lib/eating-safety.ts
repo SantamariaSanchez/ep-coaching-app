@@ -74,3 +74,18 @@ export function eatingCoachAlert(level: EatingSafetyLevel, clientName: string): 
   }
   return null;
 }
+
+/**
+ * Objectif nutrition enregistré par la personne elle-même : déficit refusé si
+ * la relation à l'alimentation est signalée (« actuel », « incertain ») ou pas
+ * encore renseignée. Un déficit = phase « deficit » ou cible sous la dépense.
+ */
+export function selfServeDeficitBlocked(
+  relation: EatingRelation | null | undefined,
+  target: { phase?: string | null; calories_target?: number | null; tdee?: number | null }
+): boolean {
+  const isDeficit =
+    target.phase === "deficit" ||
+    (typeof target.calories_target === "number" && typeof target.tdee === "number" && target.tdee > 0 && target.calories_target < target.tdee - 50);
+  return isDeficit && (relation == null || !deficitAllowed(eatingSafetyLevel(relation)));
+}
