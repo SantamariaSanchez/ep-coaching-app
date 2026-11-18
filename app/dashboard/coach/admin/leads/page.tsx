@@ -10,7 +10,7 @@ import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
-import { funnelSteps, visitGroup } from "@/lib/visit-tracking";
+import { activationSteps, funnelSteps, visitGroup, type ActivationCounts } from "@/lib/visit-tracking";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { updateLeadStatus, updateLeadNote } from "./actions";
 import { todayInParis } from "@/lib/dates";
@@ -42,11 +42,15 @@ export default async function LeadsAdminPage() {
   // emails laissés, candidatures, inscriptions et onboarding, même fenêtre.
   const since30 = new Date(new Date(`${todayInParis()}T00:00:00Z`).getTime() - 30 * 86_400_000).toISOString();
   const admin = createAdminClient();
-  const [visitRows, signups30, onboarded30] = await Promise.all([
+  const [visitRows, signups30, onboarded30, activationRes] = await Promise.all([
     admin.from("page_visits").select("path").gte("created_at", since30).limit(50_000),
     admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_platform_owner", false).not("email", "ilike", "%@epcoaching.app").gte("terms_accepted_at", since30),
     admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_platform_owner", false).not("email", "ilike", "%@epcoaching.app").gte("onboarding_completed_at", since30),
+    // Première valeur et retour à J+7 (C64), lus dans les tables d'usage :
+    // voir supabase/migrations/20261118090000_funnel_activation.sql.
+    admin.rpc("funnel_activation", { p_since: since30 }),
   ]);
+  const activation = (Array.isArray(activationRes.data) ? activationRes.data[0] : null) as ActivationCounts | null;
   const paths = ((visitRows.data ?? []) as { path: string }[]).map((v) => v.path);
   const funnel = funnelSteps({
     visits: paths.length,
@@ -151,7 +155,7 @@ export default async function LeadsAdminPage() {
       <section className="ep-card mb-6" style={{ padding: "14px 16px" }} aria-labelledby="tunnel-titre">
         <h2 id="tunnel-titre" className="text-sm font-black uppercase tracking-wide mb-2">{t("Tunnel des 30 derniers jours")}</h2>
         <ul className="flex flex-col gap-1">
-          {funnel.map((f) => (
+          {[...funnel, ...activationSteps(activation)].map((f) => (
             <li key={f.label} className="flex items-baseline gap-2 text-[12.5px]">
               <span className="flex-1 text-(--ep-ink)/70">{t(f.label)}</span>
               <b className="text-(--ep-ink)">{f.n}</b>
@@ -159,7 +163,22 @@ export default async function LeadsAdminPage() {
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-[10.5px] text-(--ep-ink)/40">{t("Visites comptées depuis le 16/11, une par page et par onglet, sans cookie.")}</p>
+        <p className="mt-2 text-[10.5px] text-(--ep-ink)/40">{t("Visites comptées depuis le 16/11, une par page et par onglet, sans cookie. Première valeur et retour à J+7 lus dans les séances, repas, bilans et check-ins, sans suivi en plus.")}</p>
+      </section>
+
+      <section className="ep-card mb-6" style={{ padding: "14px 16px" }} aria-labelledby="liens-suivis">
+        <h2 id="liens-suivis" className="text-sm font-black uppercase tracking-wide mb-1">{t("Tes liens suivis")}</h2>
+        <p className="text-[11.5px] text-(--ep-ink)/50 mb-2">
+          {t("Mets ces liens en bio et dans tes mails : chaque visite est rangée sous le bon réseau. Ajoute une page après, ex. /s/instagram/ressources.")}
+        </p>
+        <ul className="flex flex-col gap-1 text-[12px]">
+          {(["instagram", "tiktok", "linkedin", "youtube", "mail"] as const).map((s) => (
+            <li key={s} className="flex gap-2">
+              <span className="w-20 text-(--ep-ink)/60">{s}</span>
+              <code className="select-all text-(--ep-ink)">ep-coaching.vercel.app/s/{s}</code>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <PrequalInbox rows={prequals} coachName={(profile.full_name ?? "").split(" ")[0] || null} />
