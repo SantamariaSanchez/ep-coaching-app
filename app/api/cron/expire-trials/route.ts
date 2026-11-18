@@ -5,6 +5,7 @@ import { notifyUser } from "@/lib/notify";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { cronBearer } from "@/lib/cron-auth";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Item 43 (chantier 50 idées) : repasse automatiquement en gratuit les
 // essais coaching arrivés à échéance (trial_ends_at dépassé). Tourne une
@@ -64,7 +65,7 @@ export async function GET(req: Request) {
         // message partait en <div> brut, sans logo ni cadre.
         htmlContent: wrapBrandedEmail(`
           <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${title}</h2>
-          <p style="margin:0 0 12px;">Salut ${client.full_name?.split(" ")[0] ?? ""},</p>
+          <p style="margin:0 0 12px;">Salut ${escapeHtml(client.full_name?.split(" ")[0] ?? "")},</p>
           <p style="margin:0 0 16px;">${body}</p>
           <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/client/abonnement"
              style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;">

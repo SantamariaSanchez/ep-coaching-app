@@ -4,6 +4,7 @@ import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { freeTierStatus, EXPIRY_WARN_DAYS, FREE_TIER_DAYS } from "@/lib/free-tier";
 import { cronBearer } from "@/lib/cron-auth";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Prévient un membre gratuit ACTIF avant que son accès se verrouille — voir
 // lib/free-tier.ts. Distinct de app/api/cron/free-tier-inactivity, qui cible
@@ -77,7 +78,7 @@ export async function GET(req: Request) {
         subject,
         htmlContent: wrapBrandedEmail(`
           <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${subject}</h2>
-          <p style="margin:0 0 12px;">Salut ${row.full_name?.split(" ")[0] ?? ""},</p>
+          <p style="margin:0 0 12px;">Salut ${escapeHtml(row.full_name?.split(" ")[0] ?? "")},</p>
           <p style="margin:0 0 12px;">
             Tes ${FREE_TIER_DAYS} jours d'accès gratuit se terminent demain. Rien n'est perdu : tes
             données restent, mais l'appli se verrouille jusqu'à ce que tu prennes un coach.
@@ -103,7 +104,7 @@ export async function GET(req: Request) {
         subject,
         htmlContent: wrapBrandedEmail(`
           <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${subject}</h2>
-          <p style="margin:0 0 12px;">Salut ${row.full_name?.split(" ")[0] ?? ""},</p>
+          <p style="margin:0 0 12px;">Salut ${escapeHtml(row.full_name?.split(" ")[0] ?? "")},</p>
           <p style="margin:0 0 16px;">
             Ton compte gratuit a été ouvert il y a ${status.daysUsed} jours. Dans 7 jours, l'accès se
             verrouille tant qu'aucun coach n'est pris (tes données restent, tu ne perds rien).

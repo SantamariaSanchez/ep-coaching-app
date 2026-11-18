@@ -49,3 +49,16 @@ test("alerte coach : seulement pour stop et watch", () => {
   assert.match(eatingCoachAlert("stop", "Léa")!.title, /Léa/);
   assert.match(eatingCoachAlert("watch", "Léa")!.body, /culpabilise jamais/);
 });
+
+test("objectif enregistré soi-même : pas de déficit si la relation est signalée ou inconnue (règle 5)", async () => {
+  const { selfServeDeficitBlocked } = await import("../eating-safety");
+  const deficit = { phase: "deficit", calories_target: 1600, tdee: 2000 };
+  const sousLaDepense = { phase: "maintenance", calories_target: 1500, tdee: 2000 };
+  const maintenance = { phase: "maintenance", calories_target: 2000, tdee: 2000 };
+  assert.equal(selfServeDeficitBlocked("actuel", deficit), true);
+  assert.equal(selfServeDeficitBlocked("incertain", sousLaDepense), true);
+  assert.equal(selfServeDeficitBlocked(null, deficit), true);
+  assert.equal(selfServeDeficitBlocked("actuel", maintenance), false);
+  assert.equal(selfServeDeficitBlocked("non", deficit), false);
+  assert.equal(selfServeDeficitBlocked("passe", deficit), false);
+});

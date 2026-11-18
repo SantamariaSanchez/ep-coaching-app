@@ -8,10 +8,11 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { notifyUser } from "@/lib/notify";
 import { sendBrevoEmail } from "@/utils/brevo";
-import { escapeHtml, safeExternalUrl } from "@/lib/sanitize";
+import { cleanText, escapeHtml, LIMITS, safeExternalUrl } from "@/lib/sanitize";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { requireClient } from "@/lib/auth-guards";
 import { dbErrorResult } from "@/lib/db-error";
+import { ownStoragePath } from "@/lib/storage-path";
 
 type SubmitState = { error: string } | { success: true } | null;
 
@@ -21,10 +22,12 @@ function num(v: FormDataEntryValue | null): number | null {
   return isNaN(n) ? null : n;
 }
 
+// Texte libre limité à la contrainte de la table (5 000 caractères) : une
+// réponse trop longue rejetait tout le check-in au lieu d'être coupée.
 function txt(v: FormDataEntryValue | null): string | null {
-  const s = (v as string | null)?.trim();
-  return s || null;
+  return cleanText(v, LIMITS.message);
 }
+
 
 export async function submitCheckin(
   prevState: SubmitState,
@@ -48,7 +51,7 @@ export async function submitCheckin(
   // Plus de blocage sur le jour prévu (2026-10-13) : un check-in par semaine,
   // envoyé le jour qui arrange le client.
   const weekStart = getWeekStart();
-  const weekNumber = getISOWeek(new Date(weekStart));
+  const weekNumber = getISOWeek(new Date(`${weekStart}T12:00:00Z`));
   const { data: already } = await serverClient
     .from("check_ins")
     .select("id")
@@ -60,17 +63,28 @@ export async function submitCheckin(
 
   const photoPaths = formData
     .getAll("photo_paths")
-    .map((v) => (v as string).trim())
-    .filter(Boolean);
+    .map((v) => ownStoragePath(v, guard.userId))
+    .filter((p): p is string => !!p)
+    .slice(0, 12);
 
   // Vidéos d'exécution : plusieurs possibles, chacune avec son exercice.
-  const videoPaths = formData.getAll("video_paths").map((v) => (v as string).trim()).filter(Boolean).slice(0, 6);
-  const videoLabels = formData.getAll("video_labels").map((v) => ((v as string) ?? "").trim().slice(0, 80)).slice(0, videoPaths.length);
+  // Chemin et libellé gardés ensemble avant de filtrer, sinon une ligne
+  // vide décalait les libellés (la vidéo du développé étiquetée « Squat »).
+  const rawVideoLabels = formData.getAll("video_labels");
+  const videos = formData
+    .getAll("video_paths")
+    .map((v, i) => ({ path: ownStoragePath(v, guard.userId), label: (typeof rawVideoLabels[i] === "string" ? (rawVideoLabels[i] as string) : "").trim().slice(0, 80) }))
+    .filter((x): x is { path: string; label: string } => !!x.path)
+    .slice(0, 6);
+  const videoPaths = videos.map((x) => x.path);
+  const videoLabels = videos.map((x) => x.label);
   // Lien affiché tel quel au coach (<a href>) : seulement http(s), jamais
   // un « javascript: » envoyé à la main en contournant le champ type="url".
   const videoLink = safeExternalUrl(formData.get("video_drive_link"));
 
-  const attitudeRating = num(formData.get("attitude_rating"));
+  // Colonne entière de 1 à 10 : une valeur hors bornes rejetait tout le check-in.
+  const attitudeRaw = num(formData.get("attitude_rating"));
+  const attitudeRating = attitudeRaw != null && attitudeRaw >= 1 && attitudeRaw <= 10 ? Math.round(attitudeRaw) : null;
   const attitudeExplanation = txt(formData.get("attitude_explanation"));
   // Explication facultative (audit 2026-11-13) : un check-in incomplet vaut
   // mieux qu'un check-in pas envoyé.
@@ -104,7 +118,7 @@ export async function submitCheckin(
     // Médias — déjà uploadés côté client (voir CheckinForm), on ne reçoit ici
     // que les chemins de stockage, jamais les fichiers eux-mêmes.
     photo_paths: photoPaths.length > 0 ? photoPaths : null,
-    video_path: videoPaths[0] ?? txt(formData.get("video_path")),
+    video_path: videoPaths[0] ?? null,
     ...(videoPaths.length > 0 ? { video_paths: videoPaths, video_labels: videoLabels } : {}),
     ...(videoLink ? { video_drive_link: videoLink } : {}),
   });
@@ -135,12 +149,14 @@ export async function submitCheckin(
         ? sendBrevoEmail({
             to: coach.email,
             subject: `Nouveau check-in de ${clientName}`,
-            htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;"><h2 style="color:#E01E1E;margin-top:0;">Nouveau check-in reçu</h2><p>${escapeHtml(clientName)} vient d'envoyer son check-in de la semaine ${weekNumber}.</p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? ""}${url}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">Faire son bilan</a></div>`,
+            htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;"><h2 style="color:#E01E1E;margin-top:0;">Nouveau check-in reçu</h2><p>${escapeHtml(clientName)} vient d'envoyer son check-in de la semaine ${weekNumber}.</p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}${url}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">Faire son bilan</a></div>`,
           })
         : Promise.resolve(),
     ]);
   });
 
   revalidatePath("/dashboard/client/checkin");
+  // L'accueil affiche aussi « check-in à faire » : sans ça, le rappel restait.
+  revalidatePath("/dashboard/client");
   return { success: true };
 }

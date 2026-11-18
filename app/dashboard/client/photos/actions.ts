@@ -10,6 +10,7 @@ import { requireClient } from "@/lib/auth-guards";
 import type { SubmissionType } from "@/lib/posing-data";
 import { TYPE_LABELS } from "@/lib/posing-data";
 import { safeExternalUrl } from "@/lib/sanitize";
+import { ownStoragePath } from "@/lib/storage-path";
 
 function getISOWeekNumber(date: Date): number {
   const d = new Date(date);
@@ -54,9 +55,10 @@ export async function submitPhotoUpdate(
     // ici que les chemins de stockage, jamais les fichiers eux-mêmes.
     const photoPaths = formData
       .getAll("photo_paths")
-      .map((v) => (v as string).trim())
-      .filter(Boolean);
-    const videoPath = (formData.get("video_path") as string)?.trim() || null;
+      .map((v) => ownStoragePath(v, guard.userId))
+      .filter((p): p is string => !!p)
+      .slice(0, 12);
+    const videoPath = ownStoragePath(formData.get("video_path"), guard.userId);
     // Alternative à videoPath : lien externe (ScreenPal, YouTube, Vimeo...)
     // — demande explicite du 2026-08-15.
     const videoLinkRaw = (formData.get("video_link") as string)?.trim() || null;

@@ -1,4 +1,5 @@
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
+import { escapeHtml } from "@/lib/sanitize";
 
 // ── Relance J+1 après la toute première action ──────────────────────────────
 //
@@ -74,7 +75,7 @@ function doneLabel(step: NextStep["key"]): string {
  */
 export function buildFollowupMessage(ctx: FollowupContext): FollowupMessage {
   const { firstName, appUrl, doneWorkout, doneMeal, doneBilan } = ctx;
-  const hi = firstName ? `Salut ${firstName}` : "Salut";
+  const hi = firstName ? `Salut ${escapeHtml(firstName)}` : "Salut";
   const doneMap: Record<NextStep["key"], boolean> = {
     workout: doneWorkout,
     meal: doneMeal,
