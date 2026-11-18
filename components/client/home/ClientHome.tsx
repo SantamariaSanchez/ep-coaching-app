@@ -11,6 +11,8 @@ import { reorderByPriority, type derivePersonalization } from "@/lib/personaliza
 import type { OnboardingChecklistItem } from "@/lib/onboarding-checklist";
 import { visibleTodos, type HomeDayData } from "@/lib/client-home";
 import StagnationBanner from "@/components/client/StagnationBanner";
+import FirstMonthCard from "@/components/client/home/FirstMonthCard";
+import type { FirstMonth } from "@/lib/first-month";
 import HomeQuickBilan from "@/components/tracking/HomeQuickBilan";
 import type { HomeQuickData } from "@/lib/tracking-home-server";
 import type { QuickAction } from "@/components/tracking/QuickBilan";
@@ -369,9 +371,12 @@ export async function WelcomeGuide({
   quick = null,
   quickAction,
   askFeedback = false,
+  firstMonth = null,
 }: {
   /** Avis volontaire sur l'appli (C78), voir lib/app-feedback.ts. */
   askFeedback?: boolean;
+  /** « Ton premier mois » (jour 21 à 45), voir lib/first-month.ts. */
+  firstMonth?: FirstMonth | null;
   quick?: HomeQuickData | null;
   quickAction?: QuickAction;
   firstName: string;
@@ -420,6 +425,7 @@ export async function WelcomeGuide({
               </TodayPair>
             )}
             <TodoList todos={visibleTodos(day)} />
+            <FirstMonthCard data={firstMonth} />
             <StartChecklist items={checklist} hide={visibleTodos(day).some((x) => x.kind === "bilan") ? ["bilan"] : []} />
             <PremiumCta pitch={pitch} />
           </div>
@@ -579,7 +585,10 @@ export async function CoachedHome({
   preview = false,
   quick = null,
   quickAction,
+  firstMonth = null,
 }: {
+  /** « Ton premier mois » (jour 21 à 45), voir lib/first-month.ts. */
+  firstMonth?: FirstMonth | null;
   /** Saisie rapide du jour (moteur de tracking), absente en aperçu coach. */
   quick?: HomeQuickData | null;
   quickAction?: QuickAction;
@@ -644,6 +653,7 @@ export async function CoachedHome({
           )}
           <TodoList todos={visibleTodos(day)} />
           {latestNote && <div className="min-[1000px]:hidden"><CoachNoteMini note={latestNote} /></div>}
+          <FirstMonthCard data={firstMonth} />
           <StartChecklist items={checklist} hide={visibleTodos(day).some((x) => x.kind === "bilan") ? ["bilan"] : []} />
           <ProgressRow start={profile?.weight_start ?? null} current={thisWeekCheckin?.weight ?? null} goal={profile?.goal ?? null} />
           <Shortcuts title="Raccourcis" items={SHORTCUTS} />

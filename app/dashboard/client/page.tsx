@@ -13,11 +13,12 @@ import { getTrialDaysLeft } from "@/utils/coaching-trial";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization } from "@/lib/personalization";
 import { getOnboardingChecklist } from "@/lib/onboarding-checklist";
+import { getFirstMonth } from "@/lib/first-month-server";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import { getClientActivityStreak } from "@/lib/client-activity";
 import { getClientHomeDay } from "@/utils/client-home";
 import { weeksSince } from "@/lib/client-home";
-import { todayInParis } from "@/lib/dates";
+import { parisDateOf, todayInParis } from "@/lib/dates";
 import { getHomeQuickData } from "@/lib/tracking-home-server";
 import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import { CoachedHome, WelcomeGuide } from "@/components/client/home/ClientHome";
@@ -54,7 +55,7 @@ export default async function ClientDashboard({
     // Données rapides chaînées sur les réglages au lieu d'attendre tout le
     // lot puis de repartir pour un aller-retour de plus.
     const appSetupP = getAppSetup(user.id);
-    const [preferences, checklist, activityStreak, appSetup, day, quick, askFeedback] = await Promise.all([
+    const [preferences, checklist, activityStreak, appSetup, day, quick, askFeedback, firstMonth] = await Promise.all([
       getMemberPreferences(user.id),
       getOnboardingChecklist(user.id),
       // Item 42 : signal de constance déjà calculé pour item 20, réutilisé
@@ -75,6 +76,8 @@ export default async function ClientDashboard({
           return false;
         }
       })(),
+      // Membre gratuit : son mois commence à la fin de l'onboarding.
+      getFirstMonth(user.id, profile?.onboarding_completed_at ? parisDateOf(profile.onboarding_completed_at) : null, todayInParis()),
     ]);
     return (
       <>
@@ -91,6 +94,7 @@ export default async function ClientDashboard({
           day={day}
           locale={locale}
           askFeedback={askFeedback}
+          firstMonth={firstMonth}
         />
       </>
     );
@@ -132,7 +136,7 @@ export default async function ClientDashboard({
 
   // Premières semaines : la checklist de départ, puis plus jamais.
   const weeks = weeksSince(profile?.start_date, todayInParis());
-  const [day, checklist, quick] = await Promise.all([
+  const [day, checklist, quick, firstMonth] = await Promise.all([
     getClientHomeDay(user.id, {
       coached: true,
       checkinDone: !!thisWeekCheckin,
@@ -144,6 +148,7 @@ export default async function ClientDashboard({
     }),
     weeks < 4 ? getOnboardingChecklist(user.id) : Promise.resolve([]),
     getHomeQuickData(user.id, appSetup),
+    getFirstMonth(user.id, profile?.start_date ?? null, todayInParis()),
   ]);
 
   return (
@@ -161,6 +166,7 @@ export default async function ClientDashboard({
         locale={locale}
         day={day}
         checklist={checklist}
+        firstMonth={firstMonth}
       />
     </>
   );
