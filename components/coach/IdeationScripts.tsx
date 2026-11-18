@@ -19,6 +19,7 @@ import { cleanVideoPlan } from "@/lib/youtube-studio";
 import YoutubeStudio from "@/components/coach/YoutubeStudio";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript } from "@/lib/content-formats";
 import { ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
+import { shootingOrder } from "@/lib/shooting-session";
 import { defaultFormatFor, formatsForPlatform, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -578,8 +579,9 @@ function MyScripts({
   function startFilmingQueue() {
     if (filmableScripts.length === 0) return;
     setSessionDone(null);
-    setSession({ ids: filmableScripts.map((s) => s.id), index: 0, shot: 0 });
-    setShootingId(filmableScripts[0].id);
+    const ordered = shootingOrder(filmableScripts);
+    setSession({ ids: ordered.map((s) => s.id), index: 0, shot: 0 });
+    setShootingId(ordered[0].id);
   }
 
   function nextInSession(markedShot: boolean) {
