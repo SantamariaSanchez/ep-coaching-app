@@ -40,10 +40,18 @@ export async function saveMemberPreferences(
     if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
 
+    // completed_at = date du quiz : posée une seule fois. Les réglages
+    // modifiés ensuite depuis les paramètres ne doivent pas la décaler.
+    const { data: existing, error: readError } = await supabase
+      .from("member_preferences")
+      .select("completed_at")
+      .eq("id", guard.userId)
+      .maybeSingle();
+    if (readError) return { error: "Erreur lors de la sauvegarde." };
     const { error } = await supabase.from("member_preferences").upsert({
       ...stripProtected(input),
       id: guard.userId,
-      completed_at: new Date().toISOString(),
+      completed_at: (existing?.completed_at as string | null) ?? new Date().toISOString(),
     });
 
     if (error) return { error: "Erreur lors de la sauvegarde." };
@@ -59,7 +67,8 @@ export async function saveMemberPreferences(
       profileUpdate.level = LEVEL_LABELS[input.experience_level];
     }
     if (Object.keys(profileUpdate).length > 0) {
-      await supabase.from("profiles").update(profileUpdate).eq("id", guard.userId);
+      const { error: profileError } = await supabase.from("profiles").update(profileUpdate).eq("id", guard.userId);
+      if (profileError) console.error("saveMemberPreferences profile sync error:", profileError);
     }
 
     return {};
@@ -115,12 +124,17 @@ export async function completeOnboarding(): Promise<{ error?: string }> {
     if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
 
-    const { error } = await supabase
+    // Ne passe qu'une fois : un double clic ou un retour sur l'écran final ne
+    // renvoie ni le mail de bienvenue ni les notifications coach/fondateur.
+    const { data: updated, error } = await supabase
       .from("profiles")
       .update({ onboarding_completed_at: new Date().toISOString() })
-      .eq("id", guard.userId);
+      .eq("id", guard.userId)
+      .is("onboarding_completed_at", null)
+      .select("id");
 
     if (error) return { error: "Erreur lors de la sauvegarde." };
+    if (!updated || updated.length === 0) return {};
     const userId = guard.userId;
     after(() => announceOnboardingDone(userId).catch(() => {}));
     return {};
@@ -145,17 +159,31 @@ export async function installStarterProgram(presetId: string): Promise<{ error?:
     if (!preset) return { error: "Programme introuvable." };
 
     const supabase = await createServerSupabase();
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role, subscription_status")
       .eq("id", guard.userId)
-      .single();
+      .maybeSingle();
+    // Profil illisible : getAccessType(null) vaudrait « membre gratuit » et on
+    // risquerait d'installer un programme chez une cliente accompagnée.
+    if (profileError || !profile) return { error: "Impossible de vérifier ton accès, réessaie." };
     if (getAccessType(profile) !== "membre_gratuit") {
       return { error: "Ton programme est préparé par ton coach." };
     }
 
-    const existing = await getActiveProgram(guard.userId);
-    if (existing && existing.days.length > 0) return {};
+    // Lecture directe avec contrôle d'erreur : getActiveProgram renvoie null
+    // aussi en cas de panne, ce qui aurait écrasé un programme existant.
+    const { data: active, error: activeError } = await supabase
+      .from("programs")
+      .select("id")
+      .eq("client_id", guard.userId)
+      .eq("is_active", true)
+      .limit(1);
+    if (activeError) return { error: "Impossible de vérifier ton programme, réessaie." };
+    if (active && active.length > 0) {
+      const existing = await getActiveProgram(guard.userId);
+      if (!existing || existing.days.length > 0) return {};
+    }
 
     return await saveProgramForClient(supabase, guard.userId, preset.input);
   } catch (e) {
@@ -175,7 +203,7 @@ const CHECKIN_DAYS = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "sa
 async function announceOnboardingDone(userId: string): Promise<void> {
   const admin = createAdminClient();
   const [{ data: profile }, { data: prefs }] = await Promise.all([
-    admin.from("profiles").select("full_name, email, coach_id, role, checkin_day").eq("id", userId).maybeSingle(),
+    admin.from("profiles").select("full_name, email, coach_id, role, checkin_day, subscription_status").eq("id", userId).maybeSingle(),
     admin.from("member_preferences").select("primary_goal, experience_level").eq("id", userId).maybeSingle(),
   ]);
   if (!profile || profile.role !== "client") return;
@@ -185,7 +213,10 @@ async function announceOnboardingDone(userId: string): Promise<void> {
   const level = LEVEL_LABELS[(prefs?.experience_level as string | null) ?? ""] ?? null;
   const details = [goal ? `Objectif : ${goal}` : null, level ? `niveau ${level.toLowerCase()}` : null].filter(Boolean).join(" · ");
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
-  const checkinDay = CHECKIN_DAYS[(profile.checkin_day as number | null) ?? 0] || null;
+  // Le check-in hebdo et le coach qui ajuste n'existent que pour une cliente
+  // accompagnée : ne pas les promettre à un membre gratuit.
+  const accompanied = getAccessType(profile as Parameters<typeof getAccessType>[0]) === "client_accompagne";
+  const checkinDay = accompanied ? CHECKIN_DAYS[(profile.checkin_day as number | null) ?? 0] || null : null;
 
   const tasks: Promise<unknown>[] = [];
   if (profile.email) {
