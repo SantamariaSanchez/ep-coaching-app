@@ -11,6 +11,7 @@ import { sendBrevoEmail } from "@/utils/brevo";
 import { escapeHtml, safeExternalUrl } from "@/lib/sanitize";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { requireClient } from "@/lib/auth-guards";
+import { dbErrorResult } from "@/lib/db-error";
 
 type SubmitState = { error: string } | { success: true } | null;
 
@@ -108,7 +109,7 @@ export async function submitCheckin(
     ...(videoLink ? { video_drive_link: videoLink } : {}),
   });
 
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "checkin");
 
   after(() => awardPoints(guard.userId, POINTS.weekly_checkin, "Check-in hebdomadaire envoyé", "weekly_checkin", weekStart));
 

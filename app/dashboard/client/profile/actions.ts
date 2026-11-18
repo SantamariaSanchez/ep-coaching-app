@@ -3,6 +3,7 @@
 import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
+import { dbErrorResult } from "@/lib/db-error";
 
 function generateReferralCode(): string {
   return Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 5);
@@ -40,7 +41,7 @@ export async function ensureReferralCode(): Promise<{ error?: string; code?: str
       revalidatePath("/dashboard/client/profile");
       return { code: data.referral_code };
     }
-    if (error && !error.message.includes("referral_code")) return { error: error.message };
+    if (error && !error.message.includes("referral_code")) return dbErrorResult(error, "profil");
   }
 
   return { error: "Erreur lors de la génération du lien." };

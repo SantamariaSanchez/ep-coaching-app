@@ -15,6 +15,7 @@ import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-cele
 import { after } from "next/server";
 import { eatingSafetyLevel, parseEatingRelation, type EatingSafetyLevel } from "@/lib/eating-safety";
 import { recordEatingRelation } from "@/lib/eating-safety-server";
+import { dbErrorResult } from "@/lib/db-error";
 
 // Relation à l'alimentation, posée avant tout calcul de déficit (voir
 // lib/eating-safety.ts). Prévient la coach si la réponse l'exige.
@@ -249,7 +250,7 @@ export async function addFoodLog(params: {
 
     if (error) {
       console.error("food_log insert error:", error);
-      return { error: error.message ?? "Erreur lors de l'ajout." };
+      return dbErrorResult(error, "nutrition", "Ajout impossible. Réessaie dans un instant.");
     }
     if (!data) return { error: "Erreur lors de l'ajout (pas de data)." };
 

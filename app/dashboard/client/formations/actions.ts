@@ -8,6 +8,7 @@ import { after } from "next/server";
 import { getLessonWithContext } from "@/utils/formations";
 import { getProfile } from "@/utils/auth";
 import { isSubscribed } from "@/utils/auth-client";
+import { dbErrorResult } from "@/lib/db-error";
 
 // Même classe de bug que app/dashboard/client/nutrition/actions.ts
 // (addFoodLog/removeFoodLog) : sans revalidatePath, une leçon marquée
@@ -39,7 +40,7 @@ function revalidateFormations() {
 // requireAuth() plutôt qu'un getUser() nu : les formations sont suivies par
 // les clients comme par le coach, mais marquer une leçon reste une écriture,
 // donc soumise à la 2FA quand le compte l'a activée.
-export async function markLessonComplete(lessonId: string) {
+export async function markLessonComplete(lessonId: string): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
 
@@ -70,7 +71,7 @@ export async function markLessonComplete(lessonId: string) {
     .from("formation_progress")
     .upsert({ user_id: guard.userId, lesson_id: lessonId }, { onConflict: "user_id,lesson_id" });
 
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "formations");
 
   after(() => awardPoints(guard.userId, POINTS.formation_lesson, "Leçon terminée", "formation_lesson", lessonId));
   revalidateFormations();
@@ -78,7 +79,7 @@ export async function markLessonComplete(lessonId: string) {
   return { success: true };
 }
 
-export async function unmarkLessonComplete(lessonId: string) {
+export async function unmarkLessonComplete(lessonId: string): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
 
@@ -89,7 +90,7 @@ export async function unmarkLessonComplete(lessonId: string) {
     .eq("user_id", guard.userId)
     .eq("lesson_id", lessonId);
 
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "formations");
   revalidateFormations();
   return { success: true };
 }
