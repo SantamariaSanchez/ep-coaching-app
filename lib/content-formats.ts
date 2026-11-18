@@ -267,6 +267,23 @@ export const CONTENT_FORMATS: ContentFormat[] = [
     filmed: true,
   },
   {
+    // Dépôt du 18/11 (vlog séance fessiers) : la séance filmée en entier, comme
+    // si elle était à côté de toi. Chaque exercice : pourquoi il est placé là,
+    // la consigne pour sentir le muscle, séries et tempo.
+    id: "seance_avec_moi",
+    short: "Séance avec moi",
+    label: "Une séance avec moi (vlog)",
+    icon: Dumbbell,
+    color: "var(--ep-ok)",
+    description: "Ta vraie séance filmée de l'échauffement au dernier exercice : pourquoi cet ordre, la consigne pour sentir le muscle, séries et tempo. Elle s'entraîne avec toi.",
+    structure: ["Accroche : le problème qu'elle a (« je sens pas mes fessiers »)", "Échauffement ciblé", "Un bloc par exercice, du plus lourd au plus facile, avec pourquoi il est là", "Bilan de la séance et appel à l'action"],
+    tips: ["Téléphone posé de profil, corps entier, 4 à 8 s par série.", "Une consigne de sensation par exercice, dite simplement.", "Séries, répétitions et tempo écrits à l'écran, la voix off explique le pourquoi.", "Jamais de promesse de résultat en X semaines ni de remarque sur le corps."],
+    shape: "broll",
+    shapeHint: "Un bloc par exercice : « Plan : l'exercice filmé », « Écran : 4 x 10, tempo 3-1-1 », « Voix off : pourquoi il est à cette place et la consigne pour le sentir ».",
+    template: "Plan : [toi qui arrives à la salle]\nÉcran : [« Tu sens pas tes fessiers ? Fais ma séance »]\nVoix off : [le problème qu'elle a, en une phrase]\n\nPlan : [échauffement ciblé]\nÉcran : [2 x 20]\nVoix off : [pourquoi on active d'abord]\n\nPlan : [exercice 1, le plus lourd]\nÉcran : [4 x 10, tempo]\nVoix off : [pourquoi en premier + la consigne pour le sentir]\n\nPlan : [exercice 2]\nÉcran : \nVoix off : \n\nPlan : [dernier exercice, isolation]\nÉcran : \nVoix off : [on finit léger, propre]\n\nPlan : [fin de séance]\nÉcran : [appel à l'action]\nVoix off : [le bilan + où trouver le programme]",
+    filmed: true,
+  },
+  {
     id: "demo_exercice",
     short: "Démo exo",
     label: "Démo d'exercice",
