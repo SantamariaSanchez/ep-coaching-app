@@ -20,6 +20,7 @@ as $$
   ),
   usage as (
     select client_id as uid, created_at as at from sessions where is_completed
+    union all select client_id, created_at from workout_logs
     union all select client_id, created_at from food_logs
     union all select client_id, updated_at from meal_checks
     union all select client_id, created_at from daily_logs
@@ -29,6 +30,7 @@ as $$
   membres as (
     select i.id, i.t0,
       exists (select 1 from sessions s where s.client_id = i.id and s.is_completed)
+        or exists (select 1 from workout_logs w where w.client_id = i.id)
         or exists (select 1 from food_logs f where f.client_id = i.id) as valeur,
       i.t0 <= now() - interval '7 days' as cohorte7,
       exists (select 1 from usage u where u.uid = i.id and u.at >= i.t0 + interval '7 days') as revenu7
