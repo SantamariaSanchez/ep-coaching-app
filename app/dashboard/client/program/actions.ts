@@ -6,6 +6,8 @@ import { after } from "next/server";
 import { notifyCoachNewCorrection } from "@/lib/coach-client-notify";
 import { requireClient } from "@/lib/auth-guards";
 import { saveProgramForClient } from "@/utils/programs";
+import { getAccessType } from "@/utils/auth-client";
+import { ownStoragePath } from "@/lib/storage-path";
 import type { ProgramInput } from "@/utils/programs";
 
 // Self-serve program editor — only available to free-tier community members.
@@ -19,6 +21,16 @@ export async function saveOwnProgram(
   if (guard.userId !== clientId) return { error: "Accès refusé." };
 
   const supabase = await createServerSupabase();
+  // Réservé aux membres gratuits : le programme d'une cliente accompagnée
+  // est fait par son coach et ne doit pas être remplacé depuis son espace.
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role, subscription_status")
+    .eq("id", clientId)
+    .maybeSingle();
+  if (profileError || !profile) return { error: "Impossible de vérifier ton accès, réessaie." };
+  if (getAccessType(profile) !== "membre_gratuit") return { error: "Ton programme est préparé par ton coach." };
+
   const result = await saveProgramForClient(supabase, clientId, input);
   if (result.error) return result;
 
@@ -34,11 +46,15 @@ export async function submitCorrection(
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
-  const exercise_name = (formData.get("exercise_name") as string)?.trim();
-  const objective = (formData.get("objective") as string)?.trim();
-  const video_path = (formData.get("video_path") as string)?.trim();
-  const client_question =
-    (formData.get("client_question") as string)?.trim() || null;
+  const str = (key: string, max: number) => {
+    const v = formData.get(key);
+    return typeof v === "string" ? v.trim().slice(0, max) : "";
+  };
+  const exercise_name = str("exercise_name", 200);
+  const objective = str("objective", 1000);
+  // Seulement une vidéo du dossier de la cliente (voir lib/storage-path.ts).
+  const video_path = ownStoragePath(formData.get("video_path"), guard.userId);
+  const client_question = str("client_question", 2000) || null;
 
   if (!exercise_name || !objective || !video_path) {
     return { error: "Remplis tous les champs obligatoires." };
@@ -54,22 +70,14 @@ export async function submitCorrection(
 
   if (error) return { error: "Erreur lors de l'envoi. Réessaie." };
 
-  // Notify coach — fire-and-forget
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", guard.userId)
-    .single();
-
   // after() : sans lui, Vercel coupe la fonction dès la réponse envoyée et
-  // l'email / la notif au coach partaient rarement.
-  after(() =>
-    notifyCoachNewCorrection(
-      profile?.full_name ?? "Un client",
-      exercise_name,
-      guard.userId
-    ).catch(() => {})
-  );
+  // l'email / la notif au coach partaient rarement. Le nom est lu dedans
+  // pour ne pas retarder la réponse.
+  const userId = guard.userId;
+  after(async () => {
+    const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle();
+    await notifyCoachNewCorrection(profile?.full_name ?? "Un client", exercise_name, userId).catch(() => {});
+  });
 
   revalidatePath("/dashboard/client/program");
   return { success: true };
