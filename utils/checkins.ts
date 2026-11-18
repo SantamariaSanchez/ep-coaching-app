@@ -1,6 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCachedOrCreateSignedUrl } from "@/utils/signed-url-cache";
 import type { Db } from "@/lib/db-types";
+import { todayInParis } from "@/lib/dates";
 
 const CHECKIN_MEDIA_BUCKET = "checkin-media";
 const COACH_VIDEOS_BUCKET = "coach-videos";
@@ -152,13 +153,14 @@ async function withSignedMedia<
   );
 }
 
-export function getWeekStart(): string {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diff);
-  return monday.toISOString().split("T")[0];
+// Lundi de la semaine en cours, à l'heure de Paris. Avant : horloge du
+// serveur (UTC sur Vercel), donc un check-in envoyé lundi à 0 h 30 heure de
+// Paris (dimanche 22 h 30 UTC) tombait sur la semaine précédente.
+export function getWeekStart(today: string = todayInParis()): string {
+  const [y, m, d] = today.split("-").map(Number);
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  const diff = dow === 0 ? -6 : 1 - dow;
+  return new Date(Date.UTC(y, m - 1, d + diff)).toISOString().split("T")[0];
 }
 
 export function getISOWeek(date: Date = new Date()): number {
