@@ -10,7 +10,7 @@ import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
-import { auditWhen, prequalAnswerLines, prequalForEmail } from "@/lib/prequal-inbox";
+import { auditWhen, auditsWindowStart, prequalAnswerLines, prequalForEmail } from "@/lib/prequal-inbox";
 import { activationSteps, funnelSteps, visitGroup, type ActivationCounts } from "@/lib/visit-tracking";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { updateLeadStatus, updateLeadNote } from "./actions";
@@ -28,30 +28,37 @@ export default async function LeadsAdminPage() {
   const profile = await getProfile(user.id);
   if (!profile?.is_platform_owner) redirect("/dashboard/coach");
 
-  const [leads, leadMagnets, prequalRes] = await Promise.all([
+  const PREQUAL_COLS = "id, form_type, first_name, last_name, phone, email, answers, status, created_at";
+  const [leads, leadMagnets, prequalRes, bookingRes] = await Promise.all([
     getAllLeads(),
     getAllLeadMagnets(),
     createAdminClient()
       .from("prequalification_responses")
-      .select("id, form_type, first_name, last_name, phone, email, answers, status, created_at")
+      .select(PREQUAL_COLS)
       .order("created_at", { ascending: false })
       .limit(100),
+    // Audits à venir (18/11) : sans closer en poste, une réservation Calendly
+    // n'arrivait nulle part dans l'appli (lib/staff-automation.ts, « skipped »).
+    // Ici : le RDV, le lien de visio et la candidature de la personne (même
+    // email) pour préparer l'appel.
+    createAdminClient()
+      .from("prospect_bookings")
+      .select("event_uri, starts_at, name, email, join_url")
+      .eq("status", "active")
+      .gte("starts_at", auditsWindowStart())
+      .order("starts_at", { ascending: true })
+      .limit(10),
   ]);
   const prequals = (prequalRes.data ?? []) as PrequalRow[];
-
-  // Audits à venir (18/11) : sans closer en poste, une réservation Calendly
-  // n'arrivait nulle part dans l'appli (lib/staff-automation.ts, « skipped »).
-  // Ici : le RDV, le lien de visio et la candidature de la personne (même
-  // email) pour préparer l'appel.
-  const { data: bookingRows } = await createAdminClient()
-    .from("prospect_bookings")
-    .select("event_uri, starts_at, name, email, join_url")
-    .eq("status", "active")
-    .gte("starts_at", `${todayInParis()}T00:00:00Z`)
-    .order("starts_at", { ascending: true })
-    .limit(10);
-  const audits = ((bookingRows ?? []) as { event_uri: string; starts_at: string; name: string | null; email: string | null; join_url: string | null }[])
-    .map((b) => ({ ...b, prequal: prequalForEmail(b.email, prequals) }));
+  const bookings = (bookingRes.data ?? []) as { event_uri: string; starts_at: string; name: string | null; email: string | null; join_url: string | null }[];
+  // Candidature plus ancienne que les 100 dernières : cherchée par email.
+  const missingEmails = bookings
+    .map((b) => b.email?.trim().toLowerCase())
+    .filter((e): e is string => !!e && !prequalForEmail(e, prequals));
+  const olderPrequals = missingEmails.length
+    ? (((await createAdminClient().from("prequalification_responses").select(PREQUAL_COLS).or(missingEmails.map((e) => `email.ilike.${e.replace(/[%_,()]/g, "")}`).join(","))).data ?? []) as PrequalRow[])
+    : [];
+  const audits = bookings.map((b) => ({ ...b, prequal: prequalForEmail(b.email, [...prequals, ...olderPrequals]) }));
 
   // Tunnel des 30 derniers jours (C64) : visites publiques (lib/visit-tracking.ts),
   // emails laissés, candidatures, inscriptions et onboarding, même fenêtre.

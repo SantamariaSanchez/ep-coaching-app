@@ -14,7 +14,7 @@ import { cleanPositioning, positioningMarkdown, POSITIONING_KEYS, type Positioni
 import { DAILY_TOOLS, dailyToolsForRole, callDailyTool } from "@/lib/mcp-tools-daily";
 import { CONTENT_FORMAT_IDS, DEFAULT_CONTENT_FORMAT, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
 import { CONTENT_TARGET_DEFS, progressByTarget, targetsFromAnswers, targetsSummary } from "@/lib/content-targets";
-import { shootingOrder } from "@/lib/shooting-session";
+import { isFilmableScript, shootingOrder } from "@/lib/shooting-session";
 import { WRITTEN_PLATFORMS, checkWrittenPost, defaultFormatFor, getWrittenPlatform, isFormatAllowed, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 import { isMissingColumnError } from "@/lib/coach-ideation";
 import { getTrackingProfile } from "@/lib/tracking-profile-server";
@@ -451,11 +451,11 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const limit = numArg(args.nombre, 1, 200) ?? 30;
       const { data } = await admin
         .from("coach_scripts")
-        .select("id, title, hook, platform, content_format, content, created_at")
+        .select("id, title, hook, status, platform, content_format, content, created_at")
         .eq("coach_id", ownerId)
         .eq("status", "a_tourner");
-      const rows = ((data ?? []) as { id: string; title: string; hook: string | null; platform: string | null; content_format: string | null; content: string | null; created_at: string }[])
-        .filter((r) => !!r.content?.trim() && !isWrittenPlatform(r.platform) && getContentFormat(r.content_format).filmed);
+      const rows = ((data ?? []) as { id: string; title: string; hook: string | null; status: string; platform: string | null; content_format: string | null; content: string | null; created_at: string }[])
+        .filter(isFilmableScript);
       if (rows.length === 0) return text("Rien à tourner : aucun script vidéo prêt (statut à tourner avec un contenu).");
       const ordered = shootingOrder(rows).slice(0, limit);
       const lines: string[] = [`${rows.length} script(s) vidéo à tourner. Ordre de la session :`];

@@ -257,10 +257,10 @@ export async function syncBooking(b: Booking): Promise<"created" | "canceled" | 
     const admin = createAdminClient();
     // Première fois qu'on voit ce RDV ? (la synchro repasse sur chaque
     // réservation à chaque exécution : on ne prévient qu'une fois).
-    const { data: known } = await admin.from("prospect_bookings").select("event_uri").eq("event_uri", b.eventUri).maybeSingle();
+    const { data: known, error: knownError } = await admin.from("prospect_bookings").select("event_uri").eq("event_uri", b.eventUri).maybeSingle();
     // Chaque audit est gardé, même sans closer en poste : les rappels
     // J-10 à 30 min (lib/sequences.ts) partent de cette table.
-    await admin.from("prospect_bookings").upsert({
+    const { error: saveError } = await admin.from("prospect_bookings").upsert({
       event_uri: b.eventUri,
       starts_at: b.startsAt,
       status: b.status,
@@ -271,7 +271,9 @@ export async function syncBooking(b: Booking): Promise<"created" | "canceled" | 
     });
     // Nouveau RDV actif : le fondateur fait les audits lui-même tant
     // qu'aucun closer n'est en poste, il doit le voir dans l'appli.
-    if (!known && b.status === "active") {
+    // Seulement si la lecture et l'écriture ont réussi : sinon la synchro
+    // suivante reverrait le RDV comme nouveau et renverrait la notification.
+    if (!known && !knownError && !saveError && b.status === "active") {
       void runAfterResponse(() => notifyOwnerOfBooking(admin, b.inviteeName, b.startsAt));
     }
     const existingAppt = await findByExternalId(admin, `calendly:${b.eventUri}`);

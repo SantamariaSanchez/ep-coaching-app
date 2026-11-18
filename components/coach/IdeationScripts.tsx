@@ -19,7 +19,7 @@ import { cleanVideoPlan } from "@/lib/youtube-studio";
 import YoutubeStudio from "@/components/coach/YoutubeStudio";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript } from "@/lib/content-formats";
 import { ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
-import { shootingOrder } from "@/lib/shooting-session";
+import { isFilmableScript, shootingOrder } from "@/lib/shooting-session";
 import { defaultFormatFor, formatsForPlatform, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -335,7 +335,7 @@ function MyScripts({
   // Session de tournage (18/11) : « Tourner » enchaîne tous les scripts prêts,
   // du plus ancien au plus récent. « Tourné » ou « Passer » ouvre le suivant.
   const [session, setSession] = useState<{ ids: string[]; index: number; shot: number } | null>(null);
-  const [sessionDone, setSessionDone] = useState<{ shot: number; total: number } | null>(null);
+  const [sessionDone, setSessionDone] = useState<{ ids: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -568,7 +568,7 @@ function MyScripts({
   const filmableScripts = useMemo(
     () =>
       scripts
-        .filter((s) => !isNotFilmed(s) && s.status === "a_tourner" && !!s.content)
+        .filter((s) => isFilmableScript(s))
         .slice()
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
     [scripts]
@@ -594,7 +594,7 @@ function MyScripts({
     if (index >= session.ids.length) {
       setSession(null);
       setShootingId(null);
-      setSessionDone({ shot, total: session.ids.length });
+      setSessionDone({ ids: session.ids });
       return;
     }
     setSession({ ...session, index, shot });
@@ -602,7 +602,7 @@ function MyScripts({
   }
 
   function closeShooting() {
-    if (session && session.shot > 0) setSessionDone({ shot: session.shot, total: session.ids.length });
+    if (session && session.shot > 0) setSessionDone({ ids: session.ids });
     setSession(null);
     setShootingId(null);
   }
@@ -784,16 +784,21 @@ function MyScripts({
         </button>
       </div>
 
-      {sessionDone && (
+      {sessionDone && (() => {
+        // Compté sur l'état réel des scripts : un enregistrement qui échoue
+        // remet le script « à tourner », le récap ne doit pas le compter.
+        const shot = scripts.filter((x) => sessionDone.ids.includes(x.id) && x.status === "tourne").length;
+        return (
         <div role="status" className="ep-card" style={{ padding: "12px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(var(--ep-ok-rgb),0.4)" }}>
           <Clapperboard size={16} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
           <p style={{ margin: 0, flex: 1, fontSize: 13, fontWeight: 800 }}>
-            {tr("Session terminée")} : {sessionDone.shot} / {sessionDone.total} {tr("script(s) tourné(s)")}.
-            {sessionDone.shot > 0 && <span style={{ fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.6)" }}> {tr("Ils t'attendent dans « Tourné » pour le montage.")}</span>}
+            {tr("Session terminée")} : {shot} / {sessionDone.ids.length} {tr("script(s) tourné(s)")}.
+            {shot > 0 && <span style={{ fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.6)" }}> {tr("Ils t'attendent dans « Tourné » pour le montage.")}</span>}
           </p>
           <button type="button" onClick={() => setSessionDone(null)} aria-label={tr("Fermer")} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
         </div>
-      )}
+        );
+      })()}
 
       {showForm && (
         <div className="ep-card" style={{ padding: 16, marginBottom: 16 }}>

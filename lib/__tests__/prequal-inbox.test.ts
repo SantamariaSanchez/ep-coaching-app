@@ -57,3 +57,8 @@ test("date de Paris d'un audit à 00:30 heure de Paris (23:30 UTC la veille)", a
   assert.equal(parisDateOf("2026-11-26T23:30:00Z"), "2026-11-27");
   assert.equal(parisDateOf("2026-07-01T22:30:00Z"), "2026-07-02");
 });
+
+test("fenêtre des audits : commence 2 h avant maintenant", async () => {
+  const { auditsWindowStart } = await import("../prequal-inbox");
+  assert.equal(auditsWindowStart(Date.parse("2026-11-27T10:00:00Z")), "2026-11-27T08:00:00.000Z");
+});

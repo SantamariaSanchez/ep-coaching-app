@@ -87,3 +87,8 @@ export function prequalForEmail<T extends { email: string | null; created_at: st
 export function auditWhen(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
 }
+
+/** Début de la liste « audits à venir » : un audit commencé il y a moins de 2 h y reste. */
+export function auditsWindowStart(now = Date.now()): string {
+  return new Date(now - 2 * 3_600_000).toISOString();
+}

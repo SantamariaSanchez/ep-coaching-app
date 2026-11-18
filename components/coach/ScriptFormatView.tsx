@@ -521,9 +521,17 @@ export function ShootingMode({
     if (!nav.wakeLock) return;
     let lock: Sentinel | null = null;
     let alive = true;
+    let pending = false;
     const acquire = () => {
-      if (document.visibilityState !== "visible") return;
-      nav.wakeLock!.request("screen").then((l) => { if (alive) lock = l; else void l.release(); }).catch(() => {});
+      if (document.visibilityState !== "visible" || pending) return;
+      pending = true;
+      const previous = lock;
+      lock = null;
+      void previous?.release().catch(() => {});
+      nav.wakeLock!.request("screen")
+        .then((l) => { if (alive) lock = l; else void l.release().catch(() => {}); })
+        .catch(() => {})
+        .finally(() => { pending = false; });
     };
     acquire();
     document.addEventListener("visibilitychange", acquire);
