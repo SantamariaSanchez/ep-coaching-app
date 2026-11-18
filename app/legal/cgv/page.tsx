@@ -85,7 +85,7 @@ const sections: LegalSection[] = [
     body: (
       <P>
         Les tarifs de l&apos;abonnement de coaching proposé directement par le Fondateur sont communiqués
-        au Client à l&apos;issue de l&apos;appel découverte préalable à toute souscription, et rappelés avant
+        au Client à l&apos;issue de l&apos;audit stratégique préalable à toute souscription, et rappelés avant
         tout paiement. Les modalités spécifiques de cet accompagnement (prestations incluses,
         engagements réciproques) sont précisées dans le contrat de coaching signé par le Client au
         moment de son inscription.

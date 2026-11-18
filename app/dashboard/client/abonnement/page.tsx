@@ -269,7 +269,7 @@ export default async function AbonnementPage() {
                 }}
               >
                 <PhoneCall size={16} />
-                {t("Réserve ton appel découverte")}
+                {t("Réserve ton audit stratégique offert")}
                 <ArrowRight size={15} />
               </a>
             </>
@@ -428,7 +428,7 @@ export default async function AbonnementPage() {
               }}
             >
               <PhoneCall size={14} />
-              {t("Réserve ton appel découverte")}
+              {t("Réserve ton audit stratégique offert")}
             </a>
           </div>
         </section>

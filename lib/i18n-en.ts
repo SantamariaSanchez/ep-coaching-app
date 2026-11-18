@@ -2587,6 +2587,8 @@ export const EN: Record<string, string> = {
   "Un appel de 30 min pour voir si le coaching te correspond": "A 30-min call to see if coaching is right for you",
   "Pas de pression. On fait le point sur tes objectifs et tes blocages, puis on voit si l'accompagnement te convient.": "No pressure. We review your goals and blockers, then see if coaching fits you.",
   "Réserve ton appel découverte": "Book your discovery call",
+  "Réserve ton audit stratégique offert": "Book your free strategy audit",
+  "Ton audit stratégique offert, 30 min": "Your free 30-min strategy audit",
   "Ton coach, c'est moi. Pas un algorithme.": "Your coach is me. Not an algorithm.",
   "Je regarde ton programme, ton bilan et ta nutrition chaque semaine. J'ajuste ce qui marche pas. Tu me parles, je te réponds, moi, pas un bot. Aucun plan généré automatiquement.": "I look at your program, check-in and nutrition every week. I adjust what isn't working. You talk to me, I reply, me, not a bot. No auto-generated plan.",
   "Concrètement, ce que ça change au quotidien": "In practice, what it changes day to day",
