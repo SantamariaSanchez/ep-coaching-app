@@ -66,7 +66,7 @@ export const YOUTUBE_TOOLS: ToolDef[] = [
   {
     name: "clips_depuis_video",
     roles: ["coach"],
-    description: "Passages d'un script YouTube à sortir en reels (30 à 60 secondes) : texte, 4 titres hook sans ponctuation faits avec les mots du passage, description courte avec l'appel à l'action « Commente « VIDEO » pour recevoir la vidéo complète ».",
+    description: "Passages d'un script YouTube à sortir en reels (30 à 60 secondes), avec l'accroche à refilmer en face caméra (5 à 10 s) devant le passage coupé tel quel : texte, 4 titres hook sans ponctuation faits avec les mots du passage, description courte avec l'appel à l'action « Commente « VIDEO » pour recevoir la vidéo complète ».",
     inputSchema: { type: "object", properties: { script: SCRIPT_REF, nombre: { type: "number", description: "1 à 8, 6 par défaut" } }, required: ["script"] },
   },
   {
@@ -177,7 +177,9 @@ export async function callYoutubeTool(ownerId: string, role: Role, name: string,
       const n = typeof args.nombre === "number" ? Math.min(8, Math.max(1, Math.round(args.nombre))) : 6;
       const clips = deriveClips(script.content, script.duration_seconds, n);
       if (!clips.length) return text("Script trop court pour en tirer des clips.");
-      return text(clips.map((c) => [`CLIP ${c.n} · vers ${fmtTime(c.atSec)} · ~${c.seconds} s`, c.text, `Titres hook :\n${c.hooks.map((h) => `- ${h}`).join("\n") || "- (à écrire avec les mots du passage)"}`, `Description :\n${c.description}`].join("\n")).join("\n\n---\n\n"));
+      // Système de clipping (dépôt du 18/11) : on refilme seulement l'accroche
+      // en face caméra (5 à 10 s), puis on colle le passage de la vidéo tel quel.
+      return text("Méthode : refilme seulement l'accroche en face caméra (5 à 10 secondes), puis enchaîne sur le passage coupé tel quel dans la vidéo YouTube. Rien d'autre à tourner.\n\n" + clips.map((c) => [`CLIP ${c.n} · vers ${fmtTime(c.atSec)} · ~${c.seconds} s`, `Accroche à refilmer (5 à 10 s) : ${c.hooks[0] ?? "(à écrire avec les mots du passage)"}`, `Passage à couper :\n${c.text}`, `Titres hook :\n${c.hooks.map((h) => `- ${h}`).join("\n") || "- (à écrire avec les mots du passage)"}`, `Description :\n${c.description}`].join("\n")).join("\n\n---\n\n"));
     }
 
     case "plan_video_youtube": {
