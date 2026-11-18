@@ -190,6 +190,7 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
 
       {prompter && (
         <ShootingMode
+          key={prompter.id}
           scriptId={prompter.id}
           title={prompter.video_title}
           formatId={null}
@@ -199,6 +200,14 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
             const done = prompter;
             setStatus(done.id, "tourne");
             setPrompter(queue.filter((v) => v.id !== done.id)[0] ?? null);
+          }}
+          session={(() => {
+            const i = queue.findIndex((v) => v.id === prompter.id);
+            return i >= 0 ? { index: i, total: queue.length, shot: counts.filmed } : undefined;
+          })()}
+          onSkip={() => {
+            const i = queue.findIndex((v) => v.id === prompter.id);
+            setPrompter(i >= 0 && i + 1 < queue.length ? queue[i + 1] : null);
           }}
         />
       )}
