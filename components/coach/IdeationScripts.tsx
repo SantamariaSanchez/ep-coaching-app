@@ -331,6 +331,10 @@ function MyScripts({
   // Mode tournage (texte en grand, plans B-roll à cocher) et prompteur lancé
   // pour un seul script, en plus du tournage automatique en file.
   const [shootingId, setShootingId] = useState<string | null>(null);
+  // Session de tournage (18/11) : « Tourner » enchaîne tous les scripts prêts,
+  // du plus ancien au plus récent. « Tourné » ou « Passer » ouvre le suivant.
+  const [session, setSession] = useState<{ ids: string[]; index: number; shot: number } | null>(null);
+  const [sessionDone, setSessionDone] = useState<{ shot: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -572,7 +576,33 @@ function MyScripts({
   // Prompteur caméra supprimé (audit 2026-11-13) : « Tourner » ouvre le mode
   // tournage (texte en grand) sur le plus ancien script prêt.
   function startFilmingQueue() {
-    if (filmableScripts.length > 0) setShootingId(filmableScripts[0].id);
+    if (filmableScripts.length === 0) return;
+    setSessionDone(null);
+    setSession({ ids: filmableScripts.map((s) => s.id), index: 0, shot: 0 });
+    setShootingId(filmableScripts[0].id);
+  }
+
+  function nextInSession(markedShot: boolean) {
+    if (!session) {
+      setShootingId(null);
+      return;
+    }
+    const shot = session.shot + (markedShot ? 1 : 0);
+    const index = session.index + 1;
+    if (index >= session.ids.length) {
+      setSession(null);
+      setShootingId(null);
+      setSessionDone({ shot, total: session.ids.length });
+      return;
+    }
+    setSession({ ...session, index, shot });
+    setShootingId(session.ids[index]);
+  }
+
+  function closeShooting() {
+    if (session && session.shot > 0) setSessionDone({ shot: session.shot, total: session.ids.length });
+    setSession(null);
+    setShootingId(null);
   }
 
   function submitNew() {
@@ -751,6 +781,17 @@ function MyScripts({
           <Plus size={14} />{" "}{tr("Nouveau script")}
         </button>
       </div>
+
+      {sessionDone && (
+        <div role="status" className="ep-card" style={{ padding: "12px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(var(--ep-ok-rgb),0.4)" }}>
+          <Clapperboard size={16} style={{ color: "var(--ep-ok)", flexShrink: 0 }} />
+          <p style={{ margin: 0, flex: 1, fontSize: 13, fontWeight: 800 }}>
+            {tr("Session terminée")} : {sessionDone.shot} / {sessionDone.total} {tr("script(s) tourné(s)")}.
+            {sessionDone.shot > 0 && <span style={{ fontWeight: 600, color: "rgba(var(--ep-ink-rgb),0.6)" }}> {tr("Ils t'attendent dans « Tourné » pour le montage.")}</span>}
+          </p>
+          <button type="button" onClick={() => setSessionDone(null)} aria-label={tr("Fermer")} style={{ background: "none", border: "none", color: "rgba(var(--ep-ink-rgb),0.5)", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
+        </div>
+      )}
 
       {showForm && (
         <div className="ep-card" style={{ padding: 16, marginBottom: 16 }}>
@@ -1110,12 +1151,15 @@ function MyScripts({
         if (!shooting) return null;
         return (
           <ShootingMode
+            key={shooting.id}
             scriptId={shooting.id}
             title={shooting.title}
             formatId={shooting.content_format}
             content={shooting.content ?? ""}
-            onClose={() => setShootingId(null)}
-            onShot={shooting.status === "a_tourner" ? () => { setShootingId(null); cycleStatus(shooting.id, "a_tourner"); } : undefined}
+            onClose={closeShooting}
+            onShot={shooting.status === "a_tourner" ? () => { cycleStatus(shooting.id, "a_tourner"); nextInSession(true); } : undefined}
+            session={session ? { index: session.index, total: session.ids.length, shot: session.shot } : undefined}
+            onSkip={session ? () => nextInSession(false) : undefined}
           />
         );
       })()}
@@ -1262,7 +1306,7 @@ function MyScripts({
                 {!isNotFilmed(script) && script.status !== "publie" && !!script.content && (
                   <button
                     type="button"
-                    onClick={() => setShootingId(script.id)}
+                    onClick={() => { setSession(null); setShootingId(script.id); }}
                     style={{
                       marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6,
                       padding: "7px 12px", borderRadius: 999, fontSize: 11.5, fontWeight: 800, cursor: "pointer",
