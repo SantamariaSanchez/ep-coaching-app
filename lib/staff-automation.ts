@@ -275,6 +275,18 @@ export async function syncBooking(b: Booking): Promise<"created" | "canceled" | 
     // suivante reverrait le RDV comme nouveau et renverrait la notification.
     if (!known && !knownError && !saveError && b.status === "active") {
       void runAfterResponse(() => notifyOwnerOfBooking(admin, b.inviteeName, b.startsAt));
+      // Sa candidature passe en « appel réservé » : elle sort des
+      // candidatures à rappeler (on ne rappelle pas quelqu'un qui a réservé).
+      const email = b.inviteeEmail?.trim().toLowerCase();
+      if (email) {
+        void runAfterResponse(async () => {
+          await admin
+            .from("prequalification_responses")
+            .update({ status: "appel_reserve" })
+            .ilike("email", email.replace(/[%_]/g, ""))
+            .in("status", ["nouveau", "contacte"]);
+        });
+      }
     }
     const existingAppt = await findByExternalId(admin, `calendly:${b.eventUri}`);
 
