@@ -73,3 +73,17 @@ export function firstContactMessage(firstName: string | null | undefined, coachN
   const me = (coachName ?? "").trim();
   return `Salut${name ? ` ${name}` : ""}, c'est ${me || "l'équipe"} d'EP Coaching. J'ai bien reçu ton formulaire, merci. Tu as 15 minutes cette semaine pour qu'on en parle au téléphone ?`;
 }
+
+/** Candidature la plus récente envoyée avec cet email (préparation d'un audit). */
+export function prequalForEmail<T extends { email: string | null; created_at: string }>(email: string | null | undefined, rows: T[]): T | null {
+  const e = (email ?? "").trim().toLowerCase();
+  if (!e) return null;
+  return rows
+    .filter((r) => (r.email ?? "").trim().toLowerCase() === e)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
+}
+
+/** « mer. 26 nov., 00:30 » en heure de Paris. */
+export function auditWhen(iso: string): string {
+  return new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+}

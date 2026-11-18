@@ -10,6 +10,7 @@ import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
+import { auditWhen, prequalAnswerLines, prequalForEmail } from "@/lib/prequal-inbox";
 import { activationSteps, funnelSteps, visitGroup, type ActivationCounts } from "@/lib/visit-tracking";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { updateLeadStatus, updateLeadNote } from "./actions";
@@ -37,6 +38,20 @@ export default async function LeadsAdminPage() {
       .limit(100),
   ]);
   const prequals = (prequalRes.data ?? []) as PrequalRow[];
+
+  // Audits à venir (18/11) : sans closer en poste, une réservation Calendly
+  // n'arrivait nulle part dans l'appli (lib/staff-automation.ts, « skipped »).
+  // Ici : le RDV, le lien de visio et la candidature de la personne (même
+  // email) pour préparer l'appel.
+  const { data: bookingRows } = await createAdminClient()
+    .from("prospect_bookings")
+    .select("event_uri, starts_at, name, email, join_url")
+    .eq("status", "active")
+    .gte("starts_at", `${todayInParis()}T00:00:00Z`)
+    .order("starts_at", { ascending: true })
+    .limit(10);
+  const audits = ((bookingRows ?? []) as { event_uri: string; starts_at: string; name: string | null; email: string | null; join_url: string | null }[])
+    .map((b) => ({ ...b, prequal: prequalForEmail(b.email, prequals) }));
 
   // Tunnel des 30 derniers jours (C64) : visites publiques (lib/visit-tracking.ts),
   // emails laissés, candidatures, inscriptions et onboarding, même fenêtre.
@@ -165,6 +180,45 @@ export default async function LeadsAdminPage() {
         </ul>
         <p className="mt-2 text-[10.5px] text-(--ep-ink)/40">{t("Visites comptées depuis le 16/11, une par page et par onglet, sans cookie. Première valeur et retour à J+7 lus dans les séances, repas, bilans et check-ins, sans suivi en plus.")}</p>
       </section>
+
+      {audits.length > 0 && (
+        <section className="ep-card mb-6" style={{ padding: "14px 16px", border: "1px solid rgba(var(--ep-accent-rgb),0.35)" }} aria-labelledby="audits-titre">
+          <h2 id="audits-titre" className="text-sm font-black uppercase tracking-wide mb-2">{t("Tes audits à venir")}</h2>
+          <ul className="flex flex-col gap-3">
+            {audits.map((a) => {
+              const lines = a.prequal ? prequalAnswerLines(a.prequal.answers) : [];
+              return (
+                <li key={a.event_uri} className="rounded-xl p-3" style={{ background: "rgba(var(--ep-shade-rgb),0.3)" }}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="flex-1 min-w-0 text-[13.5px] font-black text-(--ep-ink)">{a.name || a.email || t("Prospect")}</p>
+                    <span className="text-[12px] font-bold text-(--ep-accent)">{auditWhen(a.starts_at)}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {a.join_url && (
+                      <a href={a.join_url} target="_blank" rel="noopener noreferrer" className="h-9 px-3 rounded-full inline-flex items-center text-[12px] font-extrabold" style={{ background: "var(--ep-accent)", color: "#fff" }}>
+                        {t("Rejoindre la visio")}
+                      </a>
+                    )}
+                    {a.email && <a href={`mailto:${a.email}`} className="h-9 px-3 rounded-full inline-flex items-center text-[12px] font-extrabold border" style={{ borderColor: "rgba(var(--ep-ink-rgb),0.14)", color: "var(--ep-ink)" }}>{a.email}</a>}
+                  </div>
+                  {lines.length > 0 ? (
+                    <dl className="mt-2 grid gap-1">
+                      {lines.map((l) => (
+                        <div key={l.label} className="text-[12px]">
+                          <dt className="inline font-bold text-(--ep-ink)/60">{t(l.label)} : </dt>
+                          <dd className="inline text-(--ep-ink)">{l.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : (
+                    <p className="mt-2 text-[11.5px] text-(--ep-ink)/45">{t("Pas de candidature avec cet email : pose les questions de base au début de l'appel.")}</p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <section className="ep-card mb-6" style={{ padding: "14px 16px" }} aria-labelledby="liens-suivis">
         <h2 id="liens-suivis" className="text-sm font-black uppercase tracking-wide mb-1">{t("Tes liens suivis")}</h2>
