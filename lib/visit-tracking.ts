@@ -6,7 +6,7 @@
 // Fichier pur, client et serveur.
 
 /** Préfixes jamais comptés : l'appli connectée, l'API, les étapes techniques. */
-const PRIVATE_PREFIXES = ["/dashboard", "/equipe", "/api", "/onboarding", "/auth/2fa", "/auth/callback", "/auth/oauth", "/auth/reset-password", "/auth/verifier-email", "/g", "/go"];
+const PRIVATE_PREFIXES = ["/dashboard", "/equipe", "/api", "/onboarding", "/auth/2fa", "/auth/callback", "/auth/oauth", "/auth/reset-password", "/auth/verifier-email", "/g", "/go", "/s"];
 
 export function shouldTrack(path: string): boolean {
   if (!path.startsWith("/") || path.length > 200) return false;
@@ -90,4 +90,33 @@ export function funnelSteps(c: FunnelCounts): FunnelStep[] {
     { label: "Inscriptions à l'appli", n: c.signups, rate: pct(c.signups, c.signupPageVisits), of: "des visites de l'inscription" },
     { label: "Onboarding terminé", n: c.onboarded, rate: pct(c.onboarded, c.signups), of: "des inscrits" },
   ];
+}
+
+/** Comptes renvoyés par la fonction SQL funnel_activation (C64). */
+export interface ActivationCounts {
+  members: number;
+  members_first_value: number;
+  members_cohort7: number;
+  members_returned7: number;
+  coaches: number;
+  coaches_first_value: number;
+}
+
+/**
+ * Suite du tunnel après l'inscription : le moment de première valeur
+ * (membre : première séance validée ou premier repas noté ; coach : premier
+ * client invité ou premier programme créé) et le retour à J+7, calculé
+ * seulement sur les inscrits qui ont déjà 7 jours d'ancienneté.
+ */
+export function activationSteps(a: ActivationCounts | null): FunnelStep[] {
+  if (!a) return [];
+  const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 1000) / 10 : null);
+  const steps: FunnelStep[] = [
+    { label: "Membres : première séance ou premier repas", n: a.members_first_value, rate: pct(a.members_first_value, a.members), of: "des membres inscrits" },
+    { label: "Membres revenus à J+7", n: a.members_returned7, rate: pct(a.members_returned7, a.members_cohort7), of: "des inscrits de 7 j et plus" },
+  ];
+  if (a.coaches > 0) {
+    steps.push({ label: "Coachs : premier client ou premier programme", n: a.coaches_first_value, rate: pct(a.coaches_first_value, a.coaches), of: "des coachs inscrits" });
+  }
+  return steps;
 }

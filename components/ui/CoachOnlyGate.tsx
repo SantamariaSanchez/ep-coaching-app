@@ -65,7 +65,7 @@ export default function CoachOnlyGate({
             style={{ width: "100%", height: 48, fontSize: 13, textDecoration: "none" }}
           >
             <PhoneCall size={16} />
-            Réserve ton appel découverte
+            Réserve ton audit stratégique offert
           </a>
           {/* Brainstorm "2 avatars" (2026-09-10) : avant ce lien, cette
               modale ne proposait que l'appel externe, sans jamais montrer

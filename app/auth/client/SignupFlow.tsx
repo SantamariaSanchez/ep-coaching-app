@@ -282,7 +282,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             <span style={{ flex: 1 }}>
               <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{t("Je veux un coaching individuel")}</span>
               <span style={{ display: "block", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.35)", marginTop: 2 }}>
-                {t("Réserve ton appel découverte de 30 min")}
+                {t("Ton audit stratégique offert, 30 min")}
               </span>
             </span>
             {submitting === "coaching" ? (
