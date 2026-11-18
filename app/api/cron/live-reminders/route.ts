@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser, notifyUsers } from "@/lib/notify";
 import { getClients } from "@/utils/auth";
 import { LIVE_TYPE_LABELS, isOneToOneType, type LiveType } from "@/lib/live-types";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Rappelle aux clients concernés qu'un live commence bientôt — déclenché
 // toutes les 5 min par Supabase pg_cron (voir
@@ -12,7 +13,7 @@ const REMINDER_WINDOW_MINUTES = 15;
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Point d'entrée pour le digest quotidien 10h (retour direct 2026-09-01 :
 // "tous les jours à 10h tu m'envoies par mail... concis clair et optimisé
@@ -12,7 +13,7 @@ import { wrapBrandedEmail } from "@/lib/mailing-audience";
 // séparation "intelligence vs envoi" que le reste du mailing.
 export async function POST(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

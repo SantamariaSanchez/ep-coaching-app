@@ -2,6 +2,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendCoachCampaign, wrapBrandedEmail } from "@/lib/brevo-mailing";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Newsletter quotidienne "valeur app" pour tous les membres EP Coaching
 // (demande explicite 2026-08-30 : "que le mailing des membres soit
@@ -162,7 +163,7 @@ function coachingNudgeBody(): string {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

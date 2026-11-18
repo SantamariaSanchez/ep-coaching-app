@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { PHASE_COLORS } from "@/lib/roadmap-colors";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Prévient le client (et son coach) le jour où une nouvelle phase de sa road
 // map démarre ("tu entres en Deload cette semaine") — avant, rien ne
@@ -25,7 +26,7 @@ function parisDateStr(date: Date): string {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

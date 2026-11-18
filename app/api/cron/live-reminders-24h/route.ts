@@ -5,6 +5,7 @@ import { getClients } from "@/utils/auth";
 import { LIVE_TYPE_LABELS, isOneToOneType, type LiveType } from "@/lib/live-types";
 import { todayInParis } from "@/lib/dates";
 import { addDaysToDateStr, formatLiveDateTime, formatLiveTime, parisDateKey } from "@/lib/live-time";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Rappel "à J-1" (distinct du rappel "dans quelques minutes" de
 // live-reminders) — déclenché toutes les heures par Supabase pg_cron (voir
@@ -15,7 +16,7 @@ const WINDOW_END_HOURS = 25;
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -4,6 +4,7 @@ import { notifyAdmin } from "@/lib/admin-notify";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { INACTIVITY_DELETE_DAYS, INACTIVITY_WARN_DAYS } from "@/lib/free-tier";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Suppression des comptes gratuits abandonnés (voir lib/free-tier.ts et CGU
 // article 5). Distinct du verrou à 60 jours calculé dans le layout (celui-là
@@ -37,7 +38,7 @@ interface CandidateRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

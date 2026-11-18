@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Déclenché par Supabase pg_cron une fois par jour. Repère les messages
 // envoyés à un coach il y a 24 à 48h et toujours non lus (= probablement
@@ -9,7 +10,7 @@ import { notifyAdmin } from "@/lib/admin-notify";
 // chaque message qu'une seule fois (pas de nouvelle colonne nécessaire).
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

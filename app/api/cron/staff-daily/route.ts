@@ -11,6 +11,7 @@ import { getPlaybook } from "@/lib/staff-playbooks";
 import { computeNextActions } from "@/lib/staff-next-actions";
 import { computeKpis, parisDate, todayAgenda, type StaffRecord } from "@/lib/staff-kpis";
 import { runOnboarding } from "@/lib/staff-onboarding";
+import { cronBearer } from "@/lib/cron-auth";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 const RECORD_FIELDS = "id, staff_id, kind, title, status, amount, occurred_on, due_at, data, created_at, updated_at";
@@ -87,7 +88,7 @@ function briefingHtml(m: Member, records: StaffRecord[], isoDow: number): string
 // rapport, 19h récapitulatif d'équipe au fondateur (jours ouvrés), 9h étapes
 // d'intégration des recrues (tous les jours).
 export async function GET(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (req.headers.get("authorization") !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { isoDow, hhmm } = nowInParis();

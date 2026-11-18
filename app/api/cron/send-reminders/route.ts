@@ -3,6 +3,7 @@ import { localParts, minutesBetween, safeTimeZone } from "@/lib/schedule-time";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
+import { cronBearer } from "@/lib/cron-auth";
 
 // The "Mes rappels" feature (app/dashboard/client/reminders) let users create
 // time/day reminders, but nothing ever fired them — there was no cron job
@@ -41,7 +42,7 @@ function parisDayAbbr(date: Date): string {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

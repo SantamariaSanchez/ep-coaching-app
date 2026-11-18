@@ -4,6 +4,7 @@ import { sendPushToUser } from "@/lib/push";
 import { insertNotification } from "@/utils/insert-notification";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { buildFollowupMessage } from "@/lib/first-action-followup";
+import { cronBearer } from "@/lib/cron-auth";
 
 // Relance à J+1 après la toute première action d'un membre gratuit (voir
 // lib/first-action-followup.ts pour le raisonnement complet). Résout un trou
@@ -29,7 +30,7 @@ interface ClientRow {
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== cronBearer()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
