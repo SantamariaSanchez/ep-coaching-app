@@ -132,7 +132,7 @@ async function notifyCoachIfDayWellLogged(clientId: string, logDate: string): Pr
   const admin = createAdminClient();
   const [{ data: logs }, { data: nutritionProfile }] = await Promise.all([
     admin.from("food_logs").select("calories").eq("client_id", clientId).eq("logged_at", logDate),
-    admin.from("nutrition_profiles").select("calories_target").eq("client_id", clientId).maybeSingle(),
+    admin.from("nutrition_profiles").select("calories_target").eq("client_id", clientId).order("updated_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   const target = (nutritionProfile as { calories_target: number | null } | null)?.calories_target;
@@ -930,6 +930,10 @@ export async function logMealItems(
     // être résolu en aliment connu — ça, c'est une vraie erreur de données.
     if (rows.length === 0) return { error: "Aucun aliment valide dans ce repas." };
 
+    // Même réaction que addFoodLog : « Valider le repas » est souvent la
+    // toute première façon de noter, l'encouragement ne doit pas manquer.
+    const isFirstMeal = await isFirstEverAction(guard.userId, "food_logs", "client_id");
+
     const { data: inserted, error } = await admin
       .from("food_logs")
       .insert(rows)
@@ -948,6 +952,15 @@ export async function logMealItems(
     ];
 
     after(() => awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt));
+    if (isFirstMeal) {
+      after(() => celebrateFirstAction(guard.userId, {
+        type: "first_meal_logged",
+        title: "🥗 Premier repas loggé !",
+        body: "Deux minutes par repas, et tu sais exactement où tu en es. Continue comme ça.",
+        url: "/dashboard/client/nutrition",
+      }).catch(() => {}));
+    }
+    after(() => notifyCoachIfDayWellLogged(guard.userId, loggedAt).catch(() => {}));
     // MASTERCLASS.md Axe W : contrairement à addFoodLog/removeFoodLog (voir
     // plus haut, corrigé le 2026-08-15), cette fonction ne revalidait que la
     // route client, jamais /dashboard/coach/moi/nutrition qui réutilise le
