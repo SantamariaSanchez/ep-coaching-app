@@ -25,6 +25,8 @@ import { YOUTUBE_TOOLS, youtubeToolsForRole, callYoutubeTool } from "@/lib/mcp-t
 import { SCRIPT_CONTENT_MAX } from "@/lib/script-limits";
 import { getLeadMagnetSlugByAnyKeyword } from "@/lib/lead-magnets";
 import { ctaKeywordWarning, findUnknownCtaKeywords } from "@/lib/cta-keywords";
+import { voiceMarkdown } from "@/lib/client-voice";
+import { getClientVoice } from "@/lib/client-voice-server";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -144,6 +146,12 @@ export const EXTRA_TOOLS: ToolDef[] = [
     name: "notes_vecues",
     roles: ["coach"],
     description: "Les notes « vécu » d'Emmanuel (journal, anecdotes, sa semaine, tagguées #vécu) avec les règles du storytelling. À lire AVANT d'écrire un script story, un reel « je raconte ma journée », un post LinkedIn ou un mail personnel. Si rien n'a été noté cette semaine, l'outil le dit : demande-lui alors ce qui s'est passé, ne comble jamais le vide.",
+    inputSchema: { type: "object", properties: { jours: { type: "number", description: "Fenêtre en jours, 30 par défaut (max 180)" } } },
+  },
+  {
+    name: "questions_clientes",
+    roles: ["coach"],
+    description: "Ce que les clientes et prospectes écrivent vraiment (questions au coach, obstacles, ressentis des check-ins, messages, candidatures, communauté), regroupé par thème avec un angle de contenu et des exemples anonymes. À lire AVANT de chercher des idées de contenu : le coaching est le meilleur marketing. Ne jamais nommer ni reconnaître une personne ; une question qui revient se reprend telle quelle, jamais le cas. Si l'outil ne renvoie rien, ne pas inventer de question de cliente.",
     inputSchema: { type: "object", properties: { jours: { type: "number", description: "Fenêtre en jours, 30 par défaut (max 180)" } } },
   },
   {
@@ -547,6 +555,13 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       if (!done) head.push("Aucune note vécu cette semaine. Demande à Emmanuel, une question à la fois : " + WEEKLY_QUESTIONS.map((q) => q.label).join(" / ") + " Puis range sa réponse avec ajouter_note (tag vécu).", "");
       if (!notes.length) return text(head.join("\n") + "\nAucune note vécu sur la période : ne propose aucun script story, demande-lui d'abord.");
       return text(head.join("\n") + notes.map((n) => `### ${n.title || "Sans titre"} (${n.created_at.slice(0, 10)})\n${n.body.replace(/#[\p{L}\p{N}_-]+/gu, "").trim().slice(0, 1500)}`).join("\n\n"));
+    }
+
+    case "questions_clientes": {
+      const days = Math.min(180, Math.max(1, Number(args.jours ?? 30) || 30));
+      const { data: me } = await admin.from("profiles").select("is_platform_owner").eq("id", ownerId).maybeSingle();
+      const voice = await getClientVoice(ownerId, !!me?.is_platform_owner, days);
+      return text(voiceMarkdown(voice.themes, voice.days, voice.total));
     }
 
     case "ajouter_idee_contenu": {
