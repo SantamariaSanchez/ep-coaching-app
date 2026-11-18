@@ -21,6 +21,7 @@ import {
   type DayTemplate,
   type TemplateBlock,
 } from "@/lib/agenda-engine";
+import { dbErrorResult } from "@/lib/db-error";
 
 // Chacun (client ou coach pour lui-même) gère uniquement son propre agenda —
 // pas de paramètre clientId, l'utilisateur connecté est toujours le
@@ -187,7 +188,7 @@ export async function updateScheduleBlock(
     ({ error } = await supabase.from("schedule_blocks").update(withoutLink(patch)).eq("id", blockId).eq("owner_id", guard.userId));
   }
 
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "agenda");
 
   revalidateAgendaPaths();
   return {};
@@ -204,7 +205,7 @@ export async function deleteScheduleBlock(blockId: string): Promise<{ error?: st
     .eq("id", blockId)
     .eq("owner_id", guard.userId);
 
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "agenda");
 
   revalidateAgendaPaths();
   return {};
@@ -273,7 +274,7 @@ export async function clearDayBlocks(day: number): Promise<{ error?: string }> {
     .eq("owner_id", guard.userId)
     .eq("day_of_week", day);
 
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "agenda");
 
   revalidateAgendaPaths();
   return {};
@@ -297,7 +298,7 @@ export async function createReminderFromBlock(
     .from("reminders")
     .insert({ client_id: guard.userId, label, time, days: [dayCode] });
 
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "agenda");
 
   revalidatePath("/dashboard/client/reminders");
   return {};
@@ -444,7 +445,7 @@ export async function setBlockSkippedOnDate(blockId: string, date: string, skip:
   const current = b.skipped_dates ?? [];
   const next = skip ? [...new Set([...current, date])] : current.filter((d) => d !== date);
   const { error } = await supabase.from("schedule_blocks").update({ skipped_dates: next }).eq("id", blockId).eq("owner_id", guard.userId);
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "agenda");
   revalidateAgendaPaths();
   return {};
 }
@@ -488,7 +489,7 @@ export async function replaceBlockOnDate(
   if (error) {
     // Sans ça, les deux blocs s'afficheraient (et notifieraient) ce jour-là.
     await supabase.from("schedule_blocks").delete().eq("id", rows[0].id).eq("owner_id", guard.userId);
-    return { error: error.message };
+    return dbErrorResult(error, "agenda");
   }
   revalidateAgendaPaths();
   return { block: rows[0], removed: !!original.specific_date };
@@ -558,7 +559,7 @@ export async function setScheduleBlockTimes(
     .update({ day_of_week: dayOfWeek, start_time: s, end_time: e, last_notified_at: initialLastNotifiedAt(dayOfWeek, s) })
     .eq("id", blockId)
     .eq("owner_id", guard.userId);
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "agenda");
   revalidateAgendaPaths();
   return {};
 }
@@ -569,7 +570,7 @@ export async function setScheduleBlockTasks(blockId: string, tasks: string[]): P
   if (!guard.ok) return { error: guard.error };
   const clean = (Array.isArray(tasks) ? tasks : []).map((t) => String(t).trim().slice(0, 300)).filter(Boolean).slice(0, 30);
   const { error } = await createAdminClient().from("schedule_blocks").update({ tasks: clean }).eq("id", blockId).eq("owner_id", guard.userId);
-  if (error) return { error: error.message };
+  if (error) return dbErrorResult(error, "agenda");
   revalidateAgendaPaths();
   return {};
 }
@@ -623,7 +624,7 @@ export async function placeColumnBlocks(
     removedIds = placed.filter((p) => cols.has(p.col)).map((p) => p.block.id);
     if (removedIds.length) {
       const { error } = await supabase.from("schedule_blocks").delete().eq("owner_id", guard.userId).in("id", removedIds);
-      if (error) return { error: error.message };
+      if (error) return dbErrorResult(error, "agenda");
     }
   } else {
     toPlace = items.filter((i) => isAlarmLabel(i.label) || !placed.some((p) => p.col === i.col && overlaps(p, i)));

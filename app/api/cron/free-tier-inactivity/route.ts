@@ -94,14 +94,14 @@ export async function GET(req: Request) {
           <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${subject}</h2>
           <p style="margin:0 0 12px;">Salut ${row.full_name?.split(" ")[0] ?? ""},</p>
           <p style="margin:0 0 12px;">
-            Ça fait ${inactiveDays} jours que tu ne t'es pas connecté. Dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""},
+            Ça fait ${inactiveDays} jours que tu n'as pas ouvert l'appli. Dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""},
             ton compte et tout ton historique seront définitivement supprimés.
           </p>
           <p style="margin:0 0 16px;">
             Ce n'est pas une relance de plus : c'est la dernière. Si tu veux garder ce que tu as commencé,
             connecte-toi maintenant, ou passe directement en accompagnement pour ne plus jamais y penser.
           </p>
-          <a href="${appUrl}/dashboard/client/abonnement"
+          <a href="${appUrl}/dashboard/client"
              style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;">
             Me connecter maintenant
           </a>

@@ -276,6 +276,15 @@ test("prompt IA : produits dopants, aucune dose ni protocole, orientation médec
   assert.match(COACHING_KNOWLEDGE_PROMPT, /doses, cycles, arrêts/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /relève d'un médecin/);
   assert.match(COACHING_KNOWLEDGE_PROMPT, /Jamais de réduction des risques chiffrée/);
+  // Compléments C59 (18/11) : approvisionnement, contrôle antidopage, eau et sodium,
+  // « légal donc sûr », dire la vérité au médecin, urgences.
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /d'approvisionnement/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /contourner ou de masquer un contrôle antidopage/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /de diurétique ni de manipulation de l'eau, du sodium ou du potassium/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /ne veut pas dire sans risque/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /le dire honnêtement à son médecin/);
+  assert.match(COACHING_KNOWLEDGE_PROMPT, /après une prise[^.]*urgences/);
+  assert.doesNotMatch(COACHING_KNOWLEDGE_PROMPT, /[—–]/);
 });
 
 test("prompt IA : ton sans culpabilisation, une action prioritaire, aucune promesse inventée (C55)", () => {
