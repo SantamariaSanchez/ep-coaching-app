@@ -11,6 +11,7 @@ import { getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
 import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
 import { escapeHtml } from "@/lib/sanitize";
+import { cleanCompleteBody } from "@/lib/session-complete-input";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -18,25 +19,6 @@ interface PR {
   exerciseName: string;
   weightKg: number;
   reps: number | null;
-}
-
-interface WorkoutData {
-  exerciseName: string;
-  muscleGroup: string;
-  isDirect: boolean;
-  setsCompleted: number;
-  rirActual: number | null;
-  weightKg: number | null;
-}
-
-interface CompleteBody {
-  duration_minutes: number;
-  general_feeling: number;
-  energy_level: number;
-  pump: number;
-  notes: string;
-  prs: PR[];
-  workoutData: WorkoutData[];
 }
 
 export async function POST(
@@ -50,7 +32,8 @@ export async function POST(
   if (limited) return limited;
 
   const { id: sessionId } = await params;
-  const body = (await req.json()) as CompleteBody;
+  const body = cleanCompleteBody(await req.json().catch(() => null));
+  if (!body) return NextResponse.json({ error: "Requête invalide, réessaie." }, { status: 400 });
   const supabase = await createServerSupabase();
 
   // Verify ownership
@@ -109,15 +92,17 @@ export async function POST(
   // (séance, exercice) sur 22 en double dans personal_records, et des faux
   // PR après un rechargement de la page en pleine séance.
   const bestByExercise = new Map<string, PR>();
-  for (const pr of Array.isArray(body.prs) ? body.prs : []) {
+  for (const pr of body.prs as Partial<PR>[]) {
     if (typeof pr?.exerciseName !== "string" || !pr.exerciseName.trim()) continue;
     const weight = Number(pr.weightKg);
-    if (!Number.isFinite(weight) || weight <= 0) continue;
-    const key = pr.exerciseName.toLowerCase();
+    if (!Number.isFinite(weight) || weight <= 0 || weight > 1000) continue;
+    // « Squat » et « Squat  » sont le même exercice (sinon faux record).
+    const name = pr.exerciseName.trim();
+    const key = name.toLowerCase();
     const current = bestByExercise.get(key);
     if (!current || weight > current.weightKg) {
       bestByExercise.set(key, {
-        exerciseName: pr.exerciseName,
+        exerciseName: name,
         weightKg: weight,
         reps: typeof pr.reps === "number" && Number.isFinite(pr.reps) ? pr.reps : null,
       });
@@ -137,7 +122,7 @@ export async function POST(
     } else {
       const bestExisting: Record<string, number> = {};
       for (const r of (existingRecords as { exercise_name: string; weight_kg: number }[]) ?? []) {
-        const key = r.exercise_name.toLowerCase();
+        const key = r.exercise_name.trim().toLowerCase();
         if (!(key in bestExisting) || r.weight_kg > bestExisting[key]) bestExisting[key] = r.weight_kg;
       }
       prsToInsert = [...bestByExercise.entries()]
@@ -186,7 +171,7 @@ export async function POST(
     body.workoutData.length > 0 && (await isFirstEverAction(guard.userId, "workout_logs", "client_id"));
 
   if (body.workoutData.length > 0) {
-    await supabase.from("workout_logs").insert(
+    const { error: volumeError } = await supabase.from("workout_logs").insert(
       body.workoutData.map((w) => ({
         client_id: guard.userId,
         exercise_name: w.exerciseName,
@@ -205,6 +190,9 @@ export async function POST(
         session_id: sessionId,
       }))
     );
+    // La séance est déjà terminée à ce stade : on ne la fait pas échouer,
+    // mais l'erreur ne doit plus passer inaperçue (volume manquant).
+    if (volumeError) console.error("POST complete: volume non enregistré:", sessionId, volumeError.code, volumeError.message);
 
     // Encouragement immédiat au membre lui-même, uniquement la toute
     // première fois (voir lib/first-action-celebration.ts) — jusqu'ici
@@ -226,9 +214,14 @@ export async function POST(
   // tous les coachs tiers voyaient leurs séances client atterrir dans la
   // boîte mail du fondateur au lieu de la leur, et rien n'apparaissait dans
   // la cloche de notifications côté coach.
-  const profile = await getProfile(guard.userId);
+  const [profile, coach] = await Promise.all([getProfile(guard.userId), getCoachForClient(guard.userId)]);
   const clientName = profile?.full_name ?? "Un client";
   const dayLabel = (session as { day_label: string }).day_label;
+  // Nom et libellé choisis par l'utilisateur : échappés avant d'entrer dans
+  // le HTML du mail (sinon liens ou balises injectés dans un mail de l'appli).
+  const safeName = escapeHtml(clientName);
+  const safeDay = escapeHtml(dayLabel ?? "");
+  const fmt = (v: number | null, unit = "") => (v == null ? "?" : `${v}${unit}`);
   // Les PR réellement enregistrés, pas ceux envoyés par l'écran : le coach
   // ne doit pas lire un record qui n'en est pas un.
   const prLine =
@@ -237,33 +230,34 @@ export async function POST(
       : "";
   const prSummary = prsToInsert.length > 0 ? ` 🏆 ${prsToInsert.length} nouveau${prsToInsert.length > 1 ? "x" : ""} PR.` : "";
 
-  const coach = await getCoachForClient(guard.userId);
-
   if (coach) {
     after(() => notifyUser(coach.id, {
       type: "session_complete",
       title: "💪 Séance terminée",
-      body: `${clientName} a terminé « ${dayLabel} » (${body.duration_minutes} min).${prSummary}`,
+      body: `${clientName} a terminé « ${dayLabel} » (${fmt(body.duration_minutes, " min")}).${prSummary}`,
       url: `/dashboard/coach/clients/${guard.userId}/logbook`,
       senderId: guard.userId,
     }).catch(() => {}));
 
     if (coach.email) {
+      const coachEmail = coach.email;
+      // Après la réponse : la validation de la séance n'attend plus l'envoi.
+      after(async () => {
       try {
         await sendBrevoEmail({
-          to: coach.email,
+          to: coachEmail,
           subject: `Séance terminée : ${clientName}`,
           // Même habillage de marque que les autres emails de l'appli
           // (logo, carte rouge sombre, pied de page) : celui-ci partait en
           // <div> brut, sans logo ni cadre.
           htmlContent: wrapBrandedEmail(`
             <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">💪 Séance terminée</h2>
-            <p style="margin:0 0 12px;"><strong>${clientName}</strong> vient de terminer sa séance <em>${dayLabel}</em>.</p>
+            <p style="margin:0 0 12px;"><strong>${safeName}</strong> vient de terminer sa séance <em>${safeDay}</em>.</p>
             <ul style="line-height:2;padding-left:16px;margin:0 0 12px;">
-              <li>Durée : ${body.duration_minutes} min</li>
-              <li>Énergie : ${body.energy_level}/5</li>
-              <li>Pump : ${body.pump}/5</li>
-              <li>Feeling : ${body.general_feeling}/5</li>
+              <li>Durée : ${fmt(body.duration_minutes, " min")}</li>
+              <li>Énergie : ${fmt(body.energy_level)}/5</li>
+              <li>Pump : ${fmt(body.pump)}/5</li>
+              <li>Feeling : ${fmt(body.general_feeling)}/5</li>
             </ul>
             ${prLine}
             <a href="${APP_URL}/dashboard/coach/clients/${guard.userId}/logbook"
@@ -276,6 +270,7 @@ export async function POST(
       } catch {
         // email failure is non-blocking
       }
+      });
     }
   }
 
