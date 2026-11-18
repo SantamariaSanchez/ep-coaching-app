@@ -12,6 +12,7 @@ import { cleanText, escapeHtml, LIMITS, safeExternalUrl } from "@/lib/sanitize";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { requireClient } from "@/lib/auth-guards";
 import { dbErrorResult } from "@/lib/db-error";
+import { ownStoragePath } from "@/lib/storage-path";
 
 type SubmitState = { error: string } | { success: true } | null;
 
@@ -27,15 +28,6 @@ function txt(v: FormDataEntryValue | null): string | null {
   return cleanText(v, LIMITS.message);
 }
 
-// Chemin de stockage envoyé par le formulaire : seulement dans le dossier de
-// la personne (« <son id>/… »). Le check-in est écrit avec le client admin :
-// sans ce contrôle, un chemin vers le dossier d'une autre cliente du même
-// coach faisait afficher ses photos privées au coach.
-function ownPath(v: FormDataEntryValue | null, userId: string): string | null {
-  const p = typeof v === "string" ? v.trim() : "";
-  if (!p || p.length > 300 || p.includes("..")) return null;
-  return p.startsWith(`${userId}/`) ? p : null;
-}
 
 export async function submitCheckin(
   prevState: SubmitState,
@@ -71,7 +63,7 @@ export async function submitCheckin(
 
   const photoPaths = formData
     .getAll("photo_paths")
-    .map((v) => ownPath(v, guard.userId))
+    .map((v) => ownStoragePath(v, guard.userId))
     .filter((p): p is string => !!p)
     .slice(0, 12);
 
@@ -81,7 +73,7 @@ export async function submitCheckin(
   const rawVideoLabels = formData.getAll("video_labels");
   const videos = formData
     .getAll("video_paths")
-    .map((v, i) => ({ path: ownPath(v, guard.userId), label: (typeof rawVideoLabels[i] === "string" ? (rawVideoLabels[i] as string) : "").trim().slice(0, 80) }))
+    .map((v, i) => ({ path: ownStoragePath(v, guard.userId), label: (typeof rawVideoLabels[i] === "string" ? (rawVideoLabels[i] as string) : "").trim().slice(0, 80) }))
     .filter((x): x is { path: string; label: string } => !!x.path)
     .slice(0, 6);
   const videoPaths = videos.map((x) => x.path);
