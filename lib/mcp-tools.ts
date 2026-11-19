@@ -3,6 +3,7 @@
 // code. Chaque outil n'agit que sur les données du propriétaire de la clé
 // (et, pour un coach, sur ses propres clients).
 import { aiTicsRefusal, findAiTics, findWeakHooks, weakHooksRefusal } from "@/lib/ai-tics";
+import { findSaturatedThemes, saturatedRefusal, subjectText } from "@/lib/saturated-themes";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { startOfTodayInParis, todayInParis } from "@/lib/dates";
 import { engagementProgress, reviewDate, reviewState, type RenewalStatus } from "@/lib/engagement";
@@ -526,6 +527,14 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       }
       if (!written && isContentFormatId(args.format_contenu) && getContentFormat(args.format_contenu).onlyFor) {
         return text(`Le format ${args.format_contenu} est réservé aux plateformes ${getContentFormat(args.format_contenu).onlyFor!.join(", ")}.`);
+      }
+      // Thèmes saturés (balance, changer de programme, logbook, squat ou développé
+      // couché) : un reel sur un thème déjà dans 2 des 20 derniers est refusé.
+      if (platform === "reel") {
+        const { data: recentRows } = await admin.from("coach_scripts").select("title, hook, content").eq("coach_id", ownerId).eq("platform", "reel").order("created_at", { ascending: false }).limit(20);
+        const recent = ((recentRows ?? []) as { title: string | null; hook: string | null; content: string | null }[]).map((r) => subjectText(r.title, r.hook, r.content));
+        const saturated = findSaturatedThemes(subjectText(title, typeof args.accroche === "string" ? args.accroche : null, content), recent);
+        if (saturated.length) return text(saturatedRefusal(saturated));
       }
       const contentFormat = written
         ? defaultFormatFor(platform, isContentFormatId(args.format_contenu) ? args.format_contenu : null)
