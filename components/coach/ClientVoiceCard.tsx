@@ -11,7 +11,7 @@ import { voiceThemeToIdeaAction } from "@/app/actions/client-voice";
 // check-ins, messages, candidatures et questions de la communauté, sans nom.
 // Un tap transforme un thème en idée de contenu (Studio > Idées). Même forme
 // que « Ma semaine » (WeeklyLivedCard) : un bouton, une feuille.
-export default function ClientVoiceCard({ themes, total, days }: { themes: VoiceTheme[]; total: number; days: number }) {
+export default function ClientVoiceCard({ themes, total, days, reasons = [] }: { themes: VoiceTheme[]; total: number; days: number; reasons?: { kind: string; text: string }[] }) {
   const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -80,6 +80,17 @@ export default function ClientVoiceCard({ themes, total, days }: { themes: Voice
                 </div>
               ))}
             </div>
+            {reasons.length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 14, fontWeight: 800 }}>{t("Pourquoi elles t'ont choisi")}</div>
+                <div style={{ fontSize: 12.5, opacity: 0.75, margin: "2px 0 6px" }}>{t("Ce qu'elles ont écrit dans leur fiche d'onboarding. C'est ça qu'il faut mettre en avant.")}</div>
+                <ul style={{ margin: 0, paddingLeft: 16, display: "grid", gap: 4 }}>
+                  {reasons.map((r, i) => (
+                    <li key={i} style={{ fontSize: 12.5 }}>« {r.text} » <span style={{ opacity: 0.6 }}>({t(r.kind)})</span></li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {error && <p role="alert" style={{ marginTop: 10, fontSize: 12.5, color: "var(--ep-red, #E01E1E)" }}>{error}</p>}
             <p style={{ marginTop: 12, fontSize: 11.5, opacity: 0.6 }}>{t("Anonyme : aucun nom ni coordonnée. Les sujets de santé ne sont jamais repris.")}</p>
           </section>

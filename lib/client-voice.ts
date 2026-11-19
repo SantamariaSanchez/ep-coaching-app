@@ -90,10 +90,28 @@ export const VOICE_RULES = [
   "Une phrase qui touche à la santé (douleur, trouble alimentaire, grossesse) ne devient jamais un contenu.",
 ];
 
+/**
+ * « Pourquoi elles t'ont choisi » (fiche d'onboarding : ce qui a donné envie,
+ * pourquoi ce coach plutôt qu'un autre). Anonymisé, dédoublonné, santé exclue.
+ */
+export function cleanReasons(raw: { kind: string; text: string | null }[], max = 8): { kind: string; text: string }[] {
+  const out: { kind: string; text: string }[] = [];
+  for (const r of raw) {
+    if (!r.text || !isUsableSnippet(r.text)) continue;
+    const text = anonymizeSnippet(r.text, 260);
+    if (!out.some((o) => o.text === text)) out.push({ kind: r.kind, text });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
 /** Version texte pour Claude (outil MCP) : thèmes, angles et exemples anonymes. */
-export function voiceMarkdown(themes: VoiceTheme[], days: number, total: number): string {
+export function voiceMarkdown(themes: VoiceTheme[], days: number, total: number, reasons: { kind: string; text: string }[] = []): string {
+  const why = reasons.length
+    ? "\n\n### Pourquoi elles t'ont choisi (fiche d'onboarding)\nÀ mettre en avant dans le marketing : c'est ce qui fait la différence pour elles.\n" + reasons.map((r) => `- « ${r.text} » (${r.kind})`).join("\n")
+    : "";
   if (!themes.length) {
-    return `Aucune phrase exploitable sur les ${days} derniers jours (${total} lue(s)). Rien à transformer en contenu pour l'instant : ne pas inventer de question de cliente.`;
+    return `Aucune phrase exploitable sur les ${days} derniers jours (${total} lue(s)). Rien à transformer en contenu pour l'instant : ne pas inventer de question de cliente.${why}`;
   }
   const head = [`Ce que les clientes et prospectes ont écrit sur ${days} jours (${total} phrase(s) lue(s)), regroupé par thème :`, "", "Règles :", ...VOICE_RULES.map((r) => `- ${r}`), ""];
   const body = themes.map((t) => [
@@ -101,5 +119,5 @@ export function voiceMarkdown(themes: VoiceTheme[], days: number, total: number)
     `Angle : ${t.angle}`,
     ...t.examples.map((e) => `- « ${e.text} » (${VOICE_SOURCE_LABELS[e.source]})`),
   ].join("\n"));
-  return head.join("\n") + body.join("\n\n");
+  return head.join("\n") + body.join("\n\n") + why;
 }

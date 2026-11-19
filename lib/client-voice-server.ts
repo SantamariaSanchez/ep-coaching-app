@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
-import { groupVoice, type VoiceSnippet, type VoiceTheme } from "@/lib/client-voice";
+import { cleanReasons, groupVoice, type VoiceSnippet, type VoiceTheme } from "@/lib/client-voice";
 
 // Lecture serveur pour « Ce que tes clientes te demandent » (lib/client-voice.ts).
 // Un coach ne lit que les phrases de SES clientes ; les candidatures et la
@@ -24,7 +24,7 @@ export async function getClientVoice(
   coachId: string,
   isOwner: boolean,
   days = 30
-): Promise<{ themes: VoiceTheme[]; total: number; days: number }> {
+): Promise<{ themes: VoiceTheme[]; total: number; days: number; reasons: { kind: string; text: string }[] }> {
   const admin = createAdminClient();
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
   const snippets: VoiceSnippet[] = [];
@@ -33,7 +33,23 @@ export async function getClientVoice(
   const clientIds = ((clients ?? []) as { id: string }[]).map((c) => c.id);
 
   const tasks: PromiseLike<void>[] = [];
+  const rawReasons: { kind: string; text: string | null }[] = [];
   if (clientIds.length > 0) {
+    // Raisons du choix : toute la fiche d'onboarding, pas seulement 30 jours
+    // (elle n'est remplie qu'une fois par cliente).
+    tasks.push(
+      admin
+        .from("client_intake")
+        .select("why_me, why_joined, created_at")
+        .in("client_id", clientIds)
+        .order("created_at", { ascending: false })
+        .limit(200)
+        .then(({ data }) => {
+          for (const r of (data ?? []) as { why_me?: string | null; why_joined?: string | null }[]) {
+            rawReasons.push({ kind: "pourquoi toi", text: r.why_me ?? null }, { kind: "ce qui a donné envie", text: r.why_joined ?? null });
+          }
+        }, () => undefined)
+    );
     tasks.push(
       admin
         .from("check_ins")
@@ -104,5 +120,5 @@ export async function getClientVoice(
   }
 
   await Promise.all(tasks);
-  return { themes: groupVoice(snippets), total: snippets.length, days };
+  return { themes: groupVoice(snippets), total: snippets.length, days, reasons: cleanReasons(rawReasons) };
 }
