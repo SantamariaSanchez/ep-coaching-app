@@ -25,9 +25,15 @@ export default async function FirstMonthCard({ data }: { data: FirstMonth | null
       {data.bilanDays > 0 && (
         <p style={{ margin: "0 0 12px", fontSize: 13, opacity: 0.8 }}>{t("{n} bilan(s) du matin remplis.", { n: data.bilanDays })}</p>
       )}
-      <Link href="/dashboard/client/progress" style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-violet)" }}>
-        {t("Voir ma progression")}
-      </Link>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px" }}>
+        <Link href="/dashboard/client/progress" style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-violet)" }}>
+          {t("Voir ma progression")}
+        </Link>
+        {/* Moment fort du parcours : c'est là qu'on demande une recommandation (transcripts Hormozi). */}
+        <Link href="/dashboard/client/profile#parrainage" style={{ fontSize: 13, fontWeight: 700, color: "var(--ep-violet)" }}>
+          {t("Une amie veut s'y mettre aussi ? Invite-la")}
+        </Link>
+      </div>
     </section>
   );
 }

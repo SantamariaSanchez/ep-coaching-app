@@ -43,7 +43,7 @@ export default function ReferralCard({
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-8" id="parrainage">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-(--ep-ink)/35 mb-1">
         {t("Parrainage")}
       </p>

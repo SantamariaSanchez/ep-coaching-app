@@ -69,3 +69,17 @@ test("candidature non terminée : repérée, marqueur jamais affiché", async ()
   assert.equal(isPartialPrequal({ objectif: "perte" }), false);
   assert.ok(!prequalAnswerLines({ objectif: "perte", _partial: "true" }).some((l) => l.label === "_partial"));
 });
+
+test("auditFollowUp : avancer avant l'appel, reprogrammer après 15 min", async () => {
+  const { auditFollowUp } = await import("../prequal-inbox");
+  const start = "2026-11-20T18:00:00Z";
+  const before = auditFollowUp("Léa", start, Date.parse("2026-11-19T10:00:00Z"), "Emmanuel");
+  assert.equal(before.kind, "avancer");
+  assert.match(before.message, /^Salut Léa, c'est Emmanuel/);
+  assert.match(before.message, /plus tôt/);
+  assert.equal(auditFollowUp(null, start, Date.parse("2026-11-20T18:10:00Z")).kind, "avancer");
+  const after = auditFollowUp("", start, Date.parse("2026-11-20T18:16:00Z"));
+  assert.equal(after.kind, "absente");
+  assert.match(after.message, /^Salut, c'est l'équipe/);
+  assert.match(after.message, /deux créneaux/);
+});

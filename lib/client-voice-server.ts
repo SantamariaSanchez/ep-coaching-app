@@ -40,13 +40,17 @@ export async function getClientVoice(
     tasks.push(
       admin
         .from("client_intake")
-        .select("why_me, why_joined, created_at")
+        .select("why_me, why_joined, why_hesitated, created_at")
         .in("client_id", clientIds)
         .order("created_at", { ascending: false })
         .limit(200)
         .then(({ data }) => {
-          for (const r of (data ?? []) as { why_me?: string | null; why_joined?: string | null }[]) {
-            rawReasons.push({ kind: "pourquoi toi", text: r.why_me ?? null }, { kind: "ce qui a donné envie", text: r.why_joined ?? null });
+          for (const r of (data ?? []) as { why_me?: string | null; why_joined?: string | null; why_hesitated?: string | null }[]) {
+            rawReasons.push(
+              { kind: "pourquoi toi", text: r.why_me ?? null },
+              { kind: "ce qui a donné envie", text: r.why_joined ?? null },
+              { kind: "ce qui l'a fait hésiter", text: r.why_hesitated ?? null },
+            );
           }
         }, () => undefined)
     );

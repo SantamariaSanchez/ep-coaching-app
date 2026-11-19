@@ -56,6 +56,8 @@ export interface ClientIntake {
   /** Ce qui a donné envie au client de rejoindre le coach (contenu, hésitation) : alimente la création de contenu. */
   why_joined?: string | null;
   why_me?: string | null;
+  /** Ce qui l'a fait hésiter avant de se lancer : les objections à traiter dans le contenu. */
+  why_hesitated?: string | null;
   resting_heart_rate: number | null;
   cycle_length_days: number | null;
   hormonal_contraceptive: string | null;
