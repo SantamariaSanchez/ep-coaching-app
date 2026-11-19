@@ -156,11 +156,12 @@ export const ONBOARDING_SECTIONS: SectionDef[] = [
     title: "Pour finir",
     kicker: "Section 9",
     fields: {
-      pourquoi: { type: "textarea", label: "Qu'est-ce qui t'a donné envie de me rejoindre ? Une vidéo, un contenu précis, une hésitation que tu avais...", required: false },
+      pourquoi: { type: "textarea", label: "Qu'est-ce qui t'a donné envie de me rejoindre ? Si c'est une vidéo précise, dis-moi laquelle.", required: false },
+      hesitation: { type: "textarea", label: "Qu'est-ce qui t'a fait hésiter avant de te lancer ?", required: false },
       pourquoi_moi: { type: "textarea", label: "Pourquoi moi plutôt qu'un autre coach ? Même une raison qui te paraît bizarre m'intéresse.", required: false },
       autre: { type: "textarea", label: "Il y a autre chose que je dois savoir sur toi pour t'accompagner au mieux ?", required: false },
     },
-    groups: [["pourquoi"], ["pourquoi_moi"], ["autre"]],
+    groups: [["pourquoi"], ["hesitation"], ["pourquoi_moi"], ["autre"]],
   },
 ];
 
@@ -209,6 +210,7 @@ export const INTAKE_FIELD_MAP: Record<string, string> = {
   autre: "additional_notes",
   pourquoi: "why_joined",
   pourquoi_moi: "why_me",
+  hesitation: "why_hesitated",
 };
 
 const NUMERIC_INTAKE_COLUMNS = new Set([

@@ -283,6 +283,13 @@ export function generateClientSuggestions(
       text: `Ce qui lui a donné envie de te rejoindre : "${intake.why_joined}". À noter pour tes prochains contenus.`,
     });
   }
+  if (intake.why_hesitated) {
+    s.push({
+      id: "why-hesitated",
+      severity: "info",
+      text: `Ce qui l'a fait hésiter avant de se lancer : "${intake.why_hesitated}". Une objection à traiter dans tes contenus.`,
+    });
+  }
   if (intake.why_me) {
     s.push({
       id: "why-me",
