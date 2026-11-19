@@ -48,3 +48,40 @@ export function saturatedRefusal(found: { theme: SaturatedTheme; count: number }
     "Prends un autre sujet : questions_clientes, la banque de sujets neufs de Notion (« Écrire comme on parle ») ou « Choix des exercices (0RIR) » pour parler machines. Rien n'a été enregistré.",
   ].join("\n");
 }
+
+// Formes répétées (analyse du Studio au 19/11 : 91 reels sur 102 finissent par
+// « commente », 75 titres sur 92 sont en « X : Y »). Règle du PROCESS MAÎTRE :
+// jamais la même fin trois fois de suite ; même règle pour le titre à deux-points.
+export interface RecentForm {
+  title: string | null;
+  content: string | null;
+}
+
+const COMMENT_CTA = /\bcommente\b/i;
+const END_WINDOW = 400;
+
+export function endsWithCommentCta(content: string | null | undefined): boolean {
+  const c = (content ?? "").trim();
+  return COMMENT_CTA.test(c.slice(-END_WINDOW));
+}
+
+export function hasColonTitle(title: string | null | undefined): boolean {
+  return /\S\s*:\s*\S/.test(title ?? "");
+}
+
+/** Formes qui feraient une troisième fois d'affilée (les 2 plus récents d'abord). */
+export function findRepeatedForms(next: RecentForm, recent: RecentForm[]): string[] {
+  const last2 = recent.slice(0, 2);
+  const out: string[] = [];
+  if (last2.length === 2 && endsWithCommentCta(next.content) && last2.every((r) => endsWithCommentCta(r.content))) {
+    out.push("la fin « commente [mot] », déjà dans les 2 derniers reels : finis sur l'audit gratuit, « abonne-toi » ou une vraie question");
+  }
+  if (last2.length === 2 && hasColonTitle(next.title) && last2.every((r) => hasColonTitle(r.title))) {
+    out.push("le titre en « X : Y », déjà dans les 2 derniers reels : écris un titre qui se dit à voix haute, sans deux-points");
+  }
+  return out;
+}
+
+export function repeatedFormsRefusal(forms: string[]): string {
+  return ["Script refusé : même forme trois fois de suite.", ...forms.map((f) => `- ${f}`), "Rien n'a été enregistré."].join("\n");
+}
