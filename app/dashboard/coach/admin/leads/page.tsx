@@ -10,7 +10,7 @@ import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
-import { auditWhen, auditsWindowStart, prequalAnswerLines, prequalForEmail } from "@/lib/prequal-inbox";
+import { auditFollowUp, auditWhen, auditsWindowStart, prequalAnswerLines, prequalForEmail, whatsappNumber } from "@/lib/prequal-inbox";
 import { activationSteps, funnelSteps, visitGroup, type ActivationCounts } from "@/lib/visit-tracking";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { updateLeadStatus, updateLeadNote } from "./actions";
@@ -27,6 +27,7 @@ export default async function LeadsAdminPage() {
 
   const profile = await getProfile(user.id);
   if (!profile?.is_platform_owner) redirect("/dashboard/coach");
+  const coachFirstName = (profile.full_name ?? "").split(" ")[0] || null;
 
   const PREQUAL_COLS = "id, form_type, first_name, last_name, phone, email, answers, status, created_at";
   const [leads, leadMagnets, prequalRes, bookingRes] = await Promise.all([
@@ -206,6 +207,19 @@ export default async function LeadsAdminPage() {
                         {t("Rejoindre la visio")}
                       </a>
                     )}
+                    {(() => {
+                      // Proposer d'avancer l'audit, ou le reprogrammer sans reproche si elle n'est pas venue.
+                      const f = auditFollowUp(a.prequal?.first_name ?? a.name?.split(" ")[0], a.starts_at, Date.now(), coachFirstName);
+                      const wa = whatsappNumber(a.prequal?.phone);
+                      const href = wa
+                        ? `https://wa.me/${wa}?text=${encodeURIComponent(f.message)}`
+                        : a.email ? `mailto:${a.email}?subject=${encodeURIComponent("Ton audit EP Coaching")}&body=${encodeURIComponent(f.message)}` : null;
+                      return href ? (
+                        <a href={href} target="_blank" rel="noopener noreferrer" className="h-9 px-3 rounded-full inline-flex items-center text-[12px] font-extrabold border" style={{ borderColor: "rgba(var(--ep-accent-rgb),0.4)", color: "var(--ep-accent)" }}>
+                          {t(f.label)}
+                        </a>
+                      ) : null;
+                    })()}
                     {a.email && <a href={`mailto:${a.email}`} className="h-9 px-3 rounded-full inline-flex items-center text-[12px] font-extrabold border" style={{ borderColor: "rgba(var(--ep-ink-rgb),0.14)", color: "var(--ep-ink)" }}>{a.email}</a>}
                   </div>
                   {lines.length > 0 ? (

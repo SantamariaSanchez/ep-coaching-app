@@ -101,3 +101,25 @@ export function auditWhen(iso: string): string {
 export function auditsWindowStart(now = Date.now()): string {
   return new Date(now - 2 * 3_600_000).toISOString();
 }
+
+/**
+ * Message proposé pour un audit réservé (transcripts « $100M Sales Team ») :
+ * avant l'appel, proposer de l'avancer ; passé de 15 min sans elle, la
+ * reprogrammer sans reproche (« un absent n'est pas un refus »).
+ */
+export function auditFollowUp(firstName: string | null | undefined, startsAt: string, now = Date.now(), coachName?: string | null): { kind: "avancer" | "absente"; label: string; message: string } {
+  const name = (firstName ?? "").trim();
+  const hi = `Salut${name ? ` ${name}` : ""}, c'est ${(coachName ?? "").trim() || "l'équipe"} d'EP Coaching.`;
+  if (now >= new Date(startsAt).getTime() + 15 * 60_000) {
+    return {
+      kind: "absente",
+      label: "Pas venue : reprogrammer",
+      message: `${hi} On devait se voir pour ton audit, on s'est mal compris, ça arrive. Je te propose deux créneaux cette semaine : lequel te va le mieux ?`,
+    };
+  }
+  return {
+    kind: "avancer",
+    label: "Proposer d'avancer",
+    message: `${hi} J'ai bien vu ta réservation pour l'audit. Un créneau plus tôt s'est libéré : tu veux qu'on avance ? Dis-moi quand tu es dispo.`,
+  };
+}
