@@ -62,3 +62,10 @@ test("fenêtre des audits : commence 2 h avant maintenant", async () => {
   const { auditsWindowStart } = await import("../prequal-inbox");
   assert.equal(auditsWindowStart(Date.parse("2026-11-27T10:00:00Z")), "2026-11-27T08:00:00.000Z");
 });
+
+test("candidature non terminée : repérée, marqueur jamais affiché", async () => {
+  const { isPartialPrequal, prequalAnswerLines } = await import("../prequal-inbox");
+  assert.equal(isPartialPrequal({ objectif: "perte", _partial: "true" }), true);
+  assert.equal(isPartialPrequal({ objectif: "perte" }), false);
+  assert.ok(!prequalAnswerLines({ objectif: "perte", _partial: "true" }).some((l) => l.label === "_partial"));
+});

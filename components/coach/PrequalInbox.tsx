@@ -6,7 +6,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { safeAction } from "@/lib/safe-action";
 import { updatePrequalStatus } from "@/app/dashboard/coach/admin/leads/actions";
 import {
-  PREQUAL_STATUSES, PREQUAL_STATUS_LABELS, firstContactMessage, prequalAnswerLines, waitingDays, whatsappNumber,
+  PREQUAL_STATUSES, PREQUAL_STATUS_LABELS, firstContactMessage, isPartialPrequal, prequalAnswerLines, waitingDays, whatsappNumber,
   type PrequalStatus,
 } from "@/lib/prequal-inbox";
 
@@ -77,6 +77,11 @@ function Row({ r, coachName, onStatus }: { r: PrequalRow; coachName: string | nu
     <li className="rounded-xl p-3" style={{ background: "rgba(var(--ep-shade-rgb),0.3)" }}>
       <div className="flex items-center gap-2">
         <p className="flex-1 min-w-0 truncate text-[13.5px] font-black text-(--ep-ink)">{name}</p>
+        {isPartialPrequal(r.answers) && (
+          <span title={t("Elle a donné son numéro puis s'est arrêtée avant la fin : à rappeler.")} className="shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-extrabold" style={{ background: "rgba(var(--ep-accent-rgb),0.16)", color: "var(--ep-accent)" }}>
+            {t("Non terminée")}
+          </span>
+        )}
         <span className="text-[11px] font-bold shrink-0" style={{ color: r.status === "nouveau" && days >= 2 ? "var(--ep-warn)" : "rgba(var(--ep-ink-rgb),0.45)" }}>
           {r.form_type === "business" ? t("Business") : t("Physique")} · {days === 0 ? t("aujourd'hui") : t("il y a {n} j", { n: days })}
         </span>
