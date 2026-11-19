@@ -290,18 +290,22 @@ export default function WeeklyAgenda({
 
   // Vue par défaut (semaine sur grand écran) et heure courante : uniquement
   // côté navigateur, après montage.
+  // Une seule fois au montage : après une sauvegarde, router.refresh() renvoie
+  // de nouveaux réglages, et relancer cet effet ramenait la vue au jour
+  // d'aujourd'hui (retour d'Emmanuel du 19/11).
+  const initialWindow = useRef(settings?.window ?? DEFAULT_WINDOW);
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setViewMode(mq.matches ? "week" : "day");
     const n = new Date();
     setNow(n);
-    const w = settings?.window ?? DEFAULT_WINDOW;
+    const w = initialWindow.current;
     const nowMin = n.getHours() * 60 + n.getMinutes();
     setSelectedCol(isOvernight(w) && nowMin < w.end ? prevDay(isoWeekday(n)) : isoWeekday(n));
     const id = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(id);
-  }, [settings?.window]);
+  }, []);
 
   // ── Données dérivées ──────────────────────────────────────────────────
   const weekBounds = now ? currentWeekBounds(now) : null;
