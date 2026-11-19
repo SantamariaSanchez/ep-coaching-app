@@ -4,6 +4,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect } from "react";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 import Link from "next/link";
+import { isStaleBuildError, reloadIfStale } from "@/lib/stale-build";
 
 // MASTERCLASS.md Axe H : avant ce fichier, aucun error.tsx n'existait nulle
 // part dans app/ — une exception non attrapée dans n'importe quel composant
@@ -12,15 +13,28 @@ import Link from "next/link";
 // et sans aucun moyen de réessayer sans recharger la page à la main.
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
+  /** Recharge les données de la page (préféré à reset, voir la doc Next). */
+  retry?: () => void;
 }) {
   const t = useT();
   useEffect(() => {
     console.error("Erreur non interceptée:", error);
+    // Appli rouverte après une mise à jour : on recharge une fois, tout seul.
+    reloadIfStale(error);
   }, [error]);
+
+  function tryAgain() {
+    // reset() seul ne refait aucune requête : l'erreur revenait à chaque fois.
+    if (isStaleBuildError(error) || !retry) {
+      window.location.reload();
+      return;
+    }
+    retry();
+  }
 
   return (
     <div
@@ -96,7 +110,7 @@ export default function Error({
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={tryAgain}
             className="ep-btn-primary"
             style={{
               display: "inline-flex",
