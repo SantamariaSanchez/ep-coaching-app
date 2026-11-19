@@ -1,6 +1,7 @@
 import VisitBeacon from "@/components/VisitBeacon";
+import StaleBuildGuard from "@/components/StaleBuildGuard";
 import type { Metadata, Viewport } from "next";
-import { Montserrat, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import AccessibilityMotionConfig from "@/components/ui/AccessibilityMotionConfig";
 import { ACCESSIBILITY_INIT_SCRIPT } from "@/lib/accessibility";
 import { AMBIANCE_INIT_SCRIPT } from "@/lib/theme-color";
@@ -8,17 +9,21 @@ import ConfirmDialogProvider from "@/components/ui/ConfirmDialogProvider";
 import NavTrailTracker from "@/components/ui/NavTrailTracker";
 import "./globals.css";
 
-const montserrat = Montserrat({
+// Polices servies depuis le dépôt (polices variables latin, mêmes fichiers
+// que Google Fonts) : next/font/google fait échouer le build Turbopack par
+// intermittence (« next/font/google queries have exactly one entry »).
+const montserrat = localFont({
+  src: "./fonts/montserrat-latin.woff2",
   variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: "400 900",
 });
 
-const playfair = Playfair_Display({
+const playfair = localFont({
+  src: [
+    { path: "./fonts/playfair-latin.woff2", style: "normal", weight: "400 700" },
+    { path: "./fonts/playfair-latin-italic.woff2", style: "italic", weight: "400 700" },
+  ],
   variable: "--font-playfair",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "700"],
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
@@ -109,6 +114,8 @@ export default function RootLayout({
         <NavTrailTracker />
         {/* Visites des pages publiques, sans cookie (lib/visit-tracking.ts). */}
         <VisitBeacon />
+        {/* Appli rouverte après une mise à jour : rechargement propre (lib/stale-build.ts). */}
+        <StaleBuildGuard />
         <AccessibilityMotionConfig>
           <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
         </AccessibilityMotionConfig>

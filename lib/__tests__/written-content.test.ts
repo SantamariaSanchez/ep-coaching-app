@@ -213,3 +213,8 @@ test("résumé pour le connecteur : ce qui manque, sans tiret cadratin", () => {
   assert.match(txt, /Reels : pas d'objectif fixé/);
   assert.doesNotMatch(txt, /[—–]/);
 });
+
+test("résumé : quota d'écriture du jour, indépendant du stock", () => {
+  const txt = targetsSummary({ reel: 50 }, { reel: 0 }, { reel: 100 }, { reel: 12 });
+  assert.match(txt, /Reels : objectif 50 par jour, publié aujourd'hui 0, en stock 100, stock suffisant ; écrits aujourd'hui 12, encore à écrire aujourd'hui 38/);
+});

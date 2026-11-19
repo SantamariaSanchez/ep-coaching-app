@@ -2,6 +2,7 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect } from "react";
+import { reloadIfStale } from "@/lib/stale-build";
 
 // MASTERCLASS.md Axe H : filet de dernier recours, seulement si la mise en
 // page racine elle-même (app/layout.tsx) plante — cas très rare, mais sans
@@ -12,7 +13,6 @@ import { useEffect } from "react";
 // si quelque chose est vraiment cassé ailleurs.
 export default function GlobalError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -20,6 +20,7 @@ export default function GlobalError({
   const t = useT();
   useEffect(() => {
     console.error("Erreur racine non interceptée:", error);
+    reloadIfStale(error);
   }, [error]);
 
   return (
@@ -81,7 +82,7 @@ export default function GlobalError({
           </p>
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={() => window.location.reload()}
             style={{
               width: "100%",
               padding: "12px 20px",
