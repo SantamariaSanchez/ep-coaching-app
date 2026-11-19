@@ -100,14 +100,27 @@ export function progressByTarget(countsByPlatform: Record<string, number>): Reco
 }
 
 /** Résumé texte pour le connecteur Claude (routines). */
-export function targetsSummary(targets: ContentTargets, done: Record<string, number>, stock: Record<string, number>): string {
+/**
+ * `written` = scripts écrits aujourd'hui (tous statuts). Les routines
+ * d'écriture s'arrêtent sur « encore à écrire 0 », pas sur le stock : un
+ * stock à tourner ne remplace pas le quota d'écriture du jour (décision du
+ * 19/11 : 20 posts LinkedIn, 1 YouTube et 50 reels écrits chaque jour).
+ */
+export function targetsSummary(
+  targets: ContentTargets,
+  done: Record<string, number>,
+  stock: Record<string, number>,
+  written?: Record<string, number>
+): string {
   const lines = CONTENT_TARGET_DEFS.map((d) => {
     const t = targets[d.key];
     const s = stock[d.key] ?? 0;
     const p = done[d.key] ?? 0;
-    if (!t) return `- ${d.label} : pas d'objectif fixé (publié aujourd'hui ${p}, en stock ${s})`;
+    const w = written ? ` ; écrits aujourd'hui ${written[d.key] ?? 0}` : "";
+    if (!t) return `- ${d.label} : pas d'objectif fixé (publié aujourd'hui ${p}, en stock ${s}${w})`;
     const missing = Math.max(0, t - p - s);
-    return `- ${d.label} : objectif ${t} par jour, publié aujourd'hui ${p}, en stock ${s}${missing ? `, il en manque ${missing}` : ", stock suffisant"}`;
+    const toWrite = written ? `, encore à écrire aujourd'hui ${Math.max(0, t - (written[d.key] ?? 0))}` : "";
+    return `- ${d.label} : objectif ${t} par jour, publié aujourd'hui ${p}, en stock ${s}${missing ? `, il en manque ${missing}` : ", stock suffisant"}${w}${toWrite}`;
   });
   return lines.join("\n");
 }

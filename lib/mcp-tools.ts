@@ -481,20 +481,24 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
     }
 
     case "mes_objectifs_contenu": {
-      const [setupRes, logRes, scriptsRes] = await Promise.all([
+      const [setupRes, logRes, scriptsRes, todayRes] = await Promise.all([
         admin.from("user_app_setup").select("answers").eq("user_id", ownerId).maybeSingle(),
         admin.from("content_published_log").select("platform").eq("coach_id", ownerId).gte("published_at", startOfTodayInParis().toISOString()),
         admin.from("coach_scripts").select("platform, status").eq("coach_id", ownerId).neq("status", "publie"),
+        // Écrits aujourd'hui (tous statuts) : le quota d'écriture des routines.
+        admin.from("coach_scripts").select("platform").eq("coach_id", ownerId).gte("created_at", startOfTodayInParis().toISOString()).limit(2000),
       ]);
       const targets = targetsFromAnswers((setupRes.data?.answers as Record<string, unknown> | null) ?? null);
       const counts: Record<string, number> = {};
       for (const r of (logRes.data ?? []) as { platform: string | null }[]) if (r.platform) counts[r.platform] = (counts[r.platform] ?? 0) + 1;
       const stock: Record<string, number> = {};
       for (const d of CONTENT_TARGET_DEFS) stock[d.key] = ((scriptsRes.data ?? []) as { platform: string }[]).filter((r) => d.platforms.includes(r.platform)).length;
+      const written: Record<string, number> = {};
+      for (const d of CONTENT_TARGET_DEFS) written[d.key] = ((todayRes.data ?? []) as { platform: string | null }[]).filter((r) => !!r.platform && d.platforms.includes(r.platform)).length;
       const head = Object.keys(targets).length
         ? "Objectifs du jour fixés par le coach (Studio créatif) :"
         : "Aucun objectif fixé dans le Studio. Ne produis pas en volume : demande au coach ses objectifs (Studio créatif, Objectifs du jour) ou produis seulement ce qu'il demande.";
-      return text(`${head}\n${targetsSummary(targets, progressByTarget(counts), stock)}`);
+      return text(`${head}\n${targetsSummary(targets, progressByTarget(counts), stock, written)}\nRègle des routines d'écriture : écris tant que « encore à écrire aujourd'hui » n'est pas à 0, même si le stock est suffisant.`)
     }
 
     case "ajouter_script": {
