@@ -3,7 +3,7 @@
 // code. Chaque outil n'agit que sur les données du propriétaire de la clé
 // (et, pour un coach, sur ses propres clients).
 import { aiTicsRefusal, findAiTics, findWeakHooks, weakHooksRefusal } from "@/lib/ai-tics";
-import { findSaturatedThemes, saturatedRefusal, subjectText } from "@/lib/saturated-themes";
+import { findRepeatedForms, findSaturatedThemes, repeatedFormsRefusal, saturatedRefusal, subjectText } from "@/lib/saturated-themes";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { startOfTodayInParis, todayInParis } from "@/lib/dates";
 import { engagementProgress, reviewDate, reviewState, type RenewalStatus } from "@/lib/engagement";
@@ -535,6 +535,8 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
         const recent = ((recentRows ?? []) as { title: string | null; hook: string | null; content: string | null }[]).map((r) => subjectText(r.title, r.hook, r.content));
         const saturated = findSaturatedThemes(subjectText(title, typeof args.accroche === "string" ? args.accroche : null, content), recent);
         if (saturated.length) return text(saturatedRefusal(saturated));
+        const forms = findRepeatedForms({ title, content }, ((recentRows ?? []) as { title: string | null; content: string | null }[]));
+        if (forms.length) return text(repeatedFormsRefusal(forms));
       }
       const contentFormat = written
         ? defaultFormatFor(platform, isContentFormatId(args.format_contenu) ? args.format_contenu : null)

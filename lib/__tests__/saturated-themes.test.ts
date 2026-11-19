@@ -36,3 +36,15 @@ test("seule la fenêtre récente compte", () => {
   const old = [subjectText("a", "", ""), subjectText("b", "", ""), subjectText("balance", "", ""), subjectText("balance", "", "")];
   assert.deepEqual(findSaturatedThemes("ta balance", old, 2), []);
 });
+
+test("formes répétées : 3e fin « commente » ou 3e titre à deux-points d'affilée", async () => {
+  const { findRepeatedForms, repeatedFormsRefusal } = await import("../saturated-themes");
+  const c = { title: "Ta première séance", content: "… Commente SALLE et je t'envoie le guide." };
+  const colon = { title: "Hip thrust : tu sens tout sauf tes fessiers", content: "… Abonne-toi." };
+  assert.equal(findRepeatedForms(c, [c, c]).length, 1);
+  assert.match(repeatedFormsRefusal(findRepeatedForms(c, [c, c])), /Rien n'a été enregistré/);
+  assert.deepEqual(findRepeatedForms(c, [c, colon]), []);
+  assert.deepEqual(findRepeatedForms(c, [c]), []);
+  assert.equal(findRepeatedForms(colon, [colon, colon]).length, 1);
+  assert.deepEqual(findRepeatedForms({ title: "Pourquoi tu sens tes cuisses et pas tes fessiers", content: "Abonne-toi." }, [colon, colon]), []);
+});
