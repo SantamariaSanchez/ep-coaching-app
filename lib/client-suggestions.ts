@@ -283,6 +283,13 @@ export function generateClientSuggestions(
       text: `Ce qui lui a donné envie de te rejoindre : "${intake.why_joined}". À noter pour tes prochains contenus.`,
     });
   }
+  if (intake.why_me) {
+    s.push({
+      id: "why-me",
+      severity: "info",
+      text: `Pourquoi toi plutôt qu'un autre coach : "${intake.why_me}". C'est ce qui te différencie, à mettre en avant.`,
+    });
+  }
 
   // ── Fiche incomplète sur les objectifs — difficile de calibrer sans ça ──
   if (!intake.goal_3_months && !intake.goal_12_months) {

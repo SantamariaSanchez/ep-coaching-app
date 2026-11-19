@@ -46,3 +46,15 @@ test("voiceMarkdown n'invente rien quand il n'y a pas de phrase", () => {
   assert.match(voiceMarkdown([], 30, 0), /ne pas inventer/);
   assert.match(voiceMarkdown(groupVoice([s("Je tiens jamais plus de 2 semaines, je perds la motivation")]), 30, 1), /Tenir sur la durée/);
 });
+
+test("cleanReasons : anonyme, sans doublon, santé exclue", async () => {
+  const { cleanReasons } = await import("../client-voice");
+  const r = cleanReasons([
+    { kind: "pourquoi toi", text: "Ta vidéo sur les fessiers, écris-moi lea@gmail.com" },
+    { kind: "pourquoi toi", text: "Ta vidéo sur les fessiers, écris-moi lea@gmail.com" },
+    { kind: "ce qui a donné envie", text: "j'ai un trouble alimentaire" },
+    { kind: "ce qui a donné envie", text: null },
+  ]);
+  assert.equal(r.length, 1);
+  assert.ok(!r[0].text.includes("gmail"));
+});

@@ -53,7 +53,7 @@ export default async function CoachStudioPage({
     getLivedNotes(user.id, 90, 40),
     // « Ce que tes clientes te demandent » (lib/client-voice.ts). Best-effort :
     // en cas de panne, le bouton s'affiche sans thème.
-    getClientVoice(user.id, !!profile.is_platform_owner, 30).catch(() => ({ themes: [], total: 0, days: 30 })),
+    getClientVoice(user.id, !!profile.is_platform_owner, 30).catch(() => ({ themes: [], total: 0, days: 30, reasons: [] })),
   ]);
   // Objectifs du jour : ce qui est déjà parti aujourd'hui (journal rempli
   // par publishScript). Lecture best-effort : sans elle, les compteurs
@@ -86,7 +86,7 @@ export default async function CoachStudioPage({
   return (
     <div className="px-4 sm:px-6 py-4 max-w-6xl mx-auto pb-24 md:pb-8 page-transition">
       <WeeklyLivedCard doneThisWeek={livedDoneThisWeek} livedCount={livedNotes.length} pendingIdeas={livedPendingIdeas} />
-      <ClientVoiceCard themes={voice.themes} total={voice.total} days={voice.days} />
+      <ClientVoiceCard themes={voice.themes} total={voice.total} days={voice.days} reasons={voice.reasons} />
 
       <IdeationHub
         initialIdeas={ideas}

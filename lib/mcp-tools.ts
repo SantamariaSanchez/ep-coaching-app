@@ -561,7 +561,7 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const days = Math.min(180, Math.max(1, Number(args.jours ?? 30) || 30));
       const { data: me } = await admin.from("profiles").select("is_platform_owner").eq("id", ownerId).maybeSingle();
       const voice = await getClientVoice(ownerId, !!me?.is_platform_owner, days);
-      return text(voiceMarkdown(voice.themes, voice.days, voice.total));
+      return text(voiceMarkdown(voice.themes, voice.days, voice.total, voice.reasons));
     }
 
     case "ajouter_idee_contenu": {
