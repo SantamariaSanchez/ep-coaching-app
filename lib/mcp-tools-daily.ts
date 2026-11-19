@@ -4,7 +4,7 @@
 // règles que lib/mcp-tools.ts : chaque outil n'agit que sur les données du
 // propriétaire de la clé et, pour un coach, sur SES clients (coach_id), jamais
 // ceux d'un autre coach. Toutes les entrées sont bornées et validées ici.
-import { aiTicsRefusal, findAiTics } from "@/lib/ai-tics";
+import { aiTicsRefusal, findAiTics, findWeakHooks, weakHooksRefusal } from "@/lib/ai-tics";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { todayInParis, nowInParis } from "@/lib/dates";
 import { fuzzyScore } from "@/lib/fuzzy-search";
@@ -384,6 +384,9 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       // Tournures d'IA absentes des transcripts : refusées, rien n'est modifié.
       const tics = findAiTics([patch.title, patch.hook, patch.content, patch.instagram_caption].filter((x): x is string => typeof x === "string").join("\n"));
       if (tics.length) return text(aiTicsRefusal(tics));
+      // Accroches interdites (Bible J2), sur l'accroche ou le contenu modifiés.
+      const weak = findWeakHooks(typeof patch.hook === "string" ? patch.hook : null, typeof patch.content === "string" ? patch.content : null);
+      if (weak.length) return text(weakHooksRefusal(weak));
       // Sauvegarde l'ancien texte avant de le remplacer (colonne previous_version),
       // pour pouvoir revenir en arrière. Le plus ancien état reste dans `earlier_version`.
       if (patch.title !== undefined || patch.hook !== undefined || patch.content !== undefined || patch.cta !== undefined || patch.instagram_caption !== undefined) {

@@ -76,3 +76,59 @@ export function aiTicsRefusal(tics: AiTic[]): string {
     "Relis les transcripts (Notion, page Transcription) et réécris ces phrases avec des mots et des tournures que tu y as lus. Rien n'a été enregistré.",
   ].join("\n");
 }
+
+// Accroches interdites (Notion, Bible J2, transcripts : « beaucoup de gens me
+// demandent » et « dans cette vidéo je vais vous parler de » font décrocher
+// dans les deux premières secondes). Vérifiées seulement sur l'ouverture :
+// annoncer le plan plus loin dans une vidéo longue reste permis.
+const WEAK_HOOKS: Pattern[] = [
+  {
+    re: /\b(?:beaucoup|plein) de (?:gens|personnes|filles|monde|vous)\b[^.!?\n]{0,25}\b(?:me )?(?:demandent|m['’]ont demand[ée]|me posent)/gi,
+    why: "« Beaucoup de gens me demandent » : accroche interdite (J2), ouvre sur la vraie question telle qu'elle revient",
+  },
+  {
+    re: /\bdans (?:cette|la) (?:vid[ée]o|reel|story)\b[^.!?\n]{0,20}\b(?:je vais|on va)\b[^.!?\n]{0,15}\b(?:parler|montrer|expliquer|voir)/gi,
+    why: "« Dans cette vidéo je vais vous parler de » : accroche interdite (J2), commence directement par l'image, le paradoxe ou la question",
+  },
+  {
+    re: /^\s*(?:salut|coucou|hello|bonjour)\s+(?:tout le monde|à tous|les filles|la team)\b/gim,
+    why: "Ouverture par une salutation : accroche interdite (J2), les deux premières secondes doivent accrocher",
+  },
+  {
+    re: /^\s*aujourd['’]hui,? (?:on va|je vais) (?:parler|voir|te parler|vous parler)\b/gim,
+    why: "« Aujourd'hui on va parler de » : accroche interdite (J2), entre directement dans le sujet",
+  },
+];
+
+/** Longueur d'ouverture vérifiée pour les accroches interdites. */
+export const HOOK_WINDOW = 220;
+
+/**
+ * Accroches interdites trouvées dans l'ouverture : l'accroche donnée à part
+ * (vérifiée en entier) et le début du contenu (les HOOK_WINDOW premiers caractères).
+ */
+export function findWeakHooks(accroche: string | null | undefined, contenu: string | null | undefined): AiTic[] {
+  const opening = [accroche ?? "", (contenu ?? "").slice(0, HOOK_WINDOW)].filter(Boolean).join("\n");
+  if (!opening.trim()) return [];
+  const out: AiTic[] = [];
+  const seen = new Set<string>();
+  for (const p of WEAK_HOOKS) {
+    p.re.lastIndex = 0;
+    for (const m of opening.matchAll(p.re)) {
+      const found = m[0].trim();
+      if (seen.has(found.toLowerCase())) continue;
+      seen.add(found.toLowerCase());
+      out.push({ found, why: p.why });
+    }
+  }
+  return out;
+}
+
+/** Message de refus pour une accroche interdite. */
+export function weakHooksRefusal(hooks: AiTic[]): string {
+  return [
+    "Script refusé : l'accroche fait partie des ouvertures interdites (Notion, Bible J2).",
+    ...hooks.slice(0, 4).map((h) => `- « ${h.found} » : ${h.why}`),
+    "Ouvertures qui marchent : casser une image qu'elle a en tête, son idée reçue, un paradoxe avec « pourtant », son corps ou sa situation maintenant, une vraie question de cliente (questions_clientes). Rien n'a été enregistré.",
+  ].join("\n");
+}
