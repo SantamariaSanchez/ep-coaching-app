@@ -44,12 +44,21 @@ export function isPrequalStatus(v: unknown): v is PrequalStatus {
 
 /** Réponses lisibles, dans l'ordre des libellés connus puis le reste. */
 export function prequalAnswerLines(answers: Record<string, unknown> | null | undefined): { label: string; value: string }[] {
-  const entries = Object.entries(answers ?? {}).filter(([, v]) => typeof v === "string" && v.trim()) as [string, string][];
+  // Clés techniques (« _partial »…) jamais affichées.
+  const entries = Object.entries(answers ?? {}).filter(([k, v]) => !k.startsWith("_") && typeof v === "string" && v.trim()) as [string, string][];
   const order = Object.keys(PREQUAL_LABELS);
   const rank = (k: string) => (order.indexOf(k) === -1 ? order.length : order.indexOf(k));
   return entries
     .sort((a, b) => rank(a[0]) - rank(b[0]))
     .map(([k, v]) => ({ label: PREQUAL_LABELS[k] ?? k, value: v.trim() }));
+}
+
+/**
+ * Candidature commencée mais pas envoyée (ep-coaching-formulaires garde les
+ * réponses dès que le téléphone est donné) : à rappeler en priorité.
+ */
+export function isPartialPrequal(answers: Record<string, unknown> | null | undefined): boolean {
+  return answers?._partial === "true" || answers?._partial === true;
 }
 
 /** Jours d'attente depuis l'envoi du formulaire (0 = aujourd'hui). */
