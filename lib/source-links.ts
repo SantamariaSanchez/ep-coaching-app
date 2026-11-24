@@ -33,3 +33,25 @@ export function sourceRedirect(source: string, segments: string[] = []): string 
   if (path.startsWith("/dashboard") || path.startsWith("/api") || path.startsWith("/equipe")) return `/?src=${src}`;
   return `${path}?src=${src}`;
 }
+
+// Lien de bio vers l'audit (24/11) : la bio Instagram envoyait tout droit sur
+// Calendly, donc aucun clic n'était compté. /s/instagram/audit compte le clic
+// (page « /s/audit » dans page_visits, avec la source) puis renvoie vers la
+// page de réservation, avec utm_source pour que Calendly garde l'origine.
+export const AUDIT_BOOKING_URL = "https://calendly.com/peccoux-manu/audit-strategique";
+export const AUDIT_CLICK_PATH = "/s/audit";
+
+/** Vrai si le lien suivi demande la réservation de l'audit (/s/<réseau>/audit). */
+export function isAuditLink(segments: string[] = []): boolean {
+  return segments.length === 1 && segments[0].toLowerCase() === "audit";
+}
+
+/** Adresse Calendly avec la source ; null si la source est inconnue. */
+export function auditRedirect(source: string): string | null {
+  const src = SOURCES[source.toLowerCase()];
+  if (!src) return null;
+  const url = new URL(AUDIT_BOOKING_URL);
+  url.searchParams.set("utm_source", src);
+  url.searchParams.set("utm_medium", "bio");
+  return url.toString();
+}
