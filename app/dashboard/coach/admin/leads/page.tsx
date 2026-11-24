@@ -10,6 +10,7 @@ import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
+import { prepLines } from "@/lib/audit-prep";
 import { auditFollowUp, auditWhen, auditsWindowStart, prequalAnswerLines, prequalForEmail, whatsappNumber } from "@/lib/prequal-inbox";
 import { activationSteps, funnelSteps, visitGroup, type ActivationCounts } from "@/lib/visit-tracking";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -44,14 +45,14 @@ export default async function LeadsAdminPage() {
     // email) pour préparer l'appel.
     createAdminClient()
       .from("prospect_bookings")
-      .select("event_uri, starts_at, name, email, join_url")
+      .select("event_uri, starts_at, name, email, join_url, prep_answers")
       .eq("status", "active")
       .gte("starts_at", auditsWindowStart())
       .order("starts_at", { ascending: true })
       .limit(10),
   ]);
   const prequals = (prequalRes.data ?? []) as PrequalRow[];
-  const bookings = (bookingRes.data ?? []) as { event_uri: string; starts_at: string; name: string | null; email: string | null; join_url: string | null }[];
+  const bookings = (bookingRes.data ?? []) as { event_uri: string; starts_at: string; name: string | null; email: string | null; join_url: string | null; prep_answers?: Record<string, unknown> | null }[];
   // Candidature plus ancienne que les 100 dernières : cherchée par email.
   const missingEmails = bookings
     .map((b) => b.email?.trim().toLowerCase())
@@ -222,6 +223,17 @@ export default async function LeadsAdminPage() {
                     })()}
                     {a.email && <a href={`mailto:${a.email}`} className="h-9 px-3 rounded-full inline-flex items-center text-[12px] font-extrabold border" style={{ borderColor: "rgba(var(--ep-ink-rgb),0.14)", color: "var(--ep-ink)" }}>{a.email}</a>}
                   </div>
+                  {prepLines(a.prep_answers).length > 0 && (
+                    <dl className="mt-2 grid gap-1 rounded-lg p-2" style={{ background: "rgba(var(--ep-accent-rgb),0.08)" }}>
+                      <p className="text-[11px] font-black uppercase tracking-wide text-(--ep-accent)">{t("Préparé par elle")}</p>
+                      {prepLines(a.prep_answers).map((l) => (
+                        <div key={l.label} className="text-[12px]">
+                          <dt className="inline font-bold text-(--ep-ink)/60">{t(l.label)} : </dt>
+                          <dd className="inline text-(--ep-ink)">{l.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
                   {lines.length > 0 ? (
                     <dl className="mt-2 grid gap-1">
                       {lines.map((l) => (

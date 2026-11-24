@@ -144,6 +144,8 @@ export interface AuditMailInput {
   name: string | null;
   startsAt: string;
   joinUrl: string | null;
+  /** Page « Ton audit » (préparation), absente si déjà remplie. */
+  prepUrl?: string | null;
 }
 
 /** Date et heure de Paris lisibles, ex. « mardi 18 novembre à 14 h 30 ». */
@@ -159,7 +161,9 @@ export function auditMail(i: AuditMailInput): MailContent | null {
   const hi = i.name ? `Salut ${esc(i.name)},` : "Salut,";
   const when = parisWhen(i.startsAt);
   const join = i.joinUrl ? LINK(i.joinUrl, "Le lien de l'appel") : "";
-  const prep = P("Pour que l'appel te serve vraiment, note avant : ton objectif en une phrase, ta semaine type (travail, sommeil, sport), et ce que tu as déjà essayé. Pas besoin que ce soit parfait.");
+  const prep = i.prepUrl
+    ? P("Pour que l'appel te serve vraiment, prépare-le en 2 minutes : ton objectif, ta semaine type, ce que tu as déjà essayé. Pas besoin que ce soit parfait.") + LINK(i.prepUrl, "Préparer mon audit")
+    : P("Pour que l'appel te serve vraiment, note avant : ton objectif en une phrase, ta semaine type (travail, sommeil, sport), et ce que tu as déjà essayé. Pas besoin que ce soit parfait.");
   switch (i.step) {
     case "j10":
     case "j5":
@@ -167,7 +171,7 @@ export function auditMail(i: AuditMailInput): MailContent | null {
     case "j2":
       return { subject: "ton audit, dans 2 jours", html: P(hi) + P(`On se parle ${esc(when)}.`) + prep + SIGN };
     case "j1":
-      return { subject: "on se parle demain", html: P(hi) + P(`C'est demain : ${esc(when)}.`) + P("Prévois un endroit calme et 30 minutes. Garde tes notes à côté de toi.") + join + SIGN };
+      return { subject: "on se parle demain", html: P(hi) + P(`C'est demain : ${esc(when)}.`) + P("Prévois un endroit calme et 30 minutes. Garde tes notes à côté de toi.") + (i.prepUrl ? LINK(i.prepUrl, "Préparer mon audit en 2 minutes") : "") + join + SIGN };
     case "h1":
       return { subject: "dans une heure", html: P(hi) + P("On se parle dans une heure. Garde tes notes à côté de toi.") + join + SIGN };
     case "m30":
