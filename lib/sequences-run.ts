@@ -56,12 +56,12 @@ export async function runSequences(now = Date.now()): Promise<SequenceRunResult>
   // 1. Rappels d'audit : à toute heure, ils sont liés à un rendez-vous.
   const { data: bookings } = await admin
     .from("prospect_bookings")
-    .select("event_uri, starts_at, name, email, join_url")
+    .select("event_uri, starts_at, name, email, join_url, prep_token, prep_at")
     .eq("status", "active")
     .gt("starts_at", new Date(now).toISOString())
     .lte("starts_at", new Date(now + 11 * 86_400_000).toISOString())
     .limit(200);
-  const bRows = (bookings ?? []) as { event_uri: string; starts_at: string; name: string | null; email: string | null; join_url: string | null }[];
+  const bRows = (bookings ?? []) as { event_uri: string; starts_at: string; name: string | null; email: string | null; join_url: string | null; prep_token?: string | null; prep_at?: string | null }[];
   // La cible inclut l'heure : un rendez-vous déplacé repart avec ses rappels.
   const target = (b: { event_uri: string; starts_at: string }) => `${b.event_uri}@${b.starts_at}`;
   const bSent = await sentSteps(admin, "audit", bRows.map(target));
@@ -69,7 +69,8 @@ export async function runSequences(now = Date.now()): Promise<SequenceRunResult>
     if (budget <= 0 || !b.email) continue;
     const step = dueAuditStep(b.starts_at, now, bSent.get(target(b)) ?? new Set());
     if (!step) continue;
-    const mail = auditMail({ step: step.key, name: firstName(b.name), startsAt: b.starts_at, joinUrl: b.join_url });
+    const prepUrl = b.prep_token && !b.prep_at ? `${APP_URL}/audit/${b.prep_token}` : null;
+    const mail = auditMail({ step: step.key, name: firstName(b.name), startsAt: b.starts_at, joinUrl: b.join_url, prepUrl });
     if (mail && (await deliver(admin, "audit", target(b), step.key, b.email, mail.subject, mail.html))) {
       out.audit++;
       budget--;
