@@ -190,21 +190,41 @@ const SELECT_FIELDS_FULL = `${SELECT_FIELDS_LIST}, coach_id, content, sources, c
 // ci-dessous). Séparé du cache "complet" pour que visiter /ressources (page
 // la plus visitée, confirmée comme canal d'acquisition organique) ne
 // déclenche plus le téléchargement du texte intégral de chaque lead magnet.
+// Supabase renvoie au plus 1 000 lignes par requête : au-delà (1 013 guides
+// publiés au 24/11), les plus anciens disparaissaient de la liste, de
+// /ressources et du contrôle des codes « commente 025 ». On lit par pages.
+const PAGE_SIZE = 1000;
+async function fetchAllPages<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; from < 20 * PAGE_SIZE; from += PAGE_SIZE) {
+    const { data, error } = await page(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    const rows = data ?? [];
+    out.push(...rows);
+    if (rows.length < PAGE_SIZE) break;
+  }
+  return out;
+}
+
 const getAllLeadMagnetSummariesCached = unstable_cache(
   async (): Promise<LeadMagnetSummary[]> => {
     try {
       const supabase = createAdminClient();
-      const { data } = await supabase
-        .from("lead_magnets")
-        .select(SELECT_FIELDS_LIST)
-        .eq("published", true)
-        .order("created_at", { ascending: false });
-      return ((data as unknown as LeadMagnetSummaryRow[]) ?? []).map(rowToSummary);
+      const rows = await fetchAllPages<LeadMagnetSummaryRow>((from, to) =>
+        supabase
+          .from("lead_magnets")
+          .select(SELECT_FIELDS_LIST)
+          .eq("published", true)
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{ data: LeadMagnetSummaryRow[] | null; error: unknown }>
+      );
+      return rows.map(rowToSummary);
     } catch {
       return [];
     }
   },
-  ["lead-magnets-summaries-v2"],
+  ["lead-magnets-summaries-v3"],
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 
@@ -260,13 +280,17 @@ export async function getAllGuidesWithContent(): Promise<GuideMagnet[]> {
   // Appel ponctuel (action du Studio) : trop gros pour le cache, lu à la demande.
   try {
     const supabase = createAdminClient();
-    const { data } = await supabase
-      .from("lead_magnets")
-      .select(SELECT_FIELDS_FULL)
-      .eq("published", true)
-      .eq("format", "guide")
-      .order("created_at", { ascending: false });
-    return ((data as unknown as LeadMagnetRow[]) ?? []).map(rowToMagnet) as GuideMagnet[];
+    const rows = await fetchAllPages<LeadMagnetRow>((from, to) =>
+      supabase
+        .from("lead_magnets")
+        .select(SELECT_FIELDS_FULL)
+        .eq("published", true)
+        .eq("format", "guide")
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to) as unknown as PromiseLike<{ data: LeadMagnetRow[] | null; error: unknown }>
+    );
+    return rows.map(rowToMagnet) as GuideMagnet[];
   } catch {
     return [];
   }
