@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { getExerciseLibrary } from "@/utils/exercise-library";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { exerciseFeasible } from "@/lib/gym-equipment";
+import { equipmentForSwapPlace, parseSwapPlace, swapPlaceGymId } from "@/lib/swap-place";
 
 // « Machine prise » en séance : quelques remplaçants du même groupe
 // musculaire tirés de la bibliothèque d'exercices, les plus proches d'abord
 // (même sous-groupe), en privilégiant un autre matériel que celui qui est
 // pris. Liste courte et légère, pas toute la bibliothèque.
+// Paramètre « place » (C52) : maison ou hôtel, sans matériel, ou une autre
+// salle enregistrée de la cliente : seuls les exercices faisables sur place
+// sont proposés. La réponse liste aussi ses salles pour le choix du lieu.
 
 interface ExerciseAlternative {
   name: string;
@@ -40,16 +46,32 @@ export async function GET(req: Request) {
   let muscle = url.searchParams.get("muscle");
   let subgroup = url.searchParams.get("subgroup");
 
+  const place = parseSwapPlace(url.searchParams.get("place"));
+  const admin = createAdminClient();
+  const { data: gymRows } = await admin
+    .from("training_gyms")
+    .select("id, name, kind, equipment")
+    .eq("owner_id", guard.userId)
+    .order("created_at", { ascending: true })
+    .limit(20);
+  const gyms = ((gymRows ?? []) as { id: string; name: string; kind: string | null; equipment: string[] | null }[]);
+  const placeGymId = swapPlaceGymId(place);
+  const placeGym = placeGymId ? gyms.find((g) => g.id === placeGymId) ?? null : null;
+  // Une salle qui n'appartient pas à la personne ne filtre rien (et n'apprend rien).
+  const placeEquipment = placeGymId && !placeGym ? null : equipmentForSwapPlace(place, placeGym);
+
   const library = await getExerciseLibrary();
   const current = library.find((e) => norm(e.name) === norm(name)) ?? null;
   muscle = muscle || current?.muscle_group || null;
   subgroup = subgroup || current?.muscle_subgroup || null;
   const currentEquipment = norm(current?.equipment);
 
-  if (!muscle) return NextResponse.json({ alternatives: [], muscle: null });
+  const gymList = gyms.map((g) => ({ id: g.id, name: g.name }));
+  if (!muscle) return NextResponse.json({ alternatives: [], muscle: null, gyms: gymList });
 
   const scored = library
     .filter((e) => norm(e.muscle_group) === norm(muscle) && norm(e.name) !== norm(name) && !exclude.has(norm(e.name)))
+    .filter((e) => exerciseFeasible(e, placeEquipment))
     .map((e) => {
       let score = 0;
       if (subgroup && norm(e.muscle_subgroup) === norm(subgroup)) score += 4;
@@ -67,5 +89,5 @@ export async function GET(req: Request) {
       equipment: e.equipment,
     }));
 
-  return NextResponse.json({ alternatives: scored, muscle });
+  return NextResponse.json({ alternatives: scored, muscle, gyms: gymList });
 }

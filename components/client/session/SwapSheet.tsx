@@ -2,9 +2,34 @@
 
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState } from "react";
-import { Clock3, Loader2, Repeat, Search, ChevronRight } from "lucide-react";
+import { Clock3, Loader2, MapPin, Repeat, Search, ChevronRight } from "lucide-react";
 import Sheet from "@/components/nutrition/Sheet";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
+import { FIXED_SWAP_PLACES, SWAP_PLACE_STORAGE_KEY, parseSwapPlace, type SwapPlace } from "@/lib/swap-place";
+
+// Le lieu choisi ne vaut que pour la journée : demain, on repart de la salle habituelle.
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function readSavedPlace(): SwapPlace {
+  try {
+    const raw = window.localStorage.getItem(SWAP_PLACE_STORAGE_KEY);
+    if (!raw) return "habituelle";
+    const saved = JSON.parse(raw) as { day?: string; place?: string };
+    return saved.day === todayKey() ? parseSwapPlace(saved.place) : "habituelle";
+  } catch {
+    return "habituelle";
+  }
+}
+
+function savePlace(place: SwapPlace) {
+  try {
+    window.localStorage.setItem(SWAP_PLACE_STORAGE_KEY, JSON.stringify({ day: todayKey(), place }));
+  } catch {
+    // Stockage bloqué : le choix vaut seulement pour cette fenêtre.
+  }
+}
 
 // « Machine prise » / « Changer d'exercice » (retour direct du fondateur
 // 2026-10-14 : « si j'ai une machine où il y a quelqu'un, le logbook
@@ -48,9 +73,22 @@ export default function SwapSheet({
   const [failed, setFailed] = useState(false);
   const [alternatives, setAlternatives] = useState<Alternative[]>([]);
   const [query, setQuery] = useState("");
+  // La fenêtre ne s'ouvre qu'après un geste en séance (jamais au rendu serveur) :
+  // le lieu du jour peut être lu tout de suite.
+  const [place, setPlace] = useState<SwapPlace>(() => (typeof window === "undefined" ? "habituelle" : readSavedPlace()));
+  const [gyms, setGyms] = useState<{ id: string; name: string }[]>([]);
+
+  function choosePlace(next: SwapPlace) {
+    if (next === place) return;
+    setLoading(true);
+    setFailed(false);
+    setPlace(next);
+    savePlace(next);
+  }
 
   useEffect(() => {
     const params = new URLSearchParams({ name: exerciseName });
+    if (place !== "habituelle") params.set("place", place);
     if (muscleGroup) params.set("muscle", muscleGroup);
     if (muscleSubgroup) params.set("subgroup", muscleSubgroup);
     for (const n of excludeNames) params.append("exclude", n);
@@ -60,8 +98,10 @@ export default function SwapSheet({
         if (!r.ok) throw new Error(String(r.status));
         return r.json();
       })
-      .then((data: { alternatives?: Alternative[] }) => {
-        if (!cancelled) setAlternatives(data.alternatives ?? []);
+      .then((data: { alternatives?: Alternative[]; gyms?: { id: string; name: string }[] }) => {
+        if (cancelled) return;
+        setAlternatives(data.alternatives ?? []);
+        setGyms(data.gyms ?? []);
       })
       .catch(() => {
         if (!cancelled) setFailed(true);
@@ -74,7 +114,14 @@ export default function SwapSheet({
     };
     // excludeNames est recalculé à chaque rendu du parent : seul l'exercice compte.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exerciseName, muscleGroup, muscleSubgroup]);
+  }, [exerciseName, muscleGroup, muscleSubgroup, place]);
+
+  const places: { key: SwapPlace; label: string }[] = [
+    FIXED_SWAP_PLACES[0],
+    ...gyms.map((g) => ({ key: `gym:${g.id}` as SwapPlace, label: g.name })),
+    ...FIXED_SWAP_PLACES.slice(1),
+  ];
+  const placeHint = FIXED_SWAP_PLACES.find((p) => p.key === place)?.hint;
 
   const filtered = useMemo(() => {
     const q = query.trim();
@@ -108,6 +155,40 @@ export default function SwapSheet({
             <ChevronRight size={16} className="text-(--ep-ink)/35 shrink-0" />
           </button>
         )}
+
+        <div>
+          <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1.5">
+            <MapPin size={11} className="shrink-0" />
+            {t("Où tu t'entraînes aujourd'hui")}
+          </p>
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("Où tu t'entraînes aujourd'hui")}>
+            {places.map((p) => {
+              const active = p.key === place;
+              return (
+                <button
+                  key={p.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => choosePlace(p.key)}
+                  className={`min-h-9 rounded-full border px-3 text-xs font-bold ${
+                    active
+                      ? "border-(--ep-accent) bg-(--ep-accent)/15 text-(--ep-strong)"
+                      : "border-(--ep-line)/30 bg-(--ep-s2) text-(--ep-ink)/70"
+                  }`}
+                >
+                  {t(p.label)}
+                </button>
+              );
+            })}
+          </div>
+          {place !== "habituelle" && (
+            <p className="text-[11px] text-(--ep-ink)/50 mt-1.5 leading-snug">
+              {placeHint ? `${t(placeHint)}. ` : ""}
+              {t("Seuls les exercices faisables ici sont proposés. Ton programme ne change pas.")}
+            </p>
+          )}
+        </div>
 
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-(--ep-ink)/40 mb-1">
