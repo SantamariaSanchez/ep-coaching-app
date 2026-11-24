@@ -42,7 +42,8 @@ export function ctaKeywordWarning(unknown: string[]): string {
 // 24 nov. 2026 : deux reels pour débutantes citaient le 123, un guide de marque
 // pour coachs). L'outil répète donc le titre du guide cité, pour que la
 // personne qui écrit vérifie qu'il colle au sujet, et signale un guide pensé
-// pour les coachs dans un contenu destiné aux clientes.
+// pour les coachs : tout le contenu (reels, YouTube et LinkedIn depuis le
+// 24/11) s'adresse aux clientes débutantes.
 const COACH_GUIDE_RE = /\bcoachs?\b(?!ing)/i;
 
 export function isCoachOrientedGuide(title: string): boolean {

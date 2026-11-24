@@ -401,7 +401,7 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       if (error) return text("Modification impossible, réessaie.");
       // Un « commente XXX » sans guide derrière fait commenter des gens à qui on ne peut rien envoyer.
       const ctaWarning = patch.cta !== undefined || patch.content !== undefined
-        ? await ctaGuideRecap([patch.cta, patch.content].filter(Boolean).join("\n"), getLeadMagnetTitleByAnyKeyword, script.platform === "linkedin" ? "coachs" : "clientes").catch(() => "")
+        ? await ctaGuideRecap([patch.cta, patch.content].filter(Boolean).join("\n"), getLeadMagnetTitleByAnyKeyword).catch(() => "")
         : "";
       if (patch.content_format) return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)), format ${getContentFormat(patch.content_format).label}.${ctaWarning}`);
       return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)).${ctaWarning}`);
