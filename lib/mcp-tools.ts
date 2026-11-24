@@ -24,8 +24,8 @@ import { getLivedNotes, hasLivedThisWeek } from "@/lib/lived-content-server";
 import { STORY_RULES, LIVED_FORMAT_HINTS, WEEKLY_QUESTIONS } from "@/lib/lived-content";
 import { YOUTUBE_TOOLS, youtubeToolsForRole, callYoutubeTool } from "@/lib/mcp-tools-youtube";
 import { SCRIPT_CONTENT_MAX } from "@/lib/script-limits";
-import { getLeadMagnetSlugByAnyKeyword } from "@/lib/lead-magnets";
-import { ctaKeywordWarning, findUnknownCtaKeywords } from "@/lib/cta-keywords";
+import { getLeadMagnetTitleByAnyKeyword } from "@/lib/lead-magnets";
+import { ctaGuideRecap } from "@/lib/cta-keywords";
 import { voiceMarkdown } from "@/lib/client-voice";
 import { getClientVoice } from "@/lib/client-voice-server";
 
@@ -555,9 +555,11 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       // Migration 20261021 pas encore passée : le script s'ajoute sans son format.
       if (isMissingColumnError(error)) ({ error } = await admin.from("coach_scripts").insert(row));
       if (error) return text("Ajout impossible, réessaie.");
-      const ctaWarning = ctaKeywordWarning(
-        await findUnknownCtaKeywords([row.cta, content].filter(Boolean).join("\n"), async (k) => Boolean(await getLeadMagnetSlugByAnyKeyword(k))).catch(() => [])
-      );
+      const ctaWarning = await ctaGuideRecap(
+        [row.cta, content].filter(Boolean).join("\n"),
+        getLeadMagnetTitleByAnyKeyword,
+        platform === "linkedin" ? "coachs" : "clientes"
+      ).catch(() => "");
       if (written) {
         const checks = checkWrittenPost({ platform, content_format: contentFormat, content, instagram_caption: caption });
         const warn = checks.length ? `\nÀ revoir avant de publier :\n${checks.map((c) => `- ${c.message}`).join("\n")}` : "";
