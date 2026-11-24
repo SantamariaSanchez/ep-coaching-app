@@ -332,6 +332,13 @@ export async function getLeadMagnetSlugByAnyKeyword(raw: string): Promise<string
   return all.find((m) => m.keyword === raw || (normalized !== null && m.keyword === normalized))?.slug ?? null;
 }
 
+// Numéro → titre, même cache : sert à rappeler le guide cité dans un script.
+export async function getLeadMagnetTitleByAnyKeyword(raw: string): Promise<string | null> {
+  const all = await getAllLeadMagnetSummariesCached();
+  const normalized = normalizeKeyword(raw);
+  return all.find((m) => m.keyword === raw || (normalized !== null && m.keyword === normalized))?.title ?? null;
+}
+
 // Extrait chaque token "lead_magnets:<keyword>" d'une source_reference de
 // coach_scripts (ex: "lead_magnets:131 guide-x (Auteur et al. 2026)" ou
 // "lead_magnets:072f644f-... slug + science_articles:... (...)") — ignore

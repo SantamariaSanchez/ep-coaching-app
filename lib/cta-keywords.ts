@@ -37,3 +37,37 @@ export function ctaKeywordWarning(unknown: string[]): string {
   if (!unknown.length) return "";
   return `\nAttention : ${unknown.join(", ")} ne correspond à aucun guide (lister_guides donne les vrais numéros) ni à APPLI ou COACHING. Corrige l'appel à l'action avant de tourner.`;
 }
+
+// Un numéro qui existe peut quand même renvoyer au mauvais guide (cas réel du
+// 24 nov. 2026 : deux reels pour débutantes citaient le 123, un guide de marque
+// pour coachs). L'outil répète donc le titre du guide cité, pour que la
+// personne qui écrit vérifie qu'il colle au sujet, et signale un guide pensé
+// pour les coachs dans un contenu destiné aux clientes.
+const COACH_GUIDE_RE = /\bcoachs?\b(?!ing)/i;
+
+export function isCoachOrientedGuide(title: string): boolean {
+  return COACH_GUIDE_RE.test(title);
+}
+
+/** Récapitulatif des guides cités : titre de chacun, et alerte si l'un s'adresse aux coachs alors que le contenu vise les clientes. */
+export async function ctaGuideRecap(
+  text: string | null | undefined,
+  titleOf: (keyword: string) => Promise<string | null>,
+  audience: "clientes" | "coachs" = "clientes"
+): Promise<string> {
+  const lines: string[] = [];
+  const unknown: string[] = [];
+  for (const keyword of extractCtaKeywords(text)) {
+    if ((LOGICAL_CTA_KEYWORDS as readonly string[]).includes(keyword)) continue;
+    const title = await titleOf(keyword);
+    if (!title) {
+      unknown.push(keyword);
+      continue;
+    }
+    lines.push(`Guide cité : ${keyword} « ${title} ». Vérifie qu'il parle bien du sujet du script.`);
+    if (audience === "clientes" && isCoachOrientedGuide(title)) {
+      lines.push(`Attention : le guide ${keyword} s'adresse aux coachs, pas aux débutantes. Choisis un autre guide avec lister_guides.`);
+    }
+  }
+  return ctaKeywordWarning(unknown) + (lines.length ? `\n${lines.join("\n")}` : "");
+}
