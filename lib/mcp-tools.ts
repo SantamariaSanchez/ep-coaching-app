@@ -557,8 +557,7 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       if (error) return text("Ajout impossible, réessaie.");
       const ctaWarning = await ctaGuideRecap(
         [row.cta, content].filter(Boolean).join("\n"),
-        getLeadMagnetTitleByAnyKeyword,
-        platform === "linkedin" ? "coachs" : "clientes"
+        getLeadMagnetTitleByAnyKeyword
       ).catch(() => "");
       if (written) {
         const checks = checkWrittenPost({ platform, content_format: contentFormat, content, instagram_caption: caption });
