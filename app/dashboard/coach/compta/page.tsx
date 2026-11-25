@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getCoachFinanceEntries } from "@/lib/coach-finance";
+import { getCoachFinanceEntries, getCoachFinanceSettings } from "@/lib/coach-finance";
 import CoachFinanceTracker from "@/components/coach/CoachFinanceTracker";
 
 // Axe 4 (VISION.md) : comptabilité personnelle du coach pour SON activité —
@@ -17,11 +17,11 @@ export default async function CoachComptaPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const entries = await getCoachFinanceEntries(user.id);
+  const [entries, settings] = await Promise.all([getCoachFinanceEntries(user.id), getCoachFinanceSettings(user.id)]);
 
   return (
     <div className="px-4 py-4 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
-      <CoachFinanceTracker initialEntries={entries} />
+      <CoachFinanceTracker initialEntries={entries} settings={settings} />
     </div>
   );
 }
