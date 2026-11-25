@@ -4,6 +4,8 @@
 // règles que lib/mcp-tools.ts : chaque outil n'agit que sur les données du
 // propriétaire de la clé et, pour un coach, sur SES clients (coach_id), jamais
 // ceux d'un autre coach. Toutes les entrées sont bornées et validées ici.
+import { claudeFormatRefusal } from "@/lib/claude-writing-policy";
+import { sanitizeBullets, type ScriptBullets } from "@/lib/script-bullets";
 import { aiTicsRefusal, findAiTics, findWeakHooks, weakHooksRefusal } from "@/lib/ai-tics";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { todayInParis, nowInParis } from "@/lib/dates";
@@ -83,7 +85,7 @@ export const DAILY_TOOLS: ToolDef[] = [
   {
     name: "modifier_script",
     roles: ["coach"],
-    description: "Met à jour un script du Studio créatif : titre, accroche, contenu, appel à l'action, description (légende du post), format de contenu (format_contenu) ou statut (a_tourner, tourne). Seuls les champs donnés changent. Si tu changes de format, réécris aussi le contenu dans la forme du nouveau format : " + contentFormatsToolHint() + ".",
+    description: "Met à jour un script du Studio créatif : titre, accroche, contenu, appel à l'action, description (légende du post), version Points clés (points_cles), format de contenu (format_contenu) ou statut (a_tourner, tourne). Claude n'écrit que du face caméra pour les reels et YouTube, sur un gabarit Marvin Ndiaye ; aucun carrousel. Seuls les champs donnés changent. Si tu changes de format, réécris aussi le contenu dans la forme du nouveau format : " + contentFormatsToolHint() + ".",
     inputSchema: {
       type: "object",
       properties: {
@@ -95,6 +97,11 @@ export const DAILY_TOOLS: ToolDef[] = [
         description: { type: "string", description: "Légende / description du post" },
         format_contenu: { type: "string", enum: CONTENT_FORMAT_IDS, description: "Format de contenu (face_cam, clone, tier_list...)" },
         statut: { type: "string", enum: ["a_tourner", "tourne"] },
+        points_cles: {
+          type: "object",
+          description: "Version « Points clés » : idee (idée principale, question ou cas à résoudre), points (4 à 8 points courts), cta.",
+          properties: { idee: { type: "string" }, points: { type: "array", items: { type: "string" } }, cta: { type: "string" } },
+        },
       },
       required: ["script"],
     },
@@ -362,7 +369,11 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
     case "modifier_script": {
       const script = await findOwnScript(admin, ownerId, str(args.script, 200));
       if (!script) return text("Script introuvable dans ton Studio. Utilise mes_scripts pour voir les identifiants.");
-      const patch: Record<string, string | null> = { updated_at: new Date().toISOString() };
+      const patch: Record<string, string | null | ScriptBullets> = { updated_at: new Date().toISOString() };
+      if (args.points_cles && typeof args.points_cles === "object") {
+        const pc = args.points_cles as Record<string, unknown>;
+        patch.bullets = sanitizeBullets({ main: pc.idee, points: pc.points, cta: pc.cta });
+      }
       if (typeof args.titre === "string") {
         const t = str(args.titre, 200);
         if (!t) return text("Le titre ne peut pas être vide.");
@@ -378,6 +389,8 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       }
       if (args.format_contenu !== undefined && args.format_contenu !== null && args.format_contenu !== "") {
         if (!isContentFormatId(args.format_contenu)) return text(`Format de contenu inconnu. Valeurs possibles : ${CONTENT_FORMAT_IDS.join(", ")}.`);
+        const policy = claudeFormatRefusal(script.platform ?? "reel", args.format_contenu);
+        if (policy) return text(policy);
         patch.content_format = args.format_contenu;
       }
       if (Object.keys(patch).length === 1) return text("Aucun champ à modifier.");
@@ -398,12 +411,13 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       }
       const { error } = await admin.from("coach_scripts").update(patch).eq("id", script.id).eq("coach_id", ownerId);
       if (error && patch.content_format && isMissingColumnError(error)) return text("Les formats de contenu ne sont pas encore activés dans la base EP Coaching. Réessaie sans format_contenu.");
+      if (error && "bullets" in patch && isMissingColumnError(error)) return text("La version Points clés n'est pas encore activée dans la base. Réessaie sans points_cles.");
       if (error) return text("Modification impossible, réessaie.");
       // Un « commente XXX » sans guide derrière fait commenter des gens à qui on ne peut rien envoyer.
       const ctaWarning = patch.cta !== undefined || patch.content !== undefined
         ? await ctaGuideRecap([patch.cta, patch.content].filter(Boolean).join("\n"), getLeadMagnetTitleByAnyKeyword).catch(() => "")
         : "";
-      if (patch.content_format) return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)), format ${getContentFormat(patch.content_format).label}.${ctaWarning}`);
+      if (patch.content_format) return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)), format ${getContentFormat(String(patch.content_format)).label}.${ctaWarning}`);
       return text(`Script « ${patch.title ?? script.title} » mis à jour (${Object.keys(patch).length - 1} champ(s)).${ctaWarning}`);
     }
 

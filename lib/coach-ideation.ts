@@ -83,6 +83,10 @@ export interface CoachScript {
   // de l'ouvrir (playbook création de contenu). Colonne ajoutée par
   // 20261104_hook_variants.sql, absente tant qu'elle n'est pas exécutée.
   hook_variants?: string[] | null;
+  // Version « Points clés » et brouillon (25/11, migration
+  // 20261125_script_bullets_draft) : voir lib/script-bullets.ts.
+  bullets?: import("@/lib/script-bullets").ScriptBullets | null;
+  draft?: string | null;
   pillar: string | null;
   source_reference: string | null;
   // CTA PARLÉ à la caméra (distinct de instagram_caption ci-dessous), doit
@@ -132,7 +136,8 @@ export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
     const admin = createAdminClient();
     const base = "id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status, views, likes, comments_count, shares, saves";
     const query = (cols: string) => admin.from("coach_scripts").select(cols).eq("coach_id", coachId).order("updated_at", { ascending: false });
-    let { data, error } = await query(`${base}, content_format, video_plan, hook_variants`);
+    let { data, error } = await query(`${base}, content_format, video_plan, hook_variants, bullets, draft`);
+    if (isMissingColumnError(error)) ({ data, error } = await query(`${base}, content_format, video_plan, hook_variants`));
     if (isMissingColumnError(error)) ({ data, error } = await query(`${base}, content_format, video_plan`));
     if (isMissingColumnError(error)) ({ data, error } = await query(`${base}, content_format`));
     if (isMissingColumnError(error)) ({ data, error } = await query(base));

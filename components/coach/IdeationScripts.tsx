@@ -1,5 +1,7 @@
 "use client";
 
+import { bulletsToText } from "@/lib/script-bullets";
+import { BulletsPanel, DraftPanel, ScriptVersionToggle, type ScriptVersionMode } from "@/components/coach/ScriptVersions";
 import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw, Wand2 } from "lucide-react";
@@ -340,6 +342,9 @@ function MyScripts({
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  // Version affichée par script (Script ou Points clés) et brouillon ouvert.
+  const [versionMode, setVersionMode] = useState<Record<string, ScriptVersionMode>>({});
+  const [draftOpenId, setDraftOpenId] = useState<string | null>(null);
   function toggleExpanded(id: string) {
     setExpandedId((cur) => {
       const next = cur === id ? null : id;
@@ -1161,8 +1166,9 @@ function MyScripts({
             key={shooting.id}
             scriptId={shooting.id}
             title={shooting.title}
-            formatId={shooting.content_format}
-            content={shooting.content ?? ""}
+            // En version Points clés, le prompteur montre les points (texte simple).
+            formatId={(versionMode[shooting.id] ?? "script") === "points" && shooting.bullets ? "face_cam" : shooting.content_format}
+            content={(versionMode[shooting.id] ?? "script") === "points" && shooting.bullets ? bulletsToText(shooting.bullets) : shooting.content ?? ""}
             onClose={closeShooting}
             onShot={shooting.status === "a_tourner" ? () => { cycleStatus(shooting.id, "a_tourner"); nextInSession(true); } : undefined}
             session={session ? { index: session.index, total: session.ids.length, shot: session.shot } : undefined}
@@ -1324,6 +1330,31 @@ function MyScripts({
                   </button>
                 )}
               </div>
+              {/* Deux versions (25/11) : Script mot pour mot ou Points clés,
+                  plus un brouillon avec les dernières idées et notes. */}
+              <ScriptVersionToggle
+                mode={versionMode[script.id] ?? "script"}
+                onMode={(m) => setVersionMode((cur) => ({ ...cur, [script.id]: m }))}
+                draftOpen={draftOpenId === script.id}
+                onDraft={() => setDraftOpenId((cur) => (cur === script.id ? null : script.id))}
+                hasBullets={!!script.bullets}
+                hasDraft={!!script.draft}
+              />
+              {draftOpenId === script.id && (
+                <DraftPanel
+                  scriptId={script.id}
+                  draft={script.draft ?? null}
+                  onSaved={(d) => setScripts((list) => list.map((x) => (x.id === script.id ? { ...x, draft: d } : x)))}
+                />
+              )}
+              {(versionMode[script.id] ?? "script") === "points" ? (
+                <BulletsPanel
+                  scriptId={script.id}
+                  bullets={script.bullets ?? null}
+                  onSaved={(b) => setScripts((list) => list.map((x) => (x.id === script.id ? { ...x, bullets: b } : x)))}
+                />
+              ) : (
+              <>
               {/* Script mot pour mot — retour direct 2026-09-02 : "le script
                   que je dois lire mot pour mot y'a pas encore" — c'était déjà
                   là en base, mais noyé sous la description Instagram et
@@ -1416,6 +1447,9 @@ function MyScripts({
                   </div>
                 )}
               </div>
+
+              </>
+              )}
 
               {script.hook_variants && script.hook_variants.length > 0 && (
                 <details style={{ marginTop: 10 }}>

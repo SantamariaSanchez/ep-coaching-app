@@ -1,5 +1,6 @@
 "use server";
 
+import { sanitizeBullets, type ScriptBullets } from "@/lib/script-bullets";
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
@@ -356,17 +357,26 @@ export async function updateScript(
     platform?: string;
     /** Format de contenu (2026-10-21), voir lib/content-formats.ts. */
     contentFormat?: string;
+    /** Version « Points clés » (25/11) ; null efface. */
+    bullets?: unknown;
+    /** Brouillon libre (25/11). */
+    draft?: string;
   }
 ): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
 
-  const patch: Record<string, string | number | null> = { updated_at: new Date().toISOString() };
+  const patch: Record<string, string | number | null | ScriptBullets> = { updated_at: new Date().toISOString() };
   if (updates.title !== undefined) {
     const title = updates.title.trim();
     if (!title) return { error: "Titre requis." };
     if (title.length > 200) return { error: "Titre trop long (200 caractères max)." };
     patch.title = title;
+  }
+  if (updates.bullets !== undefined) patch.bullets = updates.bullets === null ? null : sanitizeBullets(updates.bullets);
+  if (updates.draft !== undefined) {
+    if (updates.draft.length > 20_000) return { error: "Brouillon trop long (20 000 caractères max)." };
+    patch.draft = updates.draft.trim() || null;
   }
   if (updates.format !== undefined) {
     if (!(SCRIPT_FORMATS as readonly string[]).includes(updates.format)) return { error: "Format invalide." };
@@ -397,6 +407,9 @@ export async function updateScript(
 
   const admin = createAdminClient();
   const { error } = await admin.from("coach_scripts").update(patch).eq("id", id).eq("coach_id", guard.userId);
+  if (error && ("bullets" in patch || "draft" in patch) && isMissingColumnError(error)) {
+    return { error: "La version Points clés arrive bientôt : la mise à jour de la base n'est pas encore faite." };
+  }
   if (error && "content_format" in patch && isMissingColumnError(error)) {
     return { error: "Les formats de contenu arrivent bientôt : la mise à jour de la base n'est pas encore faite." };
   }
@@ -517,4 +530,30 @@ export async function publishScript(id: string): Promise<{ error?: string; succe
   if (error) return { error: "Publication impossible, réessaie." };
   revalidatePath("/dashboard/coach/studio");
   return { success: true };
+}
+
+// ── Brouillon d'un script (25/11) : dernières idées et notes à côté ─────
+
+export interface WritingInspiration {
+  ideas: { id: string; title: string; notes: string | null }[];
+  notes: { id: string; title: string; body: string | null; pinned: boolean }[];
+}
+
+/** Les idées de contenu et notes d'idéation les plus récentes, pour écrire sans changer d'onglet. */
+export async function fetchWritingInspiration(): Promise<WritingInspiration> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { ideas: [], notes: [] };
+  const admin = createAdminClient();
+  const [ideas, notes] = await Promise.all([
+    admin.from("content_ideas").select("id, title, notes, status").eq("coach_id", guard.userId).order("created_at", { ascending: false }).limit(15),
+    // Les notes unifiées (onglet Notes), épinglées d'abord.
+    admin.from("notes").select("id, title, body, pinned").eq("owner_id", guard.userId).order("pinned", { ascending: false }).order("updated_at", { ascending: false }).limit(10),
+  ]);
+  return {
+    ideas: ((ideas.data ?? []) as { id: string; title: string; notes: string | null; status: string | null }[])
+      .filter((i) => i.status !== "done" && i.status !== "utilisee")
+      .slice(0, 10)
+      .map(({ id, title, notes }) => ({ id, title, notes })),
+    notes: ((notes.data ?? []) as { id: string; title: string; body: string | null; pinned: boolean | null }[]).map((n) => ({ ...n, pinned: !!n.pinned })),
+  };
 }
