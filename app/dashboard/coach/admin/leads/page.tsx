@@ -13,6 +13,7 @@ import PrequalInbox, { type PrequalRow } from "@/components/coach/PrequalInbox";
 import { prepLines } from "@/lib/audit-prep";
 import { auditFollowUp, auditWhen, auditsWindowStart, prequalAnswerLines, prequalForEmail, whatsappNumber } from "@/lib/prequal-inbox";
 import { activationSteps, funnelSteps, visitGroup, type ActivationCounts } from "@/lib/visit-tracking";
+import { AUDIT_CLICK_PATH } from "@/lib/source-links";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { updateLeadStatus, updateLeadNote } from "./actions";
 import { todayInParis } from "@/lib/dates";
@@ -67,7 +68,7 @@ export default async function LeadsAdminPage() {
   const since30 = new Date(new Date(`${todayInParis()}T00:00:00Z`).getTime() - 30 * 86_400_000).toISOString();
   const admin = createAdminClient();
   const [visitRows, signups30, onboarded30, activationRes] = await Promise.all([
-    admin.from("page_visits").select("path").gte("created_at", since30).limit(50_000),
+    admin.from("page_visits").select("path, utm_source").gte("created_at", since30).limit(50_000),
     admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_platform_owner", false).not("email", "ilike", "%@epcoaching.app").gte("terms_accepted_at", since30),
     admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_platform_owner", false).not("email", "ilike", "%@epcoaching.app").gte("onboarding_completed_at", since30),
     // Première valeur et retour à J+7 (C64), lus dans les tables d'usage :
@@ -75,7 +76,12 @@ export default async function LeadsAdminPage() {
     admin.rpc("funnel_activation", { p_since: since30 }),
   ]);
   const activation = (Array.isArray(activationRes.data) ? activationRes.data[0] : null) as ActivationCounts | null;
-  const paths = ((visitRows.data ?? []) as { path: string }[]).map((v) => v.path);
+  const visitList = (visitRows.data ?? []) as { path: string; utm_source: string | null }[];
+  // Clics du lien de bio vers l'audit (/s/<réseau>/audit) : comptés à part, pas comme des visites de page.
+  const auditClicks = visitList.filter((v) => v.path === AUDIT_CLICK_PATH);
+  const auditClicksBySource = new Map<string, number>();
+  for (const c of auditClicks) auditClicksBySource.set(c.utm_source ?? "autre", (auditClicksBySource.get(c.utm_source ?? "autre") ?? 0) + 1);
+  const paths = visitList.filter((v) => v.path !== AUDIT_CLICK_PATH).map((v) => v.path);
   const funnel = funnelSteps({
     visits: paths.length,
     resourceVisits: paths.filter((p) => visitGroup(p) === "ressources").length,
@@ -187,6 +193,15 @@ export default async function LeadsAdminPage() {
             </li>
           ))}
         </ul>
+        <p className="mt-2 text-[12.5px] text-(--ep-ink)/70">
+          {t("Clics du lien de bio vers l'audit")} : <b className="text-(--ep-ink)">{auditClicks.length}</b>
+          {auditClicks.length > 0 && (
+            <span className="text-[11px] text-(--ep-ink)/45">
+              {" "}({[...auditClicksBySource.entries()].map(([src, n]) => `${src} ${n}`).join(", ")})
+            </span>
+          )}
+        </p>
+        <p className="mt-0.5 text-[10.5px] text-(--ep-ink)/40">{t("Mets ep-coaching.vercel.app/s/instagram/audit dans ta bio (ou /s/tiktok/audit, /s/linkedin/audit) : chaque clic est compté ici puis la personne arrive sur ton Calendly.")}</p>
         <p className="mt-2 text-[10.5px] text-(--ep-ink)/40">{t("Visites comptées depuis le 16/11, une par page et par onglet, sans cookie. Première valeur et retour à J+7 lus dans les séances, repas, bilans et check-ins, sans suivi en plus.")}</p>
       </section>
 
