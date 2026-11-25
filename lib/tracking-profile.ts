@@ -110,6 +110,8 @@ export interface TrackingInput {
   bilanDays14?: number | null;
   /** Jours avec bilan sur les 28 derniers jours (0 à 28), null si inconnu. */
   bilanDays28?: number | null;
+  /** Jours avec au moins un repas noté sur les 14 derniers jours (0 à 14), null si inconnu. */
+  foodDays14?: number | null;
   /** Heures visées (profil), "HH:MM". */
   wakeTime?: string | null;
   bedTime?: string | null;
@@ -295,6 +297,20 @@ export function deriveTrackingProfile(input: TrackingInput): TrackingProfile {
     safeguards.push("Aucun déficit ni objectif chiffré affiché");
   } else if (eating === "watch" && !coachDecided && nutritionDetail === "macros") {
     nutritionDetail = "calories";
+  }
+  // Adhésion réelle aux repas (26/11, « je track pas mes calories ») : si le
+  // détail demandé n'est pas tenu (repas notés 3 jours ou moins sur 14, après
+  // 2 semaines), on descend d'un cran le temps que ça redevienne facile, et on
+  // remonte tout seul dès que la régularité revient. Jamais contre un choix
+  // du coach.
+  const settledFood = (input.weeksSinceStart ?? 0) >= 2;
+  if (!coachDecided && settledFood && input.foodDays14 != null && input.foodDays14 <= 3 && nutritionDetail !== "habits") {
+    const from = nutritionDetail;
+    nutritionDetail = nutritionDetail === "macros" ? "calories" : "habits";
+    showNumbers = nutritionDetail !== "habits";
+    reasons.push(
+      `Repas notés ${input.foodDays14} jour${input.foodDays14 > 1 ? "s" : ""} sur 14 : on passe ${from === "macros" ? "des macros aux calories seules" : "aux repères simples (valider ton repas prévu en un tap)"}, ça remontera tout seul dès que tu notes plus souvent`
+    );
   }
 
   // ── Bilan du jour ────────────────────────────────────────────────────
