@@ -25,6 +25,8 @@ import { ctaGuideRecap } from "@/lib/cta-keywords";
 import { isRealAccount } from "@/lib/internal-accounts";
 import { CONTENT_FORMAT_IDS, contentFormatsToolHint, getContentFormat, isContentFormatId } from "@/lib/content-formats";
 import { isMissingColumnError } from "@/lib/coach-ideation";
+import { businessLoopText } from "@/lib/business-loop";
+import { loadBusinessLoop } from "@/utils/business-loop";
 
 type Role = "coach" | "client" | "staff";
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; roles: Role[] };
@@ -124,6 +126,12 @@ export const DAILY_TOOLS: ToolDef[] = [
         mes_guides: { type: "boolean", description: "true pour seulement les guides écrits par le coach" },
       },
     },
+  },
+  {
+    name: "etat_du_systeme",
+    roles: ["coach"],
+    description: "État du circuit EP Coaching (écriture, tournage, publication, stats, DM et guides, leads, audits, clientes, suivi) : le maillon qui bloque, l'action qui le débloque, et la consigne d'écriture (écrire du neuf ou retravailler le stock). À lire au début de chaque routine d'écriture.",
+    inputSchema: { type: "object", properties: {} },
   },
   {
     name: "resume_business",
@@ -446,6 +454,10 @@ export async function callDailyTool(ownerId: string, role: Role, name: string, a
       const { items, total } = await searchLeadMagnets({ query: query || undefined, limit });
       if (!items.length) return text(query ? `Aucun guide ne correspond à « ${query} ».` : "Aucun guide publié.");
       return text([`${total} guide(s)${query ? ` pour « ${query} »` : ""}, les ${items.length} premiers :`, ...items.map((g) => `- ${g.keyword} · ${g.title} · ${base}/ressources/${g.slug}`)].join("\n"));
+    }
+
+    case "etat_du_systeme": {
+      return text(businessLoopText(await loadBusinessLoop(ownerId)));
     }
 
     case "resume_business": {
