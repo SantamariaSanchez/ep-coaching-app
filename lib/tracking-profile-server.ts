@@ -38,12 +38,13 @@ export async function loadTrackingInputs(userIds: string[]): Promise<Map<string,
     const today = todayInParis();
     const since28 = addDaysIso(today, -27);
     const since14 = addDaysIso(today, -13);
-    const [profiles, setups, prefs, intakes, logs] = await Promise.all([
+    const [profiles, setups, prefs, intakes, logs, foods] = await Promise.all([
       admin.from("profiles").select("id, coach_id, start_date, eating_relationship, target_bedtime, target_wake_time, competition_date, onboarding_completed_at").in("id", userIds),
       admin.from("user_app_setup").select("user_id, answers, modules, completed_at").in("user_id", userIds),
       admin.from("member_preferences").select("id, experience_level, primary_goal, training_frequency, tracks_nutrition, biggest_obstacle").in("id", userIds),
       admin.from("client_intake").select("client_id, gender, sessions_current, sessions_desired, injuries, wearable_device").in("client_id", userIds),
       admin.from("daily_logs").select("client_id, log_date").in("client_id", userIds).gte("log_date", since28).limit(userIds.length * 40),
+      admin.from("food_logs").select("client_id, logged_at").in("client_id", userIds).gte("logged_at", since14).limit(userIds.length * 120),
     ]);
     const by = (res: { data: unknown }, key: string) => new Map(((res.data as Row[] | null) ?? []).map((r) => [String(r[key]), r]));
     const P = by(profiles, "id"), S = by(setups, "user_id"), M = by(prefs, "id"), I = by(intakes, "client_id");
@@ -51,6 +52,12 @@ export async function loadTrackingInputs(userIds: string[]): Promise<Map<string,
     for (const r of (logs.data as Row[] | null) ?? []) {
       const id = String(r.client_id);
       (days28.get(id) ?? days28.set(id, new Set()).get(id)!).add(String(r.log_date));
+    }
+    const foodDays = new Map<string, Set<string>>();
+    for (const r of (foods.data as Row[] | null) ?? []) {
+      const id = String(r.client_id);
+      const d = String(r.logged_at ?? "").slice(0, 10);
+      if (d) (foodDays.get(id) ?? foodDays.set(id, new Set()).get(id)!).add(d);
     }
     for (const id of userIds) {
       const p = P.get(id), s = S.get(id), m = M.get(id), i = I.get(id);
@@ -87,6 +94,7 @@ export async function loadTrackingInputs(userIds: string[]): Promise<Map<string,
         weeksSinceStart: startDate ? Math.max(0, Math.floor(diffDaysIso(startDate, today) / 7)) : null,
         bilanDays14: set ? [...set].filter((d) => d >= since14).length : 0,
         bilanDays28: set ? set.size : 0,
+        foodDays14: foods.error ? null : foodDays.get(id)?.size ?? 0,
         wakeTime: str(p?.target_wake_time)?.slice(0, 5) ?? null,
         bedTime: str(p?.target_bedtime)?.slice(0, 5) ?? null,
         override: isTrackingLevel(level) ? { level, by: by_ === "coach" ? "coach" : "client" } : null,

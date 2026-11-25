@@ -212,3 +212,20 @@ test("Bague ou montre : plus d'horaires de coucher ni de lever, même si le modu
   const layout = bilanLayout(avec, { ...({} as Record<string, boolean>), sommeil: true } as never);
   assert.ok(!layout.extraFields.includes("horaires_sommeil"));
 });
+
+test("repas peu notés : le détail nutritionnel descend d'un cran, puis remonte tout seul", () => {
+  const base = { experience: "intermediaire" as const, tracksNutrition: "parfois" as const, weeksSinceStart: 4 };
+  const regular = deriveTrackingProfile({ ...base, foodDays14: 12 });
+  assert.equal(regular.nutrition.detail, "calories");
+  const ignored = deriveTrackingProfile({ ...base, foodDays14: 1 });
+  assert.equal(ignored.nutrition.detail, "habits");
+  assert.equal(ignored.nutrition.showNumbers, false);
+  assert.ok(ignored.reasons.some((r) => /Repas notés 1 jour sur 14/.test(r)));
+  const tooEarly = deriveTrackingProfile({ ...base, weeksSinceStart: 1, foodDays14: 0 });
+  assert.equal(tooEarly.nutrition.detail, "calories");
+});
+
+test("repas peu notés : jamais contre un choix du coach", () => {
+  const p = deriveTrackingProfile({ experience: "intermediaire", weeksSinceStart: 4, foodDays14: 0, override: { level: "avance", by: "coach" } });
+  assert.equal(p.nutrition.detail, "macros");
+});
