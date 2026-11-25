@@ -85,7 +85,7 @@ export const DAILY_TOOLS: ToolDef[] = [
   {
     name: "modifier_script",
     roles: ["coach"],
-    description: "Met à jour un script du Studio créatif : titre, accroche, contenu, appel à l'action, description (légende du post), version Points clés (points_cles), format de contenu (format_contenu) ou statut (a_tourner, tourne). Claude n'écrit que du face caméra pour les reels et YouTube, sur un gabarit Marvin Ndiaye ; aucun carrousel. Seuls les champs donnés changent. Si tu changes de format, réécris aussi le contenu dans la forme du nouveau format : " + contentFormatsToolHint() + ".",
+    description: "Met à jour un script du Studio créatif : titre, accroche, contenu, appel à l'action, description (légende du post), version Points clés (points_cles), format de contenu (format_contenu) ou statut (a_tourner, tourne). Claude n'écrit que du face caméra pour les reels et YouTube, sur la structure d'un vrai contenu lu dans Notion (Marvin en priorité, tous les créateurs de Notion et les reels d'Emmanuel sont bons) ; aucun carrousel. Seuls les champs donnés changent. Si tu changes de format, réécris aussi le contenu dans la forme du nouveau format : " + contentFormatsToolHint() + ".",
     inputSchema: {
       type: "object",
       properties: {
