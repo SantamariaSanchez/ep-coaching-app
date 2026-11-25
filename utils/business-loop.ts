@@ -50,17 +50,16 @@ export async function loadBusinessLoopMetrics(coachId: string): Promise<LoopMetr
     }
   };
 
-  const lastSync = async (): Promise<number | null> => {
+  const lastCapture = async (): Promise<number | null> => {
     try {
-      const { data } = await admin
-        .from("social_sync_runs")
-        .select("started_at")
-        .eq("status", "success")
-        .order("started_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!data?.started_at) return null;
-      return Math.max(0, Math.floor((Date.now() - new Date(data.started_at as string).getTime()) / DAY));
+      const [{ data: post }, { data: day }] = await Promise.all([
+        admin.from("social_post_metrics").select("snapshot_date").order("snapshot_date", { ascending: false }).limit(1).maybeSingle(),
+        admin.from("social_account_daily").select("date").order("date", { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      const dates = [post?.snapshot_date, day?.date].filter(Boolean) as string[];
+      if (dates.length === 0) return null;
+      const last = dates.sort().pop() as string;
+      return Math.max(0, Math.floor((Date.now() - new Date(`${last}T12:00:00Z`).getTime()) / DAY));
     } catch {
       return null;
     }
@@ -70,7 +69,7 @@ export async function loadBusinessLoopMetrics(coachId: string): Promise<LoopMetr
     stockToShoot,
     shot7d,
     published7d,
-    daysSinceStatsSync,
+    daysSinceStatsCapture,
     guideClicks7d,
     leads7d,
     auditClicks7d,
@@ -83,7 +82,7 @@ export async function loadBusinessLoopMetrics(coachId: string): Promise<LoopMetr
     count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).eq("status", "a_tourner")),
     count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).in("status", ["tourne", "publie"]).gte("updated_at", since7)),
     count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).eq("status", "publie").gte("updated_at", since7)),
-    lastSync(),
+    lastCapture(),
     count(admin.from("page_visits").select("id", { count: "exact", head: true }).like("path", "/g/%").gte("created_at", since7)),
     count(admin.from("leads").select("id", { count: "exact", head: true }).gte("created_at", since7)),
     count(admin.from("page_visits").select("id", { count: "exact", head: true }).eq("path", AUDIT_CLICK_PATH).gte("created_at", since7)),
@@ -98,7 +97,7 @@ export async function loadBusinessLoopMetrics(coachId: string): Promise<LoopMetr
     stockToShoot,
     shot7d,
     published7d,
-    daysSinceStatsSync,
+    daysSinceStatsCapture,
     guideClicks7d,
     leads7d,
     auditClicks7d,

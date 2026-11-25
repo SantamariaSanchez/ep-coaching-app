@@ -15,8 +15,8 @@ export interface LoopMetrics {
   shot7d: number;
   /** Scripts marqués « publié » sur 7 jours. */
   published7d: number;
-  /** Jours depuis la dernière synchro réussie des stats réseaux (null = jamais). */
-  daysSinceStatsSync: number | null;
+  /** Jours depuis la dernière saisie de stats réseaux (capture dans Mes stats réseaux ; null = jamais). */
+  daysSinceStatsCapture: number | null;
   /** Ouvertures des liens /g/NNN envoyés en DM, sur 7 jours. */
   guideClicks7d: number;
   /** Leads captés sur 7 jours. */
@@ -91,16 +91,19 @@ export function computeBusinessLoop(m: LoopMetrics): LoopReport {
     owner: "emmanuel",
   });
 
-  const sync = m.daysSinceStatsSync;
+  // Plus de synchro automatique (décision d'Emmanuel du 16/11) : les stats se
+  // saisissent par capture d'écran dans Mes stats réseaux. Une fois par
+  // semaine suffit pour savoir ce qui marche.
+  const cap = m.daysSinceStatsCapture;
   steps.push({
     key: "mesure",
     label: "Stats réseaux",
-    value: sync === null ? "jamais synchronisées" : sync === 0 ? "à jour aujourd'hui" : `dernière synchro il y a ${plural(sync, "jour", "jours")}`,
-    tone: sync !== null && sync <= 2 ? "ok" : sync !== null && sync <= 8 ? "warn" : "bad",
+    value: cap === null ? "aucune capture saisie" : cap === 0 ? "capture saisie aujourd'hui" : `dernière capture il y a ${plural(cap, "jour", "jours")}`,
+    tone: cap !== null && cap <= 7 ? "ok" : cap !== null && cap <= 14 ? "warn" : "bad",
     action:
-      sync !== null && sync <= 2
+      cap !== null && cap <= 7
         ? null
-        : "La synchro tourne chaque matin. Si ce maillon reste rouge, reconnecte Instagram dans Windsor (onboard.windsor.ai).",
+        : "Une fois par semaine, ajoute dans Mes stats réseaux la capture d'écran des stats de tes posts de la semaine. Sans ça, impossible de savoir quels reels refaire.",
     owner: "emmanuel",
   });
 
