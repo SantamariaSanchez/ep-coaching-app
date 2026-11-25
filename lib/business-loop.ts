@@ -1,0 +1,207 @@
+// Le circuit d'EP Coaching (règle d'Emmanuel du 26/11) : il met du contenu
+// dans Notion, Claude s'en nourrit et produit, Emmanuel tourne et poste, et
+// tout doit finir en abonnés, leads, appels et clientes suivies. Ce module
+// lit chaque maillon avec de vrais chiffres, dit lequel bloque (le premier
+// rouge dans l'ordre du circuit) et l'action qui le débloque. Il sert au
+// tableau de bord du coach ET aux routines d'écriture (outil MCP
+// etat_du_systeme), qui adaptent leur travail au goulot. Fichier pur, testé.
+
+export type LoopTone = "ok" | "warn" | "bad";
+
+export interface LoopMetrics {
+  /** Scripts « à tourner » en stock. */
+  stockToShoot: number;
+  /** Scripts passés en « tourné » ou « publié » sur 7 jours. */
+  shot7d: number;
+  /** Scripts marqués « publié » sur 7 jours. */
+  published7d: number;
+  /** Jours depuis la dernière synchro réussie des stats réseaux (null = jamais). */
+  daysSinceStatsSync: number | null;
+  /** Ouvertures des liens /g/NNN envoyés en DM, sur 7 jours. */
+  guideClicks7d: number;
+  /** Leads captés sur 7 jours. */
+  leads7d: number;
+  /** Clics vers la réservation d'audit (liens suivis), sur 7 jours. */
+  auditClicks7d: number;
+  /** Appels de vente notés sur 30 jours. */
+  calls30d: number;
+  /** Clientes actives. */
+  activeClients: number;
+  /** Clientes qui ont noté au moins un repas sur 7 jours. */
+  clientsLoggingFood7d: number;
+  /** Clientes qui ont fait au moins une séance sur 7 jours. */
+  clientsTraining7d: number;
+  /** Le coach lui-même : jours avec au moins un repas noté sur 7. */
+  selfFoodDays7d: number;
+  /** Le coach lui-même : séances notées sur 7 jours. */
+  selfSessions7d: number;
+}
+
+export interface LoopStep {
+  key: string;
+  label: string;
+  value: string;
+  tone: LoopTone;
+  /** Ce qu'il faut faire, quand le maillon n'est pas vert. */
+  action: string | null;
+  /** Qui le fait : Emmanuel ou Claude (routines et sessions). */
+  owner: "emmanuel" | "claude";
+}
+
+export interface LoopReport {
+  steps: LoopStep[];
+  /** Premier maillon rouge du circuit (le goulot), sinon le premier orange. */
+  bottleneck: LoopStep | null;
+  /** Consigne aux routines d'écriture. */
+  writingMode: "ecrire" | "retravailler_le_stock";
+  writingReason: string;
+}
+
+/** Au-delà de ce stock, écrire du neuf ne sert à rien : on améliore l'existant. */
+export const STOCK_CAP = 60;
+/** Rythme visé : un reel tourné par jour. */
+export const SHOOT_TARGET_7D = 7;
+
+const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
+
+export function computeBusinessLoop(m: LoopMetrics): LoopReport {
+  const steps: LoopStep[] = [];
+
+  steps.push({
+    key: "tournage",
+    label: "Tournage",
+    value: `${plural(m.shot7d, "script tourné", "scripts tournés")} sur 7 jours, ${m.stockToShoot} en stock`,
+    tone: m.shot7d >= SHOOT_TARGET_7D ? "ok" : m.shot7d >= 3 ? "warn" : "bad",
+    action:
+      m.shot7d >= SHOOT_TARGET_7D
+        ? null
+        : "Tourne au moins un reel par jour dans le Studio (mode tournage), puis passe-le en « tourné ». Le stock est là : il ne manque que la caméra.",
+    owner: "emmanuel",
+  });
+
+  steps.push({
+    key: "publication",
+    label: "Publication",
+    value: `${plural(m.published7d, "contenu marqué publié", "contenus marqués publiés")} sur 7 jours`,
+    tone: m.published7d >= 5 ? "ok" : m.published7d >= 1 ? "warn" : "bad",
+    action:
+      m.published7d >= 5
+        ? null
+        : "Après chaque post, passe le script en « publié » dans le Studio. Sans ça, impossible de relier un reel à ses vues, ses DM et ses leads.",
+    owner: "emmanuel",
+  });
+
+  const sync = m.daysSinceStatsSync;
+  steps.push({
+    key: "mesure",
+    label: "Stats réseaux",
+    value: sync === null ? "jamais synchronisées" : sync === 0 ? "à jour aujourd'hui" : `dernière synchro il y a ${plural(sync, "jour", "jours")}`,
+    tone: sync !== null && sync <= 2 ? "ok" : sync !== null && sync <= 8 ? "warn" : "bad",
+    action:
+      sync !== null && sync <= 2
+        ? null
+        : "La synchro tourne chaque matin. Si ce maillon reste rouge, reconnecte Instagram dans Windsor (onboard.windsor.ai).",
+    owner: "emmanuel",
+  });
+
+  steps.push({
+    key: "dm",
+    label: "DM et guides",
+    value: `${plural(m.guideClicks7d, "guide ouvert", "guides ouverts")} depuis un DM sur 7 jours`,
+    tone: m.guideClicks7d >= 5 ? "ok" : m.guideClicks7d >= 1 ? "warn" : "bad",
+    action:
+      m.guideClicks7d >= 5
+        ? null
+        : "Réponds à chaque commentaire « NNN » avec le bloc « Réponse DM » du script (Studio). C'est lui qui transforme un commentaire en lead.",
+    owner: "emmanuel",
+  });
+
+  steps.push({
+    key: "leads",
+    label: "Leads",
+    value: `${plural(m.leads7d, "lead", "leads")} sur 7 jours`,
+    tone: m.leads7d >= 3 ? "ok" : m.leads7d >= 1 ? "warn" : "bad",
+    action:
+      m.leads7d >= 3
+        ? null
+        : m.guideClicks7d > 0
+          ? "Des gens ouvrent les guides mais ne laissent pas leur email : Claude retravaille l'accroche des guides les plus envoyés."
+          : "Les leads suivent les DM : débloque d'abord le maillon « DM et guides ».",
+    owner: m.guideClicks7d > 0 ? "claude" : "emmanuel",
+  });
+
+  steps.push({
+    key: "appels",
+    label: "Audits et appels",
+    value: `${plural(m.auditClicks7d, "clic", "clics")} vers l'audit sur 7 jours, ${plural(m.calls30d, "appel noté", "appels notés")} sur 30 jours`,
+    tone: m.calls30d >= 4 ? "ok" : m.calls30d >= 1 || m.auditClicks7d >= 1 ? "warn" : "bad",
+    action:
+      m.calls30d >= 4
+        ? null
+        : "Mets le lien suivi de l'audit (/s/instagram/audit) dans ta bio et note chaque appel dans Business (appels de vente), même ceux qui ne signent pas.",
+    owner: "emmanuel",
+  });
+
+  steps.push({
+    key: "clientes",
+    label: "Clientes",
+    value: plural(m.activeClients, "cliente active", "clientes actives"),
+    tone: m.activeClients >= 5 ? "ok" : m.activeClients >= 1 ? "warn" : "bad",
+    action: m.activeClients >= 5 ? null : "Chaque audit se termine par l'invitation dans l'appli (60 jours gratuits), même sans coaching signé.",
+    owner: "emmanuel",
+  });
+
+  if (m.activeClients > 0) {
+    const food = m.clientsLoggingFood7d / m.activeClients;
+    const train = m.clientsTraining7d / m.activeClients;
+    const worst = Math.min(food, train);
+    steps.push({
+      key: "suivi",
+      label: "Suivi des clientes",
+      value: `${m.clientsLoggingFood7d}/${m.activeClients} notent leurs repas, ${m.clientsTraining7d}/${m.activeClients} s'entraînent (7 jours)`,
+      tone: worst >= 0.7 ? "ok" : worst >= 0.4 ? "warn" : "bad",
+      action: worst >= 0.7 ? null : "Ouvre « Clients à relancer » : un message court et personnel à chaque cliente silencieuse, aujourd'hui.",
+      owner: "emmanuel",
+    });
+  }
+
+  steps.push({
+    key: "toi",
+    label: "Ton propre suivi",
+    value: `${m.selfFoodDays7d}/7 jours de repas notés, ${plural(m.selfSessions7d, "séance", "séances")} sur 7 jours`,
+    tone: m.selfFoodDays7d >= 5 && m.selfSessions7d >= 3 ? "ok" : m.selfFoodDays7d >= 2 || m.selfSessions7d >= 1 ? "warn" : "bad",
+    action:
+      m.selfFoodDays7d >= 5 && m.selfSessions7d >= 3
+        ? null
+        : "Note tes repas et tes séances dans Moi. C'est ta preuve en vidéo, et c'est en l'utilisant toi-même que l'appli s'améliore pour tes clientes.",
+    owner: "emmanuel",
+  });
+
+  // Le circuit se lit dans l'ordre : le premier maillon rouge bloque tout ce
+  // qui suit. « Ton propre suivi » est à part (il ne bloque pas les ventes).
+  const pipeline = steps.filter((s) => s.key !== "toi");
+  const bottleneck = pipeline.find((s) => s.tone === "bad") ?? pipeline.find((s) => s.tone === "warn") ?? null;
+
+  const tooMuchStock = m.stockToShoot > STOCK_CAP;
+  return {
+    steps,
+    bottleneck,
+    writingMode: tooMuchStock ? "retravailler_le_stock" : "ecrire",
+    writingReason: tooMuchStock
+      ? `${m.stockToShoot} scripts attendent d'être tournés (plafond ${STOCK_CAP}) pour ${m.shot7d} tournés en 7 jours : écrire du neuf ne fait pas avancer le business. On retravaille l'ancien stock (structure d'un vrai créateur, face caméra, version Points clés), du plus ancien au plus récent.`
+      : `Stock de ${m.stockToShoot} scripts, sous le plafond de ${STOCK_CAP} : on écrit normalement.`,
+  };
+}
+
+/** Texte court pour les routines et les outils MCP. */
+export function businessLoopText(r: LoopReport): string {
+  const icon = { ok: "🟢", warn: "🟠", bad: "🔴" } as const;
+  const lines = r.steps.map((s) => `${icon[s.tone]} ${s.label} : ${s.value}${s.action ? `\n   → ${s.action}` : ""}`);
+  return [
+    "État du circuit EP Coaching (Notion → écriture → tournage → publication → DM → leads → appels → clientes) :",
+    ...lines,
+    "",
+    r.bottleneck ? `Goulot : ${r.bottleneck.label}. ${r.bottleneck.action ?? ""}` : "Aucun maillon bloqué.",
+    `Consigne d'écriture : ${r.writingMode === "ecrire" ? "écrire" : "retravailler le stock"}. ${r.writingReason}`,
+  ].join("\n");
+}

@@ -21,6 +21,8 @@ import ClientsSection from "@/components/ui/ClientsSection";
 import DashboardStats from "@/components/coach/DashboardStats";
 import UrgentAlertsSection from "@/components/coach/UrgentAlertsSection";
 import MyDayCard from "@/components/coach/MyDayCard";
+import BusinessLoopCard from "@/components/coach/BusinessLoopCard";
+import { loadBusinessLoop } from "@/utils/business-loop";
 import { messagePreview } from "@/components/messaging/message-format";
 import { getAllMessageableMembers } from "@/utils/auth";
 
@@ -186,6 +188,10 @@ export default async function CoachDashboard() {
     createdAt: m.created_at,
   }));
 
+  // Le circuit du business (26/11), réservé au fondateur : le maillon qui
+  // bloque, en premier sur la page.
+  const businessLoop = profile?.is_platform_owner ? await loadBusinessLoop(user.id).catch(() => null) : null;
+
   return (
     <div
       className="page-transition ep-page-wide"
@@ -197,6 +203,8 @@ export default async function CoachDashboard() {
           {formattedDate}
         </p>
       </div>
+
+      {businessLoop && <BusinessLoopCard report={businessLoop} />}
 
       {/* ── Urgent alerts ─────────────────────────────────────────────────────
           Audit friction coach (2026-09-16) : remonté avant "Ma journée" et les
