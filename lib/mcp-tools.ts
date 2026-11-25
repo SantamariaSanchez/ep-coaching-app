@@ -2,6 +2,8 @@
 // un client ou un membre peut faire en parlant à Claude, sans clé d'API ni
 // code. Chaque outil n'agit que sur les données du propriétaire de la clé
 // (et, pour un coach, sur ses propres clients).
+import { claudeFormatRefusal, MISSING_POINTS_REFUSAL } from "@/lib/claude-writing-policy";
+import { sanitizeBullets } from "@/lib/script-bullets";
 import { aiTicsRefusal, findAiTics, findWeakHooks, weakHooksRefusal } from "@/lib/ai-tics";
 import { findRepeatedForms, findSaturatedThemes, repeatedFormsRefusal, saturatedRefusal, subjectText } from "@/lib/saturated-themes";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -127,7 +129,7 @@ export const EXTRA_TOOLS: ToolDef[] = [
   {
     name: "ajouter_script",
     roles: ["coach"],
-    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Formats permis par plateforme écrite : " + WRITTEN_PLATFORMS.map((w) => `${w.id} = ${w.formats.join(" ou ")}`).join(" ; ") + ". Un post écrit arrive dans l'onglet « Posts à publier », jamais dans la file du tournage. Règles des posts écrits : " + WRITTEN_PLATFORMS.map((w) => writtenPromptRules(w.id)).filter(Boolean).join(" ") + " Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach ; pour une histoire du quotidien, lis d'abord notes_vecues et n'utilise que ce qu'il y a dedans. Écris comme les vraies références : ouverture sur une question qui revient ou un faux problème (jamais une scène inventée), parties annoncées à l'oral, exemple chiffré refaisable, nuance, règle courte ; jamais de chapitre ni de timecode, ni de tiret cadratin ; dis adhésion (pas adhérence) et Road map.",
+    description: "Ajoute un script dans le Studio créatif du coach, statut « à tourner ». Claude n'écrit que du face caméra (face_cam) pour les reels et YouTube, en recopiant un gabarit Marvin Ndiaye (page Notion « Gabarits Marvin Ndiaye ») dont seul le sujet change ; LinkedIn en post_texte ; plus aucun carrousel ni post ou story Instagram. Un reel a aussi sa version Points clés (points_cles). Choisis le format de contenu (format_contenu, face_cam par défaut) et écris le contenu dans la forme de ce format, le Studio l'affiche en conséquence (dialogue, tableau B-roll, tier list...). Formes attendues : " + contentFormatsToolHint() + ". Formats permis par plateforme écrite : " + WRITTEN_PLATFORMS.map((w) => `${w.id} = ${w.formats.join(" ou ")}`).join(" ; ") + ". Un post écrit arrive dans l'onglet « Posts à publier », jamais dans la file du tournage. Règles des posts écrits : " + WRITTEN_PLATFORMS.map((w) => writtenPromptRules(w.id)).filter(Boolean).join(" ") + " Cas client et storytelling : jamais de client ni d'histoire inventés, un vrai cas (avec accord) ou le parcours du coach ; pour une histoire du quotidien, lis d'abord notes_vecues et n'utilise que ce qu'il y a dedans. Écris comme les vraies références : ouverture sur une question qui revient ou un faux problème (jamais une scène inventée), parties annoncées à l'oral, exemple chiffré refaisable, nuance, règle courte ; jamais de chapitre ni de timecode, ni de tiret cadratin ; dis adhésion (pas adhérence) et Road map.",
     inputSchema: {
       type: "object",
       properties: {
@@ -139,6 +141,15 @@ export const EXTRA_TOOLS: ToolDef[] = [
         plateforme: { type: "string", enum: ["reel", "youtube", "linkedin", "threads", "post_insta", "story_insta"], description: "reel = format court (Instagram, TikTok, Facebook), par défaut. post_insta = post Instagram (carrousel ou image_unique, légende dans description). story_insta = séquence de stories (format sequence_stories). linkedin/threads = post écrit (post_texte ou carrousel)." },
         description: { type: "string", description: "Légende publiée sous un post Instagram (post_insta) ou sous un reel" },
         pilier: { type: "string" },
+        points_cles: {
+          type: "object",
+          description: "Version « Points clés » du script, obligatoire pour un reel : idee (idée principale, question ou cas à résoudre), points (4 à 8 points courts à développer à l'oral), cta.",
+          properties: {
+            idee: { type: "string" },
+            points: { type: "array", items: { type: "string" } },
+            cta: { type: "string" },
+          },
+        },
       },
       required: ["titre", "contenu"],
     },
@@ -519,6 +530,15 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       if (args.format_contenu !== undefined && args.format_contenu !== null && args.format_contenu !== "" && !isContentFormatId(args.format_contenu)) {
         return text(`Format de contenu inconnu. Valeurs possibles : ${CONTENT_FORMAT_IDS.join(", ")}.`);
       }
+      // Ce que Claude peut écrire (25/11) : face caméra, LinkedIn texte, aucun carrousel.
+      const policy = claudeFormatRefusal(asked && asked !== platform ? asked : platform, isContentFormatId(args.format_contenu) ? args.format_contenu : null);
+      if (policy) return text(policy);
+      const bullets = sanitizeBullets(
+        args.points_cles && typeof args.points_cles === "object"
+          ? { main: (args.points_cles as Record<string, unknown>).idee, points: (args.points_cles as Record<string, unknown>).points, cta: (args.points_cles as Record<string, unknown>).cta }
+          : null
+      );
+      if (platform === "reel" && (!bullets || bullets.points.length < 3)) return text(MISSING_POINTS_REFUSAL);
       const written = getWrittenPlatform(platform);
       // Plateforme écrite : seulement ses formats (un reel « face caméra » sur
       // une story n'a pas de sens) ; sans format donné, celui de la plateforme.
@@ -551,7 +571,9 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
         pillar: typeof args.pilier === "string" ? args.pilier.slice(0, 100) : null,
         source_reference: "Claude",
       };
-      let { error } = await admin.from("coach_scripts").insert({ ...row, content_format: contentFormat, ...(caption ? { instagram_caption: caption } : {}) });
+      let { error } = await admin.from("coach_scripts").insert({ ...row, content_format: contentFormat, ...(caption ? { instagram_caption: caption } : {}), ...(bullets ? { bullets } : {}) });
+      // Colonne bullets absente (migration 20261125 non passée) : sans les points.
+      if (bullets && isMissingColumnError(error)) ({ error } = await admin.from("coach_scripts").insert({ ...row, content_format: contentFormat, ...(caption ? { instagram_caption: caption } : {}) }));
       // Migration 20261021 pas encore passée : le script s'ajoute sans son format.
       if (isMissingColumnError(error)) ({ error } = await admin.from("coach_scripts").insert(row));
       if (error) return text("Ajout impossible, réessaie.");
