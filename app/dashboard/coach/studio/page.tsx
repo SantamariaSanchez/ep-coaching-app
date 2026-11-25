@@ -6,7 +6,7 @@ import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getCoachScripts } from "@/lib/coach-ideation";
 import { getNotes } from "@/lib/notes";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
-import { getRealLeadsByScriptId, getLeadMagnetSlugByScriptId, getTrackedLeadsByScriptId } from "@/lib/content-leads-tracking";
+import { getRealLeadsByScriptId, getLeadMagnetSlugByScriptId, getTrackedLeadsByScriptId, getGuideByScriptId } from "@/lib/content-leads-tracking";
 import IdeationHub from "@/components/coach/IdeationHub";
 import ClientVoiceCard from "@/components/coach/ClientVoiceCard";
 import { getClientVoice } from "@/lib/client-voice-server";
@@ -77,10 +77,11 @@ export default async function CoachStudioPage({
   // Promise.all ci-dessus plutôt que dans le même lot.
   // Lien suivi par script + leads qu'il a réellement amenés (voir
   // lib/lead-origin.ts) : l'attribution exacte, à côté de l'estimation par numéro.
-  const [realLeadsByScriptId, leadSlugByScriptId, trackedLeadsByScriptId] = await Promise.all([
+  const [realLeadsByScriptId, leadSlugByScriptId, trackedLeadsByScriptId, guideByScriptId] = await Promise.all([
     getRealLeadsByScriptId(scripts),
     getLeadMagnetSlugByScriptId(scripts),
     getTrackedLeadsByScriptId(scripts.map((s) => s.id)),
+    getGuideByScriptId(scripts),
   ]);
 
   return (
@@ -95,7 +96,7 @@ export default async function CoachStudioPage({
         initialScripts={scripts}
         canvas={canvas}
         realLeadsByScriptId={realLeadsByScriptId}
-        leadTracking={{ slugByScriptId: leadSlugByScriptId, trackedByScriptId: trackedLeadsByScriptId }}
+        leadTracking={{ slugByScriptId: leadSlugByScriptId, trackedByScriptId: trackedLeadsByScriptId, guideByScriptId }}
         platforms={appSetup.completed ? coachPlatforms(appSetup) : undefined}
         montageProcesses={(appSetup.answers.montage_processes as Record<string, string> | undefined) ?? {}}
         initialTab={onglet}

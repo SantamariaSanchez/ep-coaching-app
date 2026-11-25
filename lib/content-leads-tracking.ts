@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
-import { extractLeadMagnetKeywords, getLeadMagnetSlugByAnyKeyword } from "@/lib/lead-magnets";
+import { extractLeadMagnetKeywords, getLeadMagnetSlugByAnyKeyword, getLeadMagnetTitleByAnyKeyword } from "@/lib/lead-magnets";
+import { extractCtaKeywords } from "@/lib/cta-keywords";
 import type { CoachScript } from "@/lib/coach-ideation";
 import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 
@@ -32,6 +33,8 @@ export interface SlugLeadCounts {
 export interface LeadTracking {
   slugByScriptId: Record<string, string>;
   trackedByScriptId: Record<string, SlugLeadCounts>;
+  /** Guide cité en fin de script (« commente 797 ») : numéro, titre, clics sur /g/797 sur 30 jours. */
+  guideByScriptId?: Record<string, { code: string; title: string; clicks30d: number }>;
 }
 
 // Une seule lecture de toute la table `leads`, groupée par slug — bien
@@ -202,11 +205,20 @@ export async function getLeadOriginReport(leads: LeadOriginRow[]): Promise<LeadO
 
 // Numéro de leadmagnet → slug pour chaque script, pour construire son lien
 // suivi (premier numéro cité qui existe vraiment).
+// Depuis le 25/11, le numéro se lit aussi dans l'appel à l'action
+// (« commente 797 ») : les routines l'écrivent là, pas dans source_reference,
+// et 59 scripts sur 66 n'avaient donc aucun lien de guide dans le Studio.
+function scriptGuideKeywords(script: CoachScript): string[] {
+  const fromRef = extractLeadMagnetKeywords(script.source_reference);
+  const fromCta = extractCtaKeywords(`${script.cta ?? ""}\n${script.content ?? ""}`).filter((k) => /^\d+$/.test(k));
+  return [...new Set([...fromCta, ...fromRef])];
+}
+
 export async function getLeadMagnetSlugByScriptId(scripts: CoachScript[]): Promise<Record<string, string>> {
   const out: Record<string, string> = {};
   const cache = new Map<string, string | null>();
   for (const script of scripts) {
-    for (const keyword of extractLeadMagnetKeywords(script.source_reference)) {
+    for (const keyword of scriptGuideKeywords(script)) {
       if (!cache.has(keyword)) cache.set(keyword, await getLeadMagnetSlugByAnyKeyword(keyword));
       const slug = cache.get(keyword);
       if (slug) {
@@ -229,6 +241,42 @@ export async function getTrackedLeadsByScriptId(scriptIds: string[]): Promise<Re
     const e = (out[row.origin_script_id] ??= { total: 0, last30Days: 0 });
     e.total += 1;
     if (now - new Date(row.created_at).getTime() < 30 * 24 * 60 * 60 * 1000) e.last30Days += 1;
+  }
+  return out;
+}
+
+// Guide cité par chaque script (numéro du CTA) et clics sur son lien court
+// /g/NNN des 30 derniers jours (comptés par app/g/[code]/route.ts).
+export async function getGuideByScriptId(
+  scripts: CoachScript[]
+): Promise<Record<string, { code: string; title: string; clicks30d: number }>> {
+  const out: Record<string, { code: string; title: string; clicks30d: number }> = {};
+  const titleCache = new Map<string, string | null>();
+  for (const script of scripts) {
+    const code = extractCtaKeywords(`${script.cta ?? ""}\n${script.content ?? ""}`).find((k) => /^\d+$/.test(k));
+    if (!code) continue;
+    if (!titleCache.has(code)) titleCache.set(code, await getLeadMagnetTitleByAnyKeyword(code));
+    const title = titleCache.get(code);
+    if (title) out[script.id] = { code, title, clicks30d: 0 };
+  }
+  const codes = [...new Set(Object.values(out).map((g) => g.code))];
+  if (codes.length === 0) return out;
+  try {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await createAdminClient()
+      .from("page_visits")
+      .select("path")
+      .in("path", codes.map((c) => `/g/${c}`))
+      .gte("created_at", since)
+      .limit(5000);
+    const clicks = new Map<string, number>();
+    for (const row of (data ?? []) as { path: string }[]) {
+      const c = row.path.slice(3);
+      clicks.set(c, (clicks.get(c) ?? 0) + 1);
+    }
+    for (const g of Object.values(out)) g.clicks30d = clicks.get(g.code) ?? 0;
+  } catch {
+    // les clics sont un bonus : sans eux, la réponse DM reste disponible
   }
   return out;
 }
