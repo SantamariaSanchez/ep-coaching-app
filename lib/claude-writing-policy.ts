@@ -16,7 +16,7 @@ export function claudeFormatRefusal(platform: string, format: string | null | un
     return "Refusé : plus aucun carrousel ni image (décision d'Emmanuel du 25/11). Reel ou YouTube = face_cam ; LinkedIn = post_texte. Rien n'a été enregistré.";
   }
   if ((platform === "reel" || platform === "youtube") && format && format !== "face_cam") {
-    return `Refusé : Claude n'écrit que du face caméra (face_cam) pour les reels et YouTube, pas ${format}. Reprends un gabarit Marvin Ndiaye (page Notion « Gabarits Marvin Ndiaye ») en face caméra. Rien n'a été enregistré.`;
+    return `Refusé : Claude n'écrit que du face caméra (face_cam) pour les reels et YouTube, pas ${format}. Reprends la structure d'un vrai contenu lu dans Notion (Marvin Ndiaye en priorité, mais tous les créateurs de la page Transcription et les reels d'Emmanuel sont bons ; page « Gabarits des créateurs de référence ») en face caméra. Rien n'a été enregistré.`;
   }
   if (platform === "linkedin" && format && format !== "post_texte") {
     return "Refusé : sur LinkedIn, uniquement post_texte. Rien n'a été enregistré.";
