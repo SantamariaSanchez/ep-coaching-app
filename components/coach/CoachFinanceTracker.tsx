@@ -1,12 +1,13 @@
 "use client";
 
 import { useT } from "@/components/i18n/I18nProvider";
-import { useMemo, useState, useTransition, useEffect } from "react";
-import { Plus, TrendingUp, TrendingDown, Wallet, Trash2, Download, ChevronLeft, ChevronRight, Repeat } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { Plus, TrendingUp, TrendingDown, Wallet, Trash2, Download, ChevronLeft, ChevronRight, Repeat, Search } from "lucide-react";
 import { monthTotals, monthSeries, categoryBreakdown, recurringToCarry, shiftMonth } from "@/lib/coach-finance-insights";
-import { createFinanceEntry, deleteFinanceEntry } from "@/app/dashboard/coach/compta/actions";
+import { createFinanceEntry, deleteFinanceEntry, updateFinanceEntry } from "@/app/dashboard/coach/compta/actions";
 import { categoriesFor } from "@/lib/coach-finance-categories";
-import type { FinanceEntry } from "@/lib/coach-finance";
+import type { FinanceEntry, FinanceSettings } from "@/lib/coach-finance";
+import FinancePro from "@/components/coach/FinancePro";
 import { withAlpha } from "@/lib/theme-color";
 import { safeAction } from "@/lib/safe-action";
 
@@ -31,16 +32,19 @@ function csvEscape(value: string): string {
 // import.ts) — les lignes importées portent source="stripe" et un badge
 // dédié, tout le reste (dépenses, renouvellements, coaching individuel...)
 // reste déclaratif et saisi à la main.
-export default function CoachFinanceTracker({ initialEntries }: { initialEntries: FinanceEntry[] }) {
+export default function CoachFinanceTracker({ initialEntries, settings }: { initialEntries: FinanceEntry[]; settings: FinanceSettings }) {
   const t = useT();
   const [entries, setEntries] = useState(initialEntries);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
   // initialEntries change (même piège que todayLogs dans ClientNutritionView —
   // useState ne reprend jamais un nouveau prop après le premier rendu).
-  useEffect(() => {
+  // (Fait au rendu, pas dans un effet : motif « stocker la prop précédente ».)
+  const [prevInitial, setPrevInitial] = useState(initialEntries);
+  if (prevInitial !== initialEntries) {
+    setPrevInitial(initialEntries);
     setEntries(initialEntries);
-  }, [initialEntries]);
+  }
   const [showForm, setShowForm] = useState(false);
   const [kind, setKind] = useState<"revenu" | "depense">("revenu");
   const [category, setCategory] = useState<string>(categoriesFor("revenu")[0]);
@@ -53,6 +57,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
   const currentMonth = todayStr().slice(0, 7);
   const [month, setMonth] = useState(currentMonth);
   const [filter, setFilter] = useState<"tout" | "revenu" | "depense">("tout");
+  const [query, setQuery] = useState("");
   const totals = useMemo(() => monthTotals(entries, month), [entries, month]);
   const monthRevenue = totals.revenue;
   const monthExpense = totals.expense;
@@ -60,10 +65,32 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
   const maxBar = Math.max(1, ...series.flatMap((x) => [x.revenue, x.expense]));
   const expenseCats = useMemo(() => categoryBreakdown(entries, month, "depense"), [entries, month]);
   const toCarry = useMemo(() => recurringToCarry(entries, month), [entries, month]);
+  // Une recherche cherche dans TOUT l'historique (« combien j'ai payé
+  // Canva cette année ? »), sans recherche on reste sur le mois affiché.
+  const q = query.trim().toLowerCase();
   const visible = useMemo(
-    () => entries.filter((e) => e.entry_date.startsWith(month) && (filter === "tout" || e.kind === filter)),
-    [entries, month, filter]
+    () =>
+      entries.filter(
+        (e) =>
+          (q ? `${e.label} ${e.category}`.toLowerCase().includes(q) : e.entry_date.startsWith(month)) &&
+          (filter === "tout" || e.kind === filter)
+      ),
+    [entries, month, filter, q]
   );
+  const visibleTotal = visible.reduce((acc, e) => acc + (e.kind === "revenu" ? e.amount : -e.amount), 0);
+
+  function changeCategory(id: string, next: string) {
+    const backup = entries.find((e) => e.id === id);
+    if (!backup || backup.category === next) return;
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, category: next } : e)));
+    startTransition(async () => {
+      const r = await safeAction(() => updateFinanceEntry(id, { category: next }));
+      if (r.error) {
+        setEntries((prev) => prev.map((e) => (e.id === id ? backup : e)));
+        setError(r.error);
+      }
+    });
+  }
   const monthLabel = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" }).format(new Date(`${month}-15T12:00:00`));
 
   function carryRecurring() {
@@ -169,6 +196,8 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
         <SummaryCard label={t("Bénéfice")} value={eur(monthRevenue - monthExpense)} color={monthRevenue - monthExpense >= 0 ? "var(--ep-ink)" : "var(--ep-bad)"} Icon={Wallet} />
       </div>
 
+      <FinancePro entries={entries} month={month} today={todayStr()} settings={settings} />
+
       {/* 6 derniers mois : revenus (vert) et dépenses (rouge) */}
       <div className="ep-card" style={{ padding: "14px 14px 10px", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 110 }}>
@@ -213,6 +242,16 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
           <Repeat size={15} style={{ color: "var(--ep-accent)" }} />
           {t("Reporter les dépenses fixes")} ({toCarry.length} · {eur(toCarry.reduce((s, x) => s + x.amount, 0))})
         </button>
+      )}
+
+      <div style={{ position: "relative", marginBottom: 10 }}>
+        <Search size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(var(--ep-ink-rgb),0.35)" }} />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Chercher dans tout l'historique (ex : Canva)")} aria-label={t("Chercher")} style={{ ...inputStyle, paddingLeft: 38 }} />
+      </div>
+      {q && (
+        <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 800, color: "var(--ep-ink)" }}>
+          {visible.length} {t("ligne(s)")} · {t("solde")} <span style={{ color: visibleTotal >= 0 ? "var(--ep-ok)" : "var(--ep-bad)", fontVariantNumeric: "tabular-nums" }}>{visibleTotal >= 0 ? "+" : ""}{eur(visibleTotal)}</span>
+        </p>
       )}
 
       <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
@@ -318,14 +357,31 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--ep-ink)", display: "flex", alignItems: "center", gap: 6 }}>
                   {e.label}
+                  {e.source === "import" && (
+                    <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--ep-accent)", background: "rgba(var(--ep-accent-rgb),0.12)", border: "1px solid rgba(var(--ep-accent-rgb),0.3)", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>
+                      {t("Banque")}
+                    </span>
+                  )}
                   {e.source === "stripe" && (
                     <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase", color: "#635bff", background: "#635bff1f", border: "1px solid #635bff40", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>
                       {t("Stripe")}
                     </span>
                   )}
                 </p>
-                <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)" }}>
-                  {e.category} · {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(e.entry_date + "T12:00:00"))}
+                <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(var(--ep-ink-rgb),0.35)", display: "flex", alignItems: "center", gap: 4 }}>
+                  {e.id.startsWith("tmp-") ? (
+                    e.category
+                  ) : (
+                    <select
+                      value={e.category}
+                      onChange={(ev) => changeCategory(e.id, ev.target.value)}
+                      aria-label={t("Catégorie")}
+                      style={{ fontSize: 10.5, background: "transparent", border: "none", color: "rgba(var(--ep-ink-rgb),0.5)", padding: 0, cursor: "pointer", maxWidth: 150 }}
+                    >
+                      {categoriesFor(e.kind).map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  )}
+                  · {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", ...(q ? { year: "2-digit" } : {}) }).format(new Date(e.entry_date + "T12:00:00"))}
                 </p>
               </div>
               <span style={{ fontSize: 13, fontWeight: 800, color: e.kind === "revenu" ? "var(--ep-ok)" : "var(--ep-bad)", flexShrink: 0 }}>
