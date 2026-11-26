@@ -13,8 +13,6 @@ import { VOCABULARY_PROMPT_BLOCK } from "@/lib/content-vocabulary";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
-import { guideDmReply, shortGuideLink } from "@/lib/dm-reply";
-import DmProspectForm from "@/components/coach/DmProspectForm";
 import Link from "next/link";
 import { withAlpha } from "@/lib/theme-color";
 import { safeAction } from "@/lib/safe-action";
@@ -23,7 +21,7 @@ import { cleanVideoPlan } from "@/lib/youtube-studio";
 import YoutubeStudio from "@/components/coach/YoutubeStudio";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript } from "@/lib/content-formats";
 import { ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
-import { hasGuideCta, isFilmableScript, shootingOrder } from "@/lib/shooting-session";
+import { isFilmableScript, shootingOrder } from "@/lib/shooting-session";
 import { defaultFormatFor, formatsForPlatform, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -1485,14 +1483,6 @@ function MyScripts({
                 </p>
               )}
 
-              {/* Vidéo sans guide (26/11, 0 lead) : elle ne peut pas créer de
-                  lead. Elle passe après les autres dans « Tourner ». */}
-              {isFilmableScript(script) && !hasGuideCta(script) && (
-                <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
-                  {tr("Ni guide (« commente NNN »), ni audit dans l'appel à l'action : cette vidéo ne peut pas créer de lead. Elle passe après les autres au tournage.")}
-                </p>
-              )}
-
               {/* Lien du guide, nu et lisible (retour direct 2026-09-30 :
                   plus de paramètres « à rallonge »). La plateforme d'origine
                   reste détectée par le referrer (lib/lead-origin.ts) ; les
@@ -1516,30 +1506,6 @@ function MyScripts({
                       <CopyButton text={link} />
                     </div>
                     <p style={{ margin: "4px 0 0", fontSize: 10, color: "rgba(var(--ep-ink-rgb),0.3)", overflowWrap: "anywhere" }}>{link}</p>
-                    {(() => {
-                      const guide = leadTracking.guideByScriptId?.[script.id];
-                      if (!guide) return null;
-                      const dm = guideDmReply(guide.title, shortGuideLink(TRACKED_LINK_BASE, guide.code));
-                      return (
-                        <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px dashed rgba(var(--ep-yellow-rgb),0.25)" }}>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                            <div style={{ minWidth: 0 }}>
-                              <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ep-yellow)" }}>
-                                {tr("Réponse DM à qui commente")} {guide.code}
-                              </span>
-                              <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.6)" }}>
-                                {guide.clicks30d > 0
-                                  ? `${guide.clicks30d} ${guide.clicks30d > 1 ? tr("personnes ont ouvert") : tr("personne a ouvert")} ${tr("ce guide depuis un DM (30 jours)")}`
-                                  : tr("Colle ce message à chaque personne qui commente. Une seule question, aucune relance.")}
-                              </p>
-                            </div>
-                            <CopyButton text={dm} />
-                          </div>
-                          <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)", whiteSpace: "pre-line" }}>{dm}</p>
-                          <DmProspectForm scriptId={script.id} guideSlug={leadTracking.slugByScriptId[script.id]} />
-                        </div>
-                      );
-                    })()}
                   </div>
                 );
               })()}

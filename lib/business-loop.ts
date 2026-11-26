@@ -127,7 +127,7 @@ export function computeBusinessLoop(m: LoopMetrics): LoopReport {
     action:
       m.guideClicks7d >= 5
         ? null
-        : "Réponds à chaque commentaire « NNN » avec le bloc « Réponse DM » du script (Studio). C'est lui qui transforme un commentaire en lead.",
+        : "Envoie le guide en DM à chaque personne qui commente le numéro. Peu de commentaires = peu de vues : la priorité reste des reels qui touchent des non-abonnées (le hook d'abord).",
     owner: "emmanuel",
   });
 
