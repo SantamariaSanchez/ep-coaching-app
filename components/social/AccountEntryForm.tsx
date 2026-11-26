@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Target, HelpCircle } from "lucide-react";
 import { saveAccountEntryAction, saveGoalAction } from "@/app/dashboard/coach/stats-reseaux/actions";
+import ScreenshotFill from "@/components/social/ScreenshotFill";
 
 // Saisie des chiffres d'un compte (abonnés, vues, portée...) par le coach
 // lui-même, en 1 minute par semaine. Chaque champ est optionnel : on met
@@ -89,7 +90,7 @@ export default function AccountEntryForm({
   const router = useRouter();
   const [platform, setPlatform] = useState(platforms[0] ?? "instagram");
   const [date, setDate] = useState(today);
-  const [period, setPeriod] = useState(7);
+  const [period, setPeriod] = useState(30);
   const [handle, setHandle] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(handles).map(([k, v]) => [k, v ?? ""])));
   const [values, setValues] = useState<Record<string, string>>({});
   const [goal, setGoal] = useState<Record<string, { followers: string; date: string }>>(() =>
@@ -144,6 +145,17 @@ export default function AccountEntryForm({
           <label style={lbl}>{t("Chiffres au")}</label>
           <input type="date" style={input} value={date} max={today} onChange={(e) => setDate(e.target.value)} aria-label={t("Date des chiffres")} />
         </div>
+      </div>
+
+      {/* Capture du tableau de bord du compte (26/11) : lue dans le
+          téléphone, l'image n'est jamais envoyée. On vérifie ensuite. */}
+      <div style={{ marginBottom: 12 }}>
+        <ScreenshotFill
+          onValues={(vals) => {
+            const keep = ["views", "reach", "likes", "comments", "shares", "saves"] as const;
+            setValues((cur) => ({ ...cur, ...Object.fromEntries(keep.filter((k) => vals[k] !== undefined).map((k) => [k, String(vals[k])])) }));
+          }}
+        />
       </div>
 
       <label style={lbl}>{t("Les vues, portée et interactions portent sur")}</label>
