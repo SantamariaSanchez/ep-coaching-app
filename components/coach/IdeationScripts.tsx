@@ -23,7 +23,7 @@ import { cleanVideoPlan } from "@/lib/youtube-studio";
 import YoutubeStudio from "@/components/coach/YoutubeStudio";
 import { CONTENT_FORMATS, DEFAULT_CONTENT_FORMAT, buildFormatScriptPrompt, getContentFormat, parseScript } from "@/lib/content-formats";
 import { ContentFormatPicker, FormatGuide, ScriptBody, ShootingMode } from "@/components/coach/ScriptFormatView";
-import { isFilmableScript, shootingOrder } from "@/lib/shooting-session";
+import { hasGuideCta, isFilmableScript, shootingOrder } from "@/lib/shooting-session";
 import { defaultFormatFor, formatsForPlatform, isWrittenPlatform, writtenPromptRules } from "@/lib/written-content";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -1482,6 +1482,14 @@ function MyScripts({
                 <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 700, color: "var(--ep-yellow)" }}>
                   📩 {realLeadsByScriptId[script.id].total}{" "}{tr("lead")}{realLeadsByScriptId[script.id].total > 1 ? "s" : ""}{" "}{tr("captés sur ce numéro")}
                   {realLeadsByScriptId[script.id].last30Days > 0 && ` (${realLeadsByScriptId[script.id].last30Days} sur les 30 derniers jours)`}
+                </p>
+              )}
+
+              {/* Vidéo sans guide (26/11, 0 lead) : elle ne peut pas créer de
+                  lead. Elle passe après les autres dans « Tourner ». */}
+              {isFilmableScript(script) && !hasGuideCta(script) && (
+                <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
+                  {tr("Ni guide (« commente NNN »), ni audit dans l'appel à l'action : cette vidéo ne peut pas créer de lead. Elle passe après les autres au tournage.")}
                 </p>
               )}
 
