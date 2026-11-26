@@ -120,6 +120,14 @@ function LeadRow({
                 <Phone size={10} /> {lead.phone}
               </span>
             )}
+            {/* Prospect noté depuis la Réponse DM du Studio (26/11) : pas
+                d'email, le pseudo et le contexte sont dans la note. */}
+            {lead.source === "instagram_dm" && (
+              <span className="flex items-center gap-1 text-[11px] text-(--ep-ink)/60">
+                <span className="text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-pink-500/15 text-pink-400 border border-pink-500/35">{t("DM Instagram")}</span>
+                {(lead.coach_note ?? "").split("\n")[0]}
+              </span>
+            )}
           </div>
         </div>
 
@@ -134,7 +142,7 @@ function LeadRow({
         <select
           value={status}
           onChange={(e) => handleStatusChange(e.target.value as LeadStatus)}
-          aria-label={`Statut de ${lead.email ?? lead.phone ?? "ce lead"}`}
+          aria-label={`Statut de ${lead.email ?? lead.phone ?? (lead.coach_note ?? "").split("\n")[0] ?? "ce lead"}`}
           className="flex-shrink-0"
           style={{
             background: "var(--ep-s2)",
@@ -233,7 +241,7 @@ export default function LeadsPipeline({
     return leads.filter((l) => {
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
       if (!q) return true;
-      const haystack = `${l.email ?? ""} ${l.phone ?? ""} ${magnetTitleBySlug[l.lead_magnet_slug] ?? ""} ${originLabelById?.[l.id] ?? ""}`.toLowerCase();
+      const haystack = `${l.email ?? ""} ${l.phone ?? ""} ${l.coach_note ?? ""} ${magnetTitleBySlug[l.lead_magnet_slug] ?? ""} ${originLabelById?.[l.id] ?? ""}`.toLowerCase();
       return fuzzyMatchAny([haystack], q);
     });
   }, [leads, query, statusFilter, magnetTitleBySlug, originLabelById]);

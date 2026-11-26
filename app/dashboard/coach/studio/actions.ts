@@ -1,7 +1,7 @@
 "use server";
 
 import { sanitizeBullets, type ScriptBullets } from "@/lib/script-bullets";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireCoach, requirePlatformOwner } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
@@ -556,4 +556,41 @@ export async function fetchWritingInspiration(): Promise<WritingInspiration> {
       .map(({ id, title, notes }) => ({ id, title, notes })),
     notes: ((notes.data ?? []) as { id: string; title: string; body: string | null; pinned: boolean | null }[]).map((n) => ({ ...n, pinned: !!n.pinned })),
   };
+}
+
+
+// Prospect venu d'un commentaire « NNN » puis d'un DM (26/11, process de
+// suivi des prospects des pages Notion d'acquisition) : pseudo, objectif et
+// difficulté, rangés dans la page Leads avec le guide et le script d'origine.
+// Aucune relance automatique : le suivi se fait à la main, par statut.
+export async function addDmProspect(input: {
+  scriptId: string;
+  guideSlug: string;
+  handle: string;
+  objective?: string;
+  difficulty?: string;
+}): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { error: guard.error };
+  const handle = input.handle.trim().replace(/^@?/, "@").slice(0, 60);
+  if (handle.length < 2) return { error: "Indique son pseudo Instagram." };
+  const clean = (v?: string) => (v ?? "").replace(/\s+/g, " ").trim().slice(0, 300);
+  const objective = clean(input.objective);
+  const difficulty = clean(input.difficulty);
+  const note = [handle, objective && `Objectif : ${objective}`, difficulty && `Difficulté : ${difficulty}`].filter(Boolean).join("\n");
+  const admin = createAdminClient();
+  const { error } = await admin.from("leads").insert({
+    lead_magnet_slug: input.guideSlug.slice(0, 200),
+    email: null,
+    phone: null,
+    source: "instagram_dm",
+    status: "contacte",
+    coach_note: note,
+    status_updated_at: new Date().toISOString(),
+    origin_platform: "instagram",
+    origin_script_id: /^[0-9a-f-]{36}$/i.test(input.scriptId) ? input.scriptId : null,
+  });
+  if (error) return { error: "Enregistrement impossible, réessaie." };
+  revalidatePath("/dashboard/coach/admin/leads");
+  return { success: true };
 }
