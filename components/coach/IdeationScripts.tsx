@@ -1489,7 +1489,7 @@ function MyScripts({
                   lead. Elle passe après les autres dans « Tourner ». */}
               {isFilmableScript(script) && !hasGuideCta(script) && (
                 <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.55)" }}>
-                  {tr("Pas de « commente NNN » : cette vidéo ne peut pas créer de lead. Elle passe après les autres au tournage.")}
+                  {tr("Ni guide (« commente NNN »), ni audit dans l'appel à l'action : cette vidéo ne peut pas créer de lead. Elle passe après les autres au tournage.")}
                 </p>
               )}
 

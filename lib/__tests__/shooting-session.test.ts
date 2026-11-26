@@ -32,3 +32,11 @@ test("session : dans un format, les scripts qui envoient vers un guide passent d
   ];
   assert.deepEqual(shootingOrder(s).map((x) => x.id), ["g1", "g2", "old", "b"]);
 });
+
+test("chemin vers un lead : guide, mot géré à la main ou audit ; une question en commentaire ne compte pas", async () => {
+  const { hasGuideCta } = await import("../shooting-session");
+  assert.equal(hasGuideCta({ cta: "Commente 314, et je te l'envoie" }), true);
+  assert.equal(hasGuideCta({ cta: "Commente COACHING" }), true);
+  assert.equal(hasGuideCta({ cta: "Réserve ton audit gratuit de 30 minutes, le lien est dans ma bio" }), true);
+  assert.equal(hasGuideCta({ cta: "Dis-moi dans les commentaires : toi, t'y vas ?" }), false);
+});

@@ -12,7 +12,7 @@ import { extractCtaKeywords } from "@/lib/cta-keywords";
 // dans un groupe, du plus ancien au plus récent (on vide le vieux stock).
 // Exception (26/11, 0 lead) : dans un groupe, les scripts qui envoient vers un
 // guide (« commente NNN ») passent devant. Une vidéo sans guide ne peut pas
-// créer de lead, et 104 reels du stock sur 179 n'en avaient pas.
+// créer de lead, et environ 80 reels du stock sur 179 n'avaient ni guide ni audit.
 
 export interface ShootableScript {
   id: string;
@@ -22,9 +22,15 @@ export interface ShootableScript {
   content?: string | null;
 }
 
-/** Vrai si le script fait commenter un numéro de guide (« commente 822 »). */
+/**
+ * Vrai si la vidéo a un chemin vers un lead ou un appel : un guide
+ * (« commente 822 »), un mot géré à la main (« commente COACHING », « APPLI »)
+ * ou l'audit gratuit. Une simple question en commentaire ne compte pas.
+ */
 export function hasGuideCta(s: { cta?: string | null; content?: string | null }): boolean {
-  return extractCtaKeywords(`${s.cta ?? ""}\n${s.content ?? ""}`).some((k) => /^\d+$/.test(k));
+  const text = `${s.cta ?? ""}\n${s.content ?? ""}`;
+  if (extractCtaKeywords(text).length > 0) return true;
+  return /\baudit\b/i.test(s.cta ?? "");
 }
 
 /** Script vidéo prêt : à tourner, avec un vrai texte, ni post écrit ni format sans vidéo. */
