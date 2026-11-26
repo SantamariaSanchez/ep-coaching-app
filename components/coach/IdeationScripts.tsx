@@ -14,6 +14,7 @@ import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideati
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
 import { guideDmReply, shortGuideLink } from "@/lib/dm-reply";
+import DmProspectForm from "@/components/coach/DmProspectForm";
 import Link from "next/link";
 import { withAlpha } from "@/lib/theme-color";
 import { safeAction } from "@/lib/safe-action";
@@ -1527,6 +1528,7 @@ function MyScripts({
                             <CopyButton text={dm} />
                           </div>
                           <p style={{ margin: "6px 0 0", fontSize: 11, color: "rgba(var(--ep-ink-rgb),0.5)", whiteSpace: "pre-line" }}>{dm}</p>
+                          <DmProspectForm scriptId={script.id} guideSlug={leadTracking.slugByScriptId[script.id]} />
                         </div>
                       );
                     })()}
