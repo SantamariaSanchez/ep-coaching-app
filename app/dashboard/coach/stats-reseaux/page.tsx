@@ -12,6 +12,8 @@ import { SIGNAL_LABELS, MIN_COMPARABLE, type Verdict } from "@/lib/social/post-i
 import { getAppSetup } from "@/lib/app-setup-server";
 import { COACH_PLATFORMS } from "@/lib/app-setup";
 import PostEntryForm from "@/components/social/PostEntryForm";
+import AccountEntryForm from "@/components/social/AccountEntryForm";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 // Ce qui marche (refonte du 03/11/2026, décision d'Emmanuel) : les stats
 // brutes sont déjà sur chaque réseau, l'appli ne les recopie plus. Le coach
@@ -44,6 +46,7 @@ export default async function WhatWorksPage({ searchParams }: { searchParams: Pr
 
   const [data, setup, inbound] = await Promise.all([getReadings(user.id), getAppSetup(user.id), getInboundDemand(user.id)]);
   const today = todayInParis();
+  const todayMs = new Date(`${today}T12:00:00Z`).getTime();
   const nowLocal = `${today}T${new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date())}`;
 
   const chosen = Array.isArray(setup.answers.plateformes) ? (setup.answers.plateformes as string[]) : [];
@@ -51,6 +54,20 @@ export default async function WhatWorksPage({ searchParams }: { searchParams: Pr
   const platforms = ALL.filter((p) => chosen.includes(p) || used.includes(p));
   const shown = platforms.length ? platforms : ALL;
   const formPlatforms = platforms.length ? platforms : COACH_PLATFORMS.map((o) => o.value);
+
+  // Comptes du coach : pseudo, objectif d'abonnés et dernière saisie.
+  const { data: accRows } = await createAdminClient()
+    .from("social_accounts")
+    .select("id, platform, handle, goal_followers, goal_date")
+    .eq("owner_id", user.id)
+    .eq("active", true);
+  const accounts = (accRows ?? []) as { id: string; platform: string; handle: string | null; goal_followers: number | null; goal_date: string | null }[];
+  const handles = Object.fromEntries(accounts.map((a) => [a.platform, a.handle]));
+  const goals = Object.fromEntries(accounts.map((a) => [a.platform, a.goal_followers ? { followers: a.goal_followers, date: a.goal_date } : null]));
+  const { data: lastDaily } = accounts.length
+    ? await createAdminClient().from("social_account_daily").select("date").in("account_id", accounts.map((a) => a.id)).order("date", { ascending: false }).limit(1).maybeSingle()
+    : { data: null };
+  const lastAccountCapture = lastDaily?.date ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(new Date(`${lastDaily.date}T12:00:00Z`)) : null;
 
   const comparable = data.posts.filter((p) => p.reading.verdict !== "pas_assez");
   const groups = [
@@ -69,7 +86,20 @@ export default async function WhatWorksPage({ searchParams }: { searchParams: Pr
         </section>
       )}
 
-      {/* 1. Analyser une publication */}
+      {/* 1. Les chiffres du compte : une capture par semaine (26/11, retour
+          d'Emmanuel : « c'est même pas clair où mettre la capture ».
+          Le formulaire existait mais n'était affiché nulle part). */}
+      <section style={{ marginBottom: 18 }}>
+        <p className="ep-label" style={{ marginBottom: 6 }}>{tr("1. Ton compte, une capture par semaine")}</p>
+        <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.5 }}>
+          {tr("Instagram : Profil > Tableau de bord professionnel > Performance. Fais une capture, touche « Lire une capture », vérifie les chiffres, enregistre.")}
+          {lastAccountCapture ? ` ${tr("Dernière saisie")} : ${lastAccountCapture}.` : ""}
+        </p>
+        <AccountEntryForm platforms={formPlatforms} today={today} handles={handles} goals={goals} />
+      </section>
+
+      {/* 2. Analyser une publication */}
+      <p className="ep-label" style={{ marginBottom: 6 }}>{tr("2. Une publication en particulier")}</p>
       <section style={{ marginBottom: 18 }}>
         <PostEntryForm platforms={formPlatforms} scripts={data.scripts} nowLocal={nowLocal} label="Analyser une publication" />
       </section>
@@ -164,7 +194,7 @@ export default async function WhatWorksPage({ searchParams }: { searchParams: Pr
                       {tr("Ce qui a marché, selon toi :")} {p.why.map((w) => tr(({ hook: "l'accroche", corps: "le contenu", concept: "le sujet", format: "le format", timing: "le moment" } as Record<string, string>)[w] ?? w)).join(", ")}
                     </p>
                   )}
-                  {p.platform === "youtube" && p.reading.verdict === "a_refaire" && p.published_at && Date.now() - new Date(p.published_at).getTime() > 180 * 86400000 && (
+                  {p.platform === "youtube" && p.reading.verdict === "a_refaire" && p.published_at && todayMs - new Date(p.published_at).getTime() > 180 * 86400000 && (
                     <p style={{ margin: "8px 0 0", fontSize: 12, fontWeight: 700, color: "var(--ep-accent)" }}>
                       {tr("Une de tes meilleures vidéos date de plus de 6 mois : change la miniature (très différente) pour la relancer comme une nouvelle vidéo.")}
                     </p>

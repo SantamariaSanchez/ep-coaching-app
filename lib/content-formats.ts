@@ -97,6 +97,31 @@ export const CONTENT_FORMATS: ContentFormat[] = [
     filmed: true,
   },
   {
+    // SP-18 (Notion, 02/11) : seul format qui a nettement surperformé sur le
+    // compte (« si je gagne 200 g de muscle par mois… », environ 1 430 vues
+    // pour une moyenne d'environ 150, n = 1). Découverte (TOFU), pas un cours.
+    // Claude n'en écrit pas (règle face caméra du 25/11) : c'est le format
+    // d'Emmanuel, et chaque idée porte sa source ou « hypothèse à tester ».
+    id: "texte_ecran",
+    short: "Texte court",
+    label: "Reel texte court (découverte)",
+    icon: AlignLeft,
+    color: "var(--ep-pink)",
+    description: "Une vidéo de fond de 5 à 10 secondes avec une phrase à l'écran : faire réagir quelqu'un qui ne te connaît pas encore (identification, surprise, autodérision, contraste). Pas un mini-cours.",
+    structure: ["Le texte à l'écran : une idée, lisible en 3 secondes", "Le plan de fond : simple (salle, assiette, toi qui marches)", "L'angle : contraste, projection, autodérision, observation, paradoxe...", "La source de l'idée, ou « hypothèse à tester »"],
+    tips: [
+      "Un lot de textes = des angles différents, jamais 10 variantes du même qui a marché.",
+      "Le texte se lit en une fois, sans contexte : si tu dois l'expliquer, il est trop long.",
+      "Note les vues, partages et abonnements au même délai que tes autres reels pour comparer.",
+    ],
+    shape: "sections",
+    sectionLabels: ["Texte à l'écran", "Plan de fond", "Angle", "Source"],
+    shapeHint: "« Texte à l'écran : la phrase », « Plan de fond : ce qu'on voit », « Angle : le ressort », « Source : lien ou référence, sinon « hypothèse à tester » ».",
+    template: "Texte à l'écran : [une phrase, lisible en 3 secondes]\nPlan de fond : [salle, assiette, toi qui marches...]\nAngle : [contraste, projection, autodérision, observation...]\nSource : [référence observée, ou « hypothèse à tester »]",
+    filmed: true,
+    rule: "Aucune pensée du public, statistique ou tendance inventée : chaque idée a une source, ou elle est marquée « hypothèse à tester ».",
+  },
+  {
     id: "yap",
     short: "Yap",
     label: "Yap (parlé spontané)",
