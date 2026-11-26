@@ -61,3 +61,14 @@ test("situation réelle du 26/11 matin : vidéos et LinkedIn publiés, le goulot
   assert.equal(r.writingMode, "retravailler_le_stock");
   assert.equal(r.writtenMode, "ecrire");
 });
+
+test("1 guide ouvert et 0 lead : on ne juge pas la page du guide, le goulot reste les DM", () => {
+  const r = computeBusinessLoop({ ...today, videoPublished7d: 19, writtenPublished7d: 47, daysSinceStatsCapture: 0, guideClicks7d: 1 });
+  assert.equal(r.bottleneck?.key, "dm");
+  const leads = r.steps.find((s) => s.key === "leads");
+  assert.equal(leads?.owner, "emmanuel");
+  assert.match(leads?.action ?? "", /Trop peu de guides ouverts/);
+  const enough = computeBusinessLoop({ ...today, videoPublished7d: 19, writtenPublished7d: 47, daysSinceStatsCapture: 0, guideClicks7d: 6 });
+  assert.equal(enough.bottleneck?.key, "leads");
+  assert.equal(enough.steps.find((s) => s.key === "leads")?.owner, "claude");
+});

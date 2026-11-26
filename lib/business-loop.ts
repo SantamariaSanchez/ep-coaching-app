@@ -50,6 +50,8 @@ export interface LoopStep {
   action: string | null;
   /** Qui le fait : Emmanuel ou Claude (routines et sessions). */
   owner: "emmanuel" | "claude";
+  /** Maillon amont dont dépend celui-ci quand l'échantillon est trop petit pour le juger. */
+  blockedBy?: string;
 }
 
 export interface LoopReport {
@@ -64,6 +66,8 @@ export interface LoopReport {
 }
 
 /** Au-delà de ce stock, écrire du neuf ne sert à rien : on améliore l'existant. */
+/** Guides ouverts sur 7 jours en dessous desquels on ne juge pas la page du guide. */
+export const GUIDE_SAMPLE = 5;
 export const STOCK_CAP = 60;
 /** Rythme visé : une vidéo publiée par jour. */
 export const SHOOT_TARGET_7D = 7;
@@ -127,6 +131,10 @@ export function computeBusinessLoop(m: LoopMetrics): LoopReport {
     owner: "emmanuel",
   });
 
+  // Sous 5 guides ouverts par semaine, 0 lead ne dit rien de la page du guide
+  // (26/11 : 1 ouverture, et Claude se voyait dire de réécrire les accroches).
+  // Le maillon à débloquer reste alors celui des DM.
+  const enoughOpens = m.guideClicks7d >= GUIDE_SAMPLE;
   steps.push({
     key: "leads",
     label: "Leads",
@@ -135,10 +143,11 @@ export function computeBusinessLoop(m: LoopMetrics): LoopReport {
     action:
       m.leads7d >= 3
         ? null
-        : m.guideClicks7d > 0
+        : enoughOpens
           ? "Des gens ouvrent les guides mais ne laissent pas leur email : Claude retravaille l'accroche des guides les plus envoyés."
-          : "Les leads suivent les DM : débloque d'abord le maillon « DM et guides ».",
-    owner: m.guideClicks7d > 0 ? "claude" : "emmanuel",
+          : `Trop peu de guides ouverts (${m.guideClicks7d} sur 7 jours, il en faut ${GUIDE_SAMPLE}) pour juger la page du guide : les leads suivent les DM, débloque d'abord le maillon « DM et guides ».`,
+    owner: enoughOpens ? "claude" : "emmanuel",
+    ...(m.leads7d < 3 && !enoughOpens ? { blockedBy: "dm" } : {}),
   });
 
   steps.push({
@@ -191,7 +200,8 @@ export function computeBusinessLoop(m: LoopMetrics): LoopReport {
   // Le circuit se lit dans l'ordre : le premier maillon rouge bloque tout ce
   // qui suit. « Ton propre suivi » est à part (il ne bloque pas les ventes).
   const pipeline = steps.filter((s) => s.key !== "toi");
-  const bottleneck = pipeline.find((s) => s.tone === "bad") ?? pipeline.find((s) => s.tone === "warn") ?? null;
+  const first = pipeline.find((s) => s.tone === "bad") ?? pipeline.find((s) => s.tone === "warn") ?? null;
+  const bottleneck = (first?.blockedBy && pipeline.find((s) => s.key === first.blockedBy)) || first;
 
   const tooMuchStock = m.videoStock > STOCK_CAP;
   return {
