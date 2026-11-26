@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { nowInParis, addMinutesToHhmm } from "@/lib/dates";
 import { cronBearer } from "@/lib/cron-auth";
+import { trainingAdherence } from "@/lib/training-adherence";
 
 // Relance en douceur si une séance était prévue dans l'agenda aujourd'hui
 // (bloc icon="salle", voir lib/agenda-presets.ts) et qu'elle n'a jamais été
@@ -91,13 +92,25 @@ export async function GET(req: Request) {
 
     if ((count ?? 0) > 0) continue; // déjà loggée, rien à faire
 
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", ownerId).maybeSingle();
-    const url = (profile as { role: string } | null)?.role === "coach" ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
+    const { data: profile } = await supabase.from("profiles").select("role, start_date").eq("id", ownerId).maybeSingle();
+    const p = profile as { role: string; start_date: string | null } | null;
+    const url = p?.role === "coach" ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
+
+    // Le rappel s'adapte à ce qui a vraiment été fait sur 14 jours (26/11) :
+    // séances prévues par semaine = jours avec un bloc « salle » dans l'agenda.
+    const since14 = parisDateStr(new Date(now.getTime() - 13 * 86_400_000));
+    const [{ data: weekBlocks }, { count: done14 }] = await Promise.all([
+      supabase.from("schedule_blocks").select("day_of_week").eq("owner_id", ownerId).eq("icon", "salle").not("day_of_week", "is", null),
+      supabase.from("sessions").select("id", { count: "exact", head: true }).eq("client_id", ownerId).eq("is_completed", true).gte("session_date", since14),
+    ]);
+    const plannedPerWeek = new Set(((weekBlocks ?? []) as { day_of_week: number }[]).map((b) => b.day_of_week)).size;
+    const weeksSinceStart = p?.start_date ? Math.floor((now.getTime() - new Date(`${p.start_date}T12:00:00Z`).getTime()) / (7 * 86_400_000)) : null;
+    const adherence = trainingAdherence({ plannedPerWeek, done14d: done14 ?? 0, weeksSinceStart, label: block.label });
 
     await notifyUser(ownerId, {
       type: "missed_session_reminder",
-      title: "🏋️ Séance pas encore loggée",
-      body: `Tu avais « ${block.label} » de prévu aujourd'hui, pense à la valider dans ton logbook si tu l'as faite.`,
+      title: adherence.level === "decroche" ? "🏋️ On repart doucement" : "🏋️ Séance pas encore loggée",
+      body: adherence.reminder,
       url,
     });
     sent++;
