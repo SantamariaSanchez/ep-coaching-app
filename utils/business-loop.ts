@@ -7,6 +7,8 @@ import { computeBusinessLoop, type LoopMetrics, type LoopReport } from "@/lib/bu
 // de casser le tableau de bord.
 
 const DAY = 24 * 60 * 60 * 1000;
+const VIDEO = ["reel", "youtube"];
+const WRITTEN = ["linkedin"];
 
 async function count(q: PromiseLike<{ count: number | null }>): Promise<number> {
   try {
@@ -66,9 +68,11 @@ export async function loadBusinessLoopMetrics(coachId: string): Promise<LoopMetr
   };
 
   const [
-    stockToShoot,
-    shot7d,
-    published7d,
+    videoStock,
+    videoShotWaiting,
+    videoPublished7d,
+    writtenStock,
+    writtenPublished7d,
     daysSinceStatsCapture,
     guideClicks7d,
     leads7d,
@@ -79,9 +83,11 @@ export async function loadBusinessLoopMetrics(coachId: string): Promise<LoopMetr
     selfFood,
     selfSessions7d,
   ] = await Promise.all([
-    count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).eq("status", "a_tourner")),
-    count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).in("status", ["tourne", "publie"]).gte("updated_at", since7)),
-    count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).eq("status", "publie").gte("updated_at", since7)),
+    count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).eq("status", "a_tourner").in("platform", VIDEO)),
+    count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).eq("status", "tourne").in("platform", VIDEO)),
+    count(admin.from("content_published_log").select("id", { count: "exact", head: true }).eq("coach_id", coachId).in("platform", VIDEO).gte("published_at", since7)),
+    count(admin.from("coach_scripts").select("id", { count: "exact", head: true }).eq("coach_id", coachId).eq("status", "a_tourner").in("platform", WRITTEN)),
+    count(admin.from("content_published_log").select("id", { count: "exact", head: true }).eq("coach_id", coachId).in("platform", WRITTEN).gte("published_at", since7)),
     lastCapture(),
     count(admin.from("page_visits").select("id", { count: "exact", head: true }).like("path", "/g/%").gte("created_at", since7)),
     count(admin.from("leads").select("id", { count: "exact", head: true }).gte("created_at", since7)),
@@ -94,9 +100,11 @@ export async function loadBusinessLoopMetrics(coachId: string): Promise<LoopMetr
   ]);
 
   return {
-    stockToShoot,
-    shot7d,
-    published7d,
+    videoStock,
+    videoShotWaiting,
+    videoPublished7d,
+    writtenStock,
+    writtenPublished7d,
     daysSinceStatsCapture,
     guideClicks7d,
     leads7d,

@@ -9,12 +9,16 @@
 export type LoopTone = "ok" | "warn" | "bad";
 
 export interface LoopMetrics {
-  /** Scripts « à tourner » en stock. */
-  stockToShoot: number;
-  /** Scripts passés en « tourné » ou « publié » sur 7 jours. */
-  shot7d: number;
-  /** Scripts marqués « publié » sur 7 jours. */
-  published7d: number;
+  /** Vidéos (reels et YouTube) « à tourner » en stock. */
+  videoStock: number;
+  /** Vidéos publiées sur 7 jours (journal des publications : publier un script le retire du stock). */
+  videoPublished7d: number;
+  /** Vidéos tournées, pas encore publiées. */
+  videoShotWaiting: number;
+  /** Posts écrits (LinkedIn) prêts à publier. */
+  writtenStock: number;
+  /** Posts écrits publiés sur 7 jours. */
+  writtenPublished7d: number;
   /** Jours depuis la dernière saisie de stats réseaux (capture dans Mes stats réseaux ; null = jamais). */
   daysSinceStatsCapture: number | null;
   /** Ouvertures des liens /g/NNN envoyés en DM, sur 7 jours. */
@@ -52,42 +56,46 @@ export interface LoopReport {
   steps: LoopStep[];
   /** Premier maillon rouge du circuit (le goulot), sinon le premier orange. */
   bottleneck: LoopStep | null;
-  /** Consigne aux routines d'écriture. */
+  /** Consigne aux routines d'écriture des vidéos (reels, YouTube). */
   writingMode: "ecrire" | "retravailler_le_stock";
   writingReason: string;
+  /** Consigne à la routine des posts écrits (LinkedIn). */
+  writtenMode: "ecrire" | "retravailler_le_stock";
 }
 
 /** Au-delà de ce stock, écrire du neuf ne sert à rien : on améliore l'existant. */
 export const STOCK_CAP = 60;
-/** Rythme visé : un reel tourné par jour. */
+/** Rythme visé : une vidéo publiée par jour. */
 export const SHOOT_TARGET_7D = 7;
+/** Posts écrits : au-delà de 60 prêts, on retravaille aussi l'existant. */
+export const WRITTEN_STOCK_CAP = 60;
 
 const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
 
 export function computeBusinessLoop(m: LoopMetrics): LoopReport {
   const steps: LoopStep[] = [];
 
+  // Publier un script le retire du stock et l'inscrit au journal des
+  // publications (outil publier_script) : c'est ce journal qui compte.
+  const videoOut = m.videoPublished7d + m.videoShotWaiting;
   steps.push({
     key: "tournage",
-    label: "Tournage",
-    value: `${plural(m.shot7d, "script tourné", "scripts tournés")} sur 7 jours, ${m.stockToShoot} en stock`,
-    tone: m.shot7d >= SHOOT_TARGET_7D ? "ok" : m.shot7d >= 3 ? "warn" : "bad",
+    label: "Vidéos tournées et publiées",
+    value: `${plural(m.videoPublished7d, "vidéo publiée", "vidéos publiées")} sur 7 jours, ${m.videoShotWaiting} tournée${m.videoShotWaiting > 1 ? "s" : ""} en attente, ${m.videoStock} en stock`,
+    tone: videoOut >= SHOOT_TARGET_7D ? "ok" : videoOut >= 3 ? "warn" : "bad",
     action:
-      m.shot7d >= SHOOT_TARGET_7D
+      videoOut >= SHOOT_TARGET_7D
         ? null
-        : "Tourne au moins un reel par jour dans le Studio (mode tournage), puis passe-le en « tourné ». Le stock est là : il ne manque que la caméra.",
+        : "Tourne au moins un reel par jour dans le Studio (mode tournage), puis publie-le. Le stock est là : il ne manque que la caméra.",
     owner: "emmanuel",
   });
 
   steps.push({
     key: "publication",
-    label: "Publication",
-    value: `${plural(m.published7d, "contenu marqué publié", "contenus marqués publiés")} sur 7 jours`,
-    tone: m.published7d >= 5 ? "ok" : m.published7d >= 1 ? "warn" : "bad",
-    action:
-      m.published7d >= 5
-        ? null
-        : "Après chaque post, passe le script en « publié » dans le Studio. Sans ça, impossible de relier un reel à ses vues, ses DM et ses leads.",
+    label: "Posts LinkedIn",
+    value: `${plural(m.writtenPublished7d, "post publié", "posts publiés")} sur 7 jours, ${m.writtenStock} prêt${m.writtenStock > 1 ? "s" : ""}`,
+    tone: m.writtenPublished7d >= 5 ? "ok" : m.writtenPublished7d >= 1 ? "warn" : "bad",
+    action: m.writtenPublished7d >= 5 ? null : "Publie au moins un post LinkedIn par jour depuis « Posts à publier », puis marque-le publié.",
     owner: "emmanuel",
   });
 
@@ -185,14 +193,15 @@ export function computeBusinessLoop(m: LoopMetrics): LoopReport {
   const pipeline = steps.filter((s) => s.key !== "toi");
   const bottleneck = pipeline.find((s) => s.tone === "bad") ?? pipeline.find((s) => s.tone === "warn") ?? null;
 
-  const tooMuchStock = m.stockToShoot > STOCK_CAP;
+  const tooMuchStock = m.videoStock > STOCK_CAP;
   return {
     steps,
     bottleneck,
     writingMode: tooMuchStock ? "retravailler_le_stock" : "ecrire",
     writingReason: tooMuchStock
-      ? `${m.stockToShoot} scripts attendent d'être tournés (plafond ${STOCK_CAP}) pour ${m.shot7d} tournés en 7 jours : écrire du neuf ne fait pas avancer le business. On retravaille l'ancien stock (structure d'un vrai créateur, face caméra, version Points clés), du plus ancien au plus récent.`
-      : `Stock de ${m.stockToShoot} scripts, sous le plafond de ${STOCK_CAP} : on écrit normalement.`,
+      ? `${m.videoStock} vidéos attendent d'être tournées (plafond ${STOCK_CAP}) pour ${m.videoPublished7d} publiées en 7 jours : écrire du neuf ne fait pas avancer le business. On retravaille l'ancien stock (structure d'un vrai créateur, face caméra, version Points clés), du plus ancien au plus récent.`
+      : `Stock de ${m.videoStock} vidéos, sous le plafond de ${STOCK_CAP} : on écrit normalement.`,
+    writtenMode: m.writtenStock > WRITTEN_STOCK_CAP ? "retravailler_le_stock" : "ecrire",
   };
 }
 
@@ -205,6 +214,7 @@ export function businessLoopText(r: LoopReport): string {
     ...lines,
     "",
     r.bottleneck ? `Goulot : ${r.bottleneck.label}. ${r.bottleneck.action ?? ""}` : "Aucun maillon bloqué.",
-    `Consigne d'écriture : ${r.writingMode === "ecrire" ? "écrire" : "retravailler le stock"}. ${r.writingReason}`,
+    `Consigne d'écriture des vidéos (reels, YouTube) : ${r.writingMode === "ecrire" ? "écrire" : "retravailler le stock"}. ${r.writingReason}`,
+    `Consigne des posts LinkedIn : ${r.writtenMode === "ecrire" ? "écrire (stock sous le plafond)" : "retravailler le stock"}.`,
   ].join("\n");
 }
