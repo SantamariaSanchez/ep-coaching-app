@@ -298,12 +298,9 @@ function Header({ magnet, Icon, showKeyword }: { magnet: LeadMagnet; Icon: Lucid
 
 // ── Guide ─────────────────────────────────────────────────────────────
 
-function GuideContent({ magnet }: { magnet: GuideMagnet }) {
+function GuideSection({ s }: { s: GuideMagnet["sections"][number] }) {
   return (
-    <div>
-      <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.7, marginBottom: 24 }}>{magnet.intro}</p>
-      {magnet.sections.map((s, i) => (
-        <div key={i} style={{ marginBottom: 22 }}>
+        <div style={{ marginBottom: 22 }}>
           <h2 style={{ fontSize: 15, fontWeight: 800, color: "var(--ep-ink)", marginBottom: 8 }}>{s.heading}</h2>
           {s.paragraphs.map((p, j) => (
             <p key={j} style={{ fontSize: 13.5, color: "rgba(var(--ep-ink-rgb),0.6)", lineHeight: 1.75, marginBottom: 10 }}>
@@ -343,7 +340,14 @@ function GuideContent({ magnet }: { magnet: GuideMagnet }) {
             </div>
           )}
         </div>
-      ))}
+  );
+}
+
+function GuideContent({ magnet }: { magnet: GuideMagnet }) {
+  return (
+    <div>
+      <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.7, marginBottom: 24 }}>{magnet.intro}</p>
+      {magnet.sections.map((s, i) => <GuideSection key={i} s={s} />)}
       <div style={{ borderTop: "1px solid rgba(var(--ep-accent-rgb),0.15)", paddingTop: 18, marginTop: 8 }}>
         <p style={{ fontSize: 13.5, color: "var(--ep-ink)", fontWeight: 700, lineHeight: 1.7, fontStyle: "italic" }}>
           {magnet.conclusion}
@@ -723,6 +727,17 @@ export default function LeadMagnetLanding({
           {magnet.intro && (
             <p style={{ fontSize: 14, color: "rgba(var(--ep-ink-rgb),0.7)", lineHeight: 1.7, margin: "0 0 20px" }}>{magnet.intro}</p>
           )}
+          {/* Aperçu (26/11) : la première partie se lit en entier avant
+              l'email. Quelqu'un à qui on a promis le guide en DM voyait
+              un mur de formulaire : 0 lead sur toutes les visites. */}
+          {magnet.format === "guide" && magnet.sections[0] && (
+            <div style={{ position: "relative" }}>
+              <GuideSection s={magnet.sections[0]} />
+              {magnet.sections.length > 1 && (
+                <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 60, background: "linear-gradient(to bottom, transparent, var(--ep-bg, var(--ep-s1)))", pointerEvents: "none" }} />
+              )}
+            </div>
+          )}
           <div
             style={{
               padding: "20px", borderRadius: 16, marginBottom: 20,
@@ -730,11 +745,11 @@ export default function LeadMagnetLanding({
             }}
           >
             <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--ep-ink-rgb),0.35)", marginBottom: 10 }}>
-              {t("Ce que tu vas trouver dedans")}
+              {magnet.format === "guide" && magnet.sections.length > 1 ? `${t("La suite, gratuite")} : ${magnet.sections.length - 1} ${magnet.sections.length - 1 > 1 ? t("parties") : t("partie")}` : t("Ce que tu vas trouver dedans")}
             </p>
             {magnet.format === "guide" ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {magnet.sections.map((s, i) => (
+                {magnet.sections.slice(1).map((s, i) => (
                   <p key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(var(--ep-ink-rgb),0.55)", margin: 0 }}>
                     <Check size={13} style={{ color: "var(--ep-accent)", flexShrink: 0 }} /> {s.heading}
                   </p>
@@ -746,7 +761,7 @@ export default function LeadMagnetLanding({
               </p>
             )}
           </div>
-          <CaptureForm slug={magnet.slug} submitLead={submitLeadWithOrigin} onUnlocked={() => setStoredUnlock(true)} ctaLabel={t("Débloquer gratuitement")} />
+          <CaptureForm slug={magnet.slug} submitLead={submitLeadWithOrigin} onUnlocked={() => setStoredUnlock(true)} ctaLabel={magnet.format === "guide" && magnet.sections.length > 1 ? t("Lire la suite gratuitement") : t("Débloquer gratuitement")} />
           {/* Maillage interne même avant déblocage : chaque guide mène à
               d'autres guides du même thème (SEO 2026-10-14). */}
           <RelatedMagnets items={relatedMagnets} />
