@@ -22,3 +22,13 @@ test("prêt à tourner : texte non vide, vidéo, pas un post écrit", () => {
   assert.equal(isFilmableScript({ ...base, platform: "linkedin" }), false);
   assert.equal(isFilmableScript({ ...base, content_format: "carrousel" }), false);
 });
+
+test("session : dans un format, les scripts qui envoient vers un guide passent devant", () => {
+  const s = [
+    { id: "old", created_at: "2026-10-01", content_format: "face_cam", cta: "Abonne-toi" },
+    { id: "g2", created_at: "2026-10-05", content_format: "face_cam", cta: "Commente 822, et je te l'envoie" },
+    { id: "g1", created_at: "2026-10-03", content_format: "face_cam", content: "… commente 641 et je te l'envoie" },
+    { id: "b", created_at: "2026-10-02", content_format: "broll_voix_off", cta: "Commente APPLI" },
+  ];
+  assert.deepEqual(shootingOrder(s).map((x) => x.id), ["g1", "g2", "old", "b"]);
+});

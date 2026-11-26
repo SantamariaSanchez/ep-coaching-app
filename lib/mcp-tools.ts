@@ -471,10 +471,10 @@ export async function callExtraTool(ownerId: string, role: Role, name: string, a
       const limit = numArg(args.nombre, 1, 200) ?? 30;
       const { data } = await admin
         .from("coach_scripts")
-        .select("id, title, hook, status, platform, content_format, content, created_at")
+        .select("id, title, hook, status, platform, content_format, content, cta, created_at")
         .eq("coach_id", ownerId)
         .eq("status", "a_tourner");
-      const rows = ((data ?? []) as { id: string; title: string; hook: string | null; status: string; platform: string | null; content_format: string | null; content: string | null; created_at: string }[])
+      const rows = ((data ?? []) as { id: string; title: string; hook: string | null; status: string; platform: string | null; content_format: string | null; content: string | null; cta: string | null; created_at: string }[])
         .filter(isFilmableScript);
       if (rows.length === 0) return text("Rien à tourner : aucun script vidéo prêt (statut à tourner avec un contenu).");
       const ordered = shootingOrder(rows).slice(0, limit);

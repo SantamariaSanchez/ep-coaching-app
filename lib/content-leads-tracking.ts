@@ -251,13 +251,19 @@ export async function getGuideByScriptId(
   scripts: CoachScript[]
 ): Promise<Record<string, { code: string; title: string; clicks30d: number }>> {
   const out: Record<string, { code: string; title: string; clicks30d: number }> = {};
-  const titleCache = new Map<string, string | null>();
+  // Un titre par numéro, cherchés en parallèle (26/11 : ~75 numéros
+  // différents dans le Studio, attendus l'un après l'autre à chaque ouverture).
+  const codeByScript = new Map<string, string>();
   for (const script of scripts) {
     const code = extractCtaKeywords(`${script.cta ?? ""}\n${script.content ?? ""}`).find((k) => /^\d+$/.test(k));
-    if (!code) continue;
-    if (!titleCache.has(code)) titleCache.set(code, await getLeadMagnetTitleByAnyKeyword(code));
+    if (code) codeByScript.set(script.id, code);
+  }
+  const uniqueCodes = [...new Set(codeByScript.values())];
+  const titles = await Promise.all(uniqueCodes.map((c) => getLeadMagnetTitleByAnyKeyword(c).catch(() => null)));
+  const titleCache = new Map(uniqueCodes.map((c, i) => [c, titles[i]] as const));
+  for (const [scriptId, code] of codeByScript) {
     const title = titleCache.get(code);
-    if (title) out[script.id] = { code, title, clicks30d: 0 };
+    if (title) out[scriptId] = { code, title, clicks30d: 0 };
   }
   const codes = [...new Set(Object.values(out).map((g) => g.code))];
   if (codes.length === 0) return out;

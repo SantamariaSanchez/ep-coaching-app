@@ -1,5 +1,6 @@
 import { getContentFormat } from "@/lib/content-formats";
 import { isWrittenPlatform } from "@/lib/written-content";
+import { extractCtaKeywords } from "@/lib/cta-keywords";
 
 // Session de tournage (18/11) : une seule source de vérité pour « prêt à
 // tourner » et pour l'ordre, utilisée par le Studio (bouton « Tourner ») et
@@ -9,11 +10,21 @@ import { isWrittenPlatform } from "@/lib/written-content";
 // puis tous les B-roll…) pour ne régler le téléphone qu'une fois par type de
 // plan. Les groupes suivent l'ordre du script le plus ancien de chaque format ;
 // dans un groupe, du plus ancien au plus récent (on vide le vieux stock).
+// Exception (26/11, 0 lead) : dans un groupe, les scripts qui envoient vers un
+// guide (« commente NNN ») passent devant. Une vidéo sans guide ne peut pas
+// créer de lead, et 104 reels du stock sur 179 n'en avaient pas.
 
 export interface ShootableScript {
   id: string;
   created_at: string;
   content_format?: string | null;
+  cta?: string | null;
+  content?: string | null;
+}
+
+/** Vrai si le script fait commenter un numéro de guide (« commente 822 »). */
+export function hasGuideCta(s: { cta?: string | null; content?: string | null }): boolean {
+  return extractCtaKeywords(`${s.cta ?? ""}\n${s.content ?? ""}`).some((k) => /^\d+$/.test(k));
 }
 
 /** Script vidéo prêt : à tourner, avec un vrai texte, ni post écrit ni format sans vidéo. */
@@ -31,5 +42,6 @@ export function shootingOrder<T extends ShootableScript>(scripts: T[]): T[] {
     if (g) g.push(s);
     else groups.set(key, [s]);
   }
-  return Array.from(groups.values()).flat();
+  // Tri stable : l'ordre d'ancienneté est gardé à l'intérieur de chaque moitié.
+  return Array.from(groups.values()).flatMap((g) => [...g.filter(hasGuideCta), ...g.filter((x) => !hasGuideCta(x))]);
 }
